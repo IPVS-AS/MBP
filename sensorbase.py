@@ -18,11 +18,12 @@ from stoppable import StoppableThread
 
 class SensorBase (StoppableThread):
     
-    def __init__(self, sensor_id, queue, sleeptime):
+    def __init__(self, sensor_id, queue, sleeptime, daemon = False):
         super().__init__() # python 3 only
         self.__sensor_id = sensor_id
         self.__queue = queue # value storing queue
         self.__sleeptime = sleeptime # time between each value read
+        self.daemon = daemon
 
     @staticmethod
     def readadc(adcnum):
@@ -60,8 +61,8 @@ class SensorBase (StoppableThread):
 
 class SensorStub (SensorBase):
 
-    def __init__(self, sensor_id, queue, sleeptime):
-        super().__init__(sensor_id, queue, sleeptime) # python 3 only
+    def __init__(self, sensor_id, queue, sleeptime, daemon):
+        super().__init__(sensor_id, queue, sleeptime, daemon) # python 3 only
 
     def _getSensorValue(self):
         return randint(0,9)
@@ -82,8 +83,7 @@ def signal_handler(signal, frame):
 
 if __name__ == "__main__":
     queue_ = Queue(0) # unlimited size
-    stub = SensorStub("stub", queue_, sleeptime)
-    stub.daemon = True # still having troubles to stop threads - use daemon thread
+    stub = SensorStub("stub", queue_, sleeptime, daemon=True) # still having troubles to stop threads - use daemon thread
     threads.append(stub)
     stub.start()
 
