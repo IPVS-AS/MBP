@@ -1,5 +1,7 @@
 ''' based on https://pypi.python.org/pypi/paho-mqtt/1.1#installation '''
 
+import sys
+import argparse
 import logging as log
 import struct
 from queue import Queue
@@ -12,7 +14,7 @@ from sensorbase import SensorStub
 sleeptime = 1
 daemon = True
 threads = []
-sensorid = "stub"
+sensorid = None
 queue_ = Queue()
 
 url = "localhost"
@@ -35,7 +37,20 @@ def on_message(client, userdata, msg):
 def on_publish(client, userdata, mid):
     return
 
-if __name__ == "__main__":
+def handle_args(argv):
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument('-i','--sensor-id',help='Sensor ID to be logged by this instance.', required=True)
+    parser.add_argument('-s','--sleeptime',help='Interval between each read from sensor in seconds (default: 1).', required=False)
+    parser.add_argument('-u','--url',help='URL of the MQTT broker (default: "localhost").', required=False)
+    parser.add_argument('-p','--port',help='Port of the MQTT broker (default: 1883).', required=False)
+    parser.add_argument('-t','--topic',help='Port of the MQTT broker (default: "public/me/").', required=False)
+
+    args = parser.parse_args()
+
+def main(argv):
+    handle_args(argv)
+
     stub = SensorStub(sensorid, queue_, sleeptime, daemon)
 
     client = mqtt.Client()
@@ -50,3 +65,5 @@ if __name__ == "__main__":
         value = queue_.get(block=True)
         client.publish(topic, payload=value["value"], qos=0, retain=False)
 
+if __name__ == "__main__":
+    main(sys.argv)
