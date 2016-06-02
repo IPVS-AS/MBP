@@ -3,8 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.mqttpysensor.devicemonitor.arping;
+package org.mqttpysensor.deviceaddressmonitor.arping;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,19 +24,24 @@ public class Arping {
     private String iprange;
     private Boolean usingStub;
 
-    private static final String ARPING_PATH = "py/arping.py";
-    private static final String ARPINGSTUB_PATH = "py/arpingstub.py";
+    private static final String CURRENT_PATH = "./src/org/mqttpysensor"
+            + "/deviceaddressmonitor/arping/";
+    private static final String ARPING_PATH = CURRENT_PATH 
+            + "arping.py";
+    private static final String ARPINGSTUB_PATH = CURRENT_PATH 
+            + "arpingstub.py";
     private static final int IP_ADDR_POS = 0;
     private static final int MAC_ADDR_POS = 1;
 
-    public Arping(String iprange, Boolean useStub) {
+    public Arping(String iprange, Boolean useStub) throws IOException {
         this.iprange = iprange;
         this.usingStub = useStub;
         PythonInterpreter.initialize(System.getProperties(),
                 System.getProperties(), new String[0]);
+        System.out.println(new File(".").getCanonicalPath());
     }
 
-    public Arping(String iprange) {
+    public Arping(String iprange) throws IOException {        
         this(iprange, false);
     }
 

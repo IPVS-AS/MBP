@@ -5,6 +5,7 @@
  */
 package org.mqttpysensor.devicemonitor.arping;
 
+import org.mqttpysensor.deviceaddressmonitor.arping.Arping;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.After;
