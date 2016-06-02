@@ -1,2 +1,7 @@
-# mqttpysensor
-Simple module for reading sensor values and communicate localy and through MQTT.
+Project developed on NetBeans.
+
+Using jython2.7.0 (needs to add the library to the project - only the main .jar works) with scapy installed.
+* [Download Jython.](http://www.jython.org/downloads.html)
+* [Install Jython.](http://stackoverflow.com/questions/16235562/how-can-i-install-jython-on-windows-7)
+* [Install scapy on jython.](http://stackoverflow.com/questions/3256135/importing-python-modules-in-jython)
+MAC-IP mapping not working on Windows - using stub for testing.
