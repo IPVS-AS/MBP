@@ -1,8 +1,8 @@
 #! /usr/bin/env python
 ''' taken from http://stackoverflow.com/questions/27210396/python-scapy-arp-scanning-subnet-script-from-a-book '''
 
-from scapy.all import srp
-from scapy import Ether, ARP, conf
+from scapy.all   import srp
+from scapy.all import Ether, ARP, conf
 
 import sys
 

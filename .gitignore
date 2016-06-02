@@ -1,3 +1,13 @@
+#NetBeans Project
+
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+.nb-gradle/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -60,3 +70,4 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+/sensor_catalogue/nbproject/private/
