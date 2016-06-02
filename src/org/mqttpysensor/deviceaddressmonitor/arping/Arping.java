@@ -10,25 +10,30 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.python.core.PyList;
 import org.python.core.PyObject;
 import org.python.core.PyString;
 import org.python.util.PythonInterpreter;
 
+import static org.mqttpysensor.var.Path.PYTHON_PATH;
+
 /**
  *
- * @author rafae
+ * @author rafaelkperes
  */
 public class Arping {
 
     private String iprange;
     private Boolean usingStub;
 
-    private static final String CURRENT_PATH = "./src/org/mqttpysensor"
+    private static final String CURRENT_PATH = "./org/mqttpysensor"
             + "/deviceaddressmonitor/arping/";
-    private static final String ARPING_PATH = CURRENT_PATH 
+    private static final String ARPING_PATH = PYTHON_PATH
+            + CURRENT_PATH 
             + "arping.py";
-    private static final String ARPINGSTUB_PATH = CURRENT_PATH 
+    private static final String ARPINGSTUB_PATH = PYTHON_PATH 
+            + CURRENT_PATH 
             + "arpingstub.py";
     private static final int IP_ADDR_POS = 0;
     private static final int MAC_ADDR_POS = 1;
@@ -38,7 +43,6 @@ public class Arping {
         this.usingStub = useStub;
         PythonInterpreter.initialize(System.getProperties(),
                 System.getProperties(), new String[0]);
-        System.out.println(new File(".").getCanonicalPath());
     }
 
     public Arping(String iprange) throws IOException {        
