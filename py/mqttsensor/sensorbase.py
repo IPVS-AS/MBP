@@ -39,6 +39,7 @@ class SensorBase (StoppableThread):
 
     def run(self):
         # reads sensor value and adds to queue
+
         while (not self.stopped()):
             value = self._getSensorValue()
             self.notify_observers(value)

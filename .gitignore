@@ -1,5 +1,4 @@
 #NetBeans Project
-
 nbproject/private/
 build/
 nbbuild/
@@ -7,6 +6,9 @@ dist/
 nbdist/
 nbactions.xml
 .nb-gradle/
+
+#CSV file
+*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
