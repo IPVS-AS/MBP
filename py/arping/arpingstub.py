@@ -9,11 +9,11 @@ def arping(iprange="10.0.1.0/24"):
     collection = [["100.70.2.139", "B8:86:87:D1:07:29"], ["100.70.2.138", "b8:27:eb:c4:ff:96"], ["100.70.2.140", "b8:27:eb:91:aa:c3"]]
     return collection
 
-'''if __name__ == "__main__":
+if __name__ == "__main__":
     if len(sys.argv) > 1:
         for ip in sys.argv[1:]:
             print ("arping", ip)
             print (arpingstub(ip))
 
     else:
-        print (arpingstub())'''
+        print (arpingstub())
