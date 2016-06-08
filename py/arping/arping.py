@@ -17,11 +17,11 @@ def arping(iprange="10.0.1.0/24"):
         collection.append(result)
     return collection
 
-'''if __name__ == "__main__":
+if __name__ == "__main__":
     if len(sys.argv) > 1:
         for ip in sys.argv[1:]:
             print ("arping", ip)
             print (arping(ip))
 
     else:
-        print (arping())'''
+        print (arping())
