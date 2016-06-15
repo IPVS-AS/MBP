@@ -94,8 +94,10 @@ def repeatIt():
         logger.info('arping result:' + str(result))
 
     # result to MQTT broker
-    logger.info('publish:' + json.dumps(result))
-    client.publish(topic, payload=str(result), qos=0, retain=False)
+    dictresult = {'iptomac': result}
+    jsonresult = json.dumps(dictresult)
+    logger.info('publish:' + jsonresult)
+    client.publish(topic, payload=str(jsonresult), qos=0, retain=False)
 
     # result to CSV file
     logger.info('generateCSV:' + str(result))
