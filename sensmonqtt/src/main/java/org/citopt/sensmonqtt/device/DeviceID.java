@@ -28,8 +28,8 @@ public class DeviceID {
         /*for (Integer pin : pinSet) {
             id_ += "." + pin;
             } converted to: */
-        id_ = pinSet.stream().map((pin) -> "." + pin).reduce(id_, String::concat);
-        this.id = id_;
+        id_ = pinSet.stream().map((pin) -> "," + pin).reduce(id_, String::concat);
+        this.id = id_.toUpperCase();
     }
 
     /**

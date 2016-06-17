@@ -7,6 +7,7 @@ package org.citopt.sensmonqtt.devicemanager;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import org.citopt.sensmonqtt.device.Device;
 import org.citopt.sensmonqtt.device.DeviceID;
 
@@ -19,26 +20,26 @@ public class DeviceManager {
     
     DeviceManagerDatabaseConnector db;
     Map<DeviceID, Device> activeDevices;
-    
-    
-    public enum Status {
-        /**
-         * Device is active (user option) and reachable
-         */
-        ACTIVE,
-        /**
-         * Device is active (user option) but unreachable
-         */
-        UNREACHABLE,
-        /**
-         * Device is inactive (user option)
-         */
-        INACTIVE
-    }
 
     public DeviceManager() {
         db = new DeviceManagerDatabaseConnector();
         activeDevices = new HashMap<>();
+    }
+    
+    public void registerDevice(Device device) {
+        db.addDevice(device);
+    }
+    
+    public void activateDevice(DeviceID id) {
+        Device d = db.getDevice(id);
+        if(d != null) {
+            activeDevices.put(d.getId(), d);
+        }        
+        throw new NoSuchElementException();
+    }
+    
+    public void deactivateDevice(DeviceID id) {
+        activeDevices.remove(id);
     }
     
 }

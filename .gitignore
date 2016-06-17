@@ -74,3 +74,4 @@ target/
 .ipynb_checkpoints
 /sensor_catalogue/nbproject/private/
 /sensor-lan-manager/nbproject/private/
+/sensmonqtt/nbproject/
