@@ -7,6 +7,7 @@ package org.citopt.sensmonqtt.device;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.citopt.sensmonqtt.device.location.Location;
 
 /**
  *
@@ -20,6 +21,7 @@ public class Device {
     private final String type;
     private Status status;
     private NetworkStatus netStatus;
+    private Location location;    
 
     public enum Status {
         /**
@@ -109,6 +111,14 @@ public class Device {
 
     public NetworkStatus getNetStatus() {
         return netStatus;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
     /**

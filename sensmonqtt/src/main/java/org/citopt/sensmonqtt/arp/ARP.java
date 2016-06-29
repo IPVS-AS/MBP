@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.citopt.sensmonqtt.devicemanager.arping;
+package org.citopt.sensmonqtt.arp;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import org.citopt.sensmonqtt.constant.GlobalValues;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -24,17 +25,16 @@ import org.json.simple.parser.ParseException;
  *
  * @author rafaelkperes
  */
-public class ArpingSubscriber implements MqttCallback {
+public class ARP implements MqttCallback {
 
     private final Map<String, String> mac2Ip;
     private MqttClient client;
 
     private static final String ARPING_TOPIC = "arping/result";
-    private static final String ARPING_BROKER_URL = "tcp://localhost";
     private static final String ARPING_CLIENT_ID
             = "org.citopt.sensmonqtt.devicemanager.arping";
-
-    public ArpingSubscriber() {
+        
+    public ARP() {
         this.mac2Ip = new HashMap<>();
         this.client = null;
     }
@@ -49,7 +49,8 @@ public class ArpingSubscriber implements MqttCallback {
 
     public void connectMqtt() throws MqttException {
         MemoryPersistence persistence = new MemoryPersistence();
-        this.client = new MqttClient(ARPING_BROKER_URL, ARPING_CLIENT_ID,
+        this.client = new MqttClient(GlobalValues.MQTT_BROKER_URL, 
+                ARPING_CLIENT_ID,
                 persistence);
         client.connect();
         client.setCallback(this);

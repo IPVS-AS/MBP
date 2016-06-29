@@ -3,12 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.citopt.sensmonqtt.devicemanager;
+package org.citopt.sensmonqtt.database;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import org.citopt.sensmonqtt.device.Device;
 import org.citopt.sensmonqtt.device.DeviceID;
 
@@ -19,31 +18,36 @@ import org.citopt.sensmonqtt.device.DeviceID;
  * table on database.
  * @author rafaelkperes
  */
-public class DeviceManagerDatabaseConnector {
+public class DatabaseConnector {
     
-    Map<DeviceID, Device> devices;
+    private static DatabaseConnector SINGLETON_INSTANCE = null;
+    private Map<DeviceID, Device> devices;
 
-    public DeviceManagerDatabaseConnector() {
+    private DatabaseConnector() {
         devices = new HashMap<>();
     }
     
     /**
-     * 
-     * @param id ID from desired Device
-     * @return element with given unique ID
-     * @throws NoSuchElementException if not found
+     * Use it to get the class singleton instance.
+     * @return DatabaseConnector singleton instance
      */
-    public Device getDevice(DeviceID id) throws NoSuchElementException {
-        Device d = devices.get(id);
-        if (d != null) {
-            return d;
+    public static DatabaseConnector getInstance() {
+        if (SINGLETON_INSTANCE == null) {
+            SINGLETON_INSTANCE = new DatabaseConnector();
         }
         
-        throw new NoSuchElementException();
+        return SINGLETON_INSTANCE;
     }
     
-    /**
-     * 
+    /** 
+     * @param id ID from desired Device
+     * @return element with given unique ID
+     */
+    public Device getDevice(DeviceID id) {
+        return devices.get(id);
+    }
+    
+    /** 
      * @return Collection of registered Devices
      */
     public Collection<Device> getAllDevices() {

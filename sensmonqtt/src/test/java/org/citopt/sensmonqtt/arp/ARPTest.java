@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.citopt.sensmonqtt.devicemanager.arping;
+package org.citopt.sensmonqtt.arp;
 
+import org.citopt.sensmonqtt.arp.ARP;
 import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -21,11 +22,11 @@ import static org.junit.Assert.*;
  *
  * @author rafaelkperes
  */
-public class ArpingSubscriberTest {
+public class ARPTest {
 
     private static String parseable;
 
-    public ArpingSubscriberTest() {
+    public ARPTest() {
     }
 
     @BeforeClass
@@ -54,7 +55,7 @@ public class ArpingSubscriberTest {
     public void testParseJson() throws Exception {
         System.out.println("parseJson");
         String toParse = "{\"iptomac\": [[\"100.70.2.142\", \"b0:a8:6e:9a:8f:13\"], [\"100.70.2.140\", \"b8:27:eb:91:aa:c3\"]]}";
-        ArpingSubscriber instance = new ArpingSubscriber();
+        ARP instance = new ARP();
         Map<String, String> expResult = new HashMap<>();
         expResult.put("b0:a8:6e:9a:8f:13", "100.70.2.142");
         expResult.put("b8:27:eb:91:aa:c3", "100.70.2.140");
@@ -70,7 +71,7 @@ public class ArpingSubscriberTest {
     @Test
     public void testConnectMqtt() throws Exception {
         System.out.println("connectMqtt");
-        ArpingSubscriber instance = new ArpingSubscriber();
+        ARP instance = new ARP();
         instance.connectMqtt();
         assertTrue(instance.isConnected());
 
@@ -91,7 +92,7 @@ public class ArpingSubscriberTest {
     @Test
     public void testIsConnected() {
         System.out.println("isConnected");
-        ArpingSubscriber instance = new ArpingSubscriber();
+        ARP instance = new ARP();
         boolean expResult = false;
         boolean result = instance.isConnected();
         assertEquals(expResult, result);
@@ -106,7 +107,7 @@ public class ArpingSubscriberTest {
     public void testGetIp() throws Exception {
         System.out.println("getIp");
         String macAddress = "b0:a8:6e:9a:8f:13";
-        ArpingSubscriber instance = new ArpingSubscriber();
+        ARP instance = new ARP();
 
         String toParse = "{\"iptomac\": [[\"100.70.2.142\", \"b0:a8:6e:9a:8f:13\"], [\"100.70.2.140\", \"b8:27:eb:91:aa:c3\"]]}";
         instance.messageArrived("topic", new MqttMessage(toParse.getBytes()));
@@ -123,7 +124,7 @@ public class ArpingSubscriberTest {
     public void testConnectionLost() {
         System.out.println("connectionLost");
         Throwable thrwbl = null;
-        ArpingSubscriber instance = new ArpingSubscriber();
+        ARP instance = new ARP();
         instance.connectionLost(thrwbl);
     }
 
@@ -136,7 +137,7 @@ public class ArpingSubscriberTest {
         String string = "";
         String toParse = "derp";
         MqttMessage mm = new MqttMessage(toParse.getBytes());
-        ArpingSubscriber instance = new ArpingSubscriber();
+        ARP instance = new ARP();
         try {
             instance.messageArrived(string, mm);
             fail("Should throw Exception");
@@ -146,7 +147,7 @@ public class ArpingSubscriberTest {
         string = "";
         toParse = "{\"iptomac\": [[\"100.70.2.142\", \"b0:a8:6e:9a:8f:13\"], [\"100.70.2.140\", \"b8:27:eb:91:aa:c3\"]]}";
         mm = new MqttMessage(toParse.getBytes());
-        instance = new ArpingSubscriber();
+        instance = new ARP();
         try {
             instance.messageArrived(string, mm);
         } catch (ParseException ex) {
@@ -161,7 +162,7 @@ public class ArpingSubscriberTest {
     public void testDeliveryComplete() {
         System.out.println("deliveryComplete");
         IMqttDeliveryToken imdt = null;
-        ArpingSubscriber instance = new ArpingSubscriber();
+        ARP instance = new ARP();
         instance.deliveryComplete(imdt);
     }
 
