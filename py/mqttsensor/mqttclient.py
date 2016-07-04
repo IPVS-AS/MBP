@@ -97,7 +97,7 @@ def main(argv):
             break
         except IOError as e:
             if (e.errno == 101 and ((time.time() - _time0) < connection_retry_interval)):
-                log.info("error:" + e)
+                log.info("error:" + e.errno + " " + e.filename + " " + e.strerror)
                 time.sleep(1)
             else:
                 raise
