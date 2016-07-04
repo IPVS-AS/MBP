@@ -30,11 +30,19 @@ public class ARP implements MqttCallback {
     private final Map<String, String> mac2Ip;
     private MqttClient client;
 
+    private static ARP SINGLETON_INSTANCE = null;
     private static final String ARPING_TOPIC = "arping/result";
     private static final String ARPING_CLIENT_ID
             = "org.citopt.sensmonqtt.devicemanager.arping";
+    
+    public static ARP getInstance() {
+        if (SINGLETON_INSTANCE == null) {
+            SINGLETON_INSTANCE = new ARP();
+        }
+        return SINGLETON_INSTANCE;
+    }
         
-    public ARP() {
+    private ARP() {
         this.mac2Ip = new HashMap<>();
         this.client = null;
     }

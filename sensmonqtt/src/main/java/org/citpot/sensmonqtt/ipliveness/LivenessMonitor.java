@@ -83,6 +83,10 @@ public class LivenessMonitor implements Runnable {
         InetAddress addr = InetAddress.getByName(ip);
         this.ips.put(addr, callback);
     }
+    
+    public void removeIp(String ip) {
+        this.ips.remove(ip);
+    }
 
     /**
      * Use it to explicitly check for the IP status.

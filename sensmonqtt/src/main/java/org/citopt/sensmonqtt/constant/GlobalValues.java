@@ -12,7 +12,7 @@ package org.citopt.sensmonqtt.constant;
 public final class GlobalValues {
     
     /* MQTT broker */
-    public static final String MQTT_BROKER_URL = "localhost";
+    public static final String MQTT_BROKER_URL = "tcp://localhost";
     public static final int MQTT_BROKER_PORT = 1883;
     
 }

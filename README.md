@@ -8,3 +8,8 @@ Using jython2.7.0 (needs to add the library to the project - only the main .jar 
 * [Install Jython.](http://stackoverflow.com/questions/16235562/how-can-i-install-jython-on-windows-7)
 * [Install scapy on jython.](http://stackoverflow.com/questions/3256135/importing-python-modules-in-jython)
 MAC-IP mapping not working on Windows - using stub for testing.
+
+On RPi:
+
+* Upstart packet needed (run `sudo apt-get install upstart`).
+* Reboot after installation

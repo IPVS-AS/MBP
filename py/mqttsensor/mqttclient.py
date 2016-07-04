@@ -2,7 +2,7 @@
 
 import sys
 import argparse
-import logging as log
+import logging
 import struct
 from queue import Queue
 
@@ -14,6 +14,15 @@ from sensorbase import SensorStub
 daemon = True
 threads = []
 queue_ = Queue()
+
+log = logging.getLogger()
+log.setLevel(logging.DEBUG)
+
+ch = logging.StreamHandler(sys.stdout)
+ch.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+log.addHandler(ch)
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):    
@@ -66,7 +75,7 @@ def main(argv):
     args = _parse_args(argv)
     sensorid = args['sensor_id']
     sleeptime = args['sleeptime']
-    print (args['url'])
+    #print (args['url'])
     url = args['url']
     port = args['port']
     topic = args['topic']

@@ -5,7 +5,6 @@
  */
 package org.citopt.sensmonqtt.arp;
 
-import org.citopt.sensmonqtt.arp.ARP;
 import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -55,7 +54,7 @@ public class ARPTest {
     public void testParseJson() throws Exception {
         System.out.println("parseJson");
         String toParse = "{\"iptomac\": [[\"100.70.2.142\", \"b0:a8:6e:9a:8f:13\"], [\"100.70.2.140\", \"b8:27:eb:91:aa:c3\"]]}";
-        ARP instance = new ARP();
+        ARP instance = ARP.getInstance();
         Map<String, String> expResult = new HashMap<>();
         expResult.put("b0:a8:6e:9a:8f:13", "100.70.2.142");
         expResult.put("b8:27:eb:91:aa:c3", "100.70.2.140");
@@ -67,11 +66,11 @@ public class ARPTest {
      * Test of connectMqtt method, of class ArpingSubscriber.
      *
      * @throws java.lang.Exception
-     */
+     */    
     @Test
     public void testConnectMqtt() throws Exception {
         System.out.println("connectMqtt");
-        ARP instance = new ARP();
+        ARP instance = ARP.getInstance();
         instance.connectMqtt();
         assertTrue(instance.isConnected());
 
@@ -92,7 +91,7 @@ public class ARPTest {
     @Test
     public void testIsConnected() {
         System.out.println("isConnected");
-        ARP instance = new ARP();
+        ARP instance = ARP.getInstance();
         boolean expResult = false;
         boolean result = instance.isConnected();
         assertEquals(expResult, result);
@@ -107,7 +106,7 @@ public class ARPTest {
     public void testGetIp() throws Exception {
         System.out.println("getIp");
         String macAddress = "b0:a8:6e:9a:8f:13";
-        ARP instance = new ARP();
+        ARP instance = ARP.getInstance();
 
         String toParse = "{\"iptomac\": [[\"100.70.2.142\", \"b0:a8:6e:9a:8f:13\"], [\"100.70.2.140\", \"b8:27:eb:91:aa:c3\"]]}";
         instance.messageArrived("topic", new MqttMessage(toParse.getBytes()));
@@ -124,7 +123,7 @@ public class ARPTest {
     public void testConnectionLost() {
         System.out.println("connectionLost");
         Throwable thrwbl = null;
-        ARP instance = new ARP();
+        ARP instance = ARP.getInstance();
         instance.connectionLost(thrwbl);
     }
 
@@ -137,7 +136,7 @@ public class ARPTest {
         String string = "";
         String toParse = "derp";
         MqttMessage mm = new MqttMessage(toParse.getBytes());
-        ARP instance = new ARP();
+        ARP instance = ARP.getInstance();
         try {
             instance.messageArrived(string, mm);
             fail("Should throw Exception");
@@ -147,7 +146,6 @@ public class ARPTest {
         string = "";
         toParse = "{\"iptomac\": [[\"100.70.2.142\", \"b0:a8:6e:9a:8f:13\"], [\"100.70.2.140\", \"b8:27:eb:91:aa:c3\"]]}";
         mm = new MqttMessage(toParse.getBytes());
-        instance = new ARP();
         try {
             instance.messageArrived(string, mm);
         } catch (ParseException ex) {
@@ -162,7 +160,7 @@ public class ARPTest {
     public void testDeliveryComplete() {
         System.out.println("deliveryComplete");
         IMqttDeliveryToken imdt = null;
-        ARP instance = new ARP();
+        ARP instance = ARP.getInstance();
         instance.deliveryComplete(imdt);
     }
 
