@@ -95,8 +95,8 @@ def main(argv):
             log.info("connect:" + str(url) + ":" + str(port) + " " + str(60))
             client.connect(url, port, 60)
             break
-        except IOError, e:
-            if (e.errno == 101) && (time.time() - _time0 < connection_retry_interval):
+        except IOError as e:
+            if (e.errno == 101 and ((time.time() - _time0) < connection_retry_interval)):
                 log.info("error:" + e)
                 time.sleep(1)
             else:
