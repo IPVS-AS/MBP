@@ -1,6 +1,7 @@
 ''' based on https://pypi.python.org/pypi/paho-mqtt/1.1#installation '''
 
 import sys
+import time
 import argparse
 import logging
 import struct
@@ -79,6 +80,7 @@ def main(argv):
     url = args['url']
     port = args['port']
     topic = args['topic']
+    connection_retry_interval = 120
 
     stub = SensorStub(sensorid, queue_, sleeptime, daemon)
 
@@ -86,8 +88,19 @@ def main(argv):
     client.on_connect = on_connect
     # client.on_message = on_message
 
-    log.info("connect:" + str(url) + ":" + str(port) + " " + str(60))
-    client.connect(url, port, 60)
+    # tries to connect for 2 minutes
+    _time0 = time.time()
+    while (True):
+        try:
+            log.info("connect:" + str(url) + ":" + str(port) + " " + str(60))
+            client.connect(url, port, 60)
+            break
+        except IOError, e:
+            if (e.errno == 101) && (time.time() - _time0 < connection_retry_interval):
+                log.info("error:" + e)
+                time.sleep(1)
+            else:
+                raise
 
     threads.append(stub)
     stub.start()
