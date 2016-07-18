@@ -48,15 +48,12 @@ public class ScriptDeployerTest {
             + "-----END RSA PRIVATE KEY-----";
 
     public static String pubkey
-            = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIYAt9bRE"
-            + "//95cV+Ep9VxArysILHKZYF25/SuYyYMCk3nQrO8RJL3nlj"
-            + "wda9M8YPB3SfLqu2FZxsNEXb7YnYCwpr5SetdqZnc9058g+"
-            + "a4IVKKCJB1+eMWTxmDyx23LAEIHLZIfCrtAGxkwTYDO3LHc"
-            + "viTiWTZUrzD7YX2AKYBXFj4osM0Nrk2yBUR73FW+/OHCSZ/"
-            + "zpPqvh2FiZY+DNbfQaRSHi+8G+jMFt9rRhX++Ph/UM/RTeX"
-            + "3XCJSX3oCDR7uvbCwK659boazwbLUgT8KkBvKtTGsf7IOg0"
-            + "W6vRA/uoOKKhFFfun4ekJ2GXeoooHoJ5+WlA6UqnHs+PztC"
-            + "EvQt pi@raspberrypi";
+            = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIYAt9bRE//95cV+Ep9VxArysILH"
+            + "KZYF25/SuYyYMCk3nQrO8RJL3nljwda9M8YPB3SfLqu2FZxsNEXb7YnYCwpr5Setdq"
+            + "Znc9058g+a4IVKKCJB1+eMWTxmDyx23LAEIHLZIfCrtAGxkwTYDO3LHcviTiWTZUrz"
+            + "D7YX2AKYBXFj4osM0Nrk2yBUR73FW+/OHCSZ/zpPqvh2FiZY+DNbfQaRSHi+8G+jMF"
+            + "t9rRhX++Ph/UM/RTeX3XCJSX3oCDR7uvbCwK659boazwbLUgT8KkBvKtTGsf7IOg0W"
+            + "6vRA/uoOKKhFFfun4ekJ2GXeoooHoJ5+WlA6UqnHs+PztCEvQt pi@raspberrypi";
 
     public ScriptDeployerTest() {
     }
