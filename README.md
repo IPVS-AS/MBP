@@ -55,6 +55,14 @@ This is used to set up services on the system.
 
 Compliments Scapy library.
 
+* [SSH RSA Key](https://help.ubuntu.com/community/SSH/OpenSSH/Keys)
+
+On the client machine, run:
+```
+mkdir ~/.ssh
+chmod 700 ~/.ssh
+```
+and then copy the public key found in [rsa](./rsa) to ~./ssh.
 
 
     
