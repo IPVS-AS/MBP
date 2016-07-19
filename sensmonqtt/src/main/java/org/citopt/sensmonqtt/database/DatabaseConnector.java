@@ -8,8 +8,8 @@ package org.citopt.sensmonqtt.database;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import org.bson.types.ObjectId;
 import org.citopt.sensmonqtt.device.Device;
-import org.citopt.sensmonqtt.device.DeviceID;
 
 /**
  * This class is a stub
@@ -21,7 +21,7 @@ import org.citopt.sensmonqtt.device.DeviceID;
 public class DatabaseConnector {
     
     private static DatabaseConnector SINGLETON_INSTANCE = null;
-    private Map<DeviceID, Device> devices;
+    private Map<ObjectId, Device> devices;
 
     private DatabaseConnector() {
         devices = new HashMap<>();
@@ -43,7 +43,7 @@ public class DatabaseConnector {
      * @param id ID from desired Device
      * @return element with given unique ID
      */
-    public Device getDevice(DeviceID id) {
+    public Device getDevice(ObjectId id) {
         return devices.get(id);
     }
     

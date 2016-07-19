@@ -30,3 +30,4 @@ class ActuatorStub (SensorBase):
 
 if __name__ == "__main__":
     client = SensorStub(sys.argv)
+    client.run()

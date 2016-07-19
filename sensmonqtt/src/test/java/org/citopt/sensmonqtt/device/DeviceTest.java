@@ -47,19 +47,6 @@ public class DeviceTest {
     }
 
     /**
-     * Test of getId method, of class Device.
-     */
-    @Test
-    public void testGetId() {
-        System.out.println("getId");
-        pinSet.add(1);
-        Device instance = new Device(macAddress, pinSet, type);
-        DeviceID expResult = new DeviceID(macAddress, pinSet);
-        DeviceID result = instance.getId();
-        assertEquals(expResult, result);
-    }
-
-    /**
      * Test of getType method, of class Device.
      */
     @Test

@@ -7,21 +7,35 @@ package org.citopt.sensmonqtt.device;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.bson.types.ObjectId;
 import org.citopt.sensmonqtt.device.location.Location;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Field;
+import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.Index;
+import org.mongodb.morphia.annotations.Indexes;
+import org.mongodb.morphia.annotations.Reference;
 
+@Entity("devices")
+    @Indexes(
+            @Index(value = "macAddress", fields = @Field("macAddress"))
+    )
 /**
  *
  * @author rafaelkperes
  */
+
 public class Device {
-        
-    private final DeviceID devId;
-    private final String macAddress;
-    private final List<Integer> pinSet;
-    private final String type;
+   
+    @Id
+    private ObjectId id;
+    private String macAddress;
+    private List<Integer> pinSet;
+    private String type;
     private Status status;
     private NetworkStatus netStatus;
-    private Location location;    
+    @Reference
+    private Location location;
 
     public enum Status {
         /**
@@ -45,6 +59,9 @@ public class Device {
         UNREACHABLE,
     }
     
+    public Device() {
+    }
+    
     /**
      * Status set as INACTIVE.
      * Network Status will always start as UNREACHABLE.
@@ -53,7 +70,7 @@ public class Device {
      * @param type Type of the device will determine which script will be deployed
      */
     public Device(String macAddress, List<Integer> pinSet, String type) {
-        this.devId = new DeviceID(macAddress, pinSet);
+        this.id = null;
         this.macAddress = macAddress;
         this.pinSet = new ArrayList<>(pinSet);
         this.type = type;
@@ -77,8 +94,8 @@ public class Device {
      *
      * @return DeviceID that contains this Device id as a String
      */
-    public DeviceID getId() {
-        return devId;
+    public ObjectId getId() {
+        return id;
     }
 
     /**

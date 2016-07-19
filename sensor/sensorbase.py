@@ -45,7 +45,7 @@ class SensorBase:
         #if (self._actuator):
         self._client.subscribe(self._mqtttopic, qos=0)
         self.isRunning = False
-        self.run()
+        #self.run()
 
     def run(self):
         # reads sensor value and adds to queue
@@ -94,13 +94,15 @@ class SensorBase:
         dict_ = {
             "id": self._sensorid,
             "time": str(datetime.now()),
-            "value": value,
+            "value": str(value),
         }
         json_ = json.dumps(dict_)
         self._client.publish(self._mqtttopic, payload=str(json_), qos=0, retain=False)
 
         # The callback for when the client receives a CONNACK response from the server.
 
+    def getPinset(self):
+        return self._pinset
 
 def on_message(client, userdata, message):
     log.info("on_message:" + str(message))
@@ -172,7 +174,7 @@ def parseargs(argv):
         args['sleeptime'] = sleeptime
     if ('pinset' not in args.keys() or args['pinset'] is None):
         args['pinset'] = pinset
-    args['pinset'] = map(int, args['pinset'].split(','))
+    args['pinset'] = list(map(int, args['pinset'].split(',')))
 
     argp = collections.namedtuple('Arg', ['dict', 'parser'])
     return argp(dict = args, parser = parser)
