@@ -16,16 +16,21 @@ import org.mongodb.morphia.Morphia;
  */
 public class MorphiaUtil {
 
+    private static Datastore ds = null;
+
     public static Datastore getDatastore() throws UnknownHostException {
-        MongoClient mongoClient = new MongoClient();
-        final Morphia morphia = new Morphia();
-        final Datastore datastore = morphia.createDatastore(mongoClient, "sensor");
-        datastore.ensureIndexes();
-        
-        morphia.mapPackage("org.citopt.sensmonqtt.device");
-        morphia.mapPackage("org.citopt.sensmonqtt.user");
-        
-        return datastore;
+        if (ds == null) {
+            MongoClient mongoClient = new MongoClient();
+            final Morphia morphia = new Morphia();
+            final Datastore datastore = morphia.createDatastore(mongoClient, "sensor");
+            datastore.ensureIndexes();
+
+            morphia.mapPackage("org.citopt.sensmonqtt.device");
+            morphia.mapPackage("org.citopt.sensmonqtt.user");
+
+            ds = datastore;
+        }
+        return ds;
     }
-    
+
 }

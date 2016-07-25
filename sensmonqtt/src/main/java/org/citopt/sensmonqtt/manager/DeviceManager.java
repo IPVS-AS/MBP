@@ -6,8 +6,8 @@
 package org.citopt.sensmonqtt.manager;
 
 import java.util.NoSuchElementException;
-import org.citopt.sensmonqtt.database.DatabaseConnector;
-import org.citopt.sensmonqtt.device.Device;
+import org.citopt.sensmonqtt.database.DataService;
+import org.citopt.sensmonqtt.device.Sensor;
 
 /**
  * Responsible for registering devices and retrieving its info, including its

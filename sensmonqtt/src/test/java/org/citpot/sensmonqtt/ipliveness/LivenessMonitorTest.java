@@ -6,7 +6,7 @@
 package org.citpot.sensmonqtt.ipliveness;
 
 import java.net.UnknownHostException;
-import org.citopt.sensmonqtt.device.Device;
+import org.citopt.sensmonqtt.device.Sensor;
 import org.citpot.sensmonqtt.ipliveness.LivenessMonitorTest.LivenessCallbackEmptyStub;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -117,12 +117,12 @@ public class LivenessMonitorTest {
         System.out.println("getStatus");
         String ip = reachableIp;
         LivenessMonitor instance = LivenessMonitor.getInstance();
-        Device.NetworkStatus expResult = Device.NetworkStatus.REACHABLE;
-        Device.NetworkStatus result = instance.getStatus(ip);
+        Sensor.NetworkStatus expResult = Sensor.NetworkStatus.REACHABLE;
+        Sensor.NetworkStatus result = instance.getStatus(ip);
         assertEquals(expResult, result);
 
         ip = unreachableIp;
-        expResult = Device.NetworkStatus.UNREACHABLE;
+        expResult = Sensor.NetworkStatus.UNREACHABLE;
         result = instance.getStatus(ip);
         assertEquals(expResult, result);
     }

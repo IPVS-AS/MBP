@@ -6,7 +6,7 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.citopt.sensmonqtt.device.Device;
+import org.citopt.sensmonqtt.device.Sensor;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -95,12 +95,12 @@ public class LivenessMonitor implements Runnable {
      * @return Status of the IP
      * @throws UnknownHostException
      */
-    public Device.NetworkStatus getStatus(String ip) throws UnknownHostException, IOException {
+    public Sensor.NetworkStatus getStatus(String ip) throws UnknownHostException, IOException {
         InetAddress addr = InetAddress.getByName(ip);
         if (addr.isReachable(TIMEOUT)) {
-            return Device.NetworkStatus.REACHABLE;
+            return Sensor.NetworkStatus.REACHABLE;
         }
-        return Device.NetworkStatus.UNREACHABLE;
+        return Sensor.NetworkStatus.UNREACHABLE;
     }
 
     public static LivenessMonitor getInstance() {
