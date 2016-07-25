@@ -27,7 +27,7 @@ public class SensorTest {
 
     private Device device;
     private List<Pin> pinSet;
-    private Type type;
+    private Script type;
     private ObjectId id;
 
     public SensorTest() {
@@ -45,7 +45,7 @@ public class SensorTest {
     public void setUp() {
         id = new ObjectId();
         device = new Device("AA:BB:CC:DD");
-        type = new Type();
+        type = new Script();
         type.setId(id);
         pinSet = new LinkedList<>();
     }
@@ -61,9 +61,9 @@ public class SensorTest {
     public void testGetType() {
         System.out.println("getType");
         Sensor instance = new Sensor(device, pinSet, type);
-        Type expResult = new Type();
+        Script expResult = new Script();
         expResult.setId(new ObjectId(id.toByteArray()));
-        Type result = instance.getType();
+        Script result = instance.getType();
         assertEquals(expResult, result);
     }
 
@@ -91,7 +91,7 @@ public class SensorTest {
         expResult.add(new Pin("A0", "0"));
         List<Pin> result = instance.getPinSet();
         assertEquals(expResult, result);
-                
+
         pinSet.add(new Pin("A1", "1"));
         expResult = new LinkedList<>();
         expResult.add(new Pin("A1", "1"));
@@ -99,7 +99,7 @@ public class SensorTest {
         Sensor anotherInstance = new Sensor(device, pinSet, type);
         result = anotherInstance.getPinSet();
         assertNotEquals(expResult, result);
-        
+
         expResult = new LinkedList<>();
         expResult.add(new Pin("A0", "0"));
         expResult.add(new Pin("A1", "1"));
@@ -176,15 +176,15 @@ public class SensorTest {
         try {
             instance.setNetworkStatus(netStatus);
             fail("Should throw IllegalArgumentException.");
-        } catch (IllegalArgumentException ex) {            
+        } catch (IllegalArgumentException ex) {
         }
-        
+
         netStatus = Sensor.NetworkStatus.REACHABLE;
         instance = new Sensor(device, pinSet, type, Sensor.Status.ACTIVE);
         instance.setNetworkStatus(netStatus);
-        assertEquals(netStatus, instance.getNetworkStatus());        
+        assertEquals(netStatus, instance.getNetworkStatus());
     }
-    
+
 //    @Test
 //    public void testGetId() {
 //        System.out.println("getId");
@@ -193,5 +193,4 @@ public class SensorTest {
 //        ObjectId result = instance.getId();
 //        assertEquals(expResult, result);
 //    }
-
 }

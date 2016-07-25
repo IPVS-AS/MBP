@@ -7,20 +7,38 @@ package org.citopt.sensmonqtt.device;
 
 import java.util.Objects;
 import org.bson.types.ObjectId;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Field;
 import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.Index;
+import org.mongodb.morphia.annotations.IndexOptions;
+import org.mongodb.morphia.annotations.Indexes;
 
 /**
  *
  * @author rafaelkperes
  */
+@Entity("locations")
+@Indexes({
+    @Index(fields = {
+        @Field("name")},
+            options = @IndexOptions(unique = true))
+})
 public class Location {
+
     @Id
     ObjectId id;
-    
+
+    String name;
     String description;
-    
-    public Location() {
-        
+
+    protected Location() {
+
+    }
+
+    public Location(String name, String description) {
+        this.name = name;
+        this.description = description;
     }
 
     public ObjectId getId() {
@@ -29,6 +47,10 @@ public class Location {
 
     public void setId(ObjectId id) {
         this.id = id;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getDescription() {
@@ -41,9 +63,10 @@ public class Location {
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 29 * hash + Objects.hashCode(this.id);
-        hash = 29 * hash + Objects.hashCode(this.description);
+        int hash = 3;
+        hash = 97 * hash + Objects.hashCode(this.id);
+        hash = 97 * hash + Objects.hashCode(this.name);
+        hash = 97 * hash + Objects.hashCode(this.description);
         return hash;
     }
 
@@ -59,7 +82,7 @@ public class Location {
             return false;
         }
         final Location other = (Location) obj;
-        if (!Objects.equals(this.description, other.description)) {
+        if (!Objects.equals(this.name, other.name)) {
             return false;
         }
         if (!Objects.equals(this.id, other.id)) {
@@ -67,6 +90,5 @@ public class Location {
         }
         return true;
     }
-    
     
 }

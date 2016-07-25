@@ -5,18 +5,21 @@
  */
 package org.citopt.sensmonqtt.user;
 
+import org.bson.types.ObjectId;
+import org.mongodb.morphia.annotations.Entity;
+
 /**
  *
  * @author rafaelkperes
  */
+@Entity("users")
 public class User {
-    private final UserID id;
+    private ObjectId id;
 
-    public User(UserID id) {
-        this.id = id;
+    protected User() {
     }
 
-    public UserID getId() {
+    public ObjectId getId() {
         return id;
     }
     

@@ -21,27 +21,29 @@ import org.mongodb.morphia.annotations.Reference;
  * @author rafaelkperes
  */
 @Entity("devices")
-    @Indexes({
-        @Index(fields = {@Field("macAddress")}, 
-                options = @IndexOptions(unique = true))
-    })
+@Indexes({
+    @Index(fields = {
+        @Field("macAddress")},
+            options = @IndexOptions(unique = true))
+})
 public class Device {
+
     @Id
     private ObjectId id;
-    
+
     private String macAddress;
-    
+
     @Reference
     private Set<Pin> availablePins;
-    
+
     @Reference
     private Set<Pin> allocatedPins;
-    
+
     @Reference
     private Location location;
-    
+
     protected Device() {
-        
+
     }
 
     public Device(String macAddress) {
@@ -76,23 +78,23 @@ public class Device {
     public void setLocation(Location location) {
         this.location = location;
     }
-    
+
     public void addPin(Pin p) {
         this.availablePins.add(p);
     }
-    
+
     public void allocatePin(Pin p) {
-        if(!this.availablePins.contains(p)) {
+        if (!this.availablePins.contains(p)) {
             throw new IllegalArgumentException("pin already allocated");
         }
         this.availablePins.remove(p);
         this.allocatedPins.add(p);
     }
-    
+
     public boolean isAvailable(Pin p) {
         return this.availablePins.contains(p);
     }
-    
+
     public boolean isAllocated(Pin p) {
         return this.allocatedPins.contains(p);
     }
@@ -122,6 +124,5 @@ public class Device {
         }
         return true;
     }
-    
-    
+
 }

@@ -18,30 +18,30 @@ import org.mongodb.morphia.annotations.Indexes;
 import org.mongodb.morphia.annotations.Reference;
 
 @Entity("devices")
-    @Indexes(
-            @Index(value = "macAddress", fields = @Field("macAddress"))
-    )
+@Indexes(
+        @Index(value = "macAddress", fields = @Field("macAddress"))
+)
 /**
  *
  * @author rafaelkperes
  */
 public class Sensor {
-   
+
     @Id
     private ObjectId id;
-    
+
     @Reference
     private Device device;
-    
+
     @Reference
     private List<Pin> pinSet;
-    
+
     @Reference
-    private Type type;
-    
+    private Script type;
+
     @Reference
     private Status status;
-    
+
     @Reference
     private NetworkStatus networkStatus;
 
@@ -50,41 +50,27 @@ public class Sensor {
         ACTIVE,
         INACTIVE
     }
-    
+
     @Entity
     public enum NetworkStatus {
         REACHABLE,
         UNREACHABLE,
     }
-    
+
     protected Sensor() {
     }
-    
-    /**
-     * Status set as INACTIVE.
-     * Network Status will always start as UNREACHABLE.
-     * @param macAddress Device MAC Address
-     * @param pinSet List of pins used to read values on device
-     * @param type Type of the device will determine which script will be deployed
-     */
-    public Sensor(Device device, List<Pin> pinSet, Type type) {
+
+    public Sensor(Device device, List<Pin> pinSet, Script type) {
         this.device = device;
         this.pinSet = pinSet;
         this.type = type;
         this.status = Status.INACTIVE;
         this.networkStatus = NetworkStatus.UNREACHABLE;
-        
+
         //this.id = Device.createId(this.macAddress, this.pinSet);
     }
-    
-    /**
-     * Network Status will always start as UNREACHABLE.
-     * @param macAddress Device MAC Address
-     * @param pinSet List of pins used to read values on device
-     * @param type Type of the device will determine which script will be deployed
-     * @param status Initial status of the Device
-     */
-    public Sensor(Device device, List<Pin> pinSet, Type type, Status status) {
+
+    public Sensor(Device device, List<Pin> pinSet, Script type, Status status) {
         this(device, pinSet, type);
         this.status = status;
     }
@@ -108,7 +94,7 @@ public class Sensor {
     public void addPin(Pin p) {
         this.pinSet.add(p);
     }
-    
+
     public List<Pin> getPinSet() {
         return pinSet;
     }
@@ -117,11 +103,11 @@ public class Sensor {
         this.pinSet = pinSet;
     }
 
-    public Type getType() {
+    public Script getType() {
         return type;
     }
 
-    public void setType(Type type) {
+    public void setType(Script type) {
         this.type = type;
     }
 

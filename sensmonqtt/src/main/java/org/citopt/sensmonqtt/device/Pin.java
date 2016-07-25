@@ -19,14 +19,16 @@ import org.mongodb.morphia.annotations.Indexes;
  * @author rafaelkperes
  */
 @Entity("pins")
-    @Indexes({
-        @Index(fields = {@Field("name")}, 
-                options = @IndexOptions(unique = true))
-    })
-class Pin {
+@Indexes({
+    @Index(fields = {
+        @Field("name")},
+            options = @IndexOptions(unique = true))
+})
+public class Pin {
+
     @Id
-    private ObjectId id; 
-    
+    private ObjectId id;
+
     private String name;
     private String arg;
 
@@ -76,5 +78,5 @@ class Pin {
         }
         return true;
     }
-    
+
 }

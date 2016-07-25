@@ -7,25 +7,36 @@ package org.citopt.sensmonqtt.device;
 
 import java.util.Objects;
 import org.bson.types.ObjectId;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Field;
 import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.Index;
+import org.mongodb.morphia.annotations.IndexOptions;
+import org.mongodb.morphia.annotations.Indexes;
 
 /**
  *
  * @author rafaelkperes
  */
-public class Type {
-    
+@Entity("scripts")
+@Indexes({
+    @Index(fields = {
+        @Field("name")},
+            options = @IndexOptions(unique = true))
+})
+public class Script {
+
     @Id
     private ObjectId id;
-    
+
     private String name;
     private String description;
     private byte[] script;
 
-    public Type() {
+    public Script() {
     }
 
-    public Type(String name, String description) {
+    public Script(String name, String description) {
         this.name = name;
         this.description = description;
         this.script = null;
@@ -81,11 +92,11 @@ public class Type {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Type other = (Type) obj;
+        final Script other = (Script) obj;
         if (!Objects.equals(this.id, other.id)) {
             return false;
         }
         return true;
     }
-    
+
 }
