@@ -7,6 +7,8 @@ package org.citopt.sensmonqtt.device;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.bson.types.ObjectId;
@@ -24,7 +26,7 @@ import static org.junit.Assert.*;
 public class SensorTest {
 
     private Device device;
-    private Set<Pin> pinSet;
+    private List<Pin> pinSet;
     private Type type;
     private ObjectId id;
 
@@ -45,7 +47,7 @@ public class SensorTest {
         device = new Device("AA:BB:CC:DD");
         type = new Type();
         type.setId(id);
-        pinSet = new HashSet<>();
+        pinSet = new LinkedList<>();
     }
 
     @After
@@ -85,14 +87,23 @@ public class SensorTest {
         System.out.println("getPinSet");
         pinSet.add(new Pin("A0", "0"));
         Sensor instance = new Sensor(device, pinSet, type);
-        Set<Pin> expResult = new HashSet<>();
+        List<Pin> expResult = new LinkedList<>();
         expResult.add(new Pin("A0", "0"));
-        Set<Pin> result = instance.getPinSet();
+        List<Pin> result = instance.getPinSet();
         assertEquals(expResult, result);
                 
         pinSet.add(new Pin("A1", "1"));
+        expResult = new LinkedList<>();
         expResult.add(new Pin("A1", "1"));
+        expResult.add(new Pin("A0", "0"));
         Sensor anotherInstance = new Sensor(device, pinSet, type);
+        result = anotherInstance.getPinSet();
+        assertNotEquals(expResult, result);
+        
+        expResult = new LinkedList<>();
+        expResult.add(new Pin("A0", "0"));
+        expResult.add(new Pin("A1", "1"));
+        anotherInstance = new Sensor(device, pinSet, type);
         result = anotherInstance.getPinSet();
         assertEquals(expResult, result);
     }

@@ -5,8 +5,7 @@
  */
 package org.citopt.sensmonqtt.device;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -35,7 +34,7 @@ public class Sensor {
     private Device device;
     
     @Reference
-    private Set<Pin> pinSet;
+    private List<Pin> pinSet;
     
     @Reference
     private Type type;
@@ -68,7 +67,7 @@ public class Sensor {
      * @param pinSet List of pins used to read values on device
      * @param type Type of the device will determine which script will be deployed
      */
-    public Sensor(Device device, Set<Pin> pinSet, Type type) {
+    public Sensor(Device device, List<Pin> pinSet, Type type) {
         this.device = device;
         this.pinSet = pinSet;
         this.type = type;
@@ -85,7 +84,7 @@ public class Sensor {
      * @param type Type of the device will determine which script will be deployed
      * @param status Initial status of the Device
      */
-    public Sensor(Device device, Set<Pin> pinSet, Type type, Status status) {
+    public Sensor(Device device, List<Pin> pinSet, Type type, Status status) {
         this(device, pinSet, type);
         this.status = status;
     }
@@ -110,11 +109,11 @@ public class Sensor {
         this.pinSet.add(p);
     }
     
-    public Set<Pin> getPinSet() {
+    public List<Pin> getPinSet() {
         return pinSet;
     }
 
-    public void setPinSet(Set<Pin> pinSet) {
+    public void setPinSet(List<Pin> pinSet) {
         this.pinSet = pinSet;
     }
 
