@@ -5,7 +5,6 @@
  */
 package org.citopt.sensmonqtt.database;
 
-import java.net.UnknownHostException;
 import org.bson.types.ObjectId;
 import org.citopt.sensmonqtt.device.Device;
 import org.citopt.sensmonqtt.device.Sensor;
@@ -27,63 +26,63 @@ public class DataService {
         this.ds = ds;
     }
 
-    public void storeDevice(Sensor d) throws UnknownHostException {
+    public void storeDevice(Sensor d) {
         this.ds.save(d);
     }
 
-    public Sensor getSensor(ObjectId id) throws UnknownHostException {
+    public Sensor getSensor(ObjectId id) {
         return this.ds.get(Sensor.class, id);
     }
 
-    public Query<Sensor> querySensor() throws UnknownHostException {
+    public Query<Sensor> querySensor() {
         return this.ds.createQuery(Sensor.class);
     }
 
-    public void storeLocation(Location l) throws UnknownHostException {
+    public void storeLocation(Location l) {
         this.ds.save(l);
     }
 
-    public Location getLocation(ObjectId id) throws UnknownHostException {
+    public Location getLocation(ObjectId id) {
         return this.ds.get(Location.class, id);
     }
 
-    public Query<Location> queryLocation() throws UnknownHostException {
+    public Query<Location> queryLocation() {
         return this.ds.createQuery(Location.class);
     }
 
-    public void storePin(Pin p) throws UnknownHostException {
+    public void storePin(Pin p) {
         this.ds.save(p);
     }
 
-    public Pin getPin(ObjectId id) throws UnknownHostException {
+    public Pin getPin(ObjectId id) {
         return this.ds.get(Pin.class, id);
     }
 
-    public Query<Pin> queryPin() throws UnknownHostException {
+    public Query<Pin> queryPin() {
         return this.ds.createQuery(Pin.class);
     }
 
-    public void storeDevice(Device p) throws UnknownHostException {
+    public void storeDevice(Device p) {
         this.ds.save(p);
     }
 
-    public Device getDevice(ObjectId id) throws UnknownHostException {
+    public Device getDevice(ObjectId id) {
         return this.ds.get(Device.class, id);
     }
 
-    public Query<Device> queryDevice() throws UnknownHostException {
+    public Query<Device> queryDevice() {
         return this.ds.createQuery(Device.class);
     }
 
-    public void storeScript(Script p) throws UnknownHostException {
+    public void storeScript(Script p) {
         this.ds.save(p);
     }
 
-    public Script getScript(ObjectId id) throws UnknownHostException {
+    public Script getScript(ObjectId id) {
         return this.ds.get(Script.class, id);
     }
 
-    public Query<Script> queryScript() throws UnknownHostException {
+    public Query<Script> queryScript() {
         return this.ds.createQuery(Script.class);
     }
 }

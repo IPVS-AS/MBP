@@ -5,10 +5,8 @@
  */
 package org.citopt.sensmonqtt.device;
 
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Field;
@@ -16,10 +14,11 @@ import org.mongodb.morphia.annotations.Id;
 import org.mongodb.morphia.annotations.Index;
 import org.mongodb.morphia.annotations.Indexes;
 import org.mongodb.morphia.annotations.Reference;
+import org.mongodb.morphia.annotations.Transient;
 
 @Entity("devices")
 @Indexes(
-        @Index(value = "macAddress", fields = @Field("macAddress"))
+        @Index(value = "device", fields = @Field("device"))
 )
 /**
  *
@@ -39,25 +38,23 @@ public class Sensor {
     @Reference
     private Script type;
 
-    @Reference
     private Status status;
-
-    @Reference
+    
+    @Transient
     private NetworkStatus networkStatus;
 
-    @Entity
     public enum Status {
         ACTIVE,
         INACTIVE
     }
 
-    @Entity
     public enum NetworkStatus {
         REACHABLE,
         UNREACHABLE,
     }
 
     protected Sensor() {
+        this.networkStatus = NetworkStatus.UNREACHABLE;
     }
 
     public Sensor(Device device, List<Pin> pinSet, Script type) {
@@ -66,8 +63,6 @@ public class Sensor {
         this.type = type;
         this.status = Status.INACTIVE;
         this.networkStatus = NetworkStatus.UNREACHABLE;
-
-        //this.id = Device.createId(this.macAddress, this.pinSet);
     }
 
     public Sensor(Device device, List<Pin> pinSet, Script type, Status status) {
@@ -152,9 +147,6 @@ public class Sensor {
             return false;
         }
         final Sensor other = (Sensor) obj;
-        if (!Objects.equals(this.id, other.id)) {
-            return false;
-        }
         if (!Objects.equals(this.device, other.device)) {
             return false;
         }

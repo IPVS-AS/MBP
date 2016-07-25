@@ -16,22 +16,41 @@ import org.mongodb.morphia.Morphia;
  */
 public class MorphiaUtil {
 
+    private static MongoClient mongo = null;
     private static Datastore ds = null;
 
-    public static Datastore getDatastore() throws UnknownHostException {
+    public static MongoClient getMongoClient() throws UnknownHostException {
+        if (mongo == null) {
+            mongo = new MongoClient();
+        }
+        return mongo;
+    }
+
+    public static Datastore getDatastore(MongoClient mongoClient) {
         if (ds == null) {
-            MongoClient mongoClient = new MongoClient();
             final Morphia morphia = new Morphia();
             final Datastore datastore = morphia.createDatastore(mongoClient, "sensor");
-            
+
             morphia.mapPackage("org.citopt.sensmonqtt.device");
             morphia.mapPackage("org.citopt.sensmonqtt.user");
 
             datastore.ensureIndexes();
-            
+
             ds = datastore;
         }
         return ds;
+    }
+
+    public static Datastore getDatastore(MongoClient mongoClient, String name) {
+        final Morphia morphia = new Morphia();
+        final Datastore datastore = morphia.createDatastore(mongoClient, name);
+
+        morphia.mapPackage("org.citopt.sensmonqtt.device");
+        morphia.mapPackage("org.citopt.sensmonqtt.user");
+
+        datastore.ensureIndexes();
+
+        return datastore;
     }
 
 }

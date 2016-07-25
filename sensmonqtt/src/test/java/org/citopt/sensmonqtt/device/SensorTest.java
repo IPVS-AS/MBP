@@ -184,13 +184,13 @@ public class SensorTest {
         instance.setNetworkStatus(netStatus);
         assertEquals(netStatus, instance.getNetworkStatus());
     }
-
-//    @Test
-//    public void testGetId() {
-//        System.out.println("getId");
-//        Device instance = new Device(device, pinSet, type);
-//        ObjectId expResult = new ObjectId(device + pinSet.toString());
-//        ObjectId result = instance.getId();
-//        assertEquals(expResult, result);
-//    }
+    
+    @Test
+    public void testEquals() {
+        System.out.println("equals");
+        Sensor result = new Sensor(device, pinSet, type);
+        result.setStatus(Sensor.Status.ACTIVE);
+        Sensor expResult = new Sensor(device, pinSet, type);
+        assertEquals(expResult, result);
+    }
 }

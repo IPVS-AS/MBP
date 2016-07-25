@@ -7,6 +7,7 @@ package org.citopt.sensmonqtt.user;
 
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Id;
 
 /**
  *
@@ -14,6 +15,7 @@ import org.mongodb.morphia.annotations.Entity;
  */
 @Entity("users")
 public class User {
+    @Id
     private ObjectId id;
 
     protected User() {
