@@ -63,7 +63,7 @@ public class SensorTest {
         Sensor instance = new Sensor(device, pinSet, type);
         Script expResult = new Script();
         expResult.setId(new ObjectId(id.toByteArray()));
-        Script result = instance.getType();
+        Script result = instance.getScript();
         assertEquals(expResult, result);
     }
 

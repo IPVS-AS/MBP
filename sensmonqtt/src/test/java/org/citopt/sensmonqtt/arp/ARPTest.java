@@ -5,8 +5,11 @@
  */
 package org.citopt.sensmonqtt.arp;
 
+import com.mongodb.DB;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import org.citopt.sensmonqtt.database.MongoUtils;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.simple.parser.ParseException;
@@ -23,14 +26,14 @@ import static org.junit.Assert.*;
  */
 public class ARPTest {
 
-    private static String parseable;
+    private static DB db;
 
     public ARPTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() {
-        parseable = "{\"iptomac\": [[\"100.70.2.142\", \"b0:a8:6e:9a:8f:13\"], [\"100.70.2.140\", \"b8:27:eb:91:aa:c3\"]]}";
+    public static void setUpClass() throws UnknownHostException {
+        db = MongoUtils.getMongoDB(MongoUtils.getMongoClient());
     }
 
     @AfterClass
@@ -46,122 +49,16 @@ public class ARPTest {
     }
 
     /**
-     * Test of parseJson method, of class ArpingSubscriber.
-     *
-     * @throws java.lang.Exception
+     * Test of getIp method, of class ARP.
      */
     @Test
-    public void testParseJson() throws Exception {
-        System.out.println("parseJson");
-        String toParse = "{\"iptomac\": [[\"100.70.2.142\", \"b0:a8:6e:9a:8f:13\"], [\"100.70.2.140\", \"b8:27:eb:91:aa:c3\"]]}";
-        ARP instance = ARP.getInstance();
-        Map<String, String> expResult = new HashMap<>();
-        expResult.put("b0:a8:6e:9a:8f:13", "100.70.2.142");
-        expResult.put("b8:27:eb:91:aa:c3", "100.70.2.140");
-        Map<String, String> result = instance.parseJson(toParse);
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of connectMqtt method, of class ArpingSubscriber.
-     *
-     * @throws java.lang.Exception
-     */    
-    @Test
-    public void testConnectMqtt() throws Exception {
-        System.out.println("connectMqtt");
-        ARP instance = ARP.getInstance();
-        instance.connectMqtt();
-        assertTrue(instance.isConnected());
-
-        String toParse = "derp";
-        MqttMessage mm = new MqttMessage(toParse.getBytes());
-        try {
-            instance.messageArrived("", mm);
-            fail("Should throw Exception");
-        } catch (ParseException ex) {
-            // should stay connected after ParseException
-            assertTrue(instance.isConnected());
-        }
-    }
-
-    /**
-     * Test of isConnected method, of class ArpingSubscriber.
-     */
-    @Test
-    public void testIsConnected() {
-        System.out.println("isConnected");
-        ARP instance = ARP.getInstance();
-        boolean expResult = false;
-        boolean result = instance.isConnected();
-        assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of getIp method, of class ArpingSubscriber.
-     *
-     * @throws java.lang.Exception
-     */
-    @Test
-    public void testGetIp() throws Exception {
+    public void testGetIp() throws UnknownHostException {
         System.out.println("getIp");
-        String macAddress = "b0:a8:6e:9a:8f:13";
-        ARP instance = ARP.getInstance();
-
-        String toParse = "{\"iptomac\": [[\"100.70.2.142\", \"b0:a8:6e:9a:8f:13\"], [\"100.70.2.140\", \"b8:27:eb:91:aa:c3\"]]}";
-        instance.messageArrived("topic", new MqttMessage(toParse.getBytes()));
-
-        String expResult = "100.70.2.142";
+        String macAddress = "B8-86-87-D1-07-29";
+        ARP instance = new ARP(db);
+        String expResult = "10.0.0.1";
         String result = instance.getIp(macAddress);
         assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of connectionLost method, of class ArpingSubscriber.
-     */
-    @Test
-    public void testConnectionLost() {
-        System.out.println("connectionLost");
-        Throwable thrwbl = null;
-        ARP instance = ARP.getInstance();
-        instance.connectionLost(thrwbl);
-    }
-
-    /**
-     * Test of messageArrived method, of class ArpingSubscriber.
-     */
-    @Test
-    public void testMessageArrived() {
-        System.out.println("messageArrived");
-        String string = "";
-        String toParse = "derp";
-        MqttMessage mm = new MqttMessage(toParse.getBytes());
-        ARP instance = ARP.getInstance();
-        try {
-            instance.messageArrived(string, mm);
-            fail("Should throw Exception");
-        } catch (ParseException ex) {
-        }
-
-        string = "";
-        toParse = "{\"iptomac\": [[\"100.70.2.142\", \"b0:a8:6e:9a:8f:13\"], [\"100.70.2.140\", \"b8:27:eb:91:aa:c3\"]]}";
-        mm = new MqttMessage(toParse.getBytes());
-        try {
-            instance.messageArrived(string, mm);
-        } catch (ParseException ex) {
-            fail(ex.toString());
-        }
-    }
-
-    /**
-     * Test of deliveryComplete method, of class ArpingSubscriber.
-     */
-    @Test
-    public void testDeliveryComplete() {
-        System.out.println("deliveryComplete");
-        IMqttDeliveryToken imdt = null;
-        ARP instance = ARP.getInstance();
-        instance.deliveryComplete(imdt);
     }
 
 }

@@ -5,6 +5,7 @@
  */
 package org.citopt.sensmonqtt.device;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import org.bson.types.ObjectId;
@@ -36,7 +37,7 @@ public class Sensor {
     private List<Pin> pinSet;
 
     @Reference
-    private Script type;
+    private Script script;
 
     private Status status;
     
@@ -56,17 +57,24 @@ public class Sensor {
     protected Sensor() {
         this.networkStatus = NetworkStatus.UNREACHABLE;
     }
-
-    public Sensor(Device device, List<Pin> pinSet, Script type) {
+    
+    public Sensor(Device device) {
         this.device = device;
-        this.pinSet = pinSet;
-        this.type = type;
+        this.pinSet = new LinkedList<>();
         this.status = Status.INACTIVE;
         this.networkStatus = NetworkStatus.UNREACHABLE;
     }
 
-    public Sensor(Device device, List<Pin> pinSet, Script type, Status status) {
-        this(device, pinSet, type);
+    public Sensor(Device device, List<Pin> pinSet, Script script) {
+        this.device = device;
+        this.pinSet = pinSet;
+        this.script = script;
+        this.status = Status.INACTIVE;
+        this.networkStatus = NetworkStatus.UNREACHABLE;
+    }
+
+    public Sensor(Device device, List<Pin> pinSet, Script script, Status status) {
+        this(device, pinSet, script);
         this.status = status;
     }
 
@@ -98,12 +106,12 @@ public class Sensor {
         this.pinSet = pinSet;
     }
 
-    public Script getType() {
-        return type;
+    public Script getScript() {
+        return script;
     }
 
-    public void setType(Script type) {
-        this.type = type;
+    public void setScript(Script script) {
+        this.script = script;
     }
 
     public Status getStatus() {
@@ -131,7 +139,7 @@ public class Sensor {
         hash = 31 * hash + Objects.hashCode(this.id);
         hash = 31 * hash + Objects.hashCode(this.device);
         hash = 31 * hash + Objects.hashCode(this.pinSet);
-        hash = 31 * hash + Objects.hashCode(this.type);
+        hash = 31 * hash + Objects.hashCode(this.script);
         return hash;
     }
 
@@ -153,7 +161,7 @@ public class Sensor {
         if (!Objects.equals(this.pinSet, other.pinSet)) {
             return false;
         }
-        if (!Objects.equals(this.type, other.type)) {
+        if (!Objects.equals(this.script, other.script)) {
             return false;
         }
         return true;

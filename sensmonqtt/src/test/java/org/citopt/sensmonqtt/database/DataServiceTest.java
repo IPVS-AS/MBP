@@ -38,13 +38,13 @@ public class DataServiceTest {
 
     @BeforeClass
     public static void setUpClass() throws UnknownHostException {
-        MongoClient mc = MorphiaUtil.getMongoClient();
-        ds = new DataService(MorphiaUtil.getDatastore(mc, "DataServiceTest"));
+        MongoClient mc = MongoUtils.getMongoClient();
+        ds = new DataService(MongoUtils.getDatastore(mc, "DataServiceTest"));
     }
 
     @AfterClass
     public static void tearDownClass() throws UnknownHostException {
-        MorphiaUtil.getMongoClient().dropDatabase("DataServiceTest");
+        MongoUtils.getMongoClient().dropDatabase("DataServiceTest");
     }
 
     @Before

@@ -26,7 +26,7 @@ public class DataService {
         this.ds = ds;
     }
 
-    public void storeDevice(Sensor d) {
+    public void storeSensor(Sensor d) {
         this.ds.save(d);
     }
 
