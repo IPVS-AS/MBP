@@ -28,6 +28,7 @@ def step():
         save(coll=coll, ip=ip, mac=mac)
 
 def save(coll, ip, mac):
+    mac = mac.replace('-', '').replace(':', '').lower()
     key = {
         'mac': mac
     }

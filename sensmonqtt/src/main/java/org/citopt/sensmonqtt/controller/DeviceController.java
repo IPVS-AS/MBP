@@ -6,10 +6,13 @@
 package org.citopt.sensmonqtt.controller;
 
 import com.mongodb.MongoClient;
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bson.types.ObjectId;
 import org.citopt.sensmonqtt.arp.ARP;
 import org.citopt.sensmonqtt.database.DataService;
@@ -27,14 +30,12 @@ import org.eclipse.paho.client.mqttv3.MqttException;
  */
 public class DeviceController {
 
-    private DataService ds;
+    private final DataService ds;
     private ARP arp;
 
     public DeviceController() throws UnknownHostException, MqttException {
-        //arp = ARP.getInstance();
-        //arp.connectMqtt();
-        
-        MongoClient mongoClient = new MongoClient();
+        MongoClient mongoClient = MongoUtils.getMongoClient();
+        this.arp = new ARP(MongoUtils.getMongoDB(mongoClient));
         this.ds = new DataService(MongoUtils.getMorphiaDatastore(mongoClient));
     }
 
@@ -134,20 +135,43 @@ public class DeviceController {
         return s;
     }
     
+    public String getDeviceIp(ObjectId deviceid) {
+        Device d = ds.getDevice(deviceid);
+        return arp.getIp(d.getMacAddress());
+    }
+    
+    public Sensor.NetworkStatus getDeviceStatus(ObjectId deviceid) {
+        Device d = ds.getDevice(deviceid);
+        String ip = arp.getIp(d.getMacAddress());
+        if(ip == null) {
+            return Sensor.NetworkStatus.UNREACHABLE;
+        }
+        try {
+            return arp.getStatus(ip);
+        } catch (IOException ex) {
+            return Sensor.NetworkStatus.UNREACHABLE;
+        }
+    }
+    
     public void deploySensor(ObjectId sensorid) {
         Sensor sensor = ds.getSensor(sensorid);
-        
-        if (sensor.getScript() == null) {
-            // some exception here, since no script was set yet
+        Script script = sensor.getScript();
+        if (script == null) {
+            // exception no script found
         }
         
+        String sensorip = arp.getIp(sensor.getDevice().getMacAddress());
         try {
-            String sensorip = arp.getIp(sensor.getDevice().getMacAddress());
-        } catch(NoSuchElementException e) {
-            // not found
+            if (sensorip != null && Sensor.NetworkStatus.REACHABLE.equals(arp.getStatus(sensorip))) {
+                
+            } else {
+                // exception not reachable
+            }
+            
+            // do ssh deply here
+        } catch (IOException ex) {
+            // exception not reachable
         }
-        
-        // do ssh deply here
     }
 
 }
