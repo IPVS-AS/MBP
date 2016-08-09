@@ -48,18 +48,19 @@ if __name__ == "__main__":
     mqttclient.connect(url, port, 60)
     device_topic = 'device/'
 
-    registered_macs = mac_coll.find()
-    for mac_entry in registered_macs:
-        mac = str(mac_entry['mac'])
-        print(mac)
-        arp_entry = arping_entry(coll=arp_coll, mac=mac)
-        if (arp_entry): # if mac found in arping
-            ip = arp_entry['ip']
-            topic = device_topic + mac
-            if (is_alive(ip)):
-                print(topic)
-                publish_result(mqttclient, topic, mac, ip, 'REACHABLE')
-            else:
-                print(topic)
-                publish_result(mqttclient, topic, mac, ip, 'UNREACHABLE')
+    while (True):
+        registered_macs = mac_coll.find()
+        for mac_entry in registered_macs:
+            mac = str(mac_entry['mac'])
+            print(mac)
+            arp_entry = arping_entry(coll=arp_coll, mac=mac)
+            if (arp_entry): # if mac found in arping
+                ip = arp_entry['ip']
+                topic = device_topic + mac
+                if (is_alive(ip)):
+                    print(topic)
+                    publish_result(mqttclient, topic, mac, ip, 'REACHABLE')
+                else:
+                    print(topic)
+                    publish_result(mqttclient, topic, mac, ip, 'UNREACHABLE')
             

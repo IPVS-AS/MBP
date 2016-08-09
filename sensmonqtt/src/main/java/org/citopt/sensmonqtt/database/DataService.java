@@ -5,6 +5,9 @@
  */
 package org.citopt.sensmonqtt.database;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBObject;
 import org.bson.types.ObjectId;
 import org.citopt.sensmonqtt.device.Device;
 import org.citopt.sensmonqtt.device.Sensor;
@@ -21,9 +24,11 @@ import org.mongodb.morphia.query.Query;
 public class DataService {
 
     private Datastore ds;
+    private DB db;
 
-    public DataService(Datastore ds) {
+    public DataService(Datastore ds, DB db) {
         this.ds = ds;
+        this.db = db;
     }
 
     public void storeSensor(Sensor d) {
@@ -64,6 +69,9 @@ public class DataService {
 
     public void storeDevice(Device p) {
         this.ds.save(p);
+        DBObject obj = new BasicDBObject();
+        obj.put("mac", p.getMacAddress());
+        this.db.getCollection("mac").insert(obj);
     }
 
     public Device getDevice(ObjectId id) {

@@ -21,8 +21,7 @@ import java.io.IOException;
 public class ScriptDeployer {
 
     public void deployScript(String script, String url, Integer port, String user, String key) throws UnknownHostException, IOException {
-        
-        
+
         Shell shell = new Shell.Safe(
                 new SSH(
                         url, port,
@@ -30,9 +29,9 @@ public class ScriptDeployer {
                 )
         );
 
-       OutputStream stdout = new ByteArrayOutputStream();
-       OutputStream stderr = new ByteArrayOutputStream();
-       shell.exec(
+        OutputStream stdout = new ByteArrayOutputStream();
+        OutputStream stderr = new ByteArrayOutputStream();
+        shell.exec(
                 "cat > d.txt",
                 new ByteArrayInputStream("hehehe".getBytes()),
                 stdout,

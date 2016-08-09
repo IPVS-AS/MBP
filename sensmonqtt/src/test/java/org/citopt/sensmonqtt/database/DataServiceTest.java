@@ -39,7 +39,8 @@ public class DataServiceTest {
     @BeforeClass
     public static void setUpClass() throws UnknownHostException {
         MongoClient mc = MongoUtils.getMongoClient();
-        ds = new DataService(MongoUtils.getDatastore(mc, "DataServiceTest"));
+        ds = new DataService(MongoUtils.getDatastore(mc, "DataServiceTest"),
+            MongoUtils.getMongoDB(mc));
     }
 
     @AfterClass

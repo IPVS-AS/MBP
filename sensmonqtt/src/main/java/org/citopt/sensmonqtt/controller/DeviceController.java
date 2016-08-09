@@ -10,9 +10,6 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.bson.types.ObjectId;
 import org.citopt.sensmonqtt.arp.ARP;
 import org.citopt.sensmonqtt.database.DataService;
@@ -36,7 +33,8 @@ public class DeviceController {
     public DeviceController() throws UnknownHostException, MqttException {
         MongoClient mongoClient = MongoUtils.getMongoClient();
         this.arp = new ARP(MongoUtils.getMongoDB(mongoClient));
-        this.ds = new DataService(MongoUtils.getMorphiaDatastore(mongoClient));
+        this.ds = new DataService(MongoUtils.getMorphiaDatastore(mongoClient),
+            MongoUtils.getMongoDB(mongoClient));
     }
 
     public List<Pin> getPins() {

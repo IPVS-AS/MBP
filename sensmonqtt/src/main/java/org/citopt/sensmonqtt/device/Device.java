@@ -5,6 +5,7 @@
  */
 package org.citopt.sensmonqtt.device;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import org.bson.types.ObjectId;
@@ -43,16 +44,24 @@ public class Device {
     private Location location;
 
     protected Device() {
-
+        this.availablePins = new HashSet<>();
+        this.allocatedPins = new HashSet<>();
     }
 
     public Device(String macAddress) {
-        this.macAddress = macAddress;
+        macAddress = macAddress.replace(" ", "");
+        macAddress = macAddress.replace(":", "");
+        macAddress = macAddress.replace("-", "");
+        this.macAddress = macAddress.toLowerCase();
+        this.availablePins = new HashSet<>();
+        this.allocatedPins = new HashSet<>();
     }
 
     public Device(String macAddress, Location location) {
         this.macAddress = macAddress;
         this.location = location;
+        this.availablePins = new HashSet<>();
+        this.allocatedPins = new HashSet<>();
     }
 
     public ObjectId getId() {
