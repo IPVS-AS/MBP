@@ -52,6 +52,12 @@ Run `sudo apt-get install upstart`, reboot after installation.
 
 This is used to set up services on the system.
 
+To set a service:
+
+* create a ```%name%.conf``` file in ```/etc/init```
+* run ```sudo initctl reload-configuration```
+* run ```sudo service %name% start```
+
 ### [WinPCap](https://www.winpcap.org/) on server machine (Windows only - not needed on Linux dists)
 
 Compliments Scapy library.
