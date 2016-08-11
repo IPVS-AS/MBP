@@ -13,6 +13,8 @@ import com.jcabi.ssh.Shell;
 import com.jcabi.ssh.SSH;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Collection;
+import org.citopt.sensmonqtt.device.Script;
 
 /**
  *
@@ -20,7 +22,7 @@ import java.io.IOException;
  */
 public class ScriptDeployer {
 
-    public void deployScript(String script, String url, Integer port, String user, String key) throws UnknownHostException, IOException {
+    public void deployScript(String id, Collection<Script> scripts, String url, Integer port, String user, String key) throws UnknownHostException, IOException {
 
         Shell shell = new Shell.Safe(
                 new SSH(
@@ -32,11 +34,27 @@ public class ScriptDeployer {
         OutputStream stdout = new ByteArrayOutputStream();
         OutputStream stderr = new ByteArrayOutputStream();
         shell.exec(
-                "cat > d.txt",
-                new ByteArrayInputStream("hehehe".getBytes()),
+                "mkdir ~/scripts/",
+                new ByteArrayInputStream("".getBytes()),
                 stdout,
                 stderr
         );
+
+        shell.exec(
+                "mkdir ~/scripts/" + id,
+                new ByteArrayInputStream("".getBytes()),
+                stdout,
+                stderr
+        );
+
+        for (Script script : scripts) {
+            shell.exec(
+                    "cat > ~/scripts/" + id + "/" + script.getName() + ".py",
+                    new ByteArrayInputStream(script.getScript()),
+                    stdout,
+                    stderr
+            );
+        }
     }
 
 }
