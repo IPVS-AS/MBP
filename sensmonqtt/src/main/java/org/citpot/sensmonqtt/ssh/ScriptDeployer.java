@@ -13,7 +13,9 @@ import com.jcabi.ssh.Shell;
 import com.jcabi.ssh.SSH;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import org.citopt.sensmonqtt.device.Pin;
 import org.citopt.sensmonqtt.device.Script;
 
 /**
@@ -22,7 +24,12 @@ import org.citopt.sensmonqtt.device.Script;
  */
 public class ScriptDeployer {
 
-    public void deployScript(String id, Collection<Script> scripts, String url, Integer port, String user, String key) throws UnknownHostException, IOException {
+    private static final String SCRIPTDIR = "/home/pi/scripts/";
+
+    public void deployScript(String id, List<Pin> pinset, Script script, String url, Integer port, String mqtt, String user, String key) throws UnknownHostException, IOException {
+
+        String dir = SCRIPTDIR + id;
+        String servicename = "s" + id;
 
         Shell shell = new Shell.Safe(
                 new SSH(
@@ -34,27 +41,67 @@ public class ScriptDeployer {
         OutputStream stdout = new ByteArrayOutputStream();
         OutputStream stderr = new ByteArrayOutputStream();
         shell.exec(
-                "mkdir ~/scripts/",
+                "mkdir -p " + SCRIPTDIR,
                 new ByteArrayInputStream("".getBytes()),
                 stdout,
                 stderr
         );
 
         shell.exec(
-                "mkdir ~/scripts/" + id,
+                "mkdir -p " + dir,
                 new ByteArrayInputStream("".getBytes()),
                 stdout,
                 stderr
         );
 
-        for (Script script : scripts) {
+        List<Map<Script.ScriptIndex, String>> scripts = script.getScript();
+
+        for (Map<Script.ScriptIndex, String> s : scripts) {
+            String name = s.get(Script.ScriptIndex.NAME);
+            String content = s.get(Script.ScriptIndex.CONTENT);
             shell.exec(
-                    "cat > ~/scripts/" + id + "/" + script.getName() + ".py",
-                    new ByteArrayInputStream(script.getScript()),
+                    "cat > " + dir + "/" + name,
+                    new ByteArrayInputStream(content.getBytes()),
                     stdout,
                     stderr
             );
         }
+
+        String service = script.getService();
+        service = service.replace("%dir%", dir);
+        service = service.replace("%id%", id);
+        service = service.replace("%mqtturl%", mqtt);
+        String pins = "";
+        for (Pin p : pinset) {
+            pins += p.getArg() + ",";            
+        }
+        service = service.replace("%pinset%", pins);
+
+        System.out.println(service);
+
+        shell.exec(
+                "sudo bash -c  \"cat > /etc/init/" + servicename + ".conf\"",
+                new ByteArrayInputStream(service.getBytes()),
+                stdout,
+                stderr
+        );
+
+        shell.exec(
+                "sudo initctl reload-configuration",
+                new ByteArrayInputStream("".getBytes()),
+                stdout,
+                stderr
+        );
+
+        shell.exec(
+                "sudo service " + servicename + " start",
+                new ByteArrayInputStream("".getBytes()),
+                stdout,
+                stderr
+        );
+
+        System.out.println(stdout);
+        System.out.println(stderr);
     }
 
 }

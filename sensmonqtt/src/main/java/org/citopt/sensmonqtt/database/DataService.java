@@ -93,4 +93,8 @@ public class DataService {
     public Query<Script> queryScript() {
         return this.ds.createQuery(Script.class);
     }
+    
+    public void cleanUp() {
+        this.db.dropDatabase();        
+    }
 }
