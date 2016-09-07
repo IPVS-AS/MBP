@@ -7,9 +7,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.web.multipart.MultipartFile;
 
 @Document
-public class Location {
+public class Script {
 
     @Id
     @GeneratedValue
@@ -17,20 +18,24 @@ public class Location {
 
     @Indexed(unique = true)
     private String name;
-
+    
     private String description;
 
+    private MultipartFile service;
+    private MultipartFile routine;
+
     @PersistenceConstructor
-    protected Location(ObjectId id, String name, String description) {
+    public Script(ObjectId id, String name, MultipartFile service, MultipartFile routine) {
         this.id = id;
         this.name = name;
-        this.description = description;
+        this.service = service;
+        this.routine = routine;
     }
 
-    public Location() {
+    public Script() {
     }
 
-    public Location(String name, String description) {
+    public Script(String name, String description) {
         this.name = name;
         this.description = description;
     }
@@ -39,32 +44,47 @@ public class Location {
         return id;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
     public void setId(ObjectId id) {
         this.id = id;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public void setName(String name) {
         this.name = name;
+    }    
+
+    public String getDescription() {
+        return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
     }
 
+    public MultipartFile getService() {
+        return service;
+    }
+
+    public void setService(MultipartFile service) {
+        this.service = service;
+    }
+
+    public MultipartFile getRoutine() {
+        return routine;
+    }
+
+    public void setRoutine(MultipartFile routine) {
+        this.routine = routine;
+    }
+
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 97 * hash + Objects.hashCode(this.id);
-        hash = 97 * hash + Objects.hashCode(this.name);
-        hash = 97 * hash + Objects.hashCode(this.description);
+        hash = 29 * hash + Objects.hashCode(this.id);
+        hash = 29 * hash + Objects.hashCode(this.name);
         return hash;
     }
 
@@ -79,8 +99,11 @@ public class Location {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Location other = (Location) obj;
+        final Script other = (Script) obj;
         if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.id, other.id)) {
             return false;
         }
         return true;
@@ -88,7 +111,7 @@ public class Location {
 
     @Override
     public String toString() {
-        return "Location{" + "id=" + id + ", name=" + name + ", description=" + description + '}';
+        return "Script{" + "id=" + id + ", name=" + name + ", service=" + service + ", routine=" + routine + '}';
     }
 
 }
