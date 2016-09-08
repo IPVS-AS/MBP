@@ -22,7 +22,7 @@
             </tr>
         </table>
         <table width="100%" class="table hidden" id="hidden">
-            <form:form action="${uriEdit}" method="POST" commandName="locationForm">
+            <form:form action="${uriEdit}" method="POST" modelAttribute="locationForm">
                 <form:hidden path="id" />
                 <tr>
                     <th>Name</th>
@@ -44,7 +44,7 @@
                     <th></th>
                     <td> 
                         <button type="submit" title="Save" class="btn btn-success btn-circle" /><i class="fa fa-check"></i></button>
-                        <button onclick="hide()" title="Cancel" class="btn btn-danger btn-circle">
+                        <button type="button" onclick="hide()" title="Cancel" class="btn btn-danger btn-circle">
                             <i class="fa fa-times"></i>
                         </button>
                     </td>

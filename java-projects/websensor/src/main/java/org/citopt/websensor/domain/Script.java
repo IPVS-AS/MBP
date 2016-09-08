@@ -7,10 +7,39 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.web.multipart.MultipartFile;
 
 @Document
 public class Script {
+    
+    public class ScriptFile {
+        String name;
+        byte[] content;
+
+        @PersistenceConstructor
+        public ScriptFile(String name, byte[] content) {
+            this.name = name;
+            this.content = content;
+        }
+        
+        public ScriptFile() {
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public byte[] getContent() {
+            return content;
+        }
+
+        public void setContent(byte[] content) {
+            this.content = content;
+        }
+    }
 
     @Id
     @GeneratedValue
@@ -21,11 +50,11 @@ public class Script {
     
     private String description;
 
-    private MultipartFile service;
-    private MultipartFile routine;
+    private ScriptFile service;
+    private ScriptFile routine;
 
     @PersistenceConstructor
-    public Script(ObjectId id, String name, MultipartFile service, MultipartFile routine) {
+    public Script(ObjectId id, String name, ScriptFile service, ScriptFile routine) {
         this.id = id;
         this.name = name;
         this.service = service;
@@ -64,19 +93,19 @@ public class Script {
         this.description = description;
     }
 
-    public MultipartFile getService() {
+    public ScriptFile getService() {
         return service;
     }
 
-    public void setService(MultipartFile service) {
+    public void setService(ScriptFile service) {
         this.service = service;
     }
 
-    public MultipartFile getRoutine() {
+    public ScriptFile getRoutine() {
         return routine;
     }
 
-    public void setRoutine(MultipartFile routine) {
+    public void setRoutine(ScriptFile routine) {
         this.routine = routine;
     }
 

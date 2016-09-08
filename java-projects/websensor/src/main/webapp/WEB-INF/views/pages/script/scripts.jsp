@@ -50,7 +50,7 @@
         <div id="collapseTwo" class="panel-collapse collapse">
             <div class="panel-body">
                 <div class="col-lg-6">
-                    <form:form action="script" method="POST" commandName="scriptForm">
+                    <form:form action="script" method="POST" modelAttribute="scriptForm">
                         <div class="form-group" id="script-form-name">
                             <form:label path="name">Name</form:label>
                             <form:input path="name"  type="text" class="form-control" required="required"/>
@@ -59,8 +59,7 @@
                         <div class="form-group" id="script-form-description">
                             <form:label path="description">Description</form:label>
                             <form:textarea path="description" rows="3" cols="20" class="form-control" />
-                        </div>
-                        
+                        </div>                        
                         <input type="submit" value="Register" class="btn btn-default" />
                     </form:form>
                 </div>

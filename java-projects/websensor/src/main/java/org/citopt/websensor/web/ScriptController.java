@@ -1,18 +1,21 @@
 package org.citopt.websensor.web;
 
+import org.citopt.websensor.web.file.FileBucket;
 import java.util.Map;
 import javax.servlet.ServletContext;
+import javax.validation.Valid;
 import org.bson.types.ObjectId;
 import org.citopt.websensor.domain.Script;
 import org.citopt.websensor.repository.ScriptRepository;
+import org.citopt.websensor.web.file.FileValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping(value = "/script")
@@ -23,6 +26,11 @@ public class ScriptController {
 
     @Autowired
     private ServletContext servletContext;
+
+    @Autowired
+    FileValidator fileValidator;
+
+    private static String UPLOAD_LOCATION = "./temp/file/";
 
     @RequestMapping(method = RequestMethod.GET)
     public String viewScript(Map<String, Object> model) {
@@ -37,8 +45,6 @@ public class ScriptController {
 
     @RequestMapping(method = RequestMethod.POST)
     public String processRegistration(
-            final @RequestPart(value = "service", required = false) MultipartFile service,
-            final @RequestPart(value = "routine", required = false) MultipartFile routine,
             @ModelAttribute("scriptForm") Script script,
             Map<String, Object> model) {
         System.out.println(script);
@@ -55,13 +61,48 @@ public class ScriptController {
         model.put("script", script);
         model.put("scriptForm", script);
 
+        FileBucket fileBucket = new FileBucket();
+        model.put("fileBucket", fileBucket);
+
         String uriScript = servletContext.getContextPath() + "/script"
                 + "/" + id;
         model.put("uriEdit", uriScript + "/edit");
+        model.put("uriEditService", uriScript + "/edit/service");
+        model.put("uriEditRoutine", uriScript + "/edit/routine");
         model.put("uriDelete", uriScript + "/delete");
         model.put("uriCancel", uriScript);
 
         return "script/id";
+    }
+
+    @RequestMapping(value = "/{id}/edit/service", method = RequestMethod.POST)
+    public String editService(
+            @PathVariable("id") ObjectId id,
+            @Valid FileBucket fileBucket,
+            BindingResult result,
+            ModelMap model) {
+        String uriScript = servletContext.getContextPath() + "/script"
+                + "/" + id;
+
+        if (result.hasErrors()) {
+            System.out.println("validation errors");
+            System.out.println(result.getAllErrors().get(0).toString());     
+            System.out.println(fileBucket.toString());
+        } else {
+            System.out.println(id);
+        }
+
+        return "redirect:" + "/script" + "/" + id;
+    }
+
+    @RequestMapping(value = "/{id}/edit/routine", method = RequestMethod.POST)
+    public String editRoutine(
+            @PathVariable("id") ObjectId id,
+            @ModelAttribute("fileBucket") FileBucket fileBucket) {
+        String uriScript = servletContext.getContextPath() + "/script"
+                + "/" + id;
+
+        return "redirect:" + "/script" + "/" + id;
     }
 
 }
