@@ -1,10 +1,3 @@
-## SO and Compiler Versions
-
-* `Java(TM) SE Runtime Environment (build 1.8.0_91-b14)`  (server machine)
-* `Python 3.5.1 :: Anaconda 4.0.0 (64-bit)` (server machine)
-* `Raspbian version here` (Raspberry Pi 3) (client machine)
-* `RPi python version here` (client machine)
-
 ## Repository Structure
 
 * [Java Projects](java-projects) (contains both web and the old base project that implemented the services)
@@ -14,6 +7,15 @@
 * [RSA Key](rsa-key) (key that should be installed in each RPi in order to use SSH access)
 
 * [Diagram](diagram) (domain diagram for the java project)
+
+
+## SO and Compiler Versions
+
+* `Java(TM) SE Runtime Environment (build 1.8.0_91-b14)`  (server machine)
+* `Python 3.5.1 :: Anaconda 4.0.0 (64-bit)` (server machine)
+* `Raspbian version here` (Raspberry Pi 3) (client machine)
+* `RPi python version here` (client machine)
+
 
 ## Servers and 3rd-party softwares
 
@@ -32,6 +34,7 @@ Version:
   distarch: x86_64
   target_arch: x86_64
 ```
+
 
 ### [Mosquitto MQTT Broker](https://mosquitto.org/download/) on server machine
 
