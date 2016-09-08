@@ -5,21 +5,17 @@
 * `Raspbian version here` (Raspberry Pi 3) (client machine)
 * `RPi python version here` (client machine)
 
-## Libraries
-    
-On the Java Maven project, you can check pom.xml for the libraries and respective versions.
+## Repository Structure
 
-### [Paho MQTT 3.1.1](https://eclipse.org/paho/clients/java/)
+* [Java Projects](java-projects) (contains both web and the old base project that implemented the services)
 
-Used for communication between local server and devices (Raspberries and so on).
-Download used version [here](https://repo.eclipse.org/content/repositories/paho-releases/org/eclipse/paho/org.eclipse.paho.client.mqttv3/1.0.2/).
+* [Python Scripts](python-scripts) (contains all python services and sensor scripts)
 
-### [Scapy](http://www.secdev.org/projects/scapy/)
+* [RSA Key](rsa-key) (key that should be installed in each RPi in order to use SSH access)
 
-Used on arping.py - runs only on server machine. On *Windows* the following is needed:
-[WinPCap](https://www.winpcap.org/).
+* [Diagram](diagram) (domain diagram for the java project)
 
-## Server and services
+## Servers and 3rd-party softwares
 
 ### [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community) on server machine
 
@@ -52,15 +48,17 @@ Run `sudo apt-get install upstart`, reboot after installation.
 
 This is used to set up services on the system.
 
-To set a service:
+To set a service (%name% stands for any name):
 
 * create a ```%name%.conf``` file in ```/etc/init```
 * run ```sudo initctl reload-configuration```
 * run ```sudo service %name% start```
 
+
 ### [WinPCap](https://www.winpcap.org/) on server machine (Windows only - not needed on Linux dists)
 
 Compliments Scapy library.
+
 
 ### [SSH RSA Key](https://help.ubuntu.com/community/SSH/OpenSSH/Keys)
 
