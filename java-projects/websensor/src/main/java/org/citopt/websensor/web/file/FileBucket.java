@@ -16,7 +16,8 @@ public class FileBucket {
 
     @Override
     public String toString() {
-        return "FileBucket{" + "file=" + file + '}';
+        return "FileBucket{" + "file=" + file 
+                + "(" + file.getOriginalFilename() + ")" + '}';
     }
 
 }

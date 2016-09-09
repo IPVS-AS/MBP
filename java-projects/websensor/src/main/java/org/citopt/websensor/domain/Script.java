@@ -5,42 +5,13 @@ import javax.persistence.GeneratedValue;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.Reference;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
 public class Script {
     
-    public class ScriptFile {
-        String name;
-        byte[] content;
-
-        @PersistenceConstructor
-        public ScriptFile(String name, byte[] content) {
-            this.name = name;
-            this.content = content;
-        }
-        
-        public ScriptFile() {
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public byte[] getContent() {
-            return content;
-        }
-
-        public void setContent(byte[] content) {
-            this.content = content;
-        }
-    }
-
     @Id
     @GeneratedValue
     private ObjectId id;

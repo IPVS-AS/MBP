@@ -61,7 +61,7 @@ public class LocationController {
 
     @RequestMapping(value = "/{id}" + "/edit", method = RequestMethod.POST)
     public String processEditLocation(
-            @ModelAttribute("location") Location location,
+            @ModelAttribute("locationForm") Location location,
             Map<String, Object> model) {
         locationRepository.save(location);
 

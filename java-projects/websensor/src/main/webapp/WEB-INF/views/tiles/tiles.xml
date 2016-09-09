@@ -25,7 +25,7 @@
             <add-attribute value="/static/vendor/datatables/js/jquery.dataTables.min.js" />
             <add-attribute value="/static/vendor/datatables-plugins/dataTables.bootstrap.min.js" />
             <add-attribute value="/static/vendor/datatables-responsive/dataTables.responsive.js" />
-            <add-attribute value="/static/dist/js/table-settings.js" />
+            <add-attribute value="/static/dist/js/project-settings.js" />
         </put-list-attribute>
         <put-list-attribute name="stylesheets">
             <!-- Bootstrap Core CSS -->
@@ -67,6 +67,12 @@
     <definition name="script/id" extends="base-definition">
         <put-attribute name="title" value="Location" />
         <put-attribute name="body" value="/WEB-INF/views/pages/script/script-id.jsp" />  
+    </definition>
+    
+    <!-- Script Raw File Content Page -->
+    <definition name="script/id/file/raw" extends="base-definition">
+        <put-attribute name="title" value="Raw File" />
+        <put-attribute name="body" value="/WEB-INF/views/pages/script/script-raw.jsp" />  
     </definition>
             
     <!-- Not Found Handler Page -->

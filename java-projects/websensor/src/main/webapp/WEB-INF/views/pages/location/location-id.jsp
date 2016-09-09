@@ -16,7 +16,7 @@
             <tr>
                 <th></th>
                 <td> 
-                    <button onclick="show()" title="Edit values" class="btn btn-warning btn-circle"><i class="fa fa-pencil"></i></button>
+                    <button id="show" type="button" title="Edit values" class="btn btn-warning btn-circle"><i class="fa fa-pencil"></i></button>
                     <a href="<c:out value="${uriDelete}" />" title="Delete location" class="btn btn-danger btn-circle"><i class="fa fa-trash-o"></i></a>
                 </td>
             </tr>
@@ -44,7 +44,7 @@
                     <th></th>
                     <td> 
                         <button type="submit" title="Save" class="btn btn-success btn-circle" /><i class="fa fa-check"></i></button>
-                        <button type="button" onclick="hide()" title="Cancel" class="btn btn-danger btn-circle">
+                        <button id="hide" type="button"  title="Cancel" class="btn btn-danger btn-circle">
                             <i class="fa fa-times"></i>
                         </button>
                     </td>
