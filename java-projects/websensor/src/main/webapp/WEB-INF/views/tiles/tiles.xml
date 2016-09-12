@@ -74,6 +74,18 @@
         <put-attribute name="title" value="Raw File" />
         <put-attribute name="body" value="/WEB-INF/views/pages/script/script-raw.jsp" />  
     </definition>
+    
+    <!-- Device Main Page -->
+    <definition name="device" extends="base-definition">  
+        <put-attribute name="title" value="Devices" />  
+        <put-attribute name="body" value="/WEB-INF/views/pages/device/devices.jsp" />  
+    </definition>
+    
+    <!-- Device Element Page -->
+    <definition name="device/id" extends="base-definition">
+        <put-attribute name="title" value="Device" />
+        <put-attribute name="body" value="/WEB-INF/views/pages/device/device-id.jsp" />  
+    </definition>
             
     <!-- Not Found Handler Page -->
     <definition name="error/404" extends="base-definition">

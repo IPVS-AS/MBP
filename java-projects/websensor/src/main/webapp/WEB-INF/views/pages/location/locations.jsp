@@ -50,7 +50,7 @@
         <div id="collapseTwo" class="panel-collapse collapse">
             <div class="panel-body">
                 <div class="col-lg-6">
-                    <form:form action="location" method="POST" modelAttribute="locationForm">
+                    <form:form action="${uriLocation}" method="POST" modelAttribute="locationForm">
                         <div class="form-group" id="location-form-name">
                             <form:label path="name">Name</form:label>
                             <form:input path="name"  type="text" class="form-control" required="required"/>

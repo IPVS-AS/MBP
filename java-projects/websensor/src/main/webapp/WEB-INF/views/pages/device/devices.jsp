@@ -1,34 +1,34 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 
-<h1>Scripts</h1>
+<h1>Devices</h1>
 <div class="panel-group" id="accordion">
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">List of Locations</a>
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">List of Devices</a>
             </h4>
         </div>
         <!-- /.panel-heading -->
         <div id="collapseOne" class="panel-collapse collapse">
             <div class="panel-body">
-                <table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-script">
+                <table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-device">
                     <thead>
                         <tr>
-                            <th>Name</th>
-                            <th>Description</th>
+                            <th>MAC Address</th>
+                            <th>Location</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <c:forEach var="script" items="${scripts}">
+                        <c:forEach var="device" items="${devices}">
                             <tr>
                                 <td><a href="
-                                       <c:out value="${uriScript}"/>/<c:out value="${script.id}"/>
+                                       <c:out value="${uriDevice}"/>/<c:out value="${device.id}"/>
                                        ">
-                                        <c:out value="${script.name}" />
+                                        <c:out value="${device.macAddress}" />
                                     </a>
                                 </td>
-                                <td><c:out value="${script.description}"/></td>
+                                <td><c:out value="${device.location.name}"/></td>
                             </tr>
                         </c:forEach>
                     </tbody>
@@ -43,23 +43,26 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">Register Script</a>   
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">Register Device</a>   
             </h4>
         </div>
         <!-- /.panel-heading -->
         <div id="collapseTwo" class="panel-collapse collapse">
             <div class="panel-body">
                 <div class="col-lg-6">
-                    <form:form action="${uriScript}" method="POST" modelAttribute="scriptForm">
-                        <div class="form-group" id="script-form-name">
-                            <form:label path="name">Name</form:label>
-                            <form:input path="name"  type="text" class="form-control" required="required"/>
-                            <form:errors path="name" />
+                    <form:form action="${uriDevice}" method="POST" modelAttribute="deviceForm">
+                        <div class="form-group" id="device-form-name">
+                            <form:label path="macAddress">MAC Address</form:label>
+                            <form:input path="macAddress"  type="text" class="form-control" required="required"/>
+                            <form:errors path="macAddress" />
                         </div>
-                        <div class="form-group" id="script-form-description">
-                            <form:label path="description">Description</form:label>
-                            <form:textarea path="description" rows="3" cols="20" class="form-control" />
-                        </div>                        
+                        <div class="form-group" id="device-form-description">
+                            <form:label path="location">Location</form:label>
+                            <form:select path="location">
+                                <form:option label="-- SELECT --" value="${null}"/>
+                                <form:options items="${locations}" itemLabel="name" itemValue="id" />
+                            </form:select>
+                        </div>
                         <input type="submit" value="Register" class="btn btn-default" />
                     </form:form>
                 </div>
