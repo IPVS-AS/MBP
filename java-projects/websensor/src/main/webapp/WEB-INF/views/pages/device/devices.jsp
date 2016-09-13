@@ -28,7 +28,13 @@
                                         <c:out value="${device.macAddress}" />
                                     </a>
                                 </td>
-                                <td><c:out value="${device.location.name}"/></td>
+                                <td>
+                                    <a href="
+                                       <c:out value="${uriLocation}"/>/<c:out value="${device.location.id}"/>
+                                       ">
+                                    <c:out value="${device.location.name}"/>
+                                    </a>
+                                </td>
                             </tr>
                         </c:forEach>
                     </tbody>

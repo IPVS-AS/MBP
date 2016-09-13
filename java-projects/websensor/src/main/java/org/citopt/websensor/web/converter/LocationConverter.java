@@ -1,4 +1,4 @@
-package org.citopt.websensor.web;
+package org.citopt.websensor.web.converter;
 
 import org.citopt.websensor.domain.Location;
 import org.citopt.websensor.repository.LocationRepository;
@@ -13,21 +13,17 @@ public class LocationConverter implements Converter<String, Location> {
 
     @Autowired
     public void setLocationRepository(LocationRepository locationRepository) {
-        System.out.println("autowiring locRep to locConv");
+        System.out.println("autowiring locationRepository to locationConverter");
         LocationConverter.locationRepository = locationRepository;
     }
     
     @Override
     public Location convert(String id) {
-        System.out.println("converting:" + id);
         try {
-            System.out.println(locationRepository);
             Location location = locationRepository.findOne(id);
-            System.out.println("result:" + location);
             return location;
         } catch(Exception e) {
             e.printStackTrace();
-            System.out.println("result: null");
             return null;
         }
     }

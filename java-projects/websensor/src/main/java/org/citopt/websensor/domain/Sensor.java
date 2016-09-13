@@ -5,38 +5,35 @@ import javax.persistence.GeneratedValue;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
+import org.springframework.data.annotation.Reference;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
-public class Script {
-    
+public class Sensor {
+
     @Id
     @GeneratedValue
     private ObjectId id;
 
     @Indexed(unique = true)
     private String name;
-    
-    private String description;
 
-    private ScriptFile service;
-    private ScriptFile routine;
+    @Reference
+    private Device device;
+
+    @Reference
+    private Script script;
 
     @PersistenceConstructor
-    public Script(ObjectId id, String name, ScriptFile service, ScriptFile routine) {
+    public Sensor(ObjectId id, String name, Device device, Script script) {
         this.id = id;
         this.name = name;
-        this.service = service;
-        this.routine = routine;
+        this.device = device;
+        this.script = script;
     }
 
-    public Script() {
-    }
-
-    public Script(String name, String description) {
-        this.name = name;
-        this.description = description;
+    public Sensor() {
     }
 
     public ObjectId getId() {
@@ -53,37 +50,29 @@ public class Script {
 
     public void setName(String name) {
         this.name = name;
-    }    
-
-    public String getDescription() {
-        return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public Device getDevice() {
+        return device;
     }
 
-    public ScriptFile getService() {
-        return service;
+    public void setDevice(Device device) {
+        this.device = device;
     }
 
-    public void setService(ScriptFile service) {
-        this.service = service;
+    public Script getScript() {
+        return script;
     }
 
-    public ScriptFile getRoutine() {
-        return routine;
-    }
-
-    public void setRoutine(ScriptFile routine) {
-        this.routine = routine;
+    public void setScript(Script script) {
+        this.script = script;
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 29 * hash + Objects.hashCode(this.id);
-        hash = 29 * hash + Objects.hashCode(this.name);
+        int hash = 5;
+        hash = 53 * hash + Objects.hashCode(this.id);
+        hash = 53 * hash + Objects.hashCode(this.name);
         return hash;
     }
 
@@ -98,7 +87,7 @@ public class Script {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Script other = (Script) obj;
+        final Sensor other = (Sensor) obj;
         if (!Objects.equals(this.name, other.name)) {
             return false;
         }
@@ -110,7 +99,7 @@ public class Script {
 
     @Override
     public String toString() {
-        return "Script{" + "id=" + id + ", name=" + name + ", service=" + service + ", routine=" + routine + '}';
+        return "Sensor{" + "id=" + id + ", name=" + name + ", device=" + device + ", script=" + script + '}';
     }
 
 }

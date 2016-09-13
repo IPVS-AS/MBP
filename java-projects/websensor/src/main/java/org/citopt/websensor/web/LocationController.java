@@ -55,6 +55,7 @@ public class LocationController {
         model.put("uriEdit", uriLocation + "/edit");
         model.put("uriDelete", uriLocation + "/delete");
         model.put("uriCancel", uriLocation);
+        model.put("uriLocation", uriLocation);
 
         return "location/id";
     }

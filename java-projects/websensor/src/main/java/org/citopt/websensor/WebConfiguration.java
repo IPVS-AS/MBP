@@ -1,7 +1,9 @@
 package org.citopt.websensor;
 
 import java.io.IOException;
-import org.citopt.websensor.web.LocationConverter;
+import org.citopt.websensor.web.converter.DeviceConverter;
+import org.citopt.websensor.web.converter.LocationConverter;
+import org.citopt.websensor.web.converter.ScriptConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -16,13 +18,16 @@ import org.springframework.web.servlet.view.tiles3.TilesConfigurer;
 import org.springframework.web.servlet.view.tiles3.TilesViewResolver;
 
 @Configuration
-@ComponentScan({"org.citopt.websensor.web"})
+@ComponentScan({"org.citopt.websensor.web",
+    "org.citopt.websensor.web.converter"})
 @EnableWebMvc
 public class WebConfiguration extends WebMvcConfigurerAdapter {
     
     @Override
     public void addFormatters(FormatterRegistry registry) {
+        registry.addConverter(new DeviceConverter());
         registry.addConverter(new LocationConverter());
+        registry.addConverter(new ScriptConverter());
     }
 
     @Bean(name="multipartResolver") 
