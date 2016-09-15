@@ -32,7 +32,7 @@
                                     <a href="
                                        <c:out value="${uriLocation}"/>/<c:out value="${device.location.id}"/>
                                        ">
-                                    <c:out value="${device.location.name}"/>
+                                        <c:out value="${device.location.name}"/>
                                     </a>
                                 </td>
                             </tr>
@@ -77,6 +77,42 @@
             <!-- /.panel-body -->
         </div>
         <!-- /.collapseTwo -->    
+    </div>
+    <!-- /.panel -->
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">ARP Table</a>   
+            </h4>
+        </div>
+        <!-- /.panel-heading -->
+        <div id="collapseThree" class="panel-collapse collapse">
+            <div class="panel-body">
+                <table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-arp">
+                    <thead>
+                        <tr>
+                            <th>MAC Address</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:forEach var="arpEntry" items="${arpTable}">
+                            <tr>
+                                <td>
+                                    <c:out value="${arpEntry.mac}" />
+                                </td>
+                                <td>
+                                    <c:out value="${arpEntry.ip}"/>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </tbody>
+                </table>
+                <!-- /.table-responsive -->
+            </div>
+            <!-- /.panel-body -->
+        </div>
+        <!-- /.collapseThree -->    
     </div>
     <!-- /.panel -->
 </div>

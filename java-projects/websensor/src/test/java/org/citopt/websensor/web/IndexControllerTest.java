@@ -1,5 +1,6 @@
 package org.citopt.websensor.web;
 
+import com.mongodb.Mongo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,13 +18,13 @@ public class IndexControllerTest {
 
     @Configuration
     static class IndexControllerTestConfiguration {
-        
+
         @Bean
         public IndexController indexController() {
             return new IndexController();
         }
     }
-    
+
     @Autowired
     private IndexController indexController;
 

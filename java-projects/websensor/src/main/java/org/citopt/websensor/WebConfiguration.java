@@ -1,5 +1,6 @@
 package org.citopt.websensor;
 
+import com.mongodb.Mongo;
 import java.io.IOException;
 import org.citopt.websensor.web.converter.DeviceConverter;
 import org.citopt.websensor.web.converter.LocationConverter;

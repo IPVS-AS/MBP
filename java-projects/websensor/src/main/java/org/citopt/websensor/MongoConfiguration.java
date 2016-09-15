@@ -9,6 +9,8 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @EnableMongoRepositories
 public class MongoConfiguration extends AbstractMongoConfiguration {
     
+    private static Mongo mongo;
+    
     @Override
     protected String getDatabaseName() {
         return "websensor";
@@ -16,7 +18,10 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 
     @Override
     public Mongo mongo() throws Exception {
-        return new Mongo();
+        if(mongo == null) {
+            mongo = new Mongo();
+        }
+        return mongo;
     }
 
     @Override

@@ -6,6 +6,7 @@ import org.bson.types.ObjectId;
 import org.citopt.websensor.domain.Device;
 import org.citopt.websensor.repository.DeviceRepository;
 import org.citopt.websensor.repository.LocationRepository;
+import org.citopt.websensor.service.ARPReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -16,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 @RequestMapping(value = "/device")
 public class DeviceController {
+
+    @Autowired
+    private ARPReader arpReader;
 
     @Autowired
     private DeviceRepository deviceRepository;
@@ -30,6 +34,9 @@ public class DeviceController {
     public String viewDevice(Map<String, Object> model) {
         Device deviceForm = new Device();
         model.put("deviceForm", deviceForm);
+
+        System.out.println(arpReader.getTable());
+        model.put("arpTable", arpReader.getTable());
 
         model.put("devices", deviceRepository.findAll());
         model.put("locations", locationRepository.findAll());
