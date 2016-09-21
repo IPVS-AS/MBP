@@ -10,25 +10,26 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
-public class Device {
-    
+public final class Device {
+
     @Id
     @GeneratedValue
     private ObjectId id;
-    
+
     @Indexed(unique = true)
     private String macAddress;
-    
+
     @Reference
     private Location location;
 
     @PersistenceConstructor
     public Device(ObjectId id, String macAddress, Location location) {
         this.id = id;
-        this.macAddress = macAddress;
         this.location = location;
+
+        setMacAddress(macAddress);
     }
-    
+
     public Device() {
     }
 
@@ -41,11 +42,15 @@ public class Device {
     }
 
     public String getMacAddress() {
+        return formatMAC(macAddress);
+    }
+    
+    public String getRawMacAddress() {
         return macAddress;
     }
 
     public void setMacAddress(String macAddress) {
-        this.macAddress = macAddress;
+        this.macAddress = rawMAC(macAddress);
     }
 
     public Location getLocation() {
@@ -54,6 +59,23 @@ public class Device {
 
     public void setLocation(Location location) {
         this.location = location;
+    }
+
+    public static String formatMAC(String raw) {
+        if (raw != null) {
+            String formatted = raw.replaceAll("(.{2})", "$1" + "-").substring(0,17);
+            return formatted.toUpperCase();
+        } else {
+            return raw;
+        }
+    }
+
+    public static String rawMAC(String formatted) {
+        String raw = formatted.replace(":", "");
+        raw = raw.replace("-", "");
+        raw = raw.replace(" ", "");
+        raw = raw.toLowerCase();
+        return raw;
     }
 
     @Override
@@ -89,5 +111,5 @@ public class Device {
     public String toString() {
         return "Device{" + "id=" + id + ", macAddress=" + macAddress + ", location=" + location + '}';
     }
-    
+
 }

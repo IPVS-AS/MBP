@@ -1,12 +1,13 @@
 package org.citopt.websensor.web;
 
+import java.text.ParseException;
 import java.util.Map;
 import javax.servlet.ServletContext;
 import org.bson.types.ObjectId;
 import org.citopt.websensor.domain.Device;
 import org.citopt.websensor.repository.DeviceRepository;
 import org.citopt.websensor.repository.LocationRepository;
-import org.citopt.websensor.service.ARPReader;
+import org.citopt.websensor.service.Heartbeat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -19,13 +20,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public class DeviceController {
 
     @Autowired
-    private ARPReader arpReader;
-
-    @Autowired
     private DeviceRepository deviceRepository;
 
     @Autowired
     private LocationRepository locationRepository;
+
+    @Autowired
+    private Heartbeat heartbeat;
 
     @Autowired
     private ServletContext servletContext;
@@ -34,9 +35,6 @@ public class DeviceController {
     public String viewDevice(Map<String, Object> model) {
         Device deviceForm = new Device();
         model.put("deviceForm", deviceForm);
-
-        System.out.println(arpReader.getTable());
-        model.put("arpTable", arpReader.getTable());
 
         model.put("devices", deviceRepository.findAll());
         model.put("locations", locationRepository.findAll());
@@ -60,7 +58,7 @@ public class DeviceController {
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public String viewDeviceById(
             @PathVariable("id") ObjectId id,
-            Map<String, Object> model) {
+            Map<String, Object> model) throws ParseException {
         Device device = deviceRepository.findOne(id.toString());
         model.put("device", device);
         model.put("deviceForm", device);
@@ -73,6 +71,15 @@ public class DeviceController {
         model.put("uriCancel", uriDevice);
         model.put("uriDevice", uriDevice);
         model.put("uriLocation", servletContext.getContextPath() + "/location");
+        System.out.println(id);        
+        model.put("uriHeartbeat", uriDevice + "/heartbeat");
+        
+        boolean hasHb = heartbeat.isRegistered(id.toString());
+        model.put("hasHeartbeat", hasHb);
+        if(hasHb) {
+            model.put("heartbeatResult", heartbeat.getResult(id.toString()));
+            System.out.println(model.get("heartbeatResult"));
+        }
 
         return "device/id";
     }
@@ -93,6 +100,15 @@ public class DeviceController {
         deviceRepository.delete(id.toString());
 
         return "redirect:" + "/device";
+    }
+
+    @RequestMapping(value = "/{id}" + "/heartbeat", method = RequestMethod.GET)
+    public String registerHeartbeat(
+            @PathVariable("id") ObjectId id,
+            Map<String, Object> model) {
+        Device d = deviceRepository.findOne(id.toString());
+        heartbeat.registerMac(d.getRawMacAddress(), d.getId().toString());
+        return "redirect:" + "/device/" + id;
     }
 
 }

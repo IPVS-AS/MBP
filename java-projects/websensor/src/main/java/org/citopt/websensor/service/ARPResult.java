@@ -1,5 +1,7 @@
 package org.citopt.websensor.service;
 
+import org.citopt.websensor.domain.Device;
+
 public class ARPResult {
     
     private String ip;
@@ -19,11 +21,11 @@ public class ARPResult {
     }
 
     public String getMac() {
-        return mac;
+        return Device.formatMAC(mac);
     }
 
     public void setMac(String mac) {
-        this.mac = mac;
+        this.mac = Device.rawMAC(mac);
     }
 
     @Override

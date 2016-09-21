@@ -6,7 +6,7 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">List of Locations</a>
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">List of Scripts</a>
             </h4>
         </div>
         <!-- /.panel-heading -->

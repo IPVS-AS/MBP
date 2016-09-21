@@ -19,15 +19,30 @@
                     </a>
                 </td>
             </tr>
+            <c:if test="${not empty heartbeatResult}">
+                <tr>
+                    <th>Status</th>
+                    <td class="
+                        <c:if test="${heartbeatResult.status eq 'REACHABLE'}"> text-success </c:if>
+                        <c:if test="${heartbeatResult.status eq 'UNREACHABLE'}"> text-warning </c:if>
+                        ">
+                        <c:out value="${heartbeatResult.status}" default="UNDEFINED" />
+                    </td>
+                </tr>    
+            </c:if>
             <tr>
                 <th></th>
                 <td> 
                     <button id="show" type="button" title="Edit values" class="btn btn-warning btn-circle"><i class="fa fa-pencil"></i></button>
                     <a href="<c:out value="${uriDelete}" />" title="Delete device" class="btn btn-danger btn-circle"><i class="fa fa-trash-o"></i></a>
-                </td>
-            </tr>
-        </table>
-        <table width="100%" class="table hidden" id="hidden">
+                    <a href="<c:out value="${uriHeartbeat}" />" title="Register on Heartbeat" class="btn btn-success btn-circle
+                       <c:if test="${hasHeartbeat}">disabled</c:if>">
+                           <i class="fa fa-medkit"></i>
+                       </a>
+                    </td>
+                </tr>
+            </table>
+            <table width="100%" class="table hidden" id="hidden">
             <form:form action="${uriEdit}" method="POST" modelAttribute="deviceForm">
                 <form:hidden path="id" />
                 <tr>

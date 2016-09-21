@@ -1,12 +1,19 @@
 package org.citopt.websensor.web;
 
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.Map;
 import javax.servlet.ServletContext;
 import org.bson.types.ObjectId;
+import org.citopt.websensor.domain.Device;
+import org.citopt.websensor.domain.Script;
 import org.citopt.websensor.domain.Sensor;
 import org.citopt.websensor.repository.DeviceRepository;
 import org.citopt.websensor.repository.ScriptRepository;
 import org.citopt.websensor.repository.SensorRepository;
+import org.citopt.websensor.service.Heartbeat;
+import org.citopt.websensor.service.HeartbeatResult;
+import org.citopt.websensor.service.SSHDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -26,7 +33,13 @@ public class SensorController {
 
     @Autowired
     private ScriptRepository scriptRepository;
+    
+    @Autowired
+    private Heartbeat heartbeat;
 
+    @Autowired
+    private SSHDeployer sshDeployer;
+    
     @Autowired
     private ServletContext servletContext;
 
@@ -59,7 +72,7 @@ public class SensorController {
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public String viewSensorById(
             @PathVariable("id") ObjectId id,
-            Map<String, Object> model) {
+            Map<String, Object> model) throws ParseException {
         Sensor sensor = sensorRepository.findOne(id.toString());
         model.put("sensor", sensor);
         model.put("sensorForm", sensor);
@@ -70,10 +83,18 @@ public class SensorController {
                 + "/" + id;
         model.put("uriEdit", uriSensor + "/edit");
         model.put("uriDelete", uriSensor + "/delete");
+        model.put("uriDeploy", uriSensor + "/deploy");
         model.put("uriCancel", uriSensor);
         model.put("uriSensor", uriSensor);
         model.put("uriDevice", servletContext.getContextPath() + "/device");
         model.put("uriScript", servletContext.getContextPath() + "/script");
+        
+        boolean hasHb = heartbeat.isRegistered(sensor.getDevice().getId().toString());
+        System.out.println(hasHb);
+        model.put("hasHeartbeat", hasHb);
+        if(hasHb) {
+            model.put("heartbeatResult", heartbeat.getResult(sensor.getDevice().getId().toString()));
+        }
 
         return "sensor/id";
     }
@@ -94,6 +115,26 @@ public class SensorController {
         sensorRepository.delete(id.toString());
 
         return "redirect:" + "/sensor";
+    }
+    
+    @RequestMapping(value = "/{id}" + "/deploy", method = RequestMethod.GET)
+    public String processDeploySensor(
+            @PathVariable("id") ObjectId id,
+            Map<String, Object> model) throws ParseException, IOException {
+        Sensor sensor = sensorRepository.findOne(id.toString());
+        Device device = deviceRepository.findOne(sensor.getDevice().getId().toString());
+        Script script = scriptRepository.findOne(sensor.getScript().getId().toString());
+        HeartbeatResult hb = heartbeat.getResult(device.getId().toString());
+        
+        if(HeartbeatResult.Status.REACHABLE.equals(hb.getStatus())) {
+            sshDeployer.deployScript(
+                    id.toString(), hb.getIp(), 22, "pi", SSHDeployer.key,
+                    "100.70.2.132", script);
+        } else {
+            System.out.println(hb.getStatus());
+        }
+        
+        return "redirect:" + "/sensor/" + id.toString();
     }
 
 }
