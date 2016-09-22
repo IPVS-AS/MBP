@@ -54,8 +54,13 @@ public class HeartbeatResult {
     public void setStatus(String status) {
         this.status = Status.valueOf(status);
     }
-    public Date getDate() {
+    public Date getRawDate() {
         return date;
+    }
+    
+    public String getDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return sdf.format(date);
     }
 
     public void setDate(Date date) {

@@ -25,10 +25,24 @@
                     <td class="
                         <c:if test="${heartbeatResult.status eq 'REACHABLE'}"> text-success </c:if>
                         <c:if test="${heartbeatResult.status eq 'UNREACHABLE'}"> text-warning </c:if>
-                        ">
+                            ">
                         <c:out value="${heartbeatResult.status}" default="UNDEFINED" />
                     </td>
-                </tr>    
+                </tr>
+                <tr>
+                    <th>Status @</th>
+                    <td>
+                        <c:out value="${heartbeatResult.date}" default="Not informed" />
+                    </td>
+                </tr>
+                <c:if test="${heartbeatResult.status eq 'REACHABLE'}">
+                    <tr>
+                        <th>IP</th>
+                        <td>
+                            <c:out value="${heartbeatResult.ip}" default=""/>
+                        </td>
+                    </tr>
+                </c:if>
             </c:if>
             <tr>
                 <th></th>
