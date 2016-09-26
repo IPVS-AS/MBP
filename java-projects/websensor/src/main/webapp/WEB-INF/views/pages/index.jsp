@@ -23,18 +23,30 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Trident</td>
-                            <td>1.1</td>
-                            <td>/sensor/idofthesensor</td>
-                            <td>30/08/2016 11:00:30</td>
-                        </tr>
-                        <tr>
-                            <td>Trident</td>
-                            <td>1</td>
-                            <td>/sensor/idofthesensor</td>
-                            <td>30/08/2016 11:00:00</td>
-                        </tr>
+                        <c:forEach var="logEntry" items="${logTable}">
+                            <tr>
+                                <td>
+                                    <a href="
+                                       <c:out value="${uriSensor}"/>/<c:out value="${logEntry.sensorId}"/>
+                                       ">
+                                        <c:out value="${logEntry.sensorName}" default="${logEntry.sensorId}" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="
+                                       <c:out value="${uriMessage}"/>/<c:out value="${logEntry.id}"/>
+                                       ">
+                                        <c:out value="${logEntry.value}" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <c:out value="${logEntry.topic}" />
+                                </td>
+                                <td>
+                                    <c:out value="${logEntry.date}"/>
+                                </td>
+                            </tr>
+                        </c:forEach>
                     </tbody>
                 </table>
             </div>

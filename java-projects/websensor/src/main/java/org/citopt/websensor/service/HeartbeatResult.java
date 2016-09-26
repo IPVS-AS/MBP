@@ -5,17 +5,18 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class HeartbeatResult {
-    
+
     public enum Status {
         UNDEFINED,
         REACHABLE,
         UNREACHABLE
     }
-    
+
     private String ip;
     private String mac;
     private Status status;
     private Date date;
+    private String rawDate;
 
     public HeartbeatResult() {
     }
@@ -50,31 +51,40 @@ public class HeartbeatResult {
     public void setStatus(Status status) {
         this.status = status;
     }
-    
+
     public void setStatus(String status) {
         this.status = Status.valueOf(status);
     }
-    public Date getRawDate() {
+
+    public Date getParsedDate() {
         return date;
     }
-    
+
     public String getDate() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return sdf.format(date);
+        if (this.date != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            return sdf.format(date);
+        } else {
+            return this.rawDate;
+        }
     }
 
     public void setDate(Date date) {
         this.date = date;
     }
-    
+
     public void setDate(String date) throws ParseException {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
-        this.date = sdf.parse(date);
+        this.rawDate = date;
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
+            this.date = sdf.parse(date);
+        } catch (ParseException e) {
+        }
     }
 
     @Override
     public String toString() {
         return "HeartbeatResult{" + "ip=" + ip + ", mac=" + mac + ", status=" + status + ", date=" + date + '}';
     }
-    
+
 }

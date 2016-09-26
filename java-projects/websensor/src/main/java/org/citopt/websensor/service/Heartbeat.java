@@ -40,6 +40,12 @@ public class Heartbeat {
         obj.put("mac", mac);
         Heartbeat.mac.insert(obj);
     }
+    
+    public void removeMac(String id) {
+        DBObject obj = new BasicDBObject();
+        obj.put("_id", id);
+        Heartbeat.mac.remove(obj);
+    }
 
     public HeartbeatResult getResult(String id) throws ParseException {
         DBObject obj = heartbeat.findOne(

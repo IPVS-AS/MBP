@@ -32,7 +32,10 @@ def on_message(client, userdata, msg):
     try:
         parsed = json.loads(msg.payload.decode('utf-8'))
         result['id'] = parsed['id']
+        result['value'] = str(parsed['value'])
     except Exception as e:
+        result['id'] = 'NOT PARSEABLE'
+        result['value'] = 'NOT PARSEABLE'
         print(e)
     coll.insert_one(result)
     

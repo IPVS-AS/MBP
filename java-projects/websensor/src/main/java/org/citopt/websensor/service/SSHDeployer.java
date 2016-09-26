@@ -110,6 +110,7 @@ public class SSHDeployer {
         serviceParser.put("${dir}", dir);
         serviceParser.put("${id}", id);
         serviceParser.put("${mqtturl}", mqtt);
+        serviceParser.put("${pinset}", "27");
         service = parseService(service, serviceParser);
         System.out.println(service);
 

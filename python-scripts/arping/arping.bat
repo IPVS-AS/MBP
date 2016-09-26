@@ -1,2 +1,2 @@
-python arping.py 100.70.2.*
+python arping.py 192.168.43.1/24
 pause

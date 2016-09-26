@@ -98,6 +98,7 @@ public class DeviceController {
             @PathVariable("id") ObjectId id,
             Map<String, Object> model) {
         deviceRepository.delete(id.toString());
+        heartbeat.removeMac(id.toString());
 
         return "redirect:" + "/device";
     }

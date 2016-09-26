@@ -4,8 +4,9 @@ import logging
 import datetime
 from time import sleep
 
+import scapy.all as scp
 from scapy.all import srp
-from scapy.all import Ether, ARP, conf
+from scapy.all import Ether, ARP, conf#, arping
 import pymongo
 from pymongo import MongoClient
 
@@ -19,11 +20,10 @@ result = coll.create_index([('mac', pymongo.ASCENDING)], unique=True)
 def step():
     if len(sys.argv) > 1:
         for ip in sys.argv[1:]:
-            print ("arping", ip)
+            print ('arping', ip)
             result = arping(ip)
     else:
         result = arping()
-    #print (result)
     for ip, mac in result:
         save(coll=coll, ip=ip, mac=mac)
 
@@ -39,21 +39,25 @@ def save(coll, ip, mac):
     }
     coll.update(key, post, upsert=True)
 
-def arping(iprange="10.0.1.0/24"):
+def arping(iprange='10.0.1.0/24'):
     """Arping function takes IP Address or Network, returns nested mac/ip list"""
 
     #conf, verb = 0
-    ans, unans = srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst=iprange), timeout=2)
+    ans, unans = srp(Ether(dst='ff:ff:ff:ff:ff:ff')/ARP(pdst=iprange), timeout=2, inter=0.1)
+
+    print (ans)
+    print (unans)
 
     collection = []
     for snd, rcv in ans:
-        result = rcv.sprintf(r"%ARP.psrc% %Ether.src%").split()
+        result = rcv.sprintf(r'%ARP.psrc% %Ether.src%').split()
         collection.append(result)
+        print (result)
     return collection
 
 
-if __name__ == "__main__":
-    interval = 10
+if __name__ == '__main__':
+    interval = 60
     try:
         rt = RepeatedTimer(interval, step)
         while True:

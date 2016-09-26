@@ -1,3 +1,4 @@
+import os
 import sys
 import socket
 import logging
@@ -9,7 +10,8 @@ import paho.mqtt.client as mqtt
 import pymongo
 from pymongo import MongoClient
 
-import os
+from repeatedtimer import RepeatedTimer
+
 
 def arping_entry(coll, mac="", ip=""):
     if (mac):
@@ -56,7 +58,8 @@ if __name__ == "__main__":
     mqttclient.connect(url, port, 60)
     device_topic = 'device/'
 
-    while (True):
+    def step():
+        print('step')
         registered_macs = mac_coll.find()
         for mac_entry in registered_macs:
             _id = mac_entry['_id']
@@ -69,4 +72,17 @@ if __name__ == "__main__":
                     publish_result(_id, hb_coll, mqttclient, topic, mac, ip, 'REACHABLE')
                 else:
                     publish_result(_id, hb_coll, mqttclient, topic, mac, ip, 'UNREACHABLE')
+
+    while (True):
+        interval = 10
+        try:
+            rt = RepeatedTimer(interval, step)
+            while (True):
+                sleep(interval * 100)
+        except Exception as error:
+            print (error)
+            #log.exception(__name__)
+        finally:
+            rt.stop()
+        
             

@@ -43,6 +43,12 @@
     <definition name="index" extends="base-definition">  
         <put-attribute name="title" value="Dashboard" />  
         <put-attribute name="body" value="/WEB-INF/views/pages/index.jsp" />  
+    </definition>
+    
+    <!-- Message Page -->
+    <definition name="message" extends="base-definition">  
+        <put-attribute name="title" value="Message" />  
+        <put-attribute name="body" value="/WEB-INF/views/pages/message.jsp" />  
     </definition>  
  
     <!-- Location Main Page -->
