@@ -35,8 +35,12 @@ public class IndexController {
 
         List<MQTTLoggerResult> log = mqttLoggerReader.loadLog(200);
         for (MQTTLoggerResult entry : log) {
-            entry.setSensorName(sensorRepository.findOne(entry.getSensorId())
-                    .getName());
+            try {
+                entry.setSensorName(sensorRepository.findOne(entry.getSensorId())
+                        .getName());
+            } catch (Exception e) {
+
+            }
         }
         model.put("logTable", log);
 

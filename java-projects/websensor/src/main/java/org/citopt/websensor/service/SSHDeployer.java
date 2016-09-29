@@ -66,7 +66,7 @@ public class SSHDeployer {
     }
 
     public void deployScript(String id, String url, Integer port, String user,
-            String key, String mqtt, Script script) throws UnknownHostException, IOException {
+            String key, String mqtt, Script script, String pinset) throws UnknownHostException, IOException {
         String sid = "s" + id;
         String dir = SCRIPTDIR + sid + "/";
         String servicename = sid;
@@ -110,7 +110,7 @@ public class SSHDeployer {
         serviceParser.put("${dir}", dir);
         serviceParser.put("${id}", id);
         serviceParser.put("${mqtturl}", mqtt);
-        serviceParser.put("${pinset}", "27");
+        serviceParser.put("${pinset}", pinset);
         service = parseService(service, serviceParser);
         System.out.println(service);
 

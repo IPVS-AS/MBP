@@ -31,7 +31,7 @@ public class MQTTLoggerReader {
     public List<MQTTLoggerResult> loadLog(int qty) {
         List<MQTTLoggerResult> log = new ArrayList<>();
 
-        DBCursor cursor = coll.find().sort(new BasicDBObject("$natural", -1)).limit(qty);
+        DBCursor cursor = coll.find().sort(new BasicDBObject("$natural", -1));
         while (cursor.hasNext()) {
             DBObject next = cursor.next();
             log.add(map(next));

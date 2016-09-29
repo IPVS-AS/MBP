@@ -6,6 +6,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -59,8 +60,9 @@ public class Heartbeat {
             
             return result;
         } else {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
             return new HeartbeatResult(null, null, 
-                    HeartbeatResult.Status.UNDEFINED, new Date());
+                    HeartbeatResult.Status.UNDEFINED, sdf.format(new Date()));
         }
     }
 }

@@ -15,13 +15,12 @@ public class HeartbeatResult {
     private String ip;
     private String mac;
     private Status status;
-    private Date date;
-    private String rawDate;
+    private String date;
 
     public HeartbeatResult() {
     }
 
-    public HeartbeatResult(String ip, String mac, Status status, Date date) {
+    public HeartbeatResult(String ip, String mac, Status status, String date) {
         this.ip = ip;
         this.mac = mac;
         this.status = status;
@@ -54,32 +53,14 @@ public class HeartbeatResult {
 
     public void setStatus(String status) {
         this.status = Status.valueOf(status);
-    }
+    }    
 
-    public Date getParsedDate() {
+    public String getDate() {
         return date;
     }
 
-    public String getDate() {
-        if (this.date != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            return sdf.format(date);
-        } else {
-            return this.rawDate;
-        }
-    }
-
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date;
-    }
-
-    public void setDate(String date) throws ParseException {
-        this.rawDate = date;
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
-            this.date = sdf.parse(date);
-        } catch (ParseException e) {
-        }
     }
 
     @Override

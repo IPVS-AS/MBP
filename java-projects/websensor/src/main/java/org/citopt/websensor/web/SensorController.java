@@ -129,7 +129,7 @@ public class SensorController {
         if(HeartbeatResult.Status.REACHABLE.equals(hb.getStatus())) {
             sshDeployer.deployScript(
                     id.toString(), hb.getIp(), 22, "pi", SSHDeployer.key,
-                    "192.168.43.124", script);
+                    "192.168.43.124", script, "27,26");
         } else {
             System.out.println(hb.getStatus());
         }

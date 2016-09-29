@@ -6,16 +6,16 @@ import java.util.Date;
 import org.bson.types.ObjectId;
 
 public final class MQTTLoggerResult {
+
     private String id;
     private String topic;
     private String message;
     private String value;
     private String sensorId;
     private String sensorName;
-    private Date date;
-    private String rawDate;
+    private String date;
 
-    public MQTTLoggerResult(String id, String topic, String message, 
+    public MQTTLoggerResult(String id, String topic, String message,
             String value, String sensorId, String date) {
         this.id = id;
         this.topic = topic;
@@ -28,7 +28,7 @@ public final class MQTTLoggerResult {
     public String getId() {
         return id;
     }
-    
+
     public void setId(ObjectId id) {
         this.id = id.toString();
     }
@@ -76,31 +76,13 @@ public final class MQTTLoggerResult {
     public void setSensorName(String sensorName) {
         this.sensorName = sensorName;
     }
-    
-    public String getDate() {
-        if (this.date != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            return sdf.format(date);
-        } else {
-            return this.rawDate;
-        }
-    }
 
-    public Date getParsedDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
-    }
-    
     public void setDate(String date) {
-        this.rawDate = date;
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
-            this.date = sdf.parse(date);
-        } catch (ParseException e) {
-        }
+        this.date = date;
     }
     
 }
