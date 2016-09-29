@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping(value = "/device")
@@ -47,12 +48,14 @@ public class DeviceController {
     @RequestMapping(method = RequestMethod.POST)
     public String processRegistration(
             @ModelAttribute("deviceForm") Device device,
-            Map<String, Object> model) {
+            RedirectAttributes redirectAttrs) {
         System.out.println(device);
 
         device = deviceRepository.insert(device);
-
-        return "redirect:" + "/device" + "/" + device.getId();
+        
+        redirectAttrs.addAttribute("id", device.getId())
+                .addFlashAttribute("msgSuccess", "Device registered!");
+        return "redirect:/device/{id}";
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
@@ -87,29 +90,35 @@ public class DeviceController {
     @RequestMapping(value = "/{id}" + "/edit", method = RequestMethod.POST)
     public String processEditDevice(
             @ModelAttribute("deviceForm") Device device,
-            Map<String, Object> model) {
+            RedirectAttributes redirectAttrs) {
         deviceRepository.save(device);
-
-        return "redirect:" + "/device" + "/" + device.getId();
+        
+        redirectAttrs.addAttribute("id", device.getId())
+                .addFlashAttribute("msgSuccess", "Saved succesfully!");
+        return "redirect:/device/{id}";
     }
 
     @RequestMapping(value = "/{id}" + "/delete", method = RequestMethod.GET)
     public String processDeleteDevice(
             @PathVariable("id") ObjectId id,
-            Map<String, Object> model) {
+            RedirectAttributes redirectAttrs) {
         deviceRepository.delete(id.toString());
         heartbeat.removeMac(id.toString());
 
-        return "redirect:" + "/device";
+        redirectAttrs.addFlashAttribute("msgSuccess", "Device deleted!");
+        return "redirect:/device";
     }
 
     @RequestMapping(value = "/{id}" + "/heartbeat", method = RequestMethod.GET)
     public String registerHeartbeat(
             @PathVariable("id") ObjectId id,
-            Map<String, Object> model) {
+            RedirectAttributes redirectAttrs) {
         Device d = deviceRepository.findOne(id.toString());
         heartbeat.registerMac(d.getRawMacAddress(), d.getId().toString());
-        return "redirect:" + "/device/" + id;
+        
+        redirectAttrs.addAttribute("id", id)
+                .addFlashAttribute("msgSuccess", "Heartbeat registered!");
+        return "redirect:/device/{id}";        
     }
 
 }

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class IndexController {
@@ -51,9 +52,11 @@ public class IndexController {
     }
 
     @RequestMapping(value = "/arp/reset", method = RequestMethod.GET)
-    public String resetArp(Map<String, Object> model) {
+    public String resetArp(RedirectAttributes redirectAttrs) {
         arpReader.resetTable();
-        return "redirect:" + "/";
+        
+        redirectAttrs.addFlashAttribute("msgSuccess", "ARP Table cleaned!");
+        return "redirect:/";
     }
 
     @RequestMapping(value = "/message/{id}", method = RequestMethod.GET)

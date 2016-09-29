@@ -42,6 +42,24 @@
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-xs-12">
+                            <c:if test="${not empty msgSuccess}">
+                                <div class="alert alert-success alert-dismissible fade in" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                    <c:out value="${msgSuccess}" />
+                                </div>
+                            </c:if>
+                            <c:if test="${not empty msgError}">
+                                <div class="alert alert-danger alert-dismissible fade in" role="alert">
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+
+                                    <c:out value="${msgError}" />
+
+                                </div>
+                            </c:if>
                             <tiles:insertAttribute name="body" />
                         </div>
                     </div>
