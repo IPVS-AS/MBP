@@ -38,7 +38,7 @@ def publish_result(_id, coll, client, topic, mac, ip, status):
         'ip': ip,
         'mac': mac,
         'status': status,
-        'date': str(datetime.datetime.now())
+        'date': str(datetime.datetime.now().strftime("%H:%M:%S %d-%m-%Y"))
     }
     jsonresult = json.dumps(result)
     client.publish(topic, payload=str(jsonresult), qos=0, retain=False)

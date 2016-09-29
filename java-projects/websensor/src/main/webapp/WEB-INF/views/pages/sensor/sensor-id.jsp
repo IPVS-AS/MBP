@@ -99,7 +99,7 @@
             <form action="${uriDeploy}" method="POST"  class="form-inline">
                 <div class="form-group">
                     <label>Pinset</label>
-                    <input path="pinset"  type="text" class="form-control" placeholder="15,16,17"/>
+                    <input name="pinset"  type="text" class="form-control" placeholder="15,16,17"/>
                     <button type="submit" title="Deploy sensor" class="btn btn-success btn-circle" /><i class="fa fa-download"></i></button>
                     <p class="help-block">Pin numbers separated by commas</p>
                 </div>

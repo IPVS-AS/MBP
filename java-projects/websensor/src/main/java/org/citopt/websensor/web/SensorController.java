@@ -124,7 +124,7 @@ public class SensorController {
             @PathVariable("id") ObjectId id,
             HttpServletRequest request,
             Map<String, Object> model) throws ParseException, IOException {
-        String pinset = request.getParameter("pinset");        
+        String pinset = request.getParameter("pinset");
         Sensor sensor = sensorRepository.findOne(id.toString());
         Device device = deviceRepository.findOne(sensor.getDevice().getId().toString());
         Script script = scriptRepository.findOne(sensor.getScript().getId().toString());

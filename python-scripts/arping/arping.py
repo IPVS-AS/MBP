@@ -35,7 +35,7 @@ def save(coll, ip, mac):
     post = {
         'ip':   ip,
         'mac':  mac,
-        'date': datetime.datetime.now()
+        'date': str(datetime.datetime.now().strftime("%H:%M:%S %d-%m-%Y"))
     }
     coll.update(key, post, upsert=True)
 

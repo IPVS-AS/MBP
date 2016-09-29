@@ -1,2 +1,0 @@
-python heartbeat.py
-pause

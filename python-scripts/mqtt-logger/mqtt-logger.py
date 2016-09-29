@@ -25,7 +25,7 @@ def on_message(client, userdata, msg):
         'topic': str(msg.topic),
         'qos': str(msg.qos),
         'message': str(msg.payload),
-        'date': str(datetime.datetime.utcnow())
+        'date': str(datetime.datetime.now().strftime("%H:%M:%S %d-%m-%Y"))
     }
     jsonresult = json.dumps(result)
 
