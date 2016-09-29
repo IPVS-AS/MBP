@@ -16,8 +16,8 @@
             <tr>
                 <th></th>
                 <td> 
-                    <button id="show" type="button" title="Edit values" class="btn btn-warning btn-circle"><i class="fa fa-pencil"></i></button>
-                    <a href="<c:out value="${uriDelete}" />" title="Delete script" class="btn btn-danger btn-circle"><i class="fa fa-trash-o"></i></a>
+                    <button id="show" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg"><i class="fa fa-pencil"></i></button>
+                    <a href="<c:out value="${uriDelete}" />" title="Delete script" class="btn btn-danger btn-circle btn-lg"><i class="fa fa-trash-o"></i></a>
                 </td>
             </tr>
         </table>
@@ -43,8 +43,8 @@
                 <tr>
                     <th></th>
                     <td> 
-                        <button type="submit" title="Save" class="btn btn-success btn-circle" /><i class="fa fa-check"></i></button>
-                        <button id="hide" type="button" title="Cancel" class="btn btn-danger btn-circle">
+                        <button type="submit" title="Save" class="btn btn-success btn-circle btn-lg" /><i class="fa fa-check"></i></button>
+                        <button id="hide" type="button" title="Cancel" class="btn btn-danger btn-circle btn-lg">
                             <i class="fa fa-times"></i>
                         </button>
                     </td>
@@ -71,8 +71,8 @@
                     </c:choose>
                 </td>
                 <td> 
-                    <button id="show2" type="button" title="Edit values" class="btn btn-warning btn-circle"><i class="fa fa-pencil"></i></button>
-                    <a href="<c:out value="${uriDeleteService}" />" title="Delete script" class="btn btn-danger btn-circle"><i class="fa fa-trash-o"></i></a>
+                    <button id="show2" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg"><i class="fa fa-pencil"></i></button>
+                    <a href="<c:out value="${uriDeleteService}" />" title="Delete script" class="btn btn-danger btn-circle btn-lg"><i class="fa fa-trash-o"></i></a>
                 </td>
             </tr>
         </table>
@@ -86,8 +86,8 @@
                         </div>
                     </td>
                     <td> 
-                        <button type="submit" title="Save" class="btn btn-success btn-circle" /><i class="fa fa-check"></i></button>
-                        <button id="hide2" type="button" title="Cancel" class="btn btn-danger btn-circle">
+                        <button type="submit" title="Save" class="btn btn-success btn-circle btn-lg" /><i class="fa fa-check"></i></button>
+                        <button id="hide2" type="button" title="Cancel" class="btn btn-danger btn-circle btn-lg">
                             <i class="fa fa-times"></i>
                         </button>
                     </td>
@@ -114,8 +114,8 @@
                     </c:choose>
                 </td>
                 <td> 
-                    <button id="show3" type="button" title="Edit values" class="btn btn-warning btn-circle"><i class="fa fa-pencil"></i></button>
-                    <a href="<c:out value="${uriDeleteRoutine}" />" title="Delete script" class="btn btn-danger btn-circle"><i class="fa fa-trash-o"></i></a>
+                    <button id="show3" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg"><i class="fa fa-pencil"></i></button>
+                    <a href="<c:out value="${uriDeleteRoutine}" />" title="Delete script" class="btn btn-danger btn-circle btn-lg"><i class="fa fa-trash-o"></i></a>
                 </td>
             </tr>
         </table>
@@ -129,8 +129,8 @@
                         </div>
                     </td>
                     <td> 
-                        <button type="submit" title="Save" class="btn btn-success btn-circle" /><i class="fa fa-check"></i></button>
-                        <button id="hide3" type="button" title="Cancel" class="btn btn-danger btn-circle">
+                        <button type="submit" title="Save" class="btn btn-success btn-circle btn-lg" /><i class="fa fa-check"></i></button>
+                        <button id="hide3" type="button" title="Cancel" class="btn btn-danger btn-circle btn-lg">
                             <i class="fa fa-times"></i>
                         </button>
                     </td>

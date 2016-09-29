@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Map;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import org.bson.types.ObjectId;
 import org.citopt.websensor.domain.Device;
 import org.citopt.websensor.domain.Script;
@@ -76,6 +77,7 @@ public class SensorController {
         Sensor sensor = sensorRepository.findOne(id.toString());
         model.put("sensor", sensor);
         model.put("sensorForm", sensor);
+        model.put("deployForm", new Object());
         model.put("devices", deviceRepository.findAll());
         model.put("scripts", scriptRepository.findAll());
 
@@ -117,10 +119,12 @@ public class SensorController {
         return "redirect:" + "/sensor";
     }
     
-    @RequestMapping(value = "/{id}" + "/deploy", method = RequestMethod.GET)
+    @RequestMapping(value = "/{id}" + "/deploy", method = RequestMethod.POST)
     public String processDeploySensor(
             @PathVariable("id") ObjectId id,
+            HttpServletRequest request,
             Map<String, Object> model) throws ParseException, IOException {
+        String pinset = request.getParameter("pinset");        
         Sensor sensor = sensorRepository.findOne(id.toString());
         Device device = deviceRepository.findOne(sensor.getDevice().getId().toString());
         Script script = scriptRepository.findOne(sensor.getScript().getId().toString());
@@ -129,7 +133,7 @@ public class SensorController {
         if(HeartbeatResult.Status.REACHABLE.equals(hb.getStatus())) {
             sshDeployer.deployScript(
                     id.toString(), hb.getIp(), 22, "pi", SSHDeployer.key,
-                    "192.168.43.124", script, "27,26");
+                    "192.168.43.124", script, pinset);
         } else {
             System.out.println(hb.getStatus());
         }

@@ -43,17 +43,12 @@
             <tr>
                 <th></th>
                 <td> 
-                    <button id="show" type="button" title="Edit values" class="btn btn-warning btn-circle"><i class="fa fa-pencil"></i></button>
-                    <a href="<c:out value="${uriDelete}" />" title="Delete sensor" class="btn btn-danger btn-circle">
+                    <button id="show" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg"><i class="fa fa-pencil"></i></button>
+                    <a href="<c:out value="${uriDelete}" />" title="Delete sensor" class="btn btn-danger btn-circle btn-lg">
                         <i class="fa fa-trash-o"></i>
                     </a>
-                    <c:if test="${heartbeatResult.status eq 'REACHABLE'}">
-                        <a href="<c:out value="${uriDeploy}" />" title="Deploy sensor" class="btn btn-success btn-circle">
-                            <i class="fa fa-download"></i>
-                        </a>
-                    </c:if>
                 </td>
-            </tr>
+            </tr>            
         </table>
         <table width="100%" class="table hidden" id="hidden">
             <form:form action="${uriEdit}" method="POST" modelAttribute="sensorForm">
@@ -90,15 +85,28 @@
                 <tr>
                     <th></th>
                     <td> 
-                        <button type="submit" title="Save" class="btn btn-success btn-circle" /><i class="fa fa-check"></i></button>
-                        <button id="hide" type="button"  title="Cancel" class="btn btn-danger btn-circle">
+                        <button type="submit" title="Save" class="btn btn-success btn-circle btn-lg" /><i class="fa fa-check"></i></button>
+                        <button id="hide" type="button"  title="Cancel" class="btn btn-danger btn-circle btn-lg">
                             <i class="fa fa-times"></i>
                         </button>
                     </td>
                 </tr>
             </form:form>
         </table>
+
+        <c:if test="${heartbeatResult.status eq 'REACHABLE'}">
+            <h3>Deploying</h3>
+            <form action="${uriDeploy}" method="POST"  class="form-inline">
+                <div class="form-group">
+                    <label>Pinset</label>
+                    <input path="pinset"  type="text" class="form-control" placeholder="15,16,17"/>
+                    <button type="submit" title="Deploy sensor" class="btn btn-success btn-circle" /><i class="fa fa-download"></i></button>
+                    <p class="help-block">Pin numbers separated by commas</p>
+                </div>
+            </form>
+        </c:if>
+
     </div>
-    <!-- /.col-lg-12 -->
+    <!-- /.col-lg-4 -->
 </div>
 <!-- /.row -->

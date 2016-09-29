@@ -47,9 +47,9 @@
             <tr>
                 <th></th>
                 <td> 
-                    <button id="show" type="button" title="Edit values" class="btn btn-warning btn-circle"><i class="fa fa-pencil"></i></button>
-                    <a href="<c:out value="${uriDelete}" />" title="Delete device" class="btn btn-danger btn-circle"><i class="fa fa-trash-o"></i></a>
-                    <a href="<c:out value="${uriHeartbeat}" />" title="Register on Heartbeat" class="btn btn-success btn-circle
+                    <button id="show" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg"><i class="fa fa-pencil"></i></button>
+                    <a href="<c:out value="${uriDelete}" />" title="Delete device" class="btn btn-danger btn-circle btn-lg"><i class="fa fa-trash-o"></i></a>
+                    <a href="<c:out value="${uriHeartbeat}" />" title="Register on Heartbeat" class="btn btn-success btn-circle btn-lg
                        <c:if test="${hasHeartbeat}">disabled</c:if>">
                            <i class="fa fa-medkit"></i>
                        </a>
@@ -81,8 +81,8 @@
                 <tr>
                     <th></th>
                     <td> 
-                        <button type="submit" title="Save" class="btn btn-success btn-circle" /><i class="fa fa-check"></i></button>
-                        <button id="hide" type="button"  title="Cancel" class="btn btn-danger btn-circle">
+                        <button type="submit" title="Save" class="btn btn-success btn-circle btn-lg" /><i class="fa fa-check"></i></button>
+                        <button id="hide" type="button"  title="Cancel" class="btn btn-danger btn-circle btn-lg">
                             <i class="fa fa-times"></i>
                         </button>
                     </td>

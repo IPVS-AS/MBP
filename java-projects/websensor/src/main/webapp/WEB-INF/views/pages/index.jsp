@@ -3,15 +3,18 @@
 
 <h1>Welcome!</h1>
 
-<div class="panel-group" id="accordion">
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">Last MQTT Updates</a>
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne"
+                   aria-expanded="true" aria-controls="collapseOne">
+                    Last MQTT Updates
+                </a>
             </h4>
         </div>
         <!-- /.panel-heading -->
-        <div id="collapseOne" class="panel-collapse collapse">
+        <div id="collapseOne" class="panel-collapse collapse in">
             <div class="panel-body">
                 <table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-index">
                     <thead>
@@ -84,7 +87,7 @@
                     </tbody>
                 </table>
                 <!-- /.table-responsive -->
-                <a href="<c:out value="${uriReset}" />" title="Clear table" class="btn btn-danger btn-circle"><i class="fa fa-trash-o"></i></a>
+                <a href="<c:out value="${uriReset}" />" title="Clear table" class="btn btn-danger btn-circle btn-lg"><i class="fa fa-trash-o"></i></a>
             </div>
             <!-- /.panel-body -->
         </div>
