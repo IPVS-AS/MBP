@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping(value = "/sensor")
@@ -34,13 +35,13 @@ public class SensorController {
 
     @Autowired
     private ScriptRepository scriptRepository;
-    
+
     @Autowired
     private Heartbeat heartbeat;
 
     @Autowired
     private SSHDeployer sshDeployer;
-    
+
     @Autowired
     private ServletContext servletContext;
 
@@ -62,12 +63,12 @@ public class SensorController {
     @RequestMapping(method = RequestMethod.POST)
     public String processRegistration(
             @ModelAttribute("sensorForm") Sensor sensor,
-            Map<String, Object> model) {
-        System.out.println(sensor);
-
+            RedirectAttributes redirectAttrs) {
         sensor = sensorRepository.insert(sensor);
 
-        return "redirect:" + "/sensor" + "/" + sensor.getId();
+        redirectAttrs.addAttribute("id", sensor.getId())
+                .addFlashAttribute("msgSuccess", "Sensor registered!");
+        return "redirect:/sensor/{id}";
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
@@ -90,11 +91,11 @@ public class SensorController {
         model.put("uriSensor", uriSensor);
         model.put("uriDevice", servletContext.getContextPath() + "/device");
         model.put("uriScript", servletContext.getContextPath() + "/script");
-        
+
         boolean hasHb = heartbeat.isRegistered(sensor.getDevice().getId().toString());
         System.out.println(hasHb);
         model.put("hasHeartbeat", hasHb);
-        if(hasHb) {
+        if (hasHb) {
             model.put("heartbeatResult", heartbeat.getResult(sensor.getDevice().getId().toString()));
         }
 
@@ -104,41 +105,50 @@ public class SensorController {
     @RequestMapping(value = "/{id}" + "/edit", method = RequestMethod.POST)
     public String processEditSensor(
             @ModelAttribute("sensorForm") Sensor sensor,
-            Map<String, Object> model) {
+            RedirectAttributes redirectAttrs) {
         sensorRepository.save(sensor);
 
-        return "redirect:" + "/sensor" + "/" + sensor.getId();
+        redirectAttrs.addAttribute("id", sensor.getId())
+                .addFlashAttribute("msgSuccess", "Saved succesfully!");
+        return "redirect:/sensor/{id}";
     }
 
     @RequestMapping(value = "/{id}" + "/delete", method = RequestMethod.GET)
     public String processDeleteSensor(
             @PathVariable("id") ObjectId id,
-            Map<String, Object> model) {
+            RedirectAttributes redirectAttrs) {
         sensorRepository.delete(id.toString());
 
-        return "redirect:" + "/sensor";
+        redirectAttrs.addFlashAttribute("msgSuccess", "Sensor deleted!");
+        return "redirect:/sensor";
     }
-    
+
     @RequestMapping(value = "/{id}" + "/deploy", method = RequestMethod.POST)
     public String processDeploySensor(
             @PathVariable("id") ObjectId id,
             HttpServletRequest request,
-            Map<String, Object> model) throws ParseException, IOException {
+            RedirectAttributes redirectAttrs) throws ParseException, IOException {
         String pinset = request.getParameter("pinset");
         Sensor sensor = sensorRepository.findOne(id.toString());
         Device device = deviceRepository.findOne(sensor.getDevice().getId().toString());
         Script script = scriptRepository.findOne(sensor.getScript().getId().toString());
         HeartbeatResult hb = heartbeat.getResult(device.getId().toString());
-        
-        if(HeartbeatResult.Status.REACHABLE.equals(hb.getStatus())) {
-            sshDeployer.deployScript(
-                    id.toString(), hb.getIp(), 22, "pi", SSHDeployer.key,
-                    "192.168.43.124", script, pinset);
+
+        if (HeartbeatResult.Status.REACHABLE.equals(hb.getStatus())) {
+            try {
+                sshDeployer.deployScript(
+                        id.toString(), hb.getIp(), 22, "pi", SSHDeployer.key,
+                        "192.168.43.124", script, pinset);
+                redirectAttrs.addFlashAttribute("msgSuccess", "Deployed succesfully!");
+            } catch (Exception e) {
+                redirectAttrs.addFlashAttribute("msgError", "Failed to deploy!");
+            }
         } else {
             System.out.println(hb.getStatus());
         }
-        
-        return "redirect:" + "/sensor/" + id.toString();
+
+        redirectAttrs.addAttribute("id", sensor.getId());
+        return "redirect:/sensor/{id}";
     }
 
 }

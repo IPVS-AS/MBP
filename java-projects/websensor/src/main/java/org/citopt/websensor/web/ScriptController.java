@@ -2,7 +2,6 @@ package org.citopt.websensor.web;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 import org.citopt.websensor.web.file.FileBucket;
 import java.util.Map;
 import java.util.logging.Level;
@@ -23,6 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping(value = "/script")
@@ -53,11 +53,13 @@ public class ScriptController {
     @RequestMapping(method = RequestMethod.POST)
     public String processRegistration(
             @ModelAttribute("scriptForm") Script script,
-            Map<String, Object> model) {
+            RedirectAttributes redirectAttrs) {
         System.out.println(script);
         script = scriptRepository.insert(script);
 
-        return "redirect:" + "/script" + "/" + script.getId();
+        redirectAttrs.addAttribute("id", script.getId())
+                .addFlashAttribute("msgSuccess", "Script registered!");
+        return "redirect:/script/{id}";
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
@@ -73,7 +75,7 @@ public class ScriptController {
 
         String uriScript = servletContext.getContextPath() + "/script"
                 + "/" + id;
-        
+
         model.put("uriRawService", uriScript + "/raw/service");
         model.put("uriRawRoutine", uriScript + "/raw/routine");
         model.put("uriEdit", uriScript + "/edit");
@@ -90,19 +92,22 @@ public class ScriptController {
     @RequestMapping(value = "/{id}" + "/edit", method = RequestMethod.POST)
     public String processEditScript(
             @ModelAttribute("scriptForm") Script script,
-            Map<String, Object> model) {
+            RedirectAttributes redirectAttrs) {
         scriptRepository.save(script);
 
-        return "redirect:" + "/script" + "/" + script.getId();
+        redirectAttrs.addAttribute("id", script.getId())
+                .addFlashAttribute("msgSuccess", "Saved succesfully!");
+        return "redirect:/script/{id}";
     }
 
     @RequestMapping(value = "/{id}" + "/delete", method = RequestMethod.GET)
     public String processDeleteScript(
             @PathVariable("id") ObjectId id,
-            Map<String, Object> model) {
+            RedirectAttributes redirectAttrs) {
         scriptRepository.delete(id.toString());
 
-        return "redirect:" + "/script";
+        redirectAttrs.addFlashAttribute("msgSuccess", "Script deleted!");
+        return "redirect:/script";
     }
 
     @RequestMapping(value = "/{id}/edit/service", method = RequestMethod.POST)
@@ -110,12 +115,10 @@ public class ScriptController {
             @PathVariable("id") ObjectId id,
             @Valid FileBucket fileBucket,
             BindingResult result,
-            ModelMap model) {
-        String uriScript = servletContext.getContextPath() + "/script"
-                + "/" + id;
-
+            RedirectAttributes redirectAttrs) {
         if (result.hasErrors()) {
             System.out.println(result.getAllErrors().get(0).toString());
+            redirectAttrs.addFlashAttribute("msgError", "Failed to save service!");
         } else {
 
             MultipartFile file = fileBucket.getFile();
@@ -126,15 +129,19 @@ public class ScriptController {
                 System.out.println(service);
                 script.setService(service);
                 scriptRepository.save(script);
+                redirectAttrs
+                        .addFlashAttribute("msgSuccess", "Saved service succesfully!");
             } catch (IOException ex) {
                 System.out.println("IOException");
                 Logger.getLogger(ScriptController.class.getName()).log(Level.SEVERE, null, ex);
+                redirectAttrs.addFlashAttribute("msgError", "Failed to save service!");
             }
         }
 
-        return "redirect:" + "/script" + "/" + id;
+        redirectAttrs.addAttribute("id", id);
+        return "redirect:/script/{id}";
     }
-    
+
     @RequestMapping(value = "/{id}/raw/service", method = RequestMethod.GET)
     public String viewRawService(
             @PathVariable("id") ObjectId id,
@@ -157,15 +164,15 @@ public class ScriptController {
     @RequestMapping(value = "/{id}/delete/service", method = RequestMethod.GET)
     public String deleteService(
             @PathVariable("id") ObjectId id,
-            ModelMap model) {
-        String uriScript = servletContext.getContextPath() + "/script"
-                + "/" + id;
+            RedirectAttributes redirectAttrs) {
         Script script = scriptRepository.findOne(id.toString());
 
         script.setService(null);
         scriptRepository.save(script);
 
-        return "redirect:" + "/script" + "/" + id;
+        redirectAttrs.addAttribute("id", id)
+                .addFlashAttribute("msgSuccess", "Removed service succesfully!");
+        return "redirect:/script/{id}";
     }
 
     @RequestMapping(value = "/{id}/edit/routine", method = RequestMethod.POST)
@@ -173,12 +180,10 @@ public class ScriptController {
             @PathVariable("id") ObjectId id,
             @Valid FileBucket fileBucket,
             BindingResult result,
-            ModelMap model) {
-        String uriScript = servletContext.getContextPath() + "/script"
-                + "/" + id;
-
+            RedirectAttributes redirectAttrs) {
         if (result.hasErrors()) {
             System.out.println(result.getAllErrors().get(0).toString());
+            redirectAttrs.addFlashAttribute("msgError", "Failed to save routine!");
         } else {
 
             MultipartFile file = fileBucket.getFile();
@@ -188,18 +193,22 @@ public class ScriptController {
                 ScriptFile routine = new ScriptFile(file.getOriginalFilename(), file.getBytes());
                 script.setRoutine(routine);
                 scriptRepository.save(script);
+                redirectAttrs
+                        .addFlashAttribute("msgSuccess", "Saved routine succesfully!");
             } catch (IOException ex) {
                 Logger.getLogger(ScriptController.class.getName()).log(Level.SEVERE, null, ex);
+                redirectAttrs.addFlashAttribute("msgError", "Failed to save routine!");
             }
         }
 
-        return "redirect:" + "/script" + "/" + id;
+        redirectAttrs.addAttribute("id", id);
+        return "redirect:/script/{id}";
     }
-    
+
     @RequestMapping(value = "/{id}/delete/routine", method = RequestMethod.GET)
     public String deleteRoutine(
             @PathVariable("id") ObjectId id,
-            ModelMap model) {
+            RedirectAttributes redirectAttrs) {
         String uriScript = servletContext.getContextPath() + "/script"
                 + "/" + id;
         Script script = scriptRepository.findOne(id.toString());
@@ -207,9 +216,11 @@ public class ScriptController {
         script.setRoutine(null);
         scriptRepository.save(script);
 
-        return "redirect:" + "/script" + "/" + id;
+        redirectAttrs.addAttribute("id", id)
+                .addFlashAttribute("msgSuccess", "Removed routine succesfully!");
+        return "redirect:/script/{id}";
     }
-    
+
     @RequestMapping(value = "/{id}/raw/routine", method = RequestMethod.GET)
     public String viewRawRoutine(
             @PathVariable("id") ObjectId id,

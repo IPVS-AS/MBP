@@ -49,8 +49,6 @@ public class DeviceController {
     public String processRegistration(
             @ModelAttribute("deviceForm") Device device,
             RedirectAttributes redirectAttrs) {
-        System.out.println(device);
-
         device = deviceRepository.insert(device);
         
         redirectAttrs.addAttribute("id", device.getId())

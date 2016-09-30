@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping(value = "/location")
@@ -36,10 +37,12 @@ public class LocationController {
     @RequestMapping(method = RequestMethod.POST)
     public String processRegistration(
             @ModelAttribute("locationForm") Location location,
-            Map<String, Object> model) {
+            RedirectAttributes redirectAttrs) {
         location = locationRepository.insert(location);
 
-        return "redirect:" + "/location" + "/" + location.getId();
+        redirectAttrs.addAttribute("id", location.getId())
+                .addFlashAttribute("msgSuccess", "Location registered!");
+        return "redirect:/location/{id}";
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
@@ -63,18 +66,21 @@ public class LocationController {
     @RequestMapping(value = "/{id}" + "/edit", method = RequestMethod.POST)
     public String processEditLocation(
             @ModelAttribute("locationForm") Location location,
-            Map<String, Object> model) {
+            RedirectAttributes redirectAttrs) {
         locationRepository.save(location);
 
-        return "redirect:" + "/location" + "/" + location.getId();
+        redirectAttrs.addAttribute("id", location.getId())
+                .addFlashAttribute("msgSuccess", "Saved succesfully!");
+        return "redirect:/location/{id}";
     }
 
     @RequestMapping(value = "/{id}" + "/delete", method = RequestMethod.GET)
     public String processDeleteLocation(
             @PathVariable("id") ObjectId id,
-            Map<String, Object> model) {
+            RedirectAttributes redirectAttrs) {
         locationRepository.delete(id.toString());
 
+        redirectAttrs.addFlashAttribute("msgSuccess", "Location deleted!");
         return "redirect:" + "/location";
     }
 
