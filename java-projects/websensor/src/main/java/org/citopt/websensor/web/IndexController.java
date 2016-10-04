@@ -40,7 +40,7 @@ public class IndexController {
                 entry.setSensorName(sensorRepository.findOne(entry.getSensorId())
                         .getName());
             } catch (Exception e) {
-
+                entry.setSensorName(entry.getSensorId());
             }
         }
         model.put("logTable", log);

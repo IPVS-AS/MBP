@@ -29,13 +29,19 @@
     </head>
 
     <body>
-        <header id="header">
-            <tiles:insertAttribute name="header" />
-        </header>
+        <nav>
+            <header id="header">
+                <tiles:insertAttribute name="header" />
+            </header>
 
-        <section id="sidemenu">
-            <tiles:insertAttribute name="menu" />
-        </section>
+            <section id="topmenu">
+                <tiles:insertAttribute name="topmenu" />
+            </section>
+
+            <section id="sidemenu">
+                <tiles:insertAttribute name="sidemenu" />
+            </section>
+        </nav>
 
         <section id="site-content">
             <div id="page-wrapper">

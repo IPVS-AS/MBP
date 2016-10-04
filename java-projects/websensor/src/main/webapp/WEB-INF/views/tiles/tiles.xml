@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE tiles-definitions PUBLIC  "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"  "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">  
  
-<tiles-definitions>  
-  
+<tiles-definitions> 
     <!-- Base Definition -->
-    <definition name="base-definition"
-                template="/WEB-INF/views/tiles/layouts/defaultLayout.jsp">  
-        <put-attribute name="title" value="" />  
-        <put-attribute name="header" value="/WEB-INF/views/tiles/template/defaultHeader.jsp" />
-        <put-attribute name="menu" value="/WEB-INF/views/tiles/template/defaultMenu.jsp" />  
-        <put-attribute name="body" value="" />  
-        <put-attribute name="footer" value="/WEB-INF/views/tiles/template/defaultFooter.jsp" /> 
+    <definition name="base-definition">
+        <put-attribute name="title" value="" />
        
         <put-list-attribute name="javascripts">
             <!-- jQuery -->
@@ -36,79 +30,106 @@
             <add-attribute value="/static/dist/css/sb-admin-2.css" />
             <!-- Custom Fonts -->
             <add-attribute value="/static/vendor/font-awesome/css/font-awesome.min.css" />
-        </put-list-attribute> 
+        </put-list-attribute>
+    </definition>
+    
+    <!-- Blank Definition --> 
+    <definition name="blank-definition"
+                template="/WEB-INF/views/tiles/layouts/defaultLayout.jsp"
+                extends="base-definition">
+        <put-attribute name="header" value="/WEB-INF/views/tiles/template/defaultHeader.jsp" />
+        <put-attribute name="topmenu" value="" />
+        <put-attribute name="sidemenu" value="" />
+        <put-attribute name="body" value="" />  
+        <put-attribute name="footer" value="/WEB-INF/views/tiles/template/defaultFooter.jsp" />
+    </definition>
+    
+    <!-- Default Definition -->
+    <definition name="default-definition"
+                template="/WEB-INF/views/tiles/layouts/defaultLayout.jsp"
+                extends="base-definition">
+        <put-attribute name="header" value="/WEB-INF/views/tiles/template/defaultHeader.jsp" />
+        <put-attribute name="topmenu" value="/WEB-INF/views/tiles/template/defaultMenuTop.jsp" />
+        <put-attribute name="sidemenu" value="/WEB-INF/views/tiles/template/defaultMenuSide.jsp" />
+        <put-attribute name="body" value="" />  
+        <put-attribute name="footer" value="/WEB-INF/views/tiles/template/defaultFooter.jsp" />
     </definition>  
   
     <!-- Home Page -->
-    <definition name="index" extends="base-definition">  
+    <definition name="index" extends="default-definition">  
         <put-attribute name="title" value="Dashboard" />  
         <put-attribute name="body" value="/WEB-INF/views/pages/index.jsp" />  
     </definition>
     
     <!-- Message Page -->
-    <definition name="message" extends="base-definition">  
+    <definition name="message" extends="default-definition">  
         <put-attribute name="title" value="Message" />  
         <put-attribute name="body" value="/WEB-INF/views/pages/message.jsp" />  
     </definition>  
  
     <!-- Location Main Page -->
-    <definition name="location" extends="base-definition">  
+    <definition name="location" extends="default-definition">  
         <put-attribute name="title" value="Locations" />  
         <put-attribute name="body" value="/WEB-INF/views/pages/location/locations.jsp" />  
     </definition>
     
     <!-- Location Element Page -->
-    <definition name="location/id" extends="base-definition">
+    <definition name="location/id" extends="default-definition">
         <put-attribute name="title" value="Location" />
         <put-attribute name="body" value="/WEB-INF/views/pages/location/location-id.jsp" />  
     </definition>
     
     <!-- Script Main Page -->
-    <definition name="script" extends="base-definition">  
+    <definition name="script" extends="default-definition">  
         <put-attribute name="title" value="Locations" />  
         <put-attribute name="body" value="/WEB-INF/views/pages/script/scripts.jsp" />  
     </definition>
     
     <!-- Script Element Page -->
-    <definition name="script/id" extends="base-definition">
+    <definition name="script/id" extends="default-definition">
         <put-attribute name="title" value="Location" />
         <put-attribute name="body" value="/WEB-INF/views/pages/script/script-id.jsp" />  
     </definition>
     
     <!-- Script Raw File Content Page -->
-    <definition name="script/id/file/raw" extends="base-definition">
+    <definition name="script/id/file/raw" extends="default-definition">
         <put-attribute name="title" value="Raw File" />
         <put-attribute name="body" value="/WEB-INF/views/pages/script/script-raw.jsp" />  
     </definition>
     
     <!-- Device Main Page -->
-    <definition name="device" extends="base-definition">  
+    <definition name="device" extends="default-definition">  
         <put-attribute name="title" value="Devices" />  
         <put-attribute name="body" value="/WEB-INF/views/pages/device/devices.jsp" />  
     </definition>
     
     <!-- Device Element Page -->
-    <definition name="device/id" extends="base-definition">
+    <definition name="device/id" extends="default-definition">
         <put-attribute name="title" value="Device" />
         <put-attribute name="body" value="/WEB-INF/views/pages/device/device-id.jsp" />  
     </definition>
     
     <!-- Sensor Main Page -->
-    <definition name="sensor" extends="base-definition">  
+    <definition name="sensor" extends="default-definition">  
         <put-attribute name="title" value="Sensors" />  
         <put-attribute name="body" value="/WEB-INF/views/pages/sensor/sensors.jsp" />  
     </definition>
     
     <!-- Sensor Element Page -->
-    <definition name="sensor/id" extends="base-definition">
+    <definition name="sensor/id" extends="default-definition">
         <put-attribute name="title" value="Sensor" />
         <put-attribute name="body" value="/WEB-INF/views/pages/sensor/sensor-id.jsp" />  
     </definition>
-            
+    
+    <!-- Default Error Handler Page -->
+    <definition name="error" extends="blank-definition">
+        <put-attribute name="title" value="Error" />
+        <put-attribute name="body" value="/WEB-INF/views/pages/error/default.jsp" />  
+    </definition>
+                            
     <!-- Not Found Handler Page -->
-    <definition name="error/404" extends="base-definition">
+    <definition name="error/404" extends="blank-definition">
         <put-attribute name="title" value="Page Not Found" />
         <put-attribute name="body" value="/WEB-INF/views/pages/error/404.jsp" />  
     </definition>
-  
 </tiles-definitions>

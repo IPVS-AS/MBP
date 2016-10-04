@@ -6,15 +6,16 @@ import java.util.Map;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import org.bson.types.ObjectId;
+import org.citopt.websensor.dao.DeviceDao;
+import org.citopt.websensor.dao.ScriptDao;
+import org.citopt.websensor.dao.SensorDao;
 import org.citopt.websensor.domain.Device;
 import org.citopt.websensor.domain.Script;
 import org.citopt.websensor.domain.Sensor;
-import org.citopt.websensor.repository.DeviceRepository;
-import org.citopt.websensor.repository.ScriptRepository;
-import org.citopt.websensor.repository.SensorRepository;
 import org.citopt.websensor.service.Heartbeat;
 import org.citopt.websensor.service.HeartbeatResult;
 import org.citopt.websensor.service.SSHDeployer;
+import org.citopt.websensor.web.exception.IdNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -28,13 +29,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class SensorController {
 
     @Autowired
-    private SensorRepository sensorRepository;
+    private SensorDao sensorDao;
 
     @Autowired
-    private DeviceRepository deviceRepository;
+    private DeviceDao deviceDao;
 
     @Autowired
-    private ScriptRepository scriptRepository;
+    private ScriptDao scriptDao;
 
     @Autowired
     private Heartbeat heartbeat;
@@ -50,9 +51,9 @@ public class SensorController {
         Sensor sensorForm = new Sensor();
         model.put("sensorForm", sensorForm);
 
-        model.put("sensors", sensorRepository.findAll());
-        model.put("devices", deviceRepository.findAll());
-        model.put("scripts", scriptRepository.findAll());
+        model.put("sensors", sensorDao.findAll());
+        model.put("devices", deviceDao.findAll());
+        model.put("scripts", scriptDao.findAll());
         model.put("uriSensor", servletContext.getContextPath() + "/sensor");
         model.put("uriDevice", servletContext.getContextPath() + "/device");
         model.put("uriScript", servletContext.getContextPath() + "/script");
@@ -64,7 +65,7 @@ public class SensorController {
     public String processRegistration(
             @ModelAttribute("sensorForm") Sensor sensor,
             RedirectAttributes redirectAttrs) {
-        sensor = sensorRepository.insert(sensor);
+        sensor = sensorDao.insert(sensor);
 
         redirectAttrs.addAttribute("id", sensor.getId())
                 .addFlashAttribute("msgSuccess", "Sensor registered!");
@@ -74,13 +75,14 @@ public class SensorController {
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public String viewSensorById(
             @PathVariable("id") ObjectId id,
-            Map<String, Object> model) throws ParseException {
-        Sensor sensor = sensorRepository.findOne(id.toString());
+            Map<String, Object> model) 
+            throws ParseException, IdNotFoundException {
+        Sensor sensor = sensorDao.find(id);
         model.put("sensor", sensor);
         model.put("sensorForm", sensor);
         model.put("deployForm", new Object());
-        model.put("devices", deviceRepository.findAll());
-        model.put("scripts", scriptRepository.findAll());
+        model.put("devices", deviceDao.findAll());
+        model.put("scripts", scriptDao.findAll());
 
         String uriSensor = servletContext.getContextPath() + "/sensor"
                 + "/" + id;
@@ -106,7 +108,7 @@ public class SensorController {
     public String processEditSensor(
             @ModelAttribute("sensorForm") Sensor sensor,
             RedirectAttributes redirectAttrs) {
-        sensorRepository.save(sensor);
+        sensorDao.save(sensor);
 
         redirectAttrs.addAttribute("id", sensor.getId())
                 .addFlashAttribute("msgSuccess", "Saved succesfully!");
@@ -117,7 +119,7 @@ public class SensorController {
     public String processDeleteSensor(
             @PathVariable("id") ObjectId id,
             RedirectAttributes redirectAttrs) {
-        sensorRepository.delete(id.toString());
+        sensorDao.delete(id);
 
         redirectAttrs.addFlashAttribute("msgSuccess", "Sensor deleted!");
         return "redirect:/sensor";
@@ -127,11 +129,12 @@ public class SensorController {
     public String processDeploySensor(
             @PathVariable("id") ObjectId id,
             HttpServletRequest request,
-            RedirectAttributes redirectAttrs) throws ParseException, IOException {
+            RedirectAttributes redirectAttrs) 
+            throws ParseException, IOException, IdNotFoundException {
         String pinset = request.getParameter("pinset");
-        Sensor sensor = sensorRepository.findOne(id.toString());
-        Device device = deviceRepository.findOne(sensor.getDevice().getId().toString());
-        Script script = scriptRepository.findOne(sensor.getScript().getId().toString());
+        Sensor sensor = sensorDao.find(id);
+        Device device = deviceDao.find(sensor.getDevice().getId());
+        Script script = scriptDao.find(sensor.getScript().getId());
         HeartbeatResult hb = heartbeat.getResult(device.getId().toString());
 
         if (HeartbeatResult.Status.REACHABLE.equals(hb.getStatus())) {

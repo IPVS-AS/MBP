@@ -17,7 +17,11 @@
                 <th></th>
                 <td> 
                     <button id="show" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg"><i class="fa fa-pencil"></i></button>
-                    <a href="<c:out value="${uriDelete}" />" title="Delete location" class="btn btn-danger btn-circle btn-lg"><i class="fa fa-trash-o"></i></a>
+                    <a href="<c:out value="${uriDelete}" />" 
+                       title="Delete location" class="btn btn-danger btn-circle btn-lg"
+                       data-method="delete" data-token="{{csrf_token()}}" data-confirm="Are you sure?">
+                        <i class="fa fa-trash-o"></i>
+                    </a>
                 </td>
             </tr>
         </table>

@@ -1,6 +1,5 @@
 package org.citopt.websensor;
 
-import com.mongodb.Mongo;
 import java.io.IOException;
 import org.citopt.websensor.web.converter.DeviceConverter;
 import org.citopt.websensor.web.converter.LocationConverter;
@@ -20,7 +19,8 @@ import org.springframework.web.servlet.view.tiles3.TilesViewResolver;
 
 @Configuration
 @ComponentScan({"org.citopt.websensor.web",
-    "org.citopt.websensor.web.converter"})
+    "org.citopt.websensor.web.converter",
+    "org.citopt.websensor.web.exception"})
 @EnableWebMvc
 public class WebConfiguration extends WebMvcConfigurerAdapter {
     

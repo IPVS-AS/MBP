@@ -10,16 +10,17 @@ import org.springframework.context.annotation.Import;
 
 @Configuration
 @Import({MongoConfiguration.class})
-@ComponentScan({"org.citopt.websensor.service"})
+@ComponentScan({"org.citopt.websensor.service",
+    "org.citopt.websensor.dao"})
 public class RootConfiguration {
-    
-    @Bean(name="mqtt")
+
+    @Bean(name = "mqtt")
     public MqttClient mqttClient() throws MqttException {
         MqttClient mqttClient = new MqttClient("tcp://localhost:1883", "root-server");
         return mqttClient;
     }
-    
-    @Bean(name="mongo")
+
+    @Bean(name = "mongo")
     public Mongo mongo() throws Exception {
         System.out.println("mongo bean");
         return new Mongo();

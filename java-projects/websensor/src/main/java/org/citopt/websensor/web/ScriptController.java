@@ -9,9 +9,10 @@ import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.validation.Valid;
 import org.bson.types.ObjectId;
+import org.citopt.websensor.dao.ScriptDao;
 import org.citopt.websensor.domain.Script;
 import org.citopt.websensor.domain.ScriptFile;
-import org.citopt.websensor.repository.ScriptRepository;
+import org.citopt.websensor.web.exception.IdNotFoundException;
 import org.citopt.websensor.web.file.FileValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -29,7 +30,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class ScriptController {
 
     @Autowired
-    private ScriptRepository scriptRepository;
+    private ScriptDao scriptDao;
 
     @Autowired
     private ServletContext servletContext;
@@ -44,7 +45,7 @@ public class ScriptController {
         Script scriptForm = new Script();
         model.put("scriptForm", scriptForm);
 
-        model.put("scripts", scriptRepository.findAll());
+        model.put("scripts", scriptDao.findAll());
         model.put("uriScript", servletContext.getContextPath() + "/script");
 
         return "script";
@@ -55,7 +56,7 @@ public class ScriptController {
             @ModelAttribute("scriptForm") Script script,
             RedirectAttributes redirectAttrs) {
         System.out.println(script);
-        script = scriptRepository.insert(script);
+        script = scriptDao.insert(script);
 
         redirectAttrs.addAttribute("id", script.getId())
                 .addFlashAttribute("msgSuccess", "Script registered!");
@@ -65,8 +66,9 @@ public class ScriptController {
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public String viewScriptById(
             @PathVariable("id") ObjectId id,
-            Map<String, Object> model) {
-        Script script = scriptRepository.findOne(id.toString());
+            Map<String, Object> model)
+            throws IdNotFoundException {
+        Script script = scriptDao.find(id);
         model.put("script", script);
         model.put("scriptForm", script);
 
@@ -93,7 +95,7 @@ public class ScriptController {
     public String processEditScript(
             @ModelAttribute("scriptForm") Script script,
             RedirectAttributes redirectAttrs) {
-        scriptRepository.save(script);
+        scriptDao.save(script);
 
         redirectAttrs.addAttribute("id", script.getId())
                 .addFlashAttribute("msgSuccess", "Saved succesfully!");
@@ -104,7 +106,7 @@ public class ScriptController {
     public String processDeleteScript(
             @PathVariable("id") ObjectId id,
             RedirectAttributes redirectAttrs) {
-        scriptRepository.delete(id.toString());
+        scriptDao.delete(id);
 
         redirectAttrs.addFlashAttribute("msgSuccess", "Script deleted!");
         return "redirect:/script";
@@ -115,20 +117,21 @@ public class ScriptController {
             @PathVariable("id") ObjectId id,
             @Valid FileBucket fileBucket,
             BindingResult result,
-            RedirectAttributes redirectAttrs) {
+            RedirectAttributes redirectAttrs)
+            throws IdNotFoundException {
         if (result.hasErrors()) {
             System.out.println(result.getAllErrors().get(0).toString());
             redirectAttrs.addFlashAttribute("msgError", "Failed to save service!");
         } else {
 
             MultipartFile file = fileBucket.getFile();
-            Script script = scriptRepository.findOne(id.toString());
+            Script script = scriptDao.find(id);
 
             try {
                 ScriptFile service = new ScriptFile(id, file.getBytes());
                 System.out.println(service);
                 script.setService(service);
-                scriptRepository.save(script);
+                scriptDao.save(script);
                 redirectAttrs
                         .addFlashAttribute("msgSuccess", "Saved service succesfully!");
             } catch (IOException ex) {
@@ -145,10 +148,11 @@ public class ScriptController {
     @RequestMapping(value = "/{id}/raw/service", method = RequestMethod.GET)
     public String viewRawService(
             @PathVariable("id") ObjectId id,
-            ModelMap model) {
+            ModelMap model)
+            throws IdNotFoundException {
         String uriScript = servletContext.getContextPath() + "/script"
                 + "/" + id;
-        Script script = scriptRepository.findOne(id.toString());
+        Script script = scriptDao.find(id);
 
         model.put("uriScript", uriScript);
         model.put("title", script.getService().getName());
@@ -164,11 +168,12 @@ public class ScriptController {
     @RequestMapping(value = "/{id}/delete/service", method = RequestMethod.GET)
     public String deleteService(
             @PathVariable("id") ObjectId id,
-            RedirectAttributes redirectAttrs) {
-        Script script = scriptRepository.findOne(id.toString());
+            RedirectAttributes redirectAttrs)
+            throws IdNotFoundException {
+        Script script = scriptDao.find(id);
 
         script.setService(null);
-        scriptRepository.save(script);
+        scriptDao.save(script);
 
         redirectAttrs.addAttribute("id", id)
                 .addFlashAttribute("msgSuccess", "Removed service succesfully!");
@@ -180,19 +185,20 @@ public class ScriptController {
             @PathVariable("id") ObjectId id,
             @Valid FileBucket fileBucket,
             BindingResult result,
-            RedirectAttributes redirectAttrs) {
+            RedirectAttributes redirectAttrs)
+            throws IdNotFoundException {
         if (result.hasErrors()) {
             System.out.println(result.getAllErrors().get(0).toString());
             redirectAttrs.addFlashAttribute("msgError", "Failed to save routine!");
         } else {
 
             MultipartFile file = fileBucket.getFile();
-            Script script = scriptRepository.findOne(id.toString());
+            Script script = scriptDao.find(id);
 
             try {
                 ScriptFile routine = new ScriptFile(file.getOriginalFilename(), file.getBytes());
                 script.setRoutine(routine);
-                scriptRepository.save(script);
+                scriptDao.save(script);
                 redirectAttrs
                         .addFlashAttribute("msgSuccess", "Saved routine succesfully!");
             } catch (IOException ex) {
@@ -208,13 +214,14 @@ public class ScriptController {
     @RequestMapping(value = "/{id}/delete/routine", method = RequestMethod.GET)
     public String deleteRoutine(
             @PathVariable("id") ObjectId id,
-            RedirectAttributes redirectAttrs) {
+            RedirectAttributes redirectAttrs)
+            throws IdNotFoundException {
         String uriScript = servletContext.getContextPath() + "/script"
                 + "/" + id;
-        Script script = scriptRepository.findOne(id.toString());
+        Script script = scriptDao.find(id);
 
         script.setRoutine(null);
-        scriptRepository.save(script);
+        scriptDao.save(script);
 
         redirectAttrs.addAttribute("id", id)
                 .addFlashAttribute("msgSuccess", "Removed routine succesfully!");
@@ -224,10 +231,11 @@ public class ScriptController {
     @RequestMapping(value = "/{id}/raw/routine", method = RequestMethod.GET)
     public String viewRawRoutine(
             @PathVariable("id") ObjectId id,
-            ModelMap model) {
+            ModelMap model)
+            throws IdNotFoundException {
         String uriScript = servletContext.getContextPath() + "/script"
                 + "/" + id;
-        Script script = scriptRepository.findOne(id.toString());
+        Script script = scriptDao.find(id);
 
         model.put("uriScript", uriScript);
         model.put("title", script.getRoutine().getName());
