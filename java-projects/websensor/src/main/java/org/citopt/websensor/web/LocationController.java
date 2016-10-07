@@ -24,29 +24,29 @@ public class LocationController {
     @Autowired
     private ServletContext servletContext;
 
-    private static String getLocationUri(ServletContext servletContext) {
+    public static String getUriLocation(ServletContext servletContext) {
         return servletContext.getContextPath() + "/location";
     }
 
-    private String getLocationIdUri(ServletContext servletContext, ObjectId id) {
-        return LocationController.getLocationUri(servletContext)
+    public String getUriLocationId(ServletContext servletContext, ObjectId id) {
+        return getUriLocation(servletContext)
                 + "/" + id.toString();
     }
-
+    
     @RequestMapping(method = RequestMethod.GET)
-    public String viewLocation(Map<String, Object> model) {
+    public String getLocations(Map<String, Object> model) {
         Location locationForm = new Location();
         model.put("locationForm", locationForm);
 
         model.put("locations", locationDao.findAll());
 
-        model.put("uriLocation", getLocationUri(servletContext));
+        model.put("uriLocation", getUriLocation(servletContext));
 
         return "location";
     }
-
+    
     @RequestMapping(method = RequestMethod.POST)
-    public String processRegistration(
+    public String postLocation(
             @ModelAttribute("locationForm") Location location,
             RedirectAttributes redirectAttrs) {
         location = locationDao.insert(location);
@@ -55,9 +55,9 @@ public class LocationController {
                 .addFlashAttribute("msgSuccess", "Location registered!");
         return "redirect:/location/{id}";
     }
-
+    
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public String viewLocationById(
+    public String getLocationID(
             @PathVariable("id") ObjectId id,
             Map<String, Object> model)
             throws IdNotFoundException {
@@ -66,16 +66,13 @@ public class LocationController {
         model.put("location", location);
         model.put("locationForm", location);
 
-        model.put("uriEdit", getLocationIdUri(servletContext, id) + "/edit");
-        model.put("uriDelete", getLocationIdUri(servletContext, id) + "/delete");
-        model.put("uriCancel", getLocationIdUri(servletContext, id));
-        model.put("uriLocation", getLocationIdUri(servletContext, id));
+        model.put("uriId", getUriLocationId(servletContext, id));
 
         return "location/id";
     }
 
-    @RequestMapping(value = "/{id}/edit", method = RequestMethod.POST)
-    public String processEditLocation(
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    public String putLocationID(
             @ModelAttribute("locationForm") Location location,
             RedirectAttributes redirectAttrs) {
         locationDao.save(location);
@@ -85,14 +82,13 @@ public class LocationController {
         return "redirect:/location/{id}";
     }
 
-    @RequestMapping(value = "/{id}/delete", method = RequestMethod.GET)
-    public String processDeleteLocation(
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public String deleteLocationID(
             @PathVariable("id") ObjectId id,
             RedirectAttributes redirectAttrs) {
         locationDao.delete(id);
-
+        
         redirectAttrs.addFlashAttribute("msgSuccess", "Location deleted!");
         return "redirect:/location";
     }
-
 }

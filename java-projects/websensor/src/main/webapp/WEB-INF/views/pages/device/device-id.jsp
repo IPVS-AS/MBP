@@ -47,17 +47,26 @@
             <tr>
                 <th></th>
                 <td> 
-                    <button id="show" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg"><i class="fa fa-pencil"></i></button>
-                    <a href="<c:out value="${uriDelete}" />" title="Delete device" class="btn btn-danger btn-circle btn-lg"><i class="fa fa-trash-o"></i></a>
-                    <a href="<c:out value="${uriHeartbeat}" />" title="Register on Heartbeat" class="btn btn-success btn-circle btn-lg
-                       <c:if test="${hasHeartbeat}">disabled</c:if>">
-                           <i class="fa fa-medkit"></i>
-                       </a>
-                    </td>
-                </tr>
-            </table>
-            <table width="100%" class="table hidden" id="hidden">
-            <form:form action="${uriEdit}" method="POST" modelAttribute="deviceForm">
+
+                    <button id="show" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg">
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                    <form:form action="${uriId}" method="DELETE" modelAttribute="deviceForm" style="display: inline;">
+                        <button id="show" type="submit" title="Delete" class="btn btn-danger btn-circle btn-lg">
+                            <i class="fa fa-trash-o"></i>
+                        </button>
+                    </form:form>
+                    <form:form action="${uriHeartbeat}" method="PUT" modelAttribute="deviceForm" style="display: inline;">
+                        <button id="show" type="submit" title="Register Heartbeat" class="btn btn-success btn-circle btn-lg
+                                <c:if test="${hasHeartbeat}">disabled</c:if>">
+                                    <i class="fa fa-medkit"></i>
+                                </button>
+                    </form:form>
+                </td>
+            </tr>
+        </table>
+        <table width="100%" class="table hidden" id="hidden">
+            <form:form action="${uriId}" method="PUT" modelAttribute="deviceForm">
                 <form:hidden path="id" />
                 <tr>
                     <th>MAC Address</th>

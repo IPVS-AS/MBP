@@ -16,13 +16,19 @@
             <tr>
                 <th></th>
                 <td> 
-                    <button id="show" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg"><i class="fa fa-pencil"></i></button>
-                    <a href="<c:out value="${uriDelete}" />" title="Delete script" class="btn btn-danger btn-circle btn-lg"><i class="fa fa-trash-o"></i></a>
+                    <button id="show" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg">
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                    <form:form action="${uriId}" method="DELETE" modelAttribute="scriptForm" style="display: inline;">
+                        <button id="show" type="submit" title="Delete" class="btn btn-danger btn-circle btn-lg">
+                            <i class="fa fa-trash-o"></i>
+                        </button>
+                    </form:form>
                 </td>
             </tr>
         </table>
         <table width="100%" class="table hidden" id="hidden">
-            <form:form action="${uriEdit}" method="POST" modelAttribute="scriptForm">
+            <form:form action="${uriId}" method="PUT" modelAttribute="scriptForm">
                 <form:hidden path="id" />
                 <tr>
                     <th>Name</th>
@@ -43,7 +49,9 @@
                 <tr>
                     <th></th>
                     <td> 
-                        <button type="submit" title="Save" class="btn btn-success btn-circle btn-lg" /><i class="fa fa-check"></i></button>
+                        <button type="submit" title="Save" class="btn btn-success btn-circle btn-lg">
+                            <i class="fa fa-check"></i>
+                        </button>
                         <button id="hide" type="button" title="Cancel" class="btn btn-danger btn-circle btn-lg">
                             <i class="fa fa-times"></i>
                         </button>
@@ -61,7 +69,7 @@
                 <td>
                     <c:choose>
                         <c:when test="${script.service != null}">
-                            <a href="<c:out value="${uriRawService}" />" title="View raw content" target="blank">
+                            <a href="<c:out value="${uriService}" />" title="View raw content" target="blank">
                                 <c:out value="${script.service.name}" />
                             </a>
                         </c:when>
@@ -72,12 +80,16 @@
                 </td>
                 <td> 
                     <button id="show2" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg"><i class="fa fa-pencil"></i></button>
-                    <a href="<c:out value="${uriDeleteService}" />" title="Delete script" class="btn btn-danger btn-circle btn-lg"><i class="fa fa-trash-o"></i></a>
+                    <form:form action="${uriService}" method="DELETE" modelAttribute="fileBucket" style="display: inline;">
+                        <button id="show2" type="submit" title="Delete" class="btn btn-danger btn-circle btn-lg">
+                            <i class="fa fa-trash-o"></i>
+                        </button>
+                    </form:form>                    
                 </td>
             </tr>
         </table>
         <table width="100%" class="table hidden" id="hidden2">
-            <form:form action="${uriEditService}" enctype="multipart/form-data" method="POST" modelAttribute="fileBucket">           
+            <form:form action="${uriService}" enctype="multipart/form-data" method="POST" modelAttribute="fileBucket">           
                 <tr>
                     <th>Service</th>
                     <td>
@@ -104,7 +116,7 @@
                 <td>
                     <c:choose>
                         <c:when test="${script.routine != null}">
-                            <a href="<c:out value="${uriRawRoutine}" />" title="View raw content" target="blank">
+                            <a href="<c:out value="${uriRoutine}" />" title="View raw content" target="blank">
                                 <c:out value="${script.routine.name}" />
                             </a>
                         </c:when>
@@ -115,12 +127,16 @@
                 </td>
                 <td> 
                     <button id="show3" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg"><i class="fa fa-pencil"></i></button>
-                    <a href="<c:out value="${uriDeleteRoutine}" />" title="Delete script" class="btn btn-danger btn-circle btn-lg"><i class="fa fa-trash-o"></i></a>
+                    <form:form action="${uriRoutine}" method="DELETE" modelAttribute="fileBucket" style="display: inline;">
+                        <button id="show3" type="submit" title="Delete" class="btn btn-danger btn-circle btn-lg">
+                            <i class="fa fa-trash-o"></i>
+                        </button>
+                    </form:form>
                 </td>
             </tr>
         </table>
         <table width="100%" class="table hidden" id="hidden3">
-            <form:form action="${uriEditRoutine}" enctype="multipart/form-data" method="POST" modelAttribute="fileBucket">       
+            <form:form action="${uriRoutine}" enctype="multipart/form-data" method="POST" modelAttribute="fileBucket">       
                 <tr>
                     <th>Routine</th>
                     <td>

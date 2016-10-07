@@ -32,31 +32,34 @@ public class DeviceController {
 
     @Autowired
     private ServletContext servletContext;
+    
+    public static String URI_HEARTBEAT = "/heartbeat";
 
-    private static String getDeviceUri(ServletContext servletContext) {
+    public static String getUriDevice(ServletContext servletContext) {
         return servletContext.getContextPath() + "/device";
     }
     
-    private String getDeviceIdUri(ServletContext servletContext, String id) {
-        return DeviceController.getDeviceUri(servletContext) + "/" + id;
+    public String getUriDeviceId(ServletContext servletContext, ObjectId id) {
+        return getUriDevice(servletContext) 
+                + "/" + id.toString();
     }
     
     @RequestMapping(method = RequestMethod.GET)
-    public String viewDevice(Map<String, Object> model) {
+    public String getDevices(Map<String, Object> model) {
         Device deviceForm = new Device();
         model.put("deviceForm", deviceForm);
 
         model.put("devices", deviceDao.findAll());
         model.put("locations", locationDao.findAll());
         
-        model.put("uriDevice", getDeviceUri(servletContext));
-        model.put("uriLocation", servletContext.getContextPath() + "/location");
+        model.put("uriDevice", getUriDevice(servletContext));
+        model.put("uriLocation", LocationController.getUriLocation(servletContext));
 
         return "device";
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public String processRegistration(
+    public String postDevice(
             @ModelAttribute("deviceForm") Device device,
             RedirectAttributes redirectAttrs) {
         device = deviceDao.insert(device);
@@ -67,7 +70,7 @@ public class DeviceController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public String viewDeviceById(
+    public String getDeviceID(
             @PathVariable("id") ObjectId id,
             Map<String, Object> model) 
             throws ParseException, IdNotFoundException {
@@ -76,28 +79,21 @@ public class DeviceController {
         model.put("deviceForm", device);
         model.put("locations", locationDao.findAll());
 
-        String uriDevice = servletContext.getContextPath() + "/device"
-                + "/" + id;
-        model.put("uriEdit", uriDevice + "/edit");
-        model.put("uriDelete", uriDevice + "/delete");
-        model.put("uriCancel", uriDevice);
-        model.put("uriDevice", uriDevice);
-        model.put("uriLocation", servletContext.getContextPath() + "/location");
-        System.out.println(id);
-        model.put("uriHeartbeat", uriDevice + "/heartbeat");
+        model.put("uriId", getUriDeviceId(servletContext, id));
+        model.put("uriLocation", LocationController.getUriLocation(servletContext));        
+        model.put("uriHeartbeat", getUriDeviceId(servletContext, id) + URI_HEARTBEAT);
 
         boolean hasHb = heartbeat.isRegistered(id.toString());
         model.put("hasHeartbeat", hasHb);
         if (hasHb) {
             model.put("heartbeatResult", heartbeat.getResult(id.toString()));
-            System.out.println(model.get("heartbeatResult"));
         }
 
         return "device/id";
     }
 
-    @RequestMapping(value = "/{id}" + "/edit", method = RequestMethod.POST)
-    public String processEditDevice(
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    public String putDeviceID(
             @ModelAttribute("deviceForm") Device device,
             RedirectAttributes redirectAttrs) {
         deviceDao.save(device);
@@ -107,18 +103,18 @@ public class DeviceController {
         return "redirect:/device/{id}";
     }
 
-    @RequestMapping(value = "/{id}" + "/delete", method = RequestMethod.GET)
-    public String processDeleteDevice(
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public String deleteDeviceID(
             @PathVariable("id") ObjectId id,
             RedirectAttributes redirectAttrs) {
-        deviceDao.delete(id);
         heartbeat.removeMac(id.toString());
+        deviceDao.delete(id);
 
         redirectAttrs.addFlashAttribute("msgSuccess", "Device deleted!");
         return "redirect:/device";
     }
 
-    @RequestMapping(value = "/{id}" + "/heartbeat", method = RequestMethod.GET)
+    @RequestMapping(value = "/{id}/heartbeat", method = RequestMethod.PUT)
     public String registerHeartbeat(
             @PathVariable("id") ObjectId id,
             RedirectAttributes redirectAttrs)

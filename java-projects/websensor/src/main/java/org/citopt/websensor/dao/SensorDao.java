@@ -6,7 +6,9 @@ import org.citopt.websensor.domain.Sensor;
 import org.citopt.websensor.repository.SensorRepository;
 import org.citopt.websensor.web.exception.IdNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SensorDao {
     
     @Autowired

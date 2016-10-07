@@ -38,20 +38,36 @@
                             ">
                         <c:out value="${heartbeatResult.status}" default="UNDEFINED" />
                     </td>
-                </tr>    
+                </tr>
+                <tr>
+                    <th>Status @</th>
+                    <td>
+                        <c:out value="${heartbeatResult.date}" default="Not informed" />
+                    </td>
+                </tr>
+                <c:if test="${heartbeatResult.status eq 'REACHABLE'}">
+                    <tr>
+                        <th>IP</th>
+                        <td>
+                            <c:out value="${heartbeatResult.ip}" default=""/>
+                        </td>
+                    </tr>
+                </c:if>
             </c:if>
             <tr>
                 <th></th>
                 <td> 
                     <button id="show" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg"><i class="fa fa-pencil"></i></button>
-                    <a href="<c:out value="${uriDelete}" />" title="Delete sensor" class="btn btn-danger btn-circle btn-lg">
-                        <i class="fa fa-trash-o"></i>
-                    </a>
+                    <form:form action="${uriId}" method="DELETE" modelAttribute="sensorForm" style="display: inline;">
+                        <button id="show" type="submit" title="Delete" class="btn btn-danger btn-circle btn-lg">
+                            <i class="fa fa-trash-o"></i>
+                        </button>
+                    </form:form>
                 </td>
             </tr>            
         </table>
         <table width="100%" class="table hidden" id="hidden">
-            <form:form action="${uriEdit}" method="POST" modelAttribute="sensorForm">
+            <form:form action="${uriId}" method="PUT" modelAttribute="sensorForm">
                 <form:hidden path="id" />
                 <tr>
                     <th>Name</th>

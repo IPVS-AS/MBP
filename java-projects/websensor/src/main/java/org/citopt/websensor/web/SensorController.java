@@ -45,24 +45,36 @@ public class SensorController {
 
     @Autowired
     private ServletContext servletContext;
+    
+    public static String URI_DEPLOY = "/deploy";
+    
+    public static String getUriSensor(ServletContext servletContext) {
+        return servletContext.getContextPath() + "/sensor";
+    }
+    
+    public String getUriSensorId(ServletContext servletContext, ObjectId id) {
+        return getUriSensor(servletContext) 
+                + "/" + id.toString();
+    }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String viewSensor(Map<String, Object> model) {
+    public String getSensors(Map<String, Object> model) {
         Sensor sensorForm = new Sensor();
         model.put("sensorForm", sensorForm);
 
         model.put("sensors", sensorDao.findAll());
         model.put("devices", deviceDao.findAll());
         model.put("scripts", scriptDao.findAll());
-        model.put("uriSensor", servletContext.getContextPath() + "/sensor");
-        model.put("uriDevice", servletContext.getContextPath() + "/device");
-        model.put("uriScript", servletContext.getContextPath() + "/script");
+        
+        model.put("uriSensor", getUriSensor(servletContext));
+        model.put("uriDevice", DeviceController.getUriDevice(servletContext));
+        model.put("uriScript", ScriptController.getUriScript(servletContext));
 
         return "sensor";
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public String processRegistration(
+    public String postSensor(
             @ModelAttribute("sensorForm") Sensor sensor,
             RedirectAttributes redirectAttrs) {
         sensor = sensorDao.insert(sensor);
@@ -73,7 +85,7 @@ public class SensorController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public String viewSensorById(
+    public String getSensorID(
             @PathVariable("id") ObjectId id,
             Map<String, Object> model) 
             throws ParseException, IdNotFoundException {
@@ -84,28 +96,25 @@ public class SensorController {
         model.put("devices", deviceDao.findAll());
         model.put("scripts", scriptDao.findAll());
 
-        String uriSensor = servletContext.getContextPath() + "/sensor"
-                + "/" + id;
-        model.put("uriEdit", uriSensor + "/edit");
-        model.put("uriDelete", uriSensor + "/delete");
-        model.put("uriDeploy", uriSensor + "/deploy");
-        model.put("uriCancel", uriSensor);
-        model.put("uriSensor", uriSensor);
-        model.put("uriDevice", servletContext.getContextPath() + "/device");
-        model.put("uriScript", servletContext.getContextPath() + "/script");
+        String uriId = getUriSensorId(servletContext, id);
+        model.put("uriId", uriId);
+        model.put("uriDeploy", uriId + URI_DEPLOY);
+        model.put("uriDevice", DeviceController.getUriDevice(servletContext));
+        model.put("uriScript", ScriptController.getUriScript(servletContext));
 
-        boolean hasHb = heartbeat.isRegistered(sensor.getDevice().getId().toString());
-        System.out.println(hasHb);
+        boolean hasHb = 
+                heartbeat.isRegistered(sensor.getDevice().getId().toString());
         model.put("hasHeartbeat", hasHb);
         if (hasHb) {
-            model.put("heartbeatResult", heartbeat.getResult(sensor.getDevice().getId().toString()));
+            model.put("heartbeatResult", 
+                    heartbeat.getResult(sensor.getDevice().getId().toString()));
         }
 
         return "sensor/id";
     }
 
-    @RequestMapping(value = "/{id}" + "/edit", method = RequestMethod.POST)
-    public String processEditSensor(
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    public String putSensorID(
             @ModelAttribute("sensorForm") Sensor sensor,
             RedirectAttributes redirectAttrs) {
         sensorDao.save(sensor);
@@ -115,8 +124,8 @@ public class SensorController {
         return "redirect:/sensor/{id}";
     }
 
-    @RequestMapping(value = "/{id}" + "/delete", method = RequestMethod.GET)
-    public String processDeleteSensor(
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public String deleteSensorID(
             @PathVariable("id") ObjectId id,
             RedirectAttributes redirectAttrs) {
         sensorDao.delete(id);
@@ -125,8 +134,8 @@ public class SensorController {
         return "redirect:/sensor";
     }
 
-    @RequestMapping(value = "/{id}" + "/deploy", method = RequestMethod.POST)
-    public String processDeploySensor(
+    @RequestMapping(value = "/{id}/deploy", method = RequestMethod.POST)
+    public String postSensorIDDeploy(
             @PathVariable("id") ObjectId id,
             HttpServletRequest request,
             RedirectAttributes redirectAttrs) 

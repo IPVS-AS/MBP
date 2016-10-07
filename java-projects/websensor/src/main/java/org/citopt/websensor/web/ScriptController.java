@@ -38,24 +38,34 @@ public class ScriptController {
     @Autowired
     FileValidator fileValidator;
 
-    private static String UPLOAD_LOCATION = "./temp/file/";
+    public static String URI_SERVICE = "/service";
+    public static String URI_ROUTINE = "/routine";
+
+    public static String getUriScript(ServletContext servletContext) {
+        return servletContext.getContextPath() + "/script";
+    }
+
+    public String getUriScriptId(ServletContext servletContext, ObjectId id) {
+        return getUriScript(servletContext)
+                + "/" + id.toString();
+    }
 
     @RequestMapping(method = RequestMethod.GET)
-    public String viewScript(Map<String, Object> model) {
+    public String getScripts(Map<String, Object> model) {
         Script scriptForm = new Script();
         model.put("scriptForm", scriptForm);
 
         model.put("scripts", scriptDao.findAll());
-        model.put("uriScript", servletContext.getContextPath() + "/script");
+
+        model.put("uriScript", getUriScript(servletContext));
 
         return "script";
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public String processRegistration(
+    public String postScript(
             @ModelAttribute("scriptForm") Script script,
             RedirectAttributes redirectAttrs) {
-        System.out.println(script);
         script = scriptDao.insert(script);
 
         redirectAttrs.addAttribute("id", script.getId())
@@ -64,7 +74,7 @@ public class ScriptController {
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public String viewScriptById(
+    public String getScriptID(
             @PathVariable("id") ObjectId id,
             Map<String, Object> model)
             throws IdNotFoundException {
@@ -75,24 +85,17 @@ public class ScriptController {
         FileBucket fileBucket = new FileBucket();
         model.put("fileBucket", fileBucket);
 
-        String uriScript = servletContext.getContextPath() + "/script"
-                + "/" + id;
+        String uriId = getUriScriptId(servletContext, id);
 
-        model.put("uriRawService", uriScript + "/raw/service");
-        model.put("uriRawRoutine", uriScript + "/raw/routine");
-        model.put("uriEdit", uriScript + "/edit");
-        model.put("uriEditService", uriScript + "/edit/service");
-        model.put("uriEditRoutine", uriScript + "/edit/routine");
-        model.put("uriDelete", uriScript + "/delete");
-        model.put("uriDeleteService", uriScript + "/delete/service");
-        model.put("uriDeleteRoutine", uriScript + "/delete/routine");
-        model.put("uriCancel", uriScript);
+        model.put("uriId", uriId);
+        model.put("uriService", uriId + URI_SERVICE);
+        model.put("uriRoutine", uriId + URI_ROUTINE);
 
         return "script/id";
     }
 
-    @RequestMapping(value = "/{id}" + "/edit", method = RequestMethod.POST)
-    public String processEditScript(
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    public String putScriptID(
             @ModelAttribute("scriptForm") Script script,
             RedirectAttributes redirectAttrs) {
         scriptDao.save(script);
@@ -102,8 +105,8 @@ public class ScriptController {
         return "redirect:/script/{id}";
     }
 
-    @RequestMapping(value = "/{id}" + "/delete", method = RequestMethod.GET)
-    public String processDeleteScript(
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public String deleteScriptID(
             @PathVariable("id") ObjectId id,
             RedirectAttributes redirectAttrs) {
         scriptDao.delete(id);
@@ -111,50 +114,16 @@ public class ScriptController {
         redirectAttrs.addFlashAttribute("msgSuccess", "Script deleted!");
         return "redirect:/script";
     }
-
-    @RequestMapping(value = "/{id}/edit/service", method = RequestMethod.POST)
-    public String editService(
-            @PathVariable("id") ObjectId id,
-            @Valid FileBucket fileBucket,
-            BindingResult result,
-            RedirectAttributes redirectAttrs)
-            throws IdNotFoundException {
-        if (result.hasErrors()) {
-            System.out.println(result.getAllErrors().get(0).toString());
-            redirectAttrs.addFlashAttribute("msgError", "Failed to save service!");
-        } else {
-
-            MultipartFile file = fileBucket.getFile();
-            Script script = scriptDao.find(id);
-
-            try {
-                ScriptFile service = new ScriptFile(id, file.getBytes());
-                System.out.println(service);
-                script.setService(service);
-                scriptDao.save(script);
-                redirectAttrs
-                        .addFlashAttribute("msgSuccess", "Saved service succesfully!");
-            } catch (IOException ex) {
-                System.out.println("IOException");
-                Logger.getLogger(ScriptController.class.getName()).log(Level.SEVERE, null, ex);
-                redirectAttrs.addFlashAttribute("msgError", "Failed to save service!");
-            }
-        }
-
-        redirectAttrs.addAttribute("id", id);
-        return "redirect:/script/{id}";
-    }
-
-    @RequestMapping(value = "/{id}/raw/service", method = RequestMethod.GET)
-    public String viewRawService(
+    
+    // SERVICE PART    
+    @RequestMapping(value = "/{id}/service", method = RequestMethod.GET)
+    public String getService(
             @PathVariable("id") ObjectId id,
             ModelMap model)
             throws IdNotFoundException {
-        String uriScript = servletContext.getContextPath() + "/script"
-                + "/" + id;
         Script script = scriptDao.find(id);
 
-        model.put("uriScript", uriScript);
+        model.put("uriId", getUriScriptId(servletContext, id));
         model.put("title", script.getService().getName());
         try {
             model.put("content", new String(script.getService().getContent(), "UTF-8"));
@@ -165,7 +134,37 @@ public class ScriptController {
         return "script/id/file/raw";
     }
 
-    @RequestMapping(value = "/{id}/delete/service", method = RequestMethod.GET)
+    @RequestMapping(value = "/{id}/service", method = RequestMethod.POST)
+    public String postService(
+            @PathVariable("id") ObjectId id,
+            @Valid FileBucket fileBucket,
+            BindingResult result,
+            RedirectAttributes redirectAttrs)
+            throws IdNotFoundException {
+        if (result.hasErrors()) {
+            redirectAttrs.addFlashAttribute("msgError", "Failed to save service!");
+        } else {
+
+            MultipartFile file = fileBucket.getFile();
+            Script script = scriptDao.find(id);
+
+            try {
+                ScriptFile service = new ScriptFile(file.getOriginalFilename(), file.getBytes());
+                script.setService(service);
+                scriptDao.save(script);
+                redirectAttrs
+                        .addFlashAttribute("msgSuccess", "Saved service succesfully!");
+            } catch (IOException ex) {
+                Logger.getLogger(ScriptController.class.getName()).log(Level.SEVERE, null, ex);
+                redirectAttrs.addFlashAttribute("msgError", "Failed to save service!");
+            }
+        }
+
+        redirectAttrs.addAttribute("id", id);
+        return "redirect:/script/{id}";
+    }
+
+    @RequestMapping(value = "/{id}/service", method = RequestMethod.DELETE)
     public String deleteService(
             @PathVariable("id") ObjectId id,
             RedirectAttributes redirectAttrs)
@@ -179,16 +178,35 @@ public class ScriptController {
                 .addFlashAttribute("msgSuccess", "Removed service succesfully!");
         return "redirect:/script/{id}";
     }
+    
+    // ROUTINE PART
+    @RequestMapping(value = "/{id}/routine", method = RequestMethod.GET)
+    public String getRoutine(
+            @PathVariable("id") ObjectId id,
+            ModelMap model)
+            throws IdNotFoundException {
+        Script script = scriptDao.find(id);
 
-    @RequestMapping(value = "/{id}/edit/routine", method = RequestMethod.POST)
-    public String editRoutine(
+        model.put("uriId", getUriScriptId(servletContext, id));
+        model.put("title", script.getRoutine().getName());
+        try {
+            model.put("content", new String(script.getRoutine().getContent(), "UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
+            model.put("content", script.getRoutine().getContent().toString());
+        }
+
+        return "script/id/file/raw";
+    }
+
+
+    @RequestMapping(value = "/{id}/routine", method = RequestMethod.POST)
+    public String postRoutine(
             @PathVariable("id") ObjectId id,
             @Valid FileBucket fileBucket,
             BindingResult result,
             RedirectAttributes redirectAttrs)
             throws IdNotFoundException {
         if (result.hasErrors()) {
-            System.out.println(result.getAllErrors().get(0).toString());
             redirectAttrs.addFlashAttribute("msgError", "Failed to save routine!");
         } else {
 
@@ -211,13 +229,11 @@ public class ScriptController {
         return "redirect:/script/{id}";
     }
 
-    @RequestMapping(value = "/{id}/delete/routine", method = RequestMethod.GET)
+    @RequestMapping(value = "/{id}/routine", method = RequestMethod.DELETE)
     public String deleteRoutine(
             @PathVariable("id") ObjectId id,
             RedirectAttributes redirectAttrs)
             throws IdNotFoundException {
-        String uriScript = servletContext.getContextPath() + "/script"
-                + "/" + id;
         Script script = scriptDao.find(id);
 
         script.setRoutine(null);
@@ -227,25 +243,4 @@ public class ScriptController {
                 .addFlashAttribute("msgSuccess", "Removed routine succesfully!");
         return "redirect:/script/{id}";
     }
-
-    @RequestMapping(value = "/{id}/raw/routine", method = RequestMethod.GET)
-    public String viewRawRoutine(
-            @PathVariable("id") ObjectId id,
-            ModelMap model)
-            throws IdNotFoundException {
-        String uriScript = servletContext.getContextPath() + "/script"
-                + "/" + id;
-        Script script = scriptDao.find(id);
-
-        model.put("uriScript", uriScript);
-        model.put("title", script.getRoutine().getName());
-        try {
-            model.put("content", new String(script.getRoutine().getContent(), "UTF-8"));
-        } catch (UnsupportedEncodingException ex) {
-            model.put("content", script.getRoutine().getContent().toString());
-        }
-
-        return "script/id/file/raw";
-    }
-
 }

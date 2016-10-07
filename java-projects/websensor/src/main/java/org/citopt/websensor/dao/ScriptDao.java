@@ -6,7 +6,9 @@ import org.citopt.websensor.domain.Script;
 import org.citopt.websensor.repository.ScriptRepository;
 import org.citopt.websensor.web.exception.IdNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ScriptDao {
     
     @Autowired
