@@ -10,6 +10,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import org.citopt.websensor.domain.Script;
+import org.citopt.websensor.domain.ScriptFile;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -91,17 +92,19 @@ public class SSHDeployer {
         System.out.println(stdout);
         System.out.println(stderr);
 
-        String routine = new String(script.getRoutine().getContent());
+        for (ScriptFile routine : script.getRoutines()) {
+            String content = new String(routine.getContent());
 
-        // copies routine        
-        shell.exec(
-                "sudo bash -c  \"cat > " + dir + script.getRoutine().getName() + "\"",
-                new ByteArrayInputStream(routine.getBytes()),
-                stdout,
-                stderr
-        );
-        System.out.println(stdout);
-        System.out.println(stderr);
+            // copies routine        
+            shell.exec(
+                    "sudo bash -c  \"cat > " + dir + routine.getName() + "\"",
+                    new ByteArrayInputStream(content.getBytes()),
+                    stdout,
+                    stderr
+            );
+            System.out.println(stdout);
+            System.out.println(stderr);
+        }
 
         String service = new String(script.getService().getContent());
         System.out.println(service);

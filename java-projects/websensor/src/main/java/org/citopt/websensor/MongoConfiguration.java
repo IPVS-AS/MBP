@@ -9,11 +9,13 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 @EnableMongoRepositories
 public class MongoConfiguration extends AbstractMongoConfiguration {
     
+    public static String DB_NAME = "websensor";
+    
     private static Mongo mongo;
     
     @Override
     protected String getDatabaseName() {
-        return "websensor";
+        return DB_NAME;
     }
 
     @Override

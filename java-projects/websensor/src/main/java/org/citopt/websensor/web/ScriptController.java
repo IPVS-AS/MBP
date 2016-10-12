@@ -13,6 +13,7 @@ import org.citopt.websensor.dao.ScriptDao;
 import org.citopt.websensor.domain.Script;
 import org.citopt.websensor.domain.ScriptFile;
 import org.citopt.websensor.web.exception.IdNotFoundException;
+import org.citopt.websensor.web.exception.InvalidValueException;
 import org.citopt.websensor.web.file.FileValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -180,19 +181,21 @@ public class ScriptController {
     }
     
     // ROUTINE PART
-    @RequestMapping(value = "/{id}/routine", method = RequestMethod.GET)
+    @RequestMapping(value = "/{id}/routine/{filename}", method = RequestMethod.GET)
     public String getRoutine(
             @PathVariable("id") ObjectId id,
+            @PathVariable("filename") String filename,
             ModelMap model)
             throws IdNotFoundException {
         Script script = scriptDao.find(id);
+        ScriptFile file = script.getRoutine(filename);
 
         model.put("uriId", getUriScriptId(servletContext, id));
-        model.put("title", script.getRoutine().getName());
+        model.put("title", file.getName());
         try {
-            model.put("content", new String(script.getRoutine().getContent(), "UTF-8"));
+            model.put("content", new String(file.getContent(), "UTF-8"));
         } catch (UnsupportedEncodingException ex) {
-            model.put("content", script.getRoutine().getContent().toString());
+            model.put("content", file.getContent().toString());
         }
 
         return "script/id/file/raw";
@@ -205,7 +208,7 @@ public class ScriptController {
             @Valid FileBucket fileBucket,
             BindingResult result,
             RedirectAttributes redirectAttrs)
-            throws IdNotFoundException {
+            throws IdNotFoundException, InvalidValueException {
         if (result.hasErrors()) {
             redirectAttrs.addFlashAttribute("msgError", "Failed to save routine!");
         } else {
@@ -215,7 +218,7 @@ public class ScriptController {
 
             try {
                 ScriptFile routine = new ScriptFile(file.getOriginalFilename(), file.getBytes());
-                script.setRoutine(routine);
+                script.addRoutine(routine);
                 scriptDao.save(script);
                 redirectAttrs
                         .addFlashAttribute("msgSuccess", "Saved routine succesfully!");
@@ -229,14 +232,15 @@ public class ScriptController {
         return "redirect:/script/{id}";
     }
 
-    @RequestMapping(value = "/{id}/routine", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{id}/routine/{filename}", method = RequestMethod.DELETE)
     public String deleteRoutine(
             @PathVariable("id") ObjectId id,
+            @PathVariable("filename") String filename,
             RedirectAttributes redirectAttrs)
             throws IdNotFoundException {
         Script script = scriptDao.find(id);
 
-        script.setRoutine(null);
+        script.deleteRoutine(filename);
         scriptDao.save(script);
 
         redirectAttrs.addAttribute("id", id)

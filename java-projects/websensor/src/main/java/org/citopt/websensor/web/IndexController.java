@@ -1,9 +1,11 @@
 package org.citopt.websensor.web;
 
+import com.mongodb.Mongo;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletContext;
 import org.bson.types.ObjectId;
+import org.citopt.websensor.MongoConfiguration;
 import org.citopt.websensor.repository.SensorRepository;
 import org.citopt.websensor.service.ARPReader;
 import org.citopt.websensor.service.MQTTLoggerReader;
@@ -29,6 +31,17 @@ public class IndexController {
 
     @Autowired
     private ServletContext servletContext;
+    
+    @Autowired
+    private Mongo mongo;
+    
+    @RequestMapping(value = "/factoryreset", method = RequestMethod.GET)
+    public String resetMongo(RedirectAttributes redirectAttrs) {
+        mongo.dropDatabase(MongoConfiguration.DB_NAME);
+        
+        redirectAttrs.addFlashAttribute("msgSuccess", "FACTORY RESETED!");
+        return "redirect:/";
+    }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String viewIndex(Map<String, Object> model) {

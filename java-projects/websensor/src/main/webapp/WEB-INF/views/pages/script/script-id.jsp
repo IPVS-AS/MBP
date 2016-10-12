@@ -80,7 +80,7 @@
                 </td>
                 <td> 
                     <button id="show2" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg"><i class="fa fa-pencil"></i></button>
-                    <form:form action="${uriService}" method="DELETE" modelAttribute="fileBucket" style="display: inline;">
+                        <form:form action="${uriService}" method="DELETE" modelAttribute="fileBucket" style="display: inline;">
                         <button id="show2" type="submit" title="Delete" class="btn btn-danger btn-circle btn-lg">
                             <i class="fa fa-trash-o"></i>
                         </button>
@@ -111,29 +111,37 @@
 <div class="row">
     <div class="col-lg-6">
         <table width="100%" class="table" id="shown3">
+            <!-- Empty Routine List -->
             <tr>
-                <th>Routine</th>
+                <th>Routines</th>
                 <td>
-                    <c:choose>
-                        <c:when test="${script.routine != null}">
-                            <a href="<c:out value="${uriRoutine}" />" title="View raw content" target="blank">
-                                <c:out value="${script.routine.name}" />
-                            </a>
-                        </c:when>
-                        <c:otherwise>
-                            Empty File
-                        </c:otherwise>
-                    </c:choose>
+                    Empty File
                 </td>
-                <td> 
-                    <button id="show3" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg"><i class="fa fa-pencil"></i></button>
-                    <form:form action="${uriRoutine}" method="DELETE" modelAttribute="fileBucket" style="display: inline;">
-                        <button id="show3" type="submit" title="Delete" class="btn btn-danger btn-circle btn-lg">
-                            <i class="fa fa-trash-o"></i>
-                        </button>
-                    </form:form>
+                <td>
+                    <button id="show3" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg">
+                        <i class="fa fa-pencil"></i>
+                    </button>
                 </td>
             </tr>
+            <!-- Non-empty Routine List -->
+            <c:forEach var="routine" items="${script.routines}">
+                <tr>
+                    <td></td>
+                    <td>
+                        <a href="<c:out value="${uriRoutine}/${routine.name}" />" title="View raw content" target="blank">
+                            <c:out value="${routine.name}" />
+                        </a>
+                    </td>
+                    <td>
+                        <form:form action="${uriRoutine}/${routine.name}" method="DELETE" modelAttribute="fileBucket" style="display: inline;">
+                            <button id="show3" type="submit" title="Delete" class="btn btn-danger btn-circle btn-lg">
+                                <i class="fa fa-trash-o"></i>
+                            </button>
+                        </form:form>
+
+                    </td>
+                </tr>
+            </c:forEach>
         </table>
         <table width="100%" class="table hidden" id="hidden3">
             <form:form action="${uriRoutine}" enctype="multipart/form-data" method="POST" modelAttribute="fileBucket">       

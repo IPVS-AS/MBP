@@ -1,8 +1,12 @@
 package org.citopt.websensor.domain;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import javax.persistence.GeneratedValue;
 import org.bson.types.ObjectId;
+import org.citopt.websensor.web.exception.IdNotFoundException;
+import org.citopt.websensor.web.exception.InvalidValueException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -21,17 +25,18 @@ public class Script {
     private String description;
 
     private ScriptFile service;
-    private ScriptFile routine;
+    private List<ScriptFile> routines;
 
     @PersistenceConstructor
-    public Script(ObjectId id, String name, ScriptFile service, ScriptFile routine) {
+    public Script(ObjectId id, String name, ScriptFile service, List<ScriptFile> routines) {
         this.id = id;
         this.name = name;
         this.service = service;
-        this.routine = routine;
+        this.routines = routines;
     }
 
     public Script() {
+        this.routines = new ArrayList<>();
     }
 
     public Script(String name, String description) {
@@ -71,12 +76,35 @@ public class Script {
         this.service = service;
     }
 
-    public ScriptFile getRoutine() {
-        return routine;
+    public List<ScriptFile> getRoutines() {
+        return routines;
     }
 
-    public void setRoutine(ScriptFile routine) {
-        this.routine = routine;
+    public void addRoutine(ScriptFile routine) throws InvalidValueException {
+        for(ScriptFile item : this.routines) {
+            if(routine.getName().equals(item.getName())) {
+                throw new InvalidValueException("Filename cannot be duplicate!");
+            }
+        }
+        this.routines.add(routine);
+    }
+    
+    public ScriptFile getRoutine(String filename) throws IdNotFoundException {
+        for(ScriptFile item : this.routines) {
+            if(item.getName().equals(filename)) {
+                return item;
+            }
+        }        
+        throw new IdNotFoundException("No such filename.");
+    }
+    
+    public void deleteRoutine(String filename) throws IdNotFoundException {
+        for(ScriptFile item : this.routines) {
+            if(item.getName().equals(filename)) {
+               this.routines.remove(item);
+            }
+        }        
+        throw new IdNotFoundException("No such filename.");
     }
 
     @Override
@@ -110,7 +138,7 @@ public class Script {
 
     @Override
     public String toString() {
-        return "Script{" + "id=" + id + ", name=" + name + ", service=" + service + ", routine=" + routine + '}';
+        return "Script{" + "id=" + id + ", name=" + name + ", service=" + service + ", routine=" + routines + '}';
     }
 
 }
