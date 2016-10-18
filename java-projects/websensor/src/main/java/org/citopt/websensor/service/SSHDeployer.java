@@ -2,21 +2,27 @@ package org.citopt.websensor.service;
 
 import com.jcabi.ssh.SSH;
 import com.jcabi.ssh.Shell;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.citopt.websensor.domain.Script;
 import org.citopt.websensor.domain.ScriptFile;
+import org.citopt.websensor.domain.Sensor;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SSHDeployer {
 
     private static final String SCRIPTDIR = "/home/pi/scripts/";
+    private static final String SERVICEPREFIX = "s";
 
     public static String key
             = "-----BEGIN RSA PRIVATE KEY-----\n"
@@ -66,9 +72,10 @@ public class SSHDeployer {
         return service;
     }
 
-    public void deployScript(String id, String url, Integer port, String user,
-            String key, String mqtt, Script script, String pinset) throws UnknownHostException, IOException {
-        String sid = "s" + id;
+    public void deploy(String id, String url, Integer port, String user,
+            String key, String mqtt, Script script, String pinset)
+            throws UnknownHostException, IOException {
+        String sid = SERVICEPREFIX + id;
         String dir = SCRIPTDIR + sid + "/";
         String servicename = sid;
 
@@ -89,8 +96,6 @@ public class SSHDeployer {
                 stdout,
                 stderr
         );
-        System.out.println(stdout);
-        System.out.println(stderr);
 
         for (ScriptFile routine : script.getRoutines()) {
             String content = new String(routine.getContent());
@@ -102,12 +107,9 @@ public class SSHDeployer {
                     stdout,
                     stderr
             );
-            System.out.println(stdout);
-            System.out.println(stderr);
         }
 
         String service = new String(script.getService().getContent());
-        System.out.println(service);
 
         Map<String, String> serviceParser = new HashMap<>();
         serviceParser.put("${dir}", dir);
@@ -115,8 +117,6 @@ public class SSHDeployer {
         serviceParser.put("${mqtturl}", mqtt);
         serviceParser.put("${pinset}", pinset);
         service = parseService(service, serviceParser);
-        System.out.println(service);
-
         // copies service        
         shell.exec(
                 "sudo bash -c  \"cat > /etc/init/" + servicename + ".conf\"",
@@ -124,8 +124,6 @@ public class SSHDeployer {
                 stdout,
                 stderr
         );
-        System.out.println(stdout);
-        System.out.println(stderr);
 
         // reloads service config
         shell.exec(
@@ -134,9 +132,6 @@ public class SSHDeployer {
                 stdout,
                 stderr
         );
-        System.out.println(stdout);
-        System.out.println(stderr);
-
         try {
             shell.exec(
                     "sudo service " + servicename + " stop",
@@ -154,9 +149,69 @@ public class SSHDeployer {
                 stdout,
                 stderr
         );
-        System.out.println(stdout);
-        System.out.println(stderr);
 
+    }
+
+    public boolean isRunning(Sensor sensor, String url, Integer port,
+            String user, String key)
+            throws UnknownHostException, IOException {
+        String sid = SERVICEPREFIX + sensor.getId();
+
+        Shell shell = new Shell.Safe(
+                new SSH(
+                        url, port,
+                        user, key
+                )
+        );
+
+        OutputStream stdout = new ByteArrayOutputStream();
+        OutputStream stderr = new ByteArrayOutputStream();
+
+        // lists services
+        shell.exec(
+                "sudo initctl list",
+                new ByteArrayInputStream("".getBytes()),
+                stdout,
+                stderr
+        );
+
+        // parse stdout list
+        Pattern p = Pattern.compile(sid + "( start/running)(.*)");
+        BufferedReader bufReader = new BufferedReader(
+                new StringReader(stdout.toString()));
+        String line;
+        while ((line = bufReader.readLine()) != null) {
+            Matcher m = p.matcher(line);
+            if (m.matches()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void undeploy(Sensor sensor, String url, Integer port, String user,
+            String key) 
+            throws IOException {
+        String sid = SERVICEPREFIX + sensor.getId();
+
+        Shell shell = new Shell.Safe(
+                new SSH(
+                        url, port,
+                        user, key
+                )
+        );
+        
+        OutputStream stdout = new ByteArrayOutputStream();
+        OutputStream stderr = new ByteArrayOutputStream();
+        
+        // stop service
+        shell.exec(
+                "sudo service " + sid + " stop",
+                new ByteArrayInputStream("".getBytes()),
+                stdout,
+                stderr
+        );
     }
 
 }

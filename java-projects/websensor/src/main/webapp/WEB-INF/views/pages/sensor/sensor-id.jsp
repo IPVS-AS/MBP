@@ -52,13 +52,28 @@
                             <c:out value="${heartbeatResult.ip}" default=""/>
                         </td>
                     </tr>
+                    <tr>
+                        <th>
+                            Running
+                        </th>
+                        <c:if test="${isRunning eq true}">
+                            <td class="success">
+                                <i class="fa fa-check"></i>
+                            </td>
+                        </c:if>
+                        <c:if test="${isRunning eq false}">
+                            <td class="danger">
+                                <i class="fa fa-times"></i>
+                            </td>
+                        </c:if>                
+                    </tr>
                 </c:if>
             </c:if>
             <tr>
                 <th></th>
                 <td> 
                     <button id="show" type="button" title="Edit values" class="btn btn-warning btn-circle btn-lg"><i class="fa fa-pencil"></i></button>
-                    <form:form action="${uriId}" method="DELETE" modelAttribute="sensorForm" style="display: inline;">
+                        <form:form action="${uriId}" method="DELETE" modelAttribute="sensorForm" style="display: inline;">
                         <button id="show" type="submit" title="Delete" class="btn btn-danger btn-circle btn-lg">
                             <i class="fa fa-trash-o"></i>
                         </button>
@@ -110,18 +125,25 @@
             </form:form>
         </table>
 
+        <!-- Deploying -->
         <c:if test="${heartbeatResult.status eq 'REACHABLE'}">
-            <h3>Deploying</h3>
-            <form action="${uriDeploy}" method="POST"  class="form-inline">
-                <div class="form-group">
-                    <label>Pinset</label>
-                    <input name="pinset"  type="text" class="form-control" placeholder="15,16,17"/>
-                    <button type="submit" title="Deploy sensor" class="btn btn-success btn-circle" /><i class="fa fa-download"></i></button>
-                    <p class="help-block">Pin numbers separated by commas</p>
-                </div>
-            </form>
+            <c:if test="${isRunning eq true}">
+                <form:form action="${uriDeploy}" method="DELETE" modelAttribute="sensorForm">
+                    <button type="submit" title="Undeploy" class="btn btn-danger btn-circle btn-lg" /><i class="fa fa-power-off"></i></button>
+                </form:form>
+            </c:if>
+            <c:if test="${isRunning eq false}">
+                <h3>Deploying</h3>
+                <form action="${uriDeploy}" method="POST"  class="form-inline">
+                    <div class="form-group">
+                        <label>Pinset</label>
+                        <input name="pinset"  type="text" class="form-control" placeholder="15,16,17"/>
+                        <button type="submit" title="Deploy sensor" class="btn btn-success btn-circle" /><i class="fa fa-download"></i></button>
+                        <p class="help-block">Pin numbers separated by commas</p>
+                    </div>
+                </form>
+            </c:if>
         </c:if>
-
     </div>
     <!-- /.col-lg-4 -->
 </div>

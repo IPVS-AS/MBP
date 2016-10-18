@@ -47,6 +47,7 @@ public class SensorController {
     private ServletContext servletContext;
     
     public static String URI_DEPLOY = "/deploy";
+    private static String MQTTURL = "192.168.43.124";
     
     public static String getUriSensor(ServletContext servletContext) {
         return servletContext.getContextPath() + "/sensor";
@@ -88,7 +89,7 @@ public class SensorController {
     public String getSensorID(
             @PathVariable("id") ObjectId id,
             Map<String, Object> model) 
-            throws ParseException, IdNotFoundException {
+            throws ParseException, IdNotFoundException, IOException {
         Sensor sensor = sensorDao.find(id);
         model.put("sensor", sensor);
         model.put("sensorForm", sensor);
@@ -106,8 +107,15 @@ public class SensorController {
                 heartbeat.isRegistered(sensor.getDevice().getId().toString());
         model.put("hasHeartbeat", hasHb);
         if (hasHb) {
-            model.put("heartbeatResult", 
-                    heartbeat.getResult(sensor.getDevice().getId().toString()));
+            HeartbeatResult hb 
+                    = heartbeat.getResult(sensor.getDevice().getId().toString());
+            model.put("heartbeatResult", hb);
+            if(HeartbeatResult.Status.REACHABLE.equals(hb.getStatus())) {
+                boolean running = sshDeployer.isRunning(sensor, hb.getIp(), 22, "pi",
+                        SSHDeployer.key);
+                model.put("isRunning", running);
+                System.out.println(running);
+            }
         }
 
         return "sensor/id";
@@ -148,9 +156,9 @@ public class SensorController {
 
         if (HeartbeatResult.Status.REACHABLE.equals(hb.getStatus())) {
             try {
-                sshDeployer.deployScript(
+                sshDeployer.deploy(
                         id.toString(), hb.getIp(), 22, "pi", SSHDeployer.key,
-                        "192.168.43.124", script, pinset);
+                        MQTTURL, script, pinset);
                 redirectAttrs.addFlashAttribute("msgSuccess", "Deployed succesfully!");
             } catch (Exception e) {
                 redirectAttrs.addFlashAttribute("msgError", "Failed to deploy!");
@@ -162,5 +170,31 @@ public class SensorController {
         redirectAttrs.addAttribute("id", sensor.getId());
         return "redirect:/sensor/{id}";
     }
+    
+    @RequestMapping(value = "/{id}/deploy", method = RequestMethod.DELETE)
+    public String deleteSensorIDDeploy(
+            @PathVariable("id") ObjectId id,
+            HttpServletRequest request,
+            RedirectAttributes redirectAttrs) 
+            throws ParseException, IOException, IdNotFoundException {
+        String pinset = request.getParameter("pinset");
+        Sensor sensor = sensorDao.find(id);
+        HeartbeatResult hb = heartbeat.getResult(sensor.getDevice().getId().toString());
+
+        if (HeartbeatResult.Status.REACHABLE.equals(hb.getStatus())) {
+            try {
+                sshDeployer.undeploy(
+                        sensor, hb.getIp(), 22, "pi", SSHDeployer.key);
+                redirectAttrs.addFlashAttribute("msgSuccess", "Undeployed succesfully!");
+            } catch (Exception e) {
+                redirectAttrs.addFlashAttribute("msgError", "Failed to undeploy!");
+            }
+        } else {
+            System.out.println(hb.getStatus());
+        }
+
+        redirectAttrs.addAttribute("id", sensor.getId());
+        return "redirect:/sensor/{id}";
+    }    
 
 }

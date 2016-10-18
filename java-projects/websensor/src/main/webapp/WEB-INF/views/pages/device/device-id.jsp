@@ -41,7 +41,7 @@
                         <td>
                             <c:out value="${heartbeatResult.ip}" default=""/>
                         </td>
-                    </tr>
+                    </tr>                    
                 </c:if>
             </c:if>
             <tr>
