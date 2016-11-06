@@ -2,11 +2,15 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
 
 <h1>Sensors</h1>
+
 <div class="panel-group" id="accordion">
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" aria-expanded="true" href="#collapseOne">List of Sensors</a>
+                <a data-toggle="collapse" data-parent="#accordion" 
+                   aria-expanded="true" href="#collapseOne">
+                    List of Sensors
+                </a>
             </h4>
         </div>
         <!-- /.panel-heading -->
@@ -57,7 +61,9 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">Register Sensor</a>   
+                <a data-toggle="collapse" data-parent="#accordion" 
+                   href="#collapseTwo">Register Sensor
+                </a>   
             </h4>
         </div>
         <!-- /.panel-heading -->

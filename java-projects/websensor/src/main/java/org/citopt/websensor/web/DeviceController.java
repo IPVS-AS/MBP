@@ -8,7 +8,7 @@ import org.citopt.websensor.dao.DeviceDao;
 import org.citopt.websensor.dao.LocationDao;
 import org.citopt.websensor.domain.Device;
 import org.citopt.websensor.service.Heartbeat;
-import org.citopt.websensor.web.exception.IdNotFoundException;
+import org.citopt.websensor.web.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -73,7 +73,7 @@ public class DeviceController {
     public String getDeviceID(
             @PathVariable("id") ObjectId id,
             Map<String, Object> model) 
-            throws ParseException, IdNotFoundException {
+            throws ParseException, NotFoundException {
         Device device = deviceDao.find(id);
         model.put("device", device);
         model.put("deviceForm", device);
@@ -118,7 +118,7 @@ public class DeviceController {
     public String registerHeartbeat(
             @PathVariable("id") ObjectId id,
             RedirectAttributes redirectAttrs)
-            throws IdNotFoundException {
+            throws NotFoundException {
         Device d = deviceDao.find(id);
         heartbeat.registerMac(d.getRawMacAddress(), d.getId().toString());
 

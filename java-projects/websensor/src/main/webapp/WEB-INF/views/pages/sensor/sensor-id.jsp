@@ -146,5 +146,31 @@
         </c:if>
     </div>
     <!-- /.col-lg-4 -->
+    <div class="col-lg-8">
+        <div id="mqtt-table-container">                    
+        </div>
+    </div>
 </div>
 <!-- /.row -->
+
+<script>    
+    function loadtable() {
+        $.ajax({url: "<c:url value="/mqtt/${sensor.id}" />",
+            success: function (result) {
+                $("#mqtt-table-container").html(result);
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert("Status: " + textStatus);
+                alert("Error: " + errorThrown);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        loadtable();
+    });
+
+    setInterval(function () {
+        loadtable(); // this will run after every 5 seconds
+    }, 5000);
+</script>

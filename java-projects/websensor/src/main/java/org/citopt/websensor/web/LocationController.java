@@ -5,7 +5,7 @@ import javax.servlet.ServletContext;
 import org.bson.types.ObjectId;
 import org.citopt.websensor.dao.LocationDao;
 import org.citopt.websensor.domain.Location;
-import org.citopt.websensor.web.exception.IdNotFoundException;
+import org.citopt.websensor.web.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -60,7 +60,7 @@ public class LocationController {
     public String getLocationID(
             @PathVariable("id") ObjectId id,
             Map<String, Object> model)
-            throws IdNotFoundException {
+            throws NotFoundException {
         Location location = locationDao.find(id);
 
         model.put("location", location);

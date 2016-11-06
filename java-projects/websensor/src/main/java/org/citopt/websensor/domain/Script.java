@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Objects;
 import javax.persistence.GeneratedValue;
 import org.bson.types.ObjectId;
-import org.citopt.websensor.web.exception.IdNotFoundException;
-import org.citopt.websensor.web.exception.InvalidValueException;
+import org.citopt.websensor.web.exception.NotFoundException;
+import org.citopt.websensor.dao.InsertFailureException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -80,31 +80,31 @@ public class Script {
         return routines;
     }
 
-    public void addRoutine(ScriptFile routine) throws InvalidValueException {
+    public void addRoutine(ScriptFile routine) throws InsertFailureException {
         for(ScriptFile item : this.routines) {
             if(routine.getName().equals(item.getName())) {
-                throw new InvalidValueException("Filename cannot be duplicate!");
+                throw new InsertFailureException("Filename cannot be duplicate!");
             }
         }
         this.routines.add(routine);
     }
     
-    public ScriptFile getRoutine(String filename) throws IdNotFoundException {
+    public ScriptFile getRoutine(String filename) throws NotFoundException {
         for(ScriptFile item : this.routines) {
             if(item.getName().equals(filename)) {
                 return item;
             }
         }        
-        throw new IdNotFoundException("No such filename.");
+        throw new NotFoundException("No such filename.");
     }
     
-    public void deleteRoutine(String filename) throws IdNotFoundException {
+    public void deleteRoutine(String filename) throws NotFoundException {
         for(ScriptFile item : this.routines) {
             if(item.getName().equals(filename)) {
                this.routines.remove(item);
             }
         }        
-        throw new IdNotFoundException("No such filename.");
+        throw new NotFoundException("No such filename.");
     }
 
     @Override

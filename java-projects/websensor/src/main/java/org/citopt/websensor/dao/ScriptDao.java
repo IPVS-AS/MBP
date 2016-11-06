@@ -4,7 +4,7 @@ import java.util.List;
 import org.bson.types.ObjectId;
 import org.citopt.websensor.domain.Script;
 import org.citopt.websensor.repository.ScriptRepository;
-import org.citopt.websensor.web.exception.IdNotFoundException;
+import org.citopt.websensor.web.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,10 +14,10 @@ public class ScriptDao {
     @Autowired
     private ScriptRepository repository;
     
-    public Script find(ObjectId id) throws IdNotFoundException {
+    public Script find(ObjectId id) throws NotFoundException {
         Script result = repository.findOne(id.toString());
         if(result == null) {
-            throw new IdNotFoundException();
+            throw new NotFoundException();
         }
         return result;
     }

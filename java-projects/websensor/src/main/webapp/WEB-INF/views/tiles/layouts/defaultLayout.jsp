@@ -5,9 +5,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="tiles"%>
 
-<tiles:importAttribute name="javascripts"/>
-<tiles:importAttribute name="stylesheets"/>
-
 <!DOCTYPE html>
 <html> 
     <head>
@@ -15,10 +12,18 @@
         <title><tiles:getAsString name="title" /></title>
 
         <!-- stylesheets -->
-        <c:forEach var="css" items="${stylesheets}">
+        <tiles:importAttribute name="globalcss"/>
+        <c:forEach var="css" items="${globalcss}">
             <link rel="stylesheet" type="text/css" href="<c:url value="${css}"/>">
         </c:forEach>
         <!-- end stylesheets -->
+        
+        <!-- scripts -->
+        <tiles:importAttribute name="topglobaljs"/>
+        <c:forEach var="script" items="${topglobaljs}">
+            <script src="<c:url value="${script}"/>"></script>
+        </c:forEach>
+        <!-- end scripts -->
 
         <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -61,9 +66,7 @@
                                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                     </button>
-
                                     <c:out value="${msgError}" />
-
                                 </div>
                             </c:if>
                             <tiles:insertAttribute name="body" />
@@ -78,7 +81,8 @@
         </footer>
 
         <!-- scripts -->
-        <c:forEach var="script" items="${javascripts}">
+        <tiles:importAttribute name="bottomglobaljs"/>
+        <c:forEach var="script" items="${bottomglobaljs}">
             <script src="<c:url value="${script}"/>"></script>
         </c:forEach>
         <!-- end scripts -->

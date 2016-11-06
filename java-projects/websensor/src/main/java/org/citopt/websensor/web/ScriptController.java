@@ -12,8 +12,8 @@ import org.bson.types.ObjectId;
 import org.citopt.websensor.dao.ScriptDao;
 import org.citopt.websensor.domain.Script;
 import org.citopt.websensor.domain.ScriptFile;
-import org.citopt.websensor.web.exception.IdNotFoundException;
-import org.citopt.websensor.web.exception.InvalidValueException;
+import org.citopt.websensor.web.exception.NotFoundException;
+import org.citopt.websensor.dao.InsertFailureException;
 import org.citopt.websensor.web.file.FileValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -78,7 +78,7 @@ public class ScriptController {
     public String getScriptID(
             @PathVariable("id") ObjectId id,
             Map<String, Object> model)
-            throws IdNotFoundException {
+            throws NotFoundException {
         Script script = scriptDao.find(id);
         model.put("script", script);
         model.put("scriptForm", script);
@@ -121,7 +121,7 @@ public class ScriptController {
     public String getService(
             @PathVariable("id") ObjectId id,
             ModelMap model)
-            throws IdNotFoundException {
+            throws NotFoundException {
         Script script = scriptDao.find(id);
 
         model.put("uriId", getUriScriptId(servletContext, id));
@@ -141,7 +141,7 @@ public class ScriptController {
             @Valid FileBucket fileBucket,
             BindingResult result,
             RedirectAttributes redirectAttrs)
-            throws IdNotFoundException {
+            throws NotFoundException {
         if (result.hasErrors()) {
             redirectAttrs.addFlashAttribute("msgError", "Failed to save service!");
         } else {
@@ -169,7 +169,7 @@ public class ScriptController {
     public String deleteService(
             @PathVariable("id") ObjectId id,
             RedirectAttributes redirectAttrs)
-            throws IdNotFoundException {
+            throws NotFoundException {
         Script script = scriptDao.find(id);
 
         script.setService(null);
@@ -186,7 +186,7 @@ public class ScriptController {
             @PathVariable("id") ObjectId id,
             @PathVariable("filename") String filename,
             ModelMap model)
-            throws IdNotFoundException {
+            throws NotFoundException {
         Script script = scriptDao.find(id);
         ScriptFile file = script.getRoutine(filename);
 
@@ -208,7 +208,7 @@ public class ScriptController {
             @Valid FileBucket fileBucket,
             BindingResult result,
             RedirectAttributes redirectAttrs)
-            throws IdNotFoundException, InvalidValueException {
+            throws NotFoundException, InsertFailureException {
         if (result.hasErrors()) {
             redirectAttrs.addFlashAttribute("msgError", "Failed to save routine!");
         } else {
@@ -237,7 +237,7 @@ public class ScriptController {
             @PathVariable("id") ObjectId id,
             @PathVariable("filename") String filename,
             RedirectAttributes redirectAttrs)
-            throws IdNotFoundException {
+            throws NotFoundException {
         Script script = scriptDao.find(id);
 
         script.deleteRoutine(filename);

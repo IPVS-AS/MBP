@@ -1,9 +1,11 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<%@ taglib uri="http://tiles.apache.org/tags-tiles" prefix="tiles"%>
 
 <h1>Welcome!</h1>
 
-<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+<div class="panel-group" id="accordion" 
+     role="tablist" aria-multiselectable="true">
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
@@ -16,42 +18,8 @@
         <!-- /.panel-heading -->
         <div id="collapseOne" class="panel-collapse collapse in">
             <div class="panel-body">
-                <table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-index">
-                    <thead>
-                        <tr>
-                            <th>Sensor</th>
-                            <th>Value (dynamic link to raw message)</th>
-                            <th>Topic</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:forEach var="logEntry" items="${logTable}">
-                            <tr>
-                                <td>
-                                    <a href="
-                                       <c:out value="${uriSensor}"/>/<c:out value="${logEntry.sensorId}"/>
-                                       ">
-                                        <c:out value="${logEntry.sensorName}" default="${logEntry.sensorId}" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <a href="
-                                       <c:out value="${uriMessage}"/>/<c:out value="${logEntry.id}"/>
-                                       ">
-                                        <c:out value="${logEntry.value}" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <c:out value="${logEntry.topic}" />
-                                </td>
-                                <td>
-                                    <c:out value="${logEntry.date}"/>
-                                </td>
-                            </tr>
-                        </c:forEach>
-                    </tbody>
-                </table>
+                <div id="mqtt-table-container">                    
+                </div>
             </div>
             <!-- /.panel-body -->
         </div>
@@ -60,11 +28,11 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             <h4 class="panel-title">
-                <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">ARP Table</a>   
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">ARP Table</a>   
             </h4>
         </div>
         <!-- /.panel-heading -->
-        <div id="collapseThree" class="panel-collapse collapse">
+        <div id="collapseTwo" class="panel-collapse collapse">
             <div class="panel-body">
                 <table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-arp">
                     <thead>
@@ -95,3 +63,26 @@
     </div>
     <!-- /.panel -->
 </div>
+
+<script>
+    function loadtable() {
+        $.ajax({url: "<c:url value="/mqtt" />",
+            success: function (result) {
+                $("#mqtt-table-container").html(result);
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert("Status: " + textStatus);
+                alert("Error: " + errorThrown);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        loadtable();
+    });
+
+    setInterval(function () {
+        loadtable(); // this will run after every 5 seconds
+    }, 5000);
+
+</script>

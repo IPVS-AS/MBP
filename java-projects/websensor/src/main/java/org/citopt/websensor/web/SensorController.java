@@ -15,7 +15,8 @@ import org.citopt.websensor.domain.Sensor;
 import org.citopt.websensor.service.Heartbeat;
 import org.citopt.websensor.service.HeartbeatResult;
 import org.citopt.websensor.service.SSHDeployer;
-import org.citopt.websensor.web.exception.IdNotFoundException;
+import org.citopt.websensor.dao.InsertFailureException;
+import org.citopt.websensor.web.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -77,9 +78,9 @@ public class SensorController {
     @RequestMapping(method = RequestMethod.POST)
     public String postSensor(
             @ModelAttribute("sensorForm") Sensor sensor,
-            RedirectAttributes redirectAttrs) {
+            RedirectAttributes redirectAttrs) throws InsertFailureException {
         sensor = sensorDao.insert(sensor);
-
+        System.out.println("EXCEPTION NOT THROWN");
         redirectAttrs.addAttribute("id", sensor.getId())
                 .addFlashAttribute("msgSuccess", "Sensor registered!");
         return "redirect:/sensor/{id}";
@@ -89,7 +90,7 @@ public class SensorController {
     public String getSensorID(
             @PathVariable("id") ObjectId id,
             Map<String, Object> model) 
-            throws ParseException, IdNotFoundException, IOException {
+            throws ParseException, NotFoundException, IOException {
         Sensor sensor = sensorDao.find(id);
         model.put("sensor", sensor);
         model.put("sensorForm", sensor);
@@ -147,7 +148,7 @@ public class SensorController {
             @PathVariable("id") ObjectId id,
             HttpServletRequest request,
             RedirectAttributes redirectAttrs) 
-            throws ParseException, IOException, IdNotFoundException {
+            throws ParseException, IOException, NotFoundException {
         String pinset = request.getParameter("pinset");
         Sensor sensor = sensorDao.find(id);
         Device device = deviceDao.find(sensor.getDevice().getId());
@@ -176,7 +177,7 @@ public class SensorController {
             @PathVariable("id") ObjectId id,
             HttpServletRequest request,
             RedirectAttributes redirectAttrs) 
-            throws ParseException, IOException, IdNotFoundException {
+            throws ParseException, IOException, NotFoundException {
         String pinset = request.getParameter("pinset");
         Sensor sensor = sensorDao.find(id);
         HeartbeatResult hb = heartbeat.getResult(sensor.getDevice().getId().toString());
