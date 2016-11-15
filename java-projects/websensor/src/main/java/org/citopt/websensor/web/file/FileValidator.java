@@ -15,10 +15,15 @@ public class FileValidator implements Validator {
     @Override
     public void validate(Object obj, Errors errors) {
         FileBucket file = (FileBucket) obj;
-        
-        errors.rejectValue("file", "missing.file");
-        if (file.getFile() == null || file.getFile().getSize() == 0) {
-            errors.rejectValue("file", "missing.file");
+
+        validate(file, errors);
+    }
+    
+    public void validate(FileBucket file, Errors errors) {
+        if (file == null
+                || file.getFile() == null
+                || file.getFile().isEmpty()) {
+            errors.rejectValue("file", "missing.file", "File cannot be empty");
         }
     }
 }

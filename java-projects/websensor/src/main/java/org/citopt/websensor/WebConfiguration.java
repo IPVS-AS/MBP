@@ -24,7 +24,8 @@ import org.springframework.web.servlet.view.tiles3.TilesViewResolver;
 @Configuration
 @ComponentScan({"org.citopt.websensor.web",
     "org.citopt.websensor.web.converter",
-    "org.citopt.websensor.web.exception"})
+    "org.citopt.websensor.web.exception",
+    "org.citopt.websensor.web.file"})
 @EnableWebMvc
 public class WebConfiguration extends WebMvcConfigurerAdapter {
 

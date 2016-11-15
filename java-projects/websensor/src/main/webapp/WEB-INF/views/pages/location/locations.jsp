@@ -59,6 +59,7 @@
                         <div class="form-group" id="location-form-description">
                             <form:label path="description">Description</form:label>
                             <form:textarea path="description" rows="3" cols="20" class="form-control" />
+                            <form:errors path="description" />
                         </div>
                         <input type="submit" value="Register" class="btn btn-default" />
                     </form:form>

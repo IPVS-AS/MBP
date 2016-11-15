@@ -2,6 +2,8 @@ package org.citopt.websensor.domain;
 
 import java.util.Objects;
 import javax.persistence.GeneratedValue;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceConstructor;
@@ -15,6 +17,8 @@ public class Location {
     @GeneratedValue
     private ObjectId id;
 
+    @NotNull
+    @Size(min = 2, max=32)
     @Indexed(unique = true)
     private String name;
 

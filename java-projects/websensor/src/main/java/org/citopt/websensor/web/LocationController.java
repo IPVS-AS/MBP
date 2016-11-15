@@ -2,12 +2,14 @@ package org.citopt.websensor.web;
 
 import java.util.Map;
 import javax.servlet.ServletContext;
+import javax.validation.Valid;
 import org.bson.types.ObjectId;
 import org.citopt.websensor.dao.LocationDao;
 import org.citopt.websensor.domain.Location;
 import org.citopt.websensor.web.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,8 +49,13 @@ public class LocationController {
     
     @RequestMapping(method = RequestMethod.POST)
     public String postLocation(
-            @ModelAttribute("locationForm") Location location,
-            RedirectAttributes redirectAttrs) {
+            @ModelAttribute("locationForm") @Valid Location location,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttrs) {        
+        if (bindingResult.hasErrors()) {
+            return "location";
+        }
+        
         location = locationDao.insert(location);
 
         redirectAttrs.addAttribute("id", location.getId())

@@ -53,11 +53,6 @@ public class ScriptController {
                 + "/" + id.toString();
     }
 
-    @InitBinder
-    public void initBinder(final DataBinder binder) {
-        binder.setValidator(new FileValidator());
-    }
-
     @RequestMapping(method = RequestMethod.GET)
     public String getScripts(Map<String, Object> model) {
         Script scriptForm = new Script();
@@ -149,6 +144,8 @@ public class ScriptController {
             BindingResult result,
             RedirectAttributes redirectAttrs)
             throws NotFoundException {
+        fileValidator.validate(fileBucket, result);
+
         if (result.hasErrors()) {
             redirectAttrs.addFlashAttribute("msgError", "Failed to save service!");
         } else {
@@ -214,6 +211,7 @@ public class ScriptController {
             BindingResult result,
             RedirectAttributes redirectAttrs)
             throws NotFoundException, InsertFailureException {
+        fileValidator.validate(fileBucket, result);
         if (result.hasErrors()) {
             redirectAttrs.addFlashAttribute("msgError", "Failed to save routine!");
         } else {
