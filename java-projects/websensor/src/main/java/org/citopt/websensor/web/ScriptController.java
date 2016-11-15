@@ -14,13 +14,12 @@ import org.citopt.websensor.domain.Script;
 import org.citopt.websensor.domain.ScriptFile;
 import org.citopt.websensor.web.exception.NotFoundException;
 import org.citopt.websensor.dao.InsertFailureException;
+import org.citopt.websensor.domain.validator.ScriptValidator;
 import org.citopt.websensor.web.file.FileValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.DataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +33,9 @@ public class ScriptController {
 
     @Autowired
     private ScriptDao scriptDao;
+
+    @Autowired
+    private ScriptValidator scriptValidator;
 
     @Autowired
     private ServletContext servletContext;
@@ -56,10 +58,10 @@ public class ScriptController {
     @RequestMapping(method = RequestMethod.GET)
     public String getScripts(Map<String, Object> model) {
         Script scriptForm = new Script();
-        model.put("scriptForm", scriptForm);
-
+        if (!model.containsKey("scriptForm")) {
+            model.put("scriptForm", scriptForm);
+        }
         model.put("scripts", scriptDao.findAll());
-
         model.put("uriScript", getUriScript(servletContext));
 
         return "script";
@@ -67,10 +69,19 @@ public class ScriptController {
 
     @RequestMapping(method = RequestMethod.POST)
     public String postScript(
-            @ModelAttribute("scriptForm") Script script,
+            @Valid @ModelAttribute("scriptForm") Script script,
+            BindingResult result,
             RedirectAttributes redirectAttrs) {
-        script = scriptDao.insert(script);
+        scriptValidator.validate(script, result);
+        if (result.hasErrors()) {
+            redirectAttrs.addAttribute("id", script.getId())
+                    .addFlashAttribute("msgError", "Couldn't save! Check form for errors.")
+                    .addFlashAttribute("org.springframework.validation.BindingResult.scriptForm", result)
+                    .addFlashAttribute("scriptForm", script);
+            return "redirect:/script";
+        }
 
+        script = scriptDao.insert(script);
         redirectAttrs.addAttribute("id", script.getId())
                 .addFlashAttribute("msgSuccess", "Script registered!");
         return "redirect:/script/{id}";
@@ -83,7 +94,9 @@ public class ScriptController {
             throws NotFoundException {
         Script script = scriptDao.find(id);
         model.put("script", script);
-        model.put("scriptForm", script);
+        if (!model.containsKey("scriptForm")) {
+            model.put("scriptForm", script);
+        }
 
         FileBucket fileBucket = new FileBucket();
         model.put("fileBucket", fileBucket);
@@ -99,10 +112,22 @@ public class ScriptController {
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public String putScriptID(
-            @ModelAttribute("scriptForm") Script script,
+            Map<String, Object> model,
+            @Valid @ModelAttribute("scriptForm") Script script,
+            BindingResult result,
             RedirectAttributes redirectAttrs) {
-        scriptDao.save(script);
+        scriptValidator.validate(script, result);
+        if (result.hasErrors()) {
+            System.out.println(result.getAllErrors());
+            redirectAttrs.addAttribute("id", script.getId())
+                    .addFlashAttribute("msgError", "Couldn't save! Check form for errors.")
+                    .addFlashAttribute("org.springframework.validation.BindingResult.scriptForm", result)
+                    .addFlashAttribute("scriptForm", script)
+                    .addFlashAttribute("showForm", true);
+            return "redirect:/script/{id}";
+        }
 
+        scriptDao.save(script);
         redirectAttrs.addAttribute("id", script.getId())
                 .addFlashAttribute("msgSuccess", "Saved succesfully!");
         return "redirect:/script/{id}";

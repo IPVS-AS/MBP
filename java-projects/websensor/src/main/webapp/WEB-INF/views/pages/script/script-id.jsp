@@ -1,5 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
+
 <div class="row">
     <div class="col-lg-6">
         <div class="row">
@@ -45,12 +47,19 @@
                     <form:form action="${uriId}" method="PUT" modelAttribute="scriptForm">
                         <form:hidden path="id" />
                         <tr>
-                            <th>Name</th>
-                            <td>
-                                <div class="form-group" id="script-form-name">
-                                    <form:input path="name"  type="text" class="form-control" />
-                                </div>
-                            </td>
+                            <spring:bind path="name">
+                                <th>
+                                    <form:label path="name">
+                                        Name
+                                    </form:label>
+                                </th>
+                                <td>
+                                    <div class="form-group ${status.error ? 'has-error' : ''}" id="script-form-name">
+                                        <form:input path="name"  type="text" class="form-control" />
+                                        <form:errors path="name" cssClass="text-danger" />
+                                    </div>
+                                </td>
+                            </spring:bind>
                         </tr>
                         <tr>
                             <th>Description</th>
@@ -74,6 +83,8 @@
                     </form:form>
                 </table>
             </div>
+        </div>
+        <div class="row">
             <div class="col-lg-6">
                 <h3>Service</h3>
                 <table width="100%" class="table">
@@ -81,9 +92,11 @@
                         <c:when test="${script.service == null or empty script.service}">
                             <form:form action="${uriService}" enctype="multipart/form-data" method="POST" modelAttribute="fileBucket"> 
                                 <tr>
-                                    <td>
+                                    <td class="vert-align">
                                         <div class="form-group" id="script-form-description">
-                                            <input type="file" id="file" name="file" />
+                                            <label class="btn btn-default btn-file">
+                                                Choose File <input type="file" id="file" name="file" style="display: none;">
+                                            </label>
                                         </div>
                                     </td>
                                     <td>
@@ -113,7 +126,6 @@
                             </tr>
                         </c:otherwise>
                     </c:choose>
-
                 </table>
             </div>
             <div class="col-lg-6">
@@ -121,9 +133,11 @@
                 <table width="100%" class="table">                    
                     <form:form action="${uriRoutine}" enctype="multipart/form-data" method="POST" modelAttribute="fileBucket">       
                         <tr>
-                            <td>
+                            <td class="vert-align">
                                 <div class="form-group" id="script-form-description">
-                                    <input type="file" id="file" name="file" />
+                                    <label class="btn btn-default btn-file">
+                                        Choose File <input type="file" id="file" name="file"  style="display: none;" />
+                                    </label>
                                 </div>
                             </td>
                             <td> 
@@ -176,3 +190,10 @@
     <!-- /.col-lg-6 -->
 </div>
 <!-- /.row -->
+
+<script>
+    <c:if test="${showForm}">
+        $("#hidden").removeClass('hidden');
+        $("#shown").addClass('hidden');
+    </c:if>
+</script>

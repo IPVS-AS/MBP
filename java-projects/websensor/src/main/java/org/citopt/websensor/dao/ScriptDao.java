@@ -21,6 +21,10 @@ public class ScriptDao {
         }
         return result;
     }
+    
+    public Script findByName(String name) {
+        return repository.findByName(name);
+    }
 
     public List<Script> findAll() {
         return repository.findAll();

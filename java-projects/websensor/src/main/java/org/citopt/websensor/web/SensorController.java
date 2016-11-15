@@ -3,6 +3,8 @@ package org.citopt.websensor.web;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import org.bson.types.ObjectId;
@@ -46,16 +48,16 @@ public class SensorController {
 
     @Autowired
     private ServletContext servletContext;
-    
+
     public static String URI_DEPLOY = "/deploy";
     private static String MQTTURL = "192.168.43.124";
-    
+
     public static String getUriSensor(ServletContext servletContext) {
         return servletContext.getContextPath() + "/sensor";
     }
-    
+
     public String getUriSensorId(ServletContext servletContext, ObjectId id) {
-        return getUriSensor(servletContext) 
+        return getUriSensor(servletContext)
                 + "/" + id.toString();
     }
 
@@ -67,7 +69,7 @@ public class SensorController {
         model.put("sensors", sensorDao.findAll());
         model.put("devices", deviceDao.findAll());
         model.put("scripts", scriptDao.findAll());
-        
+
         model.put("uriSensor", getUriSensor(servletContext));
         model.put("uriDevice", DeviceController.getUriDevice(servletContext));
         model.put("uriScript", ScriptController.getUriScript(servletContext));
@@ -78,18 +80,23 @@ public class SensorController {
     @RequestMapping(method = RequestMethod.POST)
     public String postSensor(
             @ModelAttribute("sensorForm") Sensor sensor,
-            RedirectAttributes redirectAttrs) throws InsertFailureException {
-        sensor = sensorDao.insert(sensor);
-        System.out.println("EXCEPTION NOT THROWN");
-        redirectAttrs.addAttribute("id", sensor.getId())
-                .addFlashAttribute("msgSuccess", "Sensor registered!");
-        return "redirect:/sensor/{id}";
+            RedirectAttributes redirectAttrs) {
+        try {
+            sensor = sensorDao.insert(sensor);
+            redirectAttrs.addAttribute("id", sensor.getId())
+                    .addFlashAttribute("msgSuccess", "Sensor registered!");
+            return "redirect:/sensor/{id}";
+        } catch (InsertFailureException ex) {
+            redirectAttrs.addAttribute("id", sensor.getId())
+                    .addFlashAttribute("msgError", "Failed to register!");
+            return "redirect:/sensor";
+        }
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public String getSensorID(
             @PathVariable("id") ObjectId id,
-            Map<String, Object> model) 
+            Map<String, Object> model)
             throws ParseException, NotFoundException, IOException {
         Sensor sensor = sensorDao.find(id);
         model.put("sensor", sensor);
@@ -104,14 +111,14 @@ public class SensorController {
         model.put("uriDevice", DeviceController.getUriDevice(servletContext));
         model.put("uriScript", ScriptController.getUriScript(servletContext));
 
-        boolean hasHb = 
-                heartbeat.isRegistered(sensor.getDevice().getId().toString());
+        boolean hasHb
+                = heartbeat.isRegistered(sensor.getDevice().getId().toString());
         model.put("hasHeartbeat", hasHb);
         if (hasHb) {
-            HeartbeatResult hb 
+            HeartbeatResult hb
                     = heartbeat.getResult(sensor.getDevice().getId().toString());
             model.put("heartbeatResult", hb);
-            if(HeartbeatResult.Status.REACHABLE.equals(hb.getStatus())) {
+            if (HeartbeatResult.Status.REACHABLE.equals(hb.getStatus())) {
                 boolean running = sshDeployer.isRunning(sensor, hb.getIp(), 22, "pi",
                         SSHDeployer.key);
                 model.put("isRunning", running);
@@ -147,7 +154,7 @@ public class SensorController {
     public String postSensorIDDeploy(
             @PathVariable("id") ObjectId id,
             HttpServletRequest request,
-            RedirectAttributes redirectAttrs) 
+            RedirectAttributes redirectAttrs)
             throws ParseException, IOException, NotFoundException {
         String pinset = request.getParameter("pinset");
         Sensor sensor = sensorDao.find(id);
@@ -171,12 +178,12 @@ public class SensorController {
         redirectAttrs.addAttribute("id", sensor.getId());
         return "redirect:/sensor/{id}";
     }
-    
+
     @RequestMapping(value = "/{id}/deploy", method = RequestMethod.DELETE)
     public String deleteSensorIDDeploy(
             @PathVariable("id") ObjectId id,
             HttpServletRequest request,
-            RedirectAttributes redirectAttrs) 
+            RedirectAttributes redirectAttrs)
             throws ParseException, IOException, NotFoundException {
         String pinset = request.getParameter("pinset");
         Sensor sensor = sensorDao.find(id);
@@ -196,6 +203,6 @@ public class SensorController {
 
         redirectAttrs.addAttribute("id", sensor.getId());
         return "redirect:/sensor/{id}";
-    }    
+    }
 
 }

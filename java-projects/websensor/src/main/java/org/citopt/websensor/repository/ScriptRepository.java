@@ -6,5 +6,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface ScriptRepository extends MongoRepository<Script, String> {
 
-    public Location findByName(String name);
+    public Script findByName(String name);
 }

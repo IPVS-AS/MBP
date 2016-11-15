@@ -34,10 +34,12 @@
             <add-attribute value="/static/vendor/bootstrap/css/bootstrap.min.css" />
             <!-- MetisMenu CSS -->
             <add-attribute value="/static/vendor/metisMenu/metisMenu.min.css" />
-            <!-- Custom CSS -->
+            <!-- Template CSS -->
             <add-attribute value="/static/dist/css/sb-admin-2.css" />
             <!-- Custom Fonts -->
             <add-attribute value="/static/vendor/font-awesome/css/font-awesome.min.css" />
+            <!-- Custom CSS -->
+            <add-attribute value="/static/dist/css/custom.css" />
         </put-list-attribute>
         
     </definition>
@@ -104,13 +106,13 @@
     
     <!-- Script Main Page -->
     <definition name="script" extends="default-definition">  
-        <put-attribute name="title" value="Locations" />  
+        <put-attribute name="title" value="Scripts" />  
         <put-attribute name="body" value="/WEB-INF/views/pages/script/scripts.jsp" />  
     </definition>
     
     <!-- Script Element Page -->
     <definition name="script/id" extends="default-definition">
-        <put-attribute name="title" value="Location" />
+        <put-attribute name="title" value="Script" />
         <put-attribute name="body" value="/WEB-INF/views/pages/script/script-id.jsp" />  
     </definition>
     
