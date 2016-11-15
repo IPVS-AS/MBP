@@ -5,6 +5,7 @@
     <!-- Base Definition -->
     <definition name="base-definition">
         <put-attribute name="title" value="Title" />
+        <put-attribute name="image-folder" value="/resources/image/" cascade="true" />
        
         <put-attribute name="table-settings" cascade="true"
                        value="/static/dist/js/table-settings.js" />

@@ -19,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.DataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,6 +51,11 @@ public class ScriptController {
     public String getUriScriptId(ServletContext servletContext, ObjectId id) {
         return getUriScript(servletContext)
                 + "/" + id.toString();
+    }
+
+    @InitBinder
+    public void initBinder(final DataBinder binder) {
+        binder.setValidator(new FileValidator());
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -115,7 +122,7 @@ public class ScriptController {
         redirectAttrs.addFlashAttribute("msgSuccess", "Script deleted!");
         return "redirect:/script";
     }
-    
+
     // SERVICE PART    
     @RequestMapping(value = "/{id}/service", method = RequestMethod.GET)
     public String getService(
@@ -145,7 +152,6 @@ public class ScriptController {
         if (result.hasErrors()) {
             redirectAttrs.addFlashAttribute("msgError", "Failed to save service!");
         } else {
-
             MultipartFile file = fileBucket.getFile();
             Script script = scriptDao.find(id);
 
@@ -179,9 +185,9 @@ public class ScriptController {
                 .addFlashAttribute("msgSuccess", "Removed service succesfully!");
         return "redirect:/script/{id}";
     }
-    
+
     // ROUTINE PART
-    @RequestMapping(value = "/{id}/routine/{filename}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{id}/routine/{filename:.+}", method = RequestMethod.GET)
     public String getRoutine(
             @PathVariable("id") ObjectId id,
             @PathVariable("filename") String filename,
@@ -200,7 +206,6 @@ public class ScriptController {
 
         return "script/id/file/raw";
     }
-
 
     @RequestMapping(value = "/{id}/routine", method = RequestMethod.POST)
     public String postRoutine(
@@ -232,7 +237,7 @@ public class ScriptController {
         return "redirect:/script/{id}";
     }
 
-    @RequestMapping(value = "/{id}/routine/{filename}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{id}/routine/{filename:.+}", method = RequestMethod.DELETE)
     public String deleteRoutine(
             @PathVariable("id") ObjectId id,
             @PathVariable("filename") String filename,

@@ -18,6 +18,11 @@
         <!-- /.panel-heading -->
         <div id="collapseOne" class="panel-collapse collapse in">
             <div class="panel-body">
+                <div id="mqtt-table-loader">
+                    <img src="
+                         <c:url value="/resources/image/ajax-loader.gif" />
+                         " />
+                </div>
                 <div id="mqtt-table-container">                    
                 </div>
             </div>
@@ -65,14 +70,24 @@
 </div>
 
 <script>
+    $(document)
+            .ajaxStart(function () {
+                $("#mqtt-table-loader").show();
+                $("#mqtt-table-container").hide();
+            })
+            .ajaxStop(function () {
+                $("#mqtt-table-loader").hide();
+                $("#mqtt-table-container").show();
+                $(this).unbind("ajaxStart");
+            });
+
     function loadtable() {
         $.ajax({url: "<c:url value="/mqtt" />",
             success: function (result) {
                 $("#mqtt-table-container").html(result);
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
-                alert("Status: " + textStatus);
-                alert("Error: " + errorThrown);
+                $("#mqtt-table-container").html("Couldn't load table.");
             }
         });
     }

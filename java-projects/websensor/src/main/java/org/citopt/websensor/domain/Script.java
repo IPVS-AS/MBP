@@ -100,8 +100,10 @@ public class Script {
     
     public void deleteRoutine(String filename) throws NotFoundException {
         for(ScriptFile item : this.routines) {
+            System.out.println(item.getName());
             if(item.getName().equals(filename)) {
                this.routines.remove(item);
+               return;
             }
         }        
         throw new NotFoundException("No such filename.");

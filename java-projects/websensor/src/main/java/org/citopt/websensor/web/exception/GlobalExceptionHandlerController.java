@@ -3,7 +3,6 @@ package org.citopt.websensor.web.exception;
 import javax.servlet.http.HttpServletRequest;
 import org.citopt.websensor.dao.InsertFailureException;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -20,6 +19,13 @@ public class GlobalExceptionHandlerController {
     public String insertFailure() {
         return "error/400";
     }
+    
+    /*@ResponseStatus(value = HttpStatus.BAD_REQUEST,
+            reason = "Bad request")  // 400*/    
+    @ExceptionHandler(BadRequestException.class)
+    public String badRequest() {
+        return "error/400";
+    }
 
     /*@ResponseStatus(value = HttpStatus.NOT_FOUND,
             reason = "Requested id not found")  // 404*/
@@ -28,13 +34,6 @@ public class GlobalExceptionHandlerController {
         return "error/404";
     }
     
-    /*@ResponseStatus(value = HttpStatus.BAD_REQUEST,
-            reason = "Bad request")  // 400*/
-    @ExceptionHandler(BadRequestException.class)
-    public String badRequest() {
-        return "error/400";
-    }
-
     @ExceptionHandler(value = Exception.class)
     public ModelAndView
             defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
