@@ -18,6 +18,19 @@
         <!-- /.panel-heading -->
         <div id="collapseOne" class="panel-collapse collapse in">
             <div class="panel-body">
+                <button type="button" class="btn btn-primary btn-sm"
+                        id="mqtt-table-refresh-button">
+                    Refresh table
+                </button>
+                |
+                <label>
+                    Autorefresh table 
+                </label>
+                <div class="bootstrap-switch bootstrap-switch-mini">
+                    <input type="checkbox" id="mqtt-table-refresh-switch"
+                           name="mqtt-table-refresh-switch" checked />
+                </div>
+                <hr>
                 <div id="mqtt-table-loader">
                     <img src="
                          <c:url value="/resources/image/ajax-loader.gif" />
@@ -70,6 +83,22 @@
 </div>
 
 <script>
+    function loadtable() {
+        $.ajax({url: "<c:url value="/mqtt" />",
+            success: function (result) {
+                $("#mqtt-table-container").html(result);
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $("#mqtt-table-container").html("Couldn't load table.");
+            }
+        });
+    }
+    
+    $("#mqtt-table-refresh-button")
+            .click(function () {
+                loadtable();
+            });
+
     $(document)
             .ajaxStart(function () {
                 $("#mqtt-table-loader").show();
@@ -81,23 +110,23 @@
                 $(this).unbind("ajaxStart");
             });
 
-    function loadtable() {
-        $.ajax({url: "<c:url value="/mqtt" />",
-            success: function (result) {
-                $("#mqtt-table-container").html(result);
-            },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                $("#mqtt-table-container").html("Couldn't load table.");
-            }
-        });
-    }
-
+    var refreshIntervalId;
     $(document).ready(function () {
         loadtable();
-    });
+        refreshIntervalId = setInterval(function () {
+            loadtable(); // this will run after every 5 seconds
+        }, 5000);
 
-    setInterval(function () {
-        loadtable(); // this will run after every 5 seconds
-    }, 5000);
+        $("input[name='mqtt-table-refresh-switch']").bootstrapSwitch();
+    });    
 
+    $("input[name='mqtt-table-refresh-switch']")
+            .on('switchChange.bootstrapSwitch', function (event, state) {
+                if (state === true)
+                    refreshIntervalId = setInterval(function () {
+                        loadtable(); // this will run after every 5 seconds
+                    }, 5000);
+                else
+                    clearInterval(refreshIntervalId);
+            });
 </script>

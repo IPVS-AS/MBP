@@ -175,7 +175,6 @@
                                                 <i class="fa fa-trash-o"></i>
                                             </button>
                                         </form:form>
-
                                     </td>
                                 </tr>
                             </c:forEach>

@@ -19,6 +19,8 @@
         <put-list-attribute name="bottomglobaljs">            
             <!-- Bootstrap Core JavaScript -->
             <add-attribute value="/static/vendor/bootstrap/js/bootstrap.min.js" />
+            <!-- Bootstrap Switch JavaScript -->
+            <add-attribute value="/static/vendor/bootstrap-switch/js/bootstrap-switch.min.js" />
             <!-- Metis Menu Plugin JavaScript -->
             <add-attribute value="/static/vendor/metisMenu/metisMenu.min.js" />
             <!-- Custom Theme JavaScript -->
@@ -32,6 +34,8 @@
         <put-list-attribute name="globalcss">
             <!-- Bootstrap Core CSS -->
             <add-attribute value="/static/vendor/bootstrap/css/bootstrap.min.css" />
+            <!-- Bootstrap Switch CSS -->
+            <add-attribute value="/static/vendor/bootstrap-switch/css/bootstrap-switch.min.css" />
             <!-- MetisMenu CSS -->
             <add-attribute value="/static/vendor/metisMenu/metisMenu.min.css" />
             <!-- Template CSS -->
