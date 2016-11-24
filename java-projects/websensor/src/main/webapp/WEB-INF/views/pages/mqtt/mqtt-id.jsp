@@ -15,7 +15,7 @@
             <tr>
                 <td>
                     <a href="
-                       <c:url value="/message/" /><c:out value="${logEntry.id}"/>
+                       <c:url value="/message/" /><c:out value="${mqttEntry.id}"/>
                        ">
                         <c:out value="${mqttEntry.value}" />
                     </a>

@@ -127,13 +127,14 @@
 
         <!-- Deploying -->
         <c:if test="${heartbeatResult.status eq 'REACHABLE'}">
+            <h3>Deploy</h3>
             <c:if test="${isRunning eq true}">
                 <form:form action="${uriDeploy}" method="DELETE" modelAttribute="sensorForm">
+                    <label>Already Deployed</label>
                     <button type="submit" title="Undeploy" class="btn btn-danger btn-circle btn-lg" /><i class="fa fa-power-off"></i></button>
                 </form:form>
             </c:if>
             <c:if test="${isRunning eq false}">
-                <h3>Deploying</h3>
                 <form action="${uriDeploy}" method="POST"  class="form-inline">
                     <div class="form-group">
                         <label>Pinset</label>

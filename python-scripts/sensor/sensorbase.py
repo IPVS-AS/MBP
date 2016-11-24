@@ -59,7 +59,7 @@ class SensorBase:
             while (True):    
                 value = self._getSensorValue()
                 self._notify_observers(value)
-                time.sleep(self._sleeptime)
+                time.sleep(float(self._sleeptime))
             self._client.loop_stop()
         elif (self._actuator):
             self._client.loop_start()

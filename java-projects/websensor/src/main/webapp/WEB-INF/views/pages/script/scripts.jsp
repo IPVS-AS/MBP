@@ -15,10 +15,28 @@
 
 <hr>
 
-<div class="row">    
+<div class="row">
+    <div class="col-lg-6">
+        <h3>Register Script</h3>
+        <form:form action="${uriScript}" method="POST" modelAttribute="scriptForm">
+            <spring:bind path="name">
+                <div class="form-group ${status.error ? 'has-error' : ''}" id="script-form-name">
+                    <form:label path="name">Name</form:label>
+                    <form:input path="name" type="text" cssClass="form-control" required="required"/>
+                    <form:errors path="name" cssClass="text-danger" />
+                </div>
+            </spring:bind>
+            <div class="form-group" id="script-form-description">
+                <form:label path="description">Description</form:label>
+                <form:textarea path="description" rows="3" cols="20" class="form-control" />
+            </div>                        
+            <input type="submit" value="Register" class="btn btn-default" />
+        </form:form>
+    </div>
+    <!-- /.col-lg-6 -->    
     <div class="col-lg-6">
         <h3>List of Scripts</h3>
-        <table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-script">
+        <table width="100%" class="table table-striped table-bordered table-hover" id="script-table">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -42,22 +60,14 @@
         <!-- /.table-responsive -->
     </div>
     <!-- /.col-lg-6 -->
-    <div class="col-lg-6">
-        <h3>Register Script</h3>
-        <form:form action="${uriScript}" method="POST" modelAttribute="scriptForm">
-            <spring:bind path="name">
-                <div class="form-group ${status.error ? 'has-error' : ''}" id="script-form-name">
-                    <form:label path="name">Name</form:label>
-                    <form:input path="name" type="text" cssClass="form-control" required="required"/>
-                    <form:errors path="name" cssClass="text-danger" />
-                </div>
-            </spring:bind>
-            <div class="form-group" id="script-form-description">
-                <form:label path="description">Description</form:label>
-                <form:textarea path="description" rows="3" cols="20" class="form-control" />
-            </div>                        
-            <input type="submit" value="Register" class="btn btn-default" />
-        </form:form>
-    </div>
-    <!-- /.col-lg-6 -->
 </div>
+
+
+<script>
+    $(document).ready(function () {
+        $('#script-table').DataTable({
+            responsive: true,
+            order: [[0, 'desc']]
+        });
+    });
+</script>
