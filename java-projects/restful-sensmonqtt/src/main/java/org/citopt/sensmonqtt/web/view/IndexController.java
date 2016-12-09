@@ -1,6 +1,5 @@
 package org.citopt.sensmonqtt.web.view;
 
-import java.util.Map;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -9,12 +8,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @author rafaelkperes
  */
 @Controller
-public class ViewController {
+public class IndexController {
     
     @RequestMapping("/")
-    public String viewIndex(Map<String, Object> model) {
-        System.out.println("GET /");
+    public String viewIndex() {
         return "index";
+        //return "redirect:/welcome";
     }
     
 }

@@ -35,6 +35,10 @@ public class WebServletConfiguration
 
     private ApplicationContext applicationContext;
 
+    private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {
+        "classpath:/META-INF/resources/", "classpath:/resources/",
+        "classpath:/static/", "classpath:/public/"};
+
     @Override
     public void setApplicationContext(ApplicationContext ac)
             throws BeansException {
@@ -44,8 +48,14 @@ public class WebServletConfiguration
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         System.out.println("load addResourceHandlers");
-        registry.addResourceHandler("/resources/**")
-                .addResourceLocations("/resources/");
+        if (!registry.hasMappingForPattern("/webjars/**")) {
+            registry.addResourceHandler("/webjars/**").addResourceLocations(
+                    "classpath:/META-INF/resources/webjars/");
+        }
+        if (!registry.hasMappingForPattern("/**")) {
+            registry.addResourceHandler("/**").addResourceLocations(
+                    CLASSPATH_RESOURCE_LOCATIONS);
+        }
     }
 
     /* start Thymeleaf */
@@ -68,7 +78,7 @@ public class WebServletConfiguration
     private ITemplateResolver templateResolver() {
         SpringResourceTemplateResolver resolver = new SpringResourceTemplateResolver();
         resolver.setApplicationContext(applicationContext);
-        resolver.setPrefix("/WEB-INF/templates/");
+        resolver.setPrefix("/WEB-INF/views/");
         resolver.setSuffix(".html");
         resolver.setTemplateMode(TemplateMode.HTML);
         return resolver;
