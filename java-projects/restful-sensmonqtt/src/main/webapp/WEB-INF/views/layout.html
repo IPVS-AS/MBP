@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+
+        <base th:href="@{/}" />
+        <link id="linkApiRoot" th:href="@{/api}" />
+        
+        <!--/*  Each token will be replaced by their respective titles in the resulting page. */-->
+        <title layout:title-pattern="$DECORATOR_TITLE - $CONTENT_TITLE">Sensmonqtt</title>
+
+        <!-- Favicon-->
+        <link rel="icon" th:href="@{/images/favicon.ico}" type="image/x-icon">
+
+        <!-- Google Fonts -->
+        <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" type="text/css">
+
+        <!-- Angular Bootstrap Css -->
+        <link th:href="@{/css/angular-bootstrap.css}" rel="stylesheet" />
+
+        <!-- Waves Effect Css -->
+        <link th:href="@{/plugins/node-waves/waves.css}" rel="stylesheet" />
+
+        <!-- Animation Css -->
+        <link th:href="@{/plugins/animate-css/animate.css}" rel="stylesheet" />
+
+        <!-- Morris Chart Css-->
+        <link th:href="@{/plugins/morrisjs/morris.css}" rel="stylesheet" />
+
+        <!-- Custom Css -->
+        <link th:href="@{/css/style.css}" rel="stylesheet">
+
+        <!-- AdminBSB Themes. You can choose a theme from css/themes instead of get all themes -->
+        <link th:href="@{/css/themes/all-themes.css}" rel="stylesheet" />
+    </head>
+    <body class="theme-red">
+        <div class="container">
+            <!-- Page Loader -->
+            <!--            <div class="page-loader-wrapper">
+                            <div class="loader">
+                                <div class="preloader">
+                                    <div class="spinner-layer pl-red">
+                                        <div class="circle-clipper left">
+                                            <div class="circle"></div>
+                                        </div>
+                                        <div class="circle-clipper right">
+                                            <div class="circle"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p>Please wait...</p>
+                            </div>
+                        </div>-->
+            <!-- #END# Page Loader -->
+
+            <!-- Overlay For Sidebars -->
+            <div class="overlay"></div>
+            <!-- #END# Overlay For Sidebars -->
+
+            <!-- Search Bar -->
+            <div th:replace="fragments/search-bar :: search-bar">
+            </div>
+            <!-- #END# Search Bar -->
+
+            <!-- Top Bar -->
+            <div th:replace="fragments/top-bar :: top-bar">
+            </div>
+            <!-- #END# Top Bar -->
+
+            <section>
+                <!-- Left Sidebar -->
+                <div th:replace="fragments/left-sidebar :: left-sidebar">
+                </div>
+                <!-- #END# Left Sidebar -->
+                <!-- Right Sidebar -->
+                <div th:replace="fragments/right-sidebar :: right-sidebar">
+                </div>
+                <!-- #END# Right Sidebar -->
+
+            </section>
+
+            <section class="content">
+                <div layout:fragment="content">
+                    <!-- ============================================================================ -->
+                    <!-- This content is only used for static prototyping purposes (natural templates)-->
+                    <!-- and is therefore entirely optional, as this markup fragment will be included -->
+                    <!-- from "fragments/header.html" at runtime.                                     -->
+                    <!-- ============================================================================ -->
+                    <h1>Static content for prototyping purposes only</h1>
+                    <p>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                        Praesent scelerisque neque neque, ac elementum quam dignissim interdum.
+                        Phasellus et placerat elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                        Praesent scelerisque neque neque, ac elementum quam dignissim interdum.
+                        Phasellus et placerat elit.
+                    </p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Angular Bootstrap (includes JQuery) Js -->
+        <script th:src="@{/js/angular-bootstrap.js}" type="text/javascript"></script>
+
+        <!-- Select Plugin Js -->
+        <script th:src="@{/plugins/bootstrap-select/js/bootstrap-select.js}"></script>
+
+        <!-- Slimscroll Plugin Js -->
+        <script th:src="@{/plugins/jquery-slimscroll/jquery.slimscroll.js}"></script>
+
+        <!-- Waves Effect Plugin Js -->
+        <script th:src="@{/plugins/node-waves/waves.js}"></script>
+
+        <!-- Jquery CountTo Plugin Js -->
+        <script th:src="@{/plugins/jquery-countto/jquery.countTo.js}"></script>
+
+        <!-- Morris Plugin Js -->
+        <script th:src="@{/plugins/raphael/raphael.min.js}"></script>
+        <script th:src="@{/plugins/morrisjs/morris.js}"></script>
+
+        <!-- Sparkline Chart Plugin Js -->
+        <script th:src="@{/plugins/jquery-sparkline/jquery.sparkline.js}"></script>
+
+        <!-- Custom Js -->
+        <script th:src="@{/js/admin.js}"></script>
+
+        <div layout:fragment="content-js">
+            <!-- Specific View JS here -->
+        </div>
+    </body>
+</html>

@@ -4,18 +4,16 @@
         <base th:href="@{/}" />
         <link id="linkApiRoot" th:href="@{/api}" />
         <title>Hello AngularJS</title>
-        <link th:href="@{/css/angular-bootstrap.css}" href="css/angular-bootstrap.css" rel="stylesheet" />
-        <style type="text/css">
-            [ng\:cloak], [ng-cloak], .ng-cloak {
-                display: none !important;
-            }
-        </style>
+        <link th:href="@{/css/angular-bootstrap.css}" rel="stylesheet" />
     </head>
 
     <body ng-app="sensmonqtt">
+<!--        <div th:replace="fragments/header :: header">
+             And here comes the Header! 
+        </div>-->
         <div class="container">
             <h1>Greeting</h1>
-            <div ng-controller="home" ng-cloak class="ng-cloak">
+            <div ng-controller="greet" ng-cloak class="ng-cloak">
                 <p>The ID is {{greeting.id}}</p>
                 <p>The content is {{greeting.content}}</p>
             </div>
@@ -23,9 +21,9 @@
                 <table>
                     <tbody ng:repeat="i in locations">
                         <tr ng-class="{true: 'bg-success'}[{{i.newborn}}]">
-                            <!--<td>
+                            <td>
                                 {{$index}}
-                            </td>-->
+                            </td>
                             <td>
                                 {{i.name}}
                             </td>
@@ -36,29 +34,29 @@
                     </tbody>
                 </table>
                 <form ng-submit="processLocationForm()">
-                    <!-- NAME -->
+                    <!--NAME--> 
                     <div id="name-group" class="form-group" ng-class="{
-                        'has-error' : errorName }"> 
+                                    'has-error' : errorName }"> 
                         <label>Name</label> 
                         <input type="text" name="name" class="form-control" placeholder="Bruce Wayne"
-                                ng-model="locationFormData.name"> 
+                               ng-model="locationFormData.name"> 
                         <span class="help-block" ng-show="errorName">{{ errorName}}</span> 
                     </div>
-                    <!-- DESCRIPTION -->
+                    <!--DESCRIPTION--> 
                     <div id="name-group" class="form-group" ng-class="{
-                        'has-error' : errorName }"> 
+                                    'has-error' : errorName }"> 
                         <label>Description</label> 
                         <input type="text" name="description" class="form-control" placeholder="He is Batman!"
                                ng-model="locationFormData.description"> 
                         <span class="help-block" ng-show="errorDescription">{{ errorDescription}}</span> 
                     </div>
-                    <!-- SUBMIT BUTTON -->
+                    <!--SUBMIT BUTTON--> 
                     <button type="submit" class="btn btn-success btn-lg btn-block">
                         <span class="glyphicon glyphicon-flash"></span> Submit!
                     </button>
                 </form>
             </div>
-            <script th:src="@{/js/angular-bootstrap.js}" src="js/angular-bootstrap.js" type="text/javascript"></script>
-            <script th:src="@{/js/hello.js}" src="js/hello.js"></script>
+            <script th:src="@{/js/angular-bootstrap.js}" type="text/javascript"></script>
+            <script th:src="@{/js/angular/hello.js}"></script>
     </body>
 </html>

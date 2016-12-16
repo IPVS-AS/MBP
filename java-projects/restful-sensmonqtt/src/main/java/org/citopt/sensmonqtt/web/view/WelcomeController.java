@@ -19,7 +19,7 @@ public class WelcomeController {
         l.setDescription("In nowhere to be found");
         model.put("location", l);
         
-        return "index";
+        return "welcome";
     }
     
 }
