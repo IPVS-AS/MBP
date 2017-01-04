@@ -6,8 +6,8 @@
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 
         <base th:href="@{/}" />
-        <link id="linkApiRoot" th:href="@{/api}" />
-        
+        <link id="uriRestIndex" th:href="@{/api}" />
+
         <!--/*  Each token will be replaced by their respective titles in the resulting page. */-->
         <title layout:title-pattern="$DECORATOR_TITLE - $CONTENT_TITLE">Sensmonqtt</title>
 
@@ -19,7 +19,8 @@
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" type="text/css">
 
         <!-- Angular Bootstrap Css -->
-        <link th:href="@{/css/angular-bootstrap.css}" rel="stylesheet" />
+        <link th:href="@{/css/bootstrap-jquery.css}" rel="stylesheet" />
+        <link th:href="@{/css/angular.css}" rel="stylesheet" />
 
         <!-- Waves Effect Css -->
         <link th:href="@{/plugins/node-waves/waves.css}" rel="stylesheet" />
@@ -30,13 +31,19 @@
         <!-- Morris Chart Css-->
         <link th:href="@{/plugins/morrisjs/morris.css}" rel="stylesheet" />
 
+        <!-- JQuery DataTable Css -->
+        <link th:href="@{/plugins/jquery-datatable/skin/bootstrap/css/dataTables.bootstrap.css}" rel="stylesheet">
+
         <!-- Custom Css -->
         <link th:href="@{/css/style.css}" rel="stylesheet">
 
         <!-- AdminBSB Themes. You can choose a theme from css/themes instead of get all themes -->
         <link th:href="@{/css/themes/all-themes.css}" rel="stylesheet" />
+
+        <!-- Angular Datatables -->
+        <link th:href="@{/plugins/angular-datatables/css/angular-datatables.css}" rel="stylesheet" />
     </head>
-    <body class="theme-red">
+    <body class="theme-blue" th:class="${session.userExpert}? 'theme-red' : 'theme-blue'">
         <div class="container">
             <!-- Page Loader -->
             <!--            <div class="page-loader-wrapper">
@@ -83,29 +90,28 @@
             </section>
 
             <section class="content">
-                <div layout:fragment="content">
-                    <!-- ============================================================================ -->
-                    <!-- This content is only used for static prototyping purposes (natural templates)-->
-                    <!-- and is therefore entirely optional, as this markup fragment will be included -->
-                    <!-- from "fragments/header.html" at runtime.                                     -->
-                    <!-- ============================================================================ -->
-                    <h1>Static content for prototyping purposes only</h1>
-                    <p>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                        Praesent scelerisque neque neque, ac elementum quam dignissim interdum.
-                        Phasellus et placerat elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                        Praesent scelerisque neque neque, ac elementum quam dignissim interdum.
-                        Phasellus et placerat elit.
-                    </p>
+                <div class="container-fluid">
+                    <div layout:fragment="content">
+                        <!-- ============================================================================ -->
+                        <!-- This content is only used for static prototyping purposes (natural templates)-->
+                        <!-- and is therefore entirely optional, as this markup fragment will be included -->
+                        <!-- from "fragments/header.html" at runtime.                                     -->
+                        <!-- ============================================================================ -->
+                        <h1>Static content for prototyping purposes only</h1>
+                        <p>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                            Praesent scelerisque neque neque, ac elementum quam dignissim interdum.
+                            Phasellus et placerat elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                            Praesent scelerisque neque neque, ac elementum quam dignissim interdum.
+                            Phasellus et placerat elit.
+                        </p>
+                    </div>
                 </div>
             </section>
         </div>
 
-        <!-- Angular Bootstrap (includes JQuery) Js -->
-        <script th:src="@{/js/angular-bootstrap.js}" type="text/javascript"></script>
-
-        <!-- Select Plugin Js -->
-        <script th:src="@{/plugins/bootstrap-select/js/bootstrap-select.js}"></script>
+        <!-- Bootstrap (includes JQuery) Js - built by WRO -->
+        <script th:src="@{/js/bootstrap-jquery.js}" type="text/javascript"></script>
 
         <!-- Slimscroll Plugin Js -->
         <script th:src="@{/plugins/jquery-slimscroll/jquery.slimscroll.js}"></script>
@@ -123,11 +129,25 @@
         <!-- Sparkline Chart Plugin Js -->
         <script th:src="@{/plugins/jquery-sparkline/jquery.sparkline.js}"></script>
 
-        <!-- Custom Js -->
+        <!-- Jquery DataTable Plugin Js -->
+        <script th:src="@{/plugins/jquery-datatable/jquery.dataTables.js}"></script>
+        <!--        <script th:src="@{/plugins/jquery-datatable/skin/bootstrap/js/dataTables.bootstrap.js}"></script>
+            <script th:src="@{/plugins/jquery-datatable/extensions/export/dataTables.buttons.min.js}"></script>
+            <script th:src="@{/plugins/jquery-datatable/extensions/export/buttons.flash.min.js}"></script>
+            <script th:src="@{/plugins/jquery-datatable/extensions/export/jszip.min.js}"></script>
+            <script th:src="@{/plugins/jquery-datatable/extensions/export/pdfmake.min.js}"></script>
+            <script th:src="@{/plugins/jquery-datatable/extensions/export/vfs_fonts.js}"></script>
+            <script th:src="@{/plugins/jquery-datatable/extensions/export/buttons.html5.min.js}"></script>
+            <script th:src="@{/plugins/jquery-datatable/extensions/export/buttons.print.min.js}"></script>-->
+
+        <!-- Custom Template Js -->
         <script th:src="@{/js/admin.js}"></script>
 
-        <div layout:fragment="content-js">
-            <!-- Specific View JS here -->
-        </div>
+        <!-- AngularJS with resource and route - built by WRO -->
+        <script th:src="@{/js/angular.js}" type="text/javascript"></script>
+
+        <section layout:fragment="content-js">
+            <!-- Specific View JS/Angular here -->
+        </section>
     </body>
 </html>

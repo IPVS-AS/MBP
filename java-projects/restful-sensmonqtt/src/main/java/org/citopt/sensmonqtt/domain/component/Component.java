@@ -2,7 +2,6 @@ package org.citopt.sensmonqtt.domain.component;
 
 import java.util.Objects;
 import javax.persistence.GeneratedValue;
-import org.bson.types.ObjectId;
 import org.citopt.sensmonqtt.domain.device.Device;
 import org.citopt.sensmonqtt.domain.type.Type;
 import org.springframework.data.annotation.Id;
@@ -15,19 +14,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * @author rafaelkperes
  */
 @Document
-public class Component {
-    
-    public enum Specie {
-        SENSOR, ACTUATOR
-    }
+public abstract class Component {
     
     @Id
     @GeneratedValue
-    private ObjectId id;
+    private String id;
 
     @Indexed(unique = true)
     private String name;
-    private Specie specie;
     
     @Reference
     private Type type;
@@ -35,11 +29,11 @@ public class Component {
     @Reference
     private Device device;
 
-    public ObjectId getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -50,15 +44,6 @@ public class Component {
     public void setName(String name) {
         this.name = name;
     }
-
-    public Specie getSpecie() {
-        return specie;
-    }
-
-    public void setSpecie(Specie specie) {
-        this.specie = specie;
-    }
-
     public Type getType() {
         return type;
     }

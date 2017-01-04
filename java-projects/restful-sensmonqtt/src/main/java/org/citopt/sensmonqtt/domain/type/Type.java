@@ -5,7 +5,6 @@ import org.citopt.sensmonqtt.exception.NotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.GeneratedValue;
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -19,7 +18,7 @@ public class Type {
 
     @Id
     @GeneratedValue
-    private ObjectId id;
+    private String id;
 
     @Indexed(unique = true)
     private String name;
@@ -66,11 +65,11 @@ public class Type {
         throw new NotFoundException("No such filename.");
     }
 
-    public ObjectId getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(String id) {
         this.id = id;
     }
 

@@ -2,11 +2,8 @@ package org.citopt.sensmonqtt.domain.device;
 
 import java.util.Objects;
 import javax.persistence.GeneratedValue;
-import org.bson.types.ObjectId;
-import org.citopt.sensmonqtt.domain.location.Location;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.PersistenceConstructor;
-import org.springframework.data.annotation.Reference;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -15,42 +12,20 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document
 public class Device {
-    
+
     @Id
     @GeneratedValue
-    private ObjectId id;
-    
+    private String id;
+
+    @Indexed(unique = true)
     private String name;
+
+    @Indexed(unique = true)
     private String macAddress;
-    
-    @Reference
-    private Location location;
-    
-    public Device() {
-    }
-    
-    @PersistenceConstructor
-    public Device(ObjectId id, String name, String macAddress) {
-        this.id = id;
-
-        setMacAddress(macAddress);
-    }
-    
-    public String getMacAddress() {
-        return formatMAC(macAddress);
-    }
-    
-    public String getRawMacAddress() {
-        return macAddress;
-    }
-
-    public void setMacAddress(String macAddress) {
-        this.macAddress = rawMAC(macAddress);
-    }
     
     public static String formatMAC(String raw) {
         if (raw != null) {
-            String formatted = raw.replaceAll("(.{2})", "$1" + "-").substring(0,17);
+            String formatted = raw.replaceAll("(.{2})", "$1" + "-").substring(0, 17);
             return formatted.toUpperCase();
         } else {
             return raw;
@@ -65,11 +40,11 @@ public class Device {
         return raw;
     }
 
-    public ObjectId getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -80,13 +55,13 @@ public class Device {
     public void setName(String name) {
         this.name = name;
     }
-
-    public Location getLocation() {
-        return location;
+    
+    public String getMacAddress() {
+        return macAddress;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
+    public void setMacAddress(String macAddress) {
+        this.macAddress = macAddress;
     }
 
     @Override

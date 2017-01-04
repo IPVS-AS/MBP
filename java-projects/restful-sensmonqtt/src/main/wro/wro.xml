@@ -1,5 +1,5 @@
 <groups xmlns="http://www.isdc.ro/wro">
-    <group name="angular-bootstrap">
+    <group name="bootstrap-jquery">
         <!-- Bootstrap Core Css -->
         <css>webjar:bootstrap/3.2.0/less/bootstrap.less</css>
         
@@ -11,7 +11,8 @@
         
         <!-- Bootstrap Core Js -->
         <js>webjar:bootstrap/3.2.0/bootstrap.js</js>
-        
+    </group>
+    <group name="angular">
         <!-- Angular Files -->
         <css>file:${project.basedir}/src/main/resources/static/css/angular.js</css>
         <js>webjar:angularjs/1.3.8/angular.min.js</js>
