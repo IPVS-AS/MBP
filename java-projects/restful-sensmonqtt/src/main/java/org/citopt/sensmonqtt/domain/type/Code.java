@@ -1,31 +1,15 @@
 package org.citopt.sensmonqtt.domain.type;
 
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.PersistenceConstructor;
-import org.springframework.stereotype.Component;
-
 /**
  *
  * @author rafaelkperes
  */
-@Component
 public class Code {
 
-    String name;
-    byte[] content;
+    private String name;
+    private String content;
 
-    static final String SERVICE_EXTENSION = ".conf";
-
-    @PersistenceConstructor
-    public Code(String name, byte[] content) {
-        this.name = name;
-        this.content = content;
-    }
-
-    public Code(ObjectId id, byte[] content) {
-        this.name = id.toString() + SERVICE_EXTENSION;
-        this.content = content;
-    }
+    public static final String SERVICE_EXTENSION = ".conf";
 
     public Code() {
     }
@@ -38,11 +22,11 @@ public class Code {
         this.name = name;
     }
 
-    public byte[] getContent() {
+    public String getContent() {
         return content;
     }
 
-    public void setContent(byte[] content) {
+    public void setContent(String content) {
         this.content = content;
     }
 

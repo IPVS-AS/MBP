@@ -1,0 +1,125 @@
+<div class="row clearfix">
+    <!-- Sensor Details Card -->
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="header">
+                <h2>
+                    SENSOR
+                </h2>
+            </div>
+            <div class="body">                
+                <table class="table table-hover">
+                    <tbody>
+                        <tr id="{{item.id}}">
+                            <th>NAME</th>
+                            <td>{{sensorDetailsCtrl.item.name}}</a></td>
+                        </tr>
+                        <tr>
+                            <th>TYPE</th>
+                            <td>{{sensorDetailsCtrl.item._embedded.type.name}}</a></td>
+                        </tr>
+                        <tr>
+                            <th>DEVICE</th>
+                            <td>{{sensorDetailsCtrl.item._embedded.device.name}}</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- deploy loader (show while deployment is being checked or executed) -->
+                <div class="row clearfix" ng-show="ctrl.deployer.processing">
+                    <div class="col-xs-12 align-center" >
+                        <div class="preloader" >
+                            <!-- dataDeploy.deploying -->
+                            <div class="spinner-layer pl-blue">
+                                <div class="circle-clipper left">
+                                    <div class="circle"></div>
+                                </div>
+                                <div class="circle-clipper right">
+                                    <div class="circle"></div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row clearfix" ng-hide="ctrl.deployer.processing">
+                    <div class="col-xs-12" ng-hide="ctrl.deployer.available">
+                        <!-- not deployer.available -->
+                        <div class="alert alert-warning">
+                            <button class="close" type="button" ng-click="ctrl.deployer.update()">
+                                <i class="material-icons">refresh</i>
+                            </button>
+                            Sensor is not available 
+                        </div>
+                    </div>
+                    <div class="col-xs-12">
+                        <!-- "global" success and error for deployer.doDeploy -->
+                        <div class="alert alert-success" ng-show="ctrl.deployer.deploy.success"> {{ctrl.deployer.deploy.success}} </div>
+                        <div class="alert alert-danger" ng-show="ctrl.deployer.deploy.errors.global"> {{ctrl.deployer.deploy.errors.global}} </div>
+                    </div>
+                    <div class="col-xs-12">
+                        <!-- "global" success and error for deployer.doUndeploy -->
+                        <div class="alert alert-success" ng-show="ctrl.deployer.undeploy.success"> {{ctrl.deployer.undeploy.success}} </div>
+                        <div class="alert alert-danger" ng-show="ctrl.deployer.undeploy.errors.global"> {{ctrl.deployer.undeploy.errors.global}} </div>
+                    </div>
+                    <div class="col-xs-12" ng-show="ctrl.deployer.available && !ctrl.deployer.deployed">
+                        <form ng-submit="ctrl.deployer.doDeploy()">
+                            <div class="row clearfix">
+                                <div class="col-xs-9">
+                                    <!-- deployer.deploy.pinset -->
+                                    <div class="form-group" ng-class="{'has-error' : ctrl.deployer.deploy.errors.name}">
+                                        <div class="form-line" ng-class="{'focused error' : ctrl.deployer.deploy.errors.name }">
+                                            <input class="form-control" id="sensor-form-input-name"  type="text" placeholder="Pinset" ng-model="ctrl.deploy.pinset" />
+                                        </div>
+                                        <span class="help-block" ng-show="ctrl.deployer.deploy.errors.pinset">{{ctrl.deployer.deploy.errors.pinset}}</span>
+                                    </div>
+                                </div>
+                                <div class="col-xs-3">
+                                    <button class="btn btn-primary waves-effect" id="deploy-button">DEPLOY</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-xs-12" ng-show="ctrl.deployer.available && ctrl.deployer.deployed">
+                        <form ng-submit="ctrl.deployer.doUndeploy()">
+                            <div class="row clearfix">
+                                <div class="col-xs-3">
+                                    <button class="btn btn-warning waves-effect" id="deploy-button">UNDEPLOY</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- #END# Sensor Details Card -->
+
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="header">
+                <h2>
+                    VALUE LOG
+                </h2>
+            </div>
+            <div class="body">
+                <p>
+                    The value field is parsed from the message received, so it 
+                    may not be present. The raw message will be linked on the 
+                    value field.
+                </p>
+                <table  class="table table-hover">
+                    <thead>
+                    <th>Value</th>
+                    <th>Date</th>
+                    </thead>
+                    <tbody>
+                        <tr id="{{v.id}}" ng-repeat="v in ctrl.values">
+                            <td>{{v.value}}</td>
+                            <td>{{v.date}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

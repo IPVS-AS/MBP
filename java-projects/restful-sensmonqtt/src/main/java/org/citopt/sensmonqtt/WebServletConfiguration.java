@@ -1,7 +1,5 @@
 package org.citopt.sensmonqtt;
 
-import nz.net.ultraq.thymeleaf.LayoutDialect;
-import nz.net.ultraq.thymeleaf.decorators.strategies.GroupingStrategy;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -73,7 +71,6 @@ public class WebServletConfiguration
         SpringTemplateEngine engine = new SpringTemplateEngine();
         engine.setEnableSpringELCompiler(true);
         engine.setTemplateResolver(templateResolver());
-        engine.addDialect(new LayoutDialect(new GroupingStrategy()));
         return engine;
     }
 

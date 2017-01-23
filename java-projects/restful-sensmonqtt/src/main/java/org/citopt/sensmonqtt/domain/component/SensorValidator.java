@@ -12,9 +12,9 @@ import org.citopt.sensmonqtt.repository.SensorRepository;
  */
 @org.springframework.stereotype.Component
 public class SensorValidator implements Validator {
-    
+
     static SensorRepository repository;
-    
+
     @Autowired
     public void setComponentRepository(SensorRepository componentRepository) {
         System.out.println("autowiring sensorRepository to SensorValidator");
@@ -32,11 +32,15 @@ public class SensorValidator implements Validator {
 
         validate(component, errors);
     }
-    
+
     public void validate(Component component, Errors errors) {
         ValidationUtils.rejectIfEmptyOrWhitespace(
                 errors, "name", "component.name.empty",
                 "The name cannot be empty!");
+
+        ValidationUtils.rejectIfEmptyOrWhitespace(
+                errors, "device", "component.device.empty",
+                "The device cannot be empty!");
 
         Component another;
         if ((another = repository.findByName(component.getName())) != null) {
@@ -47,5 +51,5 @@ public class SensorValidator implements Validator {
             }
         }
     }
-    
+
 }
