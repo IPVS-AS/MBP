@@ -30,9 +30,11 @@ def on_message(client, userdata, msg):
         parsed = json.loads(msg.payload.decode('utf-8'))
         result['idref'] = str(parsed['id'])
         result['value'] = str(parsed['value'])
+        result['component'] = str(parsed['component'])
     except Exception as e:
         result['idref'] = '-'
         result['value'] = '-'
+        result['component'] = '-'
 
     # do something with the data
     try:

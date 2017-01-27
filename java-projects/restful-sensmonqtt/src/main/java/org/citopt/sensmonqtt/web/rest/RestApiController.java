@@ -96,15 +96,21 @@ public class RestApiController implements
     @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.POST, params = {})
     public ResponseEntity<String> deploySensor(
             @PathVariable(value = "id") String id) {
-        return deploySensor(id, null);
+        return deploySensor(id, "", "");
     }
 
-    @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.POST, params = {"pinset"})
+    @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.POST, params = {"component", "pinset"})
     public ResponseEntity<String> deploySensor(
             @PathVariable(value = "id") String id,
-            @RequestParam String pinset) {
+            @RequestParam String pinset, @RequestParam(name = "component") String component) {
         System.out.println("deploy");
-        System.out.println(pinset);
+        
+        if(component == null) {
+            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        }
+        
+        System.out.println(component + " " + pinset);
+        
         Sensor sensor = sensorRepository.findOne(id);
 
         if (sensor == null) {
@@ -126,6 +132,7 @@ public class RestApiController implements
             serverIp = networkService.getSelfIp();
         } catch (UnknownHostException e) {
             // Couldn't get own IP
+            System.out.println("COULDN`T GET OWN IP");
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -133,10 +140,11 @@ public class RestApiController implements
             sshDeployer.deploy(id,
                     // url, port, user, key
                     deviceIp, 22, SSHDeployer.DEFAULT_USER, SSHDeployer.KEY,
-                    // mqttIp, type, pinset
-                    serverIp, type, pinset);
+                    // mqttIp, type, component, pinset
+                    serverIp, type, component, pinset);
         } catch (IOException e) {
             // couldn't deploy - device not found or error during remote instructions
+            System.out.println("ERROR ON DEPLOY ACTUALLY");
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 

@@ -17,8 +17,10 @@
         <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext" rel="stylesheet" type="text/css">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" type="text/css">
 
-        <!-- Angular Bootstrap Css -->
-        <link th:href="@{/css/bootstrap-jquery.css}" rel="stylesheet" />
+        <!-- Bootstrap Css -->
+        <link th:href="@{/plugins/bootstrap/css/bootstrap.min.css}" rel="stylesheet" />
+
+        <!-- Angular Css -->
         <link th:href="@{/css/angular.css}" rel="stylesheet" />
 
         <!-- Waves Effect Css -->
@@ -39,8 +41,11 @@
         <!-- AdminBSB Themes. You can choose a theme from css/themes instead of get all themes -->
         <link th:href="@{/css/themes/all-themes.css}" rel="stylesheet" />
 
-        <!-- Angular Datatables -->
-        <link th:href="@{/plugins/angular-datatables/css/angular-datatables.css}" rel="stylesheet" />
+        <!-- Angular UI Bootstrap href fix -->
+        <link th:href="@{/plugins/angular-ui/bootstrap/css/angular-ui-fix.css}" rel="stylesheet" />
+        
+        <!-- Angular UI Select Plugin -->
+        <link th:href="@{/plugins/angular-ui-select/css/select.min.css}" rel="stylesheet" />
     </head>
 
     <body ng-class="expert ? 'theme-red' : 'theme-blue'" ng-cloak>
@@ -71,14 +76,16 @@
                     <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         {{expert ? "Expert User" : "Normal User"}}
                     </div>
-                    <div class="btn-group user-helper-dropdown">
-                        <i class="material-icons" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">keyboard_arrow_down</i>
-                        <ul class="dropdown-menu pull-right">
+                    <div class="btn-group user-helper-dropdown" uib-dropdown is-open="status.isopen">
+                        <!--<button class="dropdown-toggle pull-right">-->
+                            <i class="material-icons" id="single-button" type="button"  uib-dropdown-toggle ng-disabled="disabled">keyboard_arrow_down</i>      
+                        <!--</button>-->
+                        <ul class="dropdown-menu pull-right" uib-dropdown-menu role="menu" aria-labelledby="single-button">
                             <li ng-hide="expert">
                                 <a href="view/expert"><i class="material-icons">person</i>Go Expert</a>
                             </li>
                             <li ng-show="expert">
-                                <a href="view/no-expert"><i class="material-icons">person</i>Back to Normal User</a>
+                                <a href="view/no-expert"><i class="material-icons">person</i>Leave Expert</a>
                             </li>
                         </ul>
                     </div>
@@ -162,8 +169,11 @@
             </div>
         </section>
 
-        <!-- Bootstrap (includes JQuery) Js - built by WRO -->
-        <script th:src="@{/js/bootstrap-jquery.js}" type="text/javascript"></script>
+        <!-- JQuery -->
+        <script th:src="@{/plugins/jquery/jquery-3.1.1.min.js}" type="text/javascript"></script>
+
+        <!-- Bootstrap JS -->
+        <script th:src="@{/plugins/bootstrap/js/bootstrap.min.js}" type="text/javascript"></script>
 
         <!-- Waves Effect Plugin Js -->
         <script th:src="@{/plugins/node-waves/waves.js}"></script>
@@ -177,6 +187,12 @@
         <!-- Input Mask Plugin Js -->
         <script th:src="@{/plugins/jquery-inputmask/jquery.inputmask.bundle.js}"></script>
 
+        <!-- Angular UI Bootstrap Plugin -->
+        <script th:src="@{/plugins/angular-ui/bootstrap/js/ui-bootstrap-tpls-2.4.0.min.js}"></script>
+        
+        <!-- Angular UI Select Plugin -->
+        <script th:src="@{/plugins/angular-ui-select/js/select.min.js}"></script>
+
         <!-- Angular -->
         <script th:src="@{/js/app.js}"></script>
         <script th:src="@{/js/services/SessionService.js}"></script>        
@@ -184,16 +200,22 @@
         <script th:src="@{/js/services/FileReader.js}"></script>
         <script th:src="@{/js/services/DeviceService.js}"></script>
         <script th:src="@{/js/services/ComponentService.js}"></script>
+        <script th:src="@{/js/services/TypeService.js}"></script>
+
+        <script th:src="@{/js/directives/menuItem.js}"></script>
+        <script th:src="@{/js/directives/popover.js}"></script>
+        <script th:src="@{/js/directives/fileModel.js}"></script>
 
         <script th:src="@{/js/controllers/ItemListController.js}"></script>
         <script th:src="@{/js/controllers/ItemDetailsController.js}"></script>
         <script th:src="@{/js/controllers/AddItemController.js}"></script>
 
         <script th:src="@{/js/controllers/home/HomeController.js}"></script>
+        <script th:src="@{/js/controllers/actuators/ActuatorListController.js}"></script>
         <script th:src="@{/js/controllers/sensors/SensorListController.js}"></script>
         <script th:src="@{/js/controllers/devices/DeviceListController.js}"></script>
         <script th:src="@{/js/controllers/types/TypeListController.js}"></script>
-
+        <script th:src="@{/js/controllers/actuators/ActuatorDetailsController.js}"></script>
         <script th:src="@{/js/controllers/sensors/SensorDetailsController.js}"></script>
     </body>
 </html>

@@ -16,4 +16,6 @@ public interface ValueLogRepository
     
     public List<ValueLog> findAllByIdrefOrderByDateDesc(@Param("idref") String idref);
     
+    public List<ValueLog> findAllByComponentOrderByDateDesc(@Param("component") String component);
+    
 }

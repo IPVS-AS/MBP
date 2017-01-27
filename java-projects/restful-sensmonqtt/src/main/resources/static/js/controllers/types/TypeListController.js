@@ -53,4 +53,23 @@ app.controller('TypeListController',
                                 }
                             })
                 });
+
+                // $watch 'addItem' result and add to 'itemList'
+                $scope.$watch(
+                        function () {
+                            // value being watched
+                            return vm.addTypeCtrl.result;
+                        },
+                        function () {
+                            // callback
+                            console.log('addTypeCtrl.result modified.');
+
+                            var data = vm.addTypeCtrl.result;
+                            if (data) {
+                                console.log('pushItem.');
+                                vm.typeListCtrl.pushItem(data);
+                            }
+                        }
+                );
+
             }]);

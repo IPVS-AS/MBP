@@ -1,12 +1,18 @@
 'use strict';
 
-var app = angular.module('app', ['ngRoute', 'ngCookies']);
+var app = angular.module('app', ['ngRoute', 'ngCookies', 'ngSanitize', 'ui.bootstrap', 'ui.select']);
 
 app.config(['$provide', '$routeProvider', '$locationProvider',
     function ($provide, $routeProvider, $locationProvider) {
         // gets link from html (provided by Thymeleaf - server sided)
         var restUri = $('#restUri').attr('href');
         $provide.value('restUri', restUri);
+
+        function redirectExpert($location, SessionService) {
+            if (!SessionService.isExpert()) {
+                $location.path('/');
+            }
+        }
 
         var viewPrefix = '/view';
         // configure the routing rules here
@@ -28,6 +34,12 @@ app.config(['$provide', '$routeProvider', '$locationProvider',
                             }],
                         countTypes: ['CrudService', function (CrudService) {
                                 return CrudService.countItems('types');
+                            }],
+                        actuatorValues: ['ComponentService', function (ComponentService) {
+                                return ComponentService.getValues(ComponentService.COMPONENT.ACTUATOR, undefined);
+                            }],
+                        sensorValues: ['ComponentService', function (ComponentService) {
+                                return ComponentService.getValues(ComponentService.COMPONENT.SENSOR, undefined);
                             }]
                     }
                 })
@@ -48,6 +60,48 @@ app.config(['$provide', '$routeProvider', '$locationProvider',
                             }],
                         countTypes: ['CrudService', function (CrudService) {
                                 return CrudService.countItems('types');
+                            }]
+                    }
+                })
+                
+                // Actuator List and Register (includes Device List and Register)
+                .when(viewPrefix + '/actuators', {
+                    category: 'actuators',
+                    templateUrl: 'templates/actuators',
+                    controller: 'ActuatorListController as ctrl',
+                    resolve: {
+                        actuatorList: ['CrudService', function (CrudService) {
+                                return CrudService.fetchAllItems('actuators');
+                            }],
+                        addActuator: ['CrudService', function (CrudService) {
+                                // bind category parameter
+                                return angular.bind(this, CrudService.addItem, 'actuators');
+                            }],
+                        deviceList: ['CrudService', function (CrudService) {
+                                return CrudService.fetchAllItems('devices');
+                            }],
+                        addDevice: ['CrudService', function (CrudService) {
+                                // bind category parameter
+                                return angular.bind(this, CrudService.addItem, 'devices');
+                            }],
+                        typeList: ['CrudService', function (CrudService) {
+                                return CrudService.fetchAllItems('types');
+                            }]
+                    }
+                })
+
+                // Actuator Details
+                .when(viewPrefix + '/actuators/:id', {
+                    category: 'actuators',
+                    templateUrl: 'templates/actuator-id.html',
+                    controller: 'ActuatorDetailsController as ctrl',
+                    resolve: {
+                        actuatorDetails: ['$route', 'CrudService', function ($route, CrudService) {
+                                return CrudService.fetchSpecificItem('actuators', $route.current.params.id);
+                            }],
+                        values: ['$route', 'ComponentService', function ($route, ComponentService) {
+                                console.log($route.current.params.id);
+                                return ComponentService.getValues(undefined, $route.current.params.id);
                             }]
                     }
                 })
@@ -88,7 +142,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider',
                                 return CrudService.fetchSpecificItem('sensors', $route.current.params.id);
                             }],
                         values: ['$route', 'ComponentService', function ($route, ComponentService) {
-                                return ComponentService.getValues($route.current.params.id);
+                                console.log($route.current.params.id);
+                                return ComponentService.getValues(undefined, $route.current.params.id);
                             }]
                     }
                 })
@@ -99,6 +154,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider',
                     templateUrl: 'templates/devices',
                     controller: 'DeviceListController as ctrl',
                     resolve: {
+                        isExpert: ['$location', 'SessionService', redirectExpert],
                         deviceList: ['CrudService', function (CrudService) {
                                 return CrudService.fetchAllItems('devices');
                             }],
@@ -115,6 +171,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider',
                     templateUrl: 'templates/types',
                     controller: 'TypeListController as ctrl',
                     resolve: {
+                        isExpert: ['$location', 'SessionService', redirectExpert],
                         typeList: ['CrudService', function (CrudService) {
                                 return CrudService.fetchAllItems('types');
                             }],
@@ -180,69 +237,6 @@ app.run(['$rootScope', '$timeout', 'SessionService',
             });
         });
     }]);
-
-app.directive('menuItem', ['$location', function (location) {
-        return {
-            restrict: 'A',
-            link: function (scope, element, attrs, controller) {
-                var path = attrs.href;
-                if (path.startsWith('#')) {
-                    path = path.substring(1); // skip '#'
-                }
-                if (!path.startsWith('/')) {
-                    path = '/' + path; // add '/'
-                }
-                scope.location = location;
-                scope.$watch('location.path()', function (newPath) {
-                    if (path === newPath) {
-                        element.addClass('active');
-                    } else {
-                        element.removeClass('active');
-                    }
-                });
-            }
-        };
-    }]);
-
-
-app.directive('fileModel', ['$parse', function ($parse) {
-        return {
-            restrict: 'A',
-            link: function (scope, element, attrs) {
-
-                var model = $parse(attrs.fileModel);
-                var isMultiple = attrs.multiple;
-                var modelSetter = model.assign;
-
-                element.bind('drop', function (e) {
-                    e.stopPropagation();
-                    e.preventDefault();
-
-
-//                    var droppedFiles = e.dataTransfer.files;
-//                    console.log('dropped', droppedFiles);
-                });
-
-                element.bind('change', function () {
-                    var values = [];
-
-                    angular.forEach(element[0].files, function (item) {
-                        values.push(item);
-                    });
-
-                    scope.$apply(function () {
-                        if (isMultiple) {
-                            modelSetter(scope, values);
-                        } else {
-                            modelSetter(scope, values[0]);
-                        }
-                    });
-                });
-            }
-        };
-    }]);
-
-
 
 app.controller('MainCtrl', ['$route', '$rootScope', '$routeParams', '$location',
     function MainCtrl($route, $rootScope, $routeParams, $location) {

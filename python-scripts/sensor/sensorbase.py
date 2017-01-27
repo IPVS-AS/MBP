@@ -36,6 +36,7 @@ class SensorBase:
         self._mqtttimeout = args.dict['timeout']
 
         self._pinset = args.dict['pinset']
+        self._component = args.dict['component']
         self._sleeptime = args.dict['sleeptime'] # time between each value read
 
         self._periodic = periodic
@@ -93,6 +94,7 @@ class SensorBase:
         # adds value to the queue
         dict_ = {
             "id": self._sensorid,
+            "component": self._component,
             "time": str(datetime.now()),
             "value": str(value),
         }
@@ -154,6 +156,7 @@ def parseargs(argv):
     parser.add_argument('--port', help='Port of the MQTT broker (default: 1883).', required=False)
     parser.add_argument('-t', '--topic',help='Port of the MQTT broker (default: sensor/$sensor-id).', required=False)
     parser.add_argument('-p', '--pinset', help='List of pins separated by commas (default: "26,27").', required=False)
+    parser.add_argument('-c', '--component', help='Type of the component (either SENSOR or ACTUATOR)', required=True)
     parser.add_argument('-s', '--sleeptime', type=str, help='Interval in seconds between each reading loop if periodic (default: 1).', required=False)
     parser.add_argument('--timeout', help='MQTT broker connection timeout in seconds. 0 is infinite (default: 0).', required=False)
 

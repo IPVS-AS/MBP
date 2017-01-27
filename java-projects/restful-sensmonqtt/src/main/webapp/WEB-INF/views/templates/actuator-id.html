@@ -1,10 +1,10 @@
 <div class="row clearfix">
-    <!-- Sensor Details Card -->
+    <!-- Actuator Details Card -->
     <div class="col-lg-7">
         <div class="card">
             <div class="header">
                 <h2>
-                    SENSOR
+                    ACTUATOR
                 </h2>
             </div>
             <div class="body">                
@@ -12,15 +12,15 @@
                     <tbody>
                         <tr id="{{item.id}}">
                             <th>NAME</th>
-                            <td>{{sensorDetailsCtrl.item.name}}</a></td>
+                            <td>{{actuatorDetailsCtrl.item.name}}</a></td>
                         </tr>
                         <tr>
                             <th>TYPE</th>
-                            <td>{{sensorDetailsCtrl.item._embedded.type.name}}</a></td>
+                            <td>{{actuatorDetailsCtrl.item._embedded.type.name}}</a></td>
                         </tr>
                         <tr>
                             <th>DEVICE</th>
-                            <td>{{sensorDetailsCtrl.item._embedded.device.name}}</a></td>
+                            <td>{{actuatorDetailsCtrl.item._embedded.device.name}}</a></td>
                         </tr>
                     </tbody>
                 </table>
@@ -48,7 +48,7 @@
                             <button class="close" type="button" ng-click="ctrl.deployer.update()">
                                 <i class="material-icons">refresh</i>
                             </button>
-                            Sensor is not available 
+                            Actuator is not available 
                         </div>
                     </div>
                     <div class="col-xs-12">
@@ -68,7 +68,7 @@
                                     <!-- deployer.deploy.pinset -->
                                     <div class="form-group" ng-class="{'has-error' : ctrl.deployer.deploy.errors.name}">
                                         <div class="form-line" ng-class="{'focused error' : ctrl.deployer.deploy.errors.name }">
-                                            <input class="form-control" id="sensor-form-input-name"  type="text" placeholder="Pinset" ng-model="ctrl.deployer.deploy.pinset" />
+                                            <input class="form-control" id="actuator-form-input-name"  type="text" placeholder="Pinset" ng-model="ctrl.deployer.deploy.pinset" />
                                         </div>
                                         <span class="help-block" ng-show="ctrl.deployer.deploy.errors.pinset">{{ctrl.deployer.deploy.errors.pinset}}</span>
                                     </div>
@@ -92,14 +92,14 @@
             </div>
         </div>
     </div>
-    <!-- #END# Sensor Details Card -->
+    <!-- #END# Actuator Details Card -->
 
     <div class="col-lg-5">
         <div class="card">
             <div class="header">
                 <h2>
                     LOG
-                    <small>Values sent by the sensor</small>
+                    <small>Values sent by the actuator</small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
                     <li>

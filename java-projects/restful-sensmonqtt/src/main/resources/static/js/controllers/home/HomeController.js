@@ -1,8 +1,8 @@
 /* global app */
 
 app.controller('HomeController',
-        ['countActuators', 'countSensors', 'countDevices', 'countTypes',
-            function (countActuators, countSensors, countDevices, countTypes) {
+        ['countActuators', 'countSensors', 'countDevices', 'countTypes', 'actuatorValues', 'sensorValues',
+            function (countActuators, countSensors, countDevices, countTypes, actuatorValues, sensorValues) {
                 var vm = this;
 
                 // expose
@@ -10,7 +10,9 @@ app.controller('HomeController',
                     countActuators: countActuators,
                     countSensors: countSensors,
                     countDevices: countDevices,
-                    countTypes: countTypes
+                    countTypes: countTypes,
+                    actuatorValues: actuatorValues,
+                    sensorValues: sensorValues
                 });
             }]);
 

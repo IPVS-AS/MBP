@@ -1,14 +1,14 @@
 /* global app */
 
-app.controller('SensorDetailsController',
-        ['$scope', '$timeout', '$routeParams', '$controller', 'ComponentService', 'sensorDetails', 'values',
-            function ($scope, $timeout, $routeParams, $controller, ComponentService, sensorDetails, values) {
+app.controller('ActuatorDetailsController',
+        ['$scope', '$timeout', '$routeParams', '$controller', 'ComponentService', 'actuatorDetails', 'values',
+            function ($scope, $timeout, $routeParams, $controller, ComponentService, actuatorDetails, values) {
                 var vm = this;
 
                 // public
                 function update() { // update deployment status
                     vm.deployer.processing = true;
-                    ComponentService.isDeployed(vm.sensorDetailsCtrl.item._links.deploy.href)
+                    ComponentService.isDeployed(vm.actuatorDetailsCtrl.item._links.deploy.href)
                             .then(
                                     function (deployed) {
                                         console.log('update: available, ' + deployed);
@@ -27,7 +27,7 @@ app.controller('SensorDetailsController',
 
                 function deploy() {
                     vm.deployer.processing = true;
-                    ComponentService.deploy(vm.deployer.deploy, vm.sensorDetailsCtrl.item._links.deploy.href)
+                    ComponentService.deploy(vm.deployer.deploy, vm.actuatorDetailsCtrl.item._links.deploy.href)
                             .then(
                                     function (response) {
                                         vm.deployer.processing = false;
@@ -47,7 +47,7 @@ app.controller('SensorDetailsController',
                     vm.deployer.processing = true;
                     vm.deployer.deploy.success = undefined;
                     vm.deployer.deploy.error = undefined;
-                    ComponentService.undeploy(vm.sensorDetailsCtrl.item._links.deploy.href)
+                    ComponentService.undeploy(vm.actuatorDetailsCtrl.item._links.deploy.href)
                             .then(
                                     function (response) {
                                         vm.deployer.processing = false;
@@ -66,7 +66,7 @@ app.controller('SensorDetailsController',
                 angular.extend(vm, {
                     deployer: {
                         deploy: {
-                            component: ComponentService.COMPONENT.SENSOR
+                            component: ComponentService.COMPONENT.ACTUATOR
                         },
                         update: update,
                         doDeploy: deploy,
@@ -77,10 +77,10 @@ app.controller('SensorDetailsController',
 
                 // expose controller ($controller will auto-add to $scope)
                 angular.extend(vm, {
-                    sensorDetailsCtrl: $controller('ItemDetailsController as sensorDetailsCtrl',
+                    actuatorDetailsCtrl: $controller('ItemDetailsController as actuatorDetailsCtrl',
                             {
                                 $scope: $scope,
-                                item: sensorDetails
+                                item: actuatorDetails
                             })
                 });
                 

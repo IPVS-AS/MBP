@@ -2,13 +2,20 @@
 
 app.factory('ComponentService', ['$http', '$q', function ($http, $q) {
         return {
-            getValues: function (idref = undefined) {
+            COMPONENT: {
+                SENSOR: 'SENSOR',
+                ACTUATOR: 'ACTUATOR'
+            },
+
+            getValues: function (component, idref) {
                 var url = '';
                 var params = {};
                 if (idref) {
                     url = 'http://localhost:8080/sensmonqtt/api/valueLogs/search/findAllByIdrefOrderByDateDesc';
                     params.idref = idref;
-
+                } else if(component) {
+                    url = 'http://localhost:8080/sensmonqtt/api/valueLogs/search/findAllByComponentOrderByDateDesc';
+                    params.component = component;
                 } else {
                     url = 'http://localhost:8080/sensmonqtt/api/valueLogs/';
                     params.sort = 'date,desc';
@@ -41,11 +48,14 @@ app.factory('ComponentService', ['$http', '$q', function ($http, $q) {
                     url: url
                 }).then(
                         function (response) {
-                            if (typeof response.data === 'object') {
-                                console.log('isDeployed got data');
-                                return response.data === 'true';
+                            if (response.data !== undefined) {
+                                console.log('isDeployed got data ' + response.data);
+                                return response.data === true
+                                        || response.data === 'true'
+                                        || response.data.status === 'true';
                             } else {
                                 console.log('isDeployed invalid data');
+                                console.log(response);
                                 return $q.reject(response);
                             }
                         },
@@ -59,6 +69,7 @@ app.factory('ComponentService', ['$http', '$q', function ($http, $q) {
                 if (data.constructor === Array) {
                     // if receveid an Array, put it in an object
                     data = {
+                        class: '',
                         pinset: data
                     };
                 }

@@ -1,7 +1,6 @@
 <div class="row clearfix">
     <div class="col-lg-12">
         <div class="row clearfix">
-
             <!-- ACTUATORS COUNT -->
             <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                 <div class="info-box">
@@ -53,7 +52,83 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="row clearfix">
+            <!-- ACTUATOR LOG CARD -->
+            <div class="col-lg-6 col-md-6 col-sm-12">
+                <div class="card">
+                    <div class="header">
+                        <h2>
+                            ACTUATORS VALUES
+                        </h2>
+                    </div>
+                    <div class="body">
+                        <p>
+                            The value field is parsed from the message received, so it 
+                            may not be present. The raw message will be linked on the 
+                            value field.
+                        </p>
+                        <table  class="table table-hover">
+                            <thead>
+                            <th>ID</th>
+                            <th>Value</th>
+                            <th>Date</th>
+                            </thead>
+                            <tbody>
+                                <tr id="{{v.id}}" ng-repeat="v in ctrl.actuatorValues">
+                                    <td>
+                                        <a ng-href="{{'view/actuators/' + v.idref}}">{{v.idref}}</a>
+                                    </td>
+                                    <td>
+                                        <button uib-popover="{{v.message}}" popover-title="{{'Raw Message'}}" type="button" class="btn btn-default">
+                                            {{v.value ? v.value : '-'}}
+                                        </button>
+                                    </td>
+                                    <td>{{v.date}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
+            <!-- SENSOR LOG CARD -->
+            <div class="col-lg-6 col-md-6 col-sm-12">
+                <div class="card">
+                    <div class="header">
+                        <h2>
+                            SENSORS VALUES
+                        </h2>
+                    </div>
+                    <div class="body">
+                        <p>
+                            The value field is parsed from the message received, so it 
+                            may not be present. The raw message will be linked on the 
+                            value field.
+                        </p>
+                        <table  class="table table-hover">
+                            <thead>
+                            <th>ID</th>
+                            <th>Value</th>
+                            <th>Date</th>
+                            </thead>
+                            <tbody>
+                                <tr id="{{v.id}}" ng-repeat="v in ctrl.sensorValues">
+                                    <td>
+                                        <a ng-href="{{'view/sensors/' + v.idref}}">{{v.idref}}</a>
+                                    </td>
+                                    <td>
+                                        <button uib-popover="{{v.message}}" popover-title="{{'Raw Message'}}" type="button" class="btn btn-default">
+                                            {{v.value ? v.value : '-'}}
+                                        </button>
+                                    </td>
+                                    <td>{{v.date}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

@@ -8,7 +8,7 @@ app.controller('ItemListController',
                 var vm = this;
 
                 // public
-                function push(item) {
+                function pushItem(item) {
                     if (item) {
                         vm.items.splice(0, 0, item);
                     }
@@ -18,7 +18,7 @@ app.controller('ItemListController',
                 angular.extend(vm,
                         {
                             items: list,
-                            push: push
+                            pushItem: pushItem
                         });
             }
         ]);

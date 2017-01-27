@@ -1,17 +1,17 @@
 /* global app */
 
-app.controller('SensorListController',
-        ['$scope', '$controller', 'sensorList', 'addSensor',
+app.controller('ActuatorListController',
+        ['$scope', '$controller', 'actuatorList', 'addActuator',
             'deviceList', 'addDevice', 'typeList',
-            function ($scope, $controller, sensorList, addSensor,
+            function ($scope, $controller, actuatorList, addActuator,
                     deviceList, addDevice, typeList) {
                 var vm = this;
-                console.log('SensorListController init');
+                console.log('ActuatorListController init');
 
                 // public
-                $scope.detailsLink = function (sensor) {
-                    if (sensor.id) {
-                        return "view/sensors/" + sensor.id;
+                $scope.detailsLink = function (actuator) {
+                    if (actuator.id) {
+                        return "view/actuators/" + actuator.id;
                     }
                     return "#";
                 };
@@ -24,15 +24,15 @@ app.controller('SensorListController',
 
                 // expose controller ($controller will auto-add to $scope)
                 angular.extend(vm, {
-                    sensorListCtrl: $controller('ItemListController as sensorListCtrl',
+                    actuatorListCtrl: $controller('ItemListController as actuatorListCtrl',
                             {
                                 $scope: $scope,
-                                list: sensorList
+                                list: actuatorList
                             }),
-                    addSensorCtrl: $controller('AddItemController as addSensorCtrl',
+                    addActuatorCtrl: $controller('AddItemController as addActuatorCtrl',
                             {
                                 $scope: $scope,
-                                addItem: addSensor
+                                addItem: addActuator
                             }),
                     deviceCtrl: $controller('DeviceListController as deviceCtrl',
                             {
@@ -47,24 +47,24 @@ app.controller('SensorListController',
                             })
                 });
 
-                // $watch 'addSensor' result and add to 'sensorList'
+                // $watch 'addActuator' result and add to 'actuatorList'
                 $scope.$watch(
                         function () {
                             // value being watched
-                            return vm.addSensorCtrl.result;
+                            return vm.addActuatorCtrl.result;
                         },
                         function () {
                             // callback
-                            console.log('addSensorCtrl.result modified.');
+                            console.log('addActuatorCtrl.result modified.');
 
-                            var data = vm.addSensorCtrl.result;
+                            var data = vm.addActuatorCtrl.result;
                             if (data) {
-                                vm.sensorListCtrl.pushItem(vm.addSensorCtrl.result);
+                                vm.actuatorListCtrl.pushItem(vm.addActuatorCtrl.result);
                             }
                         }
                 );
 
-                // $watch 'addDevice' result and select on sensor form
+                // $watch 'addDevice' result and select on actuator form
                 $scope.$watch(
                         function () {
                             // value being watched
@@ -76,7 +76,7 @@ app.controller('SensorListController',
 
                             var data = $scope.addDeviceCtrl.result;
                             if (data) {
-                                $scope.addSensorCtrl.item.device = data._links.self.href;
+                                $scope.addActuatorCtrl.item.device = data._links.self.href;
                                 vm.registeringDevice = false;
                             }
                         }

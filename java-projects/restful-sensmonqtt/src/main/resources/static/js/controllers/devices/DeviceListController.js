@@ -41,7 +41,7 @@ app.controller('DeviceListController',
                             var data = vm.addDeviceCtrl.result;
                             if (data) {
                                 data.formattedMacAddress = DeviceService.formatMacAddress(data.macAddress);
-                                vm.deviceListCtrl.push(data);
+                                vm.deviceListCtrl.pushItem(data);
                             }
                         }
                 );

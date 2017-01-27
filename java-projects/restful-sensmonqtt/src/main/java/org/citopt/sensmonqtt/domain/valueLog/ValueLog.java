@@ -1,7 +1,10 @@
 package org.citopt.sensmonqtt.domain.valueLog;
 
 import javax.persistence.GeneratedValue;
+import org.citopt.sensmonqtt.domain.component.Actuator;
+import org.citopt.sensmonqtt.domain.component.Sensor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Reference;
 
 /**
  *
@@ -21,7 +24,14 @@ public class ValueLog {
     
     // parsed fields
     private String idref;
+    private String component; // sensor or actuator
     private String value;
+    
+    @Reference
+    private Sensor sensorRef;
+    
+    @Reference
+    private Actuator actuatorRef;
 
     public String getId() {
         return id;
@@ -71,12 +81,36 @@ public class ValueLog {
         this.idref = idref;
     }
 
+    public String getComponent() {
+        return component;
+    }
+
+    public void setComponent(String component) {
+        this.component = component;
+    }
+
     public String getValue() {
         return value;
     }
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public Sensor getSensorRef() {
+        return sensorRef;
+    }
+
+    public void setSensorRef(Sensor sensorRef) {
+        this.sensorRef = sensorRef;
+    }
+
+    public Actuator getActuatorRef() {
+        return actuatorRef;
+    }
+
+    public void setActuatorRef(Actuator actuatorRef) {
+        this.actuatorRef = actuatorRef;
     }
     
 }

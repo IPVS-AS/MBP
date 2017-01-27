@@ -17,5 +17,7 @@ public interface DeviceRepository
     public Device findByName(@Param("name") String name);
     
     public Device findByMacAddress(@Param("macAddress") String name);
+    
+    public Device findByNameOrMacAddress(@Param("name") String name, @Param("macAddress") String macAddress);
 
 }

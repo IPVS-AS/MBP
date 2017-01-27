@@ -21,14 +21,14 @@ import org.citopt.sensmonqtt.domain.type.Code;
 @org.springframework.stereotype.Component
 public class SSHDeployer {
 
-    private static final Logger LOGGER = Logger.getLogger( SSHDeployer.class.getName() );
-    
+    private static final Logger LOGGER = Logger.getLogger(SSHDeployer.class.getName());
+
     private static final String SCRIPTDIR = "/home/pi/scripts";
     private static final String SERVICEDIR = "/etc/init";
     private static final String SERVICEPREFIX = "s";
 
     public static String DEFAULT_USER = "pi";
-    
+
     public static String KEY
             = "-----BEGIN RSA PRIVATE KEY-----\n"
             + "MIIEogIBAAKCAQEAyGALfW0RP//eXFfhKfVcQK8rCCxymWBduf0rmMmDApN50Kzv\n"
@@ -72,19 +72,24 @@ public class SSHDeployer {
 
     public static String parseService(String service, Map<String, String> values) {
         for (String k : values.keySet()) {
-            service = service.replace(k, values.get(k));
+            if (values.get(k) != null && !values.get(k).isEmpty()) {
+                service = service.replace(k, values.get(k));
+            }
         }
         return service;
     }
 
     public void deploy(String id, String url, Integer port, String user,
-            String key, String mqtt, Type type, String pinset)
+            String key, String mqtt, Type type, 
+            String component, String pinset)
             throws UnknownHostException, IOException {
         LOGGER.log(Level.FINE, "service deploy called for: "
-                + "{0} {1} {2} {3} {4} {5} {6} {7}", 
+                + "{0} {1} {2} {3} {4} {5} {6} {7} {8}",
                 new Object[]{
-                    id, url, port, user, key, mqtt, type, pinset});
-        
+                    id, url, port, user, key, mqtt, type, component, pinset});
+        System.out.println("service deploy called for: "
+                + id + url + port + user + key + mqtt + type + component + pinset);
+
         String scriptDir = getScriptDir(id);
         String servicename = SERVICEPREFIX + id;
 
@@ -107,7 +112,7 @@ public class SSHDeployer {
                 stderr
         );
         System.out.println("semote mkdir successful");
-        
+
         System.out.println("starting remote Routines output");
         for (Code routine : type.getRoutines()) {
             String content = routine.getContent();
@@ -127,14 +132,15 @@ public class SSHDeployer {
         serviceParser.put("${dir}", scriptDir);
         serviceParser.put("${id}", id);
         serviceParser.put("${mqtturl}", mqtt);
+        serviceParser.put("${component}", component);
         serviceParser.put("${pinset}", pinset);
         service = parseService(service, serviceParser);
         System.out.println("Service file parsing done");
-        
+
         System.out.println("starting remote Service output");
         shell.exec(
                 "sudo bash -c  \"cat > " + SERVICEDIR + "/"
-                        + servicename + ".conf\"",
+                + servicename + ".conf\"",
                 new ByteArrayInputStream(service.getBytes()),
                 stdout,
                 stderr
@@ -149,7 +155,7 @@ public class SSHDeployer {
                 stderr
         );
         System.out.println("remote reload-configuration successful");
-        
+
         // stops old service (if it exists)
         try {
             System.out.println("trying to stop remote old service");
@@ -174,7 +180,7 @@ public class SSHDeployer {
                 stderr
         );
         System.out.println("start remote service succesful");
-        
+
         LOGGER.log(Level.FINE, "service deploy successful for id {0}", id);
     }
 
@@ -217,7 +223,7 @@ public class SSHDeployer {
     }
 
     public void undeploy(String id, String url, Integer port, String user,
-            String key) 
+            String key)
             throws IOException {
         String sid = SERVICEPREFIX + id;
 
@@ -227,10 +233,10 @@ public class SSHDeployer {
                         user, key
                 )
         );
-        
+
         OutputStream stdout = new ByteArrayOutputStream();
         OutputStream stderr = new ByteArrayOutputStream();
-        
+
         // stop service
         shell.exec(
                 "sudo service " + sid + " stop",
