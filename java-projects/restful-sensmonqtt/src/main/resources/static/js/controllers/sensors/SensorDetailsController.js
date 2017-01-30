@@ -1,9 +1,12 @@
 /* global app */
 
 app.controller('SensorDetailsController',
-        ['$scope', '$timeout', '$routeParams', '$controller', 'ComponentService', 'sensorDetails', 'values',
-            function ($scope, $timeout, $routeParams, $controller, ComponentService, sensorDetails, values) {
+        ['$scope', '$timeout', '$routeParams', '$controller', 'ComponentService', 'sensorDetails',
+            function ($scope, $timeout, $routeParams, $controller, ComponentService, sensorDetails) {
                 var vm = this;
+
+                vm.loader = {};
+
 
                 // public
                 function update() { // update deployment status
@@ -22,7 +25,7 @@ app.controller('SensorDetailsController',
                                         vm.deployer.available = false;
                                     });
                 }
-                
+
                 $scope.isCollapsedLog = false;
 
                 function deploy() {
@@ -63,6 +66,39 @@ app.controller('SensorDetailsController',
                                     });
                 }
 
+                // sensor values
+                var loadSensorValues = function () {
+
+                    vm.loader.sensorValues = true;
+                    $timeout(
+                            function () {
+                                ComponentService.getValues(undefined, $routeParams.id).then(
+                                        function (data) {
+                                            vm.loader.sensorValues = false;
+                                            vm.sensorValues = {
+                                                data: data
+                                            };
+                                        },
+                                        function (response) {
+                                            vm.loader.sensorValues = false;
+                                            vm.sensorValues = {
+                                                error: 'Could not load values',
+                                                response: response
+                                            };
+                                        }
+                                );
+                            }, 500);
+                };
+
+                vm.reloadValues = function () {
+                    loadSensorValues();
+
+                    $timeout(function () {
+                        vm.reloadValues();
+                    }, 10000);
+                };
+                vm.reloadValues();
+
                 angular.extend(vm, {
                     deployer: {
                         deploy: {
@@ -71,8 +107,7 @@ app.controller('SensorDetailsController',
                         update: update,
                         doDeploy: deploy,
                         doUndeploy: undeploy
-                    },
-                    values: values
+                    }
                 });
 
                 // expose controller ($controller will auto-add to $scope)
@@ -83,7 +118,7 @@ app.controller('SensorDetailsController',
                                 item: sensorDetails
                             })
                 });
-                
+
                 // VERY IMPORTANT LINE HERE
                 update();
             }]);

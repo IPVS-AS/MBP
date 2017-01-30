@@ -4,7 +4,6 @@ app.controller('DeviceListController',
         ['$scope', '$controller', 'DeviceService', 'deviceList', 'addDevice',
             function ($scope, $controller, DeviceService, deviceList, addDevice) {
                 var vm = this;
-                console.log('DeviceListController init');
 
                 for (var i in deviceList) {
                     deviceList[i].formattedMacAddress =

@@ -6,7 +6,6 @@ app.controller('ActuatorListController',
             function ($scope, $controller, actuatorList, addActuator,
                     deviceList, addDevice, typeList) {
                 var vm = this;
-                console.log('ActuatorListController init');
 
                 // public
                 $scope.detailsLink = function (actuator) {

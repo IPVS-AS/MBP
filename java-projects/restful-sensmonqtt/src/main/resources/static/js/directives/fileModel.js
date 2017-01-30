@@ -11,15 +11,6 @@ app.directive('fileModel', ['$parse', function ($parse) {
                 var isMultiple = attrs.multiple;
                 var modelSetter = model.assign;
 
-                element.bind('drop', function (e) {
-                    e.stopPropagation();
-                    e.preventDefault();
-
-
-//                    var droppedFiles = e.dataTransfer.files;
-//                    console.log('dropped', droppedFiles);
-                });
-
                 element.bind('change', function () {
                     var values = [];
 

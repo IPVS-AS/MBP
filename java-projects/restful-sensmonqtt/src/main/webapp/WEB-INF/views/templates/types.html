@@ -60,10 +60,12 @@
                                     <span class="help-block" ng-show="addTypeCtrl.item.errors.description">{{addTypeCtrl.item.errors.description.message}}</span>
                                 </div>
                                 <!-- item.service group -->
+
                                 <label>Service (single .conf file)</label>
                                 <div class="form-group" ng-class="{'has-error' : addTypeCtrl.item.errors.service }">
                                     <div class="form-line" ng-class="{'focused error' : addTypeCtrl.item.errors.service }">
-                                        <input type="file" file-model="addTypeCtrl.item.service" />
+                                        <div class="dropzone" options="ctrl.dzServiceOptions" callbacks="ctrl.dzServiceCallbacks" methods="ctrl.dzMethods" ng-dropzone></div>
+                                        <!--<input type="file" ng-dropzone ng-model="addTypeCtrl.item.serviceFile" />-->
                                     </div>
                                     <span class="help-block" ng-show="addTypeCtrl.item.errors.service">{{addTypeCtrl.item.errors.service.message}}</span>
                                 </div>
@@ -71,12 +73,15 @@
                                 <label>Routines (you may select multiple files at once)</label>
                                 <div class="form-group" ng-class="{'has-error' : addTypeCtrl.item.errors.routines }">
                                     <div class="form-line" ng-class="{'focused error' : addTypeCtrl.item.errors.routines }">
-                                        <input type="file" file-model="addTypeCtrl.item.routines" multiple />
+                                        <div class="dropzone" options="ctrl.dzRoutinesOptions" callbacks="ctrl.dzRoutinesCallbacks" methods="ctrl.dzMethods" ng-dropzone></div>
+                                        <!--<input type="file" multiple ng-dropzone ng-model="addTypeCtrl.item.routineFiles"  />-->
                                     </div>
                                     <span class="help-block" ng-show="addTypeCtrl.item.errors.routines">{{addTypeCtrl.item.errors.routines.message}}</span>
                                 </div>
                             </div>
                             <div class="col-xs-12">
+                                <pre>{{addTypeCtrl.item.serviceFile}}</pre>
+                                <pre>{{addTypeCtrl.item.routineFiles}}</pre>
                                 <!-- buttons -->
                                 <div class="form-group align-right">
                                     <button type="submit" class="btn btn-primary m-t-15 waves-effect">

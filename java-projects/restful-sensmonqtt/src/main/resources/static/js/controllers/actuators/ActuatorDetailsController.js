@@ -1,9 +1,11 @@
 /* global app */
 
 app.controller('ActuatorDetailsController',
-        ['$scope', '$timeout', '$routeParams', '$controller', 'ComponentService', 'actuatorDetails', 'values',
-            function ($scope, $timeout, $routeParams, $controller, ComponentService, actuatorDetails, values) {
+        ['$scope', '$timeout', '$routeParams', '$controller', 'ComponentService', 'actuatorDetails',
+            function ($scope, $timeout, $routeParams, $controller, ComponentService, actuatorDetails) {
                 var vm = this;
+
+                vm.loader = {};
 
                 // public
                 function update() { // update deployment status
@@ -22,7 +24,7 @@ app.controller('ActuatorDetailsController',
                                         vm.deployer.available = false;
                                     });
                 }
-                
+
                 $scope.isCollapsedLog = false;
 
                 function deploy() {
@@ -63,6 +65,39 @@ app.controller('ActuatorDetailsController',
                                     });
                 }
 
+                // actuator values
+                var loadActuatorValues = function () {
+
+                    vm.loader.actuatorValues = true;
+                    $timeout(
+                            function () {
+                                ComponentService.getValues(undefined, $routeParams.id).then(
+                                        function (data) {
+                                            vm.loader.actuatorValues = false;
+                                            vm.actuatorValues = {
+                                                data: data
+                                            };
+                                        },
+                                        function (response) {
+                                            vm.loader.actuatorValues = false;
+                                            vm.actuatorValues = {
+                                                error: 'Could not load values',
+                                                response: response
+                                            };
+                                        }
+                                );
+                            }, 500);
+                };
+
+                vm.reloadValues = function () {
+                    loadActuatorValues();
+
+                    $timeout(function () {
+                        vm.reloadValues();
+                    }, 10000);
+                };
+                vm.reloadValues();
+
                 angular.extend(vm, {
                     deployer: {
                         deploy: {
@@ -71,8 +106,7 @@ app.controller('ActuatorDetailsController',
                         update: update,
                         doDeploy: deploy,
                         doUndeploy: undeploy
-                    },
-                    values: values
+                    }
                 });
 
                 // expose controller ($controller will auto-add to $scope)
@@ -83,7 +117,14 @@ app.controller('ActuatorDetailsController',
                                 item: actuatorDetails
                             })
                 });
-                
+
                 // VERY IMPORTANT LINE HERE
                 update();
+
+                vm.reload = function () {
+                    $timeout(function () {
+                        vm.reload();
+                    }, 3000);
+                };
+                vm.reload();
             }]);

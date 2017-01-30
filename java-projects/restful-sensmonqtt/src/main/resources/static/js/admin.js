@@ -278,6 +278,14 @@ $.AdminBSB.input = {
         
         // MAC Address input mask
         $(".mac-address").inputmask('##-##-##-##-##-##', {placeholder: '__-__-__-__-__-__'});
+        
+        // PIN Mask input mask
+        $(".pinset").inputmask({mask: '9{1,2}(,9{1,2}){*}', greedy: false});
+        
+        // Dropzone
+        if (Dropzone) {
+            Dropzone.autoDiscover = false;
+        }
     }
 }
 //==========================================================================================================================

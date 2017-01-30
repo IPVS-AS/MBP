@@ -1,18 +1,31 @@
 'use strict';
 
-var app = angular.module('app', ['ngRoute', 'ngCookies', 'ngSanitize', 'ui.bootstrap', 'ui.select']);
+var app = angular.module('app', ['ngRoute', 'ngResource', 'ngCookies', 'ngSanitize', 'ui.bootstrap', 'ui.select', 'ngFileUpload', 'thatisuday.dropzone']);
 
-app.config(['$provide', '$routeProvider', '$locationProvider',
-    function ($provide, $routeProvider, $locationProvider) {
+app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvider', 'dropzoneOpsProvider',
+    function ($provide, $routeProvider, $locationProvider, $resourceProvider, dropzoneOpsProvider) {
+
+        // enable HTML5mode to disable hashbang urls
+        $locationProvider.html5Mode(true);
+
+        // Don't strip trailing slashes from calculated URLs
+        $resourceProvider.defaults.stripTrailingSlashes = false;
+
         // gets link from html (provided by Thymeleaf - server sided)
-        var restUri = $('#restUri').attr('href');
-        $provide.value('restUri', restUri);
+        var ENDPOINT_URI = $('#ENDPOINT_URI').attr('href');
+        $provide.value('ENDPOINT_URI', ENDPOINT_URI);
 
         function redirectExpert($location, SessionService) {
             if (!SessionService.isExpert()) {
                 $location.path('/');
             }
         }
+
+        dropzoneOpsProvider.setOptions({
+            url: 'a',
+            maxFilesize: '100',
+            autoProcessQueue: false
+        });
 
         var viewPrefix = '/view';
         // configure the routing rules here
@@ -34,12 +47,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider',
                             }],
                         countTypes: ['CrudService', function (CrudService) {
                                 return CrudService.countItems('types');
-                            }],
-                        actuatorValues: ['ComponentService', function (ComponentService) {
-                                return ComponentService.getValues(ComponentService.COMPONENT.ACTUATOR, undefined);
-                            }],
-                        sensorValues: ['ComponentService', function (ComponentService) {
-                                return ComponentService.getValues(ComponentService.COMPONENT.SENSOR, undefined);
                             }]
                     }
                 })
@@ -63,7 +70,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider',
                             }]
                     }
                 })
-                
+
                 // Actuator List and Register (includes Device List and Register)
                 .when(viewPrefix + '/actuators', {
                     category: 'actuators',
@@ -98,10 +105,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider',
                     resolve: {
                         actuatorDetails: ['$route', 'CrudService', function ($route, CrudService) {
                                 return CrudService.fetchSpecificItem('actuators', $route.current.params.id);
-                            }],
-                        values: ['$route', 'ComponentService', function ($route, ComponentService) {
-                                console.log($route.current.params.id);
-                                return ComponentService.getValues(undefined, $route.current.params.id);
                             }]
                     }
                 })
@@ -140,10 +143,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider',
                     resolve: {
                         sensorDetails: ['$route', 'CrudService', function ($route, CrudService) {
                                 return CrudService.fetchSpecificItem('sensors', $route.current.params.id);
-                            }],
-                        values: ['$route', 'ComponentService', function ($route, ComponentService) {
-                                console.log($route.current.params.id);
-                                return ComponentService.getValues(undefined, $route.current.params.id);
                             }]
                     }
                 })
@@ -207,9 +206,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider',
                 })
 
                 .otherwise({redirectTo: '/'});
-
-        // enable HTML5mode to disable hashbang urls
-        $locationProvider.html5Mode(true);
     }]);
 
 app.run(['$rootScope', '$timeout', 'SessionService',

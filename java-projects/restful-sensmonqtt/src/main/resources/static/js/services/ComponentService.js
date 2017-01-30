@@ -1,6 +1,6 @@
 /* global app */
 
-app.factory('ComponentService', ['$http', '$q', function ($http, $q) {
+app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI', function ($http, $resource, $q, ENDPOINT_URI) {
         return {
             COMPONENT: {
                 SENSOR: 'SENSOR',
@@ -8,20 +8,19 @@ app.factory('ComponentService', ['$http', '$q', function ($http, $q) {
             },
 
             getValues: function (component, idref) {
-                var url = '';
+                var url = ENDPOINT_URI;
+                
                 var params = {};
                 if (idref) {
-                    url = 'http://localhost:8080/sensmonqtt/api/valueLogs/search/findAllByIdrefOrderByDateDesc';
+                    url += '/valueLogs/search/findAllByIdrefOrderByDateDesc';
                     params.idref = idref;
                 } else if(component) {
-                    url = 'http://localhost:8080/sensmonqtt/api/valueLogs/search/findAllByComponentOrderByDateDesc';
+                    url += '/valueLogs/search/findAllByComponentOrderByDateDesc';
                     params.component = component;
                 } else {
-                    url = 'http://localhost:8080/sensmonqtt/api/valueLogs/';
+                    url += '/valueLogs';
                     params.sort = 'date,desc';
                 }
-
-                console.log('GET ' + url + ', ' + params);
 
                 return $http({
                     method: 'GET',

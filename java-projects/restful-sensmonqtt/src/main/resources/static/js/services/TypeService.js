@@ -1,6 +1,6 @@
 /* global app */
 
-app.factory('DeviceService', function () {
+app.factory('TypeService', function () {
     return {
         find: function (name) {
             

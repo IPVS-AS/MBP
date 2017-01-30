@@ -68,14 +68,30 @@
                             may not be present. The raw message will be linked on the 
                             value field.
                         </p>
-                        <table  class="table table-hover">
+                        <!-- actuatorValues loader -->
+                        <div class="row clearfix" ng-show="ctrl.loader.actuatorValues">
+                            <div class="col-xs-12 align-center" >
+                                <div class="preloader" >
+                                    <div class="spinner-layer pl-blue">
+                                        <div class="circle-clipper left">
+                                            <div class="circle"></div>
+                                        </div>
+                                        <div class="circle-clipper right">
+                                            <div class="circle"></div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <table  class="table table-hover" ng-show="ctrl.actuatorValues.data && !ctrl.loader.actuatorValues">
                             <thead>
                             <th>ID</th>
                             <th>Value</th>
                             <th>Date</th>
                             </thead>
                             <tbody>
-                                <tr id="{{v.id}}" ng-repeat="v in ctrl.actuatorValues">
+                                <tr id="{{v.id}}" ng-repeat="v in ctrl.actuatorValues.data">
                                     <td>
                                         <a ng-href="{{'view/actuators/' + v.idref}}">{{v.idref}}</a>
                                     </td>
@@ -106,14 +122,30 @@
                             may not be present. The raw message will be linked on the 
                             value field.
                         </p>
-                        <table  class="table table-hover">
+                        <!-- actuatorValues loader -->
+                        <div class="row clearfix" ng-show="ctrl.loader.sensorValues">
+                            <div class="col-xs-12 align-center" >
+                                <div class="preloader" >
+                                    <div class="spinner-layer pl-blue">
+                                        <div class="circle-clipper left">
+                                            <div class="circle"></div>
+                                        </div>
+                                        <div class="circle-clipper right">
+                                            <div class="circle"></div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <table  class="table table-hover" ng-show="ctrl.sensorValues.data && !ctrl.loader.sensorValues">
                             <thead>
                             <th>ID</th>
                             <th>Value</th>
                             <th>Date</th>
                             </thead>
                             <tbody>
-                                <tr id="{{v.id}}" ng-repeat="v in ctrl.sensorValues">
+                                <tr id="{{v.id}}" ng-repeat="v in ctrl.sensorValues.data">
                                     <td>
                                         <a ng-href="{{'view/sensors/' + v.idref}}">{{v.idref}}</a>
                                     </td>

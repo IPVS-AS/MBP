@@ -4,6 +4,41 @@ app.controller('TypeListController',
         ['$scope', '$controller', '$q', 'typeList', 'addType', 'FileReader',
             function ($scope, $controller, $q, typeList, addType, FileReader) {
                 var vm = this;
+
+                vm.dzServiceOptions = {
+                    paramName: 'serviceFile',
+                    maxFilesize: '100',
+                    acceptedFiles: 'text/plain',
+                    addRemoveLinks: true,
+                    maxFiles: 1
+                };
+
+                vm.dzServiceCallbacks = {
+                    'addedfile': function (file) {
+                        console.log(file);
+                        vm.addTypeCtrl.item.serviceFile = file;
+                    }
+                };
+
+                vm.dzRoutinesOptions = {
+                    paramName: 'routinesFile',
+                    maxFilesize: '100',
+                    acceptedFiles: 'text/plain',
+                    addRemoveLinks: true,
+                    maxFiles: 99
+                };
+
+                vm.dzRoutinesCallbacks = {
+                    'addedfile': function (file) {
+                        if (!vm.addTypeCtrl.item.routineFiles) {
+                            vm.addTypeCtrl.item.routineFiles = [];
+                        }
+                        vm.addTypeCtrl.item.routineFiles.push(file);
+                    }
+                };
+
+                vm.dzMethods = {};
+
                 // private
                 function readService(service) {
                     if (service) {
@@ -35,11 +70,11 @@ app.controller('TypeListController',
                             {
                                 $scope: $scope,
                                 addItem: function (data) {
-                                    return readService(data.service).then(
+                                    return readService(data.serviceFile).then(
                                             function (response) {
                                                 console.log('readService: ', response);
                                                 data.service = response;
-                                                return readRoutines(data.routines)
+                                                return readRoutines(data.routineFiles)
                                                         .then(function (response) {
                                                             console.log('readRoutines: ', response);
                                                             data.routines = response;

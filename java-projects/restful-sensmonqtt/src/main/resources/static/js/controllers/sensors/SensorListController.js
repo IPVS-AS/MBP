@@ -6,7 +6,6 @@ app.controller('SensorListController',
             function ($scope, $controller, sensorList, addSensor,
                     deviceList, addDevice, typeList) {
                 var vm = this;
-                console.log('SensorListController init');
 
                 // public
                 $scope.detailsLink = function (sensor) {

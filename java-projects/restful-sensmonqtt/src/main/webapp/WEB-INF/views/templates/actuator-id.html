@@ -66,9 +66,10 @@
                             <div class="row clearfix">
                                 <div class="col-xs-9">
                                     <!-- deployer.deploy.pinset -->
+                                    <label>Pins (comma separated)</label>
                                     <div class="form-group" ng-class="{'has-error' : ctrl.deployer.deploy.errors.name}">
                                         <div class="form-line" ng-class="{'focused error' : ctrl.deployer.deploy.errors.name }">
-                                            <input class="form-control" id="actuator-form-input-name"  type="text" placeholder="Pinset" ng-model="ctrl.deployer.deploy.pinset" />
+                                            <input class="form-control pinset" id="actuator-form-input-name"  type="text" placeholder="21,22,23" ng-model="ctrl.deployer.deploy.pinset" />
                                         </div>
                                         <span class="help-block" ng-show="ctrl.deployer.deploy.errors.pinset">{{ctrl.deployer.deploy.errors.pinset}}</span>
                                     </div>
@@ -115,14 +116,30 @@
                     may not be present. The raw message will be linked on the 
                     value field.
                 </p>
-                <table class="table table-hover">
+                <!-- actuatorValues loader -->
+                <div class="row clearfix" ng-show="ctrl.loader.actuatorValues">
+                    <div class="col-xs-12 align-center" >
+                        <div class="preloader" >
+                            <div class="spinner-layer pl-blue">
+                                <div class="circle-clipper left">
+                                    <div class="circle"></div>
+                                </div>
+                                <div class="circle-clipper right">
+                                    <div class="circle"></div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table  class="table table-hover" ng-show="ctrl.actuatorValues.data && !ctrl.loader.actuatorValues">
                     <thead>
                     <th>Value</th>
                     <th>Date</th>
                     </thead>
                     <tbody>
-                        <tr id="{{v.id}}" ng-repeat="v in ctrl.values">
-                            <td popover>
+                        <tr id="{{v.id}}" ng-repeat="v in ctrl.actuatorValues.data">
+                            <td>
                                 <button uib-popover="{{v.message}}" popover-title="{{'Raw Message'}}" type="button" class="btn btn-default">
                                     {{v.value ? v.value : '-'}}
                                 </button>
