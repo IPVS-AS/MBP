@@ -1,2 +1,2 @@
-python python-scripts/value-logger/value-logger.py
+python python-scripts/value-logger.py
 pause

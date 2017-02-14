@@ -1,0 +1,244 @@
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="row clearfix">
+            <!-- ACTUATORS COUNT -->
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <div class="info-box">
+                    <div class="icon bg-lime">
+                        <i class="material-icons">wb_incandescent</i>
+                    </div>
+                    <div class="content">
+                        <div class="text">ACTUATORS</div>
+                        <div class="number count-to" data-from="0" data-to="125" data-speed="1000" data-fresh-interval="20">{{ctrl.countActuators}}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SENSORS COUNT -->
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+                <div class="info-box">
+                    <div class="icon bg-yellow">
+                        <i class="material-icons">settings_remote</i>
+                    </div>
+                    <div class="content">
+                        <div class="text">SENSORS</div>
+                        <div class="number count-to" data-from="0" data-to="125" data-speed="1000" data-fresh-interval="20">{{ctrl.countSensors}}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DEVICES COUNT -->
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12"  ng-show="expert">
+                <div class="info-box">
+                    <div class="icon bg-amber">
+                        <i class="material-icons">devices</i>
+                    </div>
+                    <div class="content">
+                        <div class="text">DEVICES</div>
+                        <div class="number count-to" data-from="0" data-to="125" data-speed="1000" data-fresh-interval="20">{{ctrl.countDevices}}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TYPES COUNT -->
+            <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12"  ng-show="expert">
+                <div class="info-box">
+                    <div class="icon bg-orange">
+                        <i class="material-icons">description</i>
+                    </div>
+                    <div class="content">
+                        <div class="text">TYPES</div>
+                        <div class="number count-to" data-from="0" data-to="125" data-speed="1000" data-fresh-interval="20">{{ctrl.countTypes}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+            <!-- ADDRESSES CARD -->
+            <div class="col-lg-6 col-md-6 col-sm-12">
+                <div class="card">
+                    <div class="header">
+                        <h2>
+                            NETWORK ADDRESSES
+                        </h2>
+                    </div>
+                    <div class="body">
+                        <p>
+                            Any new connected Device will advertise itself into the network and will be found in this table
+                        </p>
+                        <!-- error for addresses -->
+                        <span class="alert alert-danger" ng-show="ctrl.addresses.error"> {{ctrl.addresses.error}} </span>
+                        <!-- loader -->
+                        <div class="row clearfix" ng-show="ctrl.loader.addresses">
+                            <div class="col-xs-12 align-center" >
+                                <div class="preloader" >
+                                    <div class="spinner-layer pl-blue">
+                                        <div class="circle-clipper left">
+                                            <div class="circle"></div>
+                                        </div>
+                                        <div class="circle-clipper right">
+                                            <div class="circle"></div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <table  class="table table-hover" ng-show="!ctrl.loader.addresses" st-table="ctrl.addresses.data" st-pipe="ctrl.loadAddresses" refresh-table="refreshAddresses">
+                            <thead>
+                                <tr>
+                                    <th>MAC</th>
+                                    <th>IP</th>
+                                    <th>Interface</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr  ng-repeat="a in ctrl.addresses.data">
+                                    <td>{{ctrl.formatMacAddress ? ctrl.formatMacAddress(a.mac) : a.mac}}</td>
+                                    <td>{{a.ip ? a.ip : '-'}}</td>
+                                    <td>{{a.iface ? a.iface : '-'}}</td>
+                                    <td>{{a.date ? a.date : '-'}}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4">
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTUATOR LOG CARD -->
+            <div class="col-lg-6 col-md-6 col-sm-12">
+                <div class="card">
+                    <div class="header">
+                        <h2>
+                            ACTUATORS VALUES
+                        </h2>
+                    </div>
+                    <div class="body">
+                        <p>
+                            The value field is parsed from the message received, so it 
+                            may not be present. The raw message will be linked on the 
+                            value field.
+                        </p>
+                        <!-- error for actuatorValues -->
+                        <span class="alert alert-danger" ng-show="ctrl.actuatorValues.error"> {{ctrl.actuatorValues.error}} </span>
+                        <!-- actuatorValues loader -->
+                        <div class="row clearfix" ng-show="ctrl.loader.actuatorValues">
+                            <div class="col-xs-12 align-center" >
+                                <div class="preloader" >
+                                    <div class="spinner-layer pl-blue">
+                                        <div class="circle-clipper left">
+                                            <div class="circle"></div>
+                                        </div>
+                                        <div class="circle-clipper right">
+                                            <div class="circle"></div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <table  class="table table-hover" ng-show="ctrl.actuatorValues.data && !ctrl.loader.actuatorValues"   st-table="ctrl.actuatorValues.data" st-pipe="ctrl.loadActuatorValues" refresh-table="refreshActuatorValues">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Value</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="{{v.id}}" ng-repeat="v in ctrl.actuatorValues.data">
+                                    <td>
+                                        <a ng-href="{{'view/actuators/' + v.idref}}">{{v.idref}}</a>
+                                    </td>
+                                    <td>
+                                        <button uib-popover="{{v.message}}" popover-title="{{'Raw Message'}}" type="button" class="btn btn-default">
+                                            {{v.value ? v.value : '-'}}
+                                        </button>
+                                    </td>
+                                    <td>{{v.date}}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4">
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SENSOR LOG CARD -->
+            <div class="col-lg-6 col-md-6 col-sm-12">
+                <div class="card">
+                    <div class="header">
+                        <h2>
+                            SENSORS VALUES
+                        </h2>
+                    </div>
+                    <div class="body">
+                        <p>
+                            The value field is parsed from the message received, so it 
+                            may not be present. The raw message will be linked on the 
+                            value field.
+                        </p>
+                        <!-- error for sensorValues -->
+                        <span class="alert alert-danger" ng-show="ctrl.sensorValues.error"> {{ctrl.sensorValues.error}} </span>
+                        <!-- actuatorValues loader -->
+                        <div class="row clearfix" ng-show="ctrl.loader.sensorValues">
+                            <div class="col-xs-12 align-center" >
+                                <div class="preloader" >
+                                    <div class="spinner-layer pl-blue">
+                                        <div class="circle-clipper left">
+                                            <div class="circle"></div>
+                                        </div>
+                                        <div class="circle-clipper right">
+                                            <div class="circle"></div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <table class="table table-hover" ng-show="ctrl.sensorValues.data && !ctrl.loader.sensorValues"  st-table="ctrl.sensorValues.data" st-pipe="ctrl.loadSensorValues" refresh-table="refreshSensorValues">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Value</th>
+                                    <th>Date</th>
+                                </tr>        
+                            </thead>
+                            <tbody>
+                                <tr id="{{v.id}}" ng-repeat="v in ctrl.sensorValues.data">
+                                    <td>
+                                        <a ng-href="{{'view/sensors/' + v.idref}}">{{v.idref}}</a>
+                                    </td>
+                                    <td>
+                                        <button uib-popover="{{v.message}}" popover-title="{{'Raw Message'}}" type="button" class="btn btn-default">
+                                            {{v.value ? v.value : '-'}}
+                                        </button>
+                                    </td>
+                                    <td>{{v.date}}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4">
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
