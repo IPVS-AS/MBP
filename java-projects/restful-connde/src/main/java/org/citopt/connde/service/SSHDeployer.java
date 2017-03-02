@@ -20,12 +20,13 @@ import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
-import org.citopt.connde.address.Address;
-import org.citopt.connde.domain.component.ActuatorValidator;
+import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.type.Type;
 import org.citopt.connde.domain.type.Code;
+import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
+import org.citopt.connde.repository.TypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @org.springframework.stereotype.Component
@@ -36,9 +37,9 @@ public class SSHDeployer {
     private static final String SCRIPTDIR = "/home/pi/scripts";
     private static final String SERVICEDIR = "/etc/init";
     private static final String SERVICEPREFIX = "connde";
-    
+
     private static final String AUTODEPLOY_FILE = "/etc/connde/autodeploy.conf";
-    private static final String AUTODEPLOY_NAME_SUFIX = "AUTO@";
+    private static final String AUTODEPLOY_NAME_SUFIX = " AUTO@";
 
     public static final int SSH_PORT = 22;
 
@@ -85,7 +86,10 @@ public class SSHDeployer {
     private SensorRepository sensorRepository;
 
     @Autowired
-    private ActuatorValidator actuatorRepository;
+    private ActuatorRepository actuatorRepository;
+
+    @Autowired
+    private TypeRepository typeRepository;
 
     public static String getScriptDir(String id) {
         return SCRIPTDIR + "/" + SERVICEPREFIX + id;
@@ -100,9 +104,9 @@ public class SSHDeployer {
         return service;
     }
 
-    public void autodeploy(Address address, Integer port, String user, String key, String mqtt)
+    public void autodeploy(Device address, Integer port, String user, String key, String mqtt)
             throws UnknownHostException, IOException {
-        String url = address.getIp();
+        String url = address.getIpAddress();
         Shell shell = new Shell.Safe(
                 new SSH(
                         url, port,
@@ -137,6 +141,16 @@ public class SSHDeployer {
                 // register (if not registered) and deploy sensor
                 if (jSensor instanceof JsonObject) {
                     Sensor sensor = findOrRegisterSensor(sensorRepository, (JsonObject) jSensor, address);
+                    if (sensor != null) {
+                        try {
+                            sensor = sensorRepository.insert(sensor);
+                            
+                            String jPinset = ((JsonObject) jSensor).getString("pinset");
+                            
+                            deploy(sensor.getId(), sensor.getDevice().getIpAddress(), port, user, key, mqtt, sensor.getType(), "SENSOR", jPinset);
+                        } catch (IOException ex) {
+                        }
+                    }
                 }
             });
 
@@ -183,7 +197,7 @@ public class SSHDeployer {
                 stdout,
                 stderr
         );
-        System.out.println("semote mkdir successful");
+        System.out.println("remote mkdir successful");
 
         System.out.println("starting remote Routines output");
         for (Code routine : type.getRoutines()) {
@@ -196,9 +210,9 @@ public class SSHDeployer {
                     stderr
             );
         }
-        System.out.println("semote Routines output succesful");
+        System.out.println("remote Routines output succesful");
 
-        System.out.println("Starting Service file parsing");
+        System.out.println("starting Service file parsing");
         String service = type.getService().getContent();
         Map<String, String> serviceParser = new HashMap<>();
         serviceParser.put("${dir}", scriptDir);
@@ -207,7 +221,7 @@ public class SSHDeployer {
         serviceParser.put("${component}", component);
         serviceParser.put("${pinset}", pinset);
         service = parseService(service, serviceParser);
-        System.out.println("Service file parsing done");
+        System.out.println("service file parsing done");
 
         System.out.println("starting remote Service output");
         shell.exec(
@@ -318,26 +332,45 @@ public class SSHDeployer {
         );
     }
 
-    private Sensor findOrRegisterSensor(SensorRepository sensorRepository, JsonObject jSensor, Address address) {
-        String name = jSensor.getString("name");
-        
-        // JSON Object must have name attribute
-        if (name != null && !name.isEmpty()) {
-            Sensor sensor = sensorRepository.findByName(name);
-            
-            // If name not registered, register new sensor
-            if (sensor == null) {
-                sensor = new Sensor();
-                sensor.setName(name + AUTODEPLOY_NAME_SUFIX + address.getMac());
-                
-                //sensor.setType(type);
-            }
-            
-        } else {
+    private Sensor findOrRegisterSensor(SensorRepository sensorRepository, JsonObject jSensor, Device device) {
+        String jName = jSensor.getString("name");
+        String jType = jSensor.getString("type");
+        String jPinset = jSensor.getString("pinset");
+
+        // JSON Object must have name, type and pinset attribute
+        if (jType == null || jType.isEmpty()) {
             return null;
         }
+        if (jPinset == null || jPinset.isEmpty()) {
+            return null;
+        }
+        if (jName == null || jName.isEmpty()) {
+            return null;
+        }
+
+        // name on file + current device
+        String name = getAutodeployName(jName, device.getMacAddress());
+        Type type = typeRepository.findByName(jType);
         
-        return null;
+        if (type == null) {
+            return null;
+        }
+
+        // find registered sensor or create a new one
+        Sensor sensor = sensorRepository.findByName(name);
+
+        if (sensor == null) {
+            sensor = new Sensor();
+        }
+        sensor.setName(name);
+        sensor.setType(type);
+        sensor.setDevice(device);
+
+        return sensor;
+    }
+
+    private String getAutodeployName(String name, String macAddress) {
+        return name + AUTODEPLOY_NAME_SUFIX + macAddress;
     }
 
 }

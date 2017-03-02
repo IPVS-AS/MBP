@@ -1,4 +1,4 @@
-<div class="row clearfix">
+<div class="row clearfix" ng-hide>
     <!-- List of Actuators Card -->
     <div class="col-lg-7">
         <div class="card">
@@ -21,6 +21,11 @@
                             <td><a ng-href="{{detailsLink(item)}}">{{item.name}}</a></td>
                             <td>{{item._embedded.type.name}}</td>
                             <td>{{item._embedded.device.name}}</td>
+                        </tr>
+                        <tr ng-show="actuatorListCtrl.items.length === 0">
+                            <td>No actuators registered yet.</td>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>

@@ -9,7 +9,11 @@ from pymongo import MongoClient
 
 PORT = 20123
 
+DB_NAME = 'connde'
+COLL_NAME = 'device'
 AUTODEPLOY_URL = 'http://localhost:8080/connde/api/autodeploy'
+
+NAME_SUFIX = ' (AUTO)'
 
 def autodeploy(data):
     headers = { 'Content-Type': 'application/json'}
@@ -23,7 +27,7 @@ def isEqual(e1, e2):
     if e1 is None or e2 is None:
         return False
 
-    return e1['ip'] == e2['ip'] and e1['iface'] == e2['iface']
+    return e1['ipAddress'] == e2['ipAddress'] and e1['iface'] == e2['iface']
 
 def proccessMessage(coll, message):
     data = message[0].decode('utf-8')
@@ -31,24 +35,26 @@ def proccessMessage(coll, message):
 
     data = json.loads(data)
 
-    if ('mac' in data):
-        key = { 'mac': data['mac'] }
+    if ('macAddress' in data):
+        key = { 'macAddress': data['macAddress'] }
 
         # find old entry
         old = coll.find_one(key)
         
         # upsert new entry
         post = data
+        post['name'] = str(post['macAddress'] + NAME_SUFIX)
         post['date'] = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         coll.update(key, post, upsert=True)
 
         if (not isEqual(old, data) and hasAutodeploy(data)):
             # has modified ip / iface / config or is a new entry -> redeploy
-            print('Autodeploy ' + str(data['mac']))
+            print('Autodeploy ' + str(data['macAddress']))
             autodeploy(data);
 
 # main
 if __name__ == "__main__":
+    print ('Start')
 
     # bind socket for broadcasts
     s = sck.socket(sck.AF_INET, sck.SOCK_DGRAM)
@@ -56,9 +62,9 @@ if __name__ == "__main__":
 
     # access db
     client = MongoClient()
-    db = client.sensmonqtt
-    coll = db['address']
-    result = coll.create_index([('mac', pymongo.ASCENDING)], unique=True)
+    db = client[DB_NAME]
+    coll = db[COLL_NAME]
+    result = coll.create_index([('macAddress', pymongo.ASCENDING)], unique=True)
 
     print('Waiting for messages...')
     # loop n wait for messages

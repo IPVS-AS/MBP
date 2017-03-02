@@ -55,8 +55,8 @@ public abstract class Component {
         return device;
     }
 
-    public void setDevice(Device device) {
-        this.device = device;
+    public void setDevice(Device address) {
+        this.device = address;
     }
 
     @Override

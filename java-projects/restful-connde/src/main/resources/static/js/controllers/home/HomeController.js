@@ -3,29 +3,27 @@
 app.controller('HomeController',
         ['$scope', '$timeout', 'CrudService', 'ComponentService', 'DeviceService', 'countActuators', 'countSensors', 'countDevices', 'countTypes',
             function ($scope, $timeout, CrudService, ComponentService, DeviceService, countActuators, countSensors, countDevices, countTypes) {
-                console.log('CONTORLLER HOMEMOEMEMEMEMEME');
-                
                 var vm = this;
                 vm.loader = {};
 
                 vm.formatMacAddress = DeviceService.formatMacAddress;
 
                 // addresses
-                var loadAddresses = function () {
-                    vm.loader.addresses = true;
+                var loadDevices = function () {
+                    vm.loader.devices = true;
                     $timeout(
                             function () {
-                                CrudService.getPage('addresses').then(
+                                CrudService.getPage('devices').then(
                                         function (data) {
-                                            vm.loader.addresses = false;
-                                            vm.addresses = {
-                                                data: data._embedded.addresses
+                                            vm.loader.devices = false;
+                                            vm.devices = {
+                                                data: data._embedded.devices
                                             };
                                         },
                                         function (response) {
-                                            vm.loader.addresses = false;
-                                            vm.addresses = {
-                                                error: 'Could not load addresses',
+                                            vm.loader.devices = false;
+                                            vm.devices = {
+                                                error: 'Could not load devices',
                                                 response: response
                                             };
                                         }
@@ -118,12 +116,12 @@ app.controller('HomeController',
                 
                 vm.loadActuatorValues = loadActuatorValues;
                 vm.loadSensorValues = loadSensorValues;
-                vm.loadAddresses = loadAddresses;
+                vm.loadDevices = loadDevices;
 
                 vm.reloadValues = function () {
                     $scope.$broadcast('refreshActuatorValues');
                     $scope.$broadcast('refreshSensorValues');
-                    $scope.$broadcast('refreshAddresses');
+                    $scope.$broadcast('refreshDevices');
                     //loadActuatorValues();
                     //loadSensorValues();
                     //loadAddresses();

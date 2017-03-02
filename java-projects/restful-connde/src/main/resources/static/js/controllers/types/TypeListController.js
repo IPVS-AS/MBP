@@ -9,7 +9,6 @@ app.controller('TypeListController',
                     paramName: 'serviceFile',
                     maxFilesize: '100',
                     acceptedFiles: 'text/plain',
-                    addRemoveLinks: true,
                     maxFiles: 1
                 };
 
@@ -24,7 +23,6 @@ app.controller('TypeListController',
                     paramName: 'routinesFile',
                     maxFilesize: '100',
                     acceptedFiles: 'text/plain',
-                    addRemoveLinks: true,
                     maxFiles: 99
                 };
 

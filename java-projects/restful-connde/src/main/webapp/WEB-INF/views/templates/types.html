@@ -1,4 +1,4 @@
-<div class="row clearfix">
+<div class="row clearfix" ng-hide>
     <!-- List of Types Card -->
     <div class="col-lg-7">
         <div class="card">
@@ -19,6 +19,11 @@
                         <tr id="{{item.id}}" ng-repeat="item in typeListCtrl.items">
                             <td>{{item.name}}</td>
                             <td>{{item.description}}</td>
+                        </tr>
+                        <tr ng-show="typeListCtrl.items.length === 0">
+                            <td>No types registered yet.</td>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>
@@ -80,8 +85,6 @@
                                 </div>
                             </div>
                             <div class="col-xs-12">
-                                <pre>{{addTypeCtrl.item.serviceFile}}</pre>
-                                <pre>{{addTypeCtrl.item.routineFiles}}</pre>
                                 <!-- buttons -->
                                 <div class="form-group align-right">
                                     <button type="submit" class="btn btn-primary m-t-15 waves-effect">

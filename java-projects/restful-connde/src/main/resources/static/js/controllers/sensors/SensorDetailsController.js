@@ -1,8 +1,8 @@
 /* global app */
 
 app.controller('SensorDetailsController',
-        ['$scope', '$timeout', '$routeParams', '$controller', 'ComponentService', 'sensorDetails',
-            function ($scope, $timeout, $routeParams, $controller, ComponentService, sensorDetails) {
+        ['$scope', '$timeout', '$routeParams', '$controller', 'CrudService', 'ComponentService', 'sensorDetails',
+            function ($scope, $timeout, $routeParams, $controller, CrudService, ComponentService, sensorDetails) {
                 var vm = this;
 
                 vm.loader = {};
@@ -67,16 +67,34 @@ app.controller('SensorDetailsController',
                 }
 
                 // sensor values
-                var loadSensorValues = function () {
+                var loadSensorValues = function (tableState) {
 
                     vm.loader.sensorValues = true;
+
+                    var pagination = tableState.pagination || {};
+
+                    var start = pagination.start || 0; // This is NOT the page number, but the index of item in the list that you want to use to display the table.
+                    var size = pagination.number || 10; // Number of entries showed per page.
+
                     $timeout(
                             function () {
-                                ComponentService.getValues(undefined, $routeParams.id).then(
+                                var query = 'findAllByIdref';
+                                var params = {
+                                    idref: $routeParams.id,
+                                    sort: 'date,desc',
+                                    size: size,
+                                    page: Math.floor(start / size)
+                                };
+
+                                CrudService.searchPage('valueLogs', query, params).then(
                                         function (data) {
+                                            console.log(data);
                                             vm.loader.sensorValues = false;
+
+                                            tableState.pagination.numberOfPages = data.page.totalPages; //set the number of pages so the pagination can update
+
                                             vm.sensorValues = {
-                                                data: data
+                                                data: data._embedded.valueLogs
                                             };
                                         },
                                         function (response) {
@@ -89,9 +107,11 @@ app.controller('SensorDetailsController',
                                 );
                             }, 500);
                 };
+                
+                vm.loadSensorValues = loadSensorValues;
 
                 vm.reloadValues = function () {
-                    loadSensorValues();
+                    $scope.$broadcast('refreshSensorValues');
 
                     $timeout(function () {
                         vm.reloadValues();

@@ -1,4 +1,4 @@
-<div class="row clearfix">
+<div class="row clearfix" ng-hide>
     <!-- Sensor Details Card -->
     <div class="col-lg-7">
         <div class="card">
@@ -16,11 +16,15 @@
                         </tr>
                         <tr>
                             <th>TYPE</th>
-                            <td>{{sensorDetailsCtrl.item._embedded.type.name}}</a></td>
+                            <td>{{sensorDetailsCtrl.item._embedded.type.name}}</td>
                         </tr>
                         <tr>
                             <th>DEVICE</th>
-                            <td>{{sensorDetailsCtrl.item._embedded.device.name}}</a></td>
+                            <td>{{sensorDetailsCtrl.item._embedded.device.name}} (IP: {{sensorDetailsCtrl.item._embedded.device.ipAddress ? sensorDetailsCtrl.item._embedded.device.ipAddress : '-'}})</td>
+                        </tr>
+                        <tr ng-hide="ctrl.deployer.processing">
+                            <th>STATUS</th>
+                            <td>{{ctrl.deployer.available ? (ctrl.deployer.deployed ? 'RUNNING' : 'AVAILABLE') : 'NOT AVAILABLE'}}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -116,7 +120,7 @@
                     may not be present. The raw message will be linked on the 
                     value field.
                 </p>
-                <!-- actuatorValues loader -->
+                <!-- sensorValues loader -->
                 <div class="row clearfix" ng-show="ctrl.loader.sensorValues">
                     <div class="col-xs-12 align-center" >
                         <div class="preloader" >
@@ -132,11 +136,12 @@
                         </div>
                     </div>
                 </div>
-                <table  class="table table-hover" ng-show="ctrl.sensorValues.data && !ctrl.loader.sensorValues">
+                <table class="table table-hover" ng-show="ctrl.sensorValues.data && !ctrl.loader.sensorValues"  st-table="ctrl.sensorValues.data" st-pipe="ctrl.loadSensorValues" refresh-table="refreshSensorValues">
                     <thead>
-                    <th>ID</th>
-                    <th>Value</th>
-                    <th>Date</th>
+                        <tr>
+                            <th>Value</th>
+                            <th>Date</th>
+                        </tr>        
                     </thead>
                     <tbody>
                         <tr id="{{v.id}}" ng-repeat="v in ctrl.sensorValues.data">
@@ -147,7 +152,18 @@
                             </td>
                             <td>{{v.date}}</td>
                         </tr>
+                        <tr ng-show="ctrl.sensorValues.data.length === 0">
+                            <td>No values received yet.</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4">
+                            </td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>

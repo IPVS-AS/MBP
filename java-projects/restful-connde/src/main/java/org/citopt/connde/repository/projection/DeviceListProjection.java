@@ -15,4 +15,8 @@ public interface DeviceListProjection {
     String getName();
 
     String getMacAddress();
+    
+    String getIpAddress();
+    
+    String getDate();
 }

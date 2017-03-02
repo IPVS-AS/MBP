@@ -1,27 +1,30 @@
 package org.citopt.connde.domain.device;
 
-import java.util.Objects;
 import javax.persistence.GeneratedValue;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  *
  * @author rafaelkperes
  */
-@Document
 public class Device {
 
     @Id
     @GeneratedValue
     private String id;
-
+    
     @Indexed(unique = true)
     private String name;
-
+    
     @Indexed(unique = true)
     private String macAddress;
+
+    private String ipAddress;
+
+    private String iface;
+
+    private String date;
     
     public static String formatMAC(String raw) {
         if (raw != null) {
@@ -48,6 +51,14 @@ public class Device {
         this.id = id;
     }
 
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(String ip) {
+        this.ipAddress = ip;
+    }
+
     public String getName() {
         return name;
     }
@@ -55,7 +66,7 @@ public class Device {
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getMacAddress() {
         return macAddress;
     }
@@ -64,42 +75,20 @@ public class Device {
         this.macAddress = macAddress;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 11 * hash + Objects.hashCode(this.id);
-        hash = 11 * hash + Objects.hashCode(this.name);
-        hash = 11 * hash + Objects.hashCode(this.macAddress);
-        return hash;
+    public String getIface() {
+        return iface;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Device other = (Device) obj;
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        if (!Objects.equals(this.macAddress, other.macAddress)) {
-            return false;
-        }
-        if (!Objects.equals(this.id, other.id)) {
-            return false;
-        }
-        return true;
+    public void setIface(String iface) {
+        this.iface = iface;
     }
 
-    @Override
-    public String toString() {
-        return "Device{" + "id=" + id + ", name=" + name + ", macAddress=" + macAddress + '}';
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 
 }

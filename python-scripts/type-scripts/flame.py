@@ -13,7 +13,6 @@ if __name__ == "__main__":
     client = FlameSensor(sys.argv)
 
     def eventFlame(e):
-        print ('flame')
         client._gotSensorValue(1)
 
     GPIO.setwarnings(False)

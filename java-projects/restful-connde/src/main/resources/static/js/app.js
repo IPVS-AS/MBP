@@ -37,8 +37,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     controller: 'HomeController as ctrl',
                     resolve: {
                         countActuators: ['CrudService', function (CrudService) {
-                                console.log('cant home can i');
-
                                 return CrudService.countItems('actuators').then(
                                         function (count) {
                                             return count;
@@ -49,8 +47,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                                 );
                             }],
                         countSensors: ['CrudService', function (CrudService) {
-                                console.log('cant home can i');
-
                                 return CrudService.countItems('sensors').then(
                                         function (count) {
                                             return count;
@@ -61,8 +57,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                                 );
                             }],
                         countDevices: ['CrudService', function (CrudService) {
-                                console.log('cant home can i');
-
                                 return CrudService.countItems('devices').then(
                                         function (count) {
                                             return count;
@@ -73,8 +67,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                                 );
                             }],
                         countTypes: ['CrudService', function (CrudService) {
-                                console.log('cant home can i');
-
                                 return CrudService.countItems('types').then(
                                         function (count) {
                                             return count;
@@ -119,8 +111,15 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     templateUrl: 'templates/actuator-id.html',
                     controller: 'ActuatorDetailsController as ctrl',
                     resolve: {
-                        actuatorDetails: ['$route', 'CrudService', function ($route, CrudService) {
-                                return CrudService.fetchSpecificItem('actuators', $route.current.params.id);
+                        actuatorDetails: ['$route', '$location', 'CrudService', function ($route, $location, CrudService) {
+                                return CrudService.fetchSpecificItem('actuators', $route.current.params.id).then(
+                                        function (data) {
+                                            return data;
+                                        },
+                                        function () {
+                                            console.log('404');
+                                            $location.url(viewPrefix + '/404');
+                                        });
                             }]
                     }
                 })
@@ -157,8 +156,16 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     templateUrl: 'templates/sensor-id.html',
                     controller: 'SensorDetailsController as ctrl',
                     resolve: {
-                        sensorDetails: ['$route', 'CrudService', function ($route, CrudService) {
-                                return CrudService.fetchSpecificItem('sensors', $route.current.params.id);
+                        sensorDetails: ['$route', '$location', 'CrudService', function ($route, $location, CrudService) {
+                                return CrudService.fetchSpecificItem('sensors', $route.current.params.id).then(
+                                        function (data) {
+                                            console.log(data);
+                                            return data;
+                                        },
+                                        function () {
+                                            console.log('404');
+                                            $location.url(viewPrefix + '/404');
+                                        });
                             }]
                     }
                 })
@@ -195,6 +202,11 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                                 return angular.bind(this, CrudService.addItem, 'types');
                             }]
                     }
+                })
+                
+                // Types List and Register
+                .when(viewPrefix + '/404', {
+                    templateUrl: 'templates/404'
                 })
 
                 // Go expert

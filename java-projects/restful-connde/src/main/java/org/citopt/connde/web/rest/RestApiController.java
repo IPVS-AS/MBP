@@ -6,12 +6,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Logger;
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.address.Address;
+import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.component.ActuatorValidator;
 import org.citopt.connde.domain.component.Sensor;
-import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.type.Type;
-import org.citopt.connde.repository.AddressRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.NetworkService;
 import org.citopt.connde.service.SSHDeployer;
@@ -26,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.citopt.connde.repository.DeviceRepository;
 
 /**
  *
@@ -51,7 +50,7 @@ public class RestApiController implements
     private ActuatorValidator actuatorRepository;
 
     @Autowired
-    private AddressRepository addressRepository;
+    private DeviceRepository addressRepository;
 
     @Override
     public RepositoryLinksResource process(RepositoryLinksResource resource) {
@@ -80,7 +79,7 @@ public class RestApiController implements
             // Device not setted
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
-        String deviceIp = addressRepository.findByMac(device.getMacAddress()).getIp();
+        String deviceIp = addressRepository.findByMacAddress(device.getMacAddress()).getIpAddress();
 
         Boolean result;
         try {
@@ -125,7 +124,7 @@ public class RestApiController implements
             // Device or type not setted
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
-        String deviceIp = addressRepository.findByMac(device.getMacAddress()).getIp();
+        String deviceIp = addressRepository.findByMacAddress(device.getMacAddress()).getIpAddress();
 
         String serverIp;
         try {
@@ -167,7 +166,7 @@ public class RestApiController implements
             // Device not setted
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
-        String deviceIp = addressRepository.findByMac(device.getMacAddress()).getIp();
+        String deviceIp = addressRepository.findByMacAddress(device.getMacAddress()).getIpAddress();
 
         try {
             sshDeployer.undeploy(id,
@@ -189,8 +188,8 @@ public class RestApiController implements
     }
 
     @RequestMapping(value = "/autodeploy", method = RequestMethod.POST)
-    public ResponseEntity<String> autodeploy(@RequestBody Address address) {
-        Address actualAddr = addressRepository.findByMac(address.getMac());
+    public ResponseEntity<String> autodeploy(@RequestBody Device address) {
+        Device actualAddr = addressRepository.findByMacAddress(address.getMacAddress());
 
         if (actualAddr == null) {
             return new ResponseEntity(HttpStatus.BAD_REQUEST);

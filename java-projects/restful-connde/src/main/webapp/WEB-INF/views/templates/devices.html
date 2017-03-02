@@ -1,4 +1,4 @@
-<div class="row clearfix">
+<div class="row clearfix" ng-hide>
     <!-- List of Devices Card -->
     <div class="col-lg-7">
         <div class="card">
@@ -16,9 +16,17 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <tr ng-if="deviceListCtrl.items.length == 0">
+                            No devices registered yet.
+                        </tr>
                         <tr id="{{item.id}}" ng-repeat="item in deviceListCtrl.items">
                             <td>{{item.name}}</td>
                             <td>{{item.formattedMacAddress}}</td>
+                        </tr>
+                        <tr ng-show="deviceListCtrl.items.length === 0">
+                            <td>No devices registered yet.</td>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>
@@ -58,6 +66,14 @@
                                         <input class="form-control mac-address" id="device-form-input-macAddress"  type="text" placeholder="Mac Address" ng-model="addDeviceCtrl.item.formattedMacAddress" />
                                     </div>
                                     <span class="help-block" ng-show="addDeviceCtrl.item.errors.macAddress">{{addDeviceCtrl.item.errors.macAddress.message}}</span>
+                                </div>
+                                <!-- item.ipAddress group -->
+                                <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.ipAddress }">
+                                    <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.ipAddress }">
+                                        <input class="form-control mac-address" id="device-form-input-macAddress"  type="text" placeholder="IP Address" ng-model="addDeviceCtrl.item.ipAddress" />
+                                    </div>
+                                    <p class="help-block">IP Address is optional and will be overwritten once the system finds the Device.</p>
+                                    <span class="help-block" ng-show="addDeviceCtrl.item.errors.ipAddress">{{addDeviceCtrl.item.errors.ipAddress.message}}</span>
                                 </div>
                             </div>
                             <div class="col-xs-12">

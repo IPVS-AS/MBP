@@ -1,12 +1,10 @@
 package org.citopt.connde;
 
+import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.ActuatorValidator;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.component.SensorValidator;
-import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.domain.device.DeviceValidator;
-import org.citopt.connde.domain.location.LocationValidator;
 import org.citopt.connde.domain.type.Type;
 import org.citopt.connde.web.rest.RestApiController;
 import org.springframework.context.annotation.Bean;
@@ -39,17 +37,11 @@ public class RestConfiguration extends RepositoryRestMvcConfiguration {
 
     @Override
     protected void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener v) {
-        v.addValidator("beforeSave", new LocationValidator());
-        v.addValidator("beforeCreate", new LocationValidator());
-
         v.addValidator("beforeSave", new SensorValidator());
         v.addValidator("beforeCreate", new SensorValidator());
 
         v.addValidator("beforeSave", new ActuatorValidator());
         v.addValidator("beforeCreate", new ActuatorValidator());
-
-        v.addValidator("beforeSave", new DeviceValidator());
-        v.addValidator("beforeCreate", new DeviceValidator());
     }
 
     @Bean

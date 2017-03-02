@@ -1,4 +1,4 @@
-<div class="row clearfix">
+<div class="row clearfix" ng-hide>
     <!-- List of Sensors Card -->
     <div class="col-lg-7">
         <div class="card">
@@ -21,6 +21,11 @@
                             <td><a ng-href="{{detailsLink(item)}}">{{item.name}}</a></td>
                             <td>{{item._embedded.type.name}}</td>
                             <td>{{item._embedded.device.name}}</td>
+                        </tr>
+                        <tr ng-show="sensorListCtrl.items.length === 0">
+                            <td>No sensors registered yet.</td>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>
@@ -69,7 +74,7 @@
                                     <!-- item.device group -->
                                     <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.device }">
                                         <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.device }">
-                                            <select class="form-control show-tick" id="sensor-form-select-device" ng-model="addSensorCtrl.item.device" ng-options="d._links.self.href as (d.name +    ' - ' +    d.formattedMacAddress) for d in deviceListCtrl.items">
+                                            <select class="form-control show-tick" id="sensor-form-select-device" ng-model="addSensorCtrl.item.device" ng-options="d._links.self.href as (d.name +       ' - ' +       d.formattedMacAddress) for d in deviceListCtrl.items">
                                                 <option value="">Select Device<option />
                                             </select>
                                         </div>
@@ -141,3 +146,16 @@
     </div>
     <!-- #END# Register Sensors Card -->
 </div>
+<script>
+    $('#wizard_horizontal').steps({
+        headerTag: 'h2',
+        bodyTag: 'section',
+        transitionEffect: 'slideLeft',
+        onInit: function (event, currentIndex) {
+            setButtonWavesEffect(event);
+        },
+        onStepChanged: function (event, currentIndex, priorIndex) {
+            setButtonWavesEffect(event);
+        }
+    });
+</script>
