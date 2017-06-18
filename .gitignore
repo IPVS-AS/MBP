@@ -7,6 +7,9 @@ nbdist/
 nbactions.xml
 .nb-gradle/
 
+#JetBrains Projects
+.idea/
+
 #CSV file
 *.csv
 
@@ -77,3 +80,26 @@ target/
 /sensmonqtt/nbproject/
 /sensorweb/websensor/nbproject/
 /java-projects/websensor/nbproject/
+
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
