@@ -16,14 +16,19 @@ import org.springframework.context.annotation.Import;
 @Import({MongoConfiguration.class})
 public class RootConfiguration {
 
-    @Bean(name = "mqtt")
-    public MqttClient mqttClient() throws MqttException {
-        System.out.println("load MqttClient");
-        // CHANGE TO DYNAMIC IP
-        MqttClient mqttClient = 
-                new MqttClient("tcp://localhost:1883", "root-server");
-        return mqttClient;
-    }
+//    @Bean(name = "mqtt")
+//    public MqttClient mqttClient()  {
+//        System.out.println("load MqttClient");
+//        // CHANGE TO DYNAMIC IP
+//        MqttClient mqttClient = null;
+////		try {
+////			mqttClient = new MqttClient("tcp://localhost:1883", "root-server");
+////		} catch (MqttException e) {
+////			// TODO Auto-generated catch block
+////			e.printStackTrace();
+////		}
+//        return mqttClient;
+//    }
     
     @Bean(name = "mongo")
     public Mongo mongo() throws UnknownHostException {
