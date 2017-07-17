@@ -31,7 +31,6 @@ def hasAutodeploy(data):
 def isEqual(e1, e2):
     if e1 is None or e2 is None:
         return False
-
     return e1['ipAddress'] == e2['ipAddress'] and e1['iface'] == e2['iface']
 
 
@@ -135,6 +134,7 @@ class ConndeHandler(socketserver.BaseRequestHandler):
         socket.sendto(json.dumps(reply).encode('utf-8'), self.client_address)
 
     def _handle_ping(self, data):
+        print('handle ping request')
         if const.PING_MSG in data and data[const.PING_MSG] == 'ping':
             data[const.PING_MSG] = 'pong'
         socket = self.request[1]
@@ -150,23 +150,26 @@ class ConndeHandler(socketserver.BaseRequestHandler):
         data = self.request[0].decode('utf-8')
         print('Received: ' + str(data))
 
-        data = json.loads(data)
+        try:
+            data = json.loads(data)
 
-        connection_types = {
-            const.CONN_HELLO: self._handle_hello,
-            const.CONN_INIT: self._handle_init,
-            const.CONN_VALUE: self._handle_value,
-            const.CONN_KEEP_ALIVE: self._handle_keepalive,
-            const.CONN_PING: self.handle_ping,
+            connection_types = {
+                const.CONN_HELLO: self._handle_hello,
+                const.CONN_INIT: self._handle_init,
+                const.CONN_VALUE: self._handle_value,
+                const.CONN_KEEP_ALIVE: self._handle_keepalive,
+                const.CONN_PING: self._handle_ping,
 
-        }
+            }
 
-        if const.CONN_TYPE in data:
-            conn_type = data[const.CONN_TYPE]
-            if conn_type in connection_types:
-                connection_types[conn_type]()
-            else:
-                raise NotImplementedError('Unknown connection type |' + conn_type + '|')
+            if const.CONN_TYPE in data:
+                conn_type = data[const.CONN_TYPE]
+                if conn_type in connection_types:
+                    connection_types[conn_type](data)
+                else:
+                    raise NotImplementedError('Unknown connection type |' + conn_type + '|')
+        except:
+            print('unknown msg format')
 
 
 # main
