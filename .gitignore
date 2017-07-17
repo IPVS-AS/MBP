@@ -9,6 +9,7 @@ nbactions.xml
 
 #JetBrains Projects
 .idea/
+*.iml
 
 #CSV file
 *.csv
