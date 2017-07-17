@@ -8,23 +8,25 @@ Required components:
 - Maven
 
 ## Linux 
-Run script install.sh
-Run value-logger.py
+- Run script install.sh
+- Run value-logger.py
 
-Browser: http://localhost:8080/MBP
+On the browser: http://localhost:8080/MBP
 
 ## Windows
-Install and start Mosquitto, MongoDB and Tomcat8
-Install Python3 and download paho-mqtt, pymongo (pip install ...)
-Build with maven the project .war file (mvn clean install)
-deploy application on tomcat by moving .war to Tomcat8 webapps folder
+- Install and start Mosquitto, MongoDB and Tomcat8
+- Install Python3 and download paho-mqtt, pymongo (pip install ...)
+- Build with maven the project .war file (mvn clean install)
+- Deploy application on tomcat by moving .war to Tomcat8 webapps folder
 
-Browser: http://localhost:8080/restful-connde
+On the browser: http://localhost:8080/restful-connde
 
 # Registering Devices, Sensor and Actuator
-On expert mode, register type and register device
+On expert mode, register type and register device.
+
 On normal mode or expert mode, register the component (sensor or device). 
 The component id can be found in its url by selecting the component in the GUI. 
+
 For example in the following URL, '596cafaa6c0ccd5d29da0e90' corresponds to the id:
 http://localhost:8080/restful-connde/view/sensors/596cafaa6c0ccd5d29da0e90
 
