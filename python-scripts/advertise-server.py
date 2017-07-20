@@ -32,7 +32,10 @@ def isEqual(e1, e2):
     if e1 is None or e2 is None:
         return False
 
-    return e1['ipAddress'] == e2['ipAddress'] and e1['iface'] == e2['iface']
+    return e1[const.DEV_IP] == e2[const.DEV_IP] and \
+           e1[const.DEV_MAC] == e2[const.DEV_MAC] and \
+           e1[const.LOCAL_ID] == e2[const.LOCAL_ID] and \
+           e1[const.DEV_TYPE] == e2[const.DEV_TYPE]
 
 
 def proccessMessage(coll, message, addr_info):
@@ -62,11 +65,11 @@ def proccessMessage(coll, message, addr_info):
 
 
 class ConndeHandler(socketserver.BaseRequestHandler):
-    _id = 100
 
-    def _nextGlobalId(self):
-        next_id = self._id
-        self._id += 1
+    def _next_global_id(self):
+        global next_global_id
+        next_id = next_global_id
+        next_global_id += 1
         return next_id
 
     def _handle_init(self, data):
@@ -75,9 +78,6 @@ class ConndeHandler(socketserver.BaseRequestHandler):
         db_key = {'globalId': global_id}
 
         print('Connecting to db...')
-        client = MongoClient()
-        db = client[DB_NAME]
-        coll = db[COLL_NAME]
 
         cur = coll.find_one(db_key)
 
@@ -96,14 +96,12 @@ class ConndeHandler(socketserver.BaseRequestHandler):
         del auto_data['_id']
         autodeploy(auto_data)
 
-        client.close()
-
     def _handle_hello(self, data):
         print('Handling hello message')
         local_id = data[const.LOCAL_ID]
         dev_ip = data[const.DEV_IP]
 
-        global_id = self._nextGlobalId()
+        global_id = self._next_global_id()
 
         reply = {
             const.DEV_IP: dev_ip,
@@ -112,9 +110,6 @@ class ConndeHandler(socketserver.BaseRequestHandler):
         }
 
         print('Connecting to db...')
-        client = MongoClient()
-        db = client[DB_NAME]
-        coll = db[COLL_NAME]
 
         db_entry = {
             const.GLOBAL_ID: global_id,
@@ -128,8 +123,6 @@ class ConndeHandler(socketserver.BaseRequestHandler):
         coll.insert_one(
             db_entry
         )
-
-        client.close()
 
         socket = self.request[1]
         socket.sendto(json.dumps(reply).encode('utf-8'), self.client_address)
@@ -157,7 +150,7 @@ class ConndeHandler(socketserver.BaseRequestHandler):
             const.CONN_INIT: self._handle_init,
             const.CONN_VALUE: self._handle_value,
             const.CONN_KEEP_ALIVE: self._handle_keepalive,
-            const.CONN_PING: self.handle_ping,
+            const.CONN_PING: self._handle_ping,
 
         }
 
@@ -173,6 +166,13 @@ class ConndeHandler(socketserver.BaseRequestHandler):
 if __name__ == "__main__":
     print('Start')
 
+    print('Init db connection')
+    db_client = MongoClient()
+    db = db_client[DB_NAME]
+    coll = db[COLL_NAME]
+
+    next_global_id = 100
+
     # bind socket for broadcasts
     server = socketserver.UDPServer(('', PORT), ConndeHandler)
     print('Waiting for messages...')
@@ -185,21 +185,3 @@ if __name__ == "__main__":
 
 
 
-    # s = sck.socket(sck.AF_INET, sck.SOCK_DGRAM)
-    # s.bind(('', PORT))
-    #
-    # # access db
-    # # client = MongoClient()
-    # # db = client[DB_NAME]
-    # # coll = db[COLL_NAME]c
-    # # result = coll.create_index([('macAddress', pymongo.ASCENDING)], unique=True)
-    #
-    # print('Waiting for messages...')
-    # # loop n wait for messages
-    # while (True):
-    #     message, (addr, port) = s.recvfrom(1024)
-    #
-    #     # starts a thread and waits for next message
-    #     # t = Thread(target=proccessMessage, args=(coll, message))
-    #     t = Thread(target=proccessMessage, args=(None, message, (addr, port)))
-    #     t.start()

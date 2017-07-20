@@ -22,7 +22,7 @@ class LanAdvertiser:
         self.s.settimeout(5)
 
     def connect_device(self, device, own_ip, own_mac, target_address):
-        print('Connecting device |' + device[const.NAME])
+        print('Connecting device |' + device[const.NAME] + '|')
         data = {
             const.DEV_IP: own_ip,
             const.DEV_MAC: own_mac.replace(':', '').lower(),
@@ -39,13 +39,18 @@ class LanAdvertiser:
             print('rcv: ' + msg.decode('utf-8') + ' from: ' + target_address[0])
             self.server_address = srv_addr
             data = json.loads(msg.decode('utf-8'))
-            global_id = data['globalId']
+            global_id = data[const.GLOBAL_ID]
 
-            data = {const.GLOBAL_ID: global_id, const.PINSET: device[const.PINSET]}
+            data = {
+                const.GLOBAL_ID: global_id,
+                const.PINSET: device[const.PINSET],
+                const.CONN_TYPE: const.CONN_INIT
+            }
             msg = json.dumps(data).encode('utf-8')
             print('Sending adapter config: ' + str(data))
 
             self.s.sendto(msg, self.server_address)
+            global_ids[device[const.NAME]] = global_id
 
             connected = True
         except sck.timeout:
@@ -87,7 +92,7 @@ class LanAdvertiser:
                                 print('Received pong |' + msg.decode('utf-8') + '|')
                                 data = json.loads(msg.decode('utf-8'))
                                 if const.PING_MSG in data and data[const.PING_MSG] == 'pong':
-                                    print('server found at |' + srv_addr + '|')
+                                    print('server found at |' + str(srv_addr) + '|')
                                     self.server_address = srv_addr
                                     return True
                             except sck.timeout:
@@ -100,7 +105,7 @@ class LanAdvertiser:
             self.discover_server_lan()
             time.sleep(SLEEPTIME)
 
-        print('Server found @ |' + self.server_address + '|')
+        print('Server found @ |' + str(self.server_address) + '|')
 
         if self.server_address is not None:
             for sensor in autodeploy_data['sensors']:  # set invalid id for all devices
