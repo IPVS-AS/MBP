@@ -15,9 +15,14 @@ CONN_KEEP_ALIVE = 'alive'
 CONN_PING = 'ping'
 
 # autodeploy parameter
+ADAPTER_CONF = 'adapter_conf'
 NAME = 'name'
 PINSET = 'pinset'
 DEV_TYPE = 'type'
 
 # other stuff
 ENCODING = 'utf-8'
+
+# server constants
+SERVER_NEXT_ID = 'next_id'
+

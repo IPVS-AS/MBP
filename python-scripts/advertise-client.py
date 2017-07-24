@@ -5,10 +5,11 @@ import socket as sck
 import netifaces as ni
 import const
 from enum import auto
+import bluetooth
 
 SLEEPTIME = 2
 PORT = 20123
-AUTODEPLOY_FILE = 'autodeploy.conf'
+AUTODEPLOY_FILE = 'autodeploy.json'
 
 
 class LanAdvertiser:
@@ -43,9 +44,13 @@ class LanAdvertiser:
 
             data = {
                 const.GLOBAL_ID: global_id,
-                const.PINSET: device[const.PINSET],
                 const.CONN_TYPE: const.CONN_INIT
             }
+
+            adapter_conf = device[const.ADAPTER_CONF]
+            for key in adapter_conf:
+                data[key] = adapter_conf[key]
+
             msg = json.dumps(data).encode('utf-8')
             print('Sending adapter config: ' + str(data))
 
@@ -111,6 +116,9 @@ class LanAdvertiser:
             for sensor in autodeploy_data['sensors']:  # set invalid id for all devices
                 self.connect_device(sensor, self.ip, self.mac, self.server_address)
 
+class BTAdvertiser:
+    def advertise(self):
+        pass
 
 def getAutodeploy():
     try:

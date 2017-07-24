@@ -11,8 +11,9 @@ from pymongo import MongoClient
 
 PORT = 20123
 
-DB_NAME = 'connde'
-COLL_NAME = 'deploy_test'
+DB_NAME = 'discovery'
+DEV_COLL_NAME = 'devices'
+STATUS_COLL_NAME = 'status'
 AUTODEPLOY_URL = 'http://localhost:8080/connde/api/autodeploy'
 
 NAME_SUFIX = ' (AUTO)'
@@ -61,17 +62,10 @@ def proccessMessage(coll, message, addr_info):
         if (not isEqual(old, data) and hasAutodeploy(data)):
             # has modified ip / iface / config or is a new entry -> redeploy
             print('Autodeploy ' + str(data['macAddress']))
-            autodeploy(data);
+            autodeploy(data)
 
 
 class ConndeHandler(socketserver.BaseRequestHandler):
-
-    def _next_global_id(self):
-        global next_global_id
-        next_id = next_global_id
-        next_global_id += 1
-        return next_id
-
     def _handle_init(self, data):
         print('Handling adapter config')
         global_id = data['globalId']
@@ -79,7 +73,7 @@ class ConndeHandler(socketserver.BaseRequestHandler):
 
         print('Connecting to db...')
 
-        cur = coll.find_one(db_key)
+        cur = self.server.db_coll.find_one(db_key)
 
         print('Current saved client state: ' + str(cur))
 
@@ -90,9 +84,9 @@ class ConndeHandler(socketserver.BaseRequestHandler):
 
         print('Update client state: ' + str(update))
 
-        coll.update(db_key, update)
+        self.server.db_coll.update(db_key, update)
 
-        auto_data = coll.find_one(db_key)
+        auto_data = self.server.db_coll.find_one(db_key)
         del auto_data['_id']
         autodeploy(auto_data)
 
@@ -101,7 +95,7 @@ class ConndeHandler(socketserver.BaseRequestHandler):
         local_id = data[const.LOCAL_ID]
         dev_ip = data[const.DEV_IP]
 
-        global_id = self._next_global_id()
+        global_id = self.server.next_global_id()
 
         reply = {
             const.DEV_IP: dev_ip,
@@ -120,7 +114,7 @@ class ConndeHandler(socketserver.BaseRequestHandler):
 
         print('Saving: ' + str(db_entry))
 
-        coll.insert_one(
+        self.server.db_coll.insert_one(
             db_entry
         )
 
@@ -166,26 +160,41 @@ class ConndeHandler(socketserver.BaseRequestHandler):
             print('unknown msg format')
 
 
+class ConndeServer(socketserver.UDPServer):
+    def __init__(self, server_address, RequestHandlerClass):
+        socketserver.UDPServer.__init__(server_address, RequestHandlerClass)
+
+        self.db_client = MongoClient()
+        db = self.db_client[DB_NAME]
+        self.db_coll = db[DEV_COLL_NAME]
+
+        self.status_coll = db[STATUS_COLL_NAME]
+        init_status = self.status_coll.find_one({'init_status': 'true'})
+        if const.SERVER_NEXT_ID in init_status:
+            self.id = init_status[const.SERVER_NEXT_ID]
+        else:
+            self.id = 100
+
+    def next_global_id(self):
+        next_id = self.id
+        self.id += 1
+        return next_id
+
+    def server_close(self):
+        self.status_coll.update_one({'init_status': 'true'},
+                                    {
+                                        '$set': {const.SERVER_NEXT_ID: self.id}
+                                    })
+        self.db_client.close()
+
+
 # main
 if __name__ == "__main__":
     print('Start')
 
     print('Init db connection')
-    db_client = MongoClient()
-    db = db_client[DB_NAME]
-    coll = db[COLL_NAME]
-
-    next_global_id = 100
 
     # bind socket for broadcasts
-    server = socketserver.UDPServer(('', PORT), ConndeHandler)
+    server = ConndeServer(('', PORT), ConndeHandler)
     print('Waiting for messages...')
     server.serve_forever()
-
-
-
-
-
-
-
-
