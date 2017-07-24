@@ -19,7 +19,6 @@ bluetooth.advertise_service(bt_sck,
                             protocols=[bluetooth.RFCOMM_UUID]
                             )
 
-
 log.info('Releasing system resources (shutting down)')
 
 bt_sck.close()

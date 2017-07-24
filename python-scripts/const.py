@@ -31,4 +31,3 @@ SERVER_NEXT_ID = 'next_id'
 BT_UUID = '809a061f-d834-4ba6-8741-29f0f53ca1b9'
 BT_SERVICE_NAME = 'connde_discovery'
 BT_SERVICE_DESCRIPTION = 'Server used for device discovery in the connde application'
-

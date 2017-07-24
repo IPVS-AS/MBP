@@ -83,7 +83,6 @@ def server_close():
                            })
     global_db_client.close()
 
-
 class ConndeHandler(abc.ABC):
     def __init__(self, server):
         self.server = server
@@ -138,7 +137,6 @@ class ConndeHandler(abc.ABC):
             db_key,
             db_entry,
             upsert=True
-        )
 
         self._send_msg(reply)
 
@@ -237,6 +235,7 @@ class ConndeLanHandler(socketserver.BaseRequestHandler, ConndeHandler):
         self._handle_msg(msg)
 
 
+<<<<<<< HEAD
 class ConndeServer(abc.ABC):
     def __init__(self, db_client):
         self.db_client = db_client
