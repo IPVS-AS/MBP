@@ -39,13 +39,13 @@ class ConndeHandler(abc.ABC):
         dev_ip = data[const.DEV_IP]
         dev_hw_addr = data[const.DEV_HW_ADDRESS]
         dev_type = data[const.DEV_TYPE]
+        host = data[const.HOST]
 
         if const.GLOBAL_ID in data:
-            log.info('Device reentering envbironment')
+            log.info('Device reentering environment')
             global_id = data[const.GLOBAL_ID]
         else:
             log.info('New Device discovered')
-
             global_id = self.server.service.next_global_id()
 
         reply = {
@@ -64,7 +64,8 @@ class ConndeHandler(abc.ABC):
                 const.DEV_IP: dev_ip,
                 const.DEV_HW_ADDRESS: dev_hw_addr,
                 const.LOCAL_ID: local_id,
-                const.TYPE: dev_type
+                const.TYPE: dev_type,
+                const.HOST: host
             },
             '$currentDate': {
                 const.LAST_CONTACT: True

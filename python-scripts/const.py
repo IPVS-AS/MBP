@@ -6,6 +6,7 @@ LOCAL_ID = 'local_id'
 TYPE = 'type'
 CONN_TYPE = 'conn_type'
 PING_MSG = 'ping_msg'
+HOST = 'host'
 
 # Connection types
 CONN_HELLO = 'hello'

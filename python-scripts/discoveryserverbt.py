@@ -1,11 +1,8 @@
-import abc
-import const
-import logging as log
 import json
-import const
 
 from discoveryserver import *
 import bluetooth
+
 
 @ConndeHandler.register
 class ConndeBluetoothHandler(ConndeHandler):
@@ -15,8 +12,8 @@ class ConndeBluetoothHandler(ConndeHandler):
         self.client_info = client_info
 
     def handle(self):
-        log.info('Handling new connection to |' + self.client_info + '|')
-        log.info('Connection timeout is |' + self.client_sck.gettimeout())
+        log.info('Handling new connection to |%s|', str(self.client_info))
+        log.info('Connection timeout is |%s|', str(self.client_sck.gettimeout()))
 
         msg = self._receive_msg()
         while msg:  # as long there are messages handle them
@@ -27,14 +24,18 @@ class ConndeBluetoothHandler(ConndeHandler):
         self.client_sck.close()
 
     def _receive_msg(self):
-        log.debug('Trying to receive msg from |' + self.client_info + '|')
+        log.debug('Trying to receive msg from |%s', str(self.client_info))
         msg = ''
         while True:
             try:
                 data = self.client_sck.recv(1024)
+                data = data.decode(const.ENCODING)
             except bluetooth.BluetoothError as bt_err:
                 error_msg = str(bt_err)
-                if not error_msg.__eq__('timed out'):
+                if '104' in error_msg:
+                    log.info('Connection closed by client')
+                    return False
+                elif not error_msg.__eq__('timed out'):
                     raise bt_err
 
             if not data:  # on an empty string the connection was closed
@@ -44,13 +45,14 @@ class ConndeBluetoothHandler(ConndeHandler):
 
             try:
                 json_data = json.loads(msg)
+                log.debug('Received message |%s| from |%s|', msg, self.client_sck.getpeername())
                 return json_data
             except json.JSONDecodeError:
                 log.debug('Could not load JSON object from |%s|', msg)
 
     def _send_msg(self, msg):
         msg_string = json.dumps(msg)
-        log.debug('Sending message |' + msg_string + '| to |' + self.client_info + '|')
+        log.debug('Sending message |%s| to |%s|', msg_string, str(self.client_info))
         self.client_sck.sendall(msg_string)
 
 
@@ -76,15 +78,18 @@ class ConndeBluetoothServer(ConndeServer):
         log.info('Advertising BT service')
 
     def serve_forever(self):
+        global client_info
         while not self._shutdown:
             try:
+                client_info = 'unknown'
                 client_sck, client_info = self.server_sck.accept()
-                self.RequestHandlerClass(client_sck, client_info)
+                handler = self.RequestHandlerClass(self, client_sck, client_info)
+                handler.handle()
                 client_sck.close()
             except bluetooth.BluetoothError as bt_err:
                 error_msg = str(bt_err)
                 if not error_msg.__eq__('timed out'):
-                    raise bt_err
+                    log.exception('Exception while handling connection to |%s|', str(client_info))
 
         bluetooth.stop_advertising(self.server_sck)
         self.server_sck.close()

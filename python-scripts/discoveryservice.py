@@ -97,7 +97,7 @@ class DiscoveryService:
 
         if lan:
             log.info('Starting LAN...')
-            lan_server = ConndeLanServer(ConndeLanHandler, discovery_service.db_client, discovery_service, ('', PORT))
+            lan_server = ConndeLanServer(ConndeLanHandler, self.db_client, self, ('', PORT))
             lan_thread = threading.Thread(target=lan_server.serve_forever)
             lan_thread.start()
             self.servers.append(lan_server)
@@ -105,7 +105,7 @@ class DiscoveryService:
 
         if bt:
             log.info('Starting BT...')
-            bt_server = ConndeBluetoothServer(ConndeBluetoothHandler, discovery_service.db_client, discovery_service)
+            bt_server = ConndeBluetoothServer(ConndeBluetoothHandler, self.db_client, self)
             bt_thread = threading.Thread(target=bt_server.serve_forever)
             bt_thread.start()
             self.servers.append(bt_server)
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     try:
         discovery_service.start()
         while True:
-            print('.')
+            print('.', end='', flush=True)
             time.sleep(5)
     except KeyboardInterrupt:
         log.info('Keyboard interrupt. Shutting down...')
