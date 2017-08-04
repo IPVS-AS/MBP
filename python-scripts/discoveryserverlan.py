@@ -1,8 +1,4 @@
-import abc
-import const
-import logging as log
 import json
-import const
 
 from discoveryserver import *
 import socketserver
@@ -17,7 +13,6 @@ class ConndeLanHandler(socketserver.BaseRequestHandler, ConndeHandler):
     def _receive_msg(self):
         msg_string = self.request[0].decode('utf-8')
         log.debug('Received |' + msg_string + '| from |' + str(self.client_address) + '|')
-        print('Received: ' + msg_string)
 
         try:
             msg = json.loads(msg_string)
