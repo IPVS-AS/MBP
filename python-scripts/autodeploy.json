@@ -1,22 +1,25 @@
 {
-    "sensors": [
-        {
-            "name": "button1",
-            "type": "Double Button",
-            "adapter_conf": {
-                "pinset": "13,14",
-                "timeout": 10
-            }
-        },
-        {
-            "name": "button2",
-            "type": "Double Button",
-            "adapter_conf": {
-                "pinset": "15,16",
-                "timeout": 15
-            }
-        }
-
-    ],
-    "actuators": []
+  "self": {
+    "name": "raspberry-uni",
+    "type": "raspberry3",
+    "adapter_conf": {}
+  },
+  "devices": [
+    {
+      "name": "button1",
+      "type": "Double Button",
+      "adapter_conf": {
+        "pinset": "13,14",
+        "timeout": 10
+      }
+    },
+    {
+      "name": "button2",
+      "type": "Double Button",
+      "adapter_conf": {
+        "pinset": "15,16",
+        "timeout": 15
+      }
+    }
+  ]
 }

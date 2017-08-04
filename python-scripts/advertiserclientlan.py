@@ -3,6 +3,7 @@ import socket as sck
 import json
 import netifaces as ni
 
+
 @AdvertiserClient.register
 class LanAdvertiser(AdvertiserClient):
     def __init__(self, service, comm_type=const.LAN):
@@ -12,18 +13,21 @@ class LanAdvertiser(AdvertiserClient):
         self.s.settimeout(const.CLIENT_TIMEOUT)
 
     def _receive_msg(self):
-        data, srv_addr = self.s.recvfrom(1024)
-
-        msg_string = data.decode(const.ENCODING)
-        log.debug('Recieved message |%s| from |%s|', msg_string, str(srv_addr))
-
         try:
+            data, srv_addr = self.s.recvfrom(1024)
+
+            msg_string = data.decode(const.ENCODING)
+            log.debug('Recieved message |%s| from |%s|', msg_string, str(srv_addr))
+
             msg = json.loads(msg_string)
             return msg
+
         except json.JSONDecodeError:
             log.exception('Error loading json')
-
-        pass
+            return False
+        except sck.timeout:
+            log.exception('No response')
+            return False
 
     def _send_msg(self, msg):
         if self.server_address is None:
@@ -45,12 +49,12 @@ class LanAdvertiser(AdvertiserClient):
                     for mac_addr in mac_addrs:
                         if 'broadcast' in addr and 'addr' in addr:  # if it has a broadcast address
                             bc_addr = addr['broadcast']
-                            self.ip = addr['addr']
+                            ip = addr['addr']
 
-                            if self.ip == "127.0.0.1":  # omit the loop interface
+                            if ip == "127.0.0.1":  # omit the loop interface
                                 continue
 
-                            self.mac = mac_addr['addr']
+                            mac = mac_addr['addr']
                             print('broadcasting to: |' + str(bc_addr) + '|')
 
                             data = {
@@ -68,8 +72,8 @@ class LanAdvertiser(AdvertiserClient):
                                 data = json.loads(msg.decode('utf-8'))
                                 if const.PING_MSG in data and data[const.PING_MSG] == 'pong':
                                     print('server found at |' + str(srv_addr) + '|')
-                                    self.server_address = srv_addr
-                                    return True
+                                    server_address = srv_addr
+                                    return server_address, ip, mac
                             except sck.timeout:
                                 print('No response')
         return False

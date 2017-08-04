@@ -6,6 +6,7 @@ LOCAL_ID = 'local_id'
 TYPE = 'type'
 CONN_TYPE = 'conn_type'
 PING_MSG = 'ping_msg'
+HOST = 'host'
 
 # Connection types
 CONN_HELLO = 'hello'
@@ -15,8 +16,9 @@ CONN_KEEP_ALIVE = 'alive'
 CONN_PING = 'ping'
 
 # autodeploy parameter
-DEPLOY_SENSORS = 'sensors'
-DEPLOY_ADAPTERS = 'adapters'
+DEPLOY_SELF = 'self'
+DEPLOY_ON = 'on'
+DEPLOY_DEVICES = 'devices'
 ADAPTER_CONF = 'adapter_conf'
 NAME = 'name'
 PINSET = 'pinset'

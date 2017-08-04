@@ -29,8 +29,8 @@ host = first_match["host"]
 
 print("connecting to \"%s\" on %s" % (name, host))
 
-# Create the client socket
-sock = BluetoothSocket(RFCOMM)
-sock.connect((host, port))
-
-print("connected")
+# # Create the client socket
+# sock = BluetoothSocket(RFCOMM)
+# sock.connect((host, port))
+#
+# print("connected")
