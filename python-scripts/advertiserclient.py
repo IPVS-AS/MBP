@@ -24,6 +24,14 @@ class AdvertiserClient(abc.ABC):
     def discover_server(self):
         pass
 
+    def send_keep_alive(self, device_name):
+        log.debug('Sending keep_alive for |%s|', device_name)
+        keep_alive = {
+            const.CONN_TYPE: const.CONN_KEEP_ALIVE,
+            const.GLOBAL_ID: self.service.global_ids[device_name]
+        }
+        self._send_msg(keep_alive)
+
     def connect_device(self, device, ip, hw_addr):
         log.info('Connecting device |' + device[const.NAME] + '|')
         # TODO advertiseclient - read global id from last connection if availble; seperate method reconnect?

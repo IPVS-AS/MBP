@@ -8,8 +8,9 @@ class ConndeServer(abc.ABC):
         self.comm_type = comm_type
         self.service = service
         self.db_client = db_client
-        self.db_coll = self.db_client[const.DB_NAME][const.DEV_COLL_NAME]
-        self.status_coll = self.db_client[const.DB_NAME][const.STATUS_COLL_NAME]
+        self.dev_coll = self.db_client[const.DISCOVERY_DB_NAME][const.DEV_COLL_NAME]
+        self.mon_coll = self.db_client[const.DISCOVERY_DB_NAME][const.MONITOR_COLL_NAME]
+        self.status_coll = self.db_client[const.DISCOVERY_DB_NAME][const.STATUS_COLL_NAME]
 
     @abc.abstractmethod
     def serve_forever(self):
@@ -20,7 +21,7 @@ class ConndeServer(abc.ABC):
         pass
 
 
-class ConndeHandler(abc.ABC):
+class ConndeHandler(abc.ABC):  # TODO server handler - hide db logic, only access server api not db directly
     def __init__(self, server):
         self.server = server
 
@@ -44,9 +45,12 @@ class ConndeHandler(abc.ABC):
         if const.GLOBAL_ID in data:
             log.info('Device reentering environment')
             global_id = data[const.GLOBAL_ID]
+            # TODO server - register reconnected device for monitoring
         else:
             log.info('New Device discovered')
             global_id = self.server.service.next_global_id()
+
+        # TODO server - check if new device is accepted
 
         reply = {
             const.DEV_IP: dev_ip,
@@ -74,7 +78,7 @@ class ConndeHandler(abc.ABC):
 
         log.debug('Saving: ' + str(db_entry) + ' for key: ' + str(db_key))
 
-        self.server.db_coll.update_one(
+        self.server.dev_coll.update_one(
             db_key,
             db_entry,
             upsert=True
@@ -87,7 +91,7 @@ class ConndeHandler(abc.ABC):
         global_id = data[const.GLOBAL_ID]
         db_key = {const.GLOBAL_ID: global_id}
 
-        cur = self.server.db_coll.find_one(db_key)
+        cur = self.server.dev_coll.find_one(db_key)
 
         log.debug('Current saved client state: ' + str(cur))
 
@@ -106,11 +110,24 @@ class ConndeHandler(abc.ABC):
 
         log.debug('Update client state: ' + str(update))
 
-        self.server.db_coll.update_one(db_key, update)
+        self.server.dev_coll.update_one(db_key, update)
 
-        # auto_data = self.server.db_coll.find_one(db_key)
-        # del auto_data['_id']
-        # autodeploy(auto_data)
+        if const.TIMEOUT in data:
+            log.debug('Registering device |%d| for monitoring', global_id)
+            timeout = data[const.TIMEOUT]
+            monitoring_entry = {
+                '$set': {
+                    const.TIMEOUT: timeout
+                },
+                '$currentDate': {
+                    const.LAST_CONTACT: True
+                }
+            }
+            self.server.mon_coll.update_one(db_key, monitoring_entry, upsert=True)
+
+            # auto_data = self.server.dev_coll.find_one(db_key)
+            # del auto_data['_id']
+            # autodeploy(auto_data)
 
     def _handle_ping(self, data):
         log.debug('handle ping request')
@@ -123,7 +140,19 @@ class ConndeHandler(abc.ABC):
         pass
 
     def _handle_keepalive(self, data):
-        pass
+        log.debug('handle keep alive')
+        global_id = data[const.GLOBAL_ID]
+        log.debug('device |%d| is alive', global_id)
+        db_key = {const.GLOBAL_ID: global_id}
+
+        db_update = {
+            '$currentDate': {
+                const.LAST_CONTACT: True
+            }
+        }
+
+        self.server.dev_coll.update_one(db_key, db_update)
+        self.server.mon_coll.update_one(db_key, db_update)
 
     def _handle_msg(self, msg):
         connection_types = {

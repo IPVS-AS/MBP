@@ -23,13 +23,15 @@ ADAPTER_CONF = 'adapter_conf'
 NAME = 'name'
 PINSET = 'pinset'
 DEV_TYPE = 'type'
+TIMEOUT = 'timeout'
 
 # other stuff
 ENCODING = 'utf-8'
 LAST_CONTACT = 'last_contact'
 
 # server constants
-DB_NAME = 'discovery'
+DISCOVERY_DB_NAME = 'discovery'
+MONITOR_COLL_NAME = 'monitoring'
 DEV_COLL_NAME = 'devices'
 STATUS_COLL_NAME = 'status'
 
@@ -37,6 +39,8 @@ AUTODEPLOY_URL = 'http://localhost:8080/connde/api/autodeploy'
 
 STATUS_NEXT_ID = 'next_id'
 STATUS_FOR = 'status_for'
+
+SERVER_MONITOR_SLEEP = 5
 
 SERVER_SERVICE = 'service'
 SERVER_LAN = 'lan'
@@ -50,6 +54,7 @@ BT_SERVICE_DESCRIPTION = 'Server used for device discovery in the connde applica
 # Comm types
 LAN = 'LAN'
 BT = 'BT'
+TEST = 'TEST'
 
 # client constants
 SLEEPTIME = 2

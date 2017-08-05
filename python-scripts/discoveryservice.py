@@ -1,10 +1,6 @@
 import threading
-import logging as log
-import time
 import datetime
-import json
 import requests
-import const
 
 from pymongo import MongoClient
 from discoveryserverbt import *
@@ -127,20 +123,3 @@ class DiscoveryService:
                                         '$set': {const.STATUS_NEXT_ID: self._next_id}
                                     })
         self.db_client.close()
-
-
-# main
-if __name__ == "__main__":
-    log.basicConfig(format='%(asctime)s |%(levelname)s|:%(message)s', level=log.DEBUG)
-    
-    discovery_service = DiscoveryService()
-
-    # bind socket for broadcasts
-    try:
-        discovery_service.start()
-        while True:
-            print('.', end='', flush=True)
-            time.sleep(5)
-    except KeyboardInterrupt:
-        log.info('Keyboard interrupt. Shutting down...')
-        discovery_service.stop()
