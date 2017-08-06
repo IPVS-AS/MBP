@@ -1,10 +1,12 @@
-import threading
+from discoveryservice.discoveryserverlan import *
+from discoveryservice.discoveryserverbt import *
+
 import datetime
+import threading
 import requests
 
 from pymongo import MongoClient
-from discoveryserverbt import *
-from discoveryserverlan import *
+
 
 PORT = 20123
 

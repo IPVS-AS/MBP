@@ -1,4 +1,4 @@
-from discoveryservice import DiscoveryService
+from discoveryservice.discoveryservice import DiscoveryService
 from monitoringservice import MonitoringService
 
 import logging as log

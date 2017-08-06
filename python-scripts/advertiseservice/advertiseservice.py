@@ -1,10 +1,9 @@
-import time
-import json
-import const
-import logging as log
-from advertiserclientlan import LanAdvertiser
-from advertiserclientbt import BTAdvertiser
 import datetime
+import json
+import logging as log
+import time
+
+import const
 
 
 class AdvertiserService:
@@ -91,13 +90,3 @@ class AdvertiserService:
                 connected = False
 
         return connected
-
-
-if __name__ == '__main__':
-    log.basicConfig(format='%(asctime)s |%(levelname)s|:%(message)s', level=log.DEBUG)
-
-    advertise_service = AdvertiserService()
-    try:
-        advertise_service.start(LanAdvertiser)
-    except KeyboardInterrupt:
-        advertise_service.stop()

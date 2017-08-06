@@ -1,7 +1,8 @@
 import json
 
-from discoveryserver import *
 import bluetooth
+
+from discoveryservice.discoveryserver import *
 
 
 @ConndeHandler.register

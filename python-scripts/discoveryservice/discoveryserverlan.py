@@ -1,7 +1,7 @@
 import json
-
-from discoveryserver import *
 import socketserver
+
+from discoveryservice.discoveryserver import *
 
 
 @ConndeHandler.register
