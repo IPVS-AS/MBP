@@ -117,9 +117,9 @@ def format_device(device):
     device_string = str(device[const.GLOBAL_ID]) + '\t' + device[const.LOCAL_ID] + '\t' + device[const.DEV_TYPE] + '\t'
 
     if const.DEV_IP in device and device[const.DEV_IP] is not None:
-        device_string += device[const.DEV_IP] + '\t'
+        device_string += device[const.DEV_IP]
 
-    device_string += device[const.DEV_HW_ADDRESS] + '\t'
+    device_string += '\t' + device[const.DEV_HW_ADDRESS] + '\t'
 
     if const.HOST in device and device[const.HOST] is not None:
         device_string += str(device[const.HOST])
