@@ -32,10 +32,8 @@ class AdvertiserClient(abc.ABC):
         }
         self._send_msg(keep_alive)
 
-    def connect_device(self, device, ip, hw_addr):
-        log.info('Connecting device |' + device[const.NAME] + '|')
-        # TODO advertiseclient - read global id from last connection if availble; seperate method reconnect?
-        global_id = 0  # zero will be treated as false
+    def connect_device(self, device, ip, hw_addr, global_id):
+        # TODO client - do not send adapter config upon reconnect
 
         if const.HOST in device:
             host = device[const.HOST]
@@ -55,9 +53,13 @@ class AdvertiserClient(abc.ABC):
         self._send_msg(hello_msg)
 
         hello_reply = self._receive_msg()
-        if hello_reply and const.GLOBAL_ID in hello_reply:  # check for valid server response
-            global_id = hello_reply[const.GLOBAL_ID]
+        if hello_reply:
+            if const.GLOBAL_ID in hello_reply:  # check for valid server response
+                global_id = hello_reply[const.GLOBAL_ID]
+            elif const.ERROR in hello_reply:
+                log.info('Could not connect device |%s|. Reason |%s|', device[const.NAME], hello_reply[const.ERROR])
 
+        if global_id:
             # send init message
             init_msg = {
                 const.GLOBAL_ID: global_id,
@@ -69,7 +71,11 @@ class AdvertiserClient(abc.ABC):
                 init_msg[key] = adapter_conf[key]
 
             self._send_msg(init_msg)
-            # TODO advertiseclient - wait for ack
+            log.debug('Waiting for ACK')
+            ack = self._receive_msg()
+            if not ack or const.GLOBAL_ID not in ack or ack[const.GLOBAL_ID] != global_id:
+                log.debug('Did not recieve valid ACK. Treating device as unconnected')
+                global_id = 0  # treat as unconnected
 
         return global_id
 
@@ -93,19 +99,34 @@ class AdvertiserClient(abc.ABC):
         if self.server_address is not None:
             host = self.service.host
             if host is not None:
-                global_id = self.connect_device(host, self.ip, self.hw_addr)
+                global_id = self.service.global_ids[host[const.NAME]]
                 if global_id:
+                    log.info('Reconnecting device |%s|', host[const.NAME])
+                else:
+                    log.info('Connecting device |%s|', host[const.NAME])
+
+                global_id = self.connect_device(host, self.ip, self.hw_addr, global_id)
+                if global_id:
+                    log.info('Connected device |%s| with GLOBAL_ID |%d|', host[const.NAME], global_id)
+                    self.service.connected[host[const.NAME]] = True
                     self.service.global_ids[host[const.NAME]] = global_id
                 else:
                     log.error('Could not connect host. Aborting advertising...')
+                    return
 
-            for sensor in self.service.autodeploy_data[const.DEPLOY_DEVICES]:
+            for device in self.service.autodeploy_data[const.DEPLOY_DEVICES]:
                 if host is not None:
                     # add host to the device
-                    sensor[const.HOST] = self.service.global_ids[host[const.NAME]]
+                    device[const.HOST] = self.service.global_ids[host[const.NAME]]
                 else:
-                    sensor[const.HOST] = ''
-
-                global_id = self.connect_device(sensor, self.ip, self.hw_addr)
+                    device[const.HOST] = ''
+                global_id = self.service.global_ids[device[const.NAME]]
                 if global_id:
-                    self.service.global_ids[sensor[const.NAME]] = global_id
+                    log.info('Reconnecting device |%s|', device[const.NAME])
+                else:
+                    log.info('Connecting device |%s|', device[const.NAME])
+                global_id = self.connect_device(device, self.ip, self.hw_addr, global_id)
+                if global_id:
+                    log.info('Connected device |%s| with GLOBAL_ID |%d|', device[const.NAME], global_id)
+                    self.service.connected[device[const.NAME]] = True
+                    self.service.global_ids[device[const.NAME]] = global_id

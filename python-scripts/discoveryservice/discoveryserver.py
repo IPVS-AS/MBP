@@ -1,6 +1,7 @@
 import abc
 import const
 import logging as log
+import datetime
 
 
 class ConndeServer(abc.ABC):
@@ -33,61 +34,141 @@ class ConndeHandler(abc.ABC):  # TODO server handler - hide db logic, only acces
     def _receive_msg(self):
         pass
 
-    def _handle_hello(self, data):
-        log.debug('Handling hello message')
+    @abc.abstractmethod
+    def handle(self):
+        pass
 
+    def _register_device_for_monitoring(self, device):
+        global_id = device[const.GLOBAL_ID]
+        db_key = {const.GLOBAL_ID: global_id}
+        timeout = 0
+        if const.TIMEOUT in device:
+            log.debug('Registering device |%d| for monitoring', global_id)
+            timeout = device[const.TIMEOUT]
+        elif const.ADAPTER_CONF in device and const.TIMEOUT in device[const.ADAPTER_CONF]:
+            timeout = device[const.ADAPTER_CONF][const.TIMEOUT]
+
+        if timeout != 0:
+            monitoring_entry = {
+                '$set': {
+                    const.TIMEOUT: timeout
+                },
+                '$currentDate': {
+                    const.LAST_CONTACT: True
+                }
+            }
+            device_entry = {
+                '$set': {
+                    const.MONITORING: True
+                },
+                '$currentDate': {
+                    const.LAST_CONTACT: True
+                }
+            }
+            self.server.mon_coll.update_one(db_key, monitoring_entry, upsert=True)
+            self.server.dev_coll.update_one(db_key, device_entry)
+
+    def _handle_hello(self, data):
         local_id = data[const.LOCAL_ID]
         dev_ip = data[const.DEV_IP]
         dev_hw_addr = data[const.DEV_HW_ADDRESS]
         dev_type = data[const.DEV_TYPE]
         host = data[const.HOST]
 
+        accepted = True
+        error_message = ''
+
         if const.GLOBAL_ID in data:
-            log.info('Device reentering environment')
             global_id = data[const.GLOBAL_ID]
-            # TODO server - register reconnected device for monitoring
+
+            db_key = {const.GLOBAL_ID: global_id}
+            dev = self.server.dev_coll.find_one(db_key)
+
+            log.debug('Device |%d| trying to reconnect', global_id)
+            if dev is None:
+                accepted = False
+                log.debug('Device |%d| tried to reconnect, but GLOBAL_ID is not known', global_id)
+            if dev[const.DEV_HW_ADDRESS] == dev_hw_addr:
+                accepted = False
+                log.debug('Device |%d| tried to reconnect, but has a different hw_address |%s|', global_id, dev_hw_addr)
+            if dev[const.LOCAL_ID] != local_id:
+                accepted = False
+                log.debug('Device |%d| tried to reconnect, but has a different LOCAL_ID |%s|', global_id, local_id)
+
+            if accepted:
+                self._register_device_for_monitoring(dev)
+                log.info('Device |%d| reconnected successfully', global_id)
+            else:
+                error_message = 'Declined'
+                log.warning('Device |%d| tried to reconnect, but was declined', global_id)
         else:
-            log.info('New Device discovered')
-            global_id = self.server.service.next_global_id()
-
-        # TODO server - check if new device is accepted
-
-        reply = {
-            const.DEV_IP: dev_ip,
-            const.LOCAL_ID: local_id,
-            const.DEV_HW_ADDRESS: dev_hw_addr,
-            const.GLOBAL_ID: global_id
-        }
-
-        db_key = {
-            const.GLOBAL_ID: global_id
-        }
-
-        db_entry = {
-            '$set': {
-                const.DEV_IP: dev_ip,
-                const.DEV_HW_ADDRESS: dev_hw_addr,
+            log.debug('Possibly new Device detected |%s@%s|', local_id, dev_hw_addr)
+            duplicate_check_key = {
                 const.LOCAL_ID: local_id,
-                const.TYPE: dev_type,
-                const.HOST: host
-            },
-            '$currentDate': {
-                const.LAST_CONTACT: True
+                const.DEV_HW_ADDRESS: dev_hw_addr
             }
-        }
+            duplicate = self.server.dev_coll.find_one(duplicate_check_key)
 
-        log.debug('Saving: ' + str(db_entry) + ' for key: ' + str(db_key))
+            if duplicate is not None:
+                global_id = duplicate[const.GLOBAL_ID]
+                log.debug('Found duplicate for device |%s@%s| with global_id |%d|', local_id, dev_hw_addr, global_id)
 
-        self.server.dev_coll.update_one(
-            db_key,
-            db_entry,
-            upsert=True
-        )
+                cur_time = datetime.datetime.utcnow()
+                if cur_time - duplicate[const.LAST_CONTACT] < datetime.timedelta(seconds=5 * const.CLIENT_TIMEOUT):
+                    log.debug('Assuming dropped ACK for device |%d|. Resending...', global_id)
+                else:
+                    # TODO server - how to deal with duplicates? Strict -> Decline connection, Reassign -> reassign new global_id
+                    accepted = False
+                    error_message = 'Declined'
+                    log.warning('Illegal duplicate |%s@%s| in conflict with device |%d:%s@%s|', local_id, dev_hw_addr,
+                                global_id, duplicate[const.LOCAL_ID], duplicate[const.DEV_HW_ADDRESS])
+            else:
+                global_id = self.server.service.next_global_id()
+                log.info('New Device |%s@%s| discovered', local_id, dev_hw_addr)
+
+        if accepted:
+            reply = {
+                const.DEV_IP: dev_ip,
+                const.LOCAL_ID: local_id,
+                const.DEV_HW_ADDRESS: dev_hw_addr,
+                const.GLOBAL_ID: global_id
+            }
+
+            db_key = {
+                const.GLOBAL_ID: global_id
+            }
+
+            db_entry = {
+                '$set': {
+                    const.DEV_IP: dev_ip,
+                    const.DEV_HW_ADDRESS: dev_hw_addr,
+                    const.LOCAL_ID: local_id,
+                    const.TYPE: dev_type,
+                    const.HOST: host
+                },
+                '$currentDate': {
+                    const.LAST_CONTACT: True
+                }
+            }
+
+            log.debug('Saving: ' + str(db_entry) + ' for key: ' + str(db_key))
+
+            self.server.dev_coll.update_one(
+                db_key,
+                db_entry,
+                upsert=True
+            )
+        else:
+            reply = {
+                const.DEV_IP: dev_ip,
+                const.LOCAL_ID: local_id,
+                const.DEV_HW_ADDRESS: dev_hw_addr,
+                const.ERROR: error_message
+            }
 
         self._send_msg(reply)
 
     def _handle_init(self, data):
-        log.debug('Handling adapter config')
         global_id = data[const.GLOBAL_ID]
         db_key = {const.GLOBAL_ID: global_id}
 
@@ -112,25 +193,11 @@ class ConndeHandler(abc.ABC):  # TODO server handler - hide db logic, only acces
 
         self.server.dev_coll.update_one(db_key, update)
 
-        if const.TIMEOUT in data:
-            log.debug('Registering device |%d| for monitoring', global_id)
-            timeout = data[const.TIMEOUT]
-            monitoring_entry = {
-                '$set': {
-                    const.TIMEOUT: timeout
-                },
-                '$currentDate': {
-                    const.LAST_CONTACT: True
-                }
-            }
-            self.server.mon_coll.update_one(db_key, monitoring_entry, upsert=True)
+        self._register_device_for_monitoring(data)
 
-            # auto_data = self.server.dev_coll.find_one(db_key)
-            # del auto_data['_id']
-            # autodeploy(auto_data)
+        self._send_msg({const.GLOBAL_ID: global_id})  # ACK
 
     def _handle_ping(self, data):
-        log.debug('handle ping request')
         if const.PING_MSG in data and data[const.PING_MSG] == 'ping':
             data[const.PING_MSG] = 'pong'
 
@@ -140,7 +207,6 @@ class ConndeHandler(abc.ABC):  # TODO server handler - hide db logic, only acces
         pass
 
     def _handle_keepalive(self, data):
-        log.debug('handle keep alive')
         global_id = data[const.GLOBAL_ID]
         log.debug('device |%d| is alive', global_id)
         db_key = {const.GLOBAL_ID: global_id}

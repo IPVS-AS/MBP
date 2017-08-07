@@ -2,7 +2,9 @@
   "self": {
     "name": "raspberry-uni",
     "type": "raspberry3",
-    "adapter_conf": {}
+    "adapter_conf": {
+      "timeout": 30
+    }
   },
   "devices": [
     {

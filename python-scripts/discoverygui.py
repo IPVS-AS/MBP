@@ -7,14 +7,12 @@ from pymongo import MongoClient
 
 LABEL_COLUMN = 0
 LABEL_ROW = 0
-LABEL_COLUMN_SPAN = 2
+LABEL_COLUMN_SPAN = 3
 LIST_COLUMN = 0
 LIST_ROW = 1
-LIST_COLUMN_SPAN = 2
-BTN_STOP_COLUMN = 0
+LIST_COLUMN_SPAN = 3
+BTN_STOP_COLUMN = 1
 BTN_STOP_ROW = 2
-BTN_START_COLUMN = 1
-BTN_START_ROW = 2
 
 
 class simpleapp_tk(tkinter.Tk):
@@ -30,7 +28,6 @@ class simpleapp_tk(tkinter.Tk):
         self.lbl_devices = None
         self.lbl_devices_text = None
         self.list_device = None
-        self.btn_start = None
         self.btn_stop = None
         self.parent = parent
         self.initialize()
@@ -47,14 +44,12 @@ class simpleapp_tk(tkinter.Tk):
         self.list_device.grid(column=LIST_COLUMN, row=LIST_ROW, columnspan=LIST_COLUMN_SPAN)
         self.list_device.config(width=0)
 
-        self.btn_stop = tkinter.Button(self, text="Stop", command=self.OnStop)
+        self.btn_stop = tkinter.Button(self, text="Start", command=self.OnStart)
         self.btn_stop.grid(column=BTN_STOP_COLUMN, row=BTN_STOP_ROW)
-
-        self.btn_start = tkinter.Button(self, text="Start", command=self.OnStart)
-        self.btn_start.grid(column=BTN_START_COLUMN, row=BTN_START_ROW)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure(2, weight=1)
 
         # self.entryVariable = tkinter.StringVar()
         # self.entry = tkinter.Entry(self, textvariable=self.entryVariable)
@@ -81,10 +76,14 @@ class simpleapp_tk(tkinter.Tk):
 
     def OnStart(self):
         self.reload = True
+        self.btn_stop.config(text='Stop')
+        self.btn_stop.config(command=self.OnStop)
         thread = threading.Thread(target=self.keep_uptodate)
         thread.start()
 
     def OnStop(self):
+        self.btn_stop.config(text='Start')
+        self.btn_stop.config(command=self.OnStart)
         self.reload = False
 
     def set_devices(self, devices):
@@ -123,6 +122,8 @@ def format_device(device):
 
     if const.HOST in device and device[const.HOST] is not None:
         device_string += str(device[const.HOST])
+
+    device_string += '\t'
 
     return device_string
 

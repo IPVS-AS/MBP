@@ -7,6 +7,7 @@ TYPE = 'type'
 CONN_TYPE = 'conn_type'
 PING_MSG = 'ping_msg'
 HOST = 'host'
+ERROR = 'error'
 
 # Connection types
 CONN_HELLO = 'hello'
@@ -40,6 +41,8 @@ AUTODEPLOY_URL = 'http://localhost:8080/connde/api/autodeploy'
 STATUS_NEXT_ID = 'next_id'
 STATUS_FOR = 'status_for'
 
+MONITORING = 'monitoring'
+
 SERVER_MONITOR_SLEEP = 5
 
 SERVER_SERVICE = 'service'
@@ -61,3 +64,5 @@ SLEEPTIME = 2
 PORT = 20123
 AUTODEPLOY_FILE = 'autodeploy.json'
 CLIENT_TIMEOUT = 5
+
+GLOBAL_ID_FILE = 'global_ids.json'
