@@ -42,6 +42,7 @@ class AdvertiserService:
         connected_devices = [(key, self.global_ids) for key in self.global_ids if self.global_ids[key]]
         if len(connected_devices) == 0:
             log.info('No devices connected exiting')
+            return
         else:
             log.info('Successfully connected |%d| devices', len(connected_devices))
 
@@ -105,11 +106,11 @@ class AdvertiserService:
     def check_connected(self):
         # TODO client - must be able to tell the difference between (un-)successfull connect and reconnect (reconnect already has a valid global_id)
         connected = True
-        if self.host is not None and not self.global_ids[self.host[const.NAME]]:
+        if self.host is not None and not self.connected[self.host[const.NAME]]:
             connected = False
 
         for device in self.autodeploy_data[const.DEPLOY_DEVICES]:
-            if not self.global_ids.get(device[const.NAME]):
+            if not self.connected.get(device[const.NAME]):
                 connected = False
 
         return connected

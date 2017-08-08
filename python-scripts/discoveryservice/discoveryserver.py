@@ -160,6 +160,7 @@ class ConndeHandler(abc.ABC):  # TODO server handler - hide db logic, only acces
             )
         else:
             reply = {
+                const.GLOBAL_ID: 0,
                 const.DEV_IP: dev_ip,
                 const.LOCAL_ID: local_id,
                 const.DEV_HW_ADDRESS: dev_hw_addr,

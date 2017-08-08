@@ -11,6 +11,7 @@ class ConndeBluetoothHandler(ConndeHandler):
         ConndeHandler.__init__(self, server)
         self.client_sck = client_sck
         self.client_info = client_info
+        self._last_remainder = ''
 
     def handle(self):
         log.info('Handling new connection to |%s|', str(self.client_info))
@@ -24,9 +25,20 @@ class ConndeBluetoothHandler(ConndeHandler):
         # when no messages arrive, close the connection
         self.client_sck.close()
 
-    def _receive_msg(self):
-        log.debug('Trying to receive msg from |%s', str(self.client_info))
-        msg = ''
+    def _receive_msg(self, ):
+        log.debug('Trying to receive msg from |%s|', str(self.client_info))
+        if self._last_remainder != '':  # if there is a remainder from last message
+            try:
+                json_data, remainder = self._parse_json(self._last_remainder)
+                log.debug('Received message |%s| from |%s| remaining |%s|', str(json_data),
+                          self.client_sck.getpeername(),
+                          remainder)
+                self._last_remainder = remainder
+                return json_data
+            except ValueError:
+                pass
+
+        msg = self._last_remainder
         while True:
             try:
                 data = self.client_sck.recv(1024)
@@ -45,11 +57,25 @@ class ConndeBluetoothHandler(ConndeHandler):
             msg += data
 
             try:
-                json_data = json.loads(msg)
-                log.debug('Received message |%s| from |%s|', msg, self.client_sck.getpeername())
+                json_data, remainder = self._parse_json(msg)  # raises a ValueError if no JSON object contained
+                log.debug('Received message |%s| from |%s| remaining |%s|', str(json_data), self.client_sck.getpeername(),
+                          remainder)
+                self._last_remainder = remainder
                 return json_data
-            except json.JSONDecodeError:
+            except ValueError:
                 log.debug('Could not load JSON object from |%s|', msg)
+
+    def _parse_json(self, msg_string):
+        for i in range(0, len(msg_string) + 1): # need +1 to include all symbols in last partial string
+            try:
+                partial_string = msg_string[0:i]
+                json_data = json.loads(partial_string)  # error raised upon failure
+                # if no error was raised there was a valid json object. Thus all from index i+1 is remainder
+                remainder = msg_string[i:len(msg_string)]
+                return json_data, remainder
+            except json.JSONDecodeError:
+                pass
+        raise ValueError('no json object found')
 
     def _send_msg(self, msg):
         msg_string = json.dumps(msg)
@@ -91,6 +117,8 @@ class ConndeBluetoothServer(ConndeServer):
                 error_msg = str(bt_err)
                 if not error_msg.__eq__('timed out'):
                     log.exception('Exception while handling connection to |%s|', str(client_info))
+            except BaseException as ex:
+                log.exception('Exception during handling of connection')
 
         bluetooth.stop_advertising(self.server_sck)
         self.server_sck.close()

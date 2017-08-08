@@ -56,7 +56,7 @@ class AdvertiserClient(abc.ABC):
         if hello_reply:
             if const.GLOBAL_ID in hello_reply:  # check for valid server response
                 global_id = hello_reply[const.GLOBAL_ID]
-            elif const.ERROR in hello_reply:
+            if const.ERROR in hello_reply:
                 log.info('Could not connect device |%s|. Reason |%s|', device[const.NAME], hello_reply[const.ERROR])
 
         if global_id:
