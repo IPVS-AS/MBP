@@ -65,7 +65,7 @@
                         <div class="alert alert-success" ng-show="ctrl.deployer.undeploy.success"> {{ctrl.deployer.undeploy.success}} </div>
                         <div class="alert alert-danger" ng-show="ctrl.deployer.undeploy.errors.global"> {{ctrl.deployer.undeploy.errors.global}} </div>
                     </div>
-                    <div class="col-xs-12" ng-show="ctrl.deployer.available && !ctrl.deployer.deployed">
+                    <div class="col-xs-12">
                         <form ng-submit="ctrl.deployer.doDeploy()">
                             <div class="row clearfix">
                                 <div class="col-xs-9">
