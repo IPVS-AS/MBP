@@ -49,7 +49,7 @@ class AdvertiserService:
         while True:
             cur_time = datetime.datetime.utcnow()
             for device_name in self.last_keepalive.keys():
-                if not self.global_ids[device_name]:
+                if not self.connected[device_name]:
                     log.debug('Device |%s| not connected', device_name)
                     continue
                 last_contact = self.last_keepalive[device_name][const.LAST_CONTACT]
