@@ -9,7 +9,7 @@ class BTAdvertiser(AdvertiserClient):
     def __init__(self, service, comm_type=const.BT):
         AdvertiserClient.__init__(self, service, comm_type)
         self.client_sck = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-        self.client_sck.settimeout(const.CLIENT_TIMEOUT)
+        # self.client_sck.settimeout(const.CLIENT_TIMEOUT)
 
     def discover_server(self):
         service_matches = bluetooth.find_service(uuid=const.BT_UUID,
@@ -29,6 +29,7 @@ class BTAdvertiser(AdvertiserClient):
             srv_addr = (host, port)
             try:
                 self.client_sck.connect(srv_addr)
+                self.client_sck.settimeout(const.CLIENT_TIMEOUT)
 
                 ping_msg = {
                     const.CONN_TYPE: const.CONN_PING,
@@ -68,7 +69,7 @@ class BTAdvertiser(AdvertiserClient):
             try:
                 json_data = json.loads(msg)
                 if hasattr(self.client_sck, 'getpeername'):
-                    log.debug('Recieved message |%s| from |%s|', msg, self.client_sck.getpeername())
+                    log.debug('Recieved message |%s| from |%s|', msg, str(self.client_sck.getpeername()))
                 else:
                     log.debug('Received message |%s|', msg)
                 return json_data
@@ -78,7 +79,7 @@ class BTAdvertiser(AdvertiserClient):
     def _send_msg(self, msg):
         msg_string = json.dumps(msg)
         if hasattr(self.client_sck, 'getpeername'):
-            log.debug('Sending message |' + msg_string + '| to |' + self.client_sck.getpeername() + '|')
+            log.debug('Sending message |' + msg_string + '| to |' + str(self.client_sck.getpeername()) + '|')
         else:
             log.debug('Sending message |%s|', msg_string)
 
