@@ -39,7 +39,7 @@ class AdvertiserService:
             advertiser.advertise()
             connected = self.check_connected()
 
-        connected_devices = [(key, self.global_ids) for key in self.global_ids if self.global_ids[key]]
+        connected_devices = [(key, self.global_ids) for key in self.connected if self.connected[key]]
         if len(connected_devices) == 0:
             log.info('No devices connected exiting')
             return
