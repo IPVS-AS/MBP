@@ -65,4 +65,6 @@ PORT = 20123
 AUTODEPLOY_FILE = 'autodeploy.json'
 CLIENT_TIMEOUT = 5
 
+CLIENT_CMD_ARG = 'advertiser_class'
+
 GLOBAL_ID_FILE = 'global_ids.json'
