@@ -1,6 +1,6 @@
 {
   "self": {
-    "name": "raspberry-uni",
+    "local_id": "raspberry-uni",
     "type": "raspberry3",
     "adapter_conf": {
       "timeout": 30
@@ -8,7 +8,7 @@
   },
   "devices": [
     {
-      "name": "button1",
+      "local_id": "button1",
       "type": "Double Button",
       "adapter_conf": {
         "pinset": "13,14",
@@ -16,7 +16,7 @@
       }
     },
     {
-      "name": "button2",
+      "local_id": "button2",
       "type": "Double Button",
       "adapter_conf": {
         "pinset": "15,16",

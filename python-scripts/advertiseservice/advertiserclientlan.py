@@ -52,9 +52,8 @@ class LanAdvertiser(AdvertiserClient):
                             bc_addr = addr['broadcast']
                             ip = addr['addr']
 
-                            # TODO client lan - uncomment
-                            # if ip == "127.0.0.1":  # omit the loop interface
-                            #     continue
+                            if ip == "127.0.0.1":  # omit the loop interface
+                                continue
 
                             mac = mac_addr['addr']
                             print('broadcasting to: |' + str(bc_addr) + '|')

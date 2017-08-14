@@ -45,7 +45,7 @@ class AdvertiserClient(abc.ABC):
             const.DEV_IP: ip,
             const.DEV_HW_ADDRESS: hw_addr.lower(),
             const.DEV_TYPE: device[const.DEV_TYPE],
-            const.LOCAL_ID: device[const.NAME],
+            const.LOCAL_ID: device[const.LOCAL_ID],
             const.HOST: host,
             const.CONN_TYPE: const.CONN_HELLO
         }
@@ -57,7 +57,7 @@ class AdvertiserClient(abc.ABC):
             if const.GLOBAL_ID in hello_reply:  # check for valid server response
                 global_id = hello_reply[const.GLOBAL_ID]
             if const.ERROR in hello_reply:
-                log.info('Could not connect device |%s|. Reason |%s|', device[const.NAME], hello_reply[const.ERROR])
+                log.info('Could not connect device |%s|. Reason |%s|', device[const.LOCAL_ID], hello_reply[const.ERROR])
 
         if global_id:
             # send init message
@@ -99,17 +99,17 @@ class AdvertiserClient(abc.ABC):
         if self.server_address is not None:
             host = self.service.host
             if host is not None:
-                global_id = self.service.global_ids[host[const.NAME]]
+                global_id = self.service.global_ids[host[const.LOCAL_ID]]
                 if global_id:
-                    log.info('Reconnecting device |%s|', host[const.NAME])
+                    log.info('Reconnecting device |%s|', host[const.LOCAL_ID])
                 else:
-                    log.info('Connecting device |%s|', host[const.NAME])
+                    log.info('Connecting device |%s|', host[const.LOCAL_ID])
 
                 global_id = self.connect_device(host, self.ip, self.hw_addr, global_id)
                 if global_id:
-                    log.info('Connected device |%s| with GLOBAL_ID |%d|', host[const.NAME], global_id)
-                    self.service.connected[host[const.NAME]] = True
-                    self.service.global_ids[host[const.NAME]] = global_id
+                    log.info('Connected device |%s| with GLOBAL_ID |%d|', host[const.LOCAL_ID], global_id)
+                    self.service.connected[host[const.LOCAL_ID]] = True
+                    self.service.global_ids[host[const.LOCAL_ID]] = global_id
                 else:
                     log.error('Could not connect host. Aborting advertising...')
                     return
@@ -117,16 +117,16 @@ class AdvertiserClient(abc.ABC):
             for device in self.service.autodeploy_data[const.DEPLOY_DEVICES]:
                 if host is not None:
                     # add host to the device
-                    device[const.HOST] = self.service.global_ids[host[const.NAME]]
+                    device[const.HOST] = self.service.global_ids[host[const.LOCAL_ID]]
                 else:
                     device[const.HOST] = ''
-                global_id = self.service.global_ids[device[const.NAME]]
+                global_id = self.service.global_ids[device[const.LOCAL_ID]]
                 if global_id:
-                    log.info('Reconnecting device |%s|', device[const.NAME])
+                    log.info('Reconnecting device |%s|', device[const.LOCAL_ID])
                 else:
-                    log.info('Connecting device |%s|', device[const.NAME])
+                    log.info('Connecting device |%s|', device[const.LOCAL_ID])
                 global_id = self.connect_device(device, self.ip, self.hw_addr, global_id)
                 if global_id:
-                    log.info('Connected device |%s| with GLOBAL_ID |%d|', device[const.NAME], global_id)
-                    self.service.connected[device[const.NAME]] = True
-                    self.service.global_ids[device[const.NAME]] = global_id
+                    log.info('Connected device |%s| with GLOBAL_ID |%d|', device[const.LOCAL_ID], global_id)
+                    self.service.connected[device[const.LOCAL_ID]] = True
+                    self.service.global_ids[device[const.LOCAL_ID]] = global_id

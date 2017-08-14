@@ -84,33 +84,31 @@ class AdvertiserService:
             log.exception('Illformated autodeploy file')
 
     def set_unconnected(self):
-        # TODO client - replace const.NAME with const.LOCAL_ID
         if self.host is not None:
-            self.connected[self.host[const.NAME]] = False
-            self.last_keepalive[self.host[const.NAME]] = {
+            self.connected[self.host[const.LOCAL_ID]] = False
+            self.last_keepalive[self.host[const.LOCAL_ID]] = {
                 const.TIMEOUT: datetime.timedelta(seconds=self.host[const.ADAPTER_CONF][const.TIMEOUT]),
                 const.LAST_CONTACT: datetime.datetime.utcnow()
             }
-            if self.host[const.NAME] not in self.global_ids:
-                self.global_ids[self.host[const.NAME]] = 0
+            if self.host[const.LOCAL_ID] not in self.global_ids:
+                self.global_ids[self.host[const.LOCAL_ID]] = 0
 
         for device in self.autodeploy_data[const.DEPLOY_DEVICES]:  # set invalid id for all devices
-            self.connected[device[const.NAME]] = False
-            self.last_keepalive[device[const.NAME]] = {
+            self.connected[device[const.LOCAL_ID]] = False
+            self.last_keepalive[device[const.LOCAL_ID]] = {
                 const.TIMEOUT: datetime.timedelta(seconds=device[const.ADAPTER_CONF][const.TIMEOUT]),
                 const.LAST_CONTACT: datetime.datetime.utcnow()
             }
-            if device[const.NAME] not in self.global_ids:
-                self.global_ids[device[const.NAME]] = 0
+            if device[const.LOCAL_ID] not in self.global_ids:
+                self.global_ids[device[const.LOCAL_ID]] = 0
 
     def check_connected(self):
-        # TODO client - must be able to tell the difference between (un-)successfull connect and reconnect (reconnect already has a valid global_id)
         connected = True
-        if self.host is not None and not self.connected[self.host[const.NAME]]:
+        if self.host is not None and not self.connected[self.host[const.LOCAL_ID]]:
             connected = False
 
         for device in self.autodeploy_data[const.DEPLOY_DEVICES]:
-            if not self.connected.get(device[const.NAME]):
+            if not self.connected.get(device[const.LOCAL_ID]):
                 connected = False
 
         return connected
