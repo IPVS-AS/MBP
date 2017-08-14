@@ -2,7 +2,7 @@ import json
 
 import bluetooth
 
-from discoveryservice.discoveryserver import *
+from discovery.discoverygateway import *
 
 
 @ConndeHandler.register
@@ -83,10 +83,10 @@ class ConndeBluetoothHandler(ConndeHandler):
         self.client_sck.sendall(msg_string)
 
 
-@ConndeServer.register
-class ConndeBluetoothServer(ConndeServer):
+@ConndeGateway.register
+class ConndeBluetoothGateway(ConndeGateway):
     def __init__(self, RequestHandlerClass, db_client, service, poll_interval=0.5):
-        ConndeServer.__init__(self, const.BT, db_client, service)
+        ConndeGateway.__init__(self, const.BT, db_client, service)
         self.RequestHandlerClass = RequestHandlerClass
         self.server_sck = bluetooth.BluetoothSocket()
         self.server_sck.settimeout(poll_interval)

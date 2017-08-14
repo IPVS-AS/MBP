@@ -1,3 +1,5 @@
+global_ids.json # runtime file -> not needed for development
+
 #NetBeans Project
 nbproject/private/
 build/

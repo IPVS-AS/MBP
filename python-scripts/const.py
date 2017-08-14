@@ -34,6 +34,7 @@ DISCOVERY_DB_NAME = 'discovery'
 MONITOR_COLL_NAME = 'monitoring'
 DEV_COLL_NAME = 'devices'
 STATUS_COLL_NAME = 'status'
+DB_NAME = 'discovery'
 
 AUTODEPLOY_URL = 'http://localhost:8080/connde/api/autodeploy'
 

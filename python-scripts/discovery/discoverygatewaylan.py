@@ -1,7 +1,7 @@
 import json
 import socketserver
 
-from discoveryservice.discoveryserver import *
+from discovery.discoverygateway import *
 
 
 @ConndeHandler.register
@@ -36,8 +36,8 @@ class ConndeLanHandler(socketserver.BaseRequestHandler, ConndeHandler):
 
 
 
-@ConndeServer.register
-class ConndeLanServer(socketserver.UDPServer, ConndeServer):
+@ConndeGateway.register
+class ConndeLanGateway(socketserver.UDPServer, ConndeGateway):
     def __init__(self, RequestHandlerClass, db_client, service, server_address):
-        ConndeServer.__init__(self, const.LAN, db_client, service)
+        ConndeGateway.__init__(self, const.LAN, db_client, service)
         socketserver.UDPServer.__init__(self, server_address=server_address, RequestHandlerClass=RequestHandlerClass)
