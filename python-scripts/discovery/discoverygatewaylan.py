@@ -41,3 +41,6 @@ class ConndeLanGateway(socketserver.UDPServer, ConndeGateway):
     def __init__(self, RequestHandlerClass, db_client, service, server_address):
         ConndeGateway.__init__(self, const.LAN, db_client, service)
         socketserver.UDPServer.__init__(self, server_address=server_address, RequestHandlerClass=RequestHandlerClass)
+
+    def deploy_adapter(self, service_file, routines):
+        pass

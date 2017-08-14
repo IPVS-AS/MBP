@@ -125,3 +125,6 @@ class ConndeBluetoothGateway(ConndeGateway):
 
     def shutdown(self):
         self._shutdown = True
+
+    def deploy_adapter(self, service_file, routines):
+        pass
