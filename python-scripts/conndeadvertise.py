@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     args = vars(parser.parse_args())
 
-    if not const.CLIENT_CMD_ARG in args:
+    if const.CLIENT_CMD_ARG not in args or args[const.CLIENT_CMD_ARG] is None:
         log.warning('No communication type specified. Using default ip')
         args[const.CLIENT_CMD_ARG] = default_advertiser_class
 
