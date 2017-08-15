@@ -6,7 +6,8 @@ Wants=mongodb.service bluetooth.service
 
 [Service]
 Type=simple
-ExecStartPre=-chmod 666 /var/run/sdp
-ExecStart=python3 /opt/conndediscovery/conndediscovery.py
+ExecStart=/opt/conndediscovery/conndediscovery.sh
+Restart=always
 
 [Install]
+WantedBy=multi-user.target

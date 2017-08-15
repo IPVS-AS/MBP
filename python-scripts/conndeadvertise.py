@@ -5,11 +5,21 @@ from advertiseservice.advertiserclientbt import BTAdvertiser
 import const
 
 import argparse
+import signal
 
 import logging as log
 
+
+def stop_service(signum, frame):
+    log.info('|%s| received. Shutting down...', str(signum))
+    advertise_service.stop()
+
+
 if __name__ == '__main__':
     log.basicConfig(format='%(asctime)s |%(levelname)s|:%(message)s', level=log.DEBUG)
+
+    signal.signal(signal.SIGTERM, stop_service)
+    signal.signal(signal.SIGINT, stop_service)
 
     parser = argparse.ArgumentParser(usage='%(prog)s [-h] [--lan|--bt]',
                                      description='Advertises this devices to a Connde Discovery Service. '
@@ -34,4 +44,4 @@ if __name__ == '__main__':
     try:
         advertise_service.start(args[const.CLIENT_CMD_ARG])
     except KeyboardInterrupt:
-        advertise_service.stop()
+        stop_service('Keyboard interrupt', None)

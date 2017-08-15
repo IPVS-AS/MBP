@@ -4,6 +4,7 @@ import datetime
 import logging as log
 from pymongo import MongoClient
 import time
+import threading
 
 
 class MonitoringService:
@@ -15,7 +16,8 @@ class MonitoringService:
     def start(self):
         log.info('Start monitoring')
         self.monitor = True
-        self._loop_forever()
+        t = threading.Thread(target=self._loop_forever)
+        t.start()
 
     def _loop_forever(self):
         while self.monitor:
