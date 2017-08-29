@@ -49,6 +49,26 @@ SERVER_SERVICE = 'service'
 SERVER_LAN = 'lan'
 SERVER_BT = 'bt'
 
+CONNDE_DB_NAME = 'connde'
+CONNDE_DEVICE_COLLECTION = 'device'
+CONNDE_SENSOR_COLLECTION = 'sensor'
+CONNDE_ACTUATOR_COLLECTION = 'actuator'
+CONNDE_TYPE_COLLECTION = 'type'
+
+CONNDE_DEVICE_NAME = 'name'
+CONNDE_DEVICE_IFAC = 'iface'
+CONNDE_DEVICE_MAC = 'macAddress'
+CONNDE_DEVICE_IP = 'ipAddress'
+CONNDE_DEVICE_AUTODEPLOY = 'autodeploy'
+CONNDE_DEVICE_DATE = 'date'
+
+CONNDE_TYPE_NAME = 'name'
+
+CONNDE_SENSOR_CLASS = '_class'
+CONNDE_SENSOR_JAVA_CLASS = 'org.citopt.connde.domain.component.Sensor'
+CONNDE_SENSOR_NAME = 'name'
+CONNDE_SENSOR_TYPE = 'type'
+CONNDE_SENSOR_DEVICE = 'device'
 # bluetooth server constants
 BT_UUID = '809a061f-d834-4ba6-8741-29f0f53ca1b9'
 BT_SERVICE_NAME = 'connde_discovery'

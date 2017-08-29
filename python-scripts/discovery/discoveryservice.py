@@ -24,6 +24,12 @@ class DiscoveryService(ServiceAdapter):
             log.warning('no valid init status found')
             self._next_id = 100
 
+        # Connde database
+        connde_db = self.db_client[const.CONNDE_DB_NAME]
+        self.connde_devices = connde_db[const.CONNDE_DEVICE_COLLECTION]
+        self.connde_sensors = connde_db[const.CONNDE_SENSOR_COLLECTION]
+        self.connde_types = connde_db[const.CONNDE_TYPE_COLLECTION]
+
         self.id_lock = threading.Lock()
 
         self.servers = []
@@ -182,6 +188,56 @@ class DiscoveryService(ServiceAdapter):
                 db_entry,
                 upsert=True
             )
+
+            # insert to connde database
+            if host:
+                host_key = {
+                    const.GLOBAL_ID: global_id
+                }
+
+                db_host = self.connde_devices.find_one(host_key)
+
+                type_key = {
+                    const.CONNDE_TYPE_NAME: dev_type
+                }
+
+                db_type = self.connde_types.find_one(type_key)
+
+                connde_sensor = {
+                    '$set': {
+                        const.CONNDE_SENSOR_CLASS: const.CONNDE_SENSOR_JAVA_CLASS,
+                        const.CONNDE_SENSOR_NAME: local_id,
+                        const.CONNDE_SENSOR_TYPE: db_type,
+                        const.CONNDE_SENSOR_DEVICE: db_host,
+                        const.GLOBAL_ID: global_id,
+                    }
+                }
+
+                sensor_key = {
+                    const.GLOBAL_ID: global_id,
+                }
+
+                self.connde_sensors.update_one(sensor_key, connde_sensor, upsert=True)
+            else:  # if there is no host, we assume a device
+                connde_device = {
+                    '$set': {
+                        const.CONNDE_DEVICE_AUTODEPLOY: False,
+                        const.CONNDE_DEVICE_IP: dev_ip,
+                        const.CONNDE_DEVICE_MAC: dev_hw_addr,
+                        const.CONNDE_DEVICE_IFAC: 'iface',
+                        const.CONNDE_DEVICE_NAME: local_id,
+                        const.GLOBAL_ID: global_id,
+                    },
+                    '$currentDate': {
+                        const.CONNDE_DEVICE_DATE: True
+                    }
+                }
+
+                device_key = {
+                    const.GLOBAL_ID: global_id,
+                }
+
+                self.connde_devices.update_one(device_key, connde_device, upsert=True)
 
         if not accepted:
             global_id = 0
