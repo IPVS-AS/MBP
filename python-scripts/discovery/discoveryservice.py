@@ -218,12 +218,14 @@ class DiscoveryService(ServiceAdapter):
                 }
 
                 self.connde_sensors.update_one(sensor_key, connde_sensor, upsert=True)
+
+
             else:  # if there is no host, we assume a device
                 connde_device = {
                     '$set': {
                         const.CONNDE_DEVICE_AUTODEPLOY: False,
                         const.CONNDE_DEVICE_IP: dev_ip,
-                        const.CONNDE_DEVICE_MAC: dev_hw_addr,
+                        const.CONNDE_DEVICE_MAC: str(dev_hw_addr).replace(':', ''),
                         const.CONNDE_DEVICE_IFAC: 'iface',
                         const.CONNDE_DEVICE_NAME: local_id,
                         const.GLOBAL_ID: global_id,
@@ -277,10 +279,10 @@ class DiscoveryService(ServiceAdapter):
             accepted = False
             error_message = 'GLOBAL_ID is not known'
             log.debug('Device |%d| tried to reconnect, but GLOBAL_ID is not known', global_id)
-        if dev[const.DEV_HW_ADDRESS] == dev_hw_addr:
+        if dev[const.DEV_HW_ADDRESS] != dev_hw_addr:
             accepted = False
             error_message = 'different hw_address'
-            log.debug('Device |%d| tried to reconnect, but has a different hw_address |%s|', global_id, dev_hw_addr)
+            log.debug('Device |%d| tried to reconnect, but has a different hw_address |%s| != |%s|', global_id, dev_hw_addr, dev[const.DEV_HW_ADDRESS])
         if dev[const.LOCAL_ID] != local_id:
             accepted = False
             error_message = 'different LOCAL_ID'
@@ -334,7 +336,21 @@ class DiscoveryService(ServiceAdapter):
 
         self.dev_coll.update_one(db_key, update)
 
-        self.register_device_for_monitoring(dev)
+        if const.TIMEOUT in init:
+            timeout = init[const.TIMEOUT]
+            monitor_device = {
+                const.GLOBAL_ID: global_id,
+                const.TIMEOUT: timeout,
+            }
+            self.register_device_for_monitoring(monitor_device)
+
+        connde_sensor = self.connde_sensors.find_one(db_key)
+        if connde_sensor is not None:
+            sensor_id = connde_sensor['_id']
+
+            if sensor_id is not None:
+                requests.post("http://localhost:8080/MBP/deploy/sensor/" + str(sensor_id),
+                              data={'component': 'SENSOR', 'pinset': init[const.PINSET]})
 
     def device_alive(self, device):
         """

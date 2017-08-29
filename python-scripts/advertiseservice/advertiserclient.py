@@ -50,6 +50,9 @@ class AdvertiserClient(abc.ABC):
             const.CONN_TYPE: const.CONN_HELLO
         }
 
+        if global_id:
+            hello_msg[const.GLOBAL_ID] = global_id
+
         self._send_msg(hello_msg)
 
         hello_reply = self._receive_msg()
