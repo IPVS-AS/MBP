@@ -134,7 +134,10 @@ class DiscoveryService(ServiceAdapter):
         local_id = device[const.LOCAL_ID]
         dev_hw_addr = device[const.DEV_HW_ADDRESS]
         dev_ip = device[const.DEV_IP]
-        host = device[const.HOST]
+        if const.HOST in device:
+            host = device[const.HOST]
+        else:
+            host = ''
         dev_type = device[const.DEV_TYPE]
 
         log.debug('Possibly new Device detected |%s@%s|', local_id, dev_hw_addr)
@@ -192,7 +195,7 @@ class DiscoveryService(ServiceAdapter):
             # insert to connde database
             if host:
                 host_key = {
-                    const.GLOBAL_ID: global_id
+                    const.GLOBAL_ID: global_id  # TODO: shouldn't that be host?
                 }
 
                 db_host = self.connde_devices.find_one(host_key)
@@ -218,7 +221,6 @@ class DiscoveryService(ServiceAdapter):
                 }
 
                 self.connde_sensors.update_one(sensor_key, connde_sensor, upsert=True)
-
 
             else:  # if there is no host, we assume a device
                 connde_device = {
@@ -282,7 +284,8 @@ class DiscoveryService(ServiceAdapter):
         if dev[const.DEV_HW_ADDRESS] != dev_hw_addr:
             accepted = False
             error_message = 'different hw_address'
-            log.debug('Device |%d| tried to reconnect, but has a different hw_address |%s| != |%s|', global_id, dev_hw_addr, dev[const.DEV_HW_ADDRESS])
+            log.debug('Device |%d| tried to reconnect, but has a different hw_address |%s| != |%s|', global_id,
+                      dev_hw_addr, dev[const.DEV_HW_ADDRESS])
         if dev[const.LOCAL_ID] != local_id:
             accepted = False
             error_message = 'different LOCAL_ID'
@@ -348,7 +351,7 @@ class DiscoveryService(ServiceAdapter):
         if connde_sensor is not None:
             sensor_id = connde_sensor['_id']
 
-            if sensor_id is not None:
+            if sensor_id is not None and 'pinset' in init:
                 requests.post("http://localhost:8080/MBP/deploy/sensor/" + str(sensor_id),
                               data={'component': 'SENSOR', 'pinset': init[const.PINSET]})
 
