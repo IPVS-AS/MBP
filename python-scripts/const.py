@@ -63,6 +63,11 @@ CONNDE_DEVICE_AUTODEPLOY = 'autodeploy'
 CONNDE_DEVICE_DATE = 'date'
 
 CONNDE_TYPE_NAME = 'name'
+CONNDE_TYPE_CLASS = '_class'
+CONNDE_TYPE_JAVA_CLASS = 'org.citopt.connde.domain.type.Type'
+CONNDE_TYPE_DESCIRPTION = 'description'
+CONNDE_TYPE_SERVICE = 'service'
+CONNDE_TYPE_ROUTINES = 'routines'
 
 CONNDE_SENSOR_CLASS = '_class'
 CONNDE_SENSOR_JAVA_CLASS = 'org.citopt.connde.domain.component.Sensor'
