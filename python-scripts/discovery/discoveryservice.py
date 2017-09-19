@@ -195,7 +195,7 @@ class DiscoveryService(ServiceAdapter):
             # insert to connde database
             if host:
                 host_key = {
-                    const.GLOBAL_ID: global_id  # TODO: shouldn't that be host?
+                    const.GLOBAL_ID: host
                 }
 
                 db_host = self.connde_devices.find_one(host_key)
@@ -281,12 +281,12 @@ class DiscoveryService(ServiceAdapter):
             accepted = False
             error_message = 'GLOBAL_ID is not known'
             log.debug('Device |%d| tried to reconnect, but GLOBAL_ID is not known', global_id)
-        if dev[const.DEV_HW_ADDRESS] != dev_hw_addr:
+        elif dev[const.DEV_HW_ADDRESS] != dev_hw_addr:
             accepted = False
             error_message = 'different hw_address'
             log.debug('Device |%d| tried to reconnect, but has a different hw_address |%s| != |%s|', global_id,
                       dev_hw_addr, dev[const.DEV_HW_ADDRESS])
-        if dev[const.LOCAL_ID] != local_id:
+        elif dev[const.LOCAL_ID] != local_id:
             accepted = False
             error_message = 'different LOCAL_ID'
             log.debug('Device |%d| tried to reconnect, but has a different LOCAL_ID |%s|', global_id, local_id)
