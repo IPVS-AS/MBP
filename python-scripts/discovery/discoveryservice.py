@@ -116,6 +116,83 @@ class DiscoveryService(ServiceAdapter):
             self.mon_coll.update_one(db_key, monitoring_entry, upsert=True)
             self.dev_coll.update_one(db_key, device_entry)
 
+    def _insert_to_connde_db(self, device):
+        """
+        Insert the given device into the connde database.
+        Upon the const.HOST value of the device it is determined if it is a sensor or full device.
+        The devices is specified by a dictionary containing all necessary keys to fill the connde database:
+        {
+            const.LOCAL_ID:,
+            const.DEV_HW_ADDRESS:,
+            const.DEV_IP:,
+            const.HOST:,
+            const.DEV_TYPE:,
+            const.GLOBAL_ID:,
+        }
+        :param device: the device to be inserted to the connde database
+        :type device: dict
+        :return:
+        """
+        local_id = device[const.LOCAL_ID]
+        dev_hw_addr = device[const.DEV_HW_ADDRESS]
+        dev_ip = device[const.DEV_IP]
+        if const.HOST in device:
+            host = device[const.HOST]
+        else:
+            host = ''
+        dev_type = device[const.DEV_TYPE]
+        global_id = device[const.GLOBAL_ID]
+
+        if host:
+            host_key = {
+                const.GLOBAL_ID: host
+            }
+
+            db_host = self.connde_devices.find_one(host_key)
+
+            type_key = {
+                const.CONNDE_TYPE_NAME: dev_type
+            }
+
+            db_type = self.connde_types.find_one(type_key)
+
+            connde_sensor = {
+                '$set': {
+                    const.CONNDE_SENSOR_CLASS: const.CONNDE_SENSOR_JAVA_CLASS,
+                    const.CONNDE_SENSOR_NAME: local_id,
+                    const.CONNDE_SENSOR_TYPE: db_type,
+                    const.CONNDE_SENSOR_DEVICE: db_host,
+                    const.GLOBAL_ID: global_id,
+                }
+            }
+
+            sensor_key = {
+                const.GLOBAL_ID: global_id,
+            }
+
+            self.connde_sensors.update_one(sensor_key, connde_sensor, upsert=True)
+
+        else:  # if there is no host, we assume a device
+            connde_device = {
+                '$set': {
+                    const.CONNDE_DEVICE_AUTODEPLOY: False,
+                    const.CONNDE_DEVICE_IP: dev_ip,
+                    const.CONNDE_DEVICE_MAC: str(dev_hw_addr).replace(':', ''),
+                    const.CONNDE_DEVICE_IFAC: 'iface',
+                    const.CONNDE_DEVICE_NAME: local_id,
+                    const.GLOBAL_ID: global_id,
+                },
+                '$currentDate': {
+                    const.CONNDE_DEVICE_DATE: True
+                }
+            }
+
+            device_key = {
+                const.GLOBAL_ID: global_id,
+            }
+
+            self.connde_devices.update_one(device_key, connde_device, upsert=True)
+
     def connect_new_device(self, device):
         """
         Connects a new device with the Connde system.
@@ -193,55 +270,8 @@ class DiscoveryService(ServiceAdapter):
             )
 
             # insert to connde database
-            if host:
-                host_key = {
-                    const.GLOBAL_ID: host
-                }
-
-                db_host = self.connde_devices.find_one(host_key)
-
-                type_key = {
-                    const.CONNDE_TYPE_NAME: dev_type
-                }
-
-                db_type = self.connde_types.find_one(type_key)
-
-                connde_sensor = {
-                    '$set': {
-                        const.CONNDE_SENSOR_CLASS: const.CONNDE_SENSOR_JAVA_CLASS,
-                        const.CONNDE_SENSOR_NAME: local_id,
-                        const.CONNDE_SENSOR_TYPE: db_type,
-                        const.CONNDE_SENSOR_DEVICE: db_host,
-                        const.GLOBAL_ID: global_id,
-                    }
-                }
-
-                sensor_key = {
-                    const.GLOBAL_ID: global_id,
-                }
-
-                self.connde_sensors.update_one(sensor_key, connde_sensor, upsert=True)
-
-            else:  # if there is no host, we assume a device
-                connde_device = {
-                    '$set': {
-                        const.CONNDE_DEVICE_AUTODEPLOY: False,
-                        const.CONNDE_DEVICE_IP: dev_ip,
-                        const.CONNDE_DEVICE_MAC: str(dev_hw_addr).replace(':', ''),
-                        const.CONNDE_DEVICE_IFAC: 'iface',
-                        const.CONNDE_DEVICE_NAME: local_id,
-                        const.GLOBAL_ID: global_id,
-                    },
-                    '$currentDate': {
-                        const.CONNDE_DEVICE_DATE: True
-                    }
-                }
-
-                device_key = {
-                    const.GLOBAL_ID: global_id,
-                }
-
-                self.connde_devices.update_one(device_key, connde_device, upsert=True)
+            device[const.GLOBAL_ID] = global_id
+            self._insert_to_connde_db(device)
 
         if not accepted:
             global_id = 0
@@ -293,6 +323,7 @@ class DiscoveryService(ServiceAdapter):
 
         if accepted:
             self.register_device_for_monitoring(dev)
+            self._insert_to_connde_db(dev)
             log.info('Device |%d| reconnected successfully', global_id)
         else:
             log.warning('Device |%d| tried to reconnect, but was declined', global_id)

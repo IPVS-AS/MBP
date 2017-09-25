@@ -11,6 +11,8 @@ class MonitoringService:
     def __init__(self):
         self.db_client = MongoClient()
         self.dev_coll = self.db_client[const.DISCOVERY_DB_NAME][const.MONITOR_COLL_NAME]
+        self.connde_devices = self.db_client[const.CONNDE_DB_NAME][const.CONNDE_DEVICE_COLLECTION]
+        self.connde_sensors = self.db_client[const.CONNDE_DB_NAME][const.CONNDE_SENSOR_COLLECTION]
         self.monitor = False
 
     def start(self):
@@ -48,9 +50,13 @@ class MonitoringService:
                     to_delete.append(global_id)
 
             log.debug('Monitoring deleting timed out devices |%s|', str(to_delete))
-            self.dev_coll.delete_many({
-                const.GLOBAL_ID: {'$in': to_delete}
-            })
+            delete_dict = {
+                const.GLOBAL_ID:{'$in': to_delete}
+            }
+            self.dev_coll.delete_many(delete_dict)
+            self.connde_sensors.delete_many(delete_dict)
+            self.connde_devices.delete_many(delete_dict)
+
             time.sleep(const.SERVER_MONITOR_SLEEP)
 
     def stop(self):
