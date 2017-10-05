@@ -4,22 +4,22 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    ACTUATOR
+                    Actuator
                 </h2>
             </div>
             <div class="body">                
                 <table class="table table-hover">
                     <tbody>
                         <tr id="{{item.id}}">
-                            <th>NAME</th>
+                            <th>Name</th>
                             <td>{{actuatorDetailsCtrl.item.name}}</a></td>
                         </tr>
                         <tr>
-                            <th>TYPE</th>
+                            <th>Type</th>
                             <td>{{actuatorDetailsCtrl.item._embedded.type.name}}</a></td>
                         </tr>
                         <tr>
-                            <th>DEVICE</th>
+                            <th>Device</th>
                             <td>{{actuatorDetailsCtrl.item._embedded.device.name}}</a></td>
                         </tr>
                     </tbody>
@@ -75,7 +75,7 @@
                                     </div>
                                 </div>
                                 <div class="col-xs-3">
-                                    <button class="btn btn-primary waves-effect" id="deploy-button">DEPLOY</button>
+                                    <button class="btn btn-primary waves-effect" id="deploy-button">Deploy</button>
                                 </div>
                             </div>
                         </form>
@@ -84,7 +84,7 @@
                         <form ng-submit="ctrl.deployer.doUndeploy()">
                             <div class="row clearfix">
                                 <div class="col-xs-3">
-                                    <button class="btn btn-warning waves-effect" id="deploy-button">UNDEPLOY</button>
+                                    <button class="btn btn-warning waves-effect" id="deploy-button">Undeploy</button>
                                 </div>
                             </div>
                         </form>
@@ -99,7 +99,7 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    LOG
+                    Received values
                     <small>Values sent by the actuator</small>
                 </h2>
                 <ul class="header-dropdown m-r--5">

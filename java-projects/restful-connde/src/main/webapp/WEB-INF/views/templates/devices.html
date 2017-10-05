@@ -4,7 +4,7 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    LIST OF DEVICES
+                    List of devices
                 </h2>
             </div>
             <div class="body">
@@ -12,7 +12,7 @@
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Mac Address</th>
+                            <th>Mac address</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -40,13 +40,13 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    REGISTER
+                    Register
                 </h2>
             </div>
             <div class="body">
                 <form ng-submit="addDeviceCtrl.addItem()">
                     <fieldset id="device-form">
-                        <h2 class="card-inside-title">New Device</h2>
+                        <h2 class="card-inside-title">New device</h2>
                         <div class="row clearfix">
                             <div class="col-xs-12">
                                 <!-- "global" error for addItem -->
@@ -63,16 +63,16 @@
                                 <!-- item.macAddress group -->
                                 <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.macAddress }">
                                     <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.macAddress }">
-                                        <input class="form-control mac-address" id="device-form-input-macAddress"  type="text" placeholder="Mac Address" ng-model="addDeviceCtrl.item.formattedMacAddress" />
+                                        <input class="form-control mac-address" id="device-form-input-macAddress"  type="text" placeholder="Mac address" ng-model="addDeviceCtrl.item.formattedMacAddress" />
                                     </div>
                                     <span class="help-block" ng-show="addDeviceCtrl.item.errors.macAddress">{{addDeviceCtrl.item.errors.macAddress.message}}</span>
                                 </div>
                                 <!-- item.ipAddress group -->
                                 <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.ipAddress }">
                                     <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.ipAddress }">
-                                        <input id="device-form-input-ipAddress"  type="text" placeholder="IP Address" ng-model="addDeviceCtrl.item.ipAddress" />
+                                        <input class="form-control" id="device-form-input-ipAddress"  type="text" placeholder="IP address" ng-model="addDeviceCtrl.item.ipAddress" />
                                     </div>
-                                    <p class="help-block">IP Address is optional and will be overwritten once the system finds the Device.</p>
+                                    <p class="help-block">IP Address is optional and will be overwritten once the system finds the device.</p>
                                     <span class="help-block" ng-show="addDeviceCtrl.item.errors.ipAddress">{{addDeviceCtrl.item.errors.ipAddress.message}}</span>
                                 </div>
                             </div>
@@ -80,7 +80,7 @@
                                 <!-- buttons -->
                                 <div class="form-group align-right">
                                     <button type="submit" class="btn btn-primary m-t-15 waves-effect">
-                                        REGISTER
+                                        Register
                                     </button>
                                 </div>
                             </div>

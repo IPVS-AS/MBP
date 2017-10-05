@@ -4,7 +4,7 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    LIST OF ACTUATORS
+                    List of actuators
                 </h2>
             </div>
             <div class="body">
@@ -39,14 +39,14 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    REGISTER
+                    Register
                 </h2>
             </div>
             <div class="body">
                 <div ng-disabled="ctrl.registeringDevice">
                     <form ng-submit="addActuatorCtrl.addItem()">
                         <fieldset id="actuator-form">
-                            <h2 class="card-inside-title">New Actuator</h2>
+                            <h2 class="card-inside-title">New actuator</h2>
                             <div class="row clearfix">
                                 <div class="col-xs-12">
                                     <!-- "global" error for addItem -->
@@ -64,7 +64,7 @@
                                     <div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.type }">
                                         <div class="form-line" ng-class="{'focused error' : addActuatorCtrl.item.errors.type }">
                                             <select class="form-control show-tick" id="actuator-form-select-device" ng-model="addActuatorCtrl.item.type" ng-options="t._links.self.href as (t.name) for t in typeListCtrl.items">
-                                                <option value="">Select Type<option />
+                                                <option value="">Select type<option />
                                             </select>
                                         </div>
                                         <span class="help-block" ng-show="addActuatorCtrl.item.errors.type">{{addActuatorCtrl.item.errors.type.message}}</span>
@@ -75,7 +75,7 @@
                                     <div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.device }">
                                         <div class="form-line" ng-class="{'focused error' : addActuatorCtrl.item.errors.device }">
                                             <select class="form-control show-tick" id="actuator-form-select-device" ng-model="addActuatorCtrl.item.device" ng-options="d._links.self.href as (d.name +    ' - ' +    d.formattedMacAddress) for d in deviceListCtrl.items">
-                                                <option value="">Select Device<option />
+                                                <option value="">Select device<option />
                                             </select>
                                         </div>
                                         <span class="help-block" ng-show="addActuatorCtrl.item.errors.device">{{addActuatorCtrl.item.errors.device.message}}</span>
@@ -93,7 +93,7 @@
                                     <!-- buttons -->
                                     <div class="form-group align-right">
                                         <button type="submit" class="btn btn-primary m-t-15 waves-effect">
-                                            REGISTER
+                                            Register
                                         </button>
                                     </div>
                                 </div>
@@ -104,7 +104,7 @@
                 <div ng-show="ctrl.registeringDevice">
                     <form ng-submit="addDeviceCtrl.addItem()">
                         <fieldset id="device-form">
-                            <h2 class="card-inside-title">New Device</h2>
+                            <h2 class="card-inside-title">New device</h2>
                             <div class="row clearfix">
                                 <div class="col-xs-12">
                                     <!-- "global" error for addItem -->
@@ -130,10 +130,10 @@
                                     <!-- buttons -->
                                     <div class="form-group align-right">
                                         <button type="button" class="btn btn-default m-t-15 waves-effect" ng-click="ctrl.registeringDevice = false">
-                                            CANCEL
+                                            Cancel
                                         </button>
                                         <button type="submit" class="btn btn-primary m-t-15 waves-effect">
-                                            REGISTER
+                                            Register
                                         </button>
                                     </div>
                                 </div>

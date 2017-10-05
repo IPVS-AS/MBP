@@ -4,7 +4,7 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    LIST OF SENSORS
+                    List of sensors
                 </h2>
             </div>
             <div class="body">
@@ -39,14 +39,14 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    REGISTER
+                    Register
                 </h2>
             </div>
             <div class="body">
                 <div ng-disabled="ctrl.registeringDevice">
                     <form ng-submit="addSensorCtrl.addItem()">
                         <fieldset id="sensor-form">
-                            <h2 class="card-inside-title">New Sensor</h2>
+                            <h2 class="card-inside-title">New sensor</h2>
                             <div class="row clearfix">
                                 <div class="col-xs-12">
                                     <!-- "global" error for addItem -->
@@ -64,7 +64,7 @@
                                     <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.type }">
                                         <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.type }">
                                             <select class="form-control show-tick" id="sensor-form-select-device" ng-model="addSensorCtrl.item.type" ng-options="t._links.self.href as (t.name) for t in typeListCtrl.items">
-                                                <option value="">Select Type<option />
+                                                <option value="">Select adapter type<option />
                                             </select>
                                         </div>
                                         <span class="help-block" ng-show="addSensorCtrl.item.errors.type">{{addSensorCtrl.item.errors.type.message}}</span>
@@ -75,7 +75,7 @@
                                     <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.device }">
                                         <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.device }">
                                             <select class="form-control show-tick" id="sensor-form-select-device" ng-model="addSensorCtrl.item.device" ng-options="d._links.self.href as (d.name +       ' - ' +       d.formattedMacAddress) for d in deviceListCtrl.items">
-                                                <option value="">Select Device<option />
+                                                <option value="">Select device<option />
                                             </select>
                                         </div>
                                         <span class="help-block" ng-show="addSensorCtrl.item.errors.device">{{addSensorCtrl.item.errors.device.message}}</span>
@@ -93,7 +93,7 @@
                                     <!-- buttons -->
                                     <div class="form-group align-right">
                                         <button type="submit" class="btn btn-primary m-t-15 waves-effect">
-                                            REGISTER
+                                            Register
                                         </button>
                                     </div>
                                 </div>
@@ -104,7 +104,7 @@
                 <div ng-show="ctrl.registeringDevice">
                     <form ng-submit="addDeviceCtrl.addItem()">
                         <fieldset id="device-form">
-                            <h2 class="card-inside-title">New Device</h2>
+                            <h2 class="card-inside-title">New device</h2>
                             <div class="row clearfix">
                                 <div class="col-xs-12">
                                     <!-- "global" error for addItem -->
@@ -121,19 +121,27 @@
                                     <!-- item.macAddress group -->
                                     <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.macAddress }">
                                         <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.macAddress }">
-                                            <input class="form-control mac-address" id="device-form-input-macAddress"  type="text" placeholder="Mac Address" ng-model="addDeviceCtrl.item.formattedMacAddress" />
+                                            <input class="form-control mac-address" id="device-form-input-macAddress"  type="text" placeholder="Mac address" ng-model="addDeviceCtrl.item.formattedMacAddress" />
                                         </div>
                                         <span class="help-block" ng-show="addDeviceCtrl.item.errors.macAddress">{{addDeviceCtrl.item.errors.macAddress.message}}</span>
+                                    </div>
+                                    <!-- item.ipAddress group -->
+                                    <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.ipAddress }">
+                                        <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.ipAddress }">
+                                            <input class="form-control" id="device-form-input-ipAddress"  type="text" placeholder="IP address" ng-model="addDeviceCtrl.item.ipAddress" />
+                                        </div>
+                                        <p class="help-block">IP address is optional and will be overwritten once the system finds the device.</p>
+                                        <span class="help-block" ng-show="addDeviceCtrl.item.errors.ipAddress">{{addDeviceCtrl.item.errors.ipAddress.message}}</span>
                                     </div>
                                 </div>
                                 <div class="col-xs-12">
                                     <!-- buttons -->
                                     <div class="form-group align-right">
                                         <button type="button" class="btn btn-default m-t-15 waves-effect" ng-click="ctrl.registeringDevice = false">
-                                            CANCEL
+                                            Cancel
                                         </button>
                                         <button type="submit" class="btn btn-primary m-t-15 waves-effect">
-                                            REGISTER
+                                            Register
                                         </button>
                                     </div>
                                 </div>
