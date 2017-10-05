@@ -28,6 +28,7 @@ HTTP/1.1 201 Created
 
 #### retrieving all devices:
 GET /api/devices/ HTTP/1.1  
+
 HTTP/1.1 200 OK
 
 ```javascript
@@ -51,7 +52,7 @@ HTTP/1.1 200 OK
 ```javascript
 {
   "macAddress": "123456789067",
-  "ipAddress": 192.168.0.34,
+  "ipAddress": "192.168.0.34",
   "name": "Raspberry Pi",
   "id": "596c7a7d4f0c58688e5aa6b1",
   "date": null,
@@ -83,7 +84,7 @@ HTTP/1.1 204 No Content
 An adapter is the required software (e.g., python script) to bind sensors and actuators to the MBP.
 
 #### creating a new adapter type:
-POST /api/types/ HTTP/1.1
+POST /api/types/ HTTP/1.1  
 Content-Type: application/json
 
 ```javascript
@@ -162,7 +163,7 @@ HTTP/1.1 204 No Content
 ### Sensors
 
 #### creating a new sensor with type id 596c7c344f0c58688e5aa6b3 and device id 596c7a7d4f0c58688e5aa6b1:
-POST /api/sensors/ HTTP/1.1
+POST /api/sensors/ HTTP/1.1  
 Content-Type: application/json
 
 ```javascript
@@ -242,7 +243,7 @@ HTTP/1.1 204 No Content
 
 ### Actuators
 
-see REST calls for sensors, replace /sensors with /actuators
+see REST calls for sensors, replace */sensors* with */actuators*
 
 ## Repository Structure
 
