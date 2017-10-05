@@ -70,7 +70,7 @@
                                 <!-- item.ipAddress group -->
                                 <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.ipAddress }">
                                     <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.ipAddress }">
-                                        <input class="form-control mac-address" id="device-form-input-macAddress"  type="text" placeholder="IP Address" ng-model="addDeviceCtrl.item.ipAddress" />
+                                        <input id="device-form-input-ipAddress"  type="text" placeholder="IP Address" ng-model="addDeviceCtrl.item.ipAddress" />
                                     </div>
                                     <p class="help-block">IP Address is optional and will be overwritten once the system finds the Device.</p>
                                     <span class="help-block" ng-show="addDeviceCtrl.item.errors.ipAddress">{{addDeviceCtrl.item.errors.ipAddress.message}}</span>
