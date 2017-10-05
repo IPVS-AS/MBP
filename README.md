@@ -10,12 +10,14 @@ A REST API for the management of devices, sensors and actuators is provided.
 POST /api/devices/ HTTP/1.1
 Content-Type: application/json
 
+```javascript
 {
   "name": "Raspberry Pi",
   "macAddress": "123456789067",
   "ipAddress": "192.168.0.34",
   "formattedMacAddress": "12-34-56-78-90-67"
 }
+```
 
 HTTP/1.1 201 Created
 
