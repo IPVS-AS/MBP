@@ -1,6 +1,9 @@
 # Multi-purpose Binding and Provisioning Platform (MBP)
 This platform enables means for (i) automated binding of IoT devices in order to access their sensors and actuators, and (ii) automated software provisioning.
 
+## Installation and Configuration
+see [User Manual](user_manual.md)
+
 ## REST API
 A REST API for the management of devices, sensors and actuators is provided.
 
@@ -9,8 +12,7 @@ A REST API for the management of devices, sensors and actuators is provided.
 #### creating a new device:
 
 
-POST /api/devices/ HTTP/1.1
-
+POST /api/devices/ HTTP/1.1  
 Content-Type: application/json
 
 ```javascript
@@ -25,15 +27,14 @@ Content-Type: application/json
 HTTP/1.1 201 Created
 
 #### retrieving all devices:
-GET /api/devices/ HTTP/1.1
-
+GET /api/devices/ HTTP/1.1  
 HTTP/1.1 200 OK
 
 ```javascript
 [
   {
     "macAddress": "123456789067",
-    "ipAddress": 192.168.0.34,
+    "ipAddress": "192.168.0.34",
     "name": "Raspberry Pi",
     "id": "596c7a7d4f0c58688e5aa6b1",
     "date": null,
