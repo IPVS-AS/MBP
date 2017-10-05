@@ -6,8 +6,11 @@ A REST API for the management of devices, sensors and actuators is provided.
 
 ### Devices
 
-* creating a new device:
+#### creating a new device:
+
+
 POST /api/devices/ HTTP/1.1
+
 Content-Type: application/json
 
 ```javascript
@@ -21,11 +24,12 @@ Content-Type: application/json
 
 HTTP/1.1 201 Created
 
-* retrieving all devices:
+#### retrieving all devices:
 GET /api/devices/ HTTP/1.1
 
 HTTP/1.1 200 OK
 
+```javascript
 [
   {
     "macAddress": "123456789067",
@@ -35,12 +39,15 @@ HTTP/1.1 200 OK
     "date": null,
   }, ...
 ]
+```
 
-* retrieving single device (e.g., for id 596c7a7d4f0c58688e5aa6b1):
+#### retrieving single device (e.g., for id 596c7a7d4f0c58688e5aa6b1):
 
 GET /api/devices/596c7a7d4f0c58688e5aa6b1 HTTP/1.1
 
 HTTP/1.1 200 OK
+
+```javascript
 {
   "macAddress": "123456789067",
   "ipAddress": 192.168.0.34,
@@ -48,21 +55,24 @@ HTTP/1.1 200 OK
   "id": "596c7a7d4f0c58688e5aa6b1",
   "date": null,
 }
+```
 
-* updating single device (e.g., for id 596c7a7d4f0c58688e5aa6b1):
+#### updating single device (e.g., for id 596c7a7d4f0c58688e5aa6b1):
 
 PUT /api/devices/596c7a7d4f0c58688e5aa6b1 HTTP/1.1
 
+```javascript
 {
   "name": "Raspberry Pi",
   "macAddress": "127556789067",
   "ipAddress": "192.168.0.75",
   "formattedMacAddress": "12-75-56-78-90-67"
 }
+```
 
 HTTP/1.1 204 No Content
 
-* delete single device (e.g., for id 596c7a7d4f0c58688e5aa6b1):
+#### delete single device (e.g., for id 596c7a7d4f0c58688e5aa6b1):
 
 DELETE /api/devices/596c7a7d4f0c58688e5aa6b1 HTTP/1.1
 
@@ -71,10 +81,11 @@ HTTP/1.1 204 No Content
 ### Adapter Types
 An adapter is the required software (e.g., python script) to bind sensors and actuators to the MBP.
 
-* creating a new adapter type:
+#### creating a new adapter type:
 POST /api/types/ HTTP/1.1
 Content-Type: application/json
 
+```javascript
 {
   "name": "TemperatureSensorAdapter",
   "description": "An adapter for the LK temperature sensor",
@@ -87,14 +98,16 @@ Content-Type: application/json
     "content": "service code"
   }]
 }
+```
 
 HTTP/1.1 201 Created
 
-* retrieving all adapter types:
+#### retrieving all adapter types:
 GET /api/types/ HTTP/1.1
 
 HTTP/1.1 200 OK
 
+```javascript
 [
   {
     "name": "TemperatureSensorAdapter",
@@ -102,22 +115,27 @@ HTTP/1.1 200 OK
     "description": "An adapter for the LK temperature sensor"
   }, ...
 ]
+```
 
-* retrieving single adapter type (e.g., for id 596c7c344f0c58688e5aa6b3):
+#### retrieving single adapter type (e.g., for id 596c7c344f0c58688e5aa6b3):
 
 GET /api/types/596c7c344f0c58688e5aa6b3 HTTP/1.1
 
 HTTP/1.1 200 OK
+
+```javascript
 {
   "name": "TemperatureSensorAdapter",
   "id": "596c7c344f0c58688e5aa6b3",
   "description": "An adapter for the LK temperature sensor"
 }
+```
 
-* updating single adapter type (e.g., for id 596c7c344f0c58688e5aa6b3):
+#### updating single adapter type (e.g., for id 596c7c344f0c58688e5aa6b3):
 
 PUT /api/types/596c7c344f0c58688e5aa6b3 HTTP/1.1
 
+```javascript
 {
   "name": "TemperatureSensorAdapter",
   "description": "An adapter for the LK temperature sensor",
@@ -130,10 +148,11 @@ PUT /api/types/596c7c344f0c58688e5aa6b3 HTTP/1.1
     "content": "..."
   }]
 }
+```
 
 HTTP/1.1 204 No Content
 
-* delete single adapter type (e.g., for id 596c7c344f0c58688e5aa6b3):
+#### delete single adapter type (e.g., for id 596c7c344f0c58688e5aa6b3):
 
 DELETE /api/types/596c7c344f0c58688e5aa6b3 HTTP/1.1
 
@@ -141,23 +160,26 @@ HTTP/1.1 204 No Content
 
 ### Sensors
 
-* creating a new sensor with type id 596c7c344f0c58688e5aa6b3 and device id 596c7a7d4f0c58688e5aa6b1:
+#### creating a new sensor with type id 596c7c344f0c58688e5aa6b3 and device id 596c7a7d4f0c58688e5aa6b1:
 POST /api/sensors/ HTTP/1.1
 Content-Type: application/json
 
+```javascript
 {
   "name": "Temperature Sensor",
   "type": "<URL>/api/types/596c7c344f0c58688e5aa6b3",
   "device": "<URL>/api/devices/596c7a7d4f0c58688e5aa6b1",
 }
+```
 
 HTTP/1.1 201 Created
 
-* retrieving all sensors:
+#### retrieving all sensors:
 GET /api/sensors/ HTTP/1.1
 
 HTTP/1.1 200 OK
 
+```javascript
 [
   {
     "id": "596c7a974f0c58688e5aa6b2",
@@ -173,39 +195,45 @@ HTTP/1.1 200 OK
     }
   }, ...
 ]
+```
 
-* retrieving single sensor (e.g., for id 596c7a974f0c58688e5aa6b2):
+#### retrieving single sensor (e.g., for id 596c7a974f0c58688e5aa6b2):
 
 GET /api/sensors/596c7a974f0c58688e5aa6b2 HTTP/1.1
 
 HTTP/1.1 200 OK
-  {
-    "id": "596c7a974f0c58688e5aa6b2",
-    "name": "test_sensor",
-    "_embedded": {
-      "device": {
-        "macAddress": "111111111111",
-        "ipAddress": null,
-        "name": "Test_Device",
-        "id": "596c7a7d4f0c58688e5aa6b1",
-        "date": null
-      }
+
+```javascript
+{
+  "id": "596c7a974f0c58688e5aa6b2",
+  "name": "test_sensor",
+  "_embedded": {
+    "device": {
+      "macAddress": "111111111111",
+      "ipAddress": null,
+      "name": "Test_Device",
+      "id": "596c7a7d4f0c58688e5aa6b1",
+      "date": null
     }
   }
+}
+```
 
-* updating single sensor (e.g., for id 596c7a974f0c58688e5aa6b2):
+#### updating single sensor (e.g., for id 596c7a974f0c58688e5aa6b2):
 
 PUT /api/sensors/596c7a974f0c58688e5aa6b2 HTTP/1.1
 
+```javascript
 {
   "name": "Temperature Sensor",
   "type": "<URL>/api/types/596c7c344f0c58688e5aa6b3",
   "device": "<URL>/api/devices/596c7a7d4f0c58688e5aa6b1",
 }
+```
 
 HTTP/1.1 204 No Content
 
-* delete single sensor (e.g., for id 596c7a974f0c58688e5aa6b2):
+#### delete single sensor (e.g., for id 596c7a974f0c58688e5aa6b2):
 
 DELETE /api/sensors/596c7a974f0c58688e5aa6b2 HTTP/1.1
 
