@@ -20,7 +20,11 @@
                         </tr>
                         <tr>
                             <th>Device</th>
-                            <td>{{actuatorDetailsCtrl.item._embedded.device.name}}</a></td>
+                            <td>{{actuatorDetailsCtrl.item._embedded.device.name}} (IP: {{actuatorDetailsCtrl.item._embedded.device.ipAddress ? actuatorDetailsCtrl.item._embedded.device.ipAddress : '-'}})</a></td>
+                        </tr>
+                        <tr ng-hide="ctrl.deployer.processing">
+                            <th>Status</th>
+                            <td>{{ctrl.deployer.available ? (ctrl.deployer.deployed ? 'RUNNING' : 'AVAILABLE') : 'NOT AVAILABLE'}}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -134,9 +138,10 @@
                 </div>
                 <table  class="table table-hover" ng-show="ctrl.actuatorValues.data && !ctrl.loader.actuatorValues">
                     <thead>
-                    <th>ID</th>
-                    <th>Value</th>
-                    <th>Date</th>
+                        <tr>
+                            <th>Value</th>
+                            <th>Date</th>
+                        </tr> 
                     </thead>
                     <tbody>
                         <tr id="{{v.id}}" ng-repeat="v in ctrl.actuatorValues.data">

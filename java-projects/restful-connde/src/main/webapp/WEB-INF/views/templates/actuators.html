@@ -12,7 +12,7 @@
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Type</th>
+                            <th>Adapter type</th>
                             <th>Device</th>
                         </tr>
                     </thead>
@@ -124,6 +124,14 @@
                                             <input class="form-control mac-address" id="device-form-input-macAddress"  type="text" placeholder="Mac Address" ng-model="addDeviceCtrl.item.formattedMacAddress" />
                                         </div>
                                         <span class="help-block" ng-show="addDeviceCtrl.item.errors.macAddress">{{addDeviceCtrl.item.errors.macAddress.message}}</span>
+                                    </div>
+                                    <!-- item.ipAddress group -->
+                                    <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.ipAddress }">
+                                        <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.ipAddress }">
+                                            <input class="form-control" id="device-form-input-ipAddress"  type="text" placeholder="IP address" ng-model="addDeviceCtrl.item.ipAddress" />
+                                        </div>
+                                        <p class="help-block">IP address is optional and will be overwritten once the system finds the device.</p>
+                                        <span class="help-block" ng-show="addDeviceCtrl.item.errors.ipAddress">{{addDeviceCtrl.item.errors.ipAddress.message}}</span>
                                     </div>
                                 </div>
                                 <div class="col-xs-12">
