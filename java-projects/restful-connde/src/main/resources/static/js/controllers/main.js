@@ -75,6 +75,16 @@ function RetrieverService($http, $q) {
                 
                 return $q.reject(response);
             });
+        }, delete: function (url, id) {
+          var deletionURL = url + '/' + id;
+          return $http({
+           method: 'DELETE',
+           url: deletionURL
+          }).then(function (response) {
+            if (response.data.errors) {
+             alert("An error occurred during deletion...");
+            }
+          }); 
         }
     };
 }
@@ -103,7 +113,14 @@ function Device($q, RetrieverService, uriRestDevices) {
                     }, function (response) {
                         return $q.reject(response);
                     });
-        }
+        }, deleteDevice: function (uriRestDevices, id) {
+          return RetrieverService.delete(uriRestDevices, id)
+                    .then(function (data) {
+                        return data;
+                    }, function (response) {
+                        return $q.reject(response);
+                    });
+        } 
     };
 }
 

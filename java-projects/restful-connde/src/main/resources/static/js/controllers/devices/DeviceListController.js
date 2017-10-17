@@ -1,8 +1,8 @@
 /* global app */
 
 app.controller('DeviceListController',
-        ['$scope', '$controller', 'DeviceService', 'deviceList', 'addDevice',
-            function ($scope, $controller, DeviceService, deviceList, addDevice) {
+        ['$scope', '$controller', 'DeviceService', 'deviceList', 'addDevice', 'deleteDevice',
+            function ($scope, $controller, DeviceService, deviceList, addDevice, deleteDevice) {
                 var vm = this;
 
                 for (var i in deviceList) {
@@ -24,9 +24,17 @@ app.controller('DeviceListController',
                                     data.macAddress = DeviceService.normalizeMacAddress(data.formattedMacAddress);
                                     return addDevice(data);
                                 }
+                            }),
+                     deleteDeviceCtrl: $controller('DeleteItemController as deleteDeviceCtrl',
+                            {
+                                $scope: $scope,
+                                deleteItem: function (data) {
+                                    // get ID here
+                                    return deleteDevice(data);
+                                }
                             })
-                });
-
+                     });
+                      
                 // $watch 'addItem' result and add to 'itemList'
                 $scope.$watch(
                         function () {
@@ -42,6 +50,19 @@ app.controller('DeviceListController',
                                 data.formattedMacAddress = DeviceService.formatMacAddress(data.macAddress);
                                 vm.deviceListCtrl.pushItem(data);
                             }
+                        }
+                );
+                
+                // $watch 'deleteItem' result and remove from 'itemList'
+                $scope.$watch(
+                        function () {
+                            // value being watched
+                            return vm.deleteDeviceCtrl.result;
+                        },
+                        function() {
+                          var id = vm.deleteDeviceCtrl.result;
+                          
+                          vm.deviceListCtrl.removeItem(id);
                         }
                 );
             }

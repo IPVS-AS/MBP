@@ -14,11 +14,24 @@ app.controller('ItemListController',
                     }
                 }
 
+               function removeItem(id) {
+                 var itemList = vm.items;
+
+                 for (var i = 0; i < itemList.length; i++) {
+                   var curr = itemList[i];
+                   if (curr.id == id) {
+                     vm.items.splice(i, 1);
+                     break;
+                   }
+                 }
+               }
+               
                 // expose
                 angular.extend(vm,
                         {
                             items: list,
-                            pushItem: pushItem
+                            pushItem: pushItem,
+                            removeItem: removeItem
                         });
             }
         ]);

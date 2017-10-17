@@ -2,9 +2,9 @@
 
 app.controller('SensorListController',
         ['$scope', '$controller', 'sensorList', 'addSensor',
-            'deviceList', 'addDevice', 'typeList',
+            'deviceList', 'addDevice', 'deleteDevice', 'typeList',
             function ($scope, $controller, sensorList, addSensor,
-                    deviceList, addDevice, typeList) {
+                    deviceList, addDevice, deleteDevice, typeList) {
                 var vm = this;
 
                 // public
@@ -37,7 +37,8 @@ app.controller('SensorListController',
                             {
                                 $scope: $scope,
                                 deviceList: deviceList,
-                                addDevice: addDevice
+                                addDevice: addDevice,
+                                deleteDevice: deleteDevice
                             }),
                     typeListCtrl: $controller('ItemListController as typeListCtrl',
                             {

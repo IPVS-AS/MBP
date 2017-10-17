@@ -99,6 +99,11 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                                 // bind category parameter
                                 return angular.bind(this, CrudService.addItem, 'devices');
                             }],
+                        deleteDevice: ['CrudService', function (CrudService) {
+                                // bind category parameter
+                                return angular.bind(this, CrudService.deleteItem, 'devices');
+                                //return CrudService.deleteItem('devices', this);
+                            }],
                         typeList: ['CrudService', function (CrudService) {
                                 return CrudService.fetchAllItems('types');
                             }]
@@ -144,6 +149,11 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                                 // bind category parameter
                                 return angular.bind(this, CrudService.addItem, 'devices');
                             }],
+                        deleteDevice: ['CrudService', function (CrudService) {
+                                // bind category parameter
+                                return angular.bind(this, CrudService.deleteItem, 'devices');
+                                //return CrudService.deleteItem('devices', this);
+                            }],
                         typeList: ['CrudService', function (CrudService) {
                                 return CrudService.fetchAllItems('types');
                             }]
@@ -183,6 +193,11 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         addDevice: ['CrudService', function (CrudService) {
                                 // bind category parameter
                                 return angular.bind(this, CrudService.addItem, 'devices');
+                            }],
+                        deleteDevice: ['CrudService', function (CrudService) {
+                                // bind category parameter
+                                return angular.bind(this, CrudService.deleteItem, 'devices');
+                                //return CrudService.deleteItem('devices', this);
                             }]
                     }
                 })
