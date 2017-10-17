@@ -92,6 +92,10 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                                 // bind category parameter
                                 return angular.bind(this, CrudService.addItem, 'actuators');
                             }],
+                        deleteActuator: ['CrudService', function (CrudService) {
+                                // bind category parameter
+                                return angular.bind(this, CrudService.deleteItem, 'actuators');
+                            }],
                         deviceList: ['CrudService', function (CrudService) {
                                 return CrudService.fetchAllItems('devices');
                             }],

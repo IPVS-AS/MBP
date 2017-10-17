@@ -17,9 +17,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr ng-if="deviceListCtrl.items.length == 0">
-                            No devices registered yet.
-                        </tr>
                         <tr id="{{item.id}}" ng-repeat="item in deviceListCtrl.items">
                             <td>{{item.name}}</td>
                             <td>{{item.formattedMacAddress}}</td>
