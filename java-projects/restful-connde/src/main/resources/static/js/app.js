@@ -142,6 +142,10 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                                 // bind category parameter
                                 return angular.bind(this, CrudService.addItem, 'sensors');
                             }],
+                        deleteSensor: ['CrudService', function (CrudService) {
+                                // bind category parameter
+                                return angular.bind(this, CrudService.deleteItem, 'sensors');
+                            }],
                         deviceList: ['CrudService', function (CrudService) {
                                 return CrudService.fetchAllItems('devices');
                             }],

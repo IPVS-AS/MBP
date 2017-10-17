@@ -14,6 +14,7 @@
                             <th>Name</th>
                             <th>Adapter type</th>
                             <th>Device</th>
+                            <th>ID</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -21,9 +22,13 @@
                             <td><a ng-href="{{detailsLink(item)}}">{{item.name}}</a></td>
                             <td>{{item._embedded.type.name}}</td>
                             <td>{{item._embedded.device.name}}</td>
+                            <td><form ng-submit="deleteSensorCtrl.deleteItem()">
+                              <div ng-model="deleteSensorCtrl.item.id"> {{item.id}} </div>
+                              <button type="submit" class="btn btn-primary m-t-15 waves-effect" ng-click="deleteSensorCtrl.item.id = item.id"> Delete </button></form></td>
                         </tr>
                         <tr ng-show="sensorListCtrl.items.length === 0">
                             <td>No sensors registered yet.</td>
+                            <td></td>
                             <td></td>
                             <td></td>
                         </tr>
