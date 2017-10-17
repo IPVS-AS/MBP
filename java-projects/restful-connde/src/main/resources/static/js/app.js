@@ -223,6 +223,10 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         addType: ['CrudService', function (CrudService) {
                                 // bind category parameter
                                 return angular.bind(this, CrudService.addItem, 'types');
+                            }],
+                        deleteType: ['CrudService', function (CrudService) {
+                                // bind category parameter
+                                return angular.bind(this, CrudService.deleteItem, 'types');
                             }]
                     }
                 })
