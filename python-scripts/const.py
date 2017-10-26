@@ -74,6 +74,9 @@ CONNDE_SENSOR_JAVA_CLASS = 'org.citopt.connde.domain.component.Sensor'
 CONNDE_SENSOR_NAME = 'name'
 CONNDE_SENSOR_TYPE = 'type'
 CONNDE_SENSOR_DEVICE = 'device'
+
+CONNDE_ID = 'conndeId'
+MONGO_ID = '_id'
 # bluetooth server constants
 BT_UUID = '809a061f-d834-4ba6-8741-29f0f53ca1b9'
 BT_SERVICE_NAME = 'connde_discovery'

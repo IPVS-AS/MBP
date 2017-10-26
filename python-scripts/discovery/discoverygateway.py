@@ -24,6 +24,10 @@ class ServiceAdapter(abc.ABC):
     def device_alive(self, device):
         pass
 
+    @abc.abstractmethod
+    def getConndeId(self, global_id):
+        pass
+
 
 class ConndeGateway(abc.ABC):
     def __init__(self, comm_type, db_client, service):
@@ -115,8 +119,11 @@ class ConndeHandler(abc.ABC):
                 init[key] = data[key]
 
         self.server.service.save_init(device, init)
-
-        self._send_msg({const.GLOBAL_ID: global_id})  # ACK TODO let the system set the timeout
+        connde_id = self.server.service.getConndeId(global_id)
+        self._send_msg({
+            const.GLOBAL_ID: global_id,
+            const.CONNDE_ID: connde_id # hack to deploy android device
+        })  # ACK TODO let the system set the timeout
 
     def _handle_ping(self, data):
         if const.PING_MSG in data and data[const.PING_MSG] == 'ping':

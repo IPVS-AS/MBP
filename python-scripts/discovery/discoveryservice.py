@@ -410,3 +410,21 @@ class DiscoveryService(ServiceAdapter):
 
         self.dev_coll.update_one(db_key, db_update)
         self.mon_coll.update_one(db_key, db_update)
+
+    def getConndeId(self, global_id):
+        """
+        Return the id of the connde application associated with this global id.
+        :param global_id: the global_id to translate
+        :type global_id: int
+        :return: the connde application id for the specified global_id
+        """
+        db_key = {const.GLOBAL_ID: global_id}
+        device = self.connde_devices.find_one(db_key)
+        if device is None:
+            device = self.connde_sensors.find_one(db_key)
+        if device is not None:
+            connde_id = device[const.MONGO_ID]
+            return str(connde_id)
+        else:
+            return ''
+
