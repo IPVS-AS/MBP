@@ -1,13 +1,10 @@
 import abc
-import const
 import logging as log
+
+import discovery.discoveryconst as const
 
 
 class ServiceAdapter(abc.ABC):
-    @abc.abstractmethod
-    def register_device_for_monitoring(self, device):
-        pass
-
     @abc.abstractmethod
     def connect_new_device(self, device):
         return 0, 'not implemented'
@@ -29,7 +26,7 @@ class ServiceAdapter(abc.ABC):
         pass
 
 
-class ConndeGateway(abc.ABC):
+class DiscoveryGateway(abc.ABC):
     def __init__(self, comm_type, db_client, service):
         """
 
@@ -63,7 +60,7 @@ class ConndeHandler(abc.ABC):
         """
 
         :param server:
-        :type server: ConndeGateway
+        :type server: DiscoveryGateway
         """
         self.server = server
 
@@ -108,7 +105,7 @@ class ConndeHandler(abc.ABC):
 
         self._send_msg(reply)
 
-    def _handle_init(self, data):
+    def _handle_conf(self, data):
         global_id = data[const.GLOBAL_ID]
         device = {const.GLOBAL_ID: global_id}
 
@@ -122,7 +119,7 @@ class ConndeHandler(abc.ABC):
         connde_id = self.server.service.getConndeId(global_id)
         self._send_msg({
             const.GLOBAL_ID: global_id,
-            const.CONNDE_ID: connde_id # hack to deploy android device
+            const.CONNDE_ID: connde_id  # hack to deploy android device
         })  # ACK TODO let the system set the timeout
 
     def _handle_ping(self, data):
@@ -141,7 +138,7 @@ class ConndeHandler(abc.ABC):
     def _handle_msg(self, msg):
         connection_types = {
             const.CONN_HELLO: self._handle_hello,
-            const.CONN_INIT: self._handle_init,
+            const.CONN_CONF: self._handle_conf,
             const.CONN_VALUE: self._handle_value,
             const.CONN_KEEP_ALIVE: self._handle_keepalive,
             const.CONN_PING: self._handle_ping,

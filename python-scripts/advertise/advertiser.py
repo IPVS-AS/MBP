@@ -1,10 +1,10 @@
 import time
-import const
+import advertise.advertiseconst as const
 import logging as log
 import abc
 
 
-class AdvertiserClient(abc.ABC):
+class Advertiser(abc.ABC):
     def __init__(self, service, comm_type):
         self.server_address = None
         self.ip = None
@@ -66,7 +66,7 @@ class AdvertiserClient(abc.ABC):
             # send init message
             init_msg = {
                 const.GLOBAL_ID: global_id,
-                const.CONN_TYPE: const.CONN_INIT
+                const.CONN_TYPE: const.CONN_CONF
             }
 
             adapter_conf = device[const.ADAPTER_CONF]
@@ -95,7 +95,7 @@ class AdvertiserClient(abc.ABC):
                 self.server_address = srv_addr
                 self.ip = own_ip
                 self.hw_addr = own_hw_addr
-            time.sleep(const.SLEEPTIME)
+            time.sleep(const.CLIENT_SLEEPTIME)
 
         log.info('Server found @ |%s| after |%d| tries', str(self.server_address), tries)
 

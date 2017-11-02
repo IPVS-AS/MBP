@@ -1,9 +1,8 @@
-from discovery.discoveryservice import DiscoveryService
-from monitoringservice import MonitoringService
-
 import logging as log
-import time
 import signal
+
+from discovery.discoveryservice import DiscoveryService
+from discovery.monitoringservice import MonitoringService
 
 
 def stop_services(signum, frame):

@@ -1,6 +1,6 @@
-from advertiseservice.advertiseservice import AdvertiserService
-from advertiseservice.advertiserclientlan import LanAdvertiser
-from advertiseservice.advertiserclientbt import BTAdvertiser
+from advertise.advertiseservice import AdvertiserService
+from advertise.advertiserlan import LanAdvertiser
+from advertise.advertiserbt import BTAdvertiser
 
 import const
 

@@ -83,10 +83,10 @@ class ConndeBluetoothHandler(ConndeHandler):
         self.client_sck.sendall(msg_string)
 
 
-@ConndeGateway.register
-class ConndeBluetoothGateway(ConndeGateway):
+@DiscoveryGateway.register
+class DiscoveryBluetoothGateway(DiscoveryGateway):
     def __init__(self, RequestHandlerClass, db_client, service, poll_interval=0.5):
-        ConndeGateway.__init__(self, const.BT, db_client, service)
+        DiscoveryGateway.__init__(self, const.BT, db_client, service)
         self.RequestHandlerClass = RequestHandlerClass
         self.server_sck = bluetooth.BluetoothSocket()
         self.server_sck.settimeout(poll_interval)

@@ -2,12 +2,12 @@ import json
 
 import bluetooth
 
-from advertiseservice.advertiserclient import *
+from advertise.advertiser import *
 
 
-class BTAdvertiser(AdvertiserClient):
+class BTAdvertiser(Advertiser):
     def __init__(self, service, comm_type=const.BT):
-        AdvertiserClient.__init__(self, service, comm_type)
+        Advertiser.__init__(self, service, comm_type)
         self.client_sck = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
         # self.client_sck.settimeout(const.CLIENT_TIMEOUT)
 

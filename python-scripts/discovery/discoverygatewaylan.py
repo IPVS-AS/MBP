@@ -36,10 +36,10 @@ class ConndeLanHandler(socketserver.BaseRequestHandler, ConndeHandler):
         self._handle_msg(msg)
 
 
-@ConndeGateway.register
-class ConndeLanGateway(socketserver.UDPServer, ConndeGateway):
+@DiscoveryGateway.register
+class DiscoveryLanGateway(socketserver.UDPServer, DiscoveryGateway):
     def __init__(self, RequestHandlerClass, db_client, service, server_address):
-        ConndeGateway.__init__(self, const.LAN, db_client, service)
+        DiscoveryGateway.__init__(self, const.LAN, db_client, service)
         socketserver.UDPServer.__init__(self, server_address=server_address, RequestHandlerClass=RequestHandlerClass)
         self.service_info = ServiceInfo(const.DNS_SD_TYPE + const.DNS_SD_LOCAL_DOMAIN,
                                         "Your Lan Gateway." + const.DNS_SD_TYPE + const.DNS_SD_LOCAL_DOMAIN,

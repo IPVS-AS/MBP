@@ -5,13 +5,13 @@ import socket as sck
 
 import zeroconf as zerocnf
 
-from advertiseservice.advertiserclient import *
+from advertise.advertiser import *
 
 
-@AdvertiserClient.register
-class LanAdvertiser(AdvertiserClient):
+@Advertiser.register
+class LanAdvertiser(Advertiser):
     def __init__(self, service, comm_type=const.LAN):
-        AdvertiserClient.__init__(self, service, comm_type)
+        Advertiser.__init__(self, service, comm_type)
         self.s = sck.socket(sck.AF_INET, sck.SOCK_DGRAM)
         self.s.setsockopt(sck.SOL_SOCKET, sck.SO_BROADCAST, 1)
         self.s.settimeout(const.CLIENT_TIMEOUT)

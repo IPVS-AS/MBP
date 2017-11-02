@@ -1,4 +1,4 @@
-import const
+import discovery.discoveryconst as const
 
 import datetime
 import logging as log
