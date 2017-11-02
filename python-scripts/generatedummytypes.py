@@ -1,5 +1,8 @@
 from pymongo import MongoClient
-import const
+import discovery.discoveryconst as const
+import requests
+
+url = "http://localhost:8080/MBP/api/types"
 
 client = MongoClient()
 db_connde = client.get_database(const.CONNDE_DB_NAME)
@@ -14,19 +17,25 @@ coll_discovery_devices = db_discovery.get_collection(const.DEV_COLL_NAME)
 
 discovered_devices = coll_discovery_devices.find({})
 for device in discovered_devices:
-    typeName = device[const.TYPE]
+    typeName = device[const.DEV_TYPE]
     connde_type = coll_connde_type.find_one({const.CONNDE_TYPE_NAME: typeName})
     if connde_type is None:
         dummy_type = {
-            const.CONNDE_TYPE_CLASS: const.CONNDE_TYPE_JAVA_CLASS,
             const.CONNDE_TYPE_NAME: typeName,
             const.CONNDE_TYPE_DESCIRPTION: 'dummy type',
-            const.CONNDE_TYPE_SERVICE: '',
-            const.CONNDE_TYPE_ROUTINES: '',
+            const.CONNDE_TYPE_SERVICE: {
+                "name": typeName + "_service",
+                "content": "stub"
+            },
+            const.CONNDE_TYPE_ROUTINES: [{
+                "name": typeName + "_routine",
+                "content": "stub"
+            }]
         }
         print('Dummy ' + str(dummy_type))
-        coll_connde_type.insert_one(dummy_type)
-        print('inserted')
+        r = requests.post(url, json=dummy_type)
+        print(r)
+        print(r.content)
     else:
         print('Real' + str(connde_type))
 
