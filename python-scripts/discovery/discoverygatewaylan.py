@@ -1,5 +1,8 @@
 import json
+import socket
 import socketserver
+
+from zeroconf import Zeroconf, ServiceInfo
 
 from discovery.discoverygateway import *
 
@@ -33,14 +36,21 @@ class ConndeLanHandler(socketserver.BaseRequestHandler, ConndeHandler):
         self._handle_msg(msg)
 
 
-
-
-
 @ConndeGateway.register
 class ConndeLanGateway(socketserver.UDPServer, ConndeGateway):
     def __init__(self, RequestHandlerClass, db_client, service, server_address):
         ConndeGateway.__init__(self, const.LAN, db_client, service)
         socketserver.UDPServer.__init__(self, server_address=server_address, RequestHandlerClass=RequestHandlerClass)
+        self.service_info = ServiceInfo(const.DNS_SD_TYPE + const.DNS_SD_LOCAL_DOMAIN,
+                                        "Your Lan Gateway." + const.DNS_SD_TYPE + const.DNS_SD_LOCAL_DOMAIN,
+                                        socket.inet_aton("127.0.0.1"), const.PORT, 0, 0,{const.GLOBAL_ID: const.CONNDE_DB_NAME})
+        self.zeroconf = Zeroconf()
+        self.zeroconf.register_service(self.service_info)
+
+    def shutdown(self):
+        self.zeroconf.unregister_service(self.service_info)
+        self.zeroconf.close()
+        socketserver.UDPServer.shutdown(self)
 
     def deploy_adapter(self, service_file, routines):
         pass
