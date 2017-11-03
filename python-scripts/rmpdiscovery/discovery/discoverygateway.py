@@ -1,7 +1,7 @@
 import abc
 import logging as log
 
-import discovery.discoveryconst as const
+from . import discoveryconst as const
 
 
 class ServiceAdapter(abc.ABC):

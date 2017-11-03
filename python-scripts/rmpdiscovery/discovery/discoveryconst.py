@@ -1,5 +1,5 @@
 # noinspection PyUnresolvedReferences
-from const import *
+from ..const import *
 
 DISCOVERY_DB_NAME = 'discovery'
 MONITOR_COLL_NAME = 'monitoring'
@@ -23,7 +23,7 @@ SERVER_BT = 'bt'
 RMP_DB_NAME = 'connde'
 RMP_DEVICE_COLLECTION = 'device'
 RMP_SENSOR_COLLECTION = 'sensor'
-CONNDE_ACTUATOR_COLLECTION = 'actuator'
+RMP_ACTUATOR_COLLECTION = 'actuator'
 RMP_TYPE_COLLECTION = 'type'
 
 RMP_DEVICE_NAME = 'name'
@@ -52,3 +52,7 @@ MONGO_ID = '_id'
 # bluetooth
 BT_SERVICE_NAME = 'connde_discovery'
 BT_SERVICE_DESCRIPTION = 'Server used for device discovery in the connde application'
+
+# command line arguments
+SERVER_CMD_LAN = 'startLan'
+SERVER_CMD_BT = 'startBt'

@@ -1,10 +1,11 @@
-import discovery.discoveryconst as const
-
 import datetime
 import logging as log
-from pymongo import MongoClient
-import time
 import threading
+import time
+
+from pymongo import MongoClient
+
+from . import discoveryconst as const
 
 
 class MonitoringService:

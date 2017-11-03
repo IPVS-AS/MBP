@@ -1,5 +1,5 @@
 # noinspection PyUnresolvedReferences
-from const import *
+from ..const import *
 
 # autodeploy parameter
 DEPLOY_SELF = 'self'

@@ -1,6 +1,7 @@
-from pymongo import MongoClient
-import discovery.discoveryconst as const
 import requests
+from pymongo import MongoClient
+
+from rmpdiscovery import discovery as const
 
 url = "http://localhost:8080/MBP/api/types"
 
@@ -10,7 +11,7 @@ db_discovery = client.get_database(const.DB_NAME)
 
 coll_connde_sensor = db_connde.get_collection(const.RMP_SENSOR_COLLECTION)
 coll_connde_device = db_connde.get_collection(const.RMP_DEVICE_COLLECTION)
-coll_connde_actuator = db_connde.get_collection(const.CONNDE_ACTUATOR_COLLECTION)
+coll_connde_actuator = db_connde.get_collection(const.RMP_ACTUATOR_COLLECTION)
 coll_connde_type = db_connde.get_collection(const.RMP_TYPE_COLLECTION)
 
 coll_discovery_devices = db_discovery.get_collection(const.DEV_COLL_NAME)

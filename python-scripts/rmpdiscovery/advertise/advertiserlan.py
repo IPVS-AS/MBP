@@ -5,7 +5,7 @@ import socket as sck
 
 import zeroconf as zerocnf
 
-from advertise.advertiser import *
+from .advertiser import *
 
 
 @Advertiser.register

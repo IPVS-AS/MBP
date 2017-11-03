@@ -1,10 +1,6 @@
-## Directory Structure
+'## Directory Structure
 
-* [arping](arping): service that sets up an ARP table on mongodb.
-
-* [heartbeat](heartbeat): service that checks for ip liveness on those registered on mongodb.
-
-* [sensor](sensor): premade python scripts for sensors; may also containt services (.conf) descriptions
+* [type-scripts](type-scripts): premade python scripts for sensors; may also containt services (.conf) descriptions
 
 
 ## Libraries

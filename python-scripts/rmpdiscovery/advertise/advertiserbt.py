@@ -2,7 +2,7 @@ import json
 
 import bluetooth
 
-from advertise.advertiser import *
+from .advertiser import *
 
 
 class BTAdvertiser(Advertiser):

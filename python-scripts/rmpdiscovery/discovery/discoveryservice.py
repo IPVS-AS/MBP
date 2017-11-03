@@ -4,8 +4,9 @@ import threading
 import requests
 from pymongo import MongoClient
 
-from discovery.discoverygatewaybt import *
-from discovery.discoverygatewaylan import *
+from .discoverygatewaybt import *
+from .discoverygatewaylan import *
+from . import discoveryconst as const
 
 
 class DiscoveryService(ServiceAdapter):

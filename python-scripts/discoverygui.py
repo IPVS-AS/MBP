@@ -1,9 +1,10 @@
-from discovery import discoveryconst as const
-
-import tkinter
-import time
 import threading
+import time
+import tkinter
+
 from pymongo import MongoClient
+
+from rmpdiscovery.discovery import discoveryconst as const
 
 LABEL_COLUMN = 0
 LABEL_ROW = 0

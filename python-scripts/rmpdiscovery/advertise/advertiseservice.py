@@ -107,7 +107,7 @@ class AdvertiseService:
         :type: dict
         """
         try:
-            json_string = open(const.AUTODEPLOY_FILE).read()
+            json_string = open('/opt/rmpadvertise/' + const.AUTODEPLOY_FILE).read()
             deploy_data = json.loads(json_string)
             return deploy_data
         except IOError:

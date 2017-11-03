@@ -2,7 +2,7 @@ import json
 
 import bluetooth
 
-from discovery.discoverygateway import *
+from .discoverygateway import *
 
 
 @RMPHandler.register

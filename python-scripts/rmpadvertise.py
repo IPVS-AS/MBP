@@ -1,12 +1,12 @@
-from advertise.advertiseservice import AdvertiseService
-from advertise.advertiserlan import LanAdvertiser
-from advertise.advertiserbt import BTAdvertiser
-from advertise import advertiseconst as const
-
 import argparse
+import logging as log
 import signal
 
-import logging as log
+from rmpdiscovery.advertise import advertiseconst as const
+from rmpdiscovery.advertise.advertiserlan import LanAdvertiser
+from rmpdiscovery.advertise.advertiseservice import AdvertiseService
+
+from rmpdiscovery.advertise.advertiserbt import BTAdvertiser
 
 
 def stop_service(signum, frame):

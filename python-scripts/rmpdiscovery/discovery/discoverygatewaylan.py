@@ -4,7 +4,7 @@ import socketserver
 
 from zeroconf import Zeroconf, ServiceInfo
 
-from discovery.discoverygateway import *
+from .discoverygateway import *
 
 
 @RMPHandler.register
