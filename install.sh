@@ -1,4 +1,4 @@
-!/bin/sh
+#!/bin/sh
 sudo sh -c "echo '127.0.0.1' $(hostname) >> /etc/hosts";
 sudo apt-get -qy update;
 #sudo apt-get -qy upgrade;
@@ -6,8 +6,15 @@ sudo apt-get -qy update;
 #Installing Java8, pip, python mqtt client
 sudo apt-get install -qy openjdk-8-jdk;
 sudo apt-get install -qy python-pip;
-sudo pip install paho-mqtt;
-sudo pip install pymongo;
+
+# Install python virtual environment and install python packages
+sudo pip install virtualenv
+sudo pip install virtualenvwrapper
+export WORKON_HOME=/etc/rmpdiscovery/python_env
+source /usr/bin/virtualenvwrapper.sh
+mkvirtualenv rmpdiscovery
+workon rmpdiscovery
+pip install -r python-packages.txt
 
 # Install Mosquitto Broker
 sudo apt-get install -y mosquitto;
@@ -30,3 +37,9 @@ sudo mvn clean install
 # deploy war to Tomcat
 sudo mv target/restful-connde-1.0-SNAPSHOT.war /var/lib/tomcat8/webapps/MBP.war
 echo "Installation finished"
+
+# Install discovery service
+sudo mkdir -p /opt/rmpdiscovery
+cd ../../python-scripts
+sudo cp -r rmpdiscovery rmpdiscovery.py rmpdiscovery.sh rmpadvertise.sh rmpadvertise.py /opt/rmpdiscovery
+sudo cp rmpdiscovery.service rmpadvertise.service /etc/systemd/system
