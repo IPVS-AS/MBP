@@ -10,10 +10,9 @@ sudo apt-get install -qy python-pip;
 # Install python virtual environment and install python packages
 sudo pip install virtualenv
 sudo pip install virtualenvwrapper
-export WORKON_HOME=/etc/rmpdiscovery/python_env
 source /usr/bin/virtualenvwrapper.sh
-mkvirtualenv rmpdiscovery
-workon rmpdiscovery
+mkvirtualenv /etc/rmpdiscovery/python_env/rmpdiscovery
+workon /etc/rmpdiscovery/python_env/rmpdiscovery
 pip install -r python-packages.txt
 
 # Install Mosquitto Broker

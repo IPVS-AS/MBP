@@ -3,5 +3,5 @@
 export WORKON_HOME=/etc/rmpdiscovery/python_env
 source /usr/bin/virtualenvwrapper.sh
 
-workon rmpdiscovery
+workon /etc/rmpdiscvovery/python_env/rmpdiscovery
 python /opt/rmpdiscovery/rmpdiscovery.py --lan --bt

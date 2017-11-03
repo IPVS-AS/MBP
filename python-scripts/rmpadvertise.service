@@ -6,7 +6,7 @@ Requires=bluetooth.service
 
 [Service]
 Type=simple
-ExecStart=/opt/rmpadvertise/rmpadvertise.sh
+ExecStart=/opt/rmpdiscovery/rmpadvertise.sh
 Restart=always
 
 [Install]
