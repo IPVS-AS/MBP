@@ -9,11 +9,14 @@ import threading
 
 class MonitoringService:
     def __init__(self):
+        """
+        Initialize the monitoring service and all database collections.
+        """
         self.db_client = MongoClient()
         self.dev_coll = self.db_client[const.DISCOVERY_DB_NAME][const.MONITOR_COLL_NAME]
-        self.connde_devices = self.db_client[const.CONNDE_DB_NAME][const.CONNDE_DEVICE_COLLECTION]
-        self.connde_sensors = self.db_client[const.CONNDE_DB_NAME][const.CONNDE_SENSOR_COLLECTION]
-        self.monitor = False
+        self.connde_devices = self.db_client[const.RMP_DB_NAME][const.RMP_DEVICE_COLLECTION]
+        self.connde_sensors = self.db_client[const.RMP_DB_NAME][const.RMP_SENSOR_COLLECTION]
+        self.monitor = False  # indicates whether the service is running
 
     def start(self):
         log.info('Start monitoring')
@@ -22,6 +25,11 @@ class MonitoringService:
         t.start()
 
     def _loop_forever(self):
+        """
+        In every iteration, read the list of monitored devices from the database.
+        Check for each device in the list,
+        if the time period since the last contact is greater than the specified timeout interval.
+        """
         while self.monitor:
             cur_time = datetime.datetime.utcnow()
             log.debug('Monitoring checking devices @ |%s|', str(cur_time))
@@ -51,7 +59,7 @@ class MonitoringService:
 
             log.debug('Monitoring deleting timed out devices |%s|', str(to_delete))
             delete_dict = {
-                const.GLOBAL_ID:{'$in': to_delete}
+                const.GLOBAL_ID: {'$in': to_delete}
             }
             self.dev_coll.delete_many(delete_dict)
             self.connde_sensors.delete_many(delete_dict)

@@ -7,11 +7,11 @@ from zeroconf import Zeroconf, ServiceInfo
 from discovery.discoverygateway import *
 
 
-@ConndeHandler.register
-class ConndeLanHandler(socketserver.BaseRequestHandler, ConndeHandler):
-    def __init__(self, request, client_address, server):
-        socketserver.BaseRequestHandler.__init__(self, request, client_address, server)
-        ConndeHandler.__init__(self, server)
+@RMPHandler.register
+class RMPLanHandler(socketserver.BaseRequestHandler, RMPHandler):
+    def __init__(self, request, client_address, gateway):
+        RMPHandler.__init__(self, gateway)
+        socketserver.BaseRequestHandler.__init__(self, request, client_address, gateway)
 
     def _receive_msg(self):
         msg_string = self.request[0].decode('utf-8')
@@ -38,12 +38,17 @@ class ConndeLanHandler(socketserver.BaseRequestHandler, ConndeHandler):
 
 @DiscoveryGateway.register
 class DiscoveryLanGateway(socketserver.UDPServer, DiscoveryGateway):
-    def __init__(self, RequestHandlerClass, db_client, service, server_address):
-        DiscoveryGateway.__init__(self, const.LAN, db_client, service)
-        socketserver.UDPServer.__init__(self, server_address=server_address, RequestHandlerClass=RequestHandlerClass)
+    """
+    The Gateway used in IP-based networks.
+    Uses the connectionless UDP protocol and extends the UDPServer class.
+    """
+    def __init__(self, service):
+        DiscoveryGateway.__init__(self, const.LAN, service)
+        socketserver.UDPServer.__init__(self, ('', const.PORT), RequestHandlerClass=RMPLanHandler)
+        # advertise using dns-sd
         self.service_info = ServiceInfo(const.DNS_SD_TYPE + const.DNS_SD_LOCAL_DOMAIN,
                                         "Your Lan Gateway." + const.DNS_SD_TYPE + const.DNS_SD_LOCAL_DOMAIN,
-                                        socket.inet_aton("127.0.0.1"), const.PORT, 0, 0,{const.GLOBAL_ID: const.CONNDE_DB_NAME})
+                                        socket.inet_aton("127.0.0.1"), const.PORT, 0, 0, {const.GLOBAL_ID: const.RMP_DB_NAME})
         self.zeroconf = Zeroconf()
         self.zeroconf.register_service(self.service_info)
 
@@ -51,6 +56,3 @@ class DiscoveryLanGateway(socketserver.UDPServer, DiscoveryGateway):
         self.zeroconf.unregister_service(self.service_info)
         self.zeroconf.close()
         socketserver.UDPServer.shutdown(self)
-
-    def deploy_adapter(self, service_file, routines):
-        pass

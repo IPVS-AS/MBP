@@ -9,11 +9,15 @@ class BTAdvertiser(Advertiser):
     def __init__(self, service, comm_type=const.BT):
         Advertiser.__init__(self, service, comm_type)
         self.client_sck = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-        # self.client_sck.settimeout(const.CLIENT_TIMEOUT)
 
-    def discover_server(self):
+    def discover_service(self):
+        """
+        Discover the discovery service using Bluetooth SDP.
+        :return: tuple containing the server address, the local ip and the local hardware address.
+        :rtype: tuple
+        """
         service_matches = bluetooth.find_service(uuid=const.BT_UUID,
-                                                 address=None)  # search all nearby devices for server
+                                                 address=None)  # search all nearby devices for service
 
         if len(service_matches) == 0:
             log.info('No matching service found')
@@ -41,7 +45,7 @@ class BTAdvertiser(Advertiser):
                 ping_reply = self._receive_msg()
 
                 if ping_reply and const.PING_MSG in ping_reply and ping_reply[const.PING_MSG] == 'pong':
-                    log.info('server found at |' + str(srv_addr) + '|')
+                    log.info('service found at |' + str(srv_addr) + '|')
                     return srv_addr, None, self.client_sck.getsockname()[0]
             except bluetooth.BluetoothError as bt_err:
                 error_msg = str(bt_err)
@@ -51,6 +55,20 @@ class BTAdvertiser(Advertiser):
         return False
 
     def _receive_msg(self):
+        """
+        Receive a message from the service.
+        As RFCOMM maintains a connection, the data arrives as a byte stream.
+        It is not specified how many bytes are returned from the stream in every read operation.
+        Thus, it is not guaranteed that each read operation returns exactly one message.
+        As a consequence, a read operation can return no, one or more messages.
+
+        After every read operation on the stream, check if the returned data can be parsed as a json object.
+        If this fails read again until a valid json object could be parsed.
+        If the object was parsed successfully, the read bytes may contain more bytes which belong to the next message.
+        Return the parsed object and store the remainder for the next message to be returned.
+        :return: the received message
+        :rtype: dict
+        """
         msg = ''
         while True:
             try:

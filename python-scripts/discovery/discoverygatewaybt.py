@@ -5,10 +5,10 @@ import bluetooth
 from discovery.discoverygateway import *
 
 
-@ConndeHandler.register
-class ConndeBluetoothHandler(ConndeHandler):
-    def __init__(self, server, client_sck, client_info):
-        ConndeHandler.__init__(self, server)
+@RMPHandler.register
+class RMPBluetoothHandler(RMPHandler):
+    def __init__(self, gateway, client_sck, client_info):
+        RMPHandler.__init__(self, gateway)
         self.client_sck = client_sck
         self.client_info = client_info
         self._last_remainder = ''
@@ -26,8 +26,23 @@ class ConndeBluetoothHandler(ConndeHandler):
         self.client_sck.close()
 
     def _receive_msg(self, ):
+        """
+        Receive a message from the connected device.
+        As RFCOMM maintains a connection, the data arrives as a byte stream.
+        It is not specified how many bytes are returned from the stream in every read operation.
+        Thus, it is not guaranteed that each read operation returns exactly one message.
+        As a consequence, a read operation can return no, one or more messages.
+
+        After every read operation on the stream, check if the returned data can be parsed as a json object.
+        If this fails read again until a valid json object could be parsed.
+        If the object was parsed successfully, the read bytes may contain more bytes which belong to the next message.
+        Return the parsed object and store the remainder for the next message to be returned.
+        :return: the received message
+        :rtype: dict
+        """
         log.debug('Trying to receive msg from |%s|', str(self.client_info))
         if self._last_remainder != '':  # if there is a remainder from last message
+            # check if the remainder contains a complete message
             try:
                 json_data, remainder = self._parse_json(self._last_remainder)
                 log.debug('Received message |%s| from |%s| remaining |%s|', str(json_data),
@@ -38,14 +53,14 @@ class ConndeBluetoothHandler(ConndeHandler):
             except ValueError:
                 pass
 
-        msg = self._last_remainder
+        msg = self._last_remainder  # append the read bytes to the remainder of the last message
         while True:
             try:
-                data = self.client_sck.recv(1024)
+                data = self.client_sck.recv(1024)  # read from stream
                 data = data.decode(const.ENCODING)
             except bluetooth.BluetoothError as bt_err:
                 error_msg = str(bt_err)
-                if '104' in error_msg:
+                if '104' in error_msg: # hack
                     log.info('Connection closed by client')
                     return False
                 elif not error_msg.__eq__('timed out'):
@@ -54,11 +69,12 @@ class ConndeBluetoothHandler(ConndeHandler):
             if not data:  # on an empty string the connection was closed
                 return False
 
-            msg += data
+            msg += data  # append read bytes to the already received data
 
             try:
                 json_data, remainder = self._parse_json(msg)  # raises a ValueError if no JSON object contained
-                log.debug('Received message |%s| from |%s| remaining |%s|', str(json_data), self.client_sck.getpeername(),
+                log.debug('Received message |%s| from |%s| remaining |%s|', str(json_data),
+                          self.client_sck.getpeername(),
                           remainder)
                 self._last_remainder = remainder
                 return json_data
@@ -66,7 +82,18 @@ class ConndeBluetoothHandler(ConndeHandler):
                 log.debug('Could not load JSON object from |%s|', msg)
 
     def _parse_json(self, msg_string):
-        for i in range(0, len(msg_string) + 1): # need +1 to include all symbols in last partial string
+        """
+        Try to parse a json object from the given string.
+
+        Start at the beginning of the string and iteratively try to parse a json object.
+        Begin with a substring of length 1 and increase the substring length in every iteration.
+        Continue until json object can be parsed or until the hole string has been checked.
+        :param msg_string: string to parse to json object
+        :return: tuple containing the found json object and the remaining string.
+        :rtype: tuple
+        :raise ValueError, if no object could be parsed
+        """
+        for i in range(0, len(msg_string) + 1):  # need +1 to include all symbols in last partial string
             try:
                 partial_string = msg_string[0:i]
                 json_data = json.loads(partial_string)  # error raised upon failure
@@ -85,9 +112,14 @@ class ConndeBluetoothHandler(ConndeHandler):
 
 @DiscoveryGateway.register
 class DiscoveryBluetoothGateway(DiscoveryGateway):
-    def __init__(self, RequestHandlerClass, db_client, service, poll_interval=0.5):
-        DiscoveryGateway.__init__(self, const.BT, db_client, service)
-        self.RequestHandlerClass = RequestHandlerClass
+    """
+    Gateway for Bluetooth networks.
+    Currently uses RFCOMM protocol which maintains a connection,
+    as windows python library does not support connectionless protocols.
+    """
+
+    def __init__(self, service, poll_interval=0.5):
+        DiscoveryGateway.__init__(self, const.BT, service)
         self.server_sck = bluetooth.BluetoothSocket()
         self.server_sck.settimeout(poll_interval)
         self.server_sck.bind(('', bluetooth.PORT_ANY))
@@ -105,7 +137,7 @@ class DiscoveryBluetoothGateway(DiscoveryGateway):
         log.info('Advertising BT service')
 
     def serve_forever(self):
-        global client_info
+        client_info = 'unknown'
         while not self._shutdown:
             try:
                 client_info = 'unknown'
@@ -125,6 +157,3 @@ class DiscoveryBluetoothGateway(DiscoveryGateway):
 
     def shutdown(self):
         self._shutdown = True
-
-    def deploy_adapter(self, service_file, routines):
-        pass

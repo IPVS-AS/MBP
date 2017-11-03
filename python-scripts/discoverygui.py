@@ -1,4 +1,4 @@
-import const
+from discovery import discoveryconst as const
 
 import tkinter
 import time

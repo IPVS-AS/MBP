@@ -1,8 +1,7 @@
-from advertise.advertiseservice import AdvertiserService
+from advertise.advertiseservice import AdvertiseService
 from advertise.advertiserlan import LanAdvertiser
 from advertise.advertiserbt import BTAdvertiser
-
-import const
+from advertise import advertiseconst as const
 
 import argparse
 import signal
@@ -40,7 +39,7 @@ if __name__ == '__main__':
         log.warning('No communication type specified. Using default ip')
         args[const.CLIENT_CMD_ARG] = default_advertiser_class
 
-    advertise_service = AdvertiserService()
+    advertise_service = AdvertiseService()
     try:
         advertise_service.start(args[const.CLIENT_CMD_ARG])
     except KeyboardInterrupt:

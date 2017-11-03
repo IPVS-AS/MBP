@@ -10,8 +10,16 @@ from advertise.advertiser import *
 
 @Advertiser.register
 class LanAdvertiser(Advertiser):
-    def __init__(self, service, comm_type=const.LAN):
-        Advertiser.__init__(self, service, comm_type)
+    """
+    Advertiser for IP-based networks.
+    Discovers the service using DNS-SD or plain Broadcasts as fallback.
+    """
+    def __init__(self, service):
+        """
+        Initzialize the Advertiser and its sockets
+        :param service:
+        """
+        Advertiser.__init__(self, service, const.LAN)
         self.s = sck.socket(sck.AF_INET, sck.SOCK_DGRAM)
         self.s.setsockopt(sck.SOL_SOCKET, sck.SO_BROADCAST, 1)
         self.s.settimeout(const.CLIENT_TIMEOUT)
@@ -44,8 +52,14 @@ class LanAdvertiser(Advertiser):
 
         self.s.sendto(msg_string.encode('utf-8'), self.server_address)
 
-    def discover_server(self):
-        log.info('Discovering server')
+    def discover_service(self):
+        """
+        Discover the discovery service using DNS-SD.
+        If DNS-SD does not discover a server after 5 seconds, try plain broadasts as fallback.
+        :return: tuple containing the server address, the local ip and the local hardware address.
+        :rtype: tuple
+        """
+        log.info('Discovering service')
 
         log.info("Starting DNS-SD discovery")
         dnssd = zerocnf.Zeroconf()
@@ -59,13 +73,13 @@ class LanAdvertiser(Advertiser):
 
             time.sleep(0.5)
 
-        service_browser.cancel()
+        service_browser.cancel()  # stop browsing services
         dnssd.close()
         if self.discovered_server is not None:
             return self.discovered_server
 
         # fallback broadcast
-        log.warning("Could not find servier using DNS-SD. Using broadcast as fallback")
+        log.warning("Could not find service using DNS-SD. Using broadcast as fallback")
 
         interfaces = ni.interfaces()
         for i in interfaces:  # interface
@@ -97,13 +111,20 @@ class LanAdvertiser(Advertiser):
         return False
 
     def _ping_server(self, target_address, target_port=const.PORT):
+        """
+        Ping the service using the given address and port.
+        :param target_address: address of the service or broadcast address
+        :param target_port: port of the service
+        :return: the services address
+        :rtype: tuple
+        """
         data = {
             const.CONN_TYPE: const.CONN_PING,
             const.PING_MSG: 'ping'
         }
 
         msg = json.dumps(data).encode('utf-8')
-        log.debug('Ping server with |' + msg.decode('utf-8') + '|')
+        log.debug('Ping service with |' + msg.decode('utf-8') + '|')
         self.s.sendto(msg, (target_address, target_port))
 
         try:
@@ -111,7 +132,7 @@ class LanAdvertiser(Advertiser):
             log.debug('Received pong |' + msg.decode('utf-8') + '|')
             data = json.loads(msg.decode('utf-8'))
             if const.PING_MSG in data and data[const.PING_MSG] == 'pong':
-                log.info('server found at |' + str(srv_addr) + '|')
+                log.info('service found at |' + str(srv_addr) + '|')
                 server_address = srv_addr
                 return server_address
         except sck.timeout:
@@ -119,16 +140,15 @@ class LanAdvertiser(Advertiser):
 
     def server_discovered(self, zeroconf, service_type, name, state_change):
         """
+        Store the discovered server.
 
-        :param zeroconf:
         :type zeroconf: zerocnf.Zeroconf
-        :param service_type:
+        :param service_type: type of the discovered service
         :type service_type: str
-        :param name:
+        :param name: name of the discovered service
         :type name: str
-        :param state_change:
+        :param state_change: has service been ADDED or REMOVED?
         :type state_change: zerocnf.ServiceStateChange
-        :return:
         """
         log.debug("Service %s of type %s state changed: %s", name, service_type, state_change)
 
@@ -137,12 +157,21 @@ class LanAdvertiser(Advertiser):
             if info:
                 service_addr = sck.inet_ntoa(info.address)
                 service_port = info.port
-                log.info("Discovered server |%s| at |%s:%s| using DNS-SD", name, str(service_addr), str(service_port))
+                log.info("Discovered service |%s| at |%s:%s| using DNS-SD", name, str(service_addr), str(service_port))
                 ip, mac = self._read_own_address(service_addr, service_port)
                 if ip:
                     self.discovered_server = ((service_addr, service_port), ip, mac)
 
     def _read_own_address(self, target_addr, target_port=const.PORT):
+        """
+        Zeroconf does not provide a way to read the interface on which it has discovered a service.
+        Thus, the interface, with it the IP and MAC, must be found using pings to the service.
+
+        :param target_addr: IP of the service
+        :param target_port: port of the service
+        :return: tuple containing the local IP and local MAC
+        :rtype: tuple
+        """
         interfaces = ni.interfaces()
         for i in interfaces:  # interface
             if ni.AF_INET in ni.ifaddresses(i):  # if interface has AF_INET (IPv4)

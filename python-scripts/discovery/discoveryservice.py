@@ -11,7 +11,7 @@ from discovery.discoverygatewaylan import *
 class DiscoveryService(ServiceAdapter):
     def __init__(self):
         """
-        Initializes the discovery service and the database connections.
+        Initialize the discovery service and the database connections.
         Note: Gateways are started using the start() method
         """
         self.db_client = MongoClient()
@@ -31,9 +31,9 @@ class DiscoveryService(ServiceAdapter):
             self._next_id = 100
 
         # Connde database
-        self.connde_devices = self.db_client[const.DB_NAME][const.CONNDE_DEVICE_COLLECTION]
-        self.connde_sensors = self.db_client[const.DB_NAME][const.CONNDE_SENSOR_COLLECTION]
-        self.connde_types = self.db_client[const.DB_NAME][const.CONNDE_TYPE_COLLECTION]
+        self.rmp_devices = self.db_client[const.RMP_DB_NAME][const.RMP_DEVICE_COLLECTION]
+        self.rmp_sensors = self.db_client[const.RMP_DB_NAME][const.RMP_SENSOR_COLLECTION]
+        self.rmp_types = self.db_client[const.RMP_DB_NAME][const.RMP_TYPE_COLLECTION]
 
         self.id_lock = threading.Lock()
 
@@ -54,8 +54,8 @@ class DiscoveryService(ServiceAdapter):
 
     def start(self, lan=True, bt=True):
         """
-        Starts the discovery service.
-        Initializes the specified gateways and starts each in a separate thread.
+        Start the discovery service.
+        Initialize the specified gateways and start each in a separate thread.
         :param lan: Specifies if the gateway for IP-based networks should be started. Defaults to true.
         :param bt: Specifies if the gateway for Bluetooth networks should be started. Defaults to true.
         """
@@ -63,7 +63,7 @@ class DiscoveryService(ServiceAdapter):
 
         if lan:
             log.info('Starting LAN...')
-            lan_server = DiscoveryLanGateway(ConndeLanHandler, self.db_client, self, ('', const.PORT))
+            lan_server = DiscoveryLanGateway(self)
             lan_thread = threading.Thread(target=lan_server.serve_forever)
             lan_thread.start()
             self.gateways.append(lan_server)
@@ -71,7 +71,7 @@ class DiscoveryService(ServiceAdapter):
 
         if bt:
             log.info('Starting BT...')
-            bt_server = DiscoveryBluetoothGateway(ConndeBluetoothHandler, self.db_client, self)
+            bt_server = DiscoveryBluetoothGateway(self)
             bt_thread = threading.Thread(target=bt_server.serve_forever)
             bt_thread.start()
             self.gateways.append(bt_server)
@@ -81,7 +81,7 @@ class DiscoveryService(ServiceAdapter):
 
     def stop(self):
         """
-        Stops all gateways and the discovery service.
+        Stop all gateways and the discovery service.
         """
         log.info('Stopping discovery service')
 
@@ -99,7 +99,16 @@ class DiscoveryService(ServiceAdapter):
 
     def connect_new_device(self, device):
         """
-        Connects a new device with the Connde system.
+        Connect a new device with the RMP.
+
+        The device is specified by a dictionary containing information necessary for registration:
+            {
+                const.DEV_TYPE: type,
+                const.LOCAL_ID: local_id,
+                const.DEV_HW_ADDRESS: hw_addr,
+                const.DEV_IP: ip, (optional)
+                const.HOST: host (optional)
+            }
 
         Check for a duplicate in the system.
         In case a duplicate was found:
@@ -111,7 +120,10 @@ class DiscoveryService(ServiceAdapter):
         :param device: the newly connecting device
         :type device: dict
         :return: a tuple containing the GLOBAL_ID assigned to the device and an optional error message.
+        :rtype: tuple
+        :raise: KeyError, if the device object lacks necessary information
         """
+        # read all necessary information, throws exception if not present
         local_id = device[const.LOCAL_ID]
         dev_hw_addr = device[const.DEV_HW_ADDRESS]
         dev_ip = device[const.DEV_IP]
@@ -122,18 +134,23 @@ class DiscoveryService(ServiceAdapter):
         dev_type = device[const.DEV_TYPE]
 
         log.debug('Possibly new Device detected |%s@%s|', local_id, dev_hw_addr)
+
+        # init values
         accepted = True
         error_message = 'success'
-        duplicate_check_key = {
+
+        duplicate_check_key = {  # key to search the database for possible duplicates
             const.LOCAL_ID: local_id,
             const.DEV_HW_ADDRESS: dev_hw_addr
         }
         duplicate = self.dev_coll.find_one(duplicate_check_key)
 
-        if duplicate is not None:
+        if duplicate is not None:  # duplicate is found
             global_id = duplicate[const.GLOBAL_ID]
             log.debug('Found duplicate for device |%s@%s| with global_id |%d|', local_id, dev_hw_addr, global_id)
 
+            # check whether the duplicate request may be due to a lost acknowledgment.
+            # If so, resend the ack, otherwise decline the request
             cur_time = datetime.datetime.utcnow()
             if cur_time - duplicate[const.LAST_CONTACT] < datetime.timedelta(
                     seconds=5 * const.DISCOVERY_TIMEOUT):
@@ -143,10 +160,11 @@ class DiscoveryService(ServiceAdapter):
                 error_message = 'Declined'
                 log.warning('Illegal duplicate |%s@%s| in conflict with device |%d:%s@%s|', local_id, dev_hw_addr,
                             global_id, duplicate[const.LOCAL_ID], duplicate[const.DEV_HW_ADDRESS])
-        else:
+        else:  # no duplicate found -> accept request and register device
             global_id = self._next_global_id()
             log.info('New Device |%s@%s| discovered', local_id, dev_hw_addr)
 
+            # create db entry. Use update instead of insert to use '$currentDate'
             db_key = {
                 const.GLOBAL_ID: global_id
             }
@@ -176,7 +194,7 @@ class DiscoveryService(ServiceAdapter):
             device[const.GLOBAL_ID] = global_id
             self._insert_to_connde_db(device)
 
-        if not accepted:
+        if not accepted: # invalidate global_id if not accepted
             global_id = 0
 
         return global_id, error_message
@@ -199,17 +217,25 @@ class DiscoveryService(ServiceAdapter):
         :param device: the device to be reconnected
         :type device: dict
         :return: a tuple containing the GLOBAL_ID assigned to the device and an optional error message.
+        :rtype: tuple
+        :raise KeyError, if device object lacks necessary information
         """
+        # read all necessary information, throws exception if not present
         global_id = device[const.GLOBAL_ID]
         dev_hw_addr = device[const.DEV_HW_ADDRESS]
         local_id = device[const.LOCAL_ID]
 
+        log.debug('Device |%d| trying to reconnect', global_id)
+
+        # search registered devices for given GLOBAL_ID
         db_key = {const.GLOBAL_ID: global_id}
         dev = self.dev_coll.find_one(db_key)
 
-        log.debug('Device |%d| trying to reconnect', global_id)
+        # init values
         accepted = True
         error_message = 'success'
+
+        # check whether provided information equals the stored information. If not, decline.
         if dev is None:
             accepted = False
             error_message = 'GLOBAL_ID is not known'
@@ -234,7 +260,7 @@ class DiscoveryService(ServiceAdapter):
 
         return global_id, error_message
 
-    def save_init(self, dev, conf):
+    def save_conf(self, dev, conf):
         """
         Save the adapter configuration for the given device.
 
@@ -247,15 +273,18 @@ class DiscoveryService(ServiceAdapter):
         :type dev: dict
         :param conf: the adapter config
         :type conf: dict
-        :return: nothing
+        :raise KeyError, if device object lacks necessary information
         """
+        # read all necessary information, throws exception if not present
         global_id = dev[const.GLOBAL_ID]
-        db_key = {const.GLOBAL_ID: global_id}
 
+        # find device
+        db_key = {const.GLOBAL_ID: global_id}
         cur = self.dev_coll.find_one(db_key)
 
         log.debug('Current saved client state: ' + str(cur))
 
+        # generate dict to update device in database
         update = {
             '$set': {
                 const.ADAPTER_CONF: {}
@@ -265,14 +294,15 @@ class DiscoveryService(ServiceAdapter):
             }
         }
 
+        # As possible parameters are not known, copy all message contents into the dict
         for key in conf:
             if key not in [const.GLOBAL_ID, const.CONN_TYPE]:
                 update['$set'][const.ADAPTER_CONF][key] = conf[key]
 
         log.debug('Update client state: ' + str(update))
-
         self.dev_coll.update_one(db_key, update)
 
+        # if necessary register device for monitoring
         if const.TIMEOUT in conf:
             timeout = conf[const.TIMEOUT]
             monitor_device = {
@@ -281,13 +311,14 @@ class DiscoveryService(ServiceAdapter):
             }
             self._register_device_for_monitoring(monitor_device)
 
-        connde_sensor = self.connde_sensors.find_one(db_key)
-        if connde_sensor is not None:
-            sensor_id = connde_sensor['_id']
+        # if the device is a sensor, and the conf object contains the 'pinset' parameter, deploy
+        rmp_sensor = self.rmp_sensors.find_one(db_key)
+        if rmp_sensor is not None:
+            sensor_id = rmp_sensor['_id']
 
             if sensor_id is not None and 'pinset' in conf:
-                requests.post("http://localhost:8080/MBP/deploy/sensor/" + str(sensor_id),
-                              data={'component': 'SENSOR', 'pinset': conf[const.PINSET]})
+                requests.post("http://localhost:8080/MBP/api/deploy/sensor/" + str(sensor_id),
+                              json={'component': 'SENSOR', 'pinset': conf[const.PINSET]})
 
     def device_alive(self, device):
         """
@@ -298,10 +329,11 @@ class DiscoveryService(ServiceAdapter):
 
         :param device: the alive device
         :type device: dict
-        :return: nothing
+        :raise KeyError, if device object lacks necessary information
         """
-
+        # read all necessary information, throws exception if not present
         global_id = device[const.GLOBAL_ID]
+
         log.debug('device |%d| is alive', global_id)
         db_key = {const.GLOBAL_ID: global_id}
 
@@ -311,36 +343,57 @@ class DiscoveryService(ServiceAdapter):
             }
         }
 
+        # update device and monitoring collection
         self.dev_coll.update_one(db_key, db_update)
         self.mon_coll.update_one(db_key, db_update)
 
-    def getConndeId(self, global_id):
+    def get_rmp_id(self, global_id):
         """
-        Return the id of the connde application associated with this global id.
+        Return the id the rmp application associated with this global_id.
         :param global_id: the global_id to translate
         :type global_id: int
-        :return: the connde application id for the specified global_id
+        :return: the rmp application id for the specified global_id
+        :rtype: str
         """
         db_key = {const.GLOBAL_ID: global_id}
-        device = self.connde_devices.find_one(db_key)
+        device = self.rmp_devices.find_one(db_key)
         if device is None:
-            device = self.connde_sensors.find_one(db_key)
+            device = self.rmp_sensors.find_one(db_key)
         if device is not None:
-            connde_id = device[const.MONGO_ID]
-            return str(connde_id)
+            rmp_id = device[const.MONGO_ID]
+            return str(rmp_id)
         else:
             return ''
 
     def _register_device_for_monitoring(self, device):
         """
         Register the given device with the monitoring service.
+        The timeout value is interpreted in seconds.
+
+        The device is a dictionary containing the device's GLOBAL_ID and the TIMEOUT parameter.
+        The TIMEOUT is either specified on the first level or in a nested dictionary ADAPTER_CONF:
+
+        {
+            const.GLOBAL_ID: global_id,
+            const.TIMEOUT: timeout
+        }
+
+        or
+
+        {
+            const.GLOBAL_ID: global_id,
+            const.ADAPTER_CONF:  {
+                const.TIMEOUT: timeout
+            }
+        }
 
         :param device: the device to be monitored
         :type device: dict
-
-        :return: nothing
+        :raise KeyError, if device object lacks necessary information
         """
+        # read all necessary information, throws exception if not present
         global_id = device[const.GLOBAL_ID]
+
         db_key = {const.GLOBAL_ID: global_id}
         timeout = 0
         if const.TIMEOUT in device:
@@ -350,6 +403,7 @@ class DiscoveryService(ServiceAdapter):
             timeout = device[const.ADAPTER_CONF][const.TIMEOUT]
 
         if timeout != 0:
+            # insert into monitoring collection
             monitoring_entry = {
                 '$set': {
                     const.TIMEOUT: timeout
@@ -358,6 +412,7 @@ class DiscoveryService(ServiceAdapter):
                     const.LAST_CONTACT: True
                 }
             }
+            # update in the device collection
             device_entry = {
                 '$set': {
                     const.MONITORING: True
@@ -384,8 +439,9 @@ class DiscoveryService(ServiceAdapter):
         }
         :param device: the device to be inserted to the connde database
         :type device: dict
-        :return:
+        :raise KeyError, if device object lacks necessary information
         """
+        # read all necessary information, throws exception if not present
         local_id = device[const.LOCAL_ID]
         dev_hw_addr = device[const.DEV_HW_ADDRESS]
         dev_ip = device[const.DEV_IP]
@@ -396,25 +452,29 @@ class DiscoveryService(ServiceAdapter):
         dev_type = device[const.DEV_TYPE]
         global_id = device[const.GLOBAL_ID]
 
+        # if a host is specified the device is treated as a sensor or actuator, else it is treated as a device
         if host:
+            # load hosting device
             host_key = {
                 const.GLOBAL_ID: host
             }
+            db_host = self.rmp_devices.find_one(host_key)
 
-            db_host = self.connde_devices.find_one(host_key)
-
+            # load type
             type_key = {
-                const.CONNDE_TYPE_NAME: dev_type
+                const.RMP_TYPE_NAME: dev_type
             }
+            db_type = self.rmp_types.find_one(type_key)
 
-            db_type = self.connde_types.find_one(type_key)
+            # TODO discovery - differentiate between actuator and sensor
 
-            connde_sensor = {
+            # save to database
+            rmp_sensor = {
                 '$set': {
-                    const.CONNDE_SENSOR_CLASS: const.CONNDE_SENSOR_JAVA_CLASS,
-                    const.CONNDE_SENSOR_NAME: local_id,
-                    const.CONNDE_SENSOR_TYPE: db_type,
-                    const.CONNDE_SENSOR_DEVICE: db_host,
+                    const.RMP_SENSOR_CLASS: const.CONNDE_SENSOR_JAVA_CLASS,
+                    const.RMP_SENSOR_NAME: local_id,
+                    const.RMP_SENSOR_TYPE: db_type,
+                    const.RMP_SENSOR_DEVICE: db_host,
                     const.GLOBAL_ID: global_id,
                 }
             }
@@ -423,20 +483,20 @@ class DiscoveryService(ServiceAdapter):
                 const.GLOBAL_ID: global_id,
             }
 
-            self.connde_sensors.update_one(sensor_key, connde_sensor, upsert=True)
+            self.rmp_sensors.update_one(sensor_key, rmp_sensor, upsert=True)
 
         else:  # if there is no host, we assume a device
-            connde_device = {
+            rmp_device = {
                 '$set': {
-                    const.CONNDE_DEVICE_AUTODEPLOY: False,
-                    const.CONNDE_DEVICE_IP: dev_ip,
-                    const.CONNDE_DEVICE_MAC: str(dev_hw_addr).replace(':', ''),
-                    const.CONNDE_DEVICE_IFAC: 'iface',
-                    const.CONNDE_DEVICE_NAME: local_id,
+                    const.RMP_DEVICE_AUTODEPLOY: False,
+                    const.RMP_DEVICE_IP: dev_ip,
+                    const.RMP_DEVICE_MAC: str(dev_hw_addr).replace(':', ''),
+                    const.RMP_DEVICE_IFAC: 'iface',
+                    const.RMP_DEVICE_NAME: local_id,
                     const.GLOBAL_ID: global_id,
                 },
                 '$currentDate': {
-                    const.CONNDE_DEVICE_DATE: True
+                    const.RMP_DEVICE_DATE: True
                 }
             }
 
@@ -444,4 +504,4 @@ class DiscoveryService(ServiceAdapter):
                 const.GLOBAL_ID: global_id,
             }
 
-            self.connde_devices.update_one(device_key, connde_device, upsert=True)
+            self.rmp_devices.update_one(device_key, rmp_device, upsert=True)
