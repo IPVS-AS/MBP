@@ -1,10 +1,10 @@
 /* global app */
 
 app.controller('SensorListController',
-        ['$scope', '$controller', 'sensorList', 'addSensor',
-            'deviceList', 'addDevice', 'typeList',
-            function ($scope, $controller, sensorList, addSensor,
-                    deviceList, addDevice, typeList) {
+        ['$scope', '$controller', 'sensorList', 'addSensor', 'deleteSensor',
+            'deviceList', 'addDevice', 'deleteDevice', 'typeList',
+            function ($scope, $controller, sensorList, addSensor, deleteSensor,
+                    deviceList, addDevice, deleteDevice, typeList) {
                 var vm = this;
 
                 // public
@@ -33,11 +33,17 @@ app.controller('SensorListController',
                                 $scope: $scope,
                                 addItem: addSensor
                             }),
+                    deleteSensorCtrl: $controller('DeleteItemController as deleteSensorCtrl',
+                            {
+                                $scope: $scope,
+                                deleteItem: deleteSensor
+                            }),
                     deviceCtrl: $controller('DeviceListController as deviceCtrl',
                             {
                                 $scope: $scope,
                                 deviceList: deviceList,
-                                addDevice: addDevice
+                                addDevice: addDevice,
+                                deleteDevice: deleteDevice
                             }),
                     typeListCtrl: $controller('ItemListController as typeListCtrl',
                             {
@@ -62,7 +68,20 @@ app.controller('SensorListController',
                             }
                         }
                 );
-
+                
+                // $watch 'deleteItem' result and remove from 'itemList'
+                $scope.$watch(
+                        function () {
+                            // value being watched
+                            return vm.deleteSensorCtrl.result;
+                        },
+                        function() {
+                          var id = vm.deleteSensorCtrl.result;
+                          
+                          vm.sensorListCtrl.removeItem(id);
+                        }
+                );
+                
                 // $watch 'addDevice' result and select on sensor form
                 $scope.$watch(
                         function () {

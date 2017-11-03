@@ -30,10 +30,14 @@ def on_message(client, userdata, msg):
     }
 
     try:
+        print (msg.payload)
         parsed = json.loads(msg.payload.decode('utf-8'))
-        result['idref'] = str(parsed['id'])
-        result['value'] = str(parsed['value'])
-        result['component'] = str(parsed['component'])
+        print (parsed)
+        print (result)
+        result['idref'] = str(parsed["id"])
+        print (result)
+        result['value'] = str(parsed["value"])
+        result['component'] = str(parsed["component"])
         if (result['component'] == "SENSOR"):
             result['sensorRef'] = {
                 '_id': result['idref']
@@ -44,6 +48,7 @@ def on_message(client, userdata, msg):
             }
 
     except Exception as e:
+        print (e)
         result['idref'] = '-'
         result['value'] = '-'
         result['component'] = '-'

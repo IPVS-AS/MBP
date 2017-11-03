@@ -4,7 +4,7 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    LIST OF TYPES
+                    List of adapter types
                 </h2>
             </div>
             <div class="body">
@@ -13,15 +13,21 @@
                         <tr>
                             <th>Name</th>
                             <th>Description</th>
+                            <th>ID</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr id="{{item.id}}" ng-repeat="item in typeListCtrl.items">
                             <td>{{item.name}}</td>
                             <td>{{item.description}}</td>
+                            <td><form ng-submit="deleteTypeCtrl.deleteItem()">
+                              <div ng-model="deleteTypeCtrl.item.id"> {{item.id}} </div>
+                              <button type="submit" class="btn btn-primary m-t-15 waves-effect" ng-click="deleteTypeCtrl.item.id = item.id"> Delete </button></form>
+                            </td>
                         </tr>
                         <tr ng-show="typeListCtrl.items.length === 0">
-                            <td>No types registered yet.</td>
+                            <td>No adapter types registered yet.</td>
+                            <td></td>
                             <td></td>
                             <td></td>
                         </tr>
@@ -37,13 +43,13 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    REGISTER
+                    Register
                 </h2>
             </div>
             <div class="body">
                 <form ng-submit="addTypeCtrl.addItem()">
                     <fieldset id="type-form">
-                        <h2 class="card-inside-title">New Type</h2>
+                        <h2 class="card-inside-title">Add adapter type</h2>
                         <div class="row clearfix">
                             <div class="col-xs-12">
                                 <!-- "global" error for addItem -->
@@ -60,7 +66,7 @@
                                 <!-- item.description group -->
                                 <div class="form-group" ng-class="{'has-error' : addTypeCtrl.item.errors.description }">
                                     <div class="form-line" ng-class="{'focused error' : addTypeCtrl.item.errors.description }">
-                                        <textarea rows="2" class="form-control no-resize" placeholder="Describe this Type..." ng-model="addTypeCtrl.item.description"></textarea>
+                                        <textarea rows="2" class="form-control no-resize" placeholder="Describe this type..." ng-model="addTypeCtrl.item.description"></textarea>
                                     </div>
                                     <span class="help-block" ng-show="addTypeCtrl.item.errors.description">{{addTypeCtrl.item.errors.description.message}}</span>
                                 </div>
@@ -88,7 +94,7 @@
                                 <!-- buttons -->
                                 <div class="form-group align-right">
                                     <button type="submit" class="btn btn-primary m-t-15 waves-effect">
-                                        REGISTER
+                                        Register
                                     </button>
                                 </div>
                             </div>

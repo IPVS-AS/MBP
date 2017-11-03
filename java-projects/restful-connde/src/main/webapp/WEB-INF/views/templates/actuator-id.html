@@ -4,23 +4,27 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    ACTUATOR
+                    Actuator
                 </h2>
             </div>
             <div class="body">                
                 <table class="table table-hover">
                     <tbody>
                         <tr id="{{item.id}}">
-                            <th>NAME</th>
+                            <th>Name</th>
                             <td>{{actuatorDetailsCtrl.item.name}}</a></td>
                         </tr>
                         <tr>
-                            <th>TYPE</th>
+                            <th>Type</th>
                             <td>{{actuatorDetailsCtrl.item._embedded.type.name}}</a></td>
                         </tr>
                         <tr>
-                            <th>DEVICE</th>
-                            <td>{{actuatorDetailsCtrl.item._embedded.device.name}}</a></td>
+                            <th>Device</th>
+                            <td>{{actuatorDetailsCtrl.item._embedded.device.name}} (IP: {{actuatorDetailsCtrl.item._embedded.device.ipAddress ? actuatorDetailsCtrl.item._embedded.device.ipAddress : '-'}})</a></td>
+                        </tr>
+                        <tr ng-hide="ctrl.deployer.processing">
+                            <th>Status</th>
+                            <td>{{ctrl.deployer.available ? (ctrl.deployer.deployed ? 'RUNNING' : 'AVAILABLE') : 'NOT AVAILABLE'}}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -75,7 +79,7 @@
                                     </div>
                                 </div>
                                 <div class="col-xs-3">
-                                    <button class="btn btn-primary waves-effect" id="deploy-button">DEPLOY</button>
+                                    <button class="btn btn-primary waves-effect" id="deploy-button">Deploy</button>
                                 </div>
                             </div>
                         </form>
@@ -84,7 +88,7 @@
                         <form ng-submit="ctrl.deployer.doUndeploy()">
                             <div class="row clearfix">
                                 <div class="col-xs-3">
-                                    <button class="btn btn-warning waves-effect" id="deploy-button">UNDEPLOY</button>
+                                    <button class="btn btn-warning waves-effect" id="deploy-button">Undeploy</button>
                                 </div>
                             </div>
                         </form>
@@ -99,7 +103,7 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    LOG
+                    Received values
                     <small>Values sent by the actuator</small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
@@ -134,9 +138,10 @@
                 </div>
                 <table  class="table table-hover" ng-show="ctrl.actuatorValues.data && !ctrl.loader.actuatorValues">
                     <thead>
-                    <th>ID</th>
-                    <th>Value</th>
-                    <th>Date</th>
+                        <tr>
+                            <th>Value</th>
+                            <th>Date</th>
+                        </tr> 
                     </thead>
                     <tbody>
                         <tr id="{{v.id}}" ng-repeat="v in ctrl.actuatorValues.data">

@@ -8,7 +8,7 @@
         <base th:href="@{/}" />
         <link id="ENDPOINT_URI" th:href="@{/api}" />
 
-        <title>connde</title>
+        <title>MBP</title>
 
         <!-- Favicon-->
         <link rel="icon" th:href="@{/images/favicon.ico}" type="image/x-icon">
@@ -65,7 +65,7 @@
                 <div class="navbar-header">
                     <a href="javascript:void(0);" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false"></a>
                     <a href="javascript:void(0);" class="bars"></a>
-                    <a class="navbar-brand" href="./">CONNDE</a>
+                    <a class="navbar-brand" href="./">Multi-purpose Binding and Provisioning Platform</a>
                 </div>
             </div>
         </nav>
@@ -101,7 +101,7 @@
             <!-- Menu -->
             <div class="menu">
                 <ul class="list">
-                    <li class="header">MAIN NAVIGATION</li>
+                    <li class="header">Main Navigation</li>
                     <li class="active" href="" menu-item>
                         <a href="./">
                             <i class="material-icons">home</i>
@@ -129,7 +129,7 @@
                     <li href="view/types" ng-show="expert" menu-item>
                         <a href="view/types">
                             <i class="material-icons">description</i>
-                            <span>Types</span>
+                            <span>Adapter types</span>
                         </a>
                     </li>
                     <!--                    <li ng-hide="expert">
@@ -150,7 +150,7 @@
             <!-- Footer -->
             <div class="legal">
                 <div class="copyright">
-                    &copy; 2016 <a href="javascript:void(0);">connde</a>.
+                    &copy; 2016 <a href="javascript:void(0);">MBP</a>.
                 </div>
                 <!--<div class="version">
                     <b>Version: </b> 0.2.0
@@ -232,6 +232,7 @@
         <script th:src="@{/js/controllers/ItemListController.js}"></script>
         <script th:src="@{/js/controllers/ItemDetailsController.js}"></script>
         <script th:src="@{/js/controllers/AddItemController.js}"></script>
+        <script th:src="@{/js/controllers/DeleteItemController.js}"></script>
 
         <script th:src="@{/js/controllers/home/HomeController.js}"></script>
         <script th:src="@{/js/controllers/actuators/ActuatorListController.js}"></script>

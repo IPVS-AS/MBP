@@ -4,26 +4,26 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    SENSOR
+                    Sensor
                 </h2>
             </div>
             <div class="body">                
                 <table class="table table-hover">
                     <tbody>
                         <tr id="{{item.id}}">
-                            <th>NAME</th>
+                            <th>Name</th>
                             <td>{{sensorDetailsCtrl.item.name}}</a></td>
                         </tr>
                         <tr>
-                            <th>TYPE</th>
+                            <th>Type</th>
                             <td>{{sensorDetailsCtrl.item._embedded.type.name}}</td>
                         </tr>
                         <tr>
-                            <th>DEVICE</th>
+                            <th>Device</th>
                             <td>{{sensorDetailsCtrl.item._embedded.device.name}} (IP: {{sensorDetailsCtrl.item._embedded.device.ipAddress ? sensorDetailsCtrl.item._embedded.device.ipAddress : '-'}})</td>
                         </tr>
                         <tr ng-hide="ctrl.deployer.processing">
-                            <th>STATUS</th>
+                            <th>Status</th>
                             <td>{{ctrl.deployer.available ? (ctrl.deployer.deployed ? 'RUNNING' : 'AVAILABLE') : 'NOT AVAILABLE'}}</td>
                         </tr>
                     </tbody>
@@ -65,7 +65,7 @@
                         <div class="alert alert-success" ng-show="ctrl.deployer.undeploy.success"> {{ctrl.deployer.undeploy.success}} </div>
                         <div class="alert alert-danger" ng-show="ctrl.deployer.undeploy.errors.global"> {{ctrl.deployer.undeploy.errors.global}} </div>
                     </div>
-                    <div class="col-xs-12" ng-show="ctrl.deployer.available && !ctrl.deployer.deployed">
+                    <div class="col-xs-12">
                         <form ng-submit="ctrl.deployer.doDeploy()">
                             <div class="row clearfix">
                                 <div class="col-xs-9">
@@ -79,7 +79,7 @@
                                     </div>
                                 </div>
                                 <div class="col-xs-3">
-                                    <button class="btn btn-primary waves-effect" id="deploy-button">DEPLOY</button>
+                                    <button class="btn btn-primary waves-effect" id="deploy-button">Deploy</button>
                                 </div>
                             </div>
                         </form>
@@ -88,7 +88,7 @@
                         <form ng-submit="ctrl.deployer.doUndeploy()">
                             <div class="row clearfix">
                                 <div class="col-xs-3">
-                                    <button class="btn btn-warning waves-effect" id="deploy-button">UNDEPLOY</button>
+                                    <button class="btn btn-warning waves-effect" id="deploy-button">Undeploy</button>
                                 </div>
                             </div>
                         </form>
@@ -103,7 +103,7 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    LOG
+                    Received values
                     <small>Values sent by the sensor</small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
