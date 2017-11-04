@@ -9,8 +9,8 @@ DEPLOY_DEVICES = 'devices'
 
 
 # filenames
-AUTODEPLOY_FILE = 'autodeploy.json'
-GLOBAL_ID_FILE = 'global_ids.json'
+AUTODEPLOY_FILE = '/etc/rmp/autodeploy.json'
+GLOBAL_ID_FILE = '/etc/rmp/global_ids.json'
 
 CLIENT_SLEEPTIME = 2
 CLIENT_TIMEOUT = 5

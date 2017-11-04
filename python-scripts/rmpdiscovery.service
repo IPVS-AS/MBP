@@ -6,7 +6,7 @@ Requires=mongodb.service bluetooth.service
 
 [Service]
 Type=simple
-ExecStart=/opt/rmpdiscovery/rmpdiscovery.sh
+ExecStart=/opt/rmp/rmpdiscovery.sh
 Restart=always
 
 [Install]

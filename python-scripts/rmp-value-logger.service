@@ -1,12 +1,12 @@
 [Unit]
-Description=RMP advertising service
+Description=RMP value logger
 Documentation=https://github.com/Rossojo/connde
-After=bluetooth.service
-Requires=bluetooth.service
+After=mosquitto.service
+Requires=mosquitto.service
 
 [Service]
 Type=simple
-ExecStart=/opt/rmp/rmpadvertise.sh
+ExecStart=/opt/rmp/rmp-value-logger.sh
 Restart=always
 
 [Install]
