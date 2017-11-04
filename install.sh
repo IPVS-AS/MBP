@@ -26,14 +26,8 @@ sudo apt-get install -qy openjdk-8-jdk;
 sudo apt-get install -qy python-pip;
 
 # Install python virtual environment and install python packages
-echo "Installing virtualenv..."
-sudo pip install virtualenv
-sudo pip install virtualenvwrapper
-source /usr/bin/virtualenvwrapper.sh
-mkvirtualenv /etc/rmp/python_env/rmpdiscovery
-workon /etc/rmp/python_env/rmpdiscovery
 echo "Installing python packages..."
-pip install -r python-packages.txt
+sudo -H pip install -r python-packages.txt
 
 echo "Installing Mosquitto Broke, MongoDB, Tomcat8, git and maven..."
 # Install Mosquitto Broker
@@ -68,6 +62,7 @@ sudo mv target/restful-connde-1.0-SNAPSHOT.war /var/lib/tomcat8/webapps/MBP.war
 # Install discovery service
 echo "Installing python scripts..."
 sudo mkdir -p /opt/rmp
+sudo mkdir -p /etc/rmp
 cd ../../python-scripts
 sudo cp -r rmpdiscovery rmpdiscovery.py rmpdiscovery.sh rmpadvertise.sh rmpadvertise.py /opt/rmp
 sudo cp rmpdiscovery.service rmpadvertise.service /etc/systemd/system
