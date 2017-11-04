@@ -1,6 +1,3 @@
 #!/usr/bin/env sh
 
-source /usr/bin/virtualenvwrapper.sh
-
-workon /etc/rmp/python_env/rmpdiscovery
-python /opt/rmp/rmpdiscovery.py --lan
+python3 /opt/rmp/rmpdiscovery.py --lan
