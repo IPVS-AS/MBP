@@ -62,14 +62,16 @@ sudo mv target/restful-connde-1.0-SNAPSHOT.war /var/lib/tomcat8/webapps/MBP.war
 
 # Install discovery service
 echo "\nInstalling python scripts...\n"
-sudo mkdir -p /opt/rmp
-sudo mkdir -p /etc/rmp
+INSTALL_PATH = /opt/rmp
+CONFIG_PATH = /etc/rmp
+sudo mkdir -p $INSTALL_PATH
+sudo mkdir -p $CONFIG_PATH
 cd ../../python-scripts
-sudo cp -r rmpdiscovery rmpdiscovery.py rmpdiscovery.sh rmpadvertise.sh rmpadvertise.py /opt/rmp
-sudo chmod 775 /opt/rmpdiscover.sh
-sudo chmod 775 /opt/rmpadvertise.sh
-sudo cp value-logger.py rmp-value-logger.sh /opt/rmp
-sudo chmod 775 /opt/rmp-value-logger.sh
+sudo cp -r rmpdiscovery rmpdiscovery.py rmpdiscovery.sh rmpadvertise.sh rmpadvertise.py ${INSTALL_PATH}
+sudo chmod 775 ${INSTALL_PATH}/rmpdiscover.sh
+sudo chmod 775 ${INSTALL_PATH}/rmpadvertise.sh
+sudo cp value-logger.py rmp-value-logger.sh ${INSTALL_PATH}
+sudo chmod 775 ${INSTALL_PATH}/rmp-value-logger.sh
 sudo cp rmpdiscovery.service rmpadvertise.service rmp-value-logger.service /etc/systemd/system
 sudo systemctl start rmpdiscovery.service rmp-value-logger.service
 
