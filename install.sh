@@ -68,7 +68,7 @@ sudo mkdir -p $INSTALL_PATH
 sudo mkdir -p $CONFIG_PATH
 cd ../../python-scripts
 sudo cp -r rmpdiscovery rmpdiscovery.py rmpdiscovery.sh rmpadvertise.sh rmpadvertise.py ${INSTALL_PATH}
-sudo chmod 775 ${INSTALL_PATH}/rmpdiscover.sh
+sudo chmod 775 ${INSTALL_PATH}/rmpdiscovery.sh
 sudo chmod 775 ${INSTALL_PATH}/rmpadvertise.sh
 sudo cp value-logger.py rmp-value-logger.sh ${INSTALL_PATH}
 sudo chmod 775 ${INSTALL_PATH}/rmp-value-logger.sh
