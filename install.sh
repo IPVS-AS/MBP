@@ -50,7 +50,7 @@ sudo apt-get install -y maven;
 
 # checkout repository
 echo "Checking out the repository"
-sudo git clone https://github.com/ana-silva/connde.git
+sudo git clone https://github.com/rossojo/connde.git
 cd connde/java-projects/restful-connde
 echo "Building .war file..."
 sudo mvn clean install
