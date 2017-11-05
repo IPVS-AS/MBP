@@ -62,8 +62,8 @@ sudo mv target/restful-connde-1.0-SNAPSHOT.war /var/lib/tomcat8/webapps/MBP.war
 
 # Install discovery service
 echo "\nInstalling python scripts...\n"
-INSTALL_PATH = /opt/rmp
-CONFIG_PATH = /etc/rmp
+INSTALL_PATH=/opt/rmp
+CONFIG_PATH=/etc/rmp
 sudo mkdir -p $INSTALL_PATH
 sudo mkdir -p $CONFIG_PATH
 cd ../../python-scripts
