@@ -66,7 +66,10 @@ sudo mkdir -p /opt/rmp
 sudo mkdir -p /etc/rmp
 cd ../../python-scripts
 sudo cp -r rmpdiscovery rmpdiscovery.py rmpdiscovery.sh rmpadvertise.sh rmpadvertise.py /opt/rmp
+sudo chmod 775 /opt/rmpdiscover.sh
+sudo chmod 775 /opt/rmpadvertise.sh
 sudo cp value-logger.py rmp-value-logger.sh /opt/rmp
+sudo chmod 775 /opt/rmp-value-logger.sh
 sudo cp rmpdiscovery.service rmpadvertise.service rmp-value-logger.service /etc/systemd/system
 sudo systemctl start rmpdiscovery.service rmp-value-logger.service
 
