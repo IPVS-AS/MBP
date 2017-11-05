@@ -24,7 +24,7 @@ class DiscoveryService(ServiceAdapter):
 
         # read status from db
         init_status = self.status_coll.find_one({const.STATUS_FOR: const.SERVER_SERVICE})
-        if const.STATUS_NEXT_ID in init_status:
+        if init_status and const.STATUS_NEXT_ID in init_status:
             self._next_id = int(init_status[const.STATUS_NEXT_ID])
             log.info('restored init status with next_id=|%d|', self._next_id)
         else:
