@@ -71,9 +71,9 @@ sudo cp -r rmpdiscovery rmpdiscovery.py rmpdiscovery.sh rmpadvertise.sh rmpadver
 sudo chmod 775 ${INSTALL_PATH}/rmpdiscovery.sh
 sudo chmod 775 ${INSTALL_PATH}/rmpadvertise.sh
 sudo cp value-logger.py rmpvaluelogger.sh ${INSTALL_PATH}
-sudo chmod 775 ${INSTALL_PATH}/rmp-value-logger.sh
+sudo chmod 775 ${INSTALL_PATH}/rmpvaluelogger.sh
 sudo cp rmpdiscovery.service rmpadvertise.service rmpvaluelogger.service /etc/systemd/system
 sudo systemctl daemon-reload
-sudo systemctl start rmpdiscovery.service rmp-value-logger.service
+sudo systemctl start rmpdiscovery.service rmpvaluelogger.service
 
 echo "\nInstallation finished"
