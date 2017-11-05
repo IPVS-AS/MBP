@@ -6,7 +6,7 @@ Requires=mosquitto.service
 
 [Service]
 Type=simple
-ExecStart=/opt/rmp/rmp-value-logger.sh
+ExecStart=/opt/rmp/rmpvaluelogger.sh
 Restart=always
 
 [Install]

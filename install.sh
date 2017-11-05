@@ -70,9 +70,9 @@ cd ../../python-scripts
 sudo cp -r rmpdiscovery rmpdiscovery.py rmpdiscovery.sh rmpadvertise.sh rmpadvertise.py ${INSTALL_PATH}
 sudo chmod 775 ${INSTALL_PATH}/rmpdiscovery.sh
 sudo chmod 775 ${INSTALL_PATH}/rmpadvertise.sh
-sudo cp value-logger.py rmp-value-logger.sh ${INSTALL_PATH}
+sudo cp value-logger.py rmpvaluelogger.sh ${INSTALL_PATH}
 sudo chmod 775 ${INSTALL_PATH}/rmp-value-logger.sh
-sudo cp rmpdiscovery.service rmpadvertise.service rmp-value-logger.service /etc/systemd/system
+sudo cp rmpdiscovery.service rmpadvertise.service rmpvaluelogger.service /etc/systemd/system
 sudo systemctl daemon-reload
 sudo systemctl start rmpdiscovery.service rmp-value-logger.service
 
