@@ -22,8 +22,7 @@ sudo apt-get -qy update;
 
 #Installing Java8, pip
 echo "Installing Java and pip..."
-sudo apt-get install -qy openjdk-8-jdk;
-sudo apt-get install -qy python-pip;
+sudo apt-get install -qy openjdk-8-jdk python-pip libbluetooth-dev; # bluetooth-dev for installation of PyBluez required
 
 # Install python virtual environment and install python packages
 echo "Installing python packages..."
@@ -65,6 +64,7 @@ sudo mkdir -p /opt/rmp
 sudo mkdir -p /etc/rmp
 cd ../../python-scripts
 sudo cp -r rmpdiscovery rmpdiscovery.py rmpdiscovery.sh rmpadvertise.sh rmpadvertise.py /opt/rmp
-sudo cp rmpdiscovery.service rmpadvertise.service /etc/systemd/system
-sudo cp value-logger.py /opt/rmp
+sudo cp value-logger.py rmp-value-logger.sh /opt/rmp
+sudo cp rmpdiscovery.service rmpadvertise.service rmp-value-logger.service /etc/systemd/system
+
 echo "Installation finished"
