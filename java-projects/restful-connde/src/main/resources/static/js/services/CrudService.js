@@ -112,7 +112,19 @@ app.factory('CrudService', ['$resource', '$q', 'ENDPOINT_URI', function ($resour
                             return $q.reject(response);
                         }
                 );
-            }
+            },
+            
+            deleteItem: function (category, data) {
+              return Item.delete({category: category, id: data.id}).$promise.then(
+                        function (response) {
+                            return data.id;
+                        },
+                        function (response) {
+                            $q.reject(response);
+                        }
+                );             
+              }
+            
         };
     }]);
 

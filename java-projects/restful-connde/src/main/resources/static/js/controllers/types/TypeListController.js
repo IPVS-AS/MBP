@@ -1,8 +1,8 @@
 /* global app */
 
 app.controller('TypeListController',
-        ['$scope', '$controller', '$q', 'typeList', 'addType', 'FileReader',
-            function ($scope, $controller, $q, typeList, addType, FileReader) {
+        ['$scope', '$controller', '$q', 'typeList', 'addType', 'deleteType', 'FileReader',
+            function ($scope, $controller, $q, typeList, addType, deleteType, FileReader) {
                 var vm = this;
 
                 vm.dzServiceOptions = {
@@ -84,7 +84,12 @@ app.controller('TypeListController',
                                         return $q.reject(response);
                                     });
                                 }
-                            })
+                            }),
+                    deleteTypeCtrl: $controller('DeleteItemController as deleteTypeCtrl',
+                            {
+                                $scope: $scope,
+                                deleteItem: deleteType
+                            }),
                 });
 
                 // $watch 'addItem' result and add to 'itemList'
@@ -105,4 +110,16 @@ app.controller('TypeListController',
                         }
                 );
 
+                // $watch 'deleteItem' result and remove from 'itemList'
+                $scope.$watch(
+                        function () {
+                            // value being watched
+                            return vm.deleteTypeCtrl.result;
+                        },
+                        function() {
+                          var id = vm.deleteTypeCtrl.result;
+                          
+                          vm.typeListCtrl.removeItem(id);
+                        }
+                );
             }]);

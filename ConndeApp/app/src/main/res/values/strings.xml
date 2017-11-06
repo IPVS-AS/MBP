@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">RMP App</string>
+    <string name="msg_welcome">Welcome to the RMP App</string>
+    <string name="btn_listSensors">Sensors</string>
+    <string name="msg_model">Your model is: %1$s</string>
+    <string name="btn_startAdvertising">Start Advertise</string>
+    <string name="btn_deployConf">Deploy Conf</string>
+    <string name="btn_stopAdvertising">Stop Advertise</string>
+    <string name="msg_serviceAdvertiseDescription">Advertises your device to RMP servers</string>
+    <string name="msg_advertiserChannelStatusName">Advertiser Status</string>
+    <string name="msg_advertiserChannelStatusDesc">Contains notifications regarding the status of the advertiser service</string>
+</resources>
