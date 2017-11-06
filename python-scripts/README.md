@@ -5,10 +5,16 @@ The used scripts all require Python 3!!!
 * [type-scripts](type-scripts): premade python scripts for sensors; may also containt services (.conf) descriptions
 
 * the files rmpadvertise.*, rmpdiscovery.* and rmpvaluelogger.* are used to deploy and run the respective services using systemd.
+* discoverygui.py offers a basic GUI to view the devices currently registered for monitoring
 
 ## Installing services
 The discovery service is installed alongside the MBP using the install.sh script.
 To install and run the advertise service, use the install-advertise.sh script.
+
+The services are installe using systemd so they can be started and stop, using:
+
+    sudo systemctl start <service>
+    sudo systemctl stop <service>
 
 ## Discovery service
 
