@@ -1,19 +1,31 @@
-'## Directory Structure
+The used scripts all require Python 3!!!
 
+## Directory Structure
+* [rmpdiscovery](rmpdiscovery): the library containing the discovery and advertise service. The discovery service may be run alongside the MBP to discover devices. The advertise service may be used by devicees to register themselves at the MBP.
 * [type-scripts](type-scripts): premade python scripts for sensors; may also containt services (.conf) descriptions
 
+* the files rmpadvertise.*, rmpdiscovery.* and rmpvaluelogger.* are used to deploy and run the respective services using systemd.
 
-## Libraries
+## Installing services
+The discovery service is installed alongside the MBP using the install.sh script.
+To install and run the advertise service, use the install-advertise.sh script.
 
-### [Paho MQTT 3.1.1](https://eclipse.org/paho/clients/java/)
+## Discovery service
 
-Used for communication between local server and devices (Raspberries and so on).
-Download used version [here](https://repo.eclipse.org/content/repositories/paho-releases/org/eclipse/paho/org.eclipse.paho.client.mqttv3/1.0.2/).
+The discovery service is implemented in the [discovery](rmpdiscovery/discovery) package.
+The following diagram hopefully clarifies the structure: 
 
+![discovery package](../diagram/package-discovery.png)
 
-### [Scapy](http://www.secdev.org/projects/scapy/)
+The discovery gateways detect new devices in their network and register them at the discovery service.
+For each network technology there must be a specialized implementation of the `DiscoveryGateway` class. 
 
-Used on arping.py - runs only on server machine. On *Windows* the following is needed:
-[WinPCap](https://www.winpcap.org/).
+## Necessary Libraries
+
+The file [python-packages.py](../python-packages.txt) lists all used python packages.
+They can be installed using
+    
+    sudo pip install -r python-packages.txt
+    
 
 
