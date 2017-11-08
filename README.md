@@ -13,8 +13,8 @@ A REST API for the management of devices, sensors and actuators is provided.
 
 
 POST /api/devices/ HTTP/1.1  
-Content-Type: application/json
-
+Content-Type: application/json  
+accept: application/json
 ```javascript
 {
   "name": "Raspberry Pi",
@@ -24,7 +24,21 @@ Content-Type: application/json
 }
 ```
 
-HTTP/1.1 201 Created
+HTTP/1.1 201 Created  
+location: http://localhost:8080/MBP/api/devices/5a033094c27074e37bbb198b  
+content-type:
+application/json;charset=UTF-8
+```javascript
+{
+  "id": "5a033094c27074e37bbb198b",
+  "name": "Raspberry Pi",
+  "macAddress": "123456789067",
+  "ipAddress": "192.168.0.34",
+  "date": null,
+  ...
+}
+```
+The **id** of the newly created device can be parsed from the response header *location* or from the response body, which is in json format.  
 
 #### retrieving all devices:
 GET /api/devices/ HTTP/1.1  
@@ -85,8 +99,8 @@ An adapter is the required software (e.g., python script) to bind sensors and ac
 
 #### creating a new adapter type:
 POST /api/types/ HTTP/1.1  
-Content-Type: application/json
-
+Content-Type: application/json  
+accept: application/json  
 ```javascript
 {
   "name": "TemperatureSensorAdapter",
@@ -102,7 +116,18 @@ Content-Type: application/json
 }
 ```
 
-HTTP/1.1 201 Created
+HTTP/1.1 201 Created  
+location: http://localhost:8080/MBP/api/types/5a0336ba972ca8734022d67c  
+content-type: application/json;charset=UTF-8  
+```javascript
+{
+  "id": "5a0336ba972ca8734022d67c",
+  "name": "TemperatureSensorAdapter",
+  "description": "An adapter for the LK temperature sensor",
+  ...
+}
+```
+The **id** of the newly created adapter type can be parsed from the response header *location* or from the response body, which is in json format.  
 
 #### retrieving all adapter types:
 GET /api/types/ HTTP/1.1
@@ -160,11 +185,17 @@ DELETE /api/types/596c7c344f0c58688e5aa6b3 HTTP/1.1
 
 HTTP/1.1 204 No Content
 
-### Sensors
+### Sensors  
+To register a sensor, it is necessary to register first:  
+ (i) the device to which the sensor is connected to, and  
+ (ii) the adapter type, i.e., the required software (e.g., python script) to bind the sensor to the MBP. 
+  
+#### creating a new sensor:  
+The following example uses the previously registered adapter type (id = 596c7c344f0c58688e5aa6b3) and device (id = 596c7a7d4f0c58688e5aa6b1):
 
-#### creating a new sensor with type id 596c7c344f0c58688e5aa6b3 and device id 596c7a7d4f0c58688e5aa6b1:
 POST /api/sensors/ HTTP/1.1  
-Content-Type: application/json
+Content-Type: application/json  
+accept: application/json  
 
 ```javascript
 {
@@ -174,7 +205,17 @@ Content-Type: application/json
 }
 ```
 
-HTTP/1.1 201 Created
+HTTP/1.1 201 Created  
+location: http://localhost:8080/MBP/api/sensors/596c7a974f0c58688e5aa6b2  
+content-type: application/json;charset=UTF-8  
+```javascript
+{
+  "id": "596c7a974f0c58688e5aa6b2",
+  "name": "test_sensor",
+  ...
+}
+```
+The **id** of the newly created sensor can be parsed from the response header *location* or from the response body, which is in json format.  
 
 #### retrieving all sensors:
 GET /api/sensors/ HTTP/1.1
@@ -243,7 +284,7 @@ HTTP/1.1 204 No Content
 
 ### Actuators
 
-see REST calls for sensors, replace */sensors* with */actuators*
+see REST calls for sensors, replace **/sensors** with **/actuators**
 
 ## Repository Structure
 
@@ -255,45 +296,8 @@ see REST calls for sensors, replace */sensors* with */actuators*
 
 * [Diagram](diagram) (domain diagram for the java project)
 
-
-## SO and Compiler Versions
-
-* `Java(TM) SE Runtime Environment (build 1.8.0_91-b14)`  (server machine)
-* `Python 3.5.1 :: Anaconda 4.0.0 (64-bit)` (server machine)
-* `Raspbian version here` (Raspberry Pi 3) (client machine)
-* `RPi python version here` (client machine)
-
-
-## Servers and 3rd-party softwares
-
-### [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community) on server machine
-
-Install the server. To start the server, run ./Server/**version**/bin/mongod.exe inside the mongoDB installation directory.
-Version: 
-``` 
-  db version v3.2.7
-  git version: 4249c1d2b5999ebbf1fdf3bc0e0e3b3ff5c0aaf2
-  OpenSSL version: OpenSSL 1.0.1p-fips 9 Jul 2015
-  allocator: tcmalloc
-  modules: none
-  build environment:
-  distmod: 2008plus-ssl
-  distarch: x86_64
-  target_arch: x86_64
-```
-
-
-### [Mosquitto MQTT Broker](https://mosquitto.org/download/) on server machine
-
-Download and install the server. It should start on its own.
-
-Version: `mosquitto version 1.4.8 (build date 14/02/2016 15:33:31.09)`
-
-
-## Packets and others
-
-### Upstart packet on client machine
-
+## Packets and others  
+### Upstart packet on client machine  
 Run `sudo apt-get install upstart`, reboot after installation.
 
 This is used to set up services on the system.
@@ -308,13 +312,3 @@ To set a service (%name% stands for any name):
 ### [WinPCap](https://www.winpcap.org/) on server machine (Windows only - not needed on Linux dists)
 
 Compliments Scapy library.
-
-
-### [SSH RSA Key](https://help.ubuntu.com/community/SSH/OpenSSH/Keys)
-
-On the client machine, run:
-```
-mkdir ~/.ssh
-chmod 700 ~/.ssh
-```
-and then copy the public key found in [rsa](./rsa) to ~./ssh.

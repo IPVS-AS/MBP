@@ -2,12 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.citopt</groupId>
-    <artifactId>restful-connde</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1</version>
     <packaging>war</packaging>
 
-    <name>restful-connde</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -280,4 +277,8 @@
         </plugins>
     </build>
 
+    <groupId>ipvs.as</groupId>
+    <artifactId>MBP</artifactId>
+    <name>MBP</name>
+    <description>Multi-purpose Binding and Provisioning Platform</description>
 </project>

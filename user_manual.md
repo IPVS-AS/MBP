@@ -2,22 +2,24 @@
 Required components:
 - MQTT broker Mosquitto
 - MongoDB
+- Java8
 - Tomcat8
 - Python3
 - Python modules: paho-mqtt, pymongo
 - Maven
 
 ## Linux 
-- Run script install.sh
-- Run value-logger.py
+- Run the [installation script](install.sh)
+- Run [value-logger.py](python-scripts/value-logger.py)
 
 On the browser: http://localhost:8080/MBP
 
 ## Windows
-- Install and start Mosquitto, MongoDB and Tomcat8
+- Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), and [Tomcat8](https://tomcat.apache.org/download-80.cgi)
 - Install Python3 and download paho-mqtt, pymongo (pip install ...)
 - Build with maven the project .war file (mvn clean install)
 - Deploy application on tomcat by moving .war to Tomcat8 webapps folder
+- Run [value-logger.py](python-scripts/value-logger.py)
 
 On the browser: http://localhost:8080/restful-connde
 
