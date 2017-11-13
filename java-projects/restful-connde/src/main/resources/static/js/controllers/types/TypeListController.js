@@ -43,7 +43,8 @@ app.controller('TypeListController',
                         return FileReader.readAsText(service, $scope);
                     } else {
                         // reject
-                        return $q.reject('Service file must not be empty.');
+                        return '';
+                    	//return $q.reject('Service file must not be empty.');
                     }
                 }
 
@@ -53,7 +54,7 @@ app.controller('TypeListController',
                         return FileReader.readMultipleAsText(routines, $scope);
                     } else {
                         // reject
-                        return $q.reject('Routines files must not be empty.');
+                    	return $q.reject('Routines files must not be empty.');
                     }
                 }
 
@@ -68,21 +69,31 @@ app.controller('TypeListController',
                             {
                                 $scope: $scope,
                                 addItem: function (data) {
-                                    return readService(data.serviceFile).then(
-                                            function (response) {
-                                                console.log('readService: ', response);
-                                                data.service = response;
-                                                return readRoutines(data.routineFiles)
-                                                        .then(function (response) {
-                                                            console.log('readRoutines: ', response);
-                                                            data.routines = response;
-                                                            return addType(data);
-                                                        }, function (response) {
-                                                            return $q.reject(response);
-                                                        });
-                                            }, function (response) {
+                                	
+                                    return readRoutines(data.routineFiles)
+                                    .then(function (response) {
+                                        console.log('readRoutines: ', response);
+                                        data.routines = response;
+                                        return addType(data);
+                                    }, function (response) {
                                         return $q.reject(response);
                                     });
+                                    
+//                                    return readService(data.serviceFile).then(
+//                                            function (response) {
+//                                                console.log('readService: ', response);
+//                                                data.service = response;
+//                                                return readRoutines(data.routineFiles)
+//                                                        .then(function (response) {
+//                                                            console.log('readRoutines: ', response);
+//                                                            data.routines = response;
+//                                                            return addType(data);
+//                                                        }, function (response) {
+//                                                            return $q.reject(response);
+//                                                        });
+//                                            }, function (response) {
+//                                        return $q.reject(response);
+//                                    });
                                 }
                             }),
                     deleteTypeCtrl: $controller('DeleteItemController as deleteTypeCtrl',

@@ -178,19 +178,15 @@ public class SSHDeployer {
 
         String scriptDir = getScriptDir(id);
         String servicename = SERVICEPREFIX + id;
-
-        Shell shell = new Shell.Safe(
-                new SSH(
-                        url, port,
-                        user, key
-                )
-        );
+        String topicName = new String(component.toLowerCase()) + "/" + id;
+        
+        Shell shell = new Shell.Safe(new SSH (url, port, user, key));
 
         OutputStream stdout = new ByteArrayOutputStream();
         OutputStream stderr = new ByteArrayOutputStream();
 
         // creates routine dir
-        System.out.println("starting remote mkdir");
+        System.out.println("starting remote mkdir, dir=" + scriptDir);
         shell.exec(
                 "mkdir -p " + scriptDir,
                 new ByteArrayInputStream("".getBytes()),
@@ -199,7 +195,7 @@ public class SSHDeployer {
         );
         System.out.println("remote mkdir successful");
 
-        System.out.println("starting remote Routines output");
+        System.out.println("copying adapter scripts to device");
         for (Code routine : type.getRoutines()) {
             String content = routine.getContent();
             // copies routine        
@@ -210,64 +206,74 @@ public class SSHDeployer {
                     stderr
             );
         }
-        System.out.println("remote Routines output succesful");
+        System.out.println("copying scripts was succesful");
+        
+        // executing install script
+        shell.exec("sudo chmod +x " + scriptDir + "/install.sh | sudo bash " + scriptDir + "/install.sh " + topicName + " " + mqtt + " " + scriptDir, 
+        		new ByteArrayInputStream("".getBytes()), stdout, stderr);
+        
+        // executing start script
+        shell.exec("sudo chmod +x " + scriptDir + "/start.sh | sudo bash " + scriptDir + "/start.sh " + scriptDir, new ByteArrayInputStream("".getBytes()), stdout, stderr);
+        System.out.println(stdout.toString());
+        System.out.println(stderr.toString());
 
-        System.out.println("starting Service file parsing");
-        String service = type.getService().getContent();
-        Map<String, String> serviceParser = new HashMap<>();
-        serviceParser.put("${dir}", scriptDir);
-        serviceParser.put("${id}", id);
-        serviceParser.put("${mqtturl}", mqtt);
-        serviceParser.put("${component}", component);
-        serviceParser.put("${pinset}", pinset);
-        service = parseService(service, serviceParser);
-        System.out.println("service file parsing done");
-
-        System.out.println("starting remote Service output");
-        shell.exec(
-                "sudo bash -c  \"cat > " + SERVICEDIR + "/"
-                + servicename + ".conf\"",
-                new ByteArrayInputStream(service.getBytes()),
-                stdout,
-                stderr
-        );
-        System.out.println("remote Service output succesful");
-
-        System.out.println("starting remote reload-configuration");
-        shell.exec(
-                "sudo initctl reload-configuration",
-                new ByteArrayInputStream("".getBytes()),
-                stdout,
-                stderr
-        );
-        System.out.println("remote reload-configuration successful");
-
-        // stops old service (if it exists)
-        try {
-            System.out.println("trying to stop remote old service");
-            shell.exec(
-                    "sudo service " + servicename + " stop",
-                    new ByteArrayInputStream("".getBytes()),
-                    stdout,
-                    stderr
-            );
-            System.out.println("stop remote old service successful");
-        } catch (Exception e) {
-            System.out.println("stop remote old service unsuccessful "
-                    + stdout);
-        }
-
-        // starts service
-        System.out.println("start remote service");
-        shell.exec(
-                "sudo service " + servicename + " start",
-                new ByteArrayInputStream("".getBytes()),
-                stdout,
-                stderr
-        );
-        System.out.println("start remote service succesful");
-
-        LOGGER.log(Level.FINE, "service deploy successful for id {0}", id);
+//        if (type.getService() != null) {
+//	        String service = type.getService().getContent();
+//	        Map<String, String> serviceParser = new HashMap<>();
+//	        serviceParser.put("${dir}", scriptDir);
+//	        serviceParser.put("${id}", id);
+//	        serviceParser.put("${mqtturl}", mqtt);
+//	        serviceParser.put("${component}", component);
+//	        serviceParser.put("${pinset}", pinset);
+//	        service = parseService(service, serviceParser);
+//	        System.out.println("service file parsing done");
+//	
+//	        System.out.println("starting remote Service output");
+//	        shell.exec(
+//	                "sudo bash -c  \"cat > " + SERVICEDIR + "/"
+//	                + servicename + ".conf\"",
+//	                new ByteArrayInputStream(service.getBytes()),
+//	                stdout,
+//	                stderr
+//	        );
+//	        System.out.println("remote Service output succesful");
+//	
+//	        System.out.println("starting remote reload-configuration");
+//	        shell.exec(
+//	                "sudo initctl reload-configuration",
+//	                new ByteArrayInputStream("".getBytes()),
+//	                stdout,
+//	                stderr
+//	        );
+//	        System.out.println("remote reload-configuration successful");
+//	
+//	        // stops old service (if it exists)
+//	        try {
+//	            System.out.println("trying to stop remote old service");
+//	            shell.exec(
+//	                    "sudo service " + servicename + " stop",
+//	                    new ByteArrayInputStream("".getBytes()),
+//	                    stdout,
+//	                    stderr
+//	            );
+//	            System.out.println("stop remote old service successful");
+//	        } catch (Exception e) {
+//	            System.out.println("stop remote old service unsuccessful "
+//	                    + stdout);
+//	        }
+//	
+//	        // starts service
+//	        System.out.println("start remote service");
+//	        shell.exec(
+//	                "sudo service " + servicename + " start",
+//	                new ByteArrayInputStream("".getBytes()),
+//	                stdout,
+//	                stderr
+//	        );
+//	        System.out.println("start remote service succesful");
+//        }
+        
+        LOGGER.log(Level.FINE, "adapter deployed successful for id {0}", id);
     }
 
     public boolean isRunning(String id, String url, Integer port,
@@ -285,6 +291,7 @@ public class SSHDeployer {
         OutputStream stdout = new ByteArrayOutputStream();
         OutputStream stderr = new ByteArrayOutputStream();
 
+        //FIXME: list services with native command
         // lists services
         shell.exec(
                 "sudo initctl list",

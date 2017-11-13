@@ -66,22 +66,22 @@
                                 <!-- item.description group -->
                                 <div class="form-group" ng-class="{'has-error' : addTypeCtrl.item.errors.description }">
                                     <div class="form-line" ng-class="{'focused error' : addTypeCtrl.item.errors.description }">
-                                        <textarea rows="2" class="form-control no-resize" placeholder="Describe this type..." ng-model="addTypeCtrl.item.description"></textarea>
+                                        <input class="form-control no-resize" placeholder="Describe this type..." ng-model="addTypeCtrl.item.description"></input>
                                     </div>
                                     <span class="help-block" ng-show="addTypeCtrl.item.errors.description">{{addTypeCtrl.item.errors.description.message}}</span>
                                 </div>
                                 <!-- item.service group -->
 
-                                <label>Service (single .conf file)</label>
+                                <!--<label>Service (single .conf file) (optional)</label>
                                 <div class="form-group" ng-class="{'has-error' : addTypeCtrl.item.errors.service }">
                                     <div class="form-line" ng-class="{'focused error' : addTypeCtrl.item.errors.service }">
                                         <div class="dropzone" options="ctrl.dzServiceOptions" callbacks="ctrl.dzServiceCallbacks" methods="ctrl.dzMethods" ng-dropzone></div>
-                                        <!--<input type="file" ng-dropzone ng-model="addTypeCtrl.item.serviceFile" />-->
+                                        <input type="file" ng-dropzone ng-model="addTypeCtrl.item.serviceFile" />
                                     </div>
                                     <span class="help-block" ng-show="addTypeCtrl.item.errors.service">{{addTypeCtrl.item.errors.service.message}}</span>
-                                </div>
+                                </div> -->
                                 <!-- item.routine group -->
-                                <label>Routines (you may select multiple files at once)</label>
+                                <label>Adapter scripts</label>
                                 <div class="form-group" ng-class="{'has-error' : addTypeCtrl.item.errors.routines }">
                                     <div class="form-line" ng-class="{'focused error' : addTypeCtrl.item.errors.routines }">
                                         <div class="dropzone" options="ctrl.dzRoutinesOptions" callbacks="ctrl.dzRoutinesCallbacks" methods="ctrl.dzMethods" ng-dropzone></div>

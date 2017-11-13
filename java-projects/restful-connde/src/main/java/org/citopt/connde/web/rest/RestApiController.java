@@ -128,7 +128,10 @@ public class RestApiController implements
 
         String serverIp;
         try {
-            serverIp = networkService.getSelfIp();
+            //serverIp = networkService.getSelfIp();
+            serverIp = networkService.getPublicIP();
+            
+            System.out.println("MBP IP: " + serverIp);
         } catch (UnknownHostException e) {
             // Couldn't get own IP
             System.out.println("COULDN`T GET OWN IP");
