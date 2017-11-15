@@ -49,16 +49,13 @@ sudo systemctl start tomcat8;
 sudo apt-get install -qy git;
 sudo apt-get install -qy maven;
 
-# checkout repository
-echo "\nChecking out the repository\n"
-sudo git clone https://github.com/rossojo/connde.git
-cd connde/java-projects/restful-connde
+cd java-projects/restful-connde
 echo "\nBuilding .war file...\n"
 sudo mvn clean install
 
 # deploy war to Tomcat
 echo "\nDeploying .war file...\n"
-sudo mv target/restful-connde-1.0-SNAPSHOT.war /var/lib/tomcat8/webapps/MBP.war
+sudo mv target/MBP-0.1.war /var/lib/tomcat8/webapps/MBP.war
 
 # Install discovery service
 echo "\nInstalling python scripts...\n"
