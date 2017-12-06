@@ -1,13 +1,13 @@
 #!/bin/sh
 
 #########################################################################################################################
-# This install script provides a fully automated installation of the RMP.						#
+# This install script provides a fully automated installation of the MBP.						#
 # It requires systemd as the running init system.									#
-# It installs Java, Python3, Mosquitto, MongoDB and Tomcat8 to run the RMP.						#
+# It installs Java, Python3, Mosquitto, MongoDB and Tomcat8 to run the MBP.						#
 # Moreover it installs git and maven to build the necessary files.							#
 #															#
 # After the installation you will find a folder named connde in the directory the script was started.			#	
-# This folder contains all source code of the RMP and can be used to build it.						#	
+# This folder contains all source code of the MBP and can be used to build it.						#	
 # More over the necessary python scripts, running the discovery service and the value logger will be installed using a 	#
 # virtual Python environment.												#
 # The environment and configuration files will be stored in /etc/rmp							#
@@ -36,18 +36,10 @@ sudo systemctl start mosquitto;
 # Install and start MongoDB 
 sudo apt-get -qy install mongodb-server;
 sudo systemctl start mongodb;
-#sudo systemctl status mongodb;
-
-#sudo /etc/init.d/mongodb start;
-#sudo /etc/init.d/mongodb status;
 
 # Install Tomcat 9
 sudo apt-get install -qy tomcat8;
 sudo systemctl start tomcat8;
-
-# INstall git andmaven
-sudo apt-get install -qy git;
-sudo apt-get install -qy maven;
 
 cd java-projects/restful-connde
 echo "\nBuilding .war file...\n"
