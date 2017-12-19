@@ -188,7 +188,7 @@ public class SSHDeployer {
         // creates routine dir
         System.out.println("starting remote mkdir, dir=" + scriptDir);
         shell.exec(
-                "mkdir -p " + scriptDir,
+                "sudo mkdir -p " + scriptDir,
                 new ByteArrayInputStream("".getBytes()),
                 stdout,
                 stderr
@@ -211,12 +211,12 @@ public class SSHDeployer {
         // executing install script
         shell.exec("sudo chmod +x " + scriptDir + "/install.sh | sudo bash " + scriptDir + "/install.sh " + topicName + " " + mqtt + " " + scriptDir, 
         		new ByteArrayInputStream("".getBytes()), stdout, stderr);
+        System.out.println("installation was succesful");
         
         // executing start script
-        shell.exec("sudo chmod +x " + scriptDir + "/start.sh | sudo bash " + scriptDir + "/start.sh " + scriptDir, new ByteArrayInputStream("".getBytes()), stdout, stderr);
-        System.out.println(stdout.toString());
-        System.out.println(stderr.toString());
-
+        shell.exec("sudo chmod u+rwx " + scriptDir + "/start.sh | sudo bash " + scriptDir + "/start.sh " + scriptDir, new ByteArrayInputStream("".getBytes()), stdout, stderr);
+        System.out.println("start was succesful");
+        
 //        if (type.getService() != null) {
 //	        String service = type.getService().getContent();
 //	        Map<String, String> serviceParser = new HashMap<>();

@@ -123,7 +123,7 @@ def main(argv):
          publisher.sendMessage (topic_pub, json.dumps(msg_pub))
          #publisher.sendMessage (topic_pub, "42")
 
-         time.sleep(5)
+         time.sleep(10)
    except:
       print ("end")
       

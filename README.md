@@ -5,7 +5,19 @@ This platform enables means for (i) automated binding of IoT devices in order to
 see [User Manual](user_manual.md)
 
 ## REST API
-A REST API for the management of devices, sensors and actuators is provided.
+A REST API for the management of devices, sensors and actuators is provided.  
+Make sure that CORS (Cross-Origin Resource Sharing) is allowed for all origins. To do that, add the following filter to Tomcat's 'web.xml':
+
+```xml
+<filter>
+  <filter-name>CorsFilter</filter-name>
+  <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+</filter>
+<filter-mapping>
+  <filter-name>CorsFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
 
 ### Devices
 
