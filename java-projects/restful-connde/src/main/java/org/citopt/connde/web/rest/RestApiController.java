@@ -107,14 +107,14 @@ public class RestApiController implements
         System.out.println("deploy");
 
         if (component == null) {
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
 
         Sensor sensor = sensorRepository.findOne(id);
 
         if (sensor == null) {
             // Sensor not found
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
         }
 
         Device device = sensor.getDevice();
@@ -122,21 +122,14 @@ public class RestApiController implements
 
         if (device == null || type == null) {
             // Device or type not setted
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
         String deviceIp = addressRepository.findByMacAddress(device.getMacAddress()).getIpAddress();
 
         String serverIp;
-        try {
-            //serverIp = networkService.getSelfIp();
-            serverIp = networkService.getPublicIP();
-            
-            System.out.println("MBP IP: " + serverIp);
-        } catch (UnknownHostException e) {
-            // Couldn't get own IP
-            System.out.println("COULDN`T GET OWN IP");
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        serverIp = networkService.getMQTTBrokerIP();
+		//serverIp = networkService.getPublicIP();
+		System.out.println("MBP IP: " + serverIp);
 
         try {
             sshDeployer.deploy(id,
@@ -147,10 +140,10 @@ public class RestApiController implements
         } catch (IOException e) {
             // couldn't deploy - device not found or error during remote instructions
             System.out.println("ERROR ON DEPLOY ACTUALLY");
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity(HttpStatus.CREATED);
+        return new ResponseEntity<String>(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.DELETE)

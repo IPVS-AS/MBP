@@ -8,6 +8,9 @@ Required components:
 - Python modules: paho-mqtt, pymongo
 - Maven
 
+## Configuration file
+set the MQTT broker ip address in the configuration file [config.properties](config.properties)
+
 ## Linux 
 - Run the [installation script](install.sh)
 - Run [value-logger.py](python-scripts/value-logger.py)
@@ -21,7 +24,7 @@ On the browser: http://localhost:8080/MBP
 - Deploy application on tomcat by moving .war to Tomcat8 webapps folder
 - Run [value-logger.py](python-scripts/value-logger.py)
 
-On the browser: http://localhost:8080/restful-connde
+On the browser: http://localhost:8080/MBP
 
 # Registering Devices, Sensor and Actuator
 On expert mode, register type and register device.

@@ -177,7 +177,6 @@ public class SSHDeployer {
                 + id + url + port + user + key + mqtt + type + component + pinset);
 
         String scriptDir = getScriptDir(id);
-        String servicename = SERVICEPREFIX + id;
         String topicName = new String(component.toLowerCase()) + "/" + id;
         
         Shell shell = new Shell.Safe(new SSH (url, port, user, key));
