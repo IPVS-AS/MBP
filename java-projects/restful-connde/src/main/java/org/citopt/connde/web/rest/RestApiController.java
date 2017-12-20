@@ -97,7 +97,7 @@ public class RestApiController implements
     @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.POST, params = {})
     public ResponseEntity<String> deploySensor(
             @PathVariable(value = "id") String id) {
-        return deploySensor(id, "", "");
+        return deploySensor(id, "", "SENSOR");
     }
 
     @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.POST, params = {"component", "pinset"})
@@ -139,7 +139,7 @@ public class RestApiController implements
                     serverIp, type, component, pinset);
         } catch (IOException e) {
             // couldn't deploy - device not found or error during remote instructions
-            System.out.println("ERROR ON DEPLOY ACTUALLY");
+            System.out.println("ERROR ON DEPLOYMENT");
             return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 

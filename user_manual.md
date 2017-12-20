@@ -9,7 +9,7 @@ Required components:
 - Maven
 
 ## Configuration file
-set the MQTT broker ip address in the configuration file [config.properties](config.properties)
+Set the MQTT broker ip address in the configuration file [config.properties](MBP/java-projects/restful-connde/src/main/resources/config.properties)
 
 ## Linux 
 - Run the [installation script](install.sh)
