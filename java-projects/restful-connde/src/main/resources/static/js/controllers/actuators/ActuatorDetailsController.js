@@ -1,12 +1,13 @@
 /* global app */
 
 app.controller('ActuatorDetailsController',
-        ['$scope', '$timeout', '$routeParams', '$controller', 'ComponentService', 'actuatorDetails',
-            function ($scope, $timeout, $routeParams, $controller, ComponentService, actuatorDetails) {
+        ['$scope', '$timeout', '$routeParams', '$controller', 'CrudService', 'ComponentService', 'actuatorDetails',
+            function ($scope, $timeout, $routeParams, $controller, CrudService, ComponentService, actuatorDetails) {
                 var vm = this;
 
                 vm.loader = {};
 
+                
                 // public
                 function update() { // update deployment status
                     vm.deployer.processing = true;
@@ -66,16 +67,34 @@ app.controller('ActuatorDetailsController',
                 }
 
                 // actuator values
-                var loadActuatorValues = function () {
-
+                var loadActuatorValues = function (tableState) {
+                	
                     vm.loader.actuatorValues = true;
+                    
+                    var pagination = tableState.pagination || {};
+
+                    var start = pagination.start || 0; // This is NOT the page number, but the index of item in the list that you want to use to display the table.
+                    var size = pagination.number || 10; // Number of entries showed per page.
+                    
                     $timeout(
                             function () {
-                                ComponentService.getValues(undefined, $routeParams.id).then(
+                                var query = 'findAllByIdref';
+                                var params = {
+                                        idref: $routeParams.id,
+                                        sort: 'date,desc',
+                                        size: size,
+                                        page: Math.floor(start / size)
+                                    };
+
+                                CrudService.searchPage('valueLogs', query, params).then(
                                         function (data) {
+                                        	console.log(data);
                                             vm.loader.actuatorValues = false;
+                                            
+                                            tableState.pagination.numberOfPages = data.page.totalPages; //set the number of pages so the pagination can update
+                                            
                                             vm.actuatorValues = {
-                                                data: data
+                                                data: data._embedded.valueLogs
                                             };
                                         },
                                         function (response) {
@@ -89,8 +108,10 @@ app.controller('ActuatorDetailsController',
                             }, 500);
                 };
 
+                vm.loadActuatorValues = loadActuatorValues;
+                
                 vm.reloadValues = function () {
-                    loadActuatorValues();
+                	$scope.$broadcast('refreshActuatorValues');
 
                     $timeout(function () {
                         vm.reloadValues();
@@ -120,11 +141,4 @@ app.controller('ActuatorDetailsController',
 
                 // VERY IMPORTANT LINE HERE
                 update();
-
-                vm.reload = function () {
-                    $timeout(function () {
-                        vm.reload();
-                    }, 3000);
-                };
-                vm.reload();
             }]);

@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.Logger;
+
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.domain.component.ActuatorValidator;
+import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
+import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.type.Type;
+import org.citopt.connde.repository.ActuatorRepository;
+import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.NetworkService;
 import org.citopt.connde.service.SSHDeployer;
@@ -24,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.citopt.connde.repository.DeviceRepository;
 
 /**
  *
@@ -32,10 +33,9 @@ import org.citopt.connde.repository.DeviceRepository;
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
-public class RestApiController implements
-        ResourceProcessor<RepositoryLinksResource> {
+public class RestApiController implements ResourceProcessor<RepositoryLinksResource> {
 
-    private static final Logger LOGGER = Logger.getLogger(RestApiController.class.getName());
+    //private static final Logger LOGGER = Logger.getLogger(RestApiController.class.getName());
 
     @Autowired
     private NetworkService networkService;
@@ -47,7 +47,7 @@ public class RestApiController implements
     private SensorRepository sensorRepository;
 
     @Autowired
-    private ActuatorValidator actuatorRepository;
+    private ActuatorRepository actuatorRepository;
 
     @Autowired
     private DeviceRepository addressRepository;
@@ -64,20 +64,19 @@ public class RestApiController implements
     }
 
     @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.GET)
-    public ResponseEntity<Boolean> isRunningSensor(
-            @PathVariable(value = "id") String id) {
+    public ResponseEntity<Boolean> isRunningSensor(@PathVariable(value = "id") String id) {
         Sensor sensor = sensorRepository.findOne(id);
 
         if (sensor == null) {
             // Sensor not found
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<Boolean>(HttpStatus.NOT_FOUND);
         }
 
         Device device = sensor.getDevice();
 
         if (device == null) {
             // Device not setted
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<Boolean>(HttpStatus.BAD_REQUEST);
         }
         String deviceIp = addressRepository.findByMacAddress(device.getMacAddress()).getIpAddress();
 
@@ -88,15 +87,14 @@ public class RestApiController implements
                     deviceIp, SSHDeployer.SSH_PORT, SSHDeployer.DEFAULT_USER, SSHDeployer.KEY);
         } catch (IOException e) {
             // couldn't deploy - device not found or error during remote instructions
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<Boolean>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity(result, HttpStatus.OK);
+        return new ResponseEntity<Boolean>(result, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.POST, params = {})
-    public ResponseEntity<String> deploySensor(
-            @PathVariable(value = "id") String id) {
+    public ResponseEntity<String> deploySensor(@PathVariable(value = "id") String id) {
         return deploySensor(id, "", "SENSOR");
     }
 
@@ -153,14 +151,14 @@ public class RestApiController implements
 
         if (sensor == null) {
             // Sensor not found
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
         }
 
         Device device = sensor.getDevice();
 
         if (device == null) {
             // Device not setted
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
         String deviceIp = addressRepository.findByMacAddress(device.getMacAddress()).getIpAddress();
 
@@ -170,25 +168,97 @@ public class RestApiController implements
                     deviceIp, SSHDeployer.SSH_PORT, SSHDeployer.DEFAULT_USER, SSHDeployer.KEY);
         } catch (IOException e) {
             // couldn't deploy - device not found or error during remote instructions
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping("/deploy/actuator/{id}")
-    public ResponseEntity<String> deployActuator(
-            @PathVariable(value = "id") String id
-    ) {
-        return new ResponseEntity(HttpStatus.CREATED);
+    @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.GET)
+    public ResponseEntity<Boolean> isRunningActuator(@PathVariable(value = "id") String id) {
+        Actuator actuator = actuatorRepository.findOne(id);
+
+        if (actuator == null) {
+            // Sensor not found
+            return new ResponseEntity<Boolean>(HttpStatus.NOT_FOUND);
+        }
+
+        Device device = actuator.getDevice();
+
+        if (device == null) {
+            // Device not setted
+            return new ResponseEntity<Boolean>(HttpStatus.BAD_REQUEST);
+        }
+        String deviceIp = addressRepository.findByMacAddress(device.getMacAddress()).getIpAddress();
+
+        Boolean result;
+        try {
+            result = sshDeployer.isRunning(id,
+                    // url, port, user, key
+                    deviceIp, SSHDeployer.SSH_PORT, SSHDeployer.DEFAULT_USER, SSHDeployer.KEY);
+        } catch (IOException e) {
+            // couldn't deploy - device not found or error during remote instructions
+            return new ResponseEntity<Boolean>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<Boolean>(result, HttpStatus.OK);
+    }
+    
+    @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.POST, params = {})
+    public ResponseEntity<String> deployActuator(@PathVariable(value = "id") String id) {
+        return deployActuator(id, "", "ACTUATOR");
     }
 
+    @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.POST, params = {"component", "pinset"})
+    public ResponseEntity<String> deployActuator(@PathVariable(value = "id") String id, @RequestParam String pinset, @RequestParam(name = "component") String component) {
+        System.out.println("deploy");
+
+        if (component == null) {
+            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+        }
+
+        Actuator actuator = actuatorRepository.findOne(id);
+
+        if (actuator == null) {
+            // Actuator not found
+            return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
+        }
+
+        Device device = actuator.getDevice();
+        Type type = actuator.getType();
+
+        if (device == null || type == null) {
+            // Device or type not setted
+            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+        }
+        String deviceIp = addressRepository.findByMacAddress(device.getMacAddress()).getIpAddress();
+
+        String serverIp;
+        serverIp = networkService.getMQTTBrokerIP();
+		//serverIp = networkService.getPublicIP();
+		System.out.println("MBP IP: " + serverIp);
+
+        try {
+            sshDeployer.deploy(id,
+                    // url, port, user, key
+                    deviceIp, SSHDeployer.SSH_PORT, SSHDeployer.DEFAULT_USER, SSHDeployer.KEY,
+                    // mqttIp, type, component, pinset
+                    serverIp, type, component, pinset);
+        } catch (IOException e) {
+            // couldn't deploy - device not found or error during remote instructions
+            System.out.println("ERROR ON DEPLOYMENT");
+            return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<String>(HttpStatus.CREATED);
+    }
+    
     @RequestMapping(value = "/autodeploy", method = RequestMethod.POST)
     public ResponseEntity<String> autodeploy(@RequestBody Device address) {
         Device actualAddr = addressRepository.findByMacAddress(address.getMacAddress());
 
         if (actualAddr == null) {
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
 
         String serverIp;
@@ -197,7 +267,7 @@ public class RestApiController implements
         } catch (UnknownHostException e) {
             // Couldn't get own IP
             System.out.println("COULDN`T GET OWN IP");
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         try {
@@ -210,7 +280,7 @@ public class RestApiController implements
         } catch (Exception e) {
             // Couldn't get own IP
             System.out.println("AUTODEPLOY ERROR");
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<>(HttpStatus.CREATED);

@@ -65,7 +65,7 @@
                         <div class="alert alert-success" ng-show="ctrl.deployer.undeploy.success"> {{ctrl.deployer.undeploy.success}} </div>
                         <div class="alert alert-danger" ng-show="ctrl.deployer.undeploy.errors.global"> {{ctrl.deployer.undeploy.errors.global}} </div>
                     </div>
-                    <div class="col-xs-12" ng-show="ctrl.deployer.available && !ctrl.deployer.deployed">
+                    <div class="col-xs-12">
                         <form ng-submit="ctrl.deployer.doDeploy()">
                             <div class="row clearfix">
                                 <div class="col-xs-9">
@@ -136,7 +136,7 @@
                         </div>
                     </div>
                 </div>
-                <table  class="table table-hover" ng-show="ctrl.actuatorValues.data && !ctrl.loader.actuatorValues">
+                <table class="table table-hover" ng-show="ctrl.actuatorValues.data && !ctrl.loader.actuatorValues" st-table="ctrl.actuatorValues.data" st-pipe="ctrl.loadActuatorValues" refresh-table="refreshActuatorValues">
                     <thead>
                         <tr>
                             <th>Value</th>
@@ -158,6 +158,12 @@
                             <td></td>
                         </tr>
                     </tbody>
+                    <tfoot>
+                        <tr>
+                            <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4">
+                            </td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>
