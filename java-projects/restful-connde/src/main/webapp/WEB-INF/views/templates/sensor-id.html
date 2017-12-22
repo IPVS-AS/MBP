@@ -31,7 +31,7 @@
                 <!-- deploy loader (show while deployment is being checked or executed) -->
                 <div class="row clearfix" ng-show="ctrl.deployer.processing">
                     <div class="col-xs-12 align-center" >
-                        <div class="preloader" >
+                        <div class="preloader">
                             <!-- dataDeploy.deploying -->
                             <div class="spinner-layer pl-blue">
                                 <div class="circle-clipper left">
@@ -68,7 +68,7 @@
                     <div class="col-xs-12">
                         <form ng-submit="ctrl.deployer.doDeploy()">
                             <div class="row clearfix">
-                                <div class="col-xs-9">
+                                <div class="col-xs-9" ng-show="!ctrl.deployer.deployed">
                                     <!-- deployer.deploy.pinset -->
                                     <label>Pins (comma separated)</label>
                                     <div class="form-group" ng-class="{'has-error' : ctrl.deployer.deploy.errors.name}">
@@ -78,7 +78,7 @@
                                         <span class="help-block" ng-show="ctrl.deployer.deploy.errors.pinset">{{ctrl.deployer.deploy.errors.pinset}}</span>
                                     </div>
                                 </div>
-                                <div class="col-xs-3">
+                                <div class="col-xs-3" ng-show="!ctrl.deployer.deployed">
                                     <button class="btn btn-primary waves-effect" id="deploy-button">Deploy</button>
                                 </div>
                             </div>

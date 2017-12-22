@@ -232,6 +232,12 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 })
                 
                 // Types List and Register
+                .when(viewPrefix + '/settings', {
+                    category: 'settings',
+                    templateUrl: 'templates/settings'
+                })
+                
+                // Types List and Register
                 .when(viewPrefix + '/404', {
                     templateUrl: 'templates/404'
                 })

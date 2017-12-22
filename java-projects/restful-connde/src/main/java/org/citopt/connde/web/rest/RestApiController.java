@@ -253,6 +253,7 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
         return new ResponseEntity<String>(HttpStatus.CREATED);
     }
     
+    @Deprecated
     @RequestMapping(value = "/autodeploy", method = RequestMethod.POST)
     public ResponseEntity<String> autodeploy(@RequestBody Device address) {
         Device actualAddr = addressRepository.findByMacAddress(address.getMacAddress());

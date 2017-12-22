@@ -45,9 +45,7 @@ public class SSHDeployer {
 
     public static String DEFAULT_USER = "pi";
 
-    public static String KEY
-            = "-----BEGIN RSA PRIVATE KEY-----\n"
-            + "MIIEogIBAAKCAQEAyGALfW0RP//eXFfhKfVcQK8rCCxymWBduf0rmMmDApN50Kzv\n"
+    public static String KEY = "-----BEGIN RSA PRIVATE KEY-----\n" + "MIIEogIBAAKCAQEAyGALfW0RP//eXFfhKfVcQK8rCCxymWBduf0rmMmDApN50Kzv\n"
             + "ESS955Y8HWvTPGDwd0ny6rthWcbDRF2+2J2AsKa+UnrXamZ3PdOfIPmuCFSigiQd\n"
             + "fnjFk8Zg8sdtywBCBy2SHwq7QBsZME2Aztyx3L4k4lk2VK8w+2F9gCmAVxY+KLDN\n"
             + "Da5NsgVEe9xVvvzhwkmf86T6r4dhYmWPgzW30GkUh4vvBvozBbfa0YV/vj4f1DP0\n"
@@ -70,12 +68,10 @@ public class SSHDeployer {
             + "O/2PPC9NTXFpuZWpXDwR4CKpu4fLnevgE9nlaHxtkK3FskDSyLsiGWySSm7WDI/l\n"
             + "rH/Ca6SCHg5huTMpf9hP9zFN858g7k5UzsQjRmck6sDCXo6mfVvIqthSXzszCNkq\n"
             + "fRXxAoGARRp2fahKz31kUOVprVSK2UsH340fET43X3QlygyNI33J4V6tYUpTgCY7\n"
-            + "dyBUmBHZKeZwJYYAtfkI4ACDCI0KEa6NdzAtwcwUgsR10fh6jGGBrKT88F4C5Xe1\n"
-            + "8JinHG8VObUcB1S7+vmct88/ELxa+9CnJ/NbiYyDw0cuAxqWUWg=\n"
+            + "dyBUmBHZKeZwJYYAtfkI4ACDCI0KEa6NdzAtwcwUgsR10fh6jGGBrKT88F4C5Xe1\n" + "8JinHG8VObUcB1S7+vmct88/ELxa+9CnJ/NbiYyDw0cuAxqWUWg=\n"
             + "-----END RSA PRIVATE KEY-----";
 
-    public static String PUBKEY
-            = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIYAt9bRE//95cV+Ep9VxArysILH"
+    public static String PUBKEY = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIYAt9bRE//95cV+Ep9VxArysILH"
             + "KZYF25/SuYyYMCk3nQrO8RJL3nljwda9M8YPB3SfLqu2FZxsNEXb7YnYCwpr5Setdq"
             + "Znc9058g+a4IVKKCJB1+eMWTxmDyx23LAEIHLZIfCrtAGxkwTYDO3LHcviTiWTZUrz"
             + "D7YX2AKYBXFj4osM0Nrk2yBUR73FW+/OHCSZ/zpPqvh2FiZY+DNbfQaRSHi+8G+jMF"
@@ -104,35 +100,24 @@ public class SSHDeployer {
         return service;
     }
 
-    public void autodeploy(Device address, Integer port, String user, String key, String mqtt)
-            throws UnknownHostException, IOException {
+    public void autodeploy(Device address, Integer port, String user, String key, String mqtt) throws UnknownHostException, IOException {
         String url = address.getIpAddress();
-        Shell shell = new Shell.Safe(
-                new SSH(
-                        url, port,
-                        user, key
-                )
-        );
+        Shell shell = new Shell.Safe(new SSH(url, port, user, key));
 
         ByteArrayOutputStream stdout = new ByteArrayOutputStream();
         ByteArrayOutputStream stderr = new ByteArrayOutputStream();
 
         // read autodeploy configuration
         System.out.println("read conf file");
-        shell.exec(
-                "sudo bash -c \"cat " + AUTODEPLOY_FILE + "\"",
-                new ByteArrayInputStream("".getBytes()),
-                stdout,
-                stderr
-        );
+        shell.exec("sudo bash -c \"cat " + AUTODEPLOY_FILE + "\"", new ByteArrayInputStream("".getBytes()), stdout, stderr);
         System.out.println("read conf file successful");
 
         JsonObject root;
-        //get JsonObject from JsonReader
+        // get JsonObject from JsonReader
         try (JsonReader jsonReader = Json.createReader(new ByteArrayInputStream(stdout.toByteArray()))) {
-            //get JsonObject from JsonReader
+            // get JsonObject from JsonReader
             root = jsonReader.readObject();
-            //we can close IO resource and JsonReader now
+            // we can close IO resource and JsonReader now
             JsonArray sensors = root.getJsonArray("sensors");
             JsonArray actuators = root.getJsonArray("actuators");
 
@@ -144,9 +129,9 @@ public class SSHDeployer {
                     if (sensor != null) {
                         try {
                             sensor = sensorRepository.insert(sensor);
-                            
+
                             String jPinset = ((JsonObject) jSensor).getString("pinset");
-                            
+
                             deploy(sensor.getId(), sensor.getDevice().getIpAddress(), port, user, key, mqtt, sensor.getType(), "SENSOR", jPinset);
                         } catch (IOException ex) {
                         }
@@ -165,177 +150,107 @@ public class SSHDeployer {
 
     }
 
-    public void deploy(String id, String url, Integer port, String user,
-            String key, String mqtt, Type type,
-            String component, String pinset)
+    public void deploy(String id, String url, Integer port, String user, String key, String mqtt, Type type, String component, String pinset)
             throws UnknownHostException, IOException {
-        LOGGER.log(Level.FINE, "service deploy called for: "
-                + "{0} {1} {2} {3} {4} {5} {6} {7} {8}",
-                new Object[]{
-                    id, url, port, user, key, mqtt, type, component, pinset});
-        System.out.println("service deploy called for: "
-                + id + url + port + user + key + mqtt + type + component + pinset);
+        LOGGER.log(Level.FINE, "service deploy called for: " + "{0} {1} {2} {3} {4} {5} {6} {7} {8}",
+                new Object[] { id, url, port, user, key, mqtt, type, component, pinset });
+        System.out.println("service deploy called for: " + id + url + port + user + key + mqtt + type + component + pinset);
 
         String scriptDir = getScriptDir(id);
         String topicName = new String(component.toLowerCase()) + "/" + id;
-        
-        Shell shell = new Shell.Safe(new SSH (url, port, user, key));
+
+        Shell shell = new Shell.Safe(new SSH(url, port, user, key));
 
         OutputStream stdout = new ByteArrayOutputStream();
         OutputStream stderr = new ByteArrayOutputStream();
 
         // creates routine dir
         System.out.println("starting remote mkdir, dir=" + scriptDir);
-        shell.exec(
-                "sudo mkdir -p " + scriptDir,
-                new ByteArrayInputStream("".getBytes()),
-                stdout,
-                stderr
-        );
+        shell.exec("sudo mkdir -p " + scriptDir, new ByteArrayInputStream("".getBytes()), stdout, stderr);
         System.out.println("remote mkdir successful");
 
         System.out.println("copying adapter scripts to device");
         for (Code routine : type.getRoutines()) {
             String content = routine.getContent();
-            // copies routine        
-            shell.exec(
-                    "sudo bash -c  \"cat > " + scriptDir + "/" + routine.getName() + "\"",
-                    new ByteArrayInputStream(content.getBytes()),
-                    stdout,
-                    stderr
-            );
+            // copies routine
+            shell.exec("sudo bash -c  \"cat > " + scriptDir + "/" + routine.getName() + "\"", new ByteArrayInputStream(content.getBytes()), stdout,
+                    stderr);
         }
         System.out.println("copying scripts was succesful");
-        
+
         // executing install script
-        shell.exec("sudo chmod +x " + scriptDir + "/install.sh | sudo bash " + scriptDir + "/install.sh " + topicName + " " + mqtt + " " + scriptDir, 
-        		new ByteArrayInputStream("".getBytes()), stdout, stderr);
+        shell.exec("sudo chmod +x " + scriptDir + "/install.sh | sudo bash " + scriptDir + "/install.sh " + topicName + " " + mqtt + " " + scriptDir,
+                new ByteArrayInputStream("".getBytes()), stdout, stderr);
         System.out.println("installation was succesful");
-        
+
         // executing start script
-        shell.exec("sudo chmod u+rwx " + scriptDir + "/start.sh | sudo bash " + scriptDir + "/start.sh " + scriptDir, new ByteArrayInputStream("".getBytes()), stdout, stderr);
+        shell.exec("sudo chmod u+rwx " + scriptDir + "/start.sh | sudo bash " + scriptDir + "/start.sh " + scriptDir,
+                new ByteArrayInputStream("".getBytes()), stdout, stderr);
         System.out.println("start was succesful");
+
+        try {
+            shell.exec("sudo chmod +x " + scriptDir + "/running.sh", new ByteArrayInputStream("".getBytes()), stdout, stderr);
+        } catch (Exception e) {
+
+        }
         
-//        if (type.getService() != null) {
-//	        String service = type.getService().getContent();
-//	        Map<String, String> serviceParser = new HashMap<>();
-//	        serviceParser.put("${dir}", scriptDir);
-//	        serviceParser.put("${id}", id);
-//	        serviceParser.put("${mqtturl}", mqtt);
-//	        serviceParser.put("${component}", component);
-//	        serviceParser.put("${pinset}", pinset);
-//	        service = parseService(service, serviceParser);
-//	        System.out.println("service file parsing done");
-//	
-//	        System.out.println("starting remote Service output");
-//	        shell.exec(
-//	                "sudo bash -c  \"cat > " + SERVICEDIR + "/"
-//	                + servicename + ".conf\"",
-//	                new ByteArrayInputStream(service.getBytes()),
-//	                stdout,
-//	                stderr
-//	        );
-//	        System.out.println("remote Service output succesful");
-//	
-//	        System.out.println("starting remote reload-configuration");
-//	        shell.exec(
-//	                "sudo initctl reload-configuration",
-//	                new ByteArrayInputStream("".getBytes()),
-//	                stdout,
-//	                stderr
-//	        );
-//	        System.out.println("remote reload-configuration successful");
-//	
-//	        // stops old service (if it exists)
-//	        try {
-//	            System.out.println("trying to stop remote old service");
-//	            shell.exec(
-//	                    "sudo service " + servicename + " stop",
-//	                    new ByteArrayInputStream("".getBytes()),
-//	                    stdout,
-//	                    stderr
-//	            );
-//	            System.out.println("stop remote old service successful");
-//	        } catch (Exception e) {
-//	            System.out.println("stop remote old service unsuccessful "
-//	                    + stdout);
-//	        }
-//	
-//	        // starts service
-//	        System.out.println("start remote service");
-//	        shell.exec(
-//	                "sudo service " + servicename + " start",
-//	                new ByteArrayInputStream("".getBytes()),
-//	                stdout,
-//	                stderr
-//	        );
-//	        System.out.println("start remote service succesful");
-//        }
-        
+        try {
+            shell.exec("sudo chmod +x " + scriptDir + "/stop.sh", new ByteArrayInputStream("".getBytes()), stdout, stderr);
+        } catch (Exception e) {
+
+        }
+
         LOGGER.log(Level.FINE, "adapter deployed successful for id {0}", id);
     }
 
-    public boolean isRunning(String id, String url, Integer port,
-            String user, String key)
-            throws UnknownHostException, IOException {
-        String sid = SERVICEPREFIX + id;
+    public boolean isRunning(String id, String url, Integer port, String user, String key) throws UnknownHostException, IOException {
+        String scriptDir = getScriptDir(id);
+        // String sid = SERVICEPREFIX + id;
 
-        Shell shell = new Shell.Safe(
-                new SSH(
-                        url, port,
-                        user, key
-                )
-        );
+        Shell shell = new Shell.Safe(new SSH(url, port, user, key));
 
         OutputStream stdout = new ByteArrayOutputStream();
         OutputStream stderr = new ByteArrayOutputStream();
 
-        //FIXME: list services with native command
-        // lists services
-        shell.exec(
-                "sudo initctl list",
-                new ByteArrayInputStream("".getBytes()),
-                stdout,
-                stderr
-        );
+        // simple command to test if device is available
+        shell.exec("pwd", new ByteArrayInputStream("".getBytes()), stdout, stderr);
+        stdout = new ByteArrayOutputStream();
 
-        // parse stdout list
-        Pattern p = Pattern.compile(sid + "( start/running)(.*)");
-        BufferedReader bufReader = new BufferedReader(
-                new StringReader(stdout.toString()));
-        String line;
-        while ((line = bufReader.readLine()) != null) {
-            Matcher m = p.matcher(line);
-            if (m.matches()) {
+        try {
+            // executing running.sh script to check if adapter is running
+            shell.exec("sudo sudo bash " + scriptDir + "/running.sh ", new ByteArrayInputStream("".getBytes()), stdout, stderr);
+            System.out.println("end checking if adapter is running");
+
+            String returnValue = stdout.toString();
+            if ((new String(returnValue).toLowerCase()).contains("true")) {
                 return true;
+            } else {
+                return false;
             }
+        } catch (Exception exc) {
+            System.out.println("Adapter was not yet deployed or is not running");
         }
 
         return false;
     }
 
-    public void undeploy(String id, String url, Integer port, String user,
-            String key)
-            throws IOException {
-        String sid = SERVICEPREFIX + id;
+    public void undeploy(String id, String url, Integer port, String user, String key) throws IOException {
+        String scriptDir = getScriptDir(id);
 
-        Shell shell = new Shell.Safe(
-                new SSH(
-                        url, port,
-                        user, key
-                )
-        );
+        Shell shell = new Shell.Safe(new SSH(url, port, user, key));
 
         OutputStream stdout = new ByteArrayOutputStream();
         OutputStream stderr = new ByteArrayOutputStream();
 
-        // stop service
-        shell.exec(
-                "sudo service " + sid + " stop",
-                new ByteArrayInputStream("".getBytes()),
-                stdout,
-                stderr
-        );
+        try {
+            // call stop script
+            shell.exec("sudo bash " + scriptDir + "/stop.sh", new ByteArrayInputStream("".getBytes()), stdout, stderr);
+            shell.exec("sudo rm -rf " + scriptDir, new ByteArrayInputStream("".getBytes()), stdout, stderr);
+        
+        } catch (Exception e) {
+            
+        }
+        
     }
 
     private Sensor findOrRegisterSensor(SensorRepository sensorRepository, JsonObject jSensor, Device device) {
@@ -357,7 +272,7 @@ public class SSHDeployer {
         // name on file + current device
         String name = getAutodeployName(jName, device.getMacAddress());
         Type type = typeRepository.findByName(jType);
-        
+
         if (type == null) {
             return null;
         }
