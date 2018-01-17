@@ -78,7 +78,13 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
             // Device not setted
             return new ResponseEntity<Boolean>(HttpStatus.BAD_REQUEST);
         }
-        String deviceIp = addressRepository.findByMacAddress(device.getMacAddress()).getIpAddress();
+        
+        Device deviceInRepo = addressRepository.findByMacAddress(device.getMacAddress());
+        if (deviceInRepo == null) {
+            // Device not setted
+            return new ResponseEntity<Boolean>(HttpStatus.BAD_REQUEST);
+        }        
+        String deviceIp = deviceInRepo.getIpAddress();
 
         Boolean result;
         try {
@@ -122,7 +128,13 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
             // Device or type not setted
             return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
-        String deviceIp = addressRepository.findByMacAddress(device.getMacAddress()).getIpAddress();
+        
+        Device deviceInRepo = addressRepository.findByMacAddress(device.getMacAddress());
+        if (deviceInRepo == null) {
+            // Device not setted
+            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+        }        
+        String deviceIp = deviceInRepo.getIpAddress();
 
         String serverIp;
         serverIp = networkService.getMQTTBrokerIP();
@@ -160,7 +172,12 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
             // Device not setted
             return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
-        String deviceIp = addressRepository.findByMacAddress(device.getMacAddress()).getIpAddress();
+        Device deviceInRepo = addressRepository.findByMacAddress(device.getMacAddress());
+        if (deviceInRepo == null) {
+            // Device not setted
+            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+        }        
+        String deviceIp = deviceInRepo.getIpAddress();
 
         try {
             sshDeployer.undeploy(id,
@@ -189,7 +206,12 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
             // Device not setted
             return new ResponseEntity<Boolean>(HttpStatus.BAD_REQUEST);
         }
-        String deviceIp = addressRepository.findByMacAddress(device.getMacAddress()).getIpAddress();
+        Device deviceInRepo = addressRepository.findByMacAddress(device.getMacAddress());
+        if (deviceInRepo == null) {
+            // Device not setted
+            return new ResponseEntity<Boolean>(HttpStatus.BAD_REQUEST);
+        }        
+        String deviceIp = deviceInRepo.getIpAddress();
 
         Boolean result;
         try {
@@ -231,7 +253,12 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
             // Device or type not setted
             return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
-        String deviceIp = addressRepository.findByMacAddress(device.getMacAddress()).getIpAddress();
+        Device deviceInRepo = addressRepository.findByMacAddress(device.getMacAddress());
+        if (deviceInRepo == null) {
+            // Device not setted
+            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+        }        
+        String deviceIp = deviceInRepo.getIpAddress();
 
         String serverIp;
         serverIp = networkService.getMQTTBrokerIP();
