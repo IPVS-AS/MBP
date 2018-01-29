@@ -98,8 +98,41 @@
         </div>
     </div>
     <!-- #END# Sensor Details Card -->
+   
+    <div class="col-lg-7">
+		<div class="card">
+       		<div class="header">
+                <h2>
+                    Live sensor values
+                </h2>
+            </div>
+        	<div class="body">
+        		<div id="liveValues" style="width:100%; height:400px;"></div>
+        	</div>
+        </div>
+    </div>
+   
+	<div class="col-lg-7">
+		<div class="card">
+       		<div class="header">
+				<div style="align: right">                
+					<button class="close" type="button" ng-click="ctrl.showCharts()">
+        	 			<i class="material-icons">refresh</i>
+        	 		</button>
+				</div>
+                <h2>
+                    Historical sensor values
+                </h2>
 
-    <div class="col-lg-5">
+
+            </div>
+        	<div class="body">
+        		<div id="historicalValues" style="width:100%; height:400px;"></div>
+        	</div>
+        </div>
+    </div>
+    
+    <div class="col-lg-7">
         <div class="card">
             <div class="header">
                 <h2>

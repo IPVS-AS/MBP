@@ -8,6 +8,17 @@ import json
 import os, fnmatch
 from os.path import expanduser
 
+# hardware imports
+import RPi.GPIO as GPIO
+import spidev
+
+# global hardware config
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+
+# - Temperature
+temp_adc_channel = int(0)
+
 ############################
 # MQTT Client
 ############################
@@ -47,6 +58,33 @@ class mqttClient(object):
       #Call loop_stop() to stop the background thread.
       self.client.loop_start()
 
+      
+############################
+# Analog in (on linker-base ADC)
+############################
+class analogInputReader(object):
+        def __init__(self):
+                self.spi = spidev.SpiDev()
+                self.spi.open(0,0)
+ 
+        def readadc (self, adPin):
+                # read SPI data from MCP3004 chip, 4 possible adc’s (0 thru 3)
+                if ((adPin > 3) or (adPin < 0)):
+                        return -1
+                r = self.spi.xfer2([1,8+adPin <<4,0])
+                #print(r)
+                adcout = ((r[1] &3) <<8)+r[2]
+                return adcout
+ 
+        def getLevel (self, adPin):
+                value = self.readadc(adPin)
+                volts = (value*3.3)/1024
+                return (volts, value)
+	
+        def getTemperature (self, adPin):
+                v0 = self.getLevel(adPin)
+                temp = (((v0[0] * 1000) - 500)/10) # celsius
+                return temp
 
 ############################
 # MAIN
@@ -111,15 +149,20 @@ def main(argv):
    id = "id_%s" % (datetime.utcnow().strftime('%H_%M_%S'))
    publisher = mqttClient(hostname, 1883, id)
    publisher.start()
+
+   # Hardware - init analog input reader
+   aiReader = analogInputReader()
    
-  
    try:  
       while True:
          # messages in json format
          # send message, topic: temperature
          t = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
-         msg_pub = {"component": component.upper(), "id": component_id, "value": "42" }
+         # read temperature
+         measured_temp = aiReader.getTemperature(temp_adc_channel)
+         
+         msg_pub = {"component": component.upper(), "id": component_id, "value": "%.3f" % (measured_temp) }
          publisher.sendMessage (topic_pub, json.dumps(msg_pub))
          #publisher.sendMessage (topic_pub, "42")
 
