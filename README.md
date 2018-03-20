@@ -1,6 +1,8 @@
 # Multi-purpose Binding and Provisioning Platform (MBP)
 This platform enables means for (i) automated binding of IoT devices in order to access their sensors and actuators, and (ii) automated software provisioning.
 
+![MBP-UI](https://github.com/ana-silva/MBP/blob/master/MBP.PNG)
+
 ## Installation and Configuration
 see [User Manual](user_manual.md)
 
