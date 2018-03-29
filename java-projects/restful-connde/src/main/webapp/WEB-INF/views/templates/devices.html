@@ -73,9 +73,15 @@
                                     <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.ipAddress }">
                                         <input class="form-control" id="device-form-input-ipAddress"  type="text" placeholder="IP address" ng-model="addDeviceCtrl.item.ipAddress" />
                                     </div>
-                                    <p class="help-block">IP Address is optional and will be overwritten once the system finds the device.</p>
                                     <span class="help-block" ng-show="addDeviceCtrl.item.errors.ipAddress">{{addDeviceCtrl.item.errors.ipAddress.message}}</span>
                                 </div>
+                                <!-- item.username group -->
+                                <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.username }">
+                                    <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.username }">
+                                        <input class="form-control" id="device-form-input-username"  type="text" placeholder="User name" ng-model="addDeviceCtrl.item.username" />
+                                    </div>
+                                    <span class="help-block" ng-show="addDeviceCtrl.item.errors.username">{{addDeviceCtrl.item.errors.username.message}}</span>
+                                </div>                                
                             </div>
                             <div class="col-xs-12">
                                 <!-- buttons -->

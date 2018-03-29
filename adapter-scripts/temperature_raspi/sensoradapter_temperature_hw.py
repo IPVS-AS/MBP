@@ -63,28 +63,28 @@ class mqttClient(object):
 # Analog in (on linker-base ADC)
 ############################
 class analogInputReader(object):
-        def __init__(self):
-                self.spi = spidev.SpiDev()
-                self.spi.open(0,0)
+   def __init__(self):
+      self.spi = spidev.SpiDev()
+      self.spi.open(0,0) # (bus, device)
  
-        def readadc (self, adPin):
-                # read SPI data from MCP3004 chip, 4 possible adc’s (0 thru 3)
-                if ((adPin > 3) or (adPin < 0)):
-                        return -1
-                r = self.spi.xfer2([1,8+adPin <<4,0])
-                #print(r)
-                adcout = ((r[1] &3) <<8)+r[2]
-                return adcout
+   def readadc (self, adPin):
+      # read SPI data from MCP3004 chip, 4 possible adc’s (0 thru 3)
+      if ((adPin > 3) or (adPin < 0)):
+         return -1
+      r = self.spi.xfer2([1,8+adPin <<4,0])
+      #print(r)
+      adcout = ((r[1] &3) <<8)+r[2]
+      return adcout
  
-        def getLevel (self, adPin):
-                value = self.readadc(adPin)
-                volts = (value*3.3)/1024
-                return (volts, value)
-	
-        def getTemperature (self, adPin):
-                v0 = self.getLevel(adPin)
-                temp = (((v0[0] * 1000) - 500)/10) # celsius
-                return temp
+   def getLevel (self, adPin):
+      value = self.readadc(adPin)
+      volts = (value*3.3)/1024
+      return (volts, value)
+ 
+   def getTemperature (self, adPin):
+      v0 = self.getLevel(adPin)
+      temp = (((v0[0] * 1000) - 500)/10) # celsius
+      return temp
 
 ############################
 # MAIN
@@ -92,7 +92,7 @@ class analogInputReader(object):
 def main(argv):
 
    configFileName = "connections.txt"
-   home = '/home/pi/scripts' 
+   home = os.path.expandvars('$HOME/scripts')
    pattern = 'connde*'
    dirList = []
    topics = []
@@ -166,7 +166,7 @@ def main(argv):
          publisher.sendMessage (topic_pub, json.dumps(msg_pub))
          #publisher.sendMessage (topic_pub, "42")
 
-         time.sleep(60)
+         time.sleep(30)
    except:
       print ("end")
       

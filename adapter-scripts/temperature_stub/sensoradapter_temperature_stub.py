@@ -54,7 +54,7 @@ class mqttClient(object):
 def main(argv):
 
    configFileName = "connections.txt"
-   home = '/home/pi/scripts' 
+   home = os.path.expandvars('$HOME/scripts')
    pattern = 'connde*'
    dirList = []
    topics = []
@@ -123,7 +123,7 @@ def main(argv):
          publisher.sendMessage (topic_pub, json.dumps(msg_pub))
          #publisher.sendMessage (topic_pub, "42")
 
-         time.sleep(60)
+         time.sleep(30)
    except:
       print ("end")
       

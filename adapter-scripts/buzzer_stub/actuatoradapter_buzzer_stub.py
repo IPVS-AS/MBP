@@ -69,7 +69,7 @@ class mqttClient(object):
 def main(argv):
 
    configFileName = "connections.txt"
-   home = '/home/pi/scripts' 
+   home = os.path.expandvars('$HOME/scripts')
    pattern = 'connde*'
    dirList = []
    topics = []

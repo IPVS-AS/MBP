@@ -32,7 +32,8 @@ accept: application/json
   "name": "Raspberry Pi",
   "macAddress": "123456789067",
   "ipAddress": "192.168.0.34",
-  "formattedMacAddress": "12-34-56-78-90-67"
+  "formattedMacAddress": "12-34-56-78-90-67",
+  "username": "pi"
 }
 ```
 
@@ -46,6 +47,7 @@ application/json;charset=UTF-8
   "name": "Raspberry Pi",
   "macAddress": "123456789067",
   "ipAddress": "192.168.0.34",
+  "username": "pi",
   "date": null,
   ...
 }
@@ -82,6 +84,7 @@ HTTP/1.1 200 OK
   "name": "Raspberry Pi",
   "id": "596c7a7d4f0c58688e5aa6b1",
   "date": null,
+  "username": "pi",
 }
 ```
 
@@ -94,7 +97,8 @@ PUT /api/devices/596c7a7d4f0c58688e5aa6b1 HTTP/1.1
   "name": "Raspberry Pi",
   "macAddress": "127556789067",
   "ipAddress": "192.168.0.75",
-  "formattedMacAddress": "12-75-56-78-90-67"
+  "formattedMacAddress": "12-75-56-78-90-67",
+  "username": "pi"
 }
 ```
 

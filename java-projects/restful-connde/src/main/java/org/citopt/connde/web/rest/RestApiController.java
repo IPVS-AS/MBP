@@ -85,12 +85,15 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
             return new ResponseEntity<Boolean>(HttpStatus.BAD_REQUEST);
         }        
         String deviceIp = deviceInRepo.getIpAddress();
-
+        String username = deviceInRepo.getUsername();
+        if (username == null) {
+            username = SSHDeployer.DEFAULT_USER;
+        }
         Boolean result;
         try {
             result = sshDeployer.isRunning(id,
                     // url, port, user, key
-                    deviceIp, SSHDeployer.SSH_PORT, SSHDeployer.DEFAULT_USER, SSHDeployer.KEY);
+                    deviceIp, SSHDeployer.SSH_PORT, username, SSHDeployer.KEY);
         } catch (IOException e) {
             // couldn't deploy - device not found or error during remote instructions
             return new ResponseEntity<Boolean>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -135,7 +138,10 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
             return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }        
         String deviceIp = deviceInRepo.getIpAddress();
-
+        String username = deviceInRepo.getUsername();
+        if (username == null) {
+            username = SSHDeployer.DEFAULT_USER;
+        }
         String serverIp;
         serverIp = networkService.getMQTTBrokerIP();
 		//serverIp = networkService.getPublicIP();
@@ -144,7 +150,7 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
         try {
             sshDeployer.deploy(id,
                     // url, port, user, key
-                    deviceIp, SSHDeployer.SSH_PORT, SSHDeployer.DEFAULT_USER, SSHDeployer.KEY,
+                    deviceIp, SSHDeployer.SSH_PORT, username, SSHDeployer.KEY,
                     // mqttIp, type, component, pinset
                     serverIp, type, component, pinset);
         } catch (IOException e) {
@@ -178,11 +184,14 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
             return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }        
         String deviceIp = deviceInRepo.getIpAddress();
-
+        String username = deviceInRepo.getUsername();
+        if (username == null) {
+            username = SSHDeployer.DEFAULT_USER;
+        }
         try {
             sshDeployer.undeploy(id,
                     // url, port, user, key
-                    deviceIp, SSHDeployer.SSH_PORT, SSHDeployer.DEFAULT_USER, SSHDeployer.KEY);
+                    deviceIp, SSHDeployer.SSH_PORT, username, SSHDeployer.KEY);
         } catch (IOException e) {
             // couldn't deploy - device not found or error during remote instructions
             return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -212,12 +221,15 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
             return new ResponseEntity<Boolean>(HttpStatus.BAD_REQUEST);
         }        
         String deviceIp = deviceInRepo.getIpAddress();
-
+        String username = deviceInRepo.getUsername();
+        if (username == null) {
+            username = SSHDeployer.DEFAULT_USER;
+        }
         Boolean result;
         try {
             result = sshDeployer.isRunning(id,
                     // url, port, user, key
-                    deviceIp, SSHDeployer.SSH_PORT, SSHDeployer.DEFAULT_USER, SSHDeployer.KEY);
+                    deviceIp, SSHDeployer.SSH_PORT, username, SSHDeployer.KEY);
         } catch (IOException e) {
             // couldn't deploy - device not found or error during remote instructions
             return new ResponseEntity<Boolean>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -259,7 +271,10 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
             return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }        
         String deviceIp = deviceInRepo.getIpAddress();
-
+        String username = deviceInRepo.getUsername();
+        if (username == null) {
+            username = SSHDeployer.DEFAULT_USER;
+        }
         String serverIp;
         serverIp = networkService.getMQTTBrokerIP();
 		//serverIp = networkService.getPublicIP();
@@ -268,7 +283,7 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
         try {
             sshDeployer.deploy(id,
                     // url, port, user, key
-                    deviceIp, SSHDeployer.SSH_PORT, SSHDeployer.DEFAULT_USER, SSHDeployer.KEY,
+                    deviceIp, SSHDeployer.SSH_PORT, username, SSHDeployer.KEY,
                     // mqttIp, type, component, pinset
                     serverIp, type, component, pinset);
         } catch (IOException e) {

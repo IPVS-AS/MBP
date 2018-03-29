@@ -19,4 +19,6 @@ public interface DeviceListProjection {
     String getIpAddress();
     
     String getDate();
+    
+    String getUsername();
 }

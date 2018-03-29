@@ -1,41 +1,38 @@
 package org.citopt.connde.service;
 
-import com.jcabi.ssh.SSH;
-import com.jcabi.ssh.Shell;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringReader;
 import java.net.UnknownHostException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
-import org.citopt.connde.domain.device.Device;
+
 import org.citopt.connde.domain.component.Sensor;
-import org.citopt.connde.domain.type.Type;
+import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.type.Code;
+import org.citopt.connde.domain.type.Type;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.TypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import com.jcabi.ssh.SSH;
+import com.jcabi.ssh.Shell;
 
 @org.springframework.stereotype.Component
 public class SSHDeployer {
 
     private static final Logger LOGGER = Logger.getLogger(SSHDeployer.class.getName());
 
-    private static final String SCRIPTDIR = "/home/pi/scripts";
-    private static final String SERVICEDIR = "/etc/init";
+    private static final String SCRIPTDIR = "~/scripts";
     private static final String SERVICEPREFIX = "connde";
 
     private static final String AUTODEPLOY_FILE = "/etc/connde/autodeploy.conf";

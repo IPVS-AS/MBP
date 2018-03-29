@@ -26,6 +26,8 @@ public class Device {
 
     private String date;
     
+    private String username;
+    
     public static String formatMAC(String raw) {
         if (raw != null) {
             String formatted = raw.replaceAll("(.{2})", "$1" + "-").substring(0, 17);
@@ -89,6 +91,14 @@ public class Device {
 
     public void setDate(String date) {
         this.date = date;
+    }
+    
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
 }
