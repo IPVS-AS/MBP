@@ -6,11 +6,11 @@ This platform enables means for (i) automated binding of IoT devices in order to
 How to install the MBP and use its API is explained in detail in the following:  
 
 **[1 Installation and Configuration](#1-installation-and-configuration)**  
-**[2 REST API](#2-MBP-REST-API)**  
-**[2.1 Devices](#2.1-Devices)**  
-**[2.2 Adapter Types](#2.2-Adapter-Types)**  
-**[2.3 Sensors](#2.3-Sensors)**  
-**[2.1 Actuators](#2.4-Actuators)**  
+**[2 MBP REST API](#2-mbp-rest-api)**  
+**[2.1 Devices](#21-devices)**  
+**[2.2 Adapter Types](#22-adapter-types)**  
+**[2.3 Sensors](#23-sensors)**  
+**[2.1 Actuators](#24-actuators)**  
 
 ## 1 Installation and Configuration
 
@@ -24,13 +24,13 @@ The following sofware components are used in order to set up the MBP:
 - Maven
 - Bootstrap template: [https://startbootstrap.com/template-overviews/sb-admin-2/](https://startbootstrap.com/template-overviews/sb-admin-2/)
 
-## 1.1 Configuration
+### 1.1 Configuration
 Before starting the installation, please set the MQTT broker IP address in the configuration file [config.properties](MBP/src/main/resources/config.properties). In order to allow the MBP to access registered devices, the devices must be configured to be accessed by SSH using a [RSA Key](resources/rsa-key).
 
-## 1.2 Installation on Linux 
+### 1.2 Installation on Linux 
 Please run the [installation script](install.sh), which automatically install the sofware components listed above. Once the installation is completed, the MBP will be available on the URL *http://MBP-Host:8080/MBP*.  
 
-## 1.3 Installation on Windows
+### 1.3 Installation on Windows
 Please execute the following steps:  
 - Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), and [Tomcat8](https://tomcat.apache.org/download-80.cgi)  
 - Install Python3 and download the python libraries *paho-mqtt*, *pymongo*  
@@ -45,7 +45,7 @@ Please execute the following steps:
 
 Once the installation is completed, the MBP will be available on the URL *http://MBP-Host:8080/MBP*.  
 
-## 1.4 Using the MBP
+### 1.4 Using the MBP
 The MBP provides two user roles, *expert* and *normal*. As an *expert user*, it is possible to register *Adapter types*, *Devices*, *Sensors* and *Actuators*. As a *normal user* it is possible to register only *Sensors* and *Actuators*.
 
 In order to register a sensor or an actuator, the correponding *Adapter type* and *Device* must be registered before the sensor or actuator.
@@ -59,7 +59,7 @@ The message format is a json string containing at least the following elements:
 
 For example,
 
-```javascript
+```
 $ mosquitto_pub.exe -t sensor/596cafaa6c0ccd5d29da0e90 -m '{"component": "SENSOR", "id": "596cafaa6c0ccd5d29da0e90", "value": 20}'
 ```
 
