@@ -34,14 +34,16 @@ Please run the [installation script](install.sh), which automatically install th
 Please execute the following steps:  
 - Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), and [Tomcat8](https://tomcat.apache.org/download-80.cgi)  
 - Install Python3 and download the python libraries *paho-mqtt*, *pymongo*  
-  $ pip install ... 
-  
+    
+    $ pip install ... 
+    
 - Create the *MBP.war* file by building the provided maven project  
-  $ mvn clean install  
-  
+    
+    $ mvn clean install  
+    
 - Deploy the MBP application on Tomcat by moving *MBP.war* to the Tomcat webapps folder  
 
-- Run [value-logger.py](python-scripts/value-logger.py)
+- Run [value-logger.py](resources/python-scripts/value-logger.py)
 
 Once the installation is completed, the MBP will be available on the URL *http://MBP-Host:8080/MBP*.  
 
@@ -59,9 +61,9 @@ The message format is a json string containing at least the following elements:
 
 For example,
 
-```
-$ mosquitto_pub.exe -t sensor/596cafaa6c0ccd5d29da0e90 -m '{"component": "SENSOR", "id": "596cafaa6c0ccd5d29da0e90", "value": 20}'
-```
+    
+    $ mosquitto_pub.exe -t sensor/596cafaa6c0ccd5d29da0e90 -m '{"component": "SENSOR", "id": "596cafaa6c0ccd5d29da0e90", "value": 20}'
+    
 
 ## 2 MBP REST API
 A REST API for the management of devices, adapter types, sensors and actuators is provided. Furthermore, an interface to trigger the binding of sensors and actuator is as well provided. Finally, sensor and actuator values sent to the MBP can be retrieved.
