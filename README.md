@@ -3,11 +3,63 @@ This platform enables means for (i) automated binding of IoT devices in order to
 
 ![MBP-UI](https://github.com/ana-silva/MBP/blob/master/MBP.PNG)
 
-## Installation and Configuration
-see [User Manual](user_manual.md)
+**[1 Installation and Configuration](#1-installation-and-configuration)**  
+**[2 REST API](#2-REST-API)**  
 
-## REST API
-A REST API for the management of devices, sensors and actuators is provided.  
+## 1 Installation and Configuration
+
+The following sofware components are used in order to set up the MBP:  
+- [Mosquitto MQTT Broker](https://mosquitto.org/download/)
+- [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community)
+- Java8
+- [Tomcat8](https://tomcat.apache.org/download-80.cgi)
+- Python3
+- Python modules: paho-mqtt, pymongo
+- Maven
+- Bootstrap template: [https://startbootstrap.com/template-overviews/sb-admin-2/](https://startbootstrap.com/template-overviews/sb-admin-2/)
+
+## 1.1 Configuration
+Before starting the installation, please set the MQTT broker IP address in the configuration file [config.properties](MBP/src/main/resources/config.properties)
+
+In order to allow the MBP to access registered devices, the devices must be configured to be accessed by SSH using a [RSA Key](resources/rsa-key).
+
+## 1.2 Installation on Linux 
+Please run the [installation script](install.sh), which automatically install the sofware components listed above. Once the installation is completed, the MBP will be available on the URL http://<MBPHost>:8080/MBP  
+
+## 1.3 Installation on Windows
+Please execute the following steps:  
+- Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), and [Tomcat8](https://tomcat.apache.org/download-80.cgi)  
+- Install Python3 and download the python libraries *paho-mqtt*, *pymongo*  
+  $ pip install ... 
+  
+- Create the *MBP.war* file by building the provided maven project  
+  $ mvn clean install  
+  
+- Deploy the MBP application on tomcat by moving *MBP.war* to the Tomcat8 webapps folder  
+
+- Run [value-logger.py](python-scripts/value-logger.py)
+
+Once the installation is completed, the MBP will be available on the URL http://<MBPHost>:8080/MBP  
+
+## 1.4 Using the MBP
+The MBP provides two user roles, *expert* and *normal*. As an *expert user*, it is possible to register *Adapter types*, *Devices*, *Sensors* and *Actuators*. As a *normal user* it is possible to register only *Sensors* and *Actuators*.
+
+In order to register a sensor or an actuator, the correponding adapter type and device must be registered before the sensor or actuator.
+
+Once a sensor is registered, pushing sensor data to the MBP, or receiving sensor data, can be done through a MQTT Client. Sensor topics follows the structure 'sensor/$sensor_id' while actuators follows the structure 'actuator/$actuator_id'. The ids are generated on the registration step and can be shown in the MBP UI.
+
+The message format is a json string containing at least the keys:
+ - "component" : [ "SENSOR", "ACTUATOR" ] <- one of the values, accordingly
+ - "id" : $id <- sensor or actuator id
+ - "value" : $value
+
+For example,
+
+$ mosquitto_pub.exe -t sensor/596cafaa6c0ccd5d29da0e90 -m '{"component": "SENSOR", "id": "596cafaa6c0ccd5d29da0e90", "value": 20}'
+
+## 2 MBP REST API
+A REST API for the management of devices, adapter types, sensors and actuators is provided. Furthermore, an interface to trigger the binding of sensors and actuator is as well provided. Finally, sensor and actuator values sent to the MBP can be retrieved.
+
 Make sure that CORS (Cross-Origin Resource Sharing) is allowed for all origins. To do that, add the following filter to Tomcat's 'web.xml':
 
 ```xml
@@ -21,7 +73,7 @@ Make sure that CORS (Cross-Origin Resource Sharing) is allowed for all origins. 
 </filter-mapping>
 ```
 
-### Devices
+### 2.1 Devices
 
 #### creating a new device:
 
@@ -112,8 +164,9 @@ DELETE /api/devices/596c7a7d4f0c58688e5aa6b1 HTTP/1.1
 
 HTTP/1.1 204 No Content
 
-### Adapter Types
+### 2.2 Adapter Types
 An adapter is the required software (e.g., python script) to bind sensors and actuators to the MBP.
+Examples to such adapters can be found in [Adapter Scripts](resources/adapter-scripts). Each adapter shall be composed of at least the files *install.sh* and *start.sh*. Furthermore, by including the files *running.sh* and *stop.sh* in the adapter, it allows the MBP to check if the adapter is currently running and to undeploy the adapter.   
 
 #### creating a new adapter type:
 POST /api/types/ HTTP/1.1  
@@ -203,7 +256,7 @@ DELETE /api/types/596c7c344f0c58688e5aa6b3 HTTP/1.1
 
 HTTP/1.1 204 No Content
 
-### Sensors  
+### 2.3 Sensors  
 To register a sensor, it is necessary to register first:  
  (i) the device to which the sensor is connected to, and  
  (ii) the adapter type, i.e., the required software (e.g., python script) to bind the sensor to the MBP. 
@@ -300,47 +353,6 @@ DELETE /api/sensors/596c7a974f0c58688e5aa6b2 HTTP/1.1
 
 HTTP/1.1 204 No Content
 
-### Actuators
+### 2.4 Actuators
 
 see REST calls for sensors, replace **/sensors** with **/actuators**
-
-## Repository Structure
-
-* [Java Projects](java-projects) (contains both web and the old base project that implemented the services)
-
-* [Python Scripts](python-scripts) (contains all python services and sensor scripts)
-
-* [RSA Key](rsa-key) (key that should be installed in each RPi in order to use SSH access)
-
-* [Diagram](diagram) (domain diagram for the java project)
-
-## Packets and others  
-### Upstart packet on client machine  
-Run `sudo apt-get install upstart`, reboot after installation.
-
-This is used to set up services on the system.
-
-To set a service (%name% stands for any name):
-
-* create a ```%name%.conf``` file in ```/etc/init```
-* run ```sudo initctl reload-configuration```
-* run ```sudo service %name% start```
-
-
-### [WinPCap](https://www.winpcap.org/) on server machine (Windows only - not needed on Linux dists)
-
-Compliments Scapy library.
-
-## Directory Structure
-
-* [websensor](websensor): Java Web project. Built with Maven, on Java EE 7 and GlassFish Server 4.1.1
-
-* [base-java](base-java): old Java project that implements the communication with the services and performs the SSH deployment
-
-## Libraries
-
-Bootstrap template: [https://startbootstrap.com/template-overviews/sb-admin-2/](https://startbootstrap.com/template-overviews/sb-admin-2/)
-
-On each Java Maven project, you can check pom.xml for the libraries and respective versions.
-
-Don't forget do have your mongodb server running when trying to run these projects.
