@@ -1,10 +1,16 @@
 # Multi-purpose Binding and Provisioning Platform (MBP)
 This platform enables means for (i) automated binding of IoT devices in order to access their sensors and actuators, and (ii) automated software provisioning.
 
-![MBP-UI](https://github.com/ana-silva/MBP/blob/master/MBP.PNG)
+![MBP-UI](https://github.com/ana-silva/MBP/blob/master/MBP.PNG)  
+
+How to install the MBP and use its API is explained in detail in the following:  
 
 **[1 Installation and Configuration](#1-installation-and-configuration)**  
-**[2 REST API](#2-REST-API)**  
+**[2 REST API](#2-MBP-REST-API)**  
+**[2.1 Devices](#2.1-Devices)**  
+**[2.2 Adapter Types](#2.2-Adapter-Types)**  
+**[2.3 Sensors](#2.3-Sensors)**  
+**[2.1 Actuators](#2.4-Actuators)**  
 
 ## 1 Installation and Configuration
 
@@ -19,12 +25,10 @@ The following sofware components are used in order to set up the MBP:
 - Bootstrap template: [https://startbootstrap.com/template-overviews/sb-admin-2/](https://startbootstrap.com/template-overviews/sb-admin-2/)
 
 ## 1.1 Configuration
-Before starting the installation, please set the MQTT broker IP address in the configuration file [config.properties](MBP/src/main/resources/config.properties)
-
-In order to allow the MBP to access registered devices, the devices must be configured to be accessed by SSH using a [RSA Key](resources/rsa-key).
+Before starting the installation, please set the MQTT broker IP address in the configuration file [config.properties](MBP/src/main/resources/config.properties). In order to allow the MBP to access registered devices, the devices must be configured to be accessed by SSH using a [RSA Key](resources/rsa-key).
 
 ## 1.2 Installation on Linux 
-Please run the [installation script](install.sh), which automatically install the sofware components listed above. Once the installation is completed, the MBP will be available on the URL http://<MBPHost>:8080/MBP  
+Please run the [installation script](install.sh), which automatically install the sofware components listed above. Once the installation is completed, the MBP will be available on the URL *http://MBP-Host:8080/MBP*.  
 
 ## 1.3 Installation on Windows
 Please execute the following steps:  
@@ -35,27 +39,29 @@ Please execute the following steps:
 - Create the *MBP.war* file by building the provided maven project  
   $ mvn clean install  
   
-- Deploy the MBP application on tomcat by moving *MBP.war* to the Tomcat8 webapps folder  
+- Deploy the MBP application on Tomcat by moving *MBP.war* to the Tomcat webapps folder  
 
 - Run [value-logger.py](python-scripts/value-logger.py)
 
-Once the installation is completed, the MBP will be available on the URL http://<MBPHost>:8080/MBP  
+Once the installation is completed, the MBP will be available on the URL *http://MBP-Host:8080/MBP*.  
 
 ## 1.4 Using the MBP
 The MBP provides two user roles, *expert* and *normal*. As an *expert user*, it is possible to register *Adapter types*, *Devices*, *Sensors* and *Actuators*. As a *normal user* it is possible to register only *Sensors* and *Actuators*.
 
-In order to register a sensor or an actuator, the correponding adapter type and device must be registered before the sensor or actuator.
+In order to register a sensor or an actuator, the correponding *Adapter type* and *Device* must be registered before the sensor or actuator.
 
-Once a sensor is registered, pushing sensor data to the MBP, or receiving sensor data, can be done through a MQTT Client. Sensor topics follows the structure 'sensor/$sensor_id' while actuators follows the structure 'actuator/$actuator_id'. The ids are generated on the registration step and can be shown in the MBP UI.
+Once a sensor is registered, pushing sensor data to the MBP, or receiving sensor data, can be done through a MQTT Client. Sensor topics follows the structure 'sensor/$sensor_id' while actuators follows the structure 'actuator/$actuator_id'. The *ids* are generated on the registration step and are shown in the MBP UI.
 
-The message format is a json string containing at least the keys:
+The message format is a json string containing at least the following elements:
  - "component" : [ "SENSOR", "ACTUATOR" ] <- one of the values, accordingly
  - "id" : $id <- sensor or actuator id
  - "value" : $value
 
 For example,
 
+```javascript
 $ mosquitto_pub.exe -t sensor/596cafaa6c0ccd5d29da0e90 -m '{"component": "SENSOR", "id": "596cafaa6c0ccd5d29da0e90", "value": 20}'
+```
 
 ## 2 MBP REST API
 A REST API for the management of devices, adapter types, sensors and actuators is provided. Furthermore, an interface to trigger the binding of sensors and actuator is as well provided. Finally, sensor and actuator values sent to the MBP can be retrieved.
