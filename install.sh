@@ -41,7 +41,6 @@ sudo systemctl start mongodb;
 sudo apt-get install -qy tomcat8;
 sudo systemctl start tomcat8;
 
-cd java-projects/restful-connde
 echo "\nBuilding .war file...\n"
 sudo mvn clean install
 
@@ -64,5 +63,7 @@ sudo chmod 775 ${INSTALL_PATH}/rmpvaluelogger.sh
 sudo cp rmpdiscovery.service rmpadvertise.service rmpvaluelogger.service /etc/systemd/system
 sudo systemctl daemon-reload
 sudo systemctl start rmpdiscovery.service rmpvaluelogger.service
+
+#sudo nohup python python-scripts/value-logger.py & sleep 2
 
 echo "\nInstallation finished"
