@@ -1,2 +1,3 @@
 #!/bin/bash
-nohup python $1/sensoradapter_temperature_stub.py > start.log &
+cd $1
+nohup python sensoradapter_temperature_stub.py > start.log &
