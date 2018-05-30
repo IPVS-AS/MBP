@@ -33,11 +33,11 @@ Please run the [installation script](install.sh), which automatically install th
 ### 1.3 Installation on Windows
 Please execute the following steps:  
 - Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), and [Tomcat8](https://tomcat.apache.org/download-80.cgi)  
-- Install Python3 and download the python libraries *paho-mqtt*, *pymongo*  
+- Install Python3 and download the python libraries *paho-mqtt*, *pymongo*
     
     $ pip install ... 
     
-- Create the *MBP.war* file by building the provided maven project  
+- Create the *MBP.war* file by building the provided maven project
     
     $ mvn clean install  
     
@@ -361,6 +361,72 @@ DELETE /api/sensors/596c7a974f0c58688e5aa6b2 HTTP/1.1
 
 HTTP/1.1 204 No Content
 
+#### deploying the adapter for a sensor (e.g., for id 596c7a974f0c58688e5aa6b2):
+
+POST /api/deploy/sensor/596c7a974f0c58688e5aa6b2
+
+HTTP/1.1 201 Created 
+
+#### undeploying adapter of a sensor (e.g., for id 596c7a974f0c58688e5aa6b2):
+
+DELETE /api/deploy/sensor/596c7a974f0c58688e5aa6b2 HTTP/1.1
+
+HTTP/1.1 204 No Content
+
+#### retrieving sensor values (e.g., for id 5b06834c4f0ca35062f25360): 
+
+GET /api/valueLogs/search/findAllByIdref?idref=5b06834c4f0ca35062f25360 HTTP/1.1
+
+HTTP/1.1 200 OK
+
+```javascript
+{
+  "_embedded" : {
+    "valueLogs" : [ {
+      "qos" : 0,
+      "topic" : "sensor/5b06834c4f0ca35062f25360",
+      "message" : "{\"component\": \"SENSOR\", \"id\": \"5b06834c4f0ca35062f25360\", \"value\": \"42\"}",
+      "date" : "2018-05-30 10:48:41",
+      "idref" : "5b06834c4f0ca35062f25360",
+      "component" : "SENSOR",
+      "value" : "42",
+      "_links" : {
+        "self" : {
+          "href" : "http://192.168.209.189:8080/MBP/api/valueLogs/5b0e81898315295d360367b0"
+        },
+        "valueLog" : {
+          "href" : "http://192.168.209.189:8080/MBP/api/valueLogs/5b0e81898315295d360367b0"
+        },
+        "sensorRef" : {
+          "href" : "http://192.168.209.189:8080/MBP/api/valueLogs/5b0e81898315295d360367b0/sensorRef"
+        },
+        "actuatorRef" : {
+          "href" : "http://192.168.209.189:8080/MBP/api/valueLogs/5b0e81898315295d360367b0/actuatorRef"
+        }
+      }
+    }, {...}
+  }
+}
+```
+
+To retrieve values so that they are ordered by date, where the first value was the last value received use:
+    
+    /api/valueLogs/search/findAllByIdref?idref=5b06834c4f0ca35062f25360&sort=date,desc
+    
+To retrieve only the last value use:
+    
+    /api/valueLogs/search/findAllByIdref?idref=5b06834c4f0ca35062f25360&page=0&size=1&sort=date,desc
+    
 ### 2.4 Actuators
 
 see REST calls for sensors, replace **/sensors** with **/actuators**
+
+## Haftungsausschluss
+
+Dies ist ein Forschungsprototyp.
+Die Haftung für entgangenen Gewinn, Produktionsausfall, Betriebsunterbrechung, entgangene Nutzungen, Verlust von Daten und Informationen, Finanzierungsaufwendungen sowie sonstige Vermögens- und Folgeschäden ist, außer in Fällen von grober Fahrlässigkeit, Vorsatz und Personenschäden, ausgeschlossen.
+
+## Disclaimer of Warranty
+
+Unless required by applicable law or agreed to in writing, Licensor provides the Work (and each Contributor provides its Contributions) on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using or redistributing the Work and assume any risks associated with Your exercise of permissions under this License.
