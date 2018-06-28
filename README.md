@@ -25,7 +25,7 @@ The following sofware components are used in order to set up the MBP:
 - Bootstrap template: [https://startbootstrap.com/template-overviews/sb-admin-2/](https://startbootstrap.com/template-overviews/sb-admin-2/)
 
 ### 1.1 Configuration
-Before starting the installation, please set the MQTT broker IP address in the configuration file [config.properties](MBP/src/main/resources/config.properties). In order to allow the MBP to access registered devices, the devices must be configured to be accessed by SSH using a [RSA Key](resources/rsa-key).
+Before starting the installation, please set the MQTT broker IP address in the configuration file [config.properties](src/main/resources/config.properties). In order to allow the MBP to access registered devices, the devices must be configured to be accessed by SSH using a [RSA Key](resources/rsa-key).
 
 ### 1.2 Installation on Linux 
 Please run the [installation script](install.sh), which automatically install the sofware components listed above. Once the installation is completed, the MBP will be available on the URL *http://MBP-Host:8080/MBP*.  
