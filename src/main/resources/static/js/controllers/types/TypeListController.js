@@ -8,7 +8,6 @@ app.controller('TypeListController',
                 vm.dzServiceOptions = {
                     paramName: 'serviceFile',
                     maxFilesize: '100',
-                    acceptedFiles: 'text/plain',
                     maxFiles: 1
                 };
 
@@ -22,7 +21,6 @@ app.controller('TypeListController',
                 vm.dzRoutinesOptions = {
                     paramName: 'routinesFile',
                     maxFilesize: '100',
-                    acceptedFiles: 'text/plain',
                     maxFiles: 99
                 };
 
@@ -70,7 +68,7 @@ app.controller('TypeListController',
                             {
                                 $scope: $scope,
                                 addItem: function (data) {
-                                	
+
                                     return readRoutines(data.routineFiles)
                                     .then(function (response) {
                                         console.log('readRoutines: ', response);
@@ -79,7 +77,7 @@ app.controller('TypeListController',
                                     }, function (response) {
                                         return $q.reject(response);
                                     });
-                                    
+
 //                                    return readService(data.serviceFile).then(
 //                                            function (response) {
 //                                                console.log('readService: ', response);
@@ -130,7 +128,7 @@ app.controller('TypeListController',
                         },
                         function() {
                           var id = vm.deleteTypeCtrl.result;
-                          
+
                           vm.typeListCtrl.removeItem(id);
                         }
                 );
