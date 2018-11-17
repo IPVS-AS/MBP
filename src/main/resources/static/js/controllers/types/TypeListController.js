@@ -51,7 +51,8 @@ app.controller('TypeListController',
                 function readRoutines(routines) {
                     if (routines || routines.constructor === Array) {
                         // read routines files in form
-                        return FileReader.readMultipleAsText(routines, $scope);
+                        //var read = FileReader.readMultipleAsText(routines, $scope);
+                        return FileReader.readMultipleAsDataURL(routines, $scope);
                     } else {
                         // reject
                     	return $q.reject('Routines files must not be empty.');
