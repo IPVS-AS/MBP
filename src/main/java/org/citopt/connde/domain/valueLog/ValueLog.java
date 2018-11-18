@@ -1,13 +1,14 @@
 package org.citopt.connde.domain.valueLog;
 
-import javax.persistence.GeneratedValue;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 
+import javax.persistence.GeneratedValue;
+import java.text.SimpleDateFormat;
+
 /**
- *
  * @author rafaelkperes
  */
 public class ValueLog {
@@ -15,21 +16,21 @@ public class ValueLog {
     @Id
     @GeneratedValue
     private String id;
-    
+
     // mqtt default fields
     private Integer qos;
     private String topic;
     private String message;
     private String date;
-    
+
     // parsed fields
     private String idref;
     private String component; // sensor or actuator
     private String value;
-    
+
     @Reference
     private Sensor sensorRef;
-    
+
     @Reference
     private Actuator actuatorRef;
 
@@ -112,5 +113,5 @@ public class ValueLog {
     public void setActuatorRef(Actuator actuatorRef) {
         this.actuatorRef = actuatorRef;
     }
-    
+
 }
