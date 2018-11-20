@@ -50,6 +50,9 @@ public class ValueLogger {
         }
     }
 
+    /*
+    Sets up the mqtt client.
+     */
     private void setup() throws MqttException {
         //Connect and subscribe to the topics
         mqttClient.connect();
