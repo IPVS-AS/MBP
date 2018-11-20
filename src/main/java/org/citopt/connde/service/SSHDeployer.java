@@ -157,7 +157,7 @@ public class SSHDeployer {
         OutputStream stdout = new ByteArrayOutputStream();
         OutputStream stderr = new ByteArrayOutputStream();
 
-        // creates routine dir
+        //Create dir for routines
         System.out.println("starting remote mkdir, dir=" + scriptDir);
         shell.exec("sudo mkdir -p " + scriptDir, new ByteArrayInputStream("".getBytes()), stdout, stderr);
         System.out.println("remote mkdir successful");
@@ -192,17 +192,8 @@ public class SSHDeployer {
                 new ByteArrayInputStream("".getBytes()), stdout, stderr);
         System.out.println("start was succesful");
 
-        try {
-            shell.exec("sudo chmod +x " + scriptDir + "/running.sh", new ByteArrayInputStream("".getBytes()), stdout, stderr);
-        } catch (Exception e) {
-
-        }
-
-        try {
-            shell.exec("sudo chmod +x " + scriptDir + "/stop.sh", new ByteArrayInputStream("".getBytes()), stdout, stderr);
-        } catch (Exception e) {
-
-        }
+        shell.exec("sudo chmod +x " + scriptDir + "/running.sh", new ByteArrayInputStream("".getBytes()), stdout, stderr);
+        shell.exec("sudo chmod +x " + scriptDir + "/stop.sh", new ByteArrayInputStream("".getBytes()), stdout, stderr);
 
         LOGGER.log(Level.FINE, "adapter deployed successful for id {0}", id);
     }

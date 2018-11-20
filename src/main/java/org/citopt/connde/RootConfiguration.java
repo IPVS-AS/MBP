@@ -17,6 +17,10 @@ import org.springframework.context.annotation.Import;
 @Import({MongoConfiguration.class})
 public class RootConfiguration {
 
+    /**
+     * Creates a mqtt client bean that can be used for mqtt concerns.
+     * @return Mqtt client bean
+     */
     @Bean(name = "mqtt")
     public MqttClient mqttClient()  {
         System.out.println("load MqttClient");
@@ -24,11 +28,11 @@ public class RootConfiguration {
         MqttClient mqttClient = null;
         MemoryPersistence persistence = new MemoryPersistence();
 
+        //Create new mqtt client
 		try {
 			mqttClient = new MqttClient("tcp://localhost:1883", "root-server", persistence);
         } catch (MqttException e) {
 			System.err.println("MqttException: " + e.getMessage());
-            e.printStackTrace();
 		}
 
         return mqttClient;
