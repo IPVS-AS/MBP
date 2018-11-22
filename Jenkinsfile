@@ -1,17 +1,23 @@
 pipeline {
-  agent {
-    docker {
-      image 'node:6-alpine'
-      args '-p 3000:3000'
+    agent any
+    tools {
+        maven 'Maven 3.3.9'
+        jdk 'jdk8'
     }
+    stages {
+        stage ('Initialize') {
+            steps {
+                sh '''
+                    echo "PATH = ${PATH}"
+                    echo "M2_HOME = ${M2_HOME}"
+                '''
+            }
+        }
 
-  }
-  stages {
-    stage('Build') {
-      steps {
-        sh '''sudo apt install maven
-mvn clean install'''
-      }
+        stage ('Build') {
+            steps {
+                sh 'mvn -Dmaven.test.failure.ignore=true clean install' 
+            }
+        }
     }
-  }
 }
