@@ -19,5 +19,13 @@ pipeline {
                 sh 'mvn -Dmaven.test.failure.ignore=true clean install' 
             }
         }
+        
+        stage ('Deploy'){
+            deploy("target/.war", "localhost", "/dev_jan")
+        }
     }
+}
+
+def deploy(file, host, context) {
+    sh "curl -v -u deployer:deployer -T ${file} 'http://${host}:8888/manager/text/deploy?path=${context}&update=true'"
 }
