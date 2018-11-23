@@ -22,7 +22,7 @@ pipeline {
         
         stage ('Deploy'){
             steps {
-               deploy("target/MBP-0.1.war", "localhost", env.BRANCH_NAME)
+                deploy("target/MBP-0.1.war", "localhost", "deploy/${env.BRANCH_NAME}")
              }
         }
     }
