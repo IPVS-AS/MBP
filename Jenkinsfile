@@ -21,7 +21,9 @@ pipeline {
         }
         
         stage ('Deploy'){
-            deploy("target/.war", "localhost", "/dev_jan")
+            steps {
+                deploy("target/.war", "localhost", "/dev_jan")
+            }
         }
     }
 }
