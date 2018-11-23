@@ -30,6 +30,6 @@ pipeline {
 
 def deploy(file, host, context) {
     withCredentials([usernamePassword(credentialsId: 'c21e88ab-24e8-406a-8667-2c0dce78de71', variable: 'PW')]) {
-        sh "curl -v -u deployer:${PW} -T ${file} 'http://${host}:8888/manager/text/deploy?path=/${context}&update=true'
+        sh "curl -v -u deployer:${PW} -T ${file} 'http://${host}:8888/manager/text/deploy?path=/${context}&update=true'"
     }
 }
