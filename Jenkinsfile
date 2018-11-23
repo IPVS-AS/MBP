@@ -1,6 +1,3 @@
-def scmVars = checkout scm
-def branchName = scmVars.GIT_BRANCH
-
 pipeline {
     agent any
     tools {
@@ -25,12 +22,12 @@ pipeline {
         
         stage ('Deploy'){
             steps {
-                deploy("target/MBP-0.1.war", "localhost", "/${branchName}")
+                deploy("target/MBP-0.1.war", "localhost", env.BRANCH_NAME)
             }
         }
     }
 }
 
 def deploy(file, host, context) {
-    sh "curl -v -u deployer:deployer -T ${file} 'http://${host}:8888/manager/text/deploy?path=${context}&update=true'"
+    sh "curl -v -u deployer:deployer -T ${file} 'http://${host}:8888/manager/text/deploy?path=/${context}&update=true'"
 }
