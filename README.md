@@ -19,8 +19,6 @@ The following sofware components are used in order to set up the MBP:
 - [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community)
 - Java8
 - [Tomcat8](https://tomcat.apache.org/download-80.cgi)
-- Python3
-- Python modules: paho-mqtt, pymongo
 - Maven
 - Bootstrap template: [https://startbootstrap.com/template-overviews/sb-admin-2/](https://startbootstrap.com/template-overviews/sb-admin-2/)
 
