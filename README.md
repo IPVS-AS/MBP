@@ -41,9 +41,7 @@ Please execute the following steps:
     
     $ mvn clean install  
     
-- Deploy the MBP application on Tomcat by moving *MBP.war* to the Tomcat webapps folder  
-
-- Run [value-logger.py](resources/python-scripts/value-logger.py)
+- Deploy the MBP application on Tomcat by moving *MBP.war* to the Tomcat webapps folder
 
 Once the installation is completed, the MBP will be available on the URL *http://MBP-Host:8080/MBP*.  
 

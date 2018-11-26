@@ -8,8 +8,8 @@
 #                                                                                                                       #
 # After the installation you will find a folder named connde in the directory the script was started.                   #
 # This folder contains all source code of the MBP and can be used to build it.                                          #
-# More over the necessary python scripts, running the discovery service and the value logger will be installed using a  #
-# virtual Python environment.                                                                                           #
+# More over the necessary python scripts and the discovery service  will be installed using a virtual Python            #
+# environment.                                                                                                          #
 # The environment and configuration files will be stored in /etc/rmp                                                    #
 # while the scripts are installed at /opt/rmp                                                                           #
 #########################################################################################################################
@@ -61,10 +61,8 @@ cd resources/python-scripts
 sudo cp -r rmpdiscovery rmpdiscovery.py rmpdiscovery.sh rmpadvertise.sh rmpadvertise.py ${INSTALL_PATH}
 sudo chmod 775 ${INSTALL_PATH}/rmpdiscovery.sh
 sudo chmod 775 ${INSTALL_PATH}/rmpadvertise.sh
-sudo cp value-logger.py rmpvaluelogger.sh ${INSTALL_PATH}
-sudo chmod 775 ${INSTALL_PATH}/rmpvaluelogger.sh
-sudo cp rmpdiscovery.service rmpadvertise.service rmpvaluelogger.service /etc/systemd/system
+sudo cp rmpdiscovery.service rmpadvertise.service /etc/systemd/system
 sudo systemctl daemon-reload
-sudo systemctl start rmpdiscovery.service rmpvaluelogger.service
+sudo systemctl start rmpdiscovery.service
 
 echo "\nInstallation finished"
