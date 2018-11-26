@@ -19,8 +19,6 @@ The following sofware components are used in order to set up the MBP:
 - [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community)
 - Java8
 - [Tomcat8](https://tomcat.apache.org/download-80.cgi)
-- Python3
-- Python modules: paho-mqtt, pymongo
 - Maven
 - Bootstrap template: [https://startbootstrap.com/template-overviews/sb-admin-2/](https://startbootstrap.com/template-overviews/sb-admin-2/)
 
@@ -32,16 +30,12 @@ Please run the [installation script](install.sh), which automatically install th
 
 ### 1.3 Installation on Windows
 Please execute the following steps:  
-- Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), and [Tomcat8](https://tomcat.apache.org/download-80.cgi)  
-- Install Python3 and download the python libraries *paho-mqtt*, *pymongo*
-    
-    $ pip install ... 
-    
+- Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), and [Tomcat8](https://tomcat.apache.org/download-80.cgi)   
 - Create the *MBP.war* file by building the provided maven project
     
     $ mvn clean install  
     
-- Deploy the MBP application on Tomcat by moving *MBP.war* to the Tomcat webapps folder
+- Deploy the MBP application on Tomcat by moving *MBP.war* to the Tomcat webapps folder  
 
 Once the installation is completed, the MBP will be available on the URL *http://MBP-Host:8080/MBP*.  
 
