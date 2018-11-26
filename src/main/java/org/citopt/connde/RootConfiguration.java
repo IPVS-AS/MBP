@@ -1,9 +1,9 @@
 package org.citopt.connde;
 
-import com.mongodb.Mongo;
 import java.net.UnknownHostException;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
+
+import com.mongodb.MongoClient;
+import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,27 +17,30 @@ import org.springframework.context.annotation.Import;
 @Import({MongoConfiguration.class})
 public class RootConfiguration {
 
+    /**
+     * Creates a mqtt client bean that can be used for mqtt concerns.
+     * @return Mqtt client bean
+     */
     @Bean(name = "mqtt")
     public MqttClient mqttClient()  {
         System.out.println("load MqttClient");
-        // CHANGE TO DYNAMIC IP
+        // TODO CHANGE TO DYNAMIC IP
         MqttClient mqttClient = null;
         MemoryPersistence persistence = new MemoryPersistence();
 
+        //Create new mqtt client
 		try {
 			mqttClient = new MqttClient("tcp://localhost:1883", "root-server", persistence);
-		} catch (MqttException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			System.out.println("reason " + e.getReasonCode());
+        } catch (MqttException e) {
+			System.err.println("MqttException: " + e.getMessage());
 		}
+
         return mqttClient;
     }
     
     @Bean(name = "mongo")
-    public Mongo mongo() throws UnknownHostException {
+    public MongoClient mongo() throws UnknownHostException {
         System.out.println("load Mongo");
-        return new Mongo();
+        return new MongoClient();
     }
-
 }

@@ -8,7 +8,6 @@ app.controller('TypeListController',
                 vm.dzServiceOptions = {
                     paramName: 'serviceFile',
                     maxFilesize: '100',
-                    acceptedFiles: 'text/plain',
                     maxFiles: 1
                 };
 
@@ -22,7 +21,6 @@ app.controller('TypeListController',
                 vm.dzRoutinesOptions = {
                     paramName: 'routinesFile',
                     maxFilesize: '100',
-                    acceptedFiles: 'text/plain',
                     maxFiles: 99
                 };
 
@@ -51,7 +49,8 @@ app.controller('TypeListController',
                 function readRoutines(routines) {
                     if (routines || routines.constructor === Array) {
                         // read routines files in form
-                        return FileReader.readMultipleAsText(routines, $scope);
+                        //var read = FileReader.readMultipleAsText(routines, $scope);
+                        return FileReader.readMultipleAsDataURL(routines, $scope);
                     } else {
                         // reject
                     	return $q.reject('Routines files must not be empty.');
@@ -69,7 +68,7 @@ app.controller('TypeListController',
                             {
                                 $scope: $scope,
                                 addItem: function (data) {
-                                	
+
                                     return readRoutines(data.routineFiles)
                                     .then(function (response) {
                                         console.log('readRoutines: ', response);
@@ -78,7 +77,7 @@ app.controller('TypeListController',
                                     }, function (response) {
                                         return $q.reject(response);
                                     });
-                                    
+
 //                                    return readService(data.serviceFile).then(
 //                                            function (response) {
 //                                                console.log('readService: ', response);
@@ -129,7 +128,7 @@ app.controller('TypeListController',
                         },
                         function() {
                           var id = vm.deleteTypeCtrl.result;
-                          
+
                           vm.typeListCtrl.removeItem(id);
                         }
                 );

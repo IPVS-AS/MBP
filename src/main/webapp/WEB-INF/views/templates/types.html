@@ -8,7 +8,7 @@
                 </h2>
             </div>
             <div class="body">
-                <table class="table table-hover">
+                <table class="table table-hover" st-table="displayedCollection" st-safe-src="typeListCtrl.items">
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -17,7 +17,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr id="{{item.id}}" ng-repeat="item in typeListCtrl.items">
+                        <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
                             <td>{{item.name}}</td>
                             <td>{{item.description}}</td>
                             <td><form ng-submit="deleteTypeCtrl.deleteItem()">
@@ -32,6 +32,12 @@
                             <td></td>
                         </tr>
                     </tbody>
+                    <tfoot>
+                    <tr>
+                        <td class="text-center" st-pagination="" st-items-by-page="5" colspan="3">
+                        </td>
+                    </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>

@@ -8,7 +8,7 @@
                 </h2>
             </div>
             <div class="body">
-                <table class="table table-hover">
+                <table class="table table-hover" st-table="displayedCollection" st-safe-src="sensorListCtrl.items" >
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -18,7 +18,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr id="{{item.id}}" ng-repeat="item in sensorListCtrl.items">
+                        <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
                             <td><a ng-href="{{detailsLink(item)}}">{{item.name}}</a></td>
                             <td>{{item._embedded.type.name}}</td>
                             <td>{{item._embedded.device.name}}</td>
@@ -33,6 +33,12 @@
                             <td></td>
                         </tr>
                     </tbody>
+                    <tfoot>
+                    <tr>
+                        <td class="text-center" st-pagination="" st-items-by-page="5" colspan="4">
+                        </td>
+                    </tr>
+                    </tfoot>
                 </table>
             </div>
         </div>

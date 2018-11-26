@@ -1,20 +1,7 @@
 package org.citopt.connde.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
-
+import com.jcabi.ssh.SSH;
+import com.jcabi.ssh.Shell;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.type.Code;
@@ -24,8 +11,15 @@ import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.TypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.jcabi.ssh.SSH;
-import com.jcabi.ssh.Shell;
+import javax.json.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.UnknownHostException;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @org.springframework.stereotype.Component
 public class SSHDeployer {
@@ -39,6 +33,8 @@ public class SSHDeployer {
     private static final String AUTODEPLOY_NAME_SUFIX = " AUTO@";
 
     public static final int SSH_PORT = 22;
+
+    private static final String REGEX_BASE64_PREFIX = "^data\\:[a-zA-Z0-9\\/,\\-]*\\;base64\\,";
 
     public static String DEFAULT_USER = "pi";
 
@@ -150,7 +146,7 @@ public class SSHDeployer {
     public void deploy(String id, String url, Integer port, String user, String key, String mqtt, Type type, String component, String pinset)
             throws UnknownHostException, IOException {
         LOGGER.log(Level.FINE, "service deploy called for: " + "{0} {1} {2} {3} {4} {5} {6} {7} {8}",
-                new Object[] { id, url, port, user, key, mqtt, type, component, pinset });
+                new Object[]{id, url, port, user, key, mqtt, type, component, pinset});
         System.out.println("service deploy called for: " + id + url + port + user + key + mqtt + type + component + pinset);
 
         String scriptDir = getScriptDir(id);
@@ -161,7 +157,7 @@ public class SSHDeployer {
         OutputStream stdout = new ByteArrayOutputStream();
         OutputStream stderr = new ByteArrayOutputStream();
 
-        // creates routine dir
+        //Create dir for routines
         System.out.println("starting remote mkdir, dir=" + scriptDir);
         shell.exec("sudo mkdir -p " + scriptDir, new ByteArrayInputStream("".getBytes()), stdout, stderr);
         System.out.println("remote mkdir successful");
@@ -169,9 +165,20 @@ public class SSHDeployer {
         System.out.println("copying adapter scripts to device");
         for (Code routine : type.getRoutines()) {
             String content = routine.getContent();
-            // copies routine
-            shell.exec("sudo bash -c  \"cat > " + scriptDir + "/" + routine.getName() + "\"", new ByteArrayInputStream(content.getBytes()), stdout,
-                    stderr);
+
+            //Check whether content is encoded as base64
+            if (content.matches(REGEX_BASE64_PREFIX + ".+")) {
+                //Remove base64 prefix
+                content = content.replaceAll(REGEX_BASE64_PREFIX, "");
+
+                //Create file
+                shell.exec("sudo bash -c \"base64 -d > " + scriptDir + "/" + routine.getName() + "\"", new ByteArrayInputStream(content.getBytes()), stdout,
+                        stderr);
+            } else {
+                // No base64 string, copy file
+                shell.exec("sudo bash -c \"cat > " + scriptDir + "/" + routine.getName() + "\"", new ByteArrayInputStream(content.getBytes()), stdout,
+                        stderr);
+            }
         }
         System.out.println("copying scripts was succesful");
 
@@ -185,17 +192,8 @@ public class SSHDeployer {
                 new ByteArrayInputStream("".getBytes()), stdout, stderr);
         System.out.println("start was succesful");
 
-        try {
-            shell.exec("sudo chmod +x " + scriptDir + "/running.sh", new ByteArrayInputStream("".getBytes()), stdout, stderr);
-        } catch (Exception e) {
-
-        }
-        
-        try {
-            shell.exec("sudo chmod +x " + scriptDir + "/stop.sh", new ByteArrayInputStream("".getBytes()), stdout, stderr);
-        } catch (Exception e) {
-
-        }
+        shell.exec("sudo chmod +x " + scriptDir + "/running.sh", new ByteArrayInputStream("".getBytes()), stdout, stderr);
+        shell.exec("sudo chmod +x " + scriptDir + "/stop.sh", new ByteArrayInputStream("".getBytes()), stdout, stderr);
 
         LOGGER.log(Level.FINE, "adapter deployed successful for id {0}", id);
     }
@@ -243,11 +241,11 @@ public class SSHDeployer {
             // call stop script
             shell.exec("sudo bash " + scriptDir + "/stop.sh", new ByteArrayInputStream("".getBytes()), stdout, stderr);
             shell.exec("sudo rm -rf " + scriptDir, new ByteArrayInputStream("".getBytes()), stdout, stderr);
-        
+
         } catch (Exception e) {
-            
+
         }
-        
+
     }
 
     private Sensor findOrRegisterSensor(SensorRepository sensorRepository, JsonObject jSensor, Device device) {

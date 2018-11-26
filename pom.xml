@@ -5,7 +5,6 @@
     <version>0.1</version>
     <packaging>war</packaging>
 
-
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -35,7 +34,7 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
-            <version>2.13.3</version>
+            <version>3.9.0</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.paho</groupId>
@@ -160,6 +159,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <!-- Serves *only* to filter the wro.xml so it can get an absolute 
@@ -217,7 +217,7 @@
                         <artifactId>bootstrap</artifactId>
                         <version>3.2.0</version>
                     </dependency>
-                    <!--                    <dependency>
+                    <!--  <dependency>
                         <groupId>org.webjars.bower</groupId>
                         <artifactId>waves</artifactId>
                         <version>0.7.5</version>

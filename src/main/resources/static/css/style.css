@@ -7542,7 +7542,7 @@ fieldset[disabled] .form-control {
   .sidebar .menu {
     position: relative;
     overflow-y: auto;
-    height: 90vh; }
+    height: calc(100% - 185px); }
     .sidebar .menu .list {
       list-style: none;
       padding-left: 0; }
