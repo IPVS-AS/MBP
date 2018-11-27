@@ -56,7 +56,9 @@ For example,
     
     $ mosquitto_pub.exe -t sensor/596cafaa6c0ccd5d29da0e90 -m '{"component": "SENSOR", "id": "596cafaa6c0ccd5d29da0e90", "value": 20}'
     
-
+### 1.5 Improving startup time
+In order to decrease the time that is required by Tomcat to make the MBP web app available again after a reboot of the hosting system, it is helpful to adjust the 'java.security' file of the JRE as suggested [in this post](https://stackoverflow.com/a/26432537). Otherwise it may take up to 30 minutes until the MBP can be accessed again. The installation script 'install.sh' takes automatically care of this.
+	
 ## 2 MBP REST API
 A REST API for the management of devices, adapter types, sensors and actuators is provided. Furthermore, an interface to trigger the binding of sensors and actuator is as well provided. Finally, sensor and actuator values sent to the MBP can be retrieved.
 
