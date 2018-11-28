@@ -130,10 +130,10 @@
                             <span>Devices</span>
                         </a>
                     </li>
-                    <li href="view/types" ng-show="expert" menu-item>
-                        <a href="view/types">
+                    <li href="view/adapters" ng-show="expert" menu-item>
+                        <a href="view/adapters">
                             <i class="material-icons">description</i>
-                            <span>Adapter types</span>
+                            <span>Adapters</span>
                         </a>
                     </li>
                     <li href="view/settings" ng-show="expert" menu-item>
@@ -231,7 +231,7 @@
         <script th:src="@{/js/services/FileReader.js}"></script>
         <script th:src="@{/js/services/DeviceService.js}"></script>
         <script th:src="@{/js/services/ComponentService.js}"></script>
-        <script th:src="@{/js/services/TypeService.js}"></script>
+        <script th:src="@{/js/services/AdapterService.js}"></script>
 
         <script th:src="@{/js/directives/menuItem.js}"></script>
         <script th:src="@{/js/directives/popover.js}"></script>
@@ -248,7 +248,7 @@
         <script th:src="@{/js/controllers/actuators/ActuatorListController.js}"></script>
         <script th:src="@{/js/controllers/sensors/SensorListController.js}"></script>
         <script th:src="@{/js/controllers/devices/DeviceListController.js}"></script>
-        <script th:src="@{/js/controllers/types/TypeListController.js}"></script>
+        <script th:src="@{/js/controllers/adapters/AdapterListController.js}"></script>
         <script th:src="@{/js/controllers/actuators/ActuatorDetailsController.js}"></script>
         <script th:src="@{/js/controllers/sensors/SensorDetailsController.js}"></script>
     </body>

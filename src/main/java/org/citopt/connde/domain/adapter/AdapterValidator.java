@@ -1,10 +1,10 @@
-package org.citopt.connde.domain.type;
+package org.citopt.connde.domain.adapter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
-import org.citopt.connde.repository.TypeRepository;
+import org.citopt.connde.repository.AdapterRepository;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,29 +12,29 @@ import org.springframework.stereotype.Component;
  * @author rafaelkperes
  */
 @Component
-public class TypeValidator implements Validator {
+public class AdapterValidator implements Validator {
     
-    static TypeRepository repository;
+    static AdapterRepository repository;
     
     @Autowired
-    public void setTypeRepository(TypeRepository typeRepository) {
+    public void setTypeRepository(AdapterRepository adapterRepository) {
         System.out.println("autowiring type to TypeValidator");
-        TypeValidator.repository = typeRepository;
+        AdapterValidator.repository = adapterRepository;
     }
 
     @Override
     public boolean supports(Class<?> type) {
-        return Type.class.isAssignableFrom(type);
+        return Adapter.class.isAssignableFrom(type);
     }
 
     @Override
     public void validate(Object o, Errors errors) {
-        Type type = (Type) o;
+        Adapter adapter = (Adapter) o;
 
-        validate(type, errors);
+        validate(adapter, errors);
     }
     
-    public void validate(Type type, Errors errors) {
+    public void validate(Adapter adapter, Errors errors) {
         ValidationUtils.rejectIfEmptyOrWhitespace(
                 errors, "name", "type.name.empty",
                 "The name cannot be empty!");
@@ -43,10 +43,10 @@ public class TypeValidator implements Validator {
                 errors, "description", "type.description.empty",
                 "The description cannot be empty!");
 
-        Type another;
-        if ((another = repository.findByName(type.getName())) != null) {
-            if (type.getId() == null
-                    || !type.getId().equals(another.getId())) {
+        Adapter another;
+        if ((another = repository.findByName(adapter.getName())) != null) {
+            if (adapter.getId() == null
+                    || !adapter.getId().equals(another.getId())) {
                 errors.rejectValue("name", "type.name.duplicate",
                         "The name is already registered");
             }

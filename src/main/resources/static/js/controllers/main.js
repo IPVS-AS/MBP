@@ -10,7 +10,7 @@ app.config(["$provide",
         $provide.value("uriRestSensors", uriRest + "/sensors");
         $provide.value("uriRestActuators", uriRest + "/actuators");
         $provide.value("uriRestDevices", uriRest + "/devices");
-        $provide.value("uriRestTypes", uriRest + "/types");
+        $provide.value("uriRestAdapters", uriRest + "/adapters");
     }]);
 
 function formatMacAddress(address) {
