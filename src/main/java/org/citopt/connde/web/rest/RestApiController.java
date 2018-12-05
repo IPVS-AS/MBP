@@ -1,7 +1,6 @@
 package org.citopt.connde.web.rest;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -14,14 +13,14 @@ import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.NetworkService;
-import org.citopt.connde.service.SSHDeployer;
+import org.citopt.connde.service.SSHDeployer_old;
+import org.citopt.connde.service.deploy.SSHDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,8 +33,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
 public class RestApiController implements ResourceProcessor<RepositoryLinksResource> {
-
-    //private static final Logger LOGGER = Logger.getLogger(RestApiController.class.getName());
 
     @Autowired
     private NetworkService networkService;
@@ -54,12 +51,6 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
 
     @Override
     public RepositoryLinksResource process(RepositoryLinksResource resource) {
-//        resource.add(ControllerLinkBuilder
-//                .linkTo(ControllerLinkBuilder.
-//                        methodOn(RestApiController.class)
-//                        .serverDatetime())
-//                .withRel("time"));
-
         return resource;
     }
 
@@ -86,16 +77,14 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
         }        
         String deviceIp = deviceInRepo.getIpAddress();
         String username = deviceInRepo.getUsername();
-        if (username == null) {
-            username = SSHDeployer.DEFAULT_USER;
-        }
+
         Boolean result;
         try {
-            result = sshDeployer.isRunning(id,
+            result = sshDeployer.isComponentRunning(id,
                     // url, port, user, key
-                    deviceIp, SSHDeployer.SSH_PORT, username, SSHDeployer.KEY);
+                    deviceIp, SSHDeployer_old.SSH_PORT, username, SSHDeployer_old.KEY);
         } catch (IOException e) {
-            // couldn't deploy - device not found or error during remote instructions
+            // couldn't deployComponent - device not found or error during remote instructions
             return new ResponseEntity<Boolean>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -111,7 +100,7 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
     public ResponseEntity<String> deploySensor(
             @PathVariable(value = "id") String id,
             @RequestParam String pinset, @RequestParam(name = "component") String component) {
-        System.out.println("deploy");
+        System.out.println("deployComponent");
 
         if (component == null) {
             return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
@@ -140,7 +129,7 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
         String deviceIp = deviceInRepo.getIpAddress();
         String username = deviceInRepo.getUsername();
         if (username == null) {
-            username = SSHDeployer.DEFAULT_USER;
+            username = SSHDeployer_old.DEFAULT_USER;
         }
         String serverIp;
         serverIp = networkService.getMQTTBrokerIP();
@@ -148,13 +137,13 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
 		System.out.println("MBP IP: " + serverIp);
 
         try {
-            sshDeployer.deploy(id,
+            sshDeployer.deployComponent(id,
                     // url, port, user, key
-                    deviceIp, SSHDeployer.SSH_PORT, username, SSHDeployer.KEY,
+                    deviceIp, SSHDeployer_old.SSH_PORT, username, SSHDeployer_old.KEY,
                     // mqttIp, type, component, pinset
                     serverIp, type, component, pinset);
         } catch (IOException e) {
-            // couldn't deploy - device not found or error during remote instructions
+            // couldn't deployComponent - device not found or error during remote instructions
             System.out.println("ERROR ON DEPLOYMENT");
             return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -186,14 +175,14 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
         String deviceIp = deviceInRepo.getIpAddress();
         String username = deviceInRepo.getUsername();
         if (username == null) {
-            username = SSHDeployer.DEFAULT_USER;
+            username = SSHDeployer_old.DEFAULT_USER;
         }
         try {
             sshDeployer.undeploy(id,
                     // url, port, user, key
-                    deviceIp, SSHDeployer.SSH_PORT, username, SSHDeployer.KEY);
+                    deviceIp, SSHDeployer_old.SSH_PORT, username, SSHDeployer_old.KEY);
         } catch (IOException e) {
-            // couldn't deploy - device not found or error during remote instructions
+            // couldn't deployComponent - device not found or error during remote instructions
             return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -223,15 +212,15 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
         String deviceIp = deviceInRepo.getIpAddress();
         String username = deviceInRepo.getUsername();
         if (username == null) {
-            username = SSHDeployer.DEFAULT_USER;
+            username = SSHDeployer_old.DEFAULT_USER;
         }
         Boolean result;
         try {
-            result = sshDeployer.isRunning(id,
+            result = sshDeployer.isComponentRunning(id,
                     // url, port, user, key
-                    deviceIp, SSHDeployer.SSH_PORT, username, SSHDeployer.KEY);
+                    deviceIp, SSHDeployer_old.SSH_PORT, username, SSHDeployer_old.KEY);
         } catch (IOException e) {
-            // couldn't deploy - device not found or error during remote instructions
+            // couldn't deployComponent - device not found or error during remote instructions
             return new ResponseEntity<Boolean>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -245,7 +234,7 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
 
     @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.POST, params = {"component", "pinset"})
     public ResponseEntity<String> deployActuator(@PathVariable(value = "id") String id, @RequestParam String pinset, @RequestParam(name = "component") String component) {
-        System.out.println("deploy");
+        System.out.println("deployComponent");
 
         if (component == null) {
             return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
@@ -273,7 +262,7 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
         String deviceIp = deviceInRepo.getIpAddress();
         String username = deviceInRepo.getUsername();
         if (username == null) {
-            username = SSHDeployer.DEFAULT_USER;
+            username = SSHDeployer_old.DEFAULT_USER;
         }
         String serverIp;
         serverIp = networkService.getMQTTBrokerIP();
@@ -281,53 +270,18 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
 		System.out.println("MBP IP: " + serverIp);
 
         try {
-            sshDeployer.deploy(id,
+            sshDeployer.deployComponent(id,
                     // url, port, user, key
-                    deviceIp, SSHDeployer.SSH_PORT, username, SSHDeployer.KEY,
+                    deviceIp, SSHDeployer_old.SSH_PORT, username, SSHDeployer_old.KEY,
                     // mqttIp, type, component, pinset
                     serverIp, type, component, pinset);
         } catch (IOException e) {
-            // couldn't deploy - device not found or error during remote instructions
+            // couldn't deployComponent - device not found or error during remote instructions
             System.out.println("ERROR ON DEPLOYMENT");
             return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<String>(HttpStatus.CREATED);
-    }
-    
-    @Deprecated
-    @RequestMapping(value = "/autodeploy", method = RequestMethod.POST)
-    public ResponseEntity<String> autodeploy(@RequestBody Device address) {
-        Device actualAddr = addressRepository.findByMacAddress(address.getMacAddress());
-
-        if (actualAddr == null) {
-            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
-        }
-
-        String serverIp;
-        try {
-            serverIp = networkService.getSelfIp();
-        } catch (UnknownHostException e) {
-            // Couldn't get own IP
-            System.out.println("COULDN`T GET OWN IP");
-            return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        try {
-            sshDeployer.autodeploy(
-                    // url, port, user, key
-                    actualAddr, SSHDeployer.SSH_PORT, SSHDeployer.DEFAULT_USER, SSHDeployer.KEY,
-                    // mqttIp
-                    serverIp
-            );
-        } catch (Exception e) {
-            // Couldn't get own IP
-            System.out.println("AUTODEPLOY ERROR");
-            return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return new ResponseEntity<>(HttpStatus.CREATED);
-        
     }
 
     @RequestMapping("/time")
