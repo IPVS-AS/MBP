@@ -1,19 +1,12 @@
 package org.citopt.connde.web.rest;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
-import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.domain.type.Type;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.NetworkService;
-import org.citopt.connde.service.SSHDeployer_old;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
@@ -23,11 +16,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
- *
  * @author rafaelkperes
  */
 @RestController
@@ -56,35 +51,19 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
 
     @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.GET)
     public ResponseEntity<Boolean> isRunningSensor(@PathVariable(value = "id") String id) {
+        //Retrieve sensor from repository
         Sensor sensor = sensorRepository.findOne(id);
 
+        // Sensor not found?
         if (sensor == null) {
-            // Sensor not found
             return new ResponseEntity<Boolean>(HttpStatus.NOT_FOUND);
         }
 
-        Device device = sensor.getDevice();
-
-        if (device == null) {
-            // Device not setted
-            return new ResponseEntity<Boolean>(HttpStatus.BAD_REQUEST);
-        }
-        
-        Device deviceInRepo = addressRepository.findByMacAddress(device.getMacAddress());
-        if (deviceInRepo == null) {
-            // Device not setted
-            return new ResponseEntity<Boolean>(HttpStatus.BAD_REQUEST);
-        }        
-        String deviceIp = deviceInRepo.getIpAddress();
-        String username = deviceInRepo.getUsername();
-
+        //Determine component status
         Boolean result;
         try {
-            result = sshDeployer.isComponentRunning(id,
-                    // url, port, user, key
-                    deviceIp, SSHDeployer_old.SSH_PORT, username, SSHDeployer_old.KEY);
+            result = sshDeployer.isComponentRunning(sensor);
         } catch (IOException e) {
-            // couldn't deployComponent - device not found or error during remote instructions
             return new ResponseEntity<Boolean>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -92,196 +71,103 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
     }
 
     @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.POST, params = {})
-    public ResponseEntity<String> deploySensor(@PathVariable(value = "id") String id) {
-        return deploySensor(id, "", "SENSOR");
-    }
-
-    @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.POST, params = {"component", "pinset"})
     public ResponseEntity<String> deploySensor(
-            @PathVariable(value = "id") String id,
-            @RequestParam String pinset, @RequestParam(name = "component") String component) {
-        System.out.println("deployComponent");
-
-        if (component == null) {
-            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
-        }
-
+            @PathVariable(value = "id") String id) {
+        //Retrieve sensor from repository
         Sensor sensor = sensorRepository.findOne(id);
 
+        // Sensor not found?
         if (sensor == null) {
-            // Sensor not found
             return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
         }
 
-        Device device = sensor.getDevice();
-        Type type = sensor.getType();
-
-        if (device == null || type == null) {
-            // Device or type not setted
-            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
-        }
-        
-        Device deviceInRepo = addressRepository.findByMacAddress(device.getMacAddress());
-        if (deviceInRepo == null) {
-            // Device not setted
-            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
-        }        
-        String deviceIp = deviceInRepo.getIpAddress();
-        String username = deviceInRepo.getUsername();
-        if (username == null) {
-            username = SSHDeployer_old.DEFAULT_USER;
-        }
-        String serverIp;
-        serverIp = networkService.getMQTTBrokerIP();
-		//serverIp = networkService.getPublicIP();
-		System.out.println("MBP IP: " + serverIp);
-
+        //Deploy component
         try {
-            sshDeployer.deployComponent(id,
-                    // url, port, user, key
-                    deviceIp, SSHDeployer_old.SSH_PORT, username, SSHDeployer_old.KEY,
-                    // mqttIp, type, component, pinset
-                    serverIp, type, component, pinset);
+            sshDeployer.deployComponent(sensor);
         } catch (IOException e) {
-            // couldn't deployComponent - device not found or error during remote instructions
-            System.out.println("ERROR ON DEPLOYMENT");
             return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
         return new ResponseEntity<String>(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<String> undeploySensor(
             @PathVariable(value = "id") String id) {
+        //Retrieve sensor from repository
         Sensor sensor = sensorRepository.findOne(id);
 
+        //Sensor not found?
         if (sensor == null) {
-            // Sensor not found
             return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
         }
 
-        Device device = sensor.getDevice();
-
-        if (device == null) {
-            // Device not setted
-            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
-        }
-        Device deviceInRepo = addressRepository.findByMacAddress(device.getMacAddress());
-        if (deviceInRepo == null) {
-            // Device not setted
-            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
-        }        
-        String deviceIp = deviceInRepo.getIpAddress();
-        String username = deviceInRepo.getUsername();
-        if (username == null) {
-            username = SSHDeployer_old.DEFAULT_USER;
-        }
+        //Undeploy sensor
         try {
-            sshDeployer.undeploy(id,
-                    // url, port, user, key
-                    deviceIp, SSHDeployer_old.SSH_PORT, username, SSHDeployer_old.KEY);
+            sshDeployer.undeployComponent(sensor);
         } catch (IOException e) {
-            // couldn't deployComponent - device not found or error during remote instructions
             return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
         return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
     }
 
     @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.GET)
     public ResponseEntity<Boolean> isRunningActuator(@PathVariable(value = "id") String id) {
+        //Retrieve actuator from repository
         Actuator actuator = actuatorRepository.findOne(id);
 
+        //Actuator not found?
         if (actuator == null) {
-            // Sensor not found
             return new ResponseEntity<Boolean>(HttpStatus.NOT_FOUND);
         }
 
-        Device device = actuator.getDevice();
-
-        if (device == null) {
-            // Device not setted
-            return new ResponseEntity<Boolean>(HttpStatus.BAD_REQUEST);
-        }
-        Device deviceInRepo = addressRepository.findByMacAddress(device.getMacAddress());
-        if (deviceInRepo == null) {
-            // Device not setted
-            return new ResponseEntity<Boolean>(HttpStatus.BAD_REQUEST);
-        }        
-        String deviceIp = deviceInRepo.getIpAddress();
-        String username = deviceInRepo.getUsername();
-        if (username == null) {
-            username = SSHDeployer_old.DEFAULT_USER;
-        }
+        //Determine component status
         Boolean result;
         try {
-            result = sshDeployer.isComponentRunning(id,
-                    // url, port, user, key
-                    deviceIp, SSHDeployer_old.SSH_PORT, username, SSHDeployer_old.KEY);
+            result = sshDeployer.isComponentRunning(actuator);
         } catch (IOException e) {
-            // couldn't deployComponent - device not found or error during remote instructions
             return new ResponseEntity<Boolean>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
         return new ResponseEntity<Boolean>(result, HttpStatus.OK);
     }
-    
+
     @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.POST, params = {})
     public ResponseEntity<String> deployActuator(@PathVariable(value = "id") String id) {
-        return deployActuator(id, "", "ACTUATOR");
-    }
-
-    @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.POST, params = {"component", "pinset"})
-    public ResponseEntity<String> deployActuator(@PathVariable(value = "id") String id, @RequestParam String pinset, @RequestParam(name = "component") String component) {
-        System.out.println("deployComponent");
-
-        if (component == null) {
-            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
-        }
-
+        //Retrieve actuator from repository
         Actuator actuator = actuatorRepository.findOne(id);
 
+        //Actuator not found?
         if (actuator == null) {
-            // Actuator not found
             return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
         }
 
-        Device device = actuator.getDevice();
-        Type type = actuator.getType();
-
-        if (device == null || type == null) {
-            // Device or type not setted
-            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
-        }
-        Device deviceInRepo = addressRepository.findByMacAddress(device.getMacAddress());
-        if (deviceInRepo == null) {
-            // Device not setted
-            return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
-        }        
-        String deviceIp = deviceInRepo.getIpAddress();
-        String username = deviceInRepo.getUsername();
-        if (username == null) {
-            username = SSHDeployer_old.DEFAULT_USER;
-        }
-        String serverIp;
-        serverIp = networkService.getMQTTBrokerIP();
-		//serverIp = networkService.getPublicIP();
-		System.out.println("MBP IP: " + serverIp);
-
+        //Deploy actuator
         try {
-            sshDeployer.deployComponent(id,
-                    // url, port, user, key
-                    deviceIp, SSHDeployer_old.SSH_PORT, username, SSHDeployer_old.KEY,
-                    // mqttIp, type, component, pinset
-                    serverIp, type, component, pinset);
+            sshDeployer.deployComponent(actuator);
         } catch (IOException e) {
-            // couldn't deployComponent - device not found or error during remote instructions
-            System.out.println("ERROR ON DEPLOYMENT");
             return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         return new ResponseEntity<String>(HttpStatus.CREATED);
+    }
+
+    @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<String> undeployActuator(
+            @PathVariable(value = "id") String id) {
+        //Retrieve actuator from repository
+        Actuator actuator = actuatorRepository.findOne(id);
+
+        //Actuator not found?
+        if (actuator == null) {
+            return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
+        }
+
+        //Undeploy actuator
+        try {
+            sshDeployer.undeployComponent(actuator);
+        } catch (IOException e) {
+            return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
     }
 
     @RequestMapping("/time")
