@@ -9,7 +9,7 @@ import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.domain.type.Type;
+import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.SensorRepository;
@@ -125,10 +125,10 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
         }
 
         Device device = sensor.getDevice();
-        Type type = sensor.getType();
+        Adapter adapter = sensor.getAdapter();
 
-        if (device == null || type == null) {
-            // Device or type not setted
+        if (device == null || adapter == null) {
+            // Device or adapter not setted
             return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
         
@@ -151,8 +151,8 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
             sshDeployer.deploy(id,
                     // url, port, user, key
                     deviceIp, SSHDeployer.SSH_PORT, username, SSHDeployer.KEY,
-                    // mqttIp, type, component, pinset
-                    serverIp, type, component, pinset);
+                    // mqttIp, adapter, component, pinset
+                    serverIp, adapter, component, pinset);
         } catch (IOException e) {
             // couldn't deploy - device not found or error during remote instructions
             System.out.println("ERROR ON DEPLOYMENT");
@@ -259,10 +259,10 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
         }
 
         Device device = actuator.getDevice();
-        Type type = actuator.getType();
+        Adapter adapter = actuator.getAdapter();
 
-        if (device == null || type == null) {
-            // Device or type not setted
+        if (device == null || adapter == null) {
+            // Device or adapter not setted
             return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
         }
         Device deviceInRepo = addressRepository.findByMacAddress(device.getMacAddress());
@@ -284,8 +284,8 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
             sshDeployer.deploy(id,
                     // url, port, user, key
                     deviceIp, SSHDeployer.SSH_PORT, username, SSHDeployer.KEY,
-                    // mqttIp, type, component, pinset
-                    serverIp, type, component, pinset);
+                    // mqttIp, adapter, component, pinset
+                    serverIp, adapter, component, pinset);
         } catch (IOException e) {
             // couldn't deploy - device not found or error during remote instructions
             System.out.println("ERROR ON DEPLOYMENT");

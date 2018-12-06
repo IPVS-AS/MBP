@@ -1,14 +1,14 @@
 package org.citopt.connde.repository.projection;
 
-import org.citopt.connde.domain.type.Type;
+import org.citopt.connde.domain.adapter.Adapter;
 import org.springframework.data.rest.core.config.Projection;
 
 /**
  *
  * @author rafaelkperes
  */
-@Projection(name = "list", types = Type.class)
-public interface TypeListProjection {
+@Projection(name = "list", types = Adapter.class)
+public interface AdapterListProjection {
 
     String getId();
 

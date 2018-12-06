@@ -4,11 +4,11 @@ import com.jcabi.ssh.SSH;
 import com.jcabi.ssh.Shell;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.domain.type.Code;
-import org.citopt.connde.domain.type.Type;
+import org.citopt.connde.domain.adapter.Adapter;
+import org.citopt.connde.domain.adapter.Code;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
-import org.citopt.connde.repository.TypeRepository;
+import org.citopt.connde.repository.AdapterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.json.*;
@@ -78,7 +78,7 @@ public class SSHDeployer {
     private ActuatorRepository actuatorRepository;
 
     @Autowired
-    private TypeRepository typeRepository;
+    private AdapterRepository adapterRepository;
 
     public static String getScriptDir(String id) {
         return SCRIPTDIR + "/" + SERVICEPREFIX + id;
@@ -125,7 +125,7 @@ public class SSHDeployer {
 
                             String jPinset = ((JsonObject) jSensor).getString("pinset");
 
-                            deploy(sensor.getId(), sensor.getDevice().getIpAddress(), port, user, key, mqtt, sensor.getType(), "SENSOR", jPinset);
+                            deploy(sensor.getId(), sensor.getDevice().getIpAddress(), port, user, key, mqtt, sensor.getAdapter(), "SENSOR", jPinset);
                         } catch (IOException ex) {
                         }
                     }
@@ -143,11 +143,11 @@ public class SSHDeployer {
 
     }
 
-    public void deploy(String id, String url, Integer port, String user, String key, String mqtt, Type type, String component, String pinset)
+    public void deploy(String id, String url, Integer port, String user, String key, String mqtt, Adapter adapter, String component, String pinset)
             throws UnknownHostException, IOException {
         LOGGER.log(Level.FINE, "service deploy called for: " + "{0} {1} {2} {3} {4} {5} {6} {7} {8}",
-                new Object[]{id, url, port, user, key, mqtt, type, component, pinset});
-        System.out.println("service deploy called for: " + id + url + port + user + key + mqtt + type + component + pinset);
+                new Object[]{id, url, port, user, key, mqtt, adapter, component, pinset});
+        System.out.println("service deploy called for: " + id + url + port + user + key + mqtt + adapter + component + pinset);
 
         String scriptDir = getScriptDir(id);
         String topicName = new String(component.toLowerCase()) + "/" + id;
@@ -163,7 +163,7 @@ public class SSHDeployer {
         System.out.println("remote mkdir successful");
 
         System.out.println("copying adapter scripts to device");
-        for (Code routine : type.getRoutines()) {
+        for (Code routine : adapter.getRoutines()) {
             String content = routine.getContent();
 
             //Check whether content is encoded as base64
@@ -266,9 +266,9 @@ public class SSHDeployer {
 
         // name on file + current device
         String name = getAutodeployName(jName, device.getMacAddress());
-        Type type = typeRepository.findByName(jType);
+        Adapter adapter = adapterRepository.findByName(jType);
 
-        if (type == null) {
+        if (adapter == null) {
             return null;
         }
 
@@ -279,7 +279,7 @@ public class SSHDeployer {
             sensor = new Sensor();
         }
         sensor.setName(name);
-        sensor.setType(type);
+        sensor.setAdapter(adapter);
         sensor.setDevice(device);
 
         return sensor;

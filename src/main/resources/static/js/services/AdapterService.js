@@ -1,6 +1,6 @@
 /* global app */
 
-app.factory('TypeService', function () {
+app.factory('AdapterService', function () {
     return {
         find: function (name) {
             

@@ -8,7 +8,7 @@ How to install the MBP and use its API is explained in detail in the following:
 **[1 Installation and Configuration](#1-installation-and-configuration)**  
 **[2 MBP REST API](#2-mbp-rest-api)**  
 **[2.1 Devices](#21-devices)**  
-**[2.2 Adapter Types](#22-adapter-types)**  
+**[2.2 Adapters](#22-adapters)**
 **[2.3 Sensors](#23-sensors)**  
 **[2.1 Actuators](#24-actuators)**  
 
@@ -40,9 +40,9 @@ Please execute the following steps:
 Once the installation is completed, the MBP will be available on the URL *http://MBP-Host:8080/MBP*.  
 
 ### 1.4 Using the MBP
-The MBP provides two user roles, *expert* and *normal*. As an *expert user*, it is possible to register *Adapter types*, *Devices*, *Sensors* and *Actuators*. As a *normal user* it is possible to register only *Sensors* and *Actuators*.
+The MBP provides two user roles, *expert* and *normal*. As an *expert user*, it is possible to register *Adapters*, *Devices*, *Sensors* and *Actuators*. As a *normal user* it is possible to register only *Sensors* and *Actuators*.
 
-In order to register a sensor or an actuator, the correponding *Adapter type* and *Device* must be registered before the sensor or actuator.
+In order to register a sensor or an actuator, the correponding *Adapter* and *Device* must be registered before the sensor or actuator.
 
 Once a sensor is registered, pushing sensor data to the MBP, or receiving sensor data, can be done through a MQTT Client. Sensor topics follows the structure 'sensor/$sensor_id' while actuators follows the structure 'actuator/$actuator_id'. The *ids* are generated on the registration step and are shown in the MBP UI.
 
@@ -60,7 +60,7 @@ For example,
 In order to decrease the time that is required by Tomcat to make the MBP web app available again after a reboot of the hosting system, it is helpful to adjust the 'java.security' file of the JRE as suggested [in this post](https://stackoverflow.com/a/26432537). Otherwise it may take up to 30 minutes until the MBP can be accessed again. The installation script 'install.sh' takes automatically care of this.
 	
 ## 2 MBP REST API
-A REST API for the management of devices, adapter types, sensors and actuators is provided. Furthermore, an interface to trigger the binding of sensors and actuator is as well provided. Finally, sensor and actuator values sent to the MBP can be retrieved.
+A REST API for the management of devices, adapters, sensors and actuators is provided. Furthermore, an interface to trigger the binding of sensors and actuator is as well provided. Finally, sensor and actuator values sent to the MBP can be retrieved.
 
 Make sure that CORS (Cross-Origin Resource Sharing) is allowed for all origins. To do that, add the following filter to Tomcat's 'web.xml':
 
@@ -95,7 +95,7 @@ accept: application/json
 
 HTTP/1.1 201 Created  
 location: http://localhost:8080/MBP/api/devices/5a033094c27074e37bbb198b  
-content-type:
+Content-Type:
 application/json;charset=UTF-8
 ```javascript
 {
@@ -166,12 +166,12 @@ DELETE /api/devices/596c7a7d4f0c58688e5aa6b1 HTTP/1.1
 
 HTTP/1.1 204 No Content
 
-### 2.2 Adapter Types
+### 2.2 Adapters
 An adapter is the required software (e.g., python script) to bind sensors and actuators to the MBP.
 Examples to such adapters can be found in [Adapter Scripts](resources/adapter-scripts). Each adapter shall be composed of at least the files *install.sh* and *start.sh*. Furthermore, by including the files *running.sh* and *stop.sh* in the adapter, it allows the MBP to check if the adapter is currently running and to undeploy the adapter.   
 
-#### creating a new adapter type:
-POST /api/types/ HTTP/1.1  
+#### creating a new adapter:
+POST /api/adapters/ HTTP/1.1
 Content-Type: application/json  
 accept: application/json  
 ```javascript
@@ -190,8 +190,8 @@ accept: application/json
 ```
 
 HTTP/1.1 201 Created  
-location: http://localhost:8080/MBP/api/types/5a0336ba972ca8734022d67c  
-content-type: application/json;charset=UTF-8  
+location: http://localhost:8080/MBP/api/adapters/5a0336ba972ca8734022d67c
+Content-Type: application/json;charset=UTF-8
 ```javascript
 {
   "id": "5a0336ba972ca8734022d67c",
@@ -200,10 +200,10 @@ content-type: application/json;charset=UTF-8
   ...
 }
 ```
-The **id** of the newly created adapter type can be parsed from the response header *location* or from the response body, which is in json format.  
+The **id** of the newly created adapter can be parsed from the response header *location* or from the response body, which is in json format.
 
-#### retrieving all adapter types:
-GET /api/types/ HTTP/1.1
+#### retrieving all adapters:
+GET /api/adapters/ HTTP/1.1
 
 HTTP/1.1 200 OK
 
@@ -217,9 +217,9 @@ HTTP/1.1 200 OK
 ]
 ```
 
-#### retrieving single adapter type (e.g., for id 596c7c344f0c58688e5aa6b3):
+#### retrieving single adapter (e.g., for id 596c7c344f0c58688e5aa6b3):
 
-GET /api/types/596c7c344f0c58688e5aa6b3 HTTP/1.1
+GET /api/adapters/596c7c344f0c58688e5aa6b3 HTTP/1.1
 
 HTTP/1.1 200 OK
 
@@ -231,9 +231,9 @@ HTTP/1.1 200 OK
 }
 ```
 
-#### updating single adapter type (e.g., for id 596c7c344f0c58688e5aa6b3):
+#### updating single adapter (e.g., for id 596c7c344f0c58688e5aa6b3):
 
-PUT /api/types/596c7c344f0c58688e5aa6b3 HTTP/1.1
+PUT /api/adapters/596c7c344f0c58688e5aa6b3 HTTP/1.1
 
 ```javascript
 {
@@ -252,19 +252,19 @@ PUT /api/types/596c7c344f0c58688e5aa6b3 HTTP/1.1
 
 HTTP/1.1 204 No Content
 
-#### delete single adapter type (e.g., for id 596c7c344f0c58688e5aa6b3):
+#### delete single adapter (e.g., for id 596c7c344f0c58688e5aa6b3):
 
-DELETE /api/types/596c7c344f0c58688e5aa6b3 HTTP/1.1
+DELETE /api/adapters/596c7c344f0c58688e5aa6b3 HTTP/1.1
 
 HTTP/1.1 204 No Content
 
 ### 2.3 Sensors  
 To register a sensor, it is necessary to register first:  
  (i) the device to which the sensor is connected to, and  
- (ii) the adapter type, i.e., the required software (e.g., python script) to bind the sensor to the MBP. 
+ (ii) the adapter, i.e., the required software (e.g., python script) to bind the sensor to the MBP.
   
 #### creating a new sensor:  
-The following example uses the previously registered adapter type (id = 596c7c344f0c58688e5aa6b3) and device (id = 596c7a7d4f0c58688e5aa6b1):
+The following example uses the previously registered adapter (id = 596c7c344f0c58688e5aa6b3) and device (id = 596c7a7d4f0c58688e5aa6b1):
 
 POST /api/sensors/ HTTP/1.1  
 Content-Type: application/json  
@@ -273,14 +273,14 @@ accept: application/json
 ```javascript
 {
   "name": "Temperature Sensor",
-  "type": "<URL>/api/types/596c7c344f0c58688e5aa6b3",
+  "adapter": "<URL>/api/adapters/596c7c344f0c58688e5aa6b3",
   "device": "<URL>/api/devices/596c7a7d4f0c58688e5aa6b1",
 }
 ```
 
 HTTP/1.1 201 Created  
 location: http://localhost:8080/MBP/api/sensors/596c7a974f0c58688e5aa6b2  
-content-type: application/json;charset=UTF-8  
+Content-Type: application/json;charset=UTF-8
 ```javascript
 {
   "id": "596c7a974f0c58688e5aa6b2",
@@ -342,7 +342,7 @@ PUT /api/sensors/596c7a974f0c58688e5aa6b2 HTTP/1.1
 ```javascript
 {
   "name": "Temperature Sensor",
-  "type": "<URL>/api/types/596c7c344f0c58688e5aa6b3",
+  "adapter": "<URL>/api/adapters/596c7c344f0c58688e5aa6b3",
   "device": "<URL>/api/devices/596c7a7d4f0c58688e5aa6b1",
 }
 ```

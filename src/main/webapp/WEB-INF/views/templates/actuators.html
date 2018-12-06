@@ -12,7 +12,7 @@
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Adapter type</th>
+                            <th>Adapter</th>
                             <th>Device</th>
                             <th>ID</th>
                         </tr>
@@ -20,7 +20,7 @@
                     <tbody>
                         <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
                             <td><a ng-href="{{detailsLink(item)}}">{{item.name}}</a></td>
-                            <td>{{item._embedded.type.name}}</td>
+                            <td>{{item._embedded.adapter.name}}</td>
                             <td>{{item._embedded.device.name}}</td>
                             <td><form ng-submit="deleteActuatorCtrl.deleteItem()">
                               <div ng-model="deleteActuatorCtrl.item.id"> {{item.id}} </div>
@@ -71,14 +71,14 @@
                                         </div>
                                         <span class="help-block" ng-show="addActuatorCtrl.item.errors.name">{{addActuatorCtrl.item.errors.name.message}}</span>
                                     </div>
-                                    <!-- item.type group -->
-                                    <div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.type }">
-                                        <div class="form-line" ng-class="{'focused error' : addActuatorCtrl.item.errors.type }">
-                                            <select class="form-control show-tick" id="actuator-form-select-device" ng-model="addActuatorCtrl.item.type" ng-options="t._links.self.href as (t.name) for t in typeListCtrl.items">
-                                                <option value="">Select type<option />
+                                    <!-- item.adapter group -->
+                                    <div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.adapter }">
+                                        <div class="form-line" ng-class="{'focused error' : addActuatorCtrl.item.errors.adapter }">
+                                            <select class="form-control show-tick" id="actuator-form-select-adapter" ng-model="addActuatorCtrl.item.adapter" ng-options="t._links.self.href as (t.name) for t in adapterListCtrl.items">
+                                                <option value="">Select adapter<option />
                                             </select>
                                         </div>
-                                        <span class="help-block" ng-show="addActuatorCtrl.item.errors.type">{{addActuatorCtrl.item.errors.type.message}}</span>
+                                        <span class="help-block" ng-show="addActuatorCtrl.item.errors.adapter">{{addActuatorCtrl.item.errors.adapter.message}}</span>
                                     </div>
                                 </div>
                                 <div class="col-xs-9">
