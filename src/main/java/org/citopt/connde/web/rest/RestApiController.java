@@ -1,9 +1,9 @@
 package org.citopt.connde.web.rest;
 
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.domain.component.Actuator;
-import org.citopt.connde.domain.component.Sensor;
+import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.repository.ActuatorRepository;
+import org.citopt.connde.repository.ComponentRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +21,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
+ * Controller for the REST interface of the MBP that invokes deployment methods for the corresponding REST requests.
+ *
  * @author rafaelkperes
  *         <p>
  *         Refactored by Jan on 03.12.2018.
@@ -38,126 +40,86 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
     @Autowired
     private ActuatorRepository actuatorRepository;
 
-    @Override
-    public RepositoryLinksResource process(RepositoryLinksResource resource) {
-        return resource;
+
+    @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.GET)
+    public ResponseEntity<Boolean> isRunningActuator(@PathVariable(value = "id") String id) {
+        return isRunningComponent(id, actuatorRepository);
     }
 
     @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.GET)
     public ResponseEntity<Boolean> isRunningSensor(@PathVariable(value = "id") String id) {
-        //Retrieve sensor from repository
-        Sensor sensor = sensorRepository.findOne(id);
+        return isRunningComponent(id, sensorRepository);
+    }
 
-        // Sensor not found?
-        if (sensor == null) {
+    @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.POST, params = {})
+    public ResponseEntity<String> deployActuator(@PathVariable(value = "id") String id) {
+        return deployComponent(id, actuatorRepository);
+    }
+
+    @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.POST, params = {})
+    public ResponseEntity<String> deploySensor(@PathVariable(value = "id") String id) {
+        return deployComponent(id, sensorRepository);
+    }
+
+    @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<String> undeployActuator(@PathVariable(value = "id") String id) {
+        return undeployComponent(id, actuatorRepository);
+    }
+
+    @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<String> undeploySensor(@PathVariable(value = "id") String id) {
+        return undeployComponent(id, sensorRepository);
+    }
+
+    private ResponseEntity isRunningComponent(String id, ComponentRepository repository) {
+        //Retrieve component from repository
+        Component component = (Component) repository.findOne(id);
+
+        //Component not found?
+        if (component == null) {
             return new ResponseEntity<Boolean>(HttpStatus.NOT_FOUND);
         }
 
         //Determine component status
         Boolean result;
         try {
-            result = sshDeployer.isComponentRunning(sensor);
+            result = sshDeployer.isComponentRunning(component);
         } catch (IOException e) {
             return new ResponseEntity<Boolean>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
         return new ResponseEntity<Boolean>(result, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.POST, params = {})
-    public ResponseEntity<String> deploySensor(
-            @PathVariable(value = "id") String id) {
-        //Retrieve sensor from repository
-        Sensor sensor = sensorRepository.findOne(id);
+    private ResponseEntity<String> deployComponent(String id, ComponentRepository repository) {
+        //Retrieve component from repository
+        Component component = (Component) repository.findOne(id);
 
-        // Sensor not found?
-        if (sensor == null) {
+        //Component not found?
+        if (component == null) {
             return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
         }
 
         //Deploy component
         try {
-            sshDeployer.deployComponent(sensor);
+            sshDeployer.deployComponent(component);
         } catch (IOException e) {
             return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<String>(HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<String> undeploySensor(
-            @PathVariable(value = "id") String id) {
-        //Retrieve sensor from repository
-        Sensor sensor = sensorRepository.findOne(id);
+    private ResponseEntity<String> undeployComponent(String id, ComponentRepository repository) {
+        //Retrieve component from repository
+        Component component = (Component) repository.findOne(id);
 
-        //Sensor not found?
-        if (sensor == null) {
+        //Component not found?
+        if (component == null) {
             return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
         }
 
-        //Undeploy sensor
+        //Undeploy component
         try {
-            sshDeployer.undeployComponent(sensor);
-        } catch (IOException e) {
-            return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
-    }
-
-    @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.GET)
-    public ResponseEntity<Boolean> isRunningActuator(@PathVariable(value = "id") String id) {
-        //Retrieve actuator from repository
-        Actuator actuator = actuatorRepository.findOne(id);
-
-        //Actuator not found?
-        if (actuator == null) {
-            return new ResponseEntity<Boolean>(HttpStatus.NOT_FOUND);
-        }
-
-        //Determine component status
-        Boolean result;
-        try {
-            result = sshDeployer.isComponentRunning(actuator);
-        } catch (IOException e) {
-            return new ResponseEntity<Boolean>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity<Boolean>(result, HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.POST, params = {})
-    public ResponseEntity<String> deployActuator(@PathVariable(value = "id") String id) {
-        //Retrieve actuator from repository
-        Actuator actuator = actuatorRepository.findOne(id);
-
-        //Actuator not found?
-        if (actuator == null) {
-            return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
-        }
-
-        //Deploy actuator
-        try {
-            sshDeployer.deployComponent(actuator);
-        } catch (IOException e) {
-            return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        return new ResponseEntity<String>(HttpStatus.CREATED);
-    }
-
-    @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<String> undeployActuator(
-            @PathVariable(value = "id") String id) {
-        //Retrieve actuator from repository
-        Actuator actuator = actuatorRepository.findOne(id);
-
-        //Actuator not found?
-        if (actuator == null) {
-            return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
-        }
-
-        //Undeploy actuator
-        try {
-            sshDeployer.undeployComponent(actuator);
+            sshDeployer.undeployComponent(component);
         } catch (IOException e) {
             return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -172,4 +134,8 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
         return new ResponseEntity<>(strDate, HttpStatus.OK);
     }
 
+    @Override
+    public RepositoryLinksResource process(RepositoryLinksResource resource) {
+        return resource;
+    }
 }

@@ -116,6 +116,11 @@ public class SSHDeployer {
         //Retrieve adapter
         Adapter adapter = component.getAdapter();
 
+        //Validity check
+        if(adapter == null){
+            throw new IllegalArgumentException("Adapter must not be null.");
+        }
+
         LOGGER.log(Level.FINE, "Copying adapter files to target device....");
 
         //Iterate over all adapter files and copy them
@@ -237,13 +242,12 @@ public class SSHDeployer {
             throw new IllegalArgumentException("Component must not be null.");
         }
 
-        //Retrieve adapter and device
-        Adapter adapter = component.getAdapter();
+        //Retrieve device
         Device device = component.getDevice();
 
         //Validity check
-        if ((adapter == null) || (device == null)) {
-            throw new IllegalArgumentException("Adapter and device must not be null.");
+        if (device == null) {
+            throw new IllegalArgumentException("Device must not be null.");
         }
 
         //Retrieve ssh connection parameter
