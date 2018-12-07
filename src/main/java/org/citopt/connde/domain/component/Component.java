@@ -2,7 +2,7 @@ package org.citopt.connde.domain.component;
 
 import javax.persistence.GeneratedValue;
 import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.domain.type.Type;
+import org.citopt.connde.domain.adapter.Adapter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -23,7 +23,7 @@ public abstract class Component {
     private String name;
     
     @Reference
-    private Type type;
+    private Adapter adapter;
     
     @Reference
     private Device device;
@@ -43,12 +43,12 @@ public abstract class Component {
     public void setName(String name) {
         this.name = name;
     }
-    public Type getType() {
-        return type;
+    public Adapter getAdapter() {
+        return adapter;
     }
 
-    public void setType(Type type) {
-        this.type = type;
+    public void setAdapter(Adapter adapter) {
+        this.adapter = adapter;
     }
 
     public Device getDevice() {
@@ -67,6 +67,6 @@ public abstract class Component {
 
     @Override
     public String toString() {
-        return "Component{" + "id=" + id + ", name=" + name + ", type=" + type + '}';
+        return "Component{" + "id=" + id + ", name=" + name + ", type=" + adapter + '}';
     }
 }

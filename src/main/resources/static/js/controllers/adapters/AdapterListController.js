@@ -1,8 +1,8 @@
 /* global app */
 
-app.controller('TypeListController',
-        ['$scope', '$controller', '$q', 'typeList', 'addType', 'deleteType', 'FileReader',
-            function ($scope, $controller, $q, typeList, addType, deleteType, FileReader) {
+app.controller('AdapterListController',
+        ['$scope', '$controller', '$q', 'adapterList', 'addAdapter', 'deleteAdapter', 'FileReader',
+            function ($scope, $controller, $q, adapterList, addAdapter, deleteAdapter, FileReader) {
                 var vm = this;
 
                 vm.dzServiceOptions = {
@@ -14,7 +14,7 @@ app.controller('TypeListController',
                 vm.dzServiceCallbacks = {
                     'addedfile': function (file) {
                         console.log(file);
-                        vm.addTypeCtrl.item.serviceFile = file;
+                        vm.addAdapterCtrl.item.serviceFile = file;
                     }
                 };
 
@@ -26,10 +26,10 @@ app.controller('TypeListController',
 
                 vm.dzRoutinesCallbacks = {
                     'addedfile': function (file) {
-                        if (!vm.addTypeCtrl.item.routineFiles) {
-                            vm.addTypeCtrl.item.routineFiles = [];
+                        if (!vm.addAdapterCtrl.item.routineFiles) {
+                            vm.addAdapterCtrl.item.routineFiles = [];
                         }
-                        vm.addTypeCtrl.item.routineFiles.push(file);
+                        vm.addAdapterCtrl.item.routineFiles.push(file);
                     }
                 };
 
@@ -59,12 +59,12 @@ app.controller('TypeListController',
 
                 // expose controller ($controller will auto-add to $scope)
                 angular.extend(vm, {
-                    typeListCtrl: $controller('ItemListController as typeListCtrl',
+                    adapterListCtrl: $controller('ItemListController as adapterListCtrl',
                             {
                                 $scope: $scope,
-                                list: typeList
+                                list: adapterList
                             }),
-                    addTypeCtrl: $controller('AddItemController as addTypeCtrl',
+                    addAdapterCtrl: $controller('AddItemController as addAdapterCtrl',
                             {
                                 $scope: $scope,
                                 addItem: function (data) {
@@ -73,7 +73,7 @@ app.controller('TypeListController',
                                     .then(function (response) {
                                         console.log('readRoutines: ', response);
                                         data.routines = response;
-                                        return addType(data);
+                                        return addAdapter(data);
                                     }, function (response) {
                                         return $q.reject(response);
                                     });
@@ -86,7 +86,7 @@ app.controller('TypeListController',
 //                                                        .then(function (response) {
 //                                                            console.log('readRoutines: ', response);
 //                                                            data.routines = response;
-//                                                            return addType(data);
+//                                                            return addAdapter(data);
 //                                                        }, function (response) {
 //                                                            return $q.reject(response);
 //                                                        });
@@ -95,10 +95,10 @@ app.controller('TypeListController',
 //                                    });
                                 }
                             }),
-                    deleteTypeCtrl: $controller('DeleteItemController as deleteTypeCtrl',
+                    deleteAdapterCtrl: $controller('DeleteItemController as deleteAdapterCtrl',
                             {
                                 $scope: $scope,
-                                deleteItem: deleteType
+                                deleteItem: deleteAdapter
                             }),
                 });
 
@@ -106,16 +106,16 @@ app.controller('TypeListController',
                 $scope.$watch(
                         function () {
                             // value being watched
-                            return vm.addTypeCtrl.result;
+                            return vm.addAdapterCtrl.result;
                         },
                         function () {
                             // callback
-                            console.log('addTypeCtrl.result modified.');
+                            console.log('addAdapterCtrl.result modified.');
 
-                            var data = vm.addTypeCtrl.result;
+                            var data = vm.addAdapterCtrl.result;
                             if (data) {
                                 console.log('pushItem.');
-                                vm.typeListCtrl.pushItem(data);
+                                vm.adapterListCtrl.pushItem(data);
                             }
                         }
                 );
@@ -124,12 +124,12 @@ app.controller('TypeListController',
                 $scope.$watch(
                         function () {
                             // value being watched
-                            return vm.deleteTypeCtrl.result;
+                            return vm.deleteAdapterCtrl.result;
                         },
                         function() {
-                          var id = vm.deleteTypeCtrl.result;
+                          var id = vm.deleteAdapterCtrl.result;
 
-                          vm.typeListCtrl.removeItem(id);
+                          vm.adapterListCtrl.removeItem(id);
                         }
                 );
             }]);

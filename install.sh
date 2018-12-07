@@ -19,7 +19,7 @@ sudo apt-get -qy update;
 #Installing Java8
 echo "\nInstalling Java...\n"
 sudo apt-get install -qy openjdk-8-jdk;
-sudo apt-get install maven;
+sudo apt-get install -qy maven;
 
 echo "\nInstalling Mosquitto Broker, MongoDB, Tomcat8, git and maven...\n"
 # Install Mosquitto Broker
@@ -30,8 +30,16 @@ sudo systemctl start mosquitto;
 sudo apt-get -qy install mongodb-server;
 sudo systemctl start mongodb;
 
-# Install Tomcat 9
+# Install Tomcat 8
 sudo apt-get install -qy tomcat8;
+echo "\nConfiguring security settings of Tomcat8...\n"
+sudo find /usr/lib/jvm -mount -name 'java.security' | while read line; do
+    echo "Modifying '$line'"
+    sudo sed -i 's|securerandom\.source=file\:/dev/random|securerandom.source=file:/dev/./urandom|g' "$line"
+    sudo sed -i 's|securerandom\.source=file\:/dev/urandom|securerandom.source=file:/dev/./urandom|g' "$line"
+done
+
+echo "\nStarting Tomcat8\n";
 sudo systemctl start tomcat8;
 
 echo "\nBuilding .war file...\n"

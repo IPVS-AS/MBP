@@ -1,8 +1,8 @@
 /* global app */
 
 app.controller('HomeController',
-        ['$scope', '$timeout', 'CrudService', 'ComponentService', 'DeviceService', 'countActuators', 'countSensors', 'countDevices', 'countTypes',
-            function ($scope, $timeout, CrudService, ComponentService, DeviceService, countActuators, countSensors, countDevices, countTypes) {
+        ['$scope', '$timeout', 'CrudService', 'ComponentService', 'DeviceService', 'countActuators', 'countSensors', 'countDevices', 'countAdapters',
+            function ($scope, $timeout, CrudService, ComponentService, DeviceService, countActuators, countSensors, countDevices, countAdapters) {
                 var vm = this;
                 vm.loader = {};
 
@@ -137,7 +137,7 @@ app.controller('HomeController',
                     countActuators: countActuators,
                     countSensors: countSensors,
                     countDevices: countDevices,
-                    countTypes: countTypes
+                    countAdapters: countAdapters
                 });
             }]);
 

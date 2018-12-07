@@ -1,4 +1,4 @@
-package org.citopt.connde.domain.type;
+package org.citopt.connde.domain.adapter;
 
 import org.citopt.connde.exception.InsertFailureException;
 import org.citopt.connde.exception.NotFoundException;
@@ -14,7 +14,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * @author rafaelkperes
  */
 @Document
-public class Type {
+public class Adapter {
 
     @Id
     @GeneratedValue
@@ -28,7 +28,7 @@ public class Type {
     private Code service;
     private List<Code> routines;
 
-    public Type() {
+    public Adapter() {
         this.routines = new ArrayList<>();
     }
 

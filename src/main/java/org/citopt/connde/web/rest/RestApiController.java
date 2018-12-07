@@ -4,9 +4,7 @@ import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.repository.ActuatorRepository;
-import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.SensorRepository;
-import org.citopt.connde.service.NetworkService;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
@@ -24,13 +22,12 @@ import java.util.Date;
 
 /**
  * @author rafaelkperes
+ *         <p>
+ *         Refactored by Jan on 03.12.2018.
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
 public class RestApiController implements ResourceProcessor<RepositoryLinksResource> {
-
-    @Autowired
-    private NetworkService networkService;
 
     @Autowired
     private SSHDeployer sshDeployer;
@@ -40,9 +37,6 @@ public class RestApiController implements ResourceProcessor<RepositoryLinksResou
 
     @Autowired
     private ActuatorRepository actuatorRepository;
-
-    @Autowired
-    private DeviceRepository addressRepository;
 
     @Override
     public RepositoryLinksResource process(RepositoryLinksResource resource) {

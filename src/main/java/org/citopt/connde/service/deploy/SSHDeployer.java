@@ -1,9 +1,9 @@
 package org.citopt.connde.service.deploy;
 
+import org.citopt.connde.domain.adapter.Adapter;
+import org.citopt.connde.domain.adapter.Code;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.domain.type.Code;
-import org.citopt.connde.domain.type.Type;
 import org.citopt.connde.service.NetworkService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,8 +18,8 @@ import java.util.logging.Logger;
  * to check the current state of a deployed component and to undeploy the component again.
  *
  * @author rafaelkperes
- *
- * Refactored by Jan on 03.12.2018.
+ *         <p>
+ *         Refactored by Jan on 03.12.2018.
  */
 @org.springframework.stereotype.Component
 public class SSHDeployer {
@@ -76,11 +76,12 @@ public class SSHDeployer {
 
     /**
      * Returns the path to the directory to which the component is deployed.
+     *
      * @param component The component
      * @return The path to the deployment directory
      */
     public static String getDeploymentPath(Component component) {
-        if(component == null){
+        if (component == null) {
             throw new IllegalArgumentException("The component must not be null.");
         }
         return DEPLOY_DIR + "/" + DEPLOY_DIR_PREFIX + component.getId();
@@ -113,7 +114,7 @@ public class SSHDeployer {
         LOGGER.log(Level.FINE, "Created directory successfully");
 
         //Retrieve adapter
-        Type adapter = component.getType();
+        Adapter adapter = component.getAdapter();
 
         LOGGER.log(Level.FINE, "Copying adapter files to target device....");
 
@@ -162,6 +163,7 @@ public class SSHDeployer {
 
     /**
      * Checks whether the component is currently running on the dedicated remote device.
+     *
      * @param component The component to check
      * @return True, if the component is running; false otherwise
      * @throws IOException In case of an I/O issue
@@ -185,13 +187,13 @@ public class SSHDeployer {
         OutputStream stdOutStream = sshSession.getStdOutStream();
 
         //Execute run script to check whether the adapter is running and catch exceptions
-        try{
+        try {
             sshSession.executeShellScript(deploymentPath + "/" + RUN_SCRIPT_NAME);
 
             //Get return value of script
             String returnValue = stdOutStream.toString().toLowerCase();
             return returnValue.contains("true");
-        }catch (Exception e) {
+        } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Adapter has not been deployed yet or is not running");
             LOGGER.log(Level.WARNING, e.getClass().getCanonicalName() + ": " + e.getMessage());
         }
@@ -236,7 +238,7 @@ public class SSHDeployer {
         }
 
         //Retrieve adapter and device
-        Type adapter = component.getType();
+        Adapter adapter = component.getAdapter();
         Device device = component.getDevice();
 
         //Validity check

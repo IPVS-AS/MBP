@@ -66,8 +66,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                                         }
                                 );
                             }],
-                        countTypes: ['CrudService', function (CrudService) {
-                                return CrudService.countItems('types').then(
+                        countAdapters: ['CrudService', function (CrudService) {
+                                return CrudService.countItems('adapters').then(
                                         function (count) {
                                             return count;
                                         },
@@ -108,8 +108,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                                 return angular.bind(this, CrudService.deleteItem, 'devices');
                                 //return CrudService.deleteItem('devices', this);
                             }],
-                        typeList: ['CrudService', function (CrudService) {
-                                return CrudService.fetchAllItems('types');
+                        adapterList: ['CrudService', function (CrudService) {
+                                return CrudService.fetchAllItems('adapters');
                             }]
                     }
                 })
@@ -162,8 +162,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                                 return angular.bind(this, CrudService.deleteItem, 'devices');
                                 //return CrudService.deleteItem('devices', this);
                             }],
-                        typeList: ['CrudService', function (CrudService) {
-                                return CrudService.fetchAllItems('types');
+                        adapterList: ['CrudService', function (CrudService) {
+                                return CrudService.fetchAllItems('adapters');
                             }]
                     }
                 })
@@ -210,34 +210,34 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }
                 })
 
-                // Types List and Register
-                .when(viewPrefix + '/types', {
-                    category: 'types',
-                    templateUrl: 'templates/types',
-                    controller: 'TypeListController as ctrl',
+                // Adapters List and Register
+                .when(viewPrefix + '/adapters', {
+                    category: 'adapters',
+                    templateUrl: 'templates/adapters',
+                    controller: 'AdapterListController as ctrl',
                     resolve: {
                         isExpert: ['$location', 'SessionService', redirectExpert],
-                        typeList: ['CrudService', function (CrudService) {
-                                return CrudService.fetchAllItems('types');
+                        adapterList: ['CrudService', function (CrudService) {
+                                return CrudService.fetchAllItems('adapters');
                             }],
-                        addType: ['CrudService', function (CrudService) {
+                        addAdapter: ['CrudService', function (CrudService) {
                                 // bind category parameter
-                                return angular.bind(this, CrudService.addItem, 'types');
+                                return angular.bind(this, CrudService.addItem, 'adapters');
                             }],
-                        deleteType: ['CrudService', function (CrudService) {
+                        deleteAdapter: ['CrudService', function (CrudService) {
                                 // bind category parameter
-                                return angular.bind(this, CrudService.deleteItem, 'types');
+                                return angular.bind(this, CrudService.deleteItem, 'adapters');
                             }]
                     }
                 })
                 
-                // Types List and Register
+                // Adapters List and Register
                 .when(viewPrefix + '/settings', {
                     category: 'settings',
                     templateUrl: 'templates/settings'
                 })
                 
-                // Types List and Register
+                // Adapters List and Register
                 .when(viewPrefix + '/404', {
                     templateUrl: 'templates/404'
                 })

@@ -1,4 +1,4 @@
-package org.citopt.connde.domain.type;
+package org.citopt.connde.domain.adapter;
 
 /**
  *
