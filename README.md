@@ -89,7 +89,8 @@ accept: application/json
   "macAddress": "123456789067",
   "ipAddress": "192.168.0.34",
   "formattedMacAddress": "12-34-56-78-90-67",
-  "username": "pi"
+  "username": "pi",
+  "rsaKey": "-----BEGIN RSA PRIVATE KEY-----\nMIIEogIBAAKC...\n-----END RSA PRIVATE KEY-----"
 }
 ```
 
