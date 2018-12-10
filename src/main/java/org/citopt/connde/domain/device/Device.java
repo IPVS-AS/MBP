@@ -27,6 +27,8 @@ public class Device {
     private String date;
     
     private String username;
+
+    private String rsaKey;
     
     public static String formatMAC(String raw) {
         if (raw != null) {
@@ -101,4 +103,11 @@ public class Device {
         this.username = username;
     }
 
+    public String getRsaKey() {
+        return rsaKey;
+    }
+
+    public void setRsaKey(String rsaKey) {
+        this.rsaKey = rsaKey;
+    }
 }

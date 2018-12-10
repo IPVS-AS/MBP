@@ -64,7 +64,8 @@ public class SSHDeployer {
             + "O/2PPC9NTXFpuZWpXDwR4CKpu4fLnevgE9nlaHxtkK3FskDSyLsiGWySSm7WDI/l\n"
             + "rH/Ca6SCHg5huTMpf9hP9zFN858g7k5UzsQjRmck6sDCXo6mfVvIqthSXzszCNkq\n"
             + "fRXxAoGARRp2fahKz31kUOVprVSK2UsH340fET43X3QlygyNI33J4V6tYUpTgCY7\n"
-            + "dyBUmBHZKeZwJYYAtfkI4ACDCI0KEa6NdzAtwcwUgsR10fh6jGGBrKT88F4C5Xe1\n" + "8JinHG8VObUcB1S7+vmct88/ELxa+9CnJ/NbiYyDw0cuAxqWUWg=\n"
+            + "dyBUmBHZKeZwJYYAtfkI4ACDCI0KEa6NdzAtwcwUgsR10fh6jGGBrKT88F4C5Xe1\n"
+            + "8JinHG8VObUcB1S7+vmct88/ELxa+9CnJ/NbiYyDw0cuAxqWUWg=\n"
             + "-----END RSA PRIVATE KEY-----";
 
     public static String PUBKEY = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIYAt9bRE//95cV+Ep9VxArysILH"
@@ -250,6 +251,14 @@ public class SSHDeployer {
             throw new IllegalArgumentException("Device must not be null.");
         }
 
+        //Retrieve private rsa key
+        String rsaKey = device.getRsaKey();
+
+        //Check key for validity
+        if((rsaKey == null) || (rsaKey.isEmpty())){
+            throw new IllegalArgumentException("No private RSA key for SSH connection provided.");
+        }
+
         //Retrieve ssh connection parameter
         String url = device.getIpAddress();
         String username = device.getUsername();
@@ -258,7 +267,7 @@ public class SSHDeployer {
                 new Object[]{url, username});
 
         //Create new ssh session and connect
-        SSHSession sshSession = new SSHSession(url, SSH_PORT, username, KEY);
+        SSHSession sshSession = new SSHSession(url, SSH_PORT, username, rsaKey);
         sshSession.connect();
 
         return sshSession;

@@ -21,4 +21,6 @@ public interface DeviceListProjection {
     String getDate();
     
     String getUsername();
+
+    String getRsaKey();
 }

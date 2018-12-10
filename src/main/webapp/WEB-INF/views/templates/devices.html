@@ -87,7 +87,14 @@
                                         <input class="form-control" id="device-form-input-username"  type="text" placeholder="User name" ng-model="addDeviceCtrl.item.username" />
                                     </div>
                                     <span class="help-block" ng-show="addDeviceCtrl.item.errors.username">{{addDeviceCtrl.item.errors.username.message}}</span>
-                                </div>                                
+                                </div>
+                                <!-- item.rsaKey group -->
+                                <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.rsaKey }">
+                                    <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.rsaKey }">
+                                        <textarea class="form-control" id="device-form-input-rsaKey"  type="text" placeholder="Private RSA key for this device" ng-model="addDeviceCtrl.item.rsaKey" rows="4"></textarea>
+                                    </div>
+                                    <span class="help-block" ng-show="addDeviceCtrl.item.errors.rsaKey">{{addDeviceCtrl.item.errors.rsaKey.message}}</span>
+                                </div>
                             </div>
                             <div class="col-xs-12">
                                 <!-- buttons -->
