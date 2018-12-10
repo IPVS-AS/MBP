@@ -11,7 +11,7 @@ import java.net.UnknownHostException;
 /**
  * Objects of this class wrap SSH connection parameters and represent SSH sessions that can be used in order
  * to execute predefined shell commands on the remote device.
- * <p>
+ *
  * Created by Jan on 03.12.2018.
  */
 public class SSHSession {
