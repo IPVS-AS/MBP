@@ -12,14 +12,14 @@
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>Mac address</th>
+                            <th>IP address</th>
                             <th>ID</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
                             <td>{{item.name}}</td>
-                            <td>{{item.formattedMacAddress}}</td>
+                            <td>{{item.ipAddress}}</td>
                             <td><form ng-submit="deleteDeviceCtrl.deleteItem()">
                               <div ng-model="deleteDeviceCtrl.item.id"> {{item.id}} </div>
                               <button type="submit" class="btn btn-primary m-t-15 waves-effect" ng-click="deleteDeviceCtrl.item.id = item.id"> Delete </button></form></td>
