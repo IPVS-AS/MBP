@@ -8,19 +8,36 @@ app.controller('SettingsController',
             var url = ENDPOINT_URI + "/settings";
 
             vm.settings = {
-                brokerLocation: "",
-                brokerUrl: ""
+                brokerLocation: null,
+                brokerIPAddress: ""
             };
 
+            vm.response = {
+                success: false,
+                error: false
+            };
 
             // public
             function saveSettings() {
-                alert("howdy");
-                console.log(vm.broker_location);
-                console.log(vm.broker_url);
+                vm.response.success = false;
+                vm.response.error = false;
+
+                return $http({
+                    data: vm.settings,
+                    method: 'POST',
+                    url: url
+                }).then(
+                    function (response) {
+                        vm.response.success = true;
+                        vm.response.error = false;
+                    },
+                    function (response) {
+                        vm.response.success = false;
+                        vm.response.error = true;
+                        return $q.reject(response);
+                    });
             }
 
-            //public
             function getSettings() {
                 return $http({
                     method: 'GET',
@@ -30,13 +47,10 @@ app.controller('SettingsController',
                         if (response.data !== undefined) {
                             vm.settings = response.data;
                         } else {
-                            console.log('Invalid response');
-                            console.log(response);
                             return $q.reject(response);
                         }
                     },
                     function (response) {
-                        console.log('Error');
                         return $q.reject(response);
                     });
             }
@@ -47,4 +61,3 @@ app.controller('SettingsController',
 
             getSettings();
         }]);
-
