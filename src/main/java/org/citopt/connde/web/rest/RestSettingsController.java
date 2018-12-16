@@ -29,8 +29,14 @@ public class RestSettingsController {
     @Autowired
     private ValueLogger valueLogger;
 
+    /**
+     * Called when the client wants to retrieve the settings.
+     *
+     * @return The settings object
+     */
     @RequestMapping(value = "/settings", method = RequestMethod.GET)
     public ResponseEntity<Settings> getSettings() {
+        //Get settings from settings service and return them
         Settings settings;
         try {
             settings = settingsService.getSettings();
@@ -40,8 +46,14 @@ public class RestSettingsController {
         return new ResponseEntity<>(settings, HttpStatus.OK);
     }
 
+    /**
+     * Called when the client wants to change the settings.
+     * @param settings
+     * @return
+     */
     @RequestMapping(value = "/settings", method = RequestMethod.POST)
     public ResponseEntity saveSettings(@RequestBody Settings settings) {
+        //Save settings and restart value logger, since it needs to use a different ip address now
         try {
             settingsService.saveSettings(settings);
             valueLogger.setupAndStart();

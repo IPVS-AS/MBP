@@ -7,7 +7,7 @@ import java.net.*;
 /**
  * Network service that provides basic network-related features.
  *
- * @author rafaelkperes, Jan
+ * @author Jan
  */
 @Component
 public class NetworkService {

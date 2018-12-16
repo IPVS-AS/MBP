@@ -23,7 +23,7 @@ The following sofware components are used in order to set up the MBP:
 - Bootstrap template: [https://startbootstrap.com/template-overviews/sb-admin-2/](https://startbootstrap.com/template-overviews/sb-admin-2/)
 
 ### 1.1 Configuration
-Before starting the installation, please set the MQTT broker IP address in the configuration file [config.properties](src/main/resources/config.properties). In order to allow the MBP to access registered devices, the devices must be configured to be accessed by SSH. Therefore, a public RSA key needs to be copied to `~./ssh` on the target device. The corresponding private key then needs to be provided when creating the device on the MBP.
+In order to allow the MBP to access registered devices, the devices must be configured to be accessed by SSH. Therefore, a public RSA key needs to be copied to `~./ssh` on the target device. The corresponding private key then needs to be provided when creating the device on the MBP.
 
 ### 1.2 Installation on Linux 
 Please run the [installation script](install.sh), which automatically install the sofware components listed above. Once the installation is completed, the MBP will be available on the URL *http://MBP-Host:8080/MBP*.  
@@ -155,7 +155,8 @@ PUT /api/devices/596c7a7d4f0c58688e5aa6b1 HTTP/1.1
   "macAddress": "127556789067",
   "ipAddress": "192.168.0.75",
   "formattedMacAddress": "12-75-56-78-90-67",
-  "username": "pi"
+  "username": "pi",
+  "rsaKey": "-----BEGIN RSA PRIVATE KEY-----\nMIIEogIBAAKC...\n-----END RSA PRIVATE KEY-----"
 }
 ```
 
@@ -264,7 +265,7 @@ To register a sensor, it is necessary to register first:
  (i) the device to which the sensor is connected to, and  
  (ii) the adapter, i.e., the required software (e.g., python script) to bind the sensor to the MBP.
   
-#### creating a new sensor:  
+#### creating a new sensor:
 The following example uses the previously registered adapter (id = 596c7c344f0c58688e5aa6b3) and device (id = 596c7a7d4f0c58688e5aa6b1):
 
 POST /api/sensors/ HTTP/1.1  
@@ -415,6 +416,36 @@ To retrieve only the last value use:
 ### 2.4 Actuators
 
 see REST calls for sensors, replace **/sensors** with **/actuators**
+
+### 2.5 Settings
+
+there are some application-wide settings that may be changed by the user during runtime. This is possible with the following requests.
+
+#### Retrieving the settings:
+
+GET /api/settings HTTP/1.1
+
+```javascript
+{
+  "brokerLocation": "REMOTE",
+  "brokerIPAddress": "129.69.185.190"
+}
+```
+
+#### Changing the settings:
+
+POST /api/settings HTTP/1.1
+Content-Type: application/json
+accept: application/json
+
+```javascript
+{
+  "brokerLocation": "REMOTE",
+  "brokerIPAddress": "129.69.185.190"
+}
+```
+
+HTTP/1.1 200 OK
 
 ## Haftungsausschluss
 

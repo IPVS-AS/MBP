@@ -3,38 +3,65 @@ package org.citopt.connde.service.settings.model;
 import org.citopt.connde.util.Validation;
 
 /**
- * Created by Jan on 12.12.2018.
+ * Objects of this class hold the user-defined application-wide settings as models and may be used as DTOs when
+ * communicating with clients.
  */
 public class Settings {
-
-    //Setting fields with default values
+    //All setting properties with default values
     private BrokerLocation brokerLocation = BrokerLocation.LOCAL;
     private String brokerIPAddress = "255.255.255.255";
 
-    public Settings(){
+    /**
+     * Creates a new settings object with default values.
+     */
+    public Settings() {
 
     }
 
+    /**
+     * Returns the location of the MQTT broker that is supposed to be used for the application.
+     *
+     * @return The broker location
+     */
     public BrokerLocation getBrokerLocation() {
         return brokerLocation;
     }
 
+    /**
+     * Sets the broker location of the MQTT broker that is supposed to be used for the application.
+     *
+     * @param brokerLocation The broker location to set
+     */
     public void setBrokerLocation(BrokerLocation brokerLocation) {
-        if(brokerLocation == null){
+        //Sanity check
+        if (brokerLocation == null) {
             throw new IllegalArgumentException("Broker location must not be null.");
         }
         this.brokerLocation = brokerLocation;
     }
 
+    /**
+     * Returns the IP address of the MQTT broker that is supposed to be used for the application. Only required if
+     * the broker location is "remote".
+     *
+     * @return The IP address of the broker
+     */
     public String getBrokerIPAddress() {
         return brokerIPAddress;
     }
 
+    /**
+     * Sets the IP address of the MQTT broker that is supposed to be used for the application. Only required if
+     * the broker location is "remote".
+     * @param brokerIPAddress The IP address of the broker to set
+     */
     public void setBrokerIPAddress(String brokerIPAddress) {
-        if((brokerIPAddress == null) || brokerIPAddress.isEmpty()){
+        //Sanity check
+        if ((brokerIPAddress == null) || brokerIPAddress.isEmpty()) {
             throw new IllegalArgumentException("Broker IP address must not be null.");
         }
-        if(!Validation.isValidIPAddress(brokerIPAddress)){
+        //Check if provided ip address is of a valid format
+        if (!Validation.isValidIPAddress(brokerIPAddress)) {
             throw new IllegalArgumentException("Invalid broker IP address provided.");
         }
 

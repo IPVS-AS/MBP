@@ -15,7 +15,9 @@
                         <div class="row clearfix">
                             <div class="col-xs-12">
                                 <div class="form-group">
-                                    <span class="help-block">Please specify whether you want to use a local or a remote mqtt broker.</span>
+                                    <span class="help-block">Please specify whether you want to use a local or a remote
+                                        MQTT broker. If you change the settings, the MBP will adjust itself at runtime.
+                                        However, already deployed sensors need to be redeployed.</span>
                                 </div>
                                 <div class="form-group">
                                     <div class="radio">
@@ -36,7 +38,7 @@
                                         <input class="form-control" type="text" placeholder="Mqtt broker IP address"
                                                ng-model="ctrl.settings.brokerIPAddress"/>
                                     </div>
-                                    <span class="help-block">Please enter the IP address of the MQTT broker to be used.</span>
+                                    <span class="help-block">IP address of the MQTT broker to use</span>
                                 </div>
                                 <div class="form-group align-right">
                                     <button type="submit" class="btn btn-primary m-t-15 waves-effect">
