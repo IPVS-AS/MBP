@@ -231,13 +231,14 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }
                 })
                 
-                // Adapters List and Register
+                // Settings
                 .when(viewPrefix + '/settings', {
                     category: 'settings',
-                    templateUrl: 'templates/settings'
+                    templateUrl: 'templates/settings',
+                    controller: 'SettingsController as ctrl'
                 })
                 
-                // Adapters List and Register
+                // 404
                 .when(viewPrefix + '/404', {
                     templateUrl: 'templates/404'
                 })

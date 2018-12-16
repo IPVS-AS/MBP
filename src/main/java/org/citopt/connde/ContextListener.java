@@ -9,7 +9,7 @@ import java.io.IOException;
  * Provides context listeners for the application that can be used to execute tasks that need to
  * be executed on startup and shutdown.
  *
- * Created by Jan on 18.11.2018.
+ * @author Jan
  */
 @WebListener
 public class ContextListener implements ServletContextListener {

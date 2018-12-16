@@ -7,7 +7,7 @@ import org.citopt.connde.domain.component.SensorValidator;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.device.DeviceValidator;
-import org.citopt.connde.web.rest.RestApiController;
+import org.citopt.connde.web.rest.RestDeploymentController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
@@ -19,7 +19,7 @@ import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 
 /**
- * Created by Jan on 22.11.2018.
+ * @author Jan
  */
 @Configuration
 public class RestConfiguration extends RepositoryRestConfigurerAdapter {
@@ -55,7 +55,7 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
             public Resource<Sensor> process(Resource<Sensor> resource) {
                 String id = resource.getContent().getId();
                 Link link = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.
-                        methodOn(RestApiController.class).deploySensor(id))
+                        methodOn(RestDeploymentController.class).deploySensor(id))
                         .withRel("deploy");
                 resource.add(link);
                 return resource;
@@ -72,7 +72,7 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
             public Resource<Actuator> process(Resource<Actuator> resource) {
                 String id = resource.getContent().getId();
                 Link link = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.
-                        methodOn(RestApiController.class).deployActuator(id))
+                        methodOn(RestDeploymentController.class).deployActuator(id))
                         .withRel("deploy");
                 resource.add(link);
                 return resource;

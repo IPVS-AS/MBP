@@ -5,6 +5,9 @@ import org.citopt.connde.domain.adapter.Code;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.service.NetworkService;
+import org.citopt.connde.service.settings.model.BrokerLocation;
+import org.citopt.connde.service.settings.model.Settings;
+import org.citopt.connde.service.settings.SettingsService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
@@ -17,13 +20,11 @@ import java.util.logging.Logger;
  * This component provides features for deploying components onto a remote device. Furthermore it is possible
  * to check the current state of a deployed component and to undeploy the component again.
  *
- * @author rafaelkperes
- *         <p>
- *         Refactored by Jan on 03.12.2018.
+ * @author rafaelkperes, Jan
  */
 @org.springframework.stereotype.Component
 public class SSHDeployer {
-
+    //Names of the adapter scripts
     private static final String INSTALL_SCRIPT_NAME = "install.sh";
     private static final String START_SCRIPT_NAME = "start.sh";
     private static final String RUN_SCRIPT_NAME = "running.sh";
@@ -31,14 +32,20 @@ public class SSHDeployer {
 
     @Autowired
     private NetworkService networkService;
+    @Autowired
+    private SettingsService settingsService;
 
+    //Class internal logger
     private static final Logger LOGGER = Logger.getLogger(SSHDeployer.class.getName());
 
+    //Deployment location on remote devices
     private static final String DEPLOY_DIR = "~/scripts";
     private static final String DEPLOY_DIR_PREFIX = "connde";
 
-    public static final int SSH_PORT = 22;
+    //Port of the remote devices to use for SSH connections
+    private static final int SSH_PORT = 22;
 
+    //Prefix for base64 encoded files
     private static final String REGEX_BASE64_PREFIX = "^data\\:[a-zA-Z0-9\\/,\\-]*\\;base64\\,";
 
     /**
@@ -108,8 +115,15 @@ public class SSHDeployer {
         }
         LOGGER.log(Level.FINE, "Copying adapter files was succesful");
 
-        //Retrieve ip address of the mqtt broker
-        String brokerIP = networkService.getMQTTBrokerIP();
+        //Resolve own IP address that might be used as broker IP address
+        String brokerIP = networkService.getOwnIPAddress();
+
+        //Determine from settings if a remote broker should be used
+        Settings settings = settingsService.getSettings();
+        if(settings.getBrokerLocation().equals(BrokerLocation.REMOTE)){
+            //Retrieve IP address of external broker from settings
+            brokerIP = settings.getBrokerIPAddress();
+        }
 
         //Get topic name for the component
         String topicName = component.getTopicName();
@@ -158,7 +172,7 @@ public class SSHDeployer {
         //Get output stream of the session
         OutputStream stdOutStream = sshSession.getStdOutStream();
 
-        //Execute run script to check whether the adapter is running and catch exceptions
+        //Execute run script to check whether the adapter is running
         try {
             sshSession.executeShellScript(deploymentPath + "/" + RUN_SCRIPT_NAME);
 
@@ -166,8 +180,7 @@ public class SSHDeployer {
             String returnValue = stdOutStream.toString().toLowerCase();
             return returnValue.contains("true");
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Adapter has not been deployed yet or is not running");
-            LOGGER.log(Level.WARNING, e.getClass().getCanonicalName() + ": " + e.getMessage());
+            LOGGER.log(Level.INFO, "Adapter has not been deployed yet or is not running");
         }
         return false;
     }
