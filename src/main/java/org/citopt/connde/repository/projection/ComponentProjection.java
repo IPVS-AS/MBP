@@ -9,5 +9,7 @@ public interface ComponentProjection {
     String getId();
 
     String getName();
+    
+    String getComponentType();
 
 }

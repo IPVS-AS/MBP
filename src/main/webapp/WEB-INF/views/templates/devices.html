@@ -1,107 +1,127 @@
-<div class="row clearfix" ng-hide>
-    <!-- List of Devices Card -->
-    <div class="col-lg-7">
-        <div class="card">
-            <div class="header">
-                <h2>
-                    List of devices
-                </h2>
-            </div>
-            <div class="body">
-                <table class="table table-hover" st-table="displayedCollection" st-safe-src="deviceListCtrl.items">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Mac address</th>
-                            <th>ID</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
-                            <td>{{item.name}}</td>
-                            <td>{{item.formattedMacAddress}}</td>
-                            <td><form ng-submit="deleteDeviceCtrl.deleteItem()">
-                              <div ng-model="deleteDeviceCtrl.item.id"> {{item.id}} </div>
-                              <button type="submit" class="btn btn-primary m-t-15 waves-effect" ng-click="deleteDeviceCtrl.item.id = item.id"> Delete </button></form></td>
-                        </tr>
-                        <tr ng-show="deviceListCtrl.items.length === 0">
-                            <td>No devices registered yet.</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                    <tfoot>
-                    <tr>
-                        <td class="text-center" st-pagination="" st-items-by-page="5" colspan="3">
-                        </td>
-                    </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-    </div>
-    <!-- #END# List of Devices Card -->
-
-    <!-- Register Device Card -->
-    <div class="col-lg-5">
-        <div class="card">
-            <div class="header">
-                <h2>
-                    Register
-                </h2>
-            </div>
-            <div class="body">
-                <form ng-submit="addDeviceCtrl.addItem()">
-                    <fieldset id="device-form">
-                        <h2 class="card-inside-title">New device</h2>
-                        <div class="row clearfix">
-                            <div class="col-xs-12">
-                                <!-- "global" error for addItem -->
-                                <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.global}">
-                                    <span class="alert alert-danger" ng-show="addDeviceCtrl.item.errors.global"> {{addDeviceCtrl.item.errors.global}} </span>
-                                </div>
-                                <!-- item.name group -->
-                                <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.name }">
-                                    <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.name }">
-                                        <input class="form-control" id="device-form-input-name"  type="text" placeholder="Name" ng-model="addDeviceCtrl.item.name" />
-                                    </div>
-                                    <span class="help-block" ng-show="addDeviceCtrl.item.errors.name">{{addDeviceCtrl.item.errors.name.message}}</span>
-                                </div>
-                                <!-- item.macAddress group -->
-                                <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.macAddress }">
-                                    <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.macAddress }">
-                                        <input class="form-control mac-address" id="device-form-input-macAddress"  type="text" placeholder="Mac address" ng-model="addDeviceCtrl.item.formattedMacAddress" />
-                                    </div>
-                                    <span class="help-block" ng-show="addDeviceCtrl.item.errors.macAddress">{{addDeviceCtrl.item.errors.macAddress.message}}</span>
-                                </div>
-                                <!-- item.ipAddress group -->
-                                <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.ipAddress }">
-                                    <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.ipAddress }">
-                                        <input class="form-control" id="device-form-input-ipAddress"  type="text" placeholder="IP address" ng-model="addDeviceCtrl.item.ipAddress" />
-                                    </div>
-                                    <span class="help-block" ng-show="addDeviceCtrl.item.errors.ipAddress">{{addDeviceCtrl.item.errors.ipAddress.message}}</span>
-                                </div>
-                                <!-- item.username group -->
-                                <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.username }">
-                                    <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.username }">
-                                        <input class="form-control" id="device-form-input-username"  type="text" placeholder="User name" ng-model="addDeviceCtrl.item.username" />
-                                    </div>
-                                    <span class="help-block" ng-show="addDeviceCtrl.item.errors.username">{{addDeviceCtrl.item.errors.username.message}}</span>
-                                </div>                                
-                            </div>
-                            <div class="col-xs-12">
-                                <!-- buttons -->
-                                <div class="form-group align-right">
-                                    <button type="submit" class="btn btn-primary m-t-15 waves-effect">
-                                        Register
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </fieldset>
+<div class="row clearfix" ng-hide="ng-hide">
+  <!-- List of Devices Card -->
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="header">
+        <h2>
+          List of devices
+        </h2>
+      </div>
+      <div class="body">
+        <table class="table table-hover" st-table="displayedCollection" st-safe-src="deviceListCtrl.items">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Device type</th>
+              <th>Mac address</th>
+              <th>ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+              <td>{{item.name}}</td>
+              <td>{{item.componentType}}</td>
+              <td>{{item.formattedMacAddress}}</td>
+              <td>
+                <form ng-submit="deleteDeviceCtrl.deleteItem()">
+                  <div ng-model="deleteDeviceCtrl.item.id">
+                    {{item.id}}
+                  </div>
+                  <button type="submit" class="btn btn-primary m-t-15 waves-effect" ng-click="deleteDeviceCtrl.item.id = item.id">
+                    Delete
+                  </button>
                 </form>
-            </div>
-        </div>
+              </td>
+            </tr>
+            <tr ng-show="deviceListCtrl.items.length === 0">
+              <td>No devices registered yet.</td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td class="text-center" st-pagination="" st-items-by-page="5" colspan="3"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
     </div>
-    <!-- #END# Register Device Card -->
+  </div>
+  <!-- #END# List of Devices Card -->
+
+  <!-- Register Device Card -->
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="header">
+        <h2>
+          Register
+        </h2>
+      </div>
+      <div class="body">
+        <form ng-submit="addDeviceCtrl.addItem()">
+          <fieldset id="device-form">
+            <h2 class="card-inside-title">New device</h2>
+            <div class="row clearfix">
+              <div class="col-xs-12">
+                <!-- "global" error for addItem -->
+                <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.global}">
+                  <span class="alert alert-danger" ng-show="addDeviceCtrl.item.errors.global">
+                    {{addDeviceCtrl.item.errors.global}}
+                  </span>
+                </div>
+                <!-- item.name group -->
+                <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.name }">
+                  <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.name }">
+                    <input class="form-control" id="device-form-input-name" type="text" placeholder="Name" ng-model="addDeviceCtrl.item.name"/>
+                  </div>
+                  <span class="help-block" ng-show="addDeviceCtrl.item.errors.name">{{addDeviceCtrl.item.errors.name.message}}</span>
+                </div>
+                <!-- item.componentType group -->
+                <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.componentType }">
+                  <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.componentType }">
+                    <select class="form-control show-tick" id="device-form-select-component-type" ng-model="addDeviceCtrl.item.componentType">
+                      <option value="">Select device type</option>
+                      <option ng-repeat="type in ctrl.deviceTypes" value="{{type.name}}">{{type.name}}</option>
+                    </select>
+                  </div>
+                  <span class="help-block" ng-show="addDeviceCtrl.item.errors.componentType">{{addDeviceCtrl.item.errors.componentType.message}}</span>
+                </div>
+                <!-- item.macAddress group -->
+                <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.macAddress }">
+                  <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.macAddress }">
+                    <input class="form-control mac-address" id="device-form-input-macAddress" type="text" placeholder="Mac address" ng-model="addDeviceCtrl.item.formattedMacAddress"/>
+                  </div>
+                  <span class="help-block" ng-show="addDeviceCtrl.item.errors.macAddress">{{addDeviceCtrl.item.errors.macAddress.message}}</span>
+                </div>
+                <!-- item.ipAddress group -->
+                <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.ipAddress }">
+                  <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.ipAddress }">
+                    <input class="form-control" id="device-form-input-ipAddress" type="text" placeholder="IP address" ng-model="addDeviceCtrl.item.ipAddress"/>
+                  </div>
+                  <span class="help-block" ng-show="addDeviceCtrl.item.errors.ipAddress">{{addDeviceCtrl.item.errors.ipAddress.message}}</span>
+                </div>
+                <!-- item.username group -->
+                <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.username }">
+                  <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.username }">
+                    <input class="form-control" id="device-form-input-username" type="text" placeholder="User name" ng-model="addDeviceCtrl.item.username"/>
+                  </div>
+                  <span class="help-block" ng-show="addDeviceCtrl.item.errors.username">{{addDeviceCtrl.item.errors.username.message}}</span>
+                </div>
+              </div>
+              <div class="col-xs-12">
+                <!-- buttons -->
+                <div class="form-group align-right">
+                  <button type="submit" class="btn btn-primary m-t-15 waves-effect">
+                    Register
+                  </button>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- #END# Register Device Card -->
 </div>
