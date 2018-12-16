@@ -22,6 +22,9 @@ public abstract class Component {
     @Indexed(unique = true)
     private String name;
     
+    @Indexed
+    private String componentType;
+    
     @Reference
     private Adapter adapter;
     
@@ -43,6 +46,15 @@ public abstract class Component {
     public void setName(String name) {
         this.name = name;
     }
+    
+    public String getComponentType() {
+		return componentType;
+	}
+
+	public void setComponentType(String componentType) {
+		this.componentType = componentType;
+	}
+    
     public Adapter getAdapter() {
         return adapter;
     }
