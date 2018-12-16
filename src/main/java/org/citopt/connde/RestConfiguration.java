@@ -4,7 +4,10 @@ import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.ActuatorValidator;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.component.SensorValidator;
+import org.citopt.connde.domain.componentType.ComponentType;
 import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.domain.user.Authority;
+import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.web.rest.RestApiController;
@@ -31,7 +34,7 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
         super.configureRepositoryRestConfiguration(config);
         System.out.println("load RepositoryRestMvcConfiguration");
         config.setBasePath(BASE_PATH);
-        config.exposeIdsFor(Device.class, Adapter.class, Actuator.class, Sensor.class);
+        config.exposeIdsFor(Device.class, Adapter.class, Actuator.class, Sensor.class, User.class, Authority.class, ComponentType.class);
     }
 
     @Override

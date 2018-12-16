@@ -17,6 +17,9 @@ public class Device {
     @Indexed(unique = true)
     private String name;
     
+    @Indexed
+    private String componentType;
+    
     @Indexed(unique = true)
     private String macAddress;
 
@@ -70,6 +73,14 @@ public class Device {
     public void setName(String name) {
         this.name = name;
     }
+    
+    public String getComponentType() {
+		return componentType;
+	}
+
+	public void setComponentType(String componentType) {
+		this.componentType = componentType;
+	}
 
     public String getMacAddress() {
         return macAddress;

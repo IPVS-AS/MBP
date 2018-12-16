@@ -13,6 +13,8 @@ public interface DeviceListProjection {
     String getId();
 
     String getName();
+    
+    String getComponentType();
 
     String getMacAddress();
     

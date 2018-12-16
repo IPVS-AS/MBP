@@ -1,4 +1,4 @@
-package org.citopt.connde.web;
+package org.citopt.connde.web.rest;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
