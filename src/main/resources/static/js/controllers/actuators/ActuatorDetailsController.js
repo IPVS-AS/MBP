@@ -121,9 +121,7 @@ app.controller('ActuatorDetailsController',
 
                 angular.extend(vm, {
                     deployer: {
-                        deploy: {
-                            component: ComponentService.COMPONENT.ACTUATOR
-                        },
+                        deploy: {}, //May be used to pass parameters
                         update: update,
                         doDeploy: deploy,
                         doUndeploy: undeploy
