@@ -1,4 +1,4 @@
-package org.citopt.connde.web;
+package org.citopt.connde.web.rest;
 
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
@@ -18,6 +18,16 @@ public class IndexController {
    
     @RequestMapping("/")
     public String viewIndex() {
+        return "index";
+    }
+    
+    @RequestMapping("/login")
+    public String login() {
+        return "index";
+    }
+    
+    @RequestMapping("/register")
+    public String register() {
         return "index";
     }
     

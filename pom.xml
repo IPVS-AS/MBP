@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <version>0.1</version>
@@ -9,9 +10,9 @@
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.version>4.3.2.RELEASE</spring.version>
-        <thymeleaf.version>3.0.1.RELEASE</thymeleaf.version>        
+        <thymeleaf.version>3.0.1.RELEASE</thymeleaf.version>
     </properties>
-    
+
     <dependencies>
         <!-- https://mvnrepository.com/artifact/commons-validator/commons-validator -->
         <dependency>
@@ -53,7 +54,7 @@
             <version>1.5.2</version>
             <type>jar</type>
         </dependency>
-        
+
         <!-- start Spring -->
         <!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
         <dependency>
@@ -66,6 +67,11 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
             <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <version>1.4.0.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -88,7 +94,7 @@
             <version>1.9.2.RELEASE</version>
         </dependency>
         <!-- end Spring -->
-        
+
         <!-- start thymeleaf -->
         <dependency>
             <groupId>org.thymeleaf</groupId>
@@ -168,8 +174,8 @@
                 <version>3.1.0</version>
                 <executions>
                     <execution>
-                        <!-- Serves *only* to filter the wro.xml so it can get an absolute 
-                        path for the project -->
+                        <!-- Serves *only* to filter the wro.xml so it can get an absolute
+                            path for the project -->
                         <id>copy-resources</id>
                         <phase>validate</phase>
                         <goals>
@@ -200,8 +206,10 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <wroManagerFactory>ro.isdc.wro.maven.plugin.manager.factory.ConfigurableWroManagerFactory</wroManagerFactory>
-                    <cssDestinationFolder>${project.build.directory}/generated-resources/static/css</cssDestinationFolder>
+                    <wroManagerFactory>ro.isdc.wro.maven.plugin.manager.factory.ConfigurableWroManagerFactory
+                    </wroManagerFactory>
+                    <cssDestinationFolder>${project.build.directory}/generated-resources/static/css
+                    </cssDestinationFolder>
                     <jsDestinationFolder>${project.build.directory}/generated-resources/static/js</jsDestinationFolder>
                     <wroFile>${project.build.directory}/wro/wro.xml</wroFile>
                     <extraConfigFile>${basedir}/src/main/wro/wro.properties</extraConfigFile>
@@ -223,7 +231,7 @@
                         <artifactId>bootstrap</artifactId>
                         <version>3.2.0</version>
                     </dependency>
-                    <!--  <dependency>
+                    <!-- <dependency>
                         <groupId>org.webjars.bower</groupId>
                         <artifactId>waves</artifactId>
                         <version>0.7.5</version>
@@ -277,7 +285,7 @@
                         <groupId>org.webjars</groupId>
                         <artifactId>jquery.sparkline</artifactId>
                         <version>2.1.2</version>
-                    </dependency>-->
+                    </dependency> -->
                 </dependencies>
             </plugin>
         </plugins>
