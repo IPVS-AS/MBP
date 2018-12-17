@@ -2,14 +2,16 @@ package org.citopt.connde.domain.adapter;
 
 import org.citopt.connde.exception.InsertFailureException;
 import org.citopt.connde.exception.NotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import javax.persistence.GeneratedValue;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.persistence.GeneratedValue;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
+ * Document class for Adapters.
  *
  * @author rafaelkperes
  */
@@ -63,6 +65,10 @@ public class Adapter {
             }
         }
         throw new NotFoundException("No such filename.");
+    }
+
+    public boolean hasRoutines() {
+        return !this.routines.isEmpty();
     }
 
     public String getId() {

@@ -47,13 +47,12 @@ app.controller('AdapterListController',
                 }
 
                 function readRoutines(routines) {
-                    if (routines || routines.constructor === Array) {
-                        // read routines files in form
-                        //var read = FileReader.readMultipleAsText(routines, $scope);
+                    if ((routines !== undefined) && (routines.constructor === Array)) {
+                        //Read routines files
                         return FileReader.readMultipleAsDataURL(routines, $scope);
                     } else {
-                        // reject
-                    	return $q.reject('Routines files must not be empty.');
+                        //Return empty promise (no routine files)
+                        return $q.all([]);
                     }
                 }
 
