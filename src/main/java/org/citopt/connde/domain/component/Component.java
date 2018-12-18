@@ -71,9 +71,14 @@ public abstract class Component {
         this.device = address;
     }
 
+    public String getTopicName(){
+        return getComponentTypeName() + "/" + id;
+    }
+
+    public abstract String getComponentTypeName();
+
     @Override
     public String toString() {
         return "Component{" + "id=" + id + ", name=" + name + ", type=" + adapter + '}';
     }
-
 }
