@@ -10,6 +10,7 @@ import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user.Authority;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.adapter.Adapter;
+import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.web.rest.RestApiController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,6 +49,9 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
 
         v.addValidator("beforeSave", new ActuatorValidator());
         v.addValidator("beforeCreate", new ActuatorValidator());
+
+        v.addValidator("beforeSave", new DeviceValidator());
+        v.addValidator("beforeCreate", new DeviceValidator());
     }
 
     @Bean
