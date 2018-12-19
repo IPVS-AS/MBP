@@ -5,7 +5,7 @@ import org.apache.commons.validator.routines.InetAddressValidator;
 /**
  * This class provides methods for validating input data.
  *
- * Created by Jan on 10.12.2018.
+ * @author Jan
  */
 public class Validation {
     //Regular expression for valid formatted MAC addresses (including separators)
@@ -22,7 +22,6 @@ public class Validation {
      * @return True, if the MAC address is valid; false otherwise
      */
     public static boolean isValidMACAddress(String macAddress) {
-        //Check for null
         if (macAddress == null) {
             return false;
         }
@@ -37,7 +36,6 @@ public class Validation {
      * @return True, if the MAC address is valid; false otherwise
      */
     public static boolean isValidUnformattedMACAddress(String macAddress) {
-        //Check for null
         if (macAddress == null) {
             return false;
         }
@@ -52,7 +50,6 @@ public class Validation {
      * @return True, if the IP address is valid; false otherwise
      */
     public static boolean isValidIPAddress(String ipAddress) {
-        //Check for null
         if (ipAddress == null) {
             return false;
         }
@@ -71,7 +68,6 @@ public class Validation {
      * @return True, if the private RSA key is of a valid format; false otherwise
      */
     public static boolean isValidPrivateRSAKey(String rsaKey) {
-        //Check for null
         if (rsaKey == null) {
             return false;
         }

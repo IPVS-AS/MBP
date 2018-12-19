@@ -2,6 +2,7 @@ package org.citopt.connde.service.deploy;
 
 import com.jcabi.ssh.SSH;
 import com.jcabi.ssh.Shell;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.net.UnknownHostException;
  * Objects of this class wrap SSH connection parameters and represent SSH sessions that can be used in order
  * to execute predefined shell commands on the remote device.
  *
- * Created by Jan on 03.12.2018.
+ * @author Jan
  */
 public class SSHSession {
     //Default SSH port to use
@@ -24,7 +25,7 @@ public class SSHSession {
     private static final String SHELL_CREATE_FILE = "sudo bash -c \"cat > %s/%s\"";
     private static final String SHELL_CREATE_FILE_BASE64 = "sudo bash -c \"base64 -d > %s/%s\"";
     private static final String SHELL_CHANGE_FILE_PERMISSIONS = "sudo chmod %s %s";
-    private static final String SHELL_EXECUTE_SHELL_SCRIPT = "sudo bash %s %s";
+    private static final String SHELL_EXECUTE_SHELL_SCRIPT = "sudo bash %s%s";
 
     //Session parameters
     private String url;
@@ -66,7 +67,7 @@ public class SSHSession {
     /**
      * Executes a shell script that is located on the remote device with command line parameters.
      *
-     * @param filePath The path to the script to execute
+     * @param filePath   The path to the script to execute
      * @param parameters Command line parameters to pass
      * @throws IOException In case of an I/O issue
      */
@@ -76,10 +77,8 @@ public class SSHSession {
         //Build string that contains all parameters separated by whitespaces
         StringBuilder parametersString = new StringBuilder();
 
-        for(String parameter : parameters){
-            if(parametersString.length() > 0){
-                parametersString.append(" ");
-            }
+        for (String parameter : parameters) {
+            parametersString.append(" ");
             parametersString.append(parameter);
         }
 
@@ -290,6 +289,7 @@ public class SSHSession {
 
     /**
      * Returns the standard output stream of the session.
+     *
      * @return The output stream
      */
     public OutputStream getStdOutStream() {
@@ -298,6 +298,7 @@ public class SSHSession {
 
     /**
      * Returns the standard error stream of the session.
+     *
      * @return The error stream
      */
     public OutputStream getStdErrStream() {

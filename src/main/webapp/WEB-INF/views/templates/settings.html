@@ -9,20 +9,37 @@
                 </h2>
             </div>
             <div class="body">
-                <form>
+                <form ng-submit="ctrl.saveSettings()">
                     <fieldset id="settings-form">
-                        <h2 class="card-inside-title">MBP configuration</h2>
+                        <h2 class="card-inside-title">MQTT Broker</h2>
                         <div class="row clearfix">
                             <div class="col-xs-12">
                                 <div class="form-group">
-                                    <div class="form-line">
-                                        <input class="form-control" id="settings-form-input-broker"  type="text" placeholder="Mosquitto Broker URL"/>
-                                    </div>
-                                    <span class="help-block">Enter URL of the Mosquitto broker to be used</span>
+                                    <span class="help-block">Please specify whether you want to use a local or a remote
+                                        MQTT broker. If you change the settings, the MBP will adjust itself at runtime.
+                                        However, already deployed sensors need to be redeployed.</span>
                                 </div>
-                            </div>
-                            <div class="col-xs-12">
-                                <!-- buttons -->
+                                <div class="form-group">
+                                    <div class="radio">
+                                        <input type="radio" id="broker_location_local"
+                                               ng-model="ctrl.settings.brokerLocation"
+                                               value="LOCAL"/>
+                                        <label for="broker_location_local">Use local broker</label>
+                                    </div>
+                                    <div class="radio">
+                                        <input type="radio" id="broker_location_remote"
+                                               ng-model="ctrl.settings.brokerLocation"
+                                               value="REMOTE"/>
+                                        <label for="broker_location_remote">Use remote broker</label>
+                                    </div>
+                                </div>
+                                <div class="form-group" ng-show="ctrl.settings.brokerLocation=='REMOTE'">
+                                    <div class="form-line">
+                                        <input class="form-control" type="text" placeholder="Mqtt broker IP address"
+                                               ng-model="ctrl.settings.brokerIPAddress"/>
+                                    </div>
+                                    <span class="help-block">IP address of the MQTT broker to use</span>
+                                </div>
                                 <div class="form-group align-right">
                                     <button type="submit" class="btn btn-primary m-t-15 waves-effect">
                                         Save
@@ -32,6 +49,12 @@
                         </div>
                     </fieldset>
                 </form>
+                <div class="alert alert-success" ng-show="ctrl.response.success">
+                    The settings were saved successfully.
+                </div>
+                <div class="alert alert-danger" ng-show="ctrl.response.error">
+                    The settings could not be saved.
+                </div>
             </div>
         </div>
     </div>

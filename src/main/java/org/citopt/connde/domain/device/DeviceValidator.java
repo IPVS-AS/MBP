@@ -1,8 +1,6 @@
 package org.citopt.connde.domain.device;
 
-import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.util.Validation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
@@ -11,7 +9,7 @@ import org.springframework.validation.Validator;
 /**
  * Validator for device objects. It includes checks for valid formats of MAC addresses, IP addresses and private
  * RSA keys.
- *
+ * <p>
  * Created by Jan on 10.12.2018.
  */
 @org.springframework.stereotype.Component
@@ -32,7 +30,7 @@ public class DeviceValidator implements Validator {
     /**
      * Validates the fields of a device object and adds error messages to the errors object accordingly.
      *
-     * @param o The object to validate
+     * @param o      The object to validate
      * @param errors The errors object to add the error messages to
      */
     @Override

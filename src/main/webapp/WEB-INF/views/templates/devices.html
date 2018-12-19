@@ -13,7 +13,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Device type</th>
-                        <th>Mac address</th>
+                        <th>IP address</th>
                         <th>ID</th>
                     </tr>
                     </thead>
@@ -21,7 +21,7 @@
                     <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
                         <td>{{item.name}}</td>
                         <td>{{item.componentType}}</td>
-                        <td>{{item.formattedMacAddress}}</td>
+                        <td>{{item.ipAddress}}</td>
                         <td>
                             <form ng-submit="deleteDeviceCtrl.deleteItem()">
                                 <div ng-model="deleteDeviceCtrl.item.id">
