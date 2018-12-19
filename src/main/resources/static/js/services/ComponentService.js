@@ -66,15 +66,6 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI', fun
             },
 
             deploy: function (data, url) {
-                if (data.constructor === Array) {
-                    // if receveid an Array, put it in an object
-                    data = {
-                        class: '',
-                        pinset: data
-                    };
-                }
-
-                console.log(data);
                 return $http({
                     method: 'POST',
                     url: url,
