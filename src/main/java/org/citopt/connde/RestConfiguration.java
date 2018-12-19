@@ -1,6 +1,7 @@
 package org.citopt.connde;
 
 import org.citopt.connde.domain.adapter.Adapter;
+import org.citopt.connde.domain.adapter.AdapterValidator;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.ActuatorValidator;
 import org.citopt.connde.domain.component.Sensor;
@@ -53,6 +54,11 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
      */
     @Override
     public void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener v) {
+
+        //Adapters
+        v.addValidator("beforeSave", new AdapterValidator());
+        v.addValidator("beforeCreate", new AdapterValidator());
+
         //Sensors
         v.addValidator("beforeSave", new SensorValidator());
         v.addValidator("beforeCreate", new SensorValidator());
