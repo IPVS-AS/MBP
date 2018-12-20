@@ -39,7 +39,7 @@ public class SSHDeployer {
     private static final Logger LOGGER = Logger.getLogger(SSHDeployer.class.getName());
 
     //Deployment location on remote devices
-    private static final String DEPLOY_DIR = "~/scripts";
+    private static final String DEPLOY_DIR = "$HOME/scripts";
     private static final String DEPLOY_DIR_PREFIX = "connde";
 
     //Port of the remote devices to use for SSH connections
