@@ -10,27 +10,31 @@
             <div class="body">
                 <table class="table table-hover" st-table="displayedCollection" st-safe-src="adapterListCtrl.items">
                     <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>ID</th>
-                        </tr>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>ID</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
-                            <td>{{item.name}}</td>
-                            <td>{{item.description}}</td>
-                            <td><form ng-submit="deleteAdapterCtrl.deleteItem()">
-                              <div ng-model="deleteAdapterCtrl.item.id"> {{item.id}} </div>
-                              <button type="submit" class="btn btn-primary m-t-15 waves-effect" ng-click="deleteAdapterCtrl.item.id = item.id"> Delete </button></form>
-                            </td>
-                        </tr>
-                        <tr ng-show="adapterListCtrl.items.length === 0">
-                            <td>No adapters registered yet.</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
+                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                        <td>{{item.name}}</td>
+                        <td>{{item.description}}</td>
+                        <td>
+                            <form ng-submit="deleteAdapterCtrl.deleteItem()">
+                                <div ng-model="deleteAdapterCtrl.item.id"> {{item.id}}</div>
+                                <button type="submit" class="btn btn-primary m-t-15 waves-effect"
+                                        ng-click="deleteAdapterCtrl.item.id = item.id"> Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr ng-show="adapterListCtrl.items.length === 0">
+                        <td>No adapters registered yet.</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
                     </tbody>
                     <tfoot>
                     <tr>
@@ -64,15 +68,20 @@
                                 </div>
                                 <!-- item.name group -->
                                 <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.name }">
-                                    <div class="form-line" ng-class="{'focused error' : addAdapterCtrl.item.errors.name }">
-                                        <input class="form-control" id="adapter-form-input-name"  type="text" placeholder="Name" ng-model="addAdapterCtrl.item.name" />
+                                    <div class="form-line"
+                                         ng-class="{'focused error' : addAdapterCtrl.item.errors.name }">
+                                        <input class="form-control" id="adapter-form-input-name" type="text"
+                                               placeholder="Name" ng-model="addAdapterCtrl.item.name"/>
                                     </div>
                                     <span class="help-block" ng-show="addAdapterCtrl.item.errors.name">{{addAdapterCtrl.item.errors.name.message}}</span>
                                 </div>
                                 <!-- item.description group -->
-                                <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.description }">
-                                    <div class="form-line" ng-class="{'focused error' : addAdapterCtrl.item.errors.description }">
-                                        <input class="form-control no-resize" placeholder="Describe this adapter..." ng-model="addAdapterCtrl.item.description"></input>
+                                <div class="form-group"
+                                     ng-class="{'has-error' : addAdapterCtrl.item.errors.description }">
+                                    <div class="form-line"
+                                         ng-class="{'focused error' : addAdapterCtrl.item.errors.description }">
+                                        <input class="form-control no-resize" placeholder="Describe this adapter..."
+                                               ng-model="addAdapterCtrl.item.description"></input>
                                     </div>
                                     <span class="help-block" ng-show="addAdapterCtrl.item.errors.description">{{addAdapterCtrl.item.errors.description.message}}</span>
                                 </div>
@@ -87,13 +96,72 @@
                                     <span class="help-block" ng-show="addAdapterCtrl.item.errors.service">{{addAdapterCtrl.item.errors.service.message}}</span>
                                 </div> -->
                                 <!-- item.routine group -->
-                                <label>Adapter scripts</label>
+                                <label>Adapter scripts:</label>
                                 <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.routines }">
-                                    <div class="form-line" ng-class="{'focused error' : addAdapterCtrl.item.errors.routines }">
-                                        <div class="dropzone" options="ctrl.dzRoutinesOptions" callbacks="ctrl.dzRoutinesCallbacks" methods="ctrl.dzMethods" ng-dropzone></div>
+                                    <div class="form-line"
+                                         ng-class="{'focused error' : addAdapterCtrl.item.errors.routines }">
+                                        <div class="dropzone" options="ctrl.dzRoutinesOptions"
+                                             callbacks="ctrl.dzRoutinesCallbacks" methods="ctrl.dzMethods"
+                                             ng-dropzone></div>
                                         <!--<input type="file" multiple ng-dropzone ng-model="addAdapterCtrl.item.routineFiles"  />-->
                                     </div>
                                     <span class="help-block" ng-show="addAdapterCtrl.item.errors.routines">{{addAdapterCtrl.item.errors.routines.message}}</span>
+                                </div>
+                                <!-- item.parameters group -->
+                                <label>Deployment parameters:</label>
+                                <div class="form-group"
+                                     ng-class="{'has-error' : addAdapterCtrl.item.errors.parameters }">
+                                    <table class="table">
+                                        <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Req.</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr ng-repeat="item in ctrl.parameters">
+                                            <td>
+                                                <div class="form-line">
+                                                    <input class="form-control" type="text" placeholder="Name"
+                                                           ng-model="item.name"/>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="form-line">
+                                                    <select class="form-control show-tick" ng-model="item.type">
+                                                        <option value="" disabled>Select...</option>
+                                                        <option ng-repeat="type in ctrl.parameterTypes"
+                                                                value="{{type.value}}">
+                                                            {{type.name}}
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="text-center" style="margin-top: 5px;">
+                                                    <input id="{{$index}}" type="checkbox" class="filled-in"
+                                                           ng-model="item.mandatory">
+                                                    <label for="{{$index}}"> </label></div>
+                                            </td>
+                                            <td>
+                                                <button ng-click="ctrl.deleteDeploymentParameter($index)"
+                                                        type="button" class="btn btn-default waves-effect btn-xs">
+                                                    <i class="material-icons">delete</i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr ng-show="ctrl.parameters.length === 0">
+                                            <td colspan="3">No parameters specified.</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                    <button type="button"
+                                            class="btn bg-light-green btn-circle waves-effect waves-circle waves-float"
+                                            ng-click="ctrl.addDeploymentParameter()">
+                                        <i class="material-icons">add</i>
+                                    </button>
+                                    <span class="help-block" ng-show="addAdapterCtrl.item.errors.parameters">{{addAdapterCtrl.item.errors.parameters.message}}</span>
                                 </div>
                             </div>
                             <div class="col-xs-12">

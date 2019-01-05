@@ -35,6 +35,26 @@ app.controller('AdapterListController',
 
                 vm.dzMethods = {};
 
+                vm.parameterTypes = [{name: "Text", value: "text"}, {name: "Number", value: "number"},
+                    {name: "Switch", value: "boolean"}];
+
+                vm.parameters = [];
+
+                //public
+                function addDeploymentParameter(){
+                    var parameter = {
+                        name: "",
+                        type: "",
+                        mandatory: false
+                    };
+                    vm.parameters.push(parameter);
+                }
+
+                //public
+                function deleteDeploymentParameter(index){
+                    vm.parameters.splice(index, 1);
+                }
+
                 // private
                 function readService(service) {
                     if (service) {
@@ -58,6 +78,8 @@ app.controller('AdapterListController',
 
                 // expose controller ($controller will auto-add to $scope)
                 angular.extend(vm, {
+                    addDeploymentParameter: addDeploymentParameter,
+                    deleteDeploymentParameter : deleteDeploymentParameter,
                     adapterListCtrl: $controller('ItemListController as adapterListCtrl',
                             {
                                 $scope: $scope,
