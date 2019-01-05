@@ -208,7 +208,8 @@ app.controller('SensorDetailsController',
                                                             // set up the updating of the chart each second
                                                             var series = this.series[0];
                                                             var x = series.data.length;
-                                                            setInterval(function () {
+
+                                                            var timer = setInterval(function () {
                                                                 //var x = (new Date()).getTime(), // current time
                                                             	
                                                                 $timeout(
@@ -241,6 +242,11 @@ app.controller('SensorDetailsController',
                                                                 //series.addPoint([x, y], true, true);
                                                                 //x++;
                                                             }, 2000);
+
+                                                            //Delete interval timer if angular route has changed
+                                                            $scope.$on('$locationChangeStart', function() {
+                                                                window.clearInterval(timer);
+                                                            });
                                                         }
                                                     }
                                                 },
