@@ -47,7 +47,6 @@
                 <div class="circle-clipper right">
                   <div class="circle"></div>
                 </div>
-
               </div>
             </div>
           </div>
@@ -63,21 +62,10 @@
             </div>
           </div>
           <div class="col-xs-12">
-            <!-- "global" success and error for deployer.doDeploy -->
-            <div class="alert alert-success" ng-show="ctrl.deployer.deploy.success">
-              {{ctrl.deployer.deploy.success}}
-            </div>
-            <div class="alert alert-danger" ng-show="ctrl.deployer.deploy.errors.global">
-              {{ctrl.deployer.deploy.errors.global}}
-            </div>
-          </div>
-          <div class="col-xs-12">
-            <!-- "global" success and error for deployer.doUndeploy -->
-            <div class="alert alert-success" ng-show="ctrl.deployer.undeploy.success">
-              {{ctrl.deployer.undeploy.success}}
-            </div>
-            <div class="alert alert-danger" ng-show="ctrl.deployer.undeploy.errors.global">
-              {{ctrl.deployer.undeploy.errors.global}}
+            <!-- Alert for global messages -->
+            <div class="alert" ng-class="ctrl.deployer.status.success ? 'alert-success' : 'alert-danger'"
+                 ng-show="ctrl.deployer.status.globalMessage.length > 0">
+              {{ctrl.deployer.status.globalMessage}}
             </div>
           </div>
           <div class="col-xs-12">
@@ -90,14 +78,15 @@
                       <tbody>
                       <tr ng-repeat="parameter in sensorDetailsCtrl.item._embedded.adapter.parameters">
                         <td>
-                          <label>{{parameter.name}}:</label>
+                          <label>{{parameter.name}}:</label><br/>
+                            <small ng-show="parameter.mandatory">(required)</small>
                         </td>
                         <td>
                             <div ng-switch="parameter.type">
-                            <div class="form-line" ng-switch-when="TEXT">
+                            <div ng-switch-when="TEXT">
                                 <input class="form-control" type="text" ng-required="parameter.mandatory" ng-model="ctrl.parameterValues[$index].value"/>
                             </div>
-                            <div class="form-line" ng-switch-when="NUMBER">
+                            <div ng-switch-when="NUMBER">
                                 <input class="form-control" type="number" ng-required="parameter.mandatory" ng-model="ctrl.parameterValues[$index].value"/>
                             </div>
                             <div class="switch" ng-switch-when="BOOLEAN">
@@ -113,6 +102,11 @@
                       </tr>
                       </tbody>
                     </table>
+                    <div class="has-error" ng-show="ctrl.deployer.status.fieldErrors.parameters">
+                      <span class="help-block focused error">
+                        {{ctrl.deployer.status.fieldErrors.parameters}}
+                      </span>
+                    </div>
                 </div>
                 <div class="col-xs-3" ng-show="!ctrl.deployer.deployed">
                   <button class="btn btn-primary waves-effect">Deploy</button>

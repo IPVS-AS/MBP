@@ -81,7 +81,7 @@
                                     <div class="form-line"
                                          ng-class="{'focused error' : addAdapterCtrl.item.errors.description }">
                                         <input class="form-control no-resize" placeholder="Describe this adapter..."
-                                               ng-model="addAdapterCtrl.item.description"></input>
+                                               ng-model="addAdapterCtrl.item.description">
                                     </div>
                                     <span class="help-block" ng-show="addAdapterCtrl.item.errors.description">{{addAdapterCtrl.item.errors.description.message}}</span>
                                 </div>
@@ -109,8 +109,7 @@
                                 </div>
                                 <!-- item.parameters group -->
                                 <label>Deployment parameters:</label>
-                                <div class="form-group"
-                                     ng-class="{'has-error' : addAdapterCtrl.item.errors.parameters }">
+                                <div class="form-group">
                                     <table class="table">
                                         <thead>
                                         <tr>
@@ -130,7 +129,7 @@
                                             <td>
                                                 <div class="form-line">
                                                     <select class="form-control show-tick" ng-model="parameter.type">
-                                                        <option value="" disabled>Select...</option>
+                                                        <!--<option value="" disabled>Select...</option>-->
                                                         <option ng-repeat="type in ctrl.parameterTypes"
                                                                 value="{{type.value}}">
                                                             {{type.name}}
@@ -161,7 +160,9 @@
                                             ng-click="ctrl.addDeploymentParameter()">
                                         <i class="material-icons">add</i>
                                     </button>
-                                    <span class="help-block" ng-show="addAdapterCtrl.item.errors.parameters">{{addAdapterCtrl.item.errors.parameters.message}}</span>
+                                    <div class="has-error" ng-show="addAdapterCtrl.item.errors.parameters">
+                                        <span class="help-block">{{addAdapterCtrl.item.errors.parameters.message}}</span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-xs-12">
