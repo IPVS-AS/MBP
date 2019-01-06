@@ -2,17 +2,23 @@ package org.citopt.connde.service.deploy;
 
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.Code;
+import org.citopt.connde.domain.adapter.parameters.Parameter;
+import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.service.NetworkService;
+import org.citopt.connde.service.settings.SettingsService;
 import org.citopt.connde.service.settings.model.BrokerLocation;
 import org.citopt.connde.service.settings.model.Settings;
-import org.citopt.connde.service.settings.SettingsService;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,12 +68,13 @@ public class SSHDeployer {
     }
 
     /**
-     * Deploys a component onto the dedicated remote device.
+     * Deploys a component onto the dedicated remote device and passes deployment parameters to the starter script.
      *
-     * @param component The component to deployComponent
+     * @param component             The component to deploy
+     * @param parameterInstanceList List of parameter instances to pass to the start script
      * @throws IOException In case of an I/O issue
      */
-    public void deployComponent(Component component) throws IOException {
+    public void deployComponent(Component component, List<ParameterInstance> parameterInstanceList) throws IOException {
         //Validity check
         if (component == null) {
             throw new IllegalArgumentException("Component must not be null.");
@@ -91,7 +98,7 @@ public class SSHDeployer {
         Adapter adapter = component.getAdapter();
 
         //Validity check
-        if(adapter == null){
+        if (adapter == null) {
             throw new IllegalArgumentException("Adapter must not be null.");
         }
 
@@ -113,14 +120,14 @@ public class SSHDeployer {
                 sshSession.createFile(deploymentPath, file.getName(), fileContent);
             }
         }
-        LOGGER.log(Level.FINE, "Copying adapter files was succesful");
+        LOGGER.log(Level.FINE, "Copying adapter files was successful");
 
         //Resolve own IP address that might be used as broker IP address
         String brokerIP = networkService.getOwnIPAddress();
 
         //Determine from settings if a remote broker should be used
         Settings settings = settingsService.getSettings();
-        if(settings.getBrokerLocation().equals(BrokerLocation.REMOTE)){
+        if (settings.getBrokerLocation().equals(BrokerLocation.REMOTE)) {
             //Retrieve IP address of external broker from settings
             brokerIP = settings.getBrokerIPAddress();
         }
@@ -134,9 +141,13 @@ public class SSHDeployer {
 
         LOGGER.log(Level.FINE, "Installation was successful");
 
-        //Execute start script
+        //Create JSON string from parameters
+        JSONArray parameterArray = convertParametersToJSON(adapter, parameterInstanceList);
+        String jsonString = convertJSONToCmdLineString(parameterArray);
+
+        //Execute start script with parameters
         sshSession.changeFilePermissions(deploymentPath + "/" + START_SCRIPT_NAME, "u+rwx");
-        sshSession.executeShellScript(deploymentPath + "/" + START_SCRIPT_NAME, deploymentPath);
+        sshSession.executeShellScript(deploymentPath + "/" + START_SCRIPT_NAME, deploymentPath, jsonString);
 
         LOGGER.log(Level.FINE, "Start was successful");
 
@@ -234,7 +245,7 @@ public class SSHDeployer {
         String rsaKey = device.getRsaKey();
 
         //Check key for validity
-        if((rsaKey == null) || (rsaKey.isEmpty())){
+        if ((rsaKey == null) || (rsaKey.isEmpty())) {
             throw new IllegalArgumentException("No private RSA key for SSH connection provided.");
         }
 
@@ -250,5 +261,72 @@ public class SSHDeployer {
         sshSession.connect();
 
         return sshSession;
+    }
+
+    /**
+     * Converts a JSON array into a string that might be passed as command line parameter.
+     *
+     * @param jsonArray The JSON array to convert
+     * @return The corresponding JSON string (command line compatible)
+     */
+    private String convertJSONToCmdLineString(JSONArray jsonArray){
+        String jsonString = jsonArray.toString();
+        //Escape backslashes
+        jsonString = jsonString.replace("\"","\\\"");;
+        //Wrap string with double quotes
+        jsonString = "\"" + jsonString + "\"";
+
+        return jsonString;
+    }
+
+    /**
+     * Converts a list of parameter instances into a JSON array.
+     * @param adapter The adapter that specifies the parameters
+     * @param parameterInstanceList A list of parameter instances that correspond to the adapter parameters
+     * @return A JSON array that contains the parameter instances
+     */
+    private JSONArray convertParametersToJSON(Adapter adapter, List<ParameterInstance> parameterInstanceList) {
+        JSONArray parameterArray = new JSONArray();
+
+        //Sanity check
+        if (adapter == null) {
+            throw new IllegalArgumentException("Adapter must not be null.");
+        } else if ((parameterInstanceList == null) || parameterInstanceList.isEmpty()) {
+            //Return empty array
+            return parameterArray;
+        }
+
+        //Get specified parameters from adapter
+        List<Parameter> parameters = adapter.getParameters();
+
+        //Iterate over all specified parameters
+        for (Parameter parameter : parameters) {
+            boolean matchingFound = false;
+            //Iterate over all parameter instances
+            for (ParameterInstance parameterInstance : parameterInstanceList) {
+                //Find matching instance for this parameter
+                if (!parameter.isInstanceValid(parameterInstance)) {
+                    continue;
+                }
+                matchingFound = true;
+
+                //Create JSON object for the parameter that can be added to the parameter array
+                JSONObject parameterObject = new JSONObject();
+                try {
+                    //Add properties to object
+                    parameterObject.put("name", parameter.getName());
+                    parameterObject.put("value", parameterInstance.getValue());
+                } catch (JSONException e) {}
+                parameterArray.put(parameterObject);
+            }
+
+            //Throw exception if no valid instance was provided for a mandatory parameter
+            if ((!matchingFound) && parameter.isMandatory()) {
+                throw new IllegalArgumentException("No valid instance for parameter \"" + parameter.getName() +
+                        "\" provided.");
+            }
+        }
+
+        return parameterArray;
     }
 }

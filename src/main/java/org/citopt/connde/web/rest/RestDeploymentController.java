@@ -145,7 +145,7 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
 
         //Deploy component
         try {
-            sshDeployer.deployComponent(component);
+            sshDeployer.deployComponent(component, parameterInstances);
         } catch (IOException e) {
             ActionResponse response = new ActionResponse(false, "An error occurred during deployment.");
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
