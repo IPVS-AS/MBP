@@ -65,12 +65,12 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI', fun
                         });
             },
 
-            deploy: function (data, url) {
+            deploy: function (parameterList, url) {
                 return $http({
                     method: 'POST',
                     url: url,
-                    params: data,
-                    headers: {'Content-Type': 'application/json'}  // set the headers so angular passing info as form data (not request payload)
+                    data: parameterList,
+                    headers: {'Content-Type': 'application/json'}
                 });
             },
 

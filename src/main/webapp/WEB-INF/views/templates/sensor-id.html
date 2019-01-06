@@ -84,17 +84,38 @@
             <form ng-submit="ctrl.deployer.doDeploy()">
               <div class="row clearfix">
                 <div class="col-xs-9" ng-show="!ctrl.deployer.deployed">
-                  <!-- deployer.deploy.pinset -->
-                  <label>Pins (comma separated)</label>
-                  <div class="form-group" ng-class="{'has-error' : ctrl.deployer.deploy.errors.name}">
-                    <div class="form-line" ng-class="{'focused error' : ctrl.deployer.deploy.errors.name }">
-                      <input class="form-control pinset" id="sensor-form-input-name" type="text" placeholder="21,22,23" ng-model="ctrl.deployer.deploy.pinset"/>
-                    </div>
-                    <span class="help-block" ng-show="ctrl.deployer.deploy.errors.pinset">{{ctrl.deployer.deploy.errors.pinset}}</span>
-                  </div>
+                  <label>Parameters:</label>
+                    <table class="table">
+                      <thead></thead>
+                      <tbody>
+                      <tr ng-repeat="parameter in sensorDetailsCtrl.item._embedded.adapter.parameters">
+                        <td>
+                          <label>{{parameter.name}}:</label>
+                        </td>
+                        <td>
+                            <div ng-switch="parameter.type">
+                            <div class="form-line" ng-switch-when="TEXT">
+                                <input class="form-control" type="text" ng-required="parameter.mandatory" ng-model="ctrl.parameterValues[$index].value"/>
+                            </div>
+                            <div class="form-line" ng-switch-when="NUMBER">
+                                <input class="form-control" type="number" ng-required="parameter.mandatory" ng-model="ctrl.parameterValues[$index].value"/>
+                            </div>
+                            <div class="switch" ng-switch-when="BOOLEAN">
+                              <label>No
+                                <input type="checkbox" ng-model="ctrl.parameterValues[$index].value">
+                                <span class="lever"></span>Yes</label>
+                            </div>
+                            </div>
+                        </td>
+                      </tr>
+                      <tr ng-show="sensorDetailsCtrl.item._embedded.adapter.parameters.length === 0">
+                        <td colspan="2">No parameters required.</td>
+                      </tr>
+                      </tbody>
+                    </table>
                 </div>
                 <div class="col-xs-3" ng-show="!ctrl.deployer.deployed">
-                  <button class="btn btn-primary waves-effect" id="deploy-button">Deploy</button>
+                  <button class="btn btn-primary waves-effect">Deploy</button>
                 </div>
               </div>
             </form>
@@ -103,7 +124,7 @@
             <form ng-submit="ctrl.deployer.doUndeploy()">
               <div class="row clearfix">
                 <div class="col-xs-3">
-                  <button class="btn btn-warning waves-effect" id="deploy-button">Undeploy</button>
+                  <button class="btn btn-warning waves-effect">Undeploy</button>
                 </div>
               </div>
             </form>

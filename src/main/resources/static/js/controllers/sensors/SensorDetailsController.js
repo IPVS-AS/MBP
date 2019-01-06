@@ -7,6 +7,25 @@ app.controller('SensorDetailsController',
 
                 vm.loader = {};
 
+                vm.parameterValues = [];
+
+                //private
+                function initParameters(){
+                    var params = vm.sensorDetailsCtrl.item._embedded.adapter.parameters;
+                    for(var i = 0; i < params.length; i++){
+                        var value = "";
+
+                        if(params[i].type == "BOOLEAN"){
+                            value = false;
+                        }
+
+                        vm.parameterValues.push({
+                            "name": params[i].name,
+                            "value": value
+                        });
+                    }
+                }
+
                 // public
                 function update() { // update deployment status
                     vm.deployer.processing = true;
@@ -29,7 +48,7 @@ app.controller('SensorDetailsController',
 
                 function deploy() {
                     vm.deployer.processing = true;
-                    ComponentService.deploy(vm.deployer.deploy, vm.sensorDetailsCtrl.item._links.deploy.href)
+                    ComponentService.deploy(vm.parameterValues, vm.sensorDetailsCtrl.item._links.deploy.href)
                             .then(
                                     function (response) {
                                         vm.deployer.processing = false;
@@ -284,7 +303,9 @@ app.controller('SensorDetailsController',
 
                 angular.extend(vm, {
                     deployer: {
-                        deploy: {}, //May be used to pass parameters
+                        deploy: {
+                            parameters: vm.parameterValues
+                        }, //May be used to pass parameters
                         update: update,
                         doDeploy: deploy,
                         doUndeploy: undeploy
@@ -299,6 +320,8 @@ app.controller('SensorDetailsController',
                                 item: sensorDetails
                             })
                 });
+
+                initParameters();
 
                 showCharts();
                 showLiveCharts();

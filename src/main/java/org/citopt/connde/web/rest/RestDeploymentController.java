@@ -1,6 +1,7 @@
 package org.citopt.connde.web.rest;
 
 import org.citopt.connde.RestConfiguration;
+import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.componentType.ComponentType;
 import org.citopt.connde.repository.ActuatorRepository;
@@ -8,6 +9,7 @@ import org.citopt.connde.repository.ComponentRepository;
 import org.citopt.connde.repository.ComponentTypeRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.deploy.SSHDeployer;
+import org.citopt.connde.service.settings.model.Settings;
 import org.citopt.connde.web.rest.util.HeaderUtil;
 import org.citopt.connde.web.rest.util.PaginationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,14 +62,16 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
         return isRunningComponent(id, sensorRepository);
     }
 
-    @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.POST, params = {})
-    public ResponseEntity<String> deployActuator(@PathVariable(value = "id") String id) {
-        return deployComponent(id, actuatorRepository);
+    @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.POST)
+    public ResponseEntity<String> deployActuator(@PathVariable(value = "id") String id,
+                                                 @RequestBody List<ParameterInstance> parameters) {
+        return deployComponent(id, actuatorRepository, parameters);
     }
 
-    @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.POST, params = {})
-    public ResponseEntity<String> deploySensor(@PathVariable(value = "id") String id) {
-        return deployComponent(id, sensorRepository);
+    @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.POST)
+    public ResponseEntity<String> deploySensor(@PathVariable(value = "id") String id,
+                                               @RequestBody List<ParameterInstance> parameters) {
+        return deployComponent(id, sensorRepository, parameters);
     }
 
     @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.DELETE)
@@ -99,7 +103,7 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
         return new ResponseEntity<Boolean>(result, HttpStatus.OK);
     }
 
-    private ResponseEntity<String> deployComponent(String id, ComponentRepository repository) {
+    private ResponseEntity<String> deployComponent(String id, ComponentRepository repository, List<ParameterInstance> parameters) {
         //Retrieve component from repository
         Component component = (Component) repository.findOne(id);
 

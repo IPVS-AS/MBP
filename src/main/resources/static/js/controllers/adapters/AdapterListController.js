@@ -35,8 +35,8 @@ app.controller('AdapterListController',
 
                 vm.dzMethods = {};
 
-                vm.parameterTypes = [{name: "Text", value: "text"}, {name: "Number", value: "number"},
-                    {name: "Switch", value: "boolean"}];
+                vm.parameterTypes = [{name: "Text", value: "TEXT"}, {name: "Number", value: "NUMBER"},
+                    {name: "Switch", value: "BOOLEAN"}];
 
                 vm.parameters = [];
 
@@ -55,7 +55,7 @@ app.controller('AdapterListController',
                     vm.parameters.splice(index, 1);
                 }
 
-                // private
+                //private
                 function readService(service) {
                     if (service) {
                         return FileReader.readAsText(service, $scope);
@@ -66,6 +66,7 @@ app.controller('AdapterListController',
                     }
                 }
 
+                //private
                 function readRoutines(routines) {
                     if ((routines !== undefined) && (routines.constructor === Array)) {
                         //Read routines files
@@ -89,11 +90,11 @@ app.controller('AdapterListController',
                             {
                                 $scope: $scope,
                                 addItem: function (data) {
-
+                                    //Extend request parameters for routines and deployment parameters
                                     return readRoutines(data.routineFiles)
                                     .then(function (response) {
-                                        console.log('readRoutines: ', response);
                                         data.routines = response;
+                                        data.parameters = vm.parameters;
                                         return addAdapter(data);
                                     }, function (response) {
                                         return $q.reject(response);

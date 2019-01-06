@@ -120,16 +120,16 @@
                                         </tr>
                                         </thead>
                                         <tbody>
-                                        <tr ng-repeat="item in ctrl.parameters">
+                                        <tr ng-repeat="parameter in ctrl.parameters">
                                             <td>
                                                 <div class="form-line">
                                                     <input class="form-control" type="text" placeholder="Name"
-                                                           ng-model="item.name"/>
+                                                           ng-model="parameter.name"/>
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="form-line">
-                                                    <select class="form-control show-tick" ng-model="item.type">
+                                                    <select class="form-control show-tick" ng-model="parameter.type">
                                                         <option value="" disabled>Select...</option>
                                                         <option ng-repeat="type in ctrl.parameterTypes"
                                                                 value="{{type.value}}">
@@ -141,7 +141,7 @@
                                             <td>
                                                 <div class="text-center" style="margin-top: 5px;">
                                                     <input id="{{$index}}" type="checkbox" class="filled-in"
-                                                           ng-model="item.mandatory">
+                                                           ng-model="parameter.mandatory">
                                                     <label for="{{$index}}"> </label></div>
                                             </td>
                                             <td>
