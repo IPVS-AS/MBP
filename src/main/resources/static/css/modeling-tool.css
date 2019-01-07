@@ -1,0 +1,298 @@
+/* ---------------------------------------------------------------------------------------------------- */
+/* --- tool-header ---------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------------- */
+/* Style the tool-header with a grey background and some padding */
+.tool-header {
+  overflow: hidden;
+  background-color: #f1f1f1;
+  margin-bottom: 15px;
+  padding-right: 10px;
+}
+
+/* Float the link section to the right */
+.tool-header-right {
+  float: right;
+}
+
+.tool-button {
+  position: relative;
+  z-index: 2;
+  padding: 4px 20px;
+  margin: 10px auto;
+  transition: transform 0.3s;
+  border-radius: 50px;
+  background-color: transparent;
+}
+
+/* Add media queries for responsiveness - when the screen is 500px wide or less, stack the links on top of each other */
+@media screen and (max-width: 500px) {
+  .tool-header-right {
+    float: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* --- jsPlumb demo ----------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------------- */
+.jtk-main {
+  background-color: #dce0e8;
+  font-family: Arial, sans-serif;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1500px;
+  position: relative;
+  /* margin-top: 98px; */
+}
+
+.jtk-main .description {
+  font-size: 13px;
+  margin-top: 25px;
+  padding: 13px;
+  margin-bottom: 22px;
+  background-color: #f4f5ef;
+}
+
+.jtk-main .description li {
+  list-style-type: disc !important;
+}
+
+.jtk-canvas {
+  margin-left: 160px;
+  height: 445px;
+  max-height: 700px;
+  border: 1px solid #CCC;
+  background-color: white;
+}
+
+.canvas-wide {
+  margin-left: 0;
+}
+
+li {
+  list-style-type: none;
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* --- jquery-ui -------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------------- */
+.ui-icon {
+  background-image: url("") !important;
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* --- jsPlumb modeling-tool -------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------------- */
+.demo {
+  /* for IE10+ touch devices */
+  touch-action: none;
+}
+
+.custom {
+  position: absolute;
+  z-index: 5;
+}
+
+#canvas {
+  z-index: 1;
+}
+
+.start {
+  border-radius: 40px;
+  text-align: center;
+  display: inline-block;
+}
+
+.end {
+  border-radius: 40px;
+  text-align: center;
+  display: inline-block;
+}
+
+.step {
+  border-radius: 0.5em;
+  width: 80px;
+  height: 80px;
+  display: inline-block;
+}
+
+.diamond {
+  -webkit-transform: rotate(45deg);
+  -moz-transform: rotate(45deg);
+  -o-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  transform: rotate(45deg);
+  display: inline-block;
+}
+
+.desc-text {
+  -webkit-transform: rotate(-45deg);
+  -moz-transform: rotate(-45deg);
+  -o-transform: rotate(-45deg);
+  -ms-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+}
+
+.modeling-tool .window {
+  box-shadow: 2px 2px 19px #aaa;
+  -o-box-shadow: 2px 2px 19px #aaa;
+  -webkit-box-shadow: 2px 2px 19px #aaa;
+  -moz-box-shadow: 2px 2px 19px #aaa;
+  -moz-border-radius: 0.5em;
+  opacity: 0.8;
+  width: 50px;
+  height: 50px;
+  line-height: 40px;
+  cursor: pointer;
+  text-align: center;
+  /* position: absolute; */
+  /* background-color: #eeeeef; */
+  color: black;
+  font-family: helvetica, sans-serif;
+  padding: 0.5em;
+  font-size: 0.9em;
+  -webkit-transition: -webkit-box-shadow 0.15s ease-in;
+  -moz-transition: -moz-box-shadow 0.15s ease-in;
+  -o-transition: -o-box-shadow 0.15s ease-in;
+  transition: box-shadow 0.15s ease-in;
+}
+
+.modeling-tool .window:hover {
+  box-shadow: 2px 2px 19px #444;
+  -o-box-shadow: 2px 2px 19px #444;
+  -webkit-box-shadow: 2px 2px 19px #444;
+  -moz-box-shadow: 2px 2px 19px #444;
+  opacity: 0.6;
+}
+
+.modeling-tool .active {
+  border: 1px dotted green;
+}
+
+.modeling-tool .hover {
+  border: 1px dotted red;
+}
+
+#startEv {
+  /* top: 2em;
+  left: 3em; */
+}
+
+#stepEv {
+  /* top: 10em;
+  left: 3em; */
+}
+
+#descEv {
+  /* top: 20em;
+  left: 3em; */
+}
+
+#endEv {
+  /* top: 30em;
+  left: 3em; */
+}
+
+.modeling-tool .jtk-connector {
+  z-index: 4;
+}
+
+.modeling-tool .jtk-endpoint, .endpointTargetLabel, .endpointSourceLabel {
+  z-index: 21;
+  cursor: pointer;
+}
+
+.aLabel {
+  background-color: white;
+  padding: 0.4em;
+  font: 12px sans-serif;
+  color: #444;
+  z-index: 21;
+  border: 1px dotted gray;
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+.aLabel.jtk-hover {
+  background-color: #5C96BC;
+  color: white;
+  border: 1px solid white;
+}
+
+.window.jtk-connected {
+  border: 2px solid green;
+}
+
+.window.jtk-connected-step {
+  border: 2px solid #29e;
+}
+
+.window.jtk-connected-end {
+  border: 2px solid orangered;
+}
+
+.jtk-drag {
+  outline: 4px solid pink !important;
+}
+
+path, .jtk-endpoint {
+  cursor: pointer;
+}
+
+.jtk-overlay {
+  background-color: transparent;
+}
+
+.room {
+  border: 7px solid #595959;
+  /* border-radius: 5px; */
+  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
+  -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
+}
+
+#room {
+  /* top: 40em;
+  left: 3em; */
+}
+
+.door {
+  background-image: url("../images/door.png");
+  background-size: contain;
+  /* background-size: cover; */
+  background-repeat: no-repeat;
+  background-position: center center;
+  width: 80px;
+  height: 80px;
+}
+
+#door {
+  /* top: 50em;
+  left: 3em; */
+}
+
+.default-device {
+  background-image: url("../images/developer_board.png");
+  background-size: contain;
+  /* background-size: cover; */
+  background-repeat: no-repeat;
+  background-position: center center;
+  width: 80px;
+  height: 80px;
+}
+
+#canvas1 {
+  overflow: scroll;
+}
+
+.panel-body {
+  height: 250px;
+}
+
+.panel-group {
+  margin: 5px;
+}
+
+#dragList li {
+  margin-bottom: 10px;
+}
