@@ -317,6 +317,7 @@ public class SSHDeployer {
                     parameterObject.put("name", parameter.getName());
                     parameterObject.put("value", parameterInstance.getValue());
                 } catch (JSONException e) {}
+                //Add object to parameter
                 parameterArray.put(parameterObject);
             }
 

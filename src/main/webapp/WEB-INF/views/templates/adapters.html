@@ -155,14 +155,14 @@
                                         </tr>
                                         </tbody>
                                     </table>
+                                    <div class="has-error" ng-show="addAdapterCtrl.item.errors.parameters">
+                                        <span class="help-block">{{addAdapterCtrl.item.errors.parameters.message}}</span>
+                                    </div>
                                     <button type="button"
                                             class="btn bg-light-green btn-circle waves-effect waves-circle waves-float"
                                             ng-click="ctrl.addDeploymentParameter()">
                                         <i class="material-icons">add</i>
                                     </button>
-                                    <div class="has-error" ng-show="addAdapterCtrl.item.errors.parameters">
-                                        <span class="help-block">{{addAdapterCtrl.item.errors.parameters.message}}</span>
-                                    </div>
                                 </div>
                             </div>
                             <div class="col-xs-12">
