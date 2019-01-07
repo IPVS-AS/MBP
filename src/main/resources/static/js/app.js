@@ -101,8 +101,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
 
       // Model
       .when(viewPrefix + '/model', {
-        templateUrl: 'templates/model'
-        // controller: 'ModelController as vm',
+        templateUrl: 'templates/model',
+        controller: 'ModelController as vm'
       })
 
       // Actuator List and Register (includes Device List and Register)

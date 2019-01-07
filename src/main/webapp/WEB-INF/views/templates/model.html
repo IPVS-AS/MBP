@@ -1,3 +1,169 @@
-<div>
-  To be implemented...
+<div id="modelingToolView" class="row clearfix" style="display:block;">
+  <div style="width:100%; white-space:nowrap;">
+
+    <div style="display: inline-block; vertical-align: top; padding: 5px; width:17%;">
+      <div id="myPalette" style="box-shadow: 1px 1px 1px 1px grey; height: 530px;  background-color: #efefef;">
+
+        <div class="tool-header" style="box-shadow: 1px 1px 1px 1px grey;">
+          <span class="navbar-brand" style="color: black">Palette</span>
+        </div>
+
+        <div class="panel-group" id="accordion">
+          <div class="panel panel-default">
+
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+                  <i class="material-icons" style="font-size: 20px;">weekend</i>
+                  <span class="glyphicon glyphicon-chevron-down pull-right"></span>Floorplans</a>
+              </h4>
+            </div>
+
+            <div id="collapseOne" class="panel-collapse collapse in">
+              <div class="panel-body canvas-wide modeling-tool" id="canvas1">
+                <ul id="dragList">
+                  <li>
+                    <div class="window start jtk-connected" id="startEv">
+                      <strong>
+                        <p>start</p>
+                      </strong>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="window step jtk-connected-step" id="stepEv">
+                      <strong>
+                        <p>step</p>
+                      </strong>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="window diamond jtk-connected-step" id="descEv">
+                      <strong>
+                        <p class="desc-text">decision</p>
+                      </strong>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="window start jtk-connected-end" id="endEv">
+                      <strong>
+                        <p>end</p>
+                      </strong>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="window room" id="room">
+                      <strong>
+                        <p>Room</p>
+                      </strong>
+                    </div>
+                  </li>
+                  <li>
+                    <!-- Make DIV draggable and IMG resizable -->
+                    <div class="window door" id="door">
+                      <!-- <img id="doorImage" src="css/door.png" style="max-width: 100%; max-height: 100%;"/> -->
+                      <strong>
+                        <p>Door</p>
+                      </strong>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+                  <i class="material-icons" style="font-size: 20px;">devices</i>
+                  <span class="glyphicon glyphicon-chevron-down pull-right"></span>Devices</a>
+              </h4>
+            </div>
+            <div id="collapseTwo" class="panel-collapse collapse">
+              <div class="panel-body canvas-wide modeling-tool" id="canvas1">
+                <ul id="dragList">
+                  <li>
+                    <div class="window default-device" id="defaultDevice">
+                      <!-- <i class="material-icons" style="font-size: 40px;">developer_board</i> -->
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseThree">
+                  <i class="material-icons" style="font-size: 20px;">wb_incandescent</i>
+                  <span class="glyphicon glyphicon-chevron-down pull-right"></span>Actuators</a>
+              </h4>
+            </div>
+            <div id="collapseThree" class="panel-collapse collapse">
+              <div class="panel-body canvas-wide modeling-tool" id="canvas1">
+                <!-- TODO -->
+              </div>
+            </div>
+          </div>
+
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" href="#collapseFour">
+                  <i class="material-icons" style="font-size: 20px;">settings_remote</i>
+                  <span class="glyphicon glyphicon-chevron-down pull-right"></span>Sensors</a>
+              </h4>
+            </div>
+            <div id="collapseFour" class="panel-collapse collapse">
+              <div class="panel-body">
+                <!-- TODO -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- <div class="jtk-main" style="margin-top: 20px;"> <div class="jtk-canvas canvas-wide modeling-tool" id="canvas1"> <div class="window start jtk-connected" id="startEv"> <strong> <p>start</p> </strong> </div> <div class="window step
+        jtk-connected-step" id="stepEv"> <strong> <p>step</p> </strong> </div> <div class="window diamond jtk-connected-step" id="descEv"> <strong> <p class="desc-text">decision</p> </strong> </div> <div class="window start jtk-connected-end" id="endEv">
+        <strong> <p>end</p> </strong> </div> <div class="window room" id="room"> <strong> <p>Room</p> </strong> </div> <div class="window door" id="door"> <strong> <p>Door</p> </strong> </div> </div> </div> -->
+
+      </div>
+    </div>
+
+    <div style="display: inline-block; vertical-align: top; padding: 5px; width:65%;">
+      <div id="myDiagram" style="box-shadow: 1px 1px 5px 1px grey; height: 530px;  background-color: #efefef;">
+        <!-- Toolbar -->
+        <div class="tool-header" style="box-shadow: 1px 1px 1px 1px grey;">
+          <span class="navbar-brand" style="color: black">Modeling area</span>
+          <div class="tool-header-right">
+            <button class="tool-button" id="saveModelBtn" ng-click="vm.saveModel()">Save</button>
+          </div>
+        </div>
+        <!-- /.toolbar -->
+
+        <div class="jtk-main">
+          <div class="jtk-canvas canvas-wide modeling-tool jtk-surface  jtk-surface-nopan" id="canvas"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info sidebar -->
+    <div style="display: inline-block; vertical-align: top; padding: 5px; width:17%;">
+      <div id="infoSidebar" style="box-shadow: 1px 1px 1px 1px grey; height: 530px;  background-color: #efefef;">
+
+        <div class="tool-header" style="box-shadow: 1px 1px 1px 1px grey;">
+          <span class="navbar-brand" style="color: black">Info</span>
+        </div>
+
+        <div style="padding: 5px;">
+          Title:
+          <input id="titleInput" autocomplete="off" type="text" name="title" style="width: 78%;"><br>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
 </div>
