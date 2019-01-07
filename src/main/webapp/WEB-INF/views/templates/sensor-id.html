@@ -83,13 +83,13 @@
                         </td>
                         <td>
                             <div ng-switch="parameter.type">
-                            <div ng-switch-when="TEXT">
+                            <div ng-switch-when="Text">
                                 <input class="form-control" type="text" ng-required="parameter.mandatory" ng-model="ctrl.parameterValues[$index].value"/>
                             </div>
-                            <div ng-switch-when="NUMBER">
+                            <div ng-switch-when="Number">
                                 <input class="form-control" type="number" ng-required="parameter.mandatory" ng-model="ctrl.parameterValues[$index].value"/>
                             </div>
-                            <div class="switch" ng-switch-when="BOOLEAN">
+                            <div class="switch" ng-switch-when="Switch">
                               <label>No
                                 <input type="checkbox" ng-model="ctrl.parameterValues[$index].value">
                                 <span class="lever"></span>Yes</label>

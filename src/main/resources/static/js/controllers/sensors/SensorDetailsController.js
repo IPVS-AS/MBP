@@ -14,7 +14,7 @@ app.controller('SensorDetailsController',
                     for(var i = 0; i < params.length; i++){
                         var value = "";
 
-                        if(params[i].type == "BOOLEAN"){
+                        if(params[i].type == "Switch"){
                             value = false;
                         }
 

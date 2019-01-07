@@ -1,14 +1,20 @@
 package org.citopt.connde.domain.adapter.parameters;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum ParameterTypes {
     TEXT("Text"), NUMBER("Number"), BOOLEAN("Switch");
 
-    private String name;
+    private String value;
 
-    ParameterTypes(String name){
-        this.name = name;
+    ParameterTypes(String value){
+        this.value = value;
+    }
+
+    @Override
+    public String toString(){
+        return this.value;
     }
 
     @JsonCreator
@@ -22,5 +28,10 @@ public enum ParameterTypes {
             }
         }
         return null;
+    }
+
+    @JsonValue
+    public String toValue() {
+        return this.value;
     }
 }

@@ -66,13 +66,13 @@ public class AdapterValidator implements Validator {
             //Check name for uniqueness
             if(nameSet.contains(name)){
                 errors.rejectValue("parameters", "adapter.parameters.duplicate",
-                        "The parameter names must be unique.");
+                        "Parameter names must be unique.");
                 break;
             }
             //Check type
             if(parameter.getType() == null){
                 errors.rejectValue("parameters", "adapter.parameters.untyped",
-                        "A valid parameter type must be provided.");
+                        "Valid parameter types must be provided.");
                 break;
             }
             nameSet.add(name);

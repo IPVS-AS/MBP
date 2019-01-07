@@ -4,6 +4,7 @@ import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
+import org.citopt.connde.domain.adapter.parameters.ParameterTypes;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.componentType.ComponentType;
 import org.citopt.connde.repository.ActuatorRepository;
@@ -29,6 +30,7 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -175,6 +177,13 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
         }
         ActionResponse response = new ActionResponse(true, "Successfully undeployed");
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/adapter/parameter-types", method = RequestMethod.GET)
+    public ResponseEntity<List<ParameterTypes>> getAllParameterTypes(){
+        //Get all enum objects as list
+        List<ParameterTypes> parameterList = Arrays.asList(ParameterTypes.values());
+        return new ResponseEntity<>(parameterList, HttpStatus.OK);
     }
 
     @PostMapping("/component-types")

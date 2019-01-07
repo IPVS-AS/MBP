@@ -1,8 +1,8 @@
 /* global app */
 
 app.controller('AdapterListController',
-        ['$scope', '$controller', '$q', 'adapterList', 'addAdapter', 'deleteAdapter', 'FileReader',
-            function ($scope, $controller, $q, adapterList, addAdapter, deleteAdapter, FileReader) {
+        ['$scope', '$controller', '$q', 'adapterList', 'addAdapter', 'deleteAdapter', 'FileReader', 'ParameterTypeService',
+            function ($scope, $controller, $q, adapterList, addAdapter, deleteAdapter, FileReader, ParameterTypeService) {
                 var vm = this;
 
                 vm.dzServiceOptions = {
@@ -35,8 +35,7 @@ app.controller('AdapterListController',
 
                 vm.dzMethods = {};
 
-                vm.parameterTypes = [{name: "Text", value: "TEXT"}, {name: "Number", value: "NUMBER"},
-                    {name: "Switch", value: "BOOLEAN"}];
+                vm.parameterTypes = [];
 
                 vm.parameters = [];
 
@@ -76,6 +75,17 @@ app.controller('AdapterListController',
                         return $q.all([]);
                     }
                 }
+
+                //private
+                function loadParameterTypes() {
+                    ParameterTypeService.getAll().then(function(response) {
+                        if (response.success) {
+                            vm.parameterTypes = response.data;
+                        } else {
+                            console.log("Error while loading parameter types.");
+                        }
+                    });
+                };
 
                 // expose controller ($controller will auto-add to $scope)
                 angular.extend(vm, {
@@ -154,4 +164,7 @@ app.controller('AdapterListController',
                           vm.adapterListCtrl.removeItem(id);
                         }
                 );
+
+                //Load parameter types for select
+                loadParameterTypes();
             }]);
