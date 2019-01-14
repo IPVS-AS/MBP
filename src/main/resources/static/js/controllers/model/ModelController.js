@@ -5,10 +5,14 @@
     .module('app')
     .controller('ModelController', ModelController);
 
-  //ModelController.$inject = ['$location'];
+  ModelController.$inject = ['$timeout'];
 
-  function ModelController() {
+  function ModelController($timeout) {
     var vm = this;
+    vm.clickedComponent = {};
+    vm.elementIsDevice = false;
+    vm.elementIsActuator = false;
+    vm.elementIsSensor = false;
 
     // This project was done as a PoC for the WSO2 PC. This content is shared only for the learning purpose of the users.
     var endpointList = [];
@@ -147,15 +151,9 @@
       makeDraggable("#endEv", "window start jtk-connected-end custom", "end");
       makeDraggable("#room", "window room custom", "room");
       makeDraggable("#door", "window door custom", "door");
-      // makeDraggable("#defaultDevice", "window default-device custom", "default device");
-
-      $("#defaultDevice").draggable({
-        helper: function() {
-          return createElement("");
-        },
-        stack: ".custom",
-        revert: false
-      });
+      makeDraggable("#defaultDevice", "window device default-device custom", "default device");
+      makeDraggable("#defaultActuator", "window actuator default-actuator custom", "default actuator");
+      makeDraggable("#defaultSensor", "window sensor default-sensor custom", "default sensor");
 
       $("#descEv").draggable({
         helper: function() {
@@ -238,7 +236,7 @@
 
       //load properties of a room element once the end element in the palette is clicked
       $('#room').mousedown(function() {
-        loadProperties("window room custom jtk-node", "5em", "5em", "room",
+        loadProperties("window room custom jtk-node", "3em", "3em", "room",
           [], [], false);
         clicked = true;
       });
@@ -252,47 +250,64 @@
 
       //load properties of a device element once the end element in the palette is clicked
       $('#defaultDevice').mousedown(function() {
-        loadProperties("window default-device custom jtk-node", "5em", "5em", "default device",
+        loadProperties("window device default-device custom jtk-node", "5em", "5em", "default device",
           ["LeftMiddle", "RightMiddle", "BottomCenter", "TopCenter"], [], false);
+        clicked = true;
+      });
+
+      $('#defaultActuator').mousedown(function() {
+        loadProperties("window actuator default-actuator custom jtk-node", "5em", "5em", "default actuator",
+          [], ["LeftMiddle", "RightMiddle", "BottomCenter", "TopCenter"], false);
+        clicked = true;
+      });
+
+      $('#defaultSensor').mousedown(function() {
+        loadProperties("window sensor default-sensor custom jtk-node", "5em", "5em", "default sensor",
+          [], ["LeftMiddle", "RightMiddle", "BottomCenter", "TopCenter"], false);
         clicked = true;
       });
 
       //create an element to be drawn on the canvas
       function createElement(id) {
         var elm = $('<div>').addClass(properties[0].clsName).attr('id', id);
-        if (properties[0].clsName.indexOf("diamond") > -1) {
-          elm.outerWidth("100px");
-          elm.outerHeight("100px");
-        }
+        // if (properties[0].clsName.indexOf("diamond") > -1) {
+        //   elm.outerWidth("100px");
+        //   elm.outerHeight("100px");
+        // }
+
+        // The position to drop the element
         elm.css({
           'top': properties[0].top,
           'left': properties[0].left
         });
 
-        var strong = $('<strong>');
-        if (properties[0].clsName == "window diamond custom jtk-node jtk-connected-step") {
-          elm.append("<i style='display: none; margin-left: -5px; margin-top: -50px' " +
-            "class=\"fa fa-trash fa-lg close-icon desc-text\"><\/i>");
-          var p = "<p style='line-height: 110%; margin-top: 25px' class='desc-text' contenteditable='true' " +
-            "ondblclick='$(this).focus();'>" + properties[0].label + "</p>";
-          strong.append(p);
-        } else if (properties[0].clsName == "window parallelogram step custom jtk-node jtk-connected-step") {
-          elm.append("<i style='display: none' class=\"fa fa-trash fa-lg close-icon input-text\"><\/i>");
-          var p = "<p style='line-height: 110%; margin-top: 25px' class='input-text' contenteditable='true' " +
-            "ondblclick='$(this).focus();'>" + properties[0].label +
-            "</p>";
-          strong.append(p);
-        } else if (properties[0].contenteditable) {
-          elm.append("<i style='display: none' class=\"fa fa-trash fa-lg close-icon\"><\/i>");
-          var p = "<p style='line-height: 110%; margin-top: 25px' contenteditable='true' " +
-            "ondblclick='$(this).focus();'>" + properties[0].label + "</p>";
-          strong.append(p);
-        } else {
-          elm.append("<i style='display: none' class=\"fa fa-trash fa-lg close-icon\"><\/i>");
-          var p = $('<p>').text(properties[0].label);
-          strong.append(p);
-        }
-        elm.append(strong);
+        // var strong = $('<strong>');
+        // if (properties[0].clsName == "window diamond custom jtk-node jtk-connected-step") {
+        //   elm.append("<i style='display: none; margin-left: -5px; margin-top: -50px' " +
+        //     "class=\"fa fa-trash fa-lg close-icon desc-text\"><\/i>");
+        //   var p = "<p style='line-height: 110%; margin-top: 25px' class='desc-text' contenteditable='true' " +
+        //     "ondblclick='$(this).focus();'>" + properties[0].label + "</p>";
+        //   strong.append(p);
+        // } else if (properties[0].clsName == "window parallelogram step custom jtk-node jtk-connected-step") {
+        //   elm.append("<i style='display: none' class=\"fa fa-trash fa-lg close-icon input-text\"><\/i>");
+        //   var p = "<p style='line-height: 110%; margin-top: 25px' class='input-text' contenteditable='true' " +
+        //     "ondblclick='$(this).focus();'>" + properties[0].label +
+        //     "</p>";
+        //   strong.append(p);
+        // } else if (properties[0].contenteditable) {
+        //   elm.append("<i style='display: none' class=\"fa fa-trash fa-lg close-icon\"><\/i>");
+        //   var p = "<p style='line-height: 110%; margin-top: 25px' contenteditable='true' " +
+        //     "ondblclick='$(this).focus();'>" + properties[0].label + "</p>";
+        //   strong.append(p);
+        // } else {
+        //   elm.append("<i style='display: none' class=\"fa fa-trash fa-lg close-icon\"><\/i>");
+        //   var p = $('<p>').text(properties[0].label);
+        //   strong.append(p);
+        // }
+
+
+        elm.append("<i style='display: none' class=\"fa fa-trash fa-lg close-icon\"><\/i>");
+        // elm.data("name", properties[0].label);
         return elm;
       }
 
@@ -330,30 +345,42 @@
           filter: ".ui-resizable-handle"
         });
         makeResizable(".custom");
-        makeResizable("#doorImage");
       }
 
 
 
 
 
+
       $(document).on("click", ".custom", function() {
-        if ($(this).attr("class").indexOf("diamond") == -1) {
-          var marginLeft = $(this).outerWidth() + 8 + "px";
-          $(".close-icon").prop("title", "Delete the element");
-          $(this).find("i").css({
-            'margin-left': marginLeft,
-            'margin-top': "-10px"
-          }).show();
-        } else {
-          $(this).find("i").css({
-            'margin-left': "35px",
-            'margin-top': "-40px"
-          }).show();
-        }
+        loadData($(this));
+
+        var marginLeft = $(this).outerWidth() + 8 + "px";
+        $(".close-icon").prop("title", "Delete the element");
+        $(this).find("i").css({
+          'margin-left': marginLeft,
+          'margin-top': "-10px"
+        }).show();
+
+        // if ($(this).attr("class").indexOf("diamond") == -1) {
+        //   var marginLeft = $(this).outerWidth() + 8 + "px";
+        //   $(".close-icon").prop("title", "Delete the element");
+        //   $(this).find("i").css({
+        //     'margin-left': marginLeft,
+        //     'margin-top': "-10px"
+        //   }).show();
+        // } else {
+        //   $(this).find("i").css({
+        //     'margin-left': "35px",
+        //     'margin-top': "-40px"
+        //   }).show();
+        // }
+
       });
 
       $('#canvas').on('click', function(e) {
+        saveData();
+
         $(".jtk-node").css({
           'outline': "none"
         });
@@ -370,6 +397,61 @@
       $(document).on("click", ".close-icon", function() {
         jsPlumbInstance.remove($(this).parent().attr("id"));
       });
+
+      function loadData(element) {
+        $timeout(function() {
+          if (element.attr("class").indexOf("device") > -1) {
+            vm.elementIsDevice = true;
+            vm.clickedComponent.name = element.data("name");
+            vm.clickedComponent.type = element.data("type");
+            vm.clickedComponent.mac = element.data("mac");
+            vm.clickedComponent.ip = element.data("ip");
+            vm.clickedComponent.username = element.data("username");
+            vm.clickedComponent.element = element;
+          } else if (element.attr("class").indexOf("actuator") > -1) {
+            vm.elementIsActuator = true;
+            vm.clickedComponent.name = element.data("name");
+            vm.clickedComponent.type = element.data("type");
+            vm.clickedComponent.adapter = element.data("adapter");
+            vm.clickedComponent.device = element.data("device");
+            vm.clickedComponent.element = element;
+          } else if (element.attr("class").indexOf("sensor") > -1) {
+            vm.elementIsSensor = true;
+            vm.clickedComponent.name = element.data("name");
+            vm.clickedComponent.type = element.data("type");
+            vm.clickedComponent.adapter = element.data("adapter");
+            vm.clickedComponent.device = element.data("device");
+            vm.clickedComponent.element = element;
+          }
+        });
+      }
+
+      function saveData() {
+        var element = vm.clickedComponent.element;
+        if (element) {
+          if (element.attr("class").indexOf("device") > -1) {
+            element.data("name", vm.clickedComponent.name);
+            element.data("type", vm.clickedComponent.type);
+            element.data("mac", vm.clickedComponent.mac);
+            element.data("ip", vm.clickedComponent.ip);
+            element.data("username", vm.clickedComponent.username);
+          } else if (element.attr("class").indexOf("actuator") > -1) {
+            element.data("name", vm.clickedComponent.name);
+            element.data("type", vm.clickedComponent.type);
+            element.data("adapter", vm.clickedComponent.adapter);
+            element.data("device", vm.clickedComponent.device);
+          } else if (element.attr("class").indexOf("sensor") > -1) {
+            element.data("name", vm.clickedComponent.name);
+            element.data("type", vm.clickedComponent.type);
+            element.data("adapter", vm.clickedComponent.adapter);
+            element.data("device", vm.clickedComponent.device);
+          }
+        }
+
+        $timeout(function() {
+          vm.clickedComponent = {};
+        });
+      }
 
 
       vm.saveModel = saveModel;
