@@ -249,6 +249,8 @@ path, .jtk-endpoint {
   -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
   -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
+  text-align: center;
+  display: inline-block;
 }
 
 #room {
@@ -259,11 +261,12 @@ path, .jtk-endpoint {
 .door {
   background-image: url("../images/door.png");
   background-size: contain;
-  /* background-size: cover; */
   background-repeat: no-repeat;
   background-position: center center;
   width: 80px;
   height: 80px;
+  text-align: center;
+  display: inline-block;
 }
 
 #door {
@@ -272,13 +275,36 @@ path, .jtk-endpoint {
 }
 
 .default-device {
-  background-image: url("../images/developer_board.png");
+  background-image: url("../images/default-device.png");
   background-size: contain;
-  /* background-size: cover; */
   background-repeat: no-repeat;
   background-position: center center;
   width: 80px;
   height: 80px;
+  text-align: center;
+  display: inline-block;
+}
+
+.default-actuator {
+  background-image: url("../images/default-actuator.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  width: 80px;
+  height: 80px;
+  text-align: center;
+  display: inline-block;
+}
+
+.default-sensor {
+  background-image: url("../images/default-sensor.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  width: 80px;
+  height: 80px;
+  text-align: center;
+  display: inline-block;
 }
 
 #canvas1 {
@@ -293,6 +319,11 @@ path, .jtk-endpoint {
   margin: 5px;
 }
 
+#dragList {
+  padding: 2px;
+}
+
 #dragList li {
   margin-bottom: 10px;
+  text-align: center;
 }
