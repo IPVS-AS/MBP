@@ -192,7 +192,7 @@ app.controller('SensorDetailsController',
 
                                 var finalValues = new Array();
                                 var i = data._embedded.valueLogs.length - 1;
-                                for (i; i != 0; i--) {
+                                for (i; i > 0; i--) {
                                     var values = new Array();
                                     var value = data._embedded.valueLogs[i].value * 1;
 
@@ -201,8 +201,6 @@ app.controller('SensorDetailsController',
 
                                     var parsedDate = new Date(date);
                                     values.push(parsedDate.toString(), value);
-
-                                    //values.push(data._embedded.valueLogs.length - i, value);
 
                                     finalValues.push(values);
                                 }
@@ -222,7 +220,7 @@ app.controller('SensorDetailsController',
                                                 // set up the updating of the chart each second
                                                 var series = this.series[0];
                                                 var x = series.data.length;
-                                                setInterval(function () {
+                                                var timer = setInterval(function () {
                                                     //var x = (new Date()).getTime(), // current time
 
                                                     $timeout(
@@ -236,17 +234,18 @@ app.controller('SensorDetailsController',
 
                                                             CrudService.searchPage('valueLogs', query, params).then(
                                                                 function (data) {
-                                                                    var value = 0.0;
-                                                                    value = data._embedded.valueLogs[0].value * 1.0;
+                                                                    //Sanity check
+                                                                    if(data._embedded.valueLogs.length < 1){
+                                                                        return;
+                                                                    }
 
-                                                                    var date = data._embedded.valueLogs[i].date;
+                                                                    var value = data._embedded.valueLogs[0].value * 1.0;
+                                                                    var date = data._embedded.valueLogs[0].date;
                                                                     date = date.replace(/\s/g, "T");
 
                                                                     var parsedDate = new Date(date);
 
-                                                                    if (data._embedded.valueLogs.length > 0) {
-                                                                        series.addPoint([parsedDate.toString(), value], true, true);
-                                                                    }
+                                                                    series.addPoint([parsedDate.toString(), value], true, true);
                                                                 }
                                                             );
                                                         }, 500);
@@ -255,6 +254,11 @@ app.controller('SensorDetailsController',
                                                     //series.addPoint([x, y], true, true);
                                                     //x++;
                                                 }, 2000);
+
+                                                //Delete interval timer if angular route has changed
+                                                $scope.$on('$locationChangeStart', function() {
+                                                    window.clearInterval(timer);
+                                                });
                                             }
                                         }
                                     },
