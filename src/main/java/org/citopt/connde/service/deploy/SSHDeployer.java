@@ -125,6 +125,11 @@ public class SSHDeployer {
             brokerIP = settings.getBrokerIPAddress();
         }
 
+        //Sanity check
+        if(brokerIP == null){
+            throw new RuntimeException("Unable to resolve IP address of the broker.");
+        }
+
         //Get topic name for the component
         String topicName = component.getTopicName();
 

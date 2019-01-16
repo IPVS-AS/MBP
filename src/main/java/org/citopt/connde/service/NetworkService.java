@@ -57,7 +57,7 @@ public class NetworkService {
         /*
         Resolved IP address is still useless
         Last option: resolve the IP address from host name
-         */
+        */
 
         //Resolve host name
         String hostName = InetAddress.getLocalHost().getHostName();
@@ -66,13 +66,13 @@ public class NetworkService {
         List<String> numberBlocks = new ArrayList<>();
 
         //Find all number blocks
-        while(m.find()){
+        while (m.find()) {
             String numberBlock = m.group();
             numberBlocks.add(numberBlock);
         }
 
         //At least four blocks are required
-        if(numberBlocks.size() < 4){
+        if (numberBlocks.size() < 4) {
             return null;
         }
 
@@ -80,9 +80,9 @@ public class NetworkService {
         StringBuilder ipAddressBuilder = new StringBuilder();
 
         //Take the last four number blocks
-        for(int i = (numberBlocks.size() - 4); i < numberBlocks.size(); i++){
+        for (int i = (numberBlocks.size() - 4); i < numberBlocks.size(); i++) {
             //Add number block separator
-            if(ipAddressBuilder.length() > 0){
+            if (ipAddressBuilder.length() > 0) {
                 ipAddressBuilder.append(".");
             }
 
