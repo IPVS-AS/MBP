@@ -90,7 +90,7 @@ public class NetworkService {
             ipAddressBuilder.append(numberBlocks.get(i));
         }
 
-        return ipAddress;
+        return ipAddressBuilder.toString();
     }
 
     /**
