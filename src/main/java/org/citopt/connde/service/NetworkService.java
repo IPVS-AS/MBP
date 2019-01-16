@@ -108,6 +108,6 @@ public class NetworkService {
         }
 
         //Validation check
-        return (!ipAddress.equals("127.0.0.1")) && (!ipAddress.equals("localhost")) && (!ipAddress.startsWith("10."));
+        return (!ipAddress.equals("127.0.0.1")) && (!ipAddress.equals("localhost")) && (!ipAddress.startsWith("10.0."));
     }
 }
