@@ -59,7 +59,7 @@
 
   </head>
 
-  <body ng-class="expert ? 'theme-red' : 'theme-blue'" ng-cloak="ng-cloak">
+  <body ng-class="expert ? 'theme-red' : 'theme-blue'" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
     <!-- Overlay For Sidebars -->
     <div class="overlay"></div>
     <!-- #END# Overlay For Sidebars -->
@@ -172,7 +172,7 @@
       <!-- Footer -->
       <div class="legal">
         <div class="copyright">
-          &copy; 2018
+          &copy; {{ctrl.getDate()| date:'yyyy'}}
           <a href="javascript:void(0);">MBP</a>.
         </div>
         <!--<div class="version"> <b>Version: </b> 0.2.0 </div>-->
@@ -247,6 +247,8 @@
     <script th:src="@{/js/directives/fileModel.js}"></script>
     <script th:src="@{/js/directives/ngDropzone.js}"></script>
     <script th:src="@{/js/directives/refreshTable.js}"></script>
+
+    <script th:src="@{/js/controllers/index/IndexController.js}"></script>
 
     <script th:src="@{/js/controllers/ItemListController.js}"></script>
     <script th:src="@{/js/controllers/ItemDetailsController.js}"></script>
