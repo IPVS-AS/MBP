@@ -80,7 +80,7 @@ public class AdapterValidator implements Validator {
             //Check unit
             if((parameter.getUnit() != null) && (parameter.getUnit().length() > PARAMETER_UNIT_MAX_LENGTH)){
                 errors.rejectValue("parameters", "adapter.parameters.invalid_unit",
-                        "The unit must not be longer than " + PARAMETER_UNIT_MAX_LENGTH + " characters.");
+                        "Units must not be longer than " + PARAMETER_UNIT_MAX_LENGTH + " characters.");
                 break;
             }
             nameSet.add(name);
