@@ -18,6 +18,8 @@ import java.util.Set;
  */
 @Component
 public class AdapterValidator implements Validator {
+    //Max length of parameter units
+    private static final int PARAMETER_UNIT_MAX_LENGTH = 20;
 
     static AdapterRepository repository;
 
@@ -73,6 +75,12 @@ public class AdapterValidator implements Validator {
             if(parameter.getType() == null){
                 errors.rejectValue("parameters", "adapter.parameters.untyped",
                         "Valid parameter types must be provided.");
+                break;
+            }
+            //Check unit
+            if((parameter.getUnit() != null) && (parameter.getUnit().length() > PARAMETER_UNIT_MAX_LENGTH)){
+                errors.rejectValue("parameters", "adapter.parameters.invalid_unit",
+                        "The unit must not be longer than " + PARAMETER_UNIT_MAX_LENGTH + " characters.");
                 break;
             }
             nameSet.add(name);

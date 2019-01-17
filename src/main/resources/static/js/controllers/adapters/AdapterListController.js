@@ -44,6 +44,7 @@ app.controller('AdapterListController',
                     var parameter = {
                         name: "",
                         type: "",
+                        unit: "",
                         mandatory: false
                     };
                     vm.parameters.push(parameter);

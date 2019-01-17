@@ -8,6 +8,7 @@ package org.citopt.connde.domain.adapter.parameters;
 public class Parameter {
     private String name;
     private ParameterTypes type;
+    private String unit;
     private boolean mandatory;
 
     /**
@@ -18,16 +19,18 @@ public class Parameter {
     }
 
     /**
-     * Creates a new deployment parameter with a given name and parameter type. In addition, it can
+     * Creates a new deployment parameter with a given name, parameter type and unit. In addition, it can
      * be specified whether the parameter is mandatory for the deployment.
      *
      * @param name      The name of the parameter
      * @param type      The type of the parameter
+     * @param unit      The unit of the parameter
      * @param mandatory True, if the parameter is mandatory; false otherwise
      */
-    public Parameter(String name, ParameterTypes type, boolean mandatory) {
+    public Parameter(String name, ParameterTypes type, String unit, boolean mandatory) {
         this.name = name;
         this.type = type;
+        this.unit = unit;
         this.mandatory = mandatory;
     }
 
@@ -61,10 +64,26 @@ public class Parameter {
     /**
      * Sets the type of the parameter.
      *
-     * @param type The type
+     * @param type The type to set
      */
     public void setType(ParameterTypes type) {
         this.type = type;
+    }
+
+    /**
+     * Returns the unit of the parameter.
+     * @return The unit
+     */
+    public String getUnit() {
+        return unit;
+    }
+
+    /**
+     * Sets the unit of the parameter.
+     * @param unit The unit to set
+     */
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 
     /**
