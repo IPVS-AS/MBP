@@ -1,5 +1,6 @@
 package org.citopt.connde.domain.adapter;
 
+import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.exception.InsertFailureException;
 import org.citopt.connde.exception.NotFoundException;
 import org.springframework.data.annotation.Id;
@@ -30,8 +31,11 @@ public class Adapter {
     private Code service;
     private List<Code> routines;
 
+    private List<Parameter> parameters;
+
     public Adapter() {
         this.routines = new ArrayList<>();
+        this.parameters = new ArrayList<>();
     }
 
     public List<Code> getRoutines() {
@@ -103,4 +107,11 @@ public class Adapter {
         this.service = service;
     }
 
+    public List<Parameter> getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(List<Parameter> parameters) {
+        this.parameters = parameters;
+    }
 }

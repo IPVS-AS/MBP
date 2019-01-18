@@ -1,8 +1,8 @@
 /* global app */
 
 app.controller('AdapterListController',
-        ['$scope', '$controller', '$q', 'adapterList', 'addAdapter', 'deleteAdapter', 'FileReader',
-            function ($scope, $controller, $q, adapterList, addAdapter, deleteAdapter, FileReader) {
+        ['$scope', '$controller', '$q', 'adapterList', 'addAdapter', 'deleteAdapter', 'FileReader', 'ParameterTypeService',
+            function ($scope, $controller, $q, adapterList, addAdapter, deleteAdapter, FileReader, ParameterTypeService) {
                 var vm = this;
 
                 vm.dzServiceOptions = {
@@ -35,7 +35,27 @@ app.controller('AdapterListController',
 
                 vm.dzMethods = {};
 
-                // private
+                vm.parameterTypes = [];
+
+                vm.parameters = [];
+
+                //public
+                function addDeploymentParameter(){
+                    var parameter = {
+                        name: "",
+                        type: "",
+                        unit: "",
+                        mandatory: false
+                    };
+                    vm.parameters.push(parameter);
+                }
+
+                //public
+                function deleteDeploymentParameter(index){
+                    vm.parameters.splice(index, 1);
+                }
+
+                //private
                 function readService(service) {
                     if (service) {
                         return FileReader.readAsText(service, $scope);
@@ -46,6 +66,7 @@ app.controller('AdapterListController',
                     }
                 }
 
+                //private
                 function readRoutines(routines) {
                     if ((routines !== undefined) && (routines.constructor === Array)) {
                         //Read routines files
@@ -56,8 +77,21 @@ app.controller('AdapterListController',
                     }
                 }
 
+                //private
+                function loadParameterTypes() {
+                    ParameterTypeService.getAll().then(function(response) {
+                        if (response.success) {
+                            vm.parameterTypes = response.data;
+                        } else {
+                            console.log("Error while loading parameter types.");
+                        }
+                    });
+                };
+
                 // expose controller ($controller will auto-add to $scope)
                 angular.extend(vm, {
+                    addDeploymentParameter: addDeploymentParameter,
+                    deleteDeploymentParameter : deleteDeploymentParameter,
                     adapterListCtrl: $controller('ItemListController as adapterListCtrl',
                             {
                                 $scope: $scope,
@@ -67,11 +101,11 @@ app.controller('AdapterListController',
                             {
                                 $scope: $scope,
                                 addItem: function (data) {
-
+                                    //Extend request parameters for routines and deployment parameters
                                     return readRoutines(data.routineFiles)
                                     .then(function (response) {
-                                        console.log('readRoutines: ', response);
                                         data.routines = response;
+                                        data.parameters = vm.parameters;
                                         return addAdapter(data);
                                     }, function (response) {
                                         return $q.reject(response);
@@ -131,4 +165,7 @@ app.controller('AdapterListController',
                           vm.adapterListCtrl.removeItem(id);
                         }
                 );
+
+                //Load parameter types for select
+                loadParameterTypes();
             }]);

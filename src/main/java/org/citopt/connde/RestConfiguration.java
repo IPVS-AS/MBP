@@ -2,6 +2,7 @@ package org.citopt.connde;
 
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.AdapterValidator;
+import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.ActuatorValidator;
 import org.citopt.connde.domain.component.Sensor;
@@ -21,6 +22,9 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Contains crucial rest configurations for the application.
@@ -93,7 +97,8 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
                 String id = resource.getContent().getId();
                 //Link sensor with deployment
                 Link link = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.
-                        methodOn(RestDeploymentController.class).deploySensor(id))
+                        methodOn(RestDeploymentController.class).deploySensor(id, new ArrayList<ParameterInstance>() {
+                }))
                         .withRel("deploy");
                 resource.add(link);
                 return resource;
@@ -122,7 +127,7 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
                 String id = resource.getContent().getId();
                 //Link actuator with deployment
                 Link link = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.
-                        methodOn(RestDeploymentController.class).deployActuator(id))
+                        methodOn(RestDeploymentController.class).deployActuator(id, new ArrayList<ParameterInstance>()))
                         .withRel("deploy");
                 resource.add(link);
                 return resource;

@@ -187,7 +187,16 @@ accept: application/json
   "routines": [{
     "name": "service-stub.py",
     "content": "service code"
-  }]
+  }],
+  "parameters" : [ {
+    "name" : "interval",
+    "type" : "Number",
+    "mandatory" : false
+  }, {
+    "name" : "indoor",
+    "type" : "Switch",
+    "mandatory" : true
+  } ],
 }
 ```
 
@@ -199,6 +208,15 @@ Content-Type: application/json;charset=UTF-8
   "id": "5a0336ba972ca8734022d67c",
   "name": "TemperatureSensorAdapter",
   "description": "An adapter for the LK temperature sensor",
+  "parameters" : [ {
+    "name" : "interval",
+    "type" : "Number",
+    "mandatory" : false
+  }, {
+    "name" : "indoor",
+    "type" : "Switch",
+    "mandatory" : true
+  } ],
   ...
 }
 ```
@@ -214,7 +232,16 @@ HTTP/1.1 200 OK
   {
     "name": "TemperatureSensorAdapter",
     "id": "596c7c344f0c58688e5aa6b3",
-    "description": "An adapter for the LK temperature sensor"
+    "description": "An adapter for the LK temperature sensor",
+    "parameters" : [ {
+        "name" : "interval",
+        "type" : "Number",
+        "mandatory" : false
+    }, {
+        "name" : "indoor",
+        "type" : "Switch",
+        "mandatory" : true
+    } ],
   }, ...
 ]
 ```
@@ -229,7 +256,16 @@ HTTP/1.1 200 OK
 {
   "name": "TemperatureSensorAdapter",
   "id": "596c7c344f0c58688e5aa6b3",
-  "description": "An adapter for the LK temperature sensor"
+  "description": "An adapter for the LK temperature sensor",
+    "parameters" : [ {
+        "name" : "interval",
+        "type" : "Number",
+        "mandatory" : false
+    }, {
+        "name" : "indoor",
+        "type" : "Switch",
+        "mandatory" : true
+    } ],
 }
 ```
 
@@ -248,7 +284,16 @@ PUT /api/adapters/596c7c344f0c58688e5aa6b3 HTTP/1.1
   "routines": [{
     "name": "service-stub.py",
     "content": "..."
-  }]
+  }],
+  "parameters" : [ {
+    "name" : "interval",
+    "type" : "Number",
+    "mandatory" : false
+  }, {
+    "name" : "indoor",
+    "type" : "Switch",
+    "mandatory" : true
+  } ],
 }
 ```
 
@@ -268,8 +313,8 @@ To register a sensor, it is necessary to register first:
 #### creating a new sensor:
 The following example uses the previously registered adapter (id = 596c7c344f0c58688e5aa6b3) and device (id = 596c7a7d4f0c58688e5aa6b1):
 
-POST /api/sensors/ HTTP/1.1  
-Content-Type: application/json  
+POST /api/sensors/ HTTP/1.1
+Content-Type: application/json
 accept: application/json  
 
 ```javascript
@@ -359,15 +404,38 @@ HTTP/1.1 204 No Content
 
 #### deploying the adapter for a sensor (e.g., for id 596c7a974f0c58688e5aa6b2):
 
-POST /api/deploy/sensor/596c7a974f0c58688e5aa6b2
+POST /api/deploy/sensor/596c7a974f0c58688e5aa6b2 HTTP/1.1
+```javascript
+[{
+  "name": "interval",
+  "value": 300
+}, {
+  "name": "indoor",
+  "value": true
+}]
+```
 
-HTTP/1.1 201 Created 
+HTTP/1.1 201 Created
+```javascript
+{
+  "success": true,
+  "globalMessage": "Successfully deployed",
+  "fieldErrors":{}
+}
+```
 
 #### undeploying adapter of a sensor (e.g., for id 596c7a974f0c58688e5aa6b2):
 
 DELETE /api/deploy/sensor/596c7a974f0c58688e5aa6b2 HTTP/1.1
 
-HTTP/1.1 204 No Content
+HTTP/1.1 200 OK
+```javascript
+{
+  "success": true,
+  "globalMessage": "Successfully undeployed",
+  "fieldErrors":{}
+}
+```
 
 #### retrieving sensor values (e.g., for id 5b06834c4f0ca35062f25360): 
 

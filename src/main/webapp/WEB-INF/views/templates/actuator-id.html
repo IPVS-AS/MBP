@@ -1,186 +1,247 @@
 <div class="row clearfix" ng-hide="ng-hide">
-  <!-- Actuator Details Card -->
-  <div class="col-lg-7">
-    <div class="card">
-      <div class="header">
-        <h2>
-          Actuator
-        </h2>
-      </div>
-      <div class="body">
-        <table class="table table-hover">
-          <tbody>
-            <tr id="{{item.id}}">
-              <th>Name</th>
-              <td>{{actuatorDetailsCtrl.item.name}}
-              </td>
-            </tr>
-            <tr>
-              <th>Actuator Type</th>
-              <td>{{actuatorDetailsCtrl.item.componentType}}
-              </td>
-            </tr>
-            <tr>
-              <th>Adapter</th>
-              <td>{{actuatorDetailsCtrl.item._embedded.adapter.name}}
-              </td>
-            </tr>
-            <tr>
-              <th>Device</th>
-              <td>{{actuatorDetailsCtrl.item._embedded.device.name}}
-                (IP:
-                {{actuatorDetailsCtrl.item._embedded.device.ipAddress ? actuatorDetailsCtrl.item._embedded.device.ipAddress : '-'}})</a>
-            </td>
-          </tr>
-          <tr ng-hide="ctrl.deployer.processing">
-            <th>Status</th>
-            <td>{{ctrl.deployer.available ? (ctrl.deployer.deployed ? 'RUNNING' : 'AVAILABLE') : 'NOT AVAILABLE'}}</td>
-          </tr>
-        </tbody>
-      </table>
-      <!-- deploy loader (show while deployment is being checked or executed) -->
-      <div class="row clearfix" ng-show="ctrl.deployer.processing">
-        <div class="col-xs-12 align-center">
-          <div class="preloader">
-            <!-- dataDeploy.deploying -->
-            <div class="spinner-layer pl-blue">
-              <div class="circle-clipper left">
-                <div class="circle"></div>
-              </div>
-              <div class="circle-clipper right">
-                <div class="circle"></div>
-              </div>
-
+    <!-- Actuator Details Card -->
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="header">
+                <h2>
+                    Actuator
+                </h2>
             </div>
-          </div>
-        </div>
-      </div>
-      <div class="row clearfix" ng-hide="ctrl.deployer.processing">
-        <div class="col-xs-12" ng-hide="ctrl.deployer.available">
-          <!-- not deployer.available -->
-          <div class="alert alert-warning">
-            <button class="close" type="button" ng-click="ctrl.deployer.update()">
-              <i class="material-icons">refresh</i>
-            </button>
-            Actuator is not available
-          </div>
-        </div>
-        <div class="col-xs-12">
-          <!-- "global" success and error for deployer.doDeploy -->
-          <div class="alert alert-success" ng-show="ctrl.deployer.deploy.success">
-            {{ctrl.deployer.deploy.success}}
-          </div>
-          <div class="alert alert-danger" ng-show="ctrl.deployer.deploy.errors.global">
-            {{ctrl.deployer.deploy.errors.global}}
-          </div>
-        </div>
-        <div class="col-xs-12">
-          <!-- "global" success and error for deployer.doUndeploy -->
-          <div class="alert alert-success" ng-show="ctrl.deployer.undeploy.success">
-            {{ctrl.deployer.undeploy.success}}
-          </div>
-          <div class="alert alert-danger" ng-show="ctrl.deployer.undeploy.errors.global">
-            {{ctrl.deployer.undeploy.errors.global}}
-          </div>
-        </div>
-        <div class="col-xs-12">
-          <form ng-submit="ctrl.deployer.doDeploy()">
-            <div class="row clearfix">
-              <div class="col-xs-9">
-                <!-- deployer.deploy.pinset -->
-                <label>Pins (comma separated)</label>
-                <div class="form-group" ng-class="{'has-error' : ctrl.deployer.deploy.errors.name}">
-                  <div class="form-line" ng-class="{'focused error' : ctrl.deployer.deploy.errors.name }">
-                    <input class="form-control pinset" id="actuator-form-input-name" type="text" placeholder="21,22,23" ng-model="ctrl.deployer.deploy.pinset"/>
-                  </div>
-                  <span class="help-block" ng-show="ctrl.deployer.deploy.errors.pinset">{{ctrl.deployer.deploy.errors.pinset}}</span>
+            <div class="body">
+                <table class="table table-hover">
+                    <tbody>
+                    <tr id="{{item.id}}">
+                        <th>Name</th>
+                        <td>{{actuatorDetailsCtrl.item.name}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Actuator type</th>
+                        <td>{{actuatorDetailsCtrl.item.componentType}}</td>
+                    </tr>
+                    <tr>
+                        <th>Adapter</th>
+                        <td>{{actuatorDetailsCtrl.item._embedded.adapter.name}}</td>
+                    </tr>
+                    <tr>
+                        <th>Device</th>
+                        <td>{{actuatorDetailsCtrl.item._embedded.device.name}}
+                            (IP:
+                            {{actuatorDetailsCtrl.item._embedded.device.ipAddress ?
+                            actuatorDetailsCtrl.item._embedded.device.ipAddress : '-'}})
+                        </td>
+                    </tr>
+                    <tr ng-hide="ctrl.deployer.processing">
+                        <th>Status</th>
+                        <td>{{ctrl.deployer.available ? (ctrl.deployer.deployed ? 'RUNNING' : 'AVAILABLE') :
+                            'NOT AVAILABLE'}}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <!-- deploy loader (show while deployment is being checked or executed) -->
+                <div class="row clearfix" ng-show="ctrl.deployer.processing">
+                    <div class="col-xs-12 align-center">
+                        <div class="preloader">
+                            <!-- dataDeploy.deploying -->
+                            <div class="spinner-layer pl-blue">
+                                <div class="circle-clipper left">
+                                    <div class="circle"></div>
+                                </div>
+                                <div class="circle-clipper right">
+                                    <div class="circle"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
-              <div class="col-xs-3">
-                <button class="btn btn-primary waves-effect" id="deploy-button">Deploy</button>
-              </div>
+                <div class="row clearfix" ng-hide="ctrl.deployer.processing">
+                    <div class="col-xs-12" ng-hide="ctrl.deployer.available">
+                        <!-- not deployer.available -->
+                        <div class="alert alert-warning">
+                            <button class="close" type="button" ng-click="ctrl.deployer.update()">
+                                <i class="material-icons">refresh</i>
+                            </button>
+                            Actuator is not available
+                        </div>
+                    </div>
+                    <div class="col-xs-12">
+                        <!-- Alert for global messages -->
+                        <div class="alert" ng-class="ctrl.deployer.status.success ? 'alert-success' : 'alert-danger'"
+                             ng-show="ctrl.deployer.status.globalMessage.length > 0">
+                            {{ctrl.deployer.status.globalMessage}}
+                        </div>
+                    </div>
+                    <div class="col-xs-12">
+                        <form ng-submit="ctrl.deployer.doDeploy()">
+                            <div class="row clearfix">
+                                <div class="col-xs-9" ng-show="!ctrl.deployer.deployed">
+                                    <label>Parameters:</label>
+                                    <table class="table parameter-table">
+                                        <thead></thead>
+                                        <tbody>
+                                        <tr ng-repeat="parameter in actuatorDetailsCtrl.item._embedded.adapter.parameters">
+                                            <td>
+                                                <label>{{parameter.name}}:</label><br/>
+                                                <small ng-show="parameter.mandatory">(required)</small>
+                                            </td>
+                                            <td>
+                                                <div ng-switch="parameter.type">
+                                                    <div ng-switch-when="Text">
+                                                        <input class="form-control" type="text"
+                                                               ng-required="parameter.mandatory"
+                                                               ng-model="ctrl.parameterValues[$index].value"/>
+                                                    </div>
+                                                    <div ng-switch-when="Number">
+                                                        <input class="form-control" type="number"
+                                                               ng-required="parameter.mandatory"
+                                                               ng-model="ctrl.parameterValues[$index].value"/>
+                                                    </div>
+                                                    <div class="switch" ng-switch-when="Switch">
+                                                        <label>No
+                                                            <input type="checkbox"
+                                                                   ng-model="ctrl.parameterValues[$index].value">
+                                                            <span class="lever"></span>Yes</label>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="label bg-grey"
+                                                      ng-show="parameter.unit">{{parameter.unit}}</span>
+                                            </td>
+                                        </tr>
+                                        <tr ng-show="actuatorDetailsCtrl.item._embedded.adapter.parameters.length === 0">
+                                            <td colspan="2">No parameters required.</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="has-error" ng-show="ctrl.deployer.status.fieldErrors.parameters">
+                      <span class="help-block focused error">
+                        {{ctrl.deployer.status.fieldErrors.parameters}}
+                      </span>
+                                    </div>
+                                </div>
+                                <div class="col-xs-3" ng-show="!ctrl.deployer.deployed">
+                                    <button class="btn btn-primary waves-effect">Deploy</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-xs-12" ng-show="ctrl.deployer.available && ctrl.deployer.deployed">
+                        <form ng-submit="ctrl.deployer.doUndeploy()">
+                            <div class="row clearfix">
+                                <div class="col-xs-3">
+                                    <button class="btn btn-warning waves-effect">Undeploy</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-          </form>
         </div>
-        <div class="col-xs-12" ng-show="ctrl.deployer.available && ctrl.deployer.deployed">
-          <form ng-submit="ctrl.deployer.doUndeploy()">
-            <div class="row clearfix">
-              <div class="col-xs-3">
-                <button class="btn btn-warning waves-effect" id="deploy-button">Undeploy</button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
     </div>
-  </div>
-</div>
-<!-- #END# Actuator Details Card -->
+    <!-- #END# Actuator Details Card -->
 
-<div class="col-lg-5">
-  <div class="card">
-    <div class="header">
-      <h2>
-        Received values
-        <small>Values sent by the actuator</small>
-      </h2>
-      <ul class="header-dropdown m-r--5">
-        <li>
-          <a role="button" ng-click="isCollapsedLog = !isCollapsedLog">
-            <i class="material-icons">keyboard_arrow_down</i>
-          </a>
-        </li>
-      </ul>
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="header">
+                <h2>
+                    Live actuator values
+                </h2>
+            </div>
+            <div class="body">
+                <div id="liveValues" style="width:100%; height:400px;"></div>
+            </div>
+        </div>
     </div>
-    <div class="body" uib-collapse="isCollapsedLog">
-      <p>
-        The value field is parsed from the message received, so it may not be present. The raw message will be linked on the value field.
-      </p>
-      <!-- actuatorValues loader -->
-      <div class="row clearfix" ng-show="ctrl.loader.actuatorValues">
-        <div class="col-xs-12 align-center">
-          <div class="preloader">
-            <div class="spinner-layer pl-blue">
-              <div class="circle-clipper left">
-                <div class="circle"></div>
-              </div>
-              <div class="circle-clipper right">
-                <div class="circle"></div>
-              </div>
+
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="header">
+                <div style="align: right">
+                    <button class="close" type="button" ng-click="ctrl.showCharts()">
+                        <i class="material-icons">refresh</i>
+                    </button>
+                </div>
+                <h2>
+                    Historical actuator values
+                </h2>
 
             </div>
-          </div>
+            <div class="body">
+                <div id="historicalValues" style="width:100%; height:400px;"></div>
+            </div>
         </div>
-      </div>
-      <table class="table table-hover" ng-show="ctrl.actuatorValues.data && !ctrl.loader.actuatorValues" st-table="ctrl.actuatorValues.data" st-pipe="ctrl.loadActuatorValues" refresh-table="refreshActuatorValues">
-        <thead>
-          <tr>
-            <th>Value</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr id="{{v.id}}" ng-repeat="v in ctrl.actuatorValues.data">
-            <td>
-              <button uib-popover="{{v.message}}" popover-title="{{'Raw Message'}}" type="button" class="btn btn-default">
-                {{v.value ? v.value : '-'}}
-              </button>
-            </td>
-            <td>{{v.date}}</td>
-          </tr>
-          <tr ng-show="ctrl.actuatorValues.data.length === 0">
-            <td>No values received yet.</td>
-            <td></td>
-            <td></td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
-          </tr>
-        </tfoot>
-      </table>
     </div>
-  </div>
-</div>
+
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="header">
+                <h2>
+                    Received values
+                    <small>Values sent by the actuator</small>
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a role="button" ng-click="isCollapsedLog = !isCollapsedLog">
+                            <i class="material-icons">keyboard_arrow_down</i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="body" uib-collapse="isCollapsedLog">
+                <p>
+                    The value field is parsed from the message received, so it may not be present. The raw message will
+                    be linked on the value field.
+                </p>
+                <!-- actuatorValues loader -->
+                <div class="row clearfix" ng-show="ctrl.loader.actuatorValues">
+                    <div class="col-xs-12 align-center">
+                        <div class="preloader">
+                            <div class="spinner-layer pl-blue">
+                                <div class="circle-clipper left">
+                                    <div class="circle"></div>
+                                </div>
+                                <div class="circle-clipper right">
+                                    <div class="circle"></div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table class="table table-hover" ng-show="ctrl.actuatorValues.data && !ctrl.loader.actuatorValues"
+                       st-table="ctrl.actuatorValues.data" st-pipe="ctrl.loadActuatorValues"
+                       refresh-table="refreshActuatorValues">
+                    <thead>
+                    <tr>
+                        <th>Value</th>
+                        <th>Date</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="{{v.id}}" ng-repeat="v in ctrl.actuatorValues.data">
+                        <td>
+                            <button uib-popover="{{v.message}}" popover-title="{{'Raw Message'}}" type="button"
+                                    class="btn btn-default">
+                                {{v.value ? v.value : '-'}}
+                            </button>
+                        </td>
+                        <td>{{v.date}}</td>
+                    </tr>
+                    <tr ng-show="ctrl.actuatorValues.data.length === 0">
+                        <td>No values received yet.</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
