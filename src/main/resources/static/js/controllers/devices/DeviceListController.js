@@ -23,8 +23,17 @@ app.controller('DeviceListController',
         addDeviceCtrl: $controller('AddItemController as addDeviceCtrl', {
           $scope: $scope,
           addItem: function(data) {
-            data.macAddress = DeviceService.normalizeMacAddress(data.formattedMacAddress);
-            return addDevice(data);
+            var deviceObject = {};
+
+            for (var property in data) {
+              if (data.hasOwnProperty(property)) {
+                deviceObject[property] = data[property];
+              }
+            }
+            delete deviceObject.formattedMacAddress;
+            deviceObject.macAddress = DeviceService.normalizeMacAddress(data.formattedMacAddress);
+
+            return addDevice(deviceObject);
           }
         }),
         deleteDeviceCtrl: $controller('DeleteItemController as deleteDeviceCtrl', {

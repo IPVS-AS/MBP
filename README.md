@@ -88,7 +88,6 @@ accept: application/json
   "name": "Raspberry Pi",
   "macAddress": "123456789067",
   "ipAddress": "192.168.0.34",
-  "formattedMacAddress": "12-34-56-78-90-67",
   "username": "pi",
   "rsaKey": "-----BEGIN RSA PRIVATE KEY-----\nMIIEogIBAAKC...\n-----END RSA PRIVATE KEY-----"
 }
@@ -154,7 +153,6 @@ PUT /api/devices/596c7a7d4f0c58688e5aa6b1 HTTP/1.1
   "name": "Raspberry Pi",
   "macAddress": "127556789067",
   "ipAddress": "192.168.0.75",
-  "formattedMacAddress": "12-75-56-78-90-67",
   "username": "pi",
   "rsaKey": "-----BEGIN RSA PRIVATE KEY-----\nMIIEogIBAAKC...\n-----END RSA PRIVATE KEY-----"
 }
