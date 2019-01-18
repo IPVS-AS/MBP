@@ -1,91 +1,91 @@
 /* global app */
 
 app.controller('DeviceListController',
-  ['$scope', '$controller', 'DeviceService', 'deviceList', 'addDevice', 'deleteDevice', 'ComponentTypeService',
-    function($scope, $controller, DeviceService, deviceList, addDevice, deleteDevice, ComponentTypeService) {
-      var vm = this;
+    ['$scope', '$controller', 'DeviceService', 'deviceList', 'addDevice', 'deleteDevice', 'ComponentTypeService',
+        function ($scope, $controller, DeviceService, deviceList, addDevice, deleteDevice, ComponentTypeService) {
+            var vm = this;
 
-      (function initController() {
-        loadDeviceTypes();
-      })();
+            (function initController() {
+                loadDeviceTypes();
+            })();
 
-      for (var i in deviceList) {
-        deviceList[i].formattedMacAddress =
-          DeviceService.formatMacAddress(deviceList[i].macAddress);
-      }
-
-      // expose controller ($controller will auto-add to $scope)
-      angular.extend(vm, {
-        deviceListCtrl: $controller('ItemListController as deviceListCtrl', {
-          $scope: $scope,
-          list: deviceList
-        }),
-        addDeviceCtrl: $controller('AddItemController as addDeviceCtrl', {
-          $scope: $scope,
-          addItem: function(data) {
-            var deviceObject = {};
-
-            for (var property in data) {
-              if (data.hasOwnProperty(property)) {
-                deviceObject[property] = data[property];
-              }
+            for (var i in deviceList) {
+                deviceList[i].formattedMacAddress =
+                    DeviceService.formatMacAddress(deviceList[i].macAddress);
             }
-            delete deviceObject.formattedMacAddress;
-            deviceObject.macAddress = DeviceService.normalizeMacAddress(data.formattedMacAddress);
 
-            return addDevice(deviceObject);
-          }
-        }),
-        deleteDeviceCtrl: $controller('DeleteItemController as deleteDeviceCtrl', {
-          $scope: $scope,
-          deleteItem: function(data) {
-            // get ID here
-            return deleteDevice(data);
-          }
-        })
-      });
+            // expose controller ($controller will auto-add to $scope)
+            angular.extend(vm, {
+                deviceListCtrl: $controller('ItemListController as deviceListCtrl', {
+                    $scope: $scope,
+                    list: deviceList
+                }),
+                addDeviceCtrl: $controller('AddItemController as addDeviceCtrl', {
+                    $scope: $scope,
+                    addItem: function (data) {
+                        var deviceObject = {};
 
-      // $watch 'addItem' result and add to 'itemList'
-      $scope.$watch(
-        function() {
-          // value being watched
-          return vm.addDeviceCtrl.result;
-        },
-        function() {
-          // callback
-          console.log('addDeviceCtrl.result modified.');
+                        for (var property in data) {
+                            if (data.hasOwnProperty(property)) {
+                                deviceObject[property] = data[property];
+                            }
+                        }
+                        delete deviceObject.formattedMacAddress;
+                        deviceObject.macAddress = DeviceService.normalizeMacAddress(data.formattedMacAddress);
 
-          var data = vm.addDeviceCtrl.result;
-          if (data) {
-            data.formattedMacAddress = DeviceService.formatMacAddress(data.macAddress);
-            vm.deviceListCtrl.pushItem(data);
-          }
+                        return addDevice(deviceObject);
+                    }
+                }),
+                deleteDeviceCtrl: $controller('DeleteItemController as deleteDeviceCtrl', {
+                    $scope: $scope,
+                    deleteItem: function (data) {
+                        // get ID here
+                        return deleteDevice(data);
+                    }
+                })
+            });
+
+            // $watch 'addItem' result and add to 'itemList'
+            $scope.$watch(
+                function () {
+                    // value being watched
+                    return vm.addDeviceCtrl.result;
+                },
+                function () {
+                    // callback
+                    console.log('addDeviceCtrl.result modified.');
+
+                    var data = vm.addDeviceCtrl.result;
+                    if (data) {
+                        data.formattedMacAddress = DeviceService.formatMacAddress(data.macAddress);
+                        vm.deviceListCtrl.pushItem(data);
+                    }
+                }
+            );
+
+            // $watch 'deleteItem' result and remove from 'itemList'
+            $scope.$watch(
+                function () {
+                    // value being watched
+                    return vm.deleteDeviceCtrl.result;
+                },
+                function () {
+                    var id = vm.deleteDeviceCtrl.result;
+
+                    vm.deviceListCtrl.removeItem(id);
+                }
+            );
+
+            function loadDeviceTypes() {
+                ComponentTypeService.GetByComponent('DEVICE')
+                    .then(function (response) {
+                        if (response.success) {
+                            vm.deviceTypes = response.data;
+                        } else {
+                            console.log("Error loading device types!");
+                        }
+                    });
+            };
+
         }
-      );
-
-      // $watch 'deleteItem' result and remove from 'itemList'
-      $scope.$watch(
-        function() {
-          // value being watched
-          return vm.deleteDeviceCtrl.result;
-        },
-        function() {
-          var id = vm.deleteDeviceCtrl.result;
-
-          vm.deviceListCtrl.removeItem(id);
-        }
-      );
-
-      function loadDeviceTypes() {
-        ComponentTypeService.GetByComponent('DEVICE')
-          .then(function(response) {
-            if (response.success) {
-              vm.deviceTypes = response.data;
-            } else {
-              console.log("Error loading device types!");
-            }
-          });
-      };
-
-    }
-  ]);
+    ]);
