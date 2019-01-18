@@ -220,7 +220,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
         templateUrl: 'templates/devices',
         controller: 'DeviceListController as ctrl',
         resolve: {
-          isExpert: ['$location', 'SessionService', redirectExpert],
           deviceList: ['CrudService', function(CrudService) {
             return CrudService.fetchAllItems('devices');
           }],
