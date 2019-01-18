@@ -1,4 +1,4 @@
-﻿/* Navbar ====================================== */
+/* Navbar ====================================== */
 @import url(materialize.css);
 .navbar {
   font-family: "Roboto", sans-serif;
@@ -2351,7 +2351,7 @@
 
 /* General ===================================== */
 body {
-  background-color: #e9e9e9;
+  background-color: #efefef;
   -moz-transition: all 0.5s;
   -o-transition: all 0.5s;
   -webkit-transition: all 0.5s;
@@ -3042,7 +3042,7 @@ section.content {
   background-color: #fff;
   position: relative;
   overflow: hidden;
-  margin-bottom: 30px; }
+  margin-bottom: 20px; }
   .info-box .icon {
     display: inline-block;
     text-align: center;
@@ -3050,7 +3050,7 @@ section.content {
     width: 80px; }
     .info-box .icon i {
       color: #fff;
-      font-size: 50px;
+      font-size: 60px;
       line-height: 80px; }
     .info-box .icon .chart.chart-bar {
       height: 100%;
@@ -3071,8 +3071,8 @@ section.content {
     display: inline-block;
     padding: 7px 10px; }
     .info-box .content .text {
-      font-size: 13px;
-      margin-top: 11px;
+      font-size: 15px;
+      margin-top: 9px;
       color: #555; }
     .info-box .content .number {
       font-weight: normal;
