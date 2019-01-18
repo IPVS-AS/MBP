@@ -38,10 +38,6 @@ public class AdapterValidator implements Validator {
                 errors, "name", "adapter.name.empty",
                 "The name cannot be empty!");
 
-        ValidationUtils.rejectIfEmptyOrWhitespace(
-                errors, "description", "adapter.description.empty",
-                "The description cannot be empty!");
-
         if (!adapter.hasRoutines()) {
             errors.rejectValue("routines", "adapter.routines.empty",
                     "Routine files must be provided.");
