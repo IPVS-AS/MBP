@@ -1,21 +1,26 @@
-<div class="row clearfix" ng-hide="ng-hide">
+<div>
   <!-- List of Sensors Card -->
-  <div class="col-lg-7">
+  <div class="col-lg-12">
     <div class="card">
       <div class="header">
-        <h2>
-          List of sensors
-        </h2>
+		<div class="col-lg-6">
+			<h2>Sensors</h2>
+		</div>
+		<div class="align-right">	
+			<button id="add-button" type="button" class="btn bg-blue btn-circle waves-effect waves-circle waves-float" data-toggle="modal" data-target="#addSensorModal">
+      				<i class="material-icons">add</i>
+      		</button>
+     	</div>
       </div>
       <div class="body">
         <table class="table table-hover" st-table="displayedCollection" st-safe-src="sensorListCtrl.items">
           <thead>
             <tr>
               <th>Name</th>
+              <th>Status</th>
               <th>Sensor type</th>
               <th>Adapter</th>
               <th>Device</th>
-              <th>ID</th>
             </tr>
           </thead>
           <tbody>
@@ -23,14 +28,12 @@
               <td>
                 <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>
               </td>
+			  <td><span class="badge badge-info">not connected</span></td>
               <td>{{item.componentType}}</td>
               <td>{{item._embedded.adapter.name}}</td>
               <td>{{item._embedded.device.name}}</td>
               <td>
                 <form ng-submit="deleteSensorCtrl.deleteItem()">
-                  <div ng-model="deleteSensorCtrl.item.id">
-                    {{item.id}}
-                  </div>
                   <button type="submit" class="btn btn-danger m-t-0 waves-effect" ng-click="deleteSensorCtrl.item.id = item.id">
                     Delete
                   </button>
@@ -38,7 +41,7 @@
               </td>
             </tr>
             <tr ng-show="sensorListCtrl.items.length === 0">
-              <td>No sensors registered yet.</td>
+              <td>No sensors registered.</td>
               <td></td>
               <td></td>
               <td></td>
@@ -55,150 +58,71 @@
   </div>
   <!-- #END# List of Sensors Card -->
 
-  <!-- Register Sensors Card -->
-  <div class="col-lg-5">
-    <div class="card">
-      <div class="header">
-        <h2>
-          Register
-        </h2>
-      </div>
-      <div class="body">
-        <div ng-disabled="ctrl.registeringDevice">
-          <form ng-submit="addSensorCtrl.addItem()">
-            <fieldset id="sensor-form">
-              <h2 class="card-inside-title">New sensor</h2>
-              <div class="row clearfix">
-                <div class="col-xs-12">
-                  <!-- "global" error for addItem -->
-                  <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.global}">
-                    <span class="alert alert-danger" ng-show="addSensorCtrl.item.errors.global">
-                      {{addSensorCtrl.item.errors.global}}
-                    </span>
-                  </div>
-                  <!-- item.name group -->
-                  <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.name }">
-                    <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.name }">
-                      <input class="form-control" id="sensor-form-input-name" type="text" placeholder="Name" ng-model="addSensorCtrl.item.name"/>
-                    </div>
-                    <span class="help-block" ng-show="addSensorCtrl.item.errors.name">{{addSensorCtrl.item.errors.name.message}}</span>
-                  </div>
-                  <!-- item.componentType group -->
-                  <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.componentType }">
-                    <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.componentType }">
-                      <select class="form-control show-tick" id="sensor-form-select-component-type" ng-model="addSensorCtrl.item.componentType">
-                        <option value="">Select sensor type</option>
-                        <option ng-repeat="type in ctrl.sensorTypes" value="{{type.name}}">{{type.name}}</option>
-                      </select>
-                    </div>
-                    <span class="help-block" ng-show="addSensorCtrl.item.errors.componentType">{{addSensorCtrl.item.errors.componentType.message}}</span>
-                  </div>
-                  <!-- item.adapter group -->
-                  <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.adapter }">
-                    <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.adapter }">
-                      <select class="form-control show-tick" id="sensor-form-select-adapter" ng-model="addSensorCtrl.item.adapter" ng-options="t._links.self.href as (t.name) for t in adapterListCtrl.items">
-                        <option value="">Select adapter<option/>
-                        </select>
-                      </div>
-                      <span class="help-block" ng-show="addSensorCtrl.item.errors.adapter">{{addSensorCtrl.item.errors.adapter.message}}</span>
-                    </div>
-                  </div>
-                  <div class="col-xs-9">
-                    <!-- item.device group -->
-                    <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.device }">
-                      <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.device }">
-                        <select class="form-control show-tick" id="sensor-form-select-device" ng-model="addSensorCtrl.item.device" ng-options="d._links.self.href as (d.name +       ' - ' +       d.formattedMacAddress) for d in deviceListCtrl.items">
-                          <option value="">Select device<option/>
-                          </select>
-                        </div>
-                        <span class="help-block" ng-show="addSensorCtrl.item.errors.device">{{addSensorCtrl.item.errors.device.message}}</span>
-                      </div>
-                    </div>
-                    <div class="col-xs-3">
-                      <!-- add device button -->
-                      <div class="form-group align-right">
-                        <button id="toggle-device-form" type="button" class="btn bg-light-green btn-circle waves-effect waves-circle waves-float" ng-click="ctrl.registeringDevice = true">
-                          <i class="material-icons">add_to_queue</i>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="col-xs-12">
-                      <!-- buttons -->
-                      <div class="form-group align-right">
-                        <button type="submit" class="btn btn-primary m-t-15 waves-effect">
-                          Register
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </fieldset>
-              </form>
-            </div>
-            <div ng-show="ctrl.registeringDevice">
-              <form ng-submit="addDeviceCtrl.addItem()">
-                <fieldset id="device-form">
-                  <h2 class="card-inside-title">New device</h2>
-                  <div class="row clearfix">
-                    <div class="col-xs-12">
-                      <!-- "global" error for addItem -->
-                      <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.global}">
-                        <span class="alert alert-danger" ng-show="addDeviceCtrl.item.errors.global">
-                          {{addDeviceCtrl.item.errors.global}}
-                        </span>
-                      </div>
-                      <!-- item.name group -->
-                      <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.name }">
-                        <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.name }">
-                          <input class="form-control" id="device-form-input-name" type="text" placeholder="Name" ng-model="addDeviceCtrl.item.name"/>
-                        </div>
-                        <span class="help-block" ng-show="addDeviceCtrl.item.errors.name">{{addDeviceCtrl.item.errors.name.message}}</span>
-                      </div>
-                      <!-- item.macAddress group -->
-                      <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.macAddress }">
-                        <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.macAddress }">
-                          <input class="form-control mac-address" id="device-form-input-macAddress" type="text" placeholder="Mac address" ng-model="addDeviceCtrl.item.formattedMacAddress"/>
-                        </div>
-                        <span class="help-block" ng-show="addDeviceCtrl.item.errors.macAddress">{{addDeviceCtrl.item.errors.macAddress.message}}</span>
-                      </div>
-                      <!-- item.ipAddress group -->
-                      <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.ipAddress }">
-                        <div class="form-line" ng-class="{'focused error' : addDeviceCtrl.item.errors.ipAddress }">
-                          <input class="form-control" id="device-form-input-ipAddress" type="text" placeholder="IP address" ng-model="addDeviceCtrl.item.ipAddress"/>
-                        </div>
-                        <p class="help-block">IP address is optional and will be overwritten once the system finds the device.</p>
-                        <span class="help-block" ng-show="addDeviceCtrl.item.errors.ipAddress">{{addDeviceCtrl.item.errors.ipAddress.message}}</span>
-                      </div>
-                    </div>
-                    <div class="col-xs-12">
-                      <!-- buttons -->
-                      <div class="form-group align-right">
-                        <button type="button" class="btn btn-default m-t-15 waves-effect" ng-click="ctrl.registeringDevice = false">
-                          Cancel
-                        </button>
-                        <button type="submit" class="btn btn-primary m-t-15 waves-effect">
-                          Register
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </fieldset>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- #END# Register Sensors Card -->
+	<!-- Modal -->
+	<div class="modal fade" id="addSensorModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+	        		<h5 class="modal-title">Register a new sensor
+	        			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          				<span aria-hidden="true">&times;</span>
+	        			</button>
+	        		</h5>
+
+	      		</div>
+		  		<form id="addSensorForm" ng-submit="addSensorCtrl.addItem()">
+					<fieldset id="sensor-form">
+		      			<div class="modal-body">
+							<!-- "global" error for addItem -->
+			                <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addSensorCtrl.item.errors.global">
+			                      {{addSensorCtrl.item.errors.global}}
+			                    </span>
+			                </div>
+			                <!-- item.name group -->
+			                <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.name }">
+			                    <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.name }">
+			                      <input class="form-control" id="sensor-form-input-name" type="text" placeholder="Name" ng-model="addSensorCtrl.item.name"/>
+			                    </div>
+			                    <span class="help-block" ng-show="addSensorCtrl.item.errors.name">{{addSensorCtrl.item.errors.name.message}}</span>
+			                </div>
+			                <!-- item.componentType group -->
+			                <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.componentType }">
+			                    <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.componentType }">
+			                      <select class="form-control show-tick" id="sensor-form-select-component-type" ng-model="addSensorCtrl.item.componentType">
+			                        <option value="">Select sensor type</option>
+			                        <option ng-repeat="type in ctrl.sensorTypes" value="{{type.name}}">{{type.name}}</option>
+			                      </select>
+			                    </div>
+			                    <span class="help-block" ng-show="addSensorCtrl.item.errors.componentType">{{addSensorCtrl.item.errors.componentType.message}}</span>
+			                </div>
+							<!-- item.adpter group -->
+			                <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.adapter }">
+			                    <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.adapter }">
+			                      <select class="form-control show-tick" id="sensor-form-select-adapter" ng-model="addSensorCtrl.item.adapter" ng-options="t._links.self.href as (t.name) for t in adapterListCtrl.items">
+			                        <option value="">Select adapter<option/>
+			                        </select>
+			                      </div>
+			                      <span class="help-block" ng-show="addSensorCtrl.item.errors.adapter">{{addSensorCtrl.item.errors.adapter.message}}</span>			                   
+			                </div>
+							<!-- item.device group -->
+		                    <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.device }">
+		                      <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.device }">
+		                        <select class="form-control show-tick" id="sensor-form-select-device" ng-model="addSensorCtrl.item.device" ng-options="d._links.self.href as (d.name +       ' - ' +       d.formattedMacAddress) for d in deviceListCtrl.items">
+		                          <option value="">Select device<option/>
+		                          </select>
+		                        </div>
+		                        <span class="help-block" ng-show="addSensorCtrl.item.errors.device">{{addSensorCtrl.item.errors.device.message}}</span>
+		                    </div>
+		      			</div>
+					    <div class="modal-footer">
+					    	<button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">Close</button>
+					        <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+					    </div>  
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+    <!-- #END# Modal -->
     </div>
-    <script>
-      $('#wizard_horizontal').steps({
-        headerTag: 'h2',
-        bodyTag: 'section',
-        transitionEffect: 'slideLeft',
-        onInit: function (event, currentIndex) {
-          setButtonWavesEffect(event);
-        },
-        onStepChanged: function (event, currentIndex, priorIndex) {
-          setButtonWavesEffect(event);
-        }
-      });
-    </script>
