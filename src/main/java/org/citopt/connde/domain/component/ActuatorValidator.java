@@ -39,6 +39,10 @@ public class ActuatorValidator implements Validator {
                 "The name cannot be empty!");
 
         ValidationUtils.rejectIfEmptyOrWhitespace(
+                errors, "componentType", "component.componentType.empty",
+                "The component type cannot be empty!");
+        
+        ValidationUtils.rejectIfEmptyOrWhitespace(
                 errors, "device", "component.device.empty",
                 "The device cannot be empty!");
 

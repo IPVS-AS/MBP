@@ -4521,7 +4521,8 @@ section.content {
 .table tbody tr td, .table tbody tr th {
   padding: 10px;
   border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee; }
+  border-bottom: 1px solid #eee; 
+  text-align: center; }
 
 .table tbody tr.primary td, .table tbody tr.primary th {
   background-color: #1f91f3;
@@ -4545,7 +4546,8 @@ section.content {
 
 .table thead tr th {
   padding: 10px;
-  border-bottom: 1px solid #eee; }
+  border-bottom: 1px solid #eee; 
+  text-align: center; }
 
 .table-bordered {
   border-top: 1px solid #eee; }
