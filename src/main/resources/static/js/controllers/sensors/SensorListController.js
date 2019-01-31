@@ -19,6 +19,24 @@ app.controller('SensorListController',
         return "#";
       };
 
+      function confirmDelete(data) {
+        var sensorId = data.id;
+        var sensorName = "";
+
+        for(var i = 0; i < sensorList.length; i++){
+          if(sensorId == sensorList[i].id){
+            sensorName = sensorList[i].name;
+            break;
+          }
+        }
+
+        return swal("Delete sensor",
+            "Are you sure you want to delete sensor \"" + sensorName + "\"?", "warning",
+            {
+              buttons: ["Cancel", "Delete sensor"]
+            });
+      }
+
       // expose variables
 
       angular.extend(vm, {
@@ -37,7 +55,8 @@ app.controller('SensorListController',
         }),
         deleteSensorCtrl: $controller('DeleteItemController as deleteSensorCtrl', {
           $scope: $scope,
-          deleteItem: deleteSensor
+          deleteItem: deleteSensor,
+          confirmDeletion: confirmDelete
         }),
         deviceCtrl: $controller('DeviceListController as deviceCtrl', {
           $scope: $scope,

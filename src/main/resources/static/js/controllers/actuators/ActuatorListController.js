@@ -19,6 +19,24 @@ app.controller('ActuatorListController',
         return "#";
       };
 
+      function confirmDelete(data) {
+        var actuatorId = data.id;
+        var actuatorName = "";
+
+        for(var i = 0; i < actuatorList.length; i++){
+          if(actuatorId == actuatorList[i].id){
+            actuatorName = actuatorList[i].name;
+            break;
+          }
+        }
+
+        return swal("Delete actuator",
+            "Are you sure you want to delete actuator \"" + actuatorName + "\"?", "warning",
+            {
+              buttons: ["Cancel", "Delete actuator"]
+            });
+      }
+
       // expose variables
       angular.extend(vm, {
         registeringDevice: false
@@ -36,7 +54,8 @@ app.controller('ActuatorListController',
         }),
         deleteActuatorCtrl: $controller('DeleteItemController as deleteActuatorCtrl', {
           $scope: $scope,
-          deleteItem: deleteActuator
+          deleteItem: deleteActuator,
+          confirmDeletion: confirmDelete
         }),
         deviceCtrl: $controller('DeviceListController as deviceCtrl', {
           $scope: $scope,

@@ -1,8 +1,8 @@
 /* global app */
 
 app.controller('AdapterListController',
-        ['$scope', '$controller', '$q', 'adapterList', 'addAdapter', 'deleteAdapter', 'FileReader', 'ParameterTypeService',
-            function ($scope, $controller, $q, adapterList, addAdapter, deleteAdapter, FileReader, ParameterTypeService) {
+        ['$scope', '$controller', '$q', 'adapterList', 'addAdapter', 'deleteAdapter', 'FileReader', 'ParameterTypeService', 'AdapterService',
+            function ($scope, $controller, $q, adapterList, addAdapter, deleteAdapter, FileReader, ParameterTypeService, AdapterService) {
                 var vm = this;
 
                 vm.dzServiceOptions = {
@@ -86,7 +86,28 @@ app.controller('AdapterListController',
                             console.log("Error while loading parameter types.");
                         }
                     });
-                };
+                }
+
+                function confirmDelete(data) {
+                    var usingComponents = AdapterService.getUsingComponents(data.id).value.data;
+                    console.log(usingComponents);
+
+                    var adapterId = data.id;
+                    var adapterName = "";
+
+                    for(var i = 0; i < adapterList.length; i++){
+                        if(adapterId == adapterList[i].id){
+                            adapterName = adapterList[i].name;
+                            break;
+                        }
+                    }
+
+                    return swal("Delete adapter",
+                        "Are you sure you want to delete adapter \"" + adapterName + "\"?", "warning",
+                        {
+                            buttons: ["Cancel", "Delete adapter"]
+                        });
+                }
 
                 // expose controller ($controller will auto-add to $scope)
                 angular.extend(vm, {
@@ -131,7 +152,8 @@ app.controller('AdapterListController',
                     deleteAdapterCtrl: $controller('DeleteItemController as deleteAdapterCtrl',
                             {
                                 $scope: $scope,
-                                deleteItem: deleteAdapter
+                                deleteItem: deleteAdapter,
+                                confirmDeletion: confirmDelete
                             }),
                 });
 

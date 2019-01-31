@@ -14,6 +14,24 @@ app.controller('DeviceListController',
                     DeviceService.formatMacAddress(deviceList[i].macAddress);
             }
 
+            function confirmDelete(data) {
+                var deviceId = data.id;
+                var deviceName = "";
+
+                for(var i = 0; i < deviceList.length; i++){
+                    if(deviceId == deviceList[i].id){
+                        deviceName = deviceList[i].name;
+                        break;
+                    }
+                }
+
+                return swal("Delete device",
+                    "Are you sure you want to delete device \"" + deviceName + "\"?", "warning",
+                    {
+                        buttons: ["Cancel", "Delete device"]
+                    });
+            }
+
             // expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {
                 deviceListCtrl: $controller('ItemListController as deviceListCtrl', {
@@ -38,10 +56,8 @@ app.controller('DeviceListController',
                 }),
                 deleteDeviceCtrl: $controller('DeleteItemController as deleteDeviceCtrl', {
                     $scope: $scope,
-                    deleteItem: function (data) {
-                        // get ID here
-                        return deleteDevice(data);
-                    }
+                    deleteItem: deleteDevice,
+                    confirmDeletion: confirmDelete
                 })
             });
 
