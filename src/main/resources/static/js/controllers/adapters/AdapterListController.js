@@ -89,7 +89,7 @@ app.controller('AdapterListController',
                 }
 
                 function confirmDelete(data) {
-                    var usingComponents = AdapterService.getUsingComponents(data.id).value.data;
+                    var usingComponents = AdapterService.getUsingComponents(data.id);
                     console.log(usingComponents);
 
                     var adapterId = data.id;
