@@ -43,6 +43,11 @@ public class DeviceValidator implements Validator {
                 errors, "name", "device.name.empty",
                 "The name must not be empty.");
 
+      //Check if device type was provided (mandatory)
+        ValidationUtils.rejectIfEmptyOrWhitespace(
+                errors, "componentType", "component.componentType.empty",
+                "The component type cannot be empty!");
+        
         //Check if ip address was provided (mandatory)
         ValidationUtils.rejectIfEmptyOrWhitespace(
                 errors, "ipAddress", "device.ipAddress.empty",
