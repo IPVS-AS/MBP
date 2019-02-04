@@ -82,7 +82,7 @@ public class RestModelController {
 	 * DELETE /model : Delete the "name" model of the current user.
 	 *
 	 * @param name
-	 *            The name of the model to be deleted
+	 *            The name of the model to delete
 	 * @return the ResponseEntity with status 200 (OK)
 	 */
 	@DeleteMapping("/models/{name}")

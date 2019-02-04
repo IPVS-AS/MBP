@@ -1,249 +1,270 @@
 <div id="modelingToolView" class="row clearfix" style="display:block;">
-  <div style="width:100%; white-space:nowrap;">
+  <div style="width:100%; white-space:nowrap; box-shadow: 1px 1px 1px 1px grey; height: 100%; background-color: #efefef;">
 
-    <div style="display: inline-block; vertical-align: top; padding: 5px; width:17%;">
-      <div id="myPalette" style="box-shadow: 1px 1px 1px 1px grey; height: 530px;  background-color: #efefef;">
+    <div id="myPalette" style="display: inline-block; vertical-align: top; width:17%; height: 100%">
+      <!-- <div id="myPalette" style="box-shadow: 1px 1px 1px 1px grey; height: 530px; background-color: #efefef;"> -->
 
-        <div class="tool-header" style="box-shadow: 1px 1px 1px 1px grey;">
-          <span class="navbar-brand" style="color: black">Palette</span>
+      <div class="tool-header" style="box-shadow: 1px 1px 1px 1px grey;">
+        <span class="navbar-brand" style="color: black">Palette</span>
+      </div>
+
+      <div class="panel-group" id="accordion">
+        <div class="panel panel-default">
+
+          <div class="panel-heading">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseFloorplans">
+                <i class="material-icons" style="font-size: 20px;">weekend</i>
+                <span class="glyphicon glyphicon-chevron-down pull-right"></span>Floorplans</a>
+            </h4>
+          </div>
+
+          <div id="collapseFloorplans" class="panel-collapse collapse in">
+            <div class="panel-body canvas-wide modeling-tool" id="canvasPalette">
+              <ul id="dragList">
+                <li>
+                  <div class="window room" id="room"></div>
+                  <strong>
+                    <p>Room</p>
+                  </strong>
+                </li>
+                <li>
+                  <div class="window door" id="door"></div>
+                  <strong>
+                    <p>Door</p>
+                  </strong>
+                </li>
+              </ul>
+            </div>
+          </div>
+
         </div>
 
-        <div class="panel-group" id="accordion">
-          <div class="panel panel-default">
-
-            <div class="panel-heading">
-              <h4 class="panel-title">
-                <a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseFloorplans">
-                  <i class="material-icons" style="font-size: 20px;">weekend</i>
-                  <span class="glyphicon glyphicon-chevron-down pull-right"></span>Floorplans</a>
-              </h4>
-            </div>
-
-            <div id="collapseFloorplans" class="panel-collapse collapse in">
-              <div class="panel-body canvas-wide modeling-tool" id="canvasPalette">
-                <ul id="dragList">
-                  <li>
-                    <div class="window room" id="room"></div>
-                    <strong>
-                      <p>Room</p>
-                    </strong>
-                  </li>
-                  <li>
-                    <div class="window door" id="door"></div>
-                    <strong>
-                      <p>Door</p>
-                    </strong>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseDevices">
+                <i class="material-icons" style="font-size: 20px;">devices</i>
+                <span class="glyphicon glyphicon-chevron-down pull-right"></span>Devices</a>
+            </h4>
           </div>
-
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">
-                <a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseDevices">
-                  <i class="material-icons" style="font-size: 20px;">devices</i>
-                  <span class="glyphicon glyphicon-chevron-down pull-right"></span>Devices</a>
-              </h4>
-            </div>
-            <div id="collapseDevices" class="panel-collapse collapse">
-              <div class="panel-body canvas-wide modeling-tool" id="canvasPalette">
-                <ul id="dragList">
-                  <li>
-                    <div class="window device default-device" id="defaultDevice"></div>
-                    <strong>
-                      <p>Default device</p>
-                    </strong>
-                  </li>
-                </ul>
-              </div>
+          <div id="collapseDevices" class="panel-collapse collapse">
+            <div class="panel-body canvas-wide modeling-tool" id="canvasPalette">
+              <ul id="dragList">
+                <li>
+                  <div class="window device default-device" id="defaultDevice"></div>
+                  <strong>
+                    <p>Default device</p>
+                  </strong>
+                </li>
+              </ul>
             </div>
           </div>
+        </div>
 
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">
-                <a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseActuators">
-                  <i class="material-icons" style="font-size: 20px;">wb_incandescent</i>
-                  <span class="glyphicon glyphicon-chevron-down pull-right"></span>Actuators</a>
-              </h4>
-            </div>
-            <div id="collapseActuators" class="panel-collapse collapse">
-              <div class="panel-body canvas-wide modeling-tool" id="canvasPalette">
-                <ul id="dragList">
-                  <li>
-                    <div class="window actuator default-actuator" id="defaultActuator"></div>
-                    <strong>
-                      <p>Default actuator</p>
-                    </strong>
-                  </li>
-                </ul>
-              </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseActuators">
+                <i class="material-icons" style="font-size: 20px;">wb_incandescent</i>
+                <span class="glyphicon glyphicon-chevron-down pull-right"></span>Actuators</a>
+            </h4>
+          </div>
+          <div id="collapseActuators" class="panel-collapse collapse">
+            <div class="panel-body canvas-wide modeling-tool" id="canvasPalette">
+              <ul id="dragList">
+                <li>
+                  <div class="window actuator default-actuator" id="defaultActuator"></div>
+                  <strong>
+                    <p>Default actuator</p>
+                  </strong>
+                </li>
+              </ul>
             </div>
           </div>
+        </div>
 
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h4 class="panel-title">
-                <a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseSensors">
-                  <i class="material-icons" style="font-size: 20px;">settings_remote</i>
-                  <span class="glyphicon glyphicon-chevron-down pull-right"></span>Sensors</a>
-              </h4>
-            </div>
-            <div id="collapseSensors" class="panel-collapse collapse">
-              <div class="panel-body canvas-wide modeling-tool" id="canvasPalette">
-                <ul id="dragList">
-                  <li>
-                    <div class="window sensor default-sensor" id="defaultSensor"></div>
-                    <strong>
-                      <p>Default sensor</p>
-                    </strong>
-                  </li>
-                </ul>
-              </div>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseSensors">
+                <i class="material-icons" style="font-size: 20px;">settings_remote</i>
+                <span class="glyphicon glyphicon-chevron-down pull-right"></span>Sensors</a>
+            </h4>
+          </div>
+          <div id="collapseSensors" class="panel-collapse collapse">
+            <div class="panel-body canvas-wide modeling-tool" id="canvasPalette">
+              <ul id="dragList">
+                <li>
+                  <div class="window sensor default-sensor" id="defaultSensor"></div>
+                  <strong>
+                    <p>Default sensor</p>
+                  </strong>
+                </li>
+              </ul>
             </div>
           </div>
-
         </div>
 
       </div>
+
+      <!-- </div> -->
     </div>
 
-    <div style="display: inline-block; vertical-align: top; padding: 5px; width:65%;">
-      <div id="myDiagram" style="box-shadow: 1px 1px 5px 1px grey; height: 530px;  background-color: #efefef;">
-        <!-- Toolbar -->
-        <div class="tool-header" style="box-shadow: 1px 1px 1px 1px grey;">
+    <div id="myDiagram" style="display: inline-block; vertical-align: top; width:65%; height: 100%">
+      <!-- <div id="myDiagram" style="box-shadow: 1px 1px 5px 1px grey; height: 530px; background-color: #efefef;"> -->
+      <!-- Toolbar -->
+      <div class="tool-header" style="box-shadow: 1px 1px 1px 1px grey;">
+        <div class="row" style="width: 100%; margin-left: 0px; margin-right: 0px">
           <span class="navbar-brand" style="color: black">Modeling area</span>
-          <div class="tool-header-right">
-            <!-- <button class="tool-button" id="saveModelBtn" ng-click="vm.saveModel()">Save</button> -->
-            <button class="tool-button" id="registerComponentsBtn" ng-click="vm.registerComponents()">Register</button>
-            <button class="tool-button" id="deployComponentsBtn" ng-click="vm.deployComponents()">Deploy</button>
-            <button class="tool-button" id="undeployComponentsBtn" ng-click="vm.undeployComponents()">Undeploy</button>
-            <!-- <button class="tool-button" id="deleteModelBtn" ng-click="vm.deleteModel()">Delete</button> <button class="tool-button" id="clearCanvasBtn" ng-click="vm.clearCanvas()">Clear</button> -->
-          </div>
         </div>
-        <!-- /.toolbar -->
-        <!-- Toolbar -->
-        <div class="tool-header" style="box-shadow: 1px 1px 1px 1px grey;">
-          <div class="tool-header-right">
-            <button class="tool-button" id="saveModelBtn" ng-click="vm.saveModel()">Save</button>
-            <button class="tool-button" id="deleteModelBtn" ng-click="vm.deleteModel()">Delete</button>
-            <button class="tool-button" id="clearCanvasBtn" ng-click="vm.clearCanvas()">Clear</button>
+        <div class="row" style="width: 100%; margin-left: 0px; margin-right: 0px">
+          <div class="tool-header-left" style="width: 50%">
+            <select class="form-control show-tick" id="select-models" ng-change="vm.drawModel(model)" ng-model="model" style="display: inline-block; width: 50%">
+              <option ng-repeat="model in vm.loadedModels" value="{{model}}" ng-selected="model.name === vm.selectedOptionName">{{model.name}}</option>
+            </select>
+            <input id="modelNameInput" type="text" name="name" ng-model="vm.currentModel.name" autocomplete="off" placeholder="Name" style="display: inline-block; width: 50%"/>
           </div>
-        </div>
-        <!-- /.toolbar -->
-
-        <div class="jtk-main">
-          <div class="jtk-canvas canvas-wide modeling-tool jtk-surface jtk-surface-nopan" id="canvas"></div>
+          <div class="tool-header-right">
+            <button id="newModelBtn" title="New model" ng-click="vm.newModel()">
+              <i class="fas fa-plus-circle"></i>
+            </button>
+            &nbsp;&nbsp;
+            <button id="saveModelBtn" title="Save" ng-click="vm.saveModel()">
+              <i class="fas fa-save"></i>
+            </button>
+            <button id="clearCanvasBtn" title="Clear" ng-click="vm.clearCanvas()">
+              <i class="fas fa-eraser"></i>
+            </button>
+            <button id="deleteModelBtn" title="Delete" ng-click="vm.deleteModel()">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+            &nbsp;&nbsp;
+            <button id="registerComponentsBtn" title="Register components" ng-click="vm.registerComponents()">
+              <i class="fas fa-share-square"></i>
+            </button>
+            <button id="deployComponentsBtn" title="Deploy model" ng-click="vm.deployComponents()">
+              <i class="fas fa-cogs"></i>
+            </button>
+            <button id="undeployComponentsBtn" title="Undeploy model" ng-click="vm.undeployComponents()">
+              <span class="icon-stack">
+                <i class="fas fa-ban icon-stack-2x"></i>
+                <i class="fas fa-cog icon-stack-1x"></i>
+              </span>
+            </button>
+          </div>
         </div>
       </div>
+
+      <div class="jtk-main">
+        <div class="jtk-canvas canvas-wide modeling-tool jtk-surface jtk-surface-nopan" id="canvas"></div>
+      </div>
+      <!-- </div> -->
     </div>
 
     <!-- Info sidebar -->
-    <div style="display: inline-block; vertical-align: top; padding: 5px; width:17%;">
-      <div id="infoSidebar" style="box-shadow: 1px 1px 1px 1px grey; height: 530px; background-color: #efefef;">
+    <div id="infoSidebar" style="display: inline-block; vertical-align: top; width:17%; height: 100%">
+      <!-- <div id="infoSidebar" style="box-shadow: 1px 1px 1px 1px grey; height: 530px; background-color: #efefef;"> -->
 
-        <div class="tool-header" style="box-shadow: 1px 1px 1px 1px grey;">
-          <span class="navbar-brand" style="color: black">Info</span>
-        </div>
-
-        <div class="panel panel-default" style="margin: 5px;" ng-show="vm.clickedComponent.category == 'DEVICE'">
-          <div class="panel-heading" style="text-align: center;">
-            <h4 class="panel-title">DEVICE</h4>
-          </div>
-          <div id="deviceInfo" class="panel-body input-list">
-            <ul>
-              <li>
-                <label for="name">Name</label>
-                <input id="deviceNameInput" type="text" name="name" ng-model="vm.clickedComponent.name" autocomplete="off">
-                <!-- <span>Enter your full name here</span> -->
-              </li>
-              <li>
-                <label for="type">Type</label>
-                <input id="deviceTypeInput" type="text" name="type" ng-model="vm.clickedComponent.type" autocomplete="off">
-              </li>
-              <li>
-                <label for="mac">MAC</label>
-                <input id="deviceMacInput" type="text" name="mac" ng-model="vm.clickedComponent.mac" autocomplete="off" placeholder="HH-HH-HH-HH-HH-HH">
-              </li>
-              <li>
-                <label for="ip">IP</label>
-                <input id="deviceIpInput" type="text" name="ip" ng-model="vm.clickedComponent.ip" autocomplete="off">
-              </li>
-              <li>
-                <label for="username">Username</label>
-                <input id="deviceUsernameInput" type="text" name="username" ng-model="vm.clickedComponent.username" autocomplete="off">
-              </li>
-              <!-- <li> <input type="submit" value="Send This"> </li> -->
-            </ul>
-          </div>
-
-          <div class="panel-footer">
-            <button class="tool-button" id="registerComponentBtn" ng-click="vm.registerComponent()">Register</button>
-          </div>
-        </div>
-
-        <div class="panel panel-default" style="margin: 5px;" ng-show="vm.clickedComponent.category == 'ACTUATOR'">
-          <div class="panel-heading" style="text-align: center;">
-            <h4 class="panel-title">ACTUATOR</h4>
-          </div>
-
-          <div id="actuatorInfo" class="input-list">
-            <ul>
-              <li>
-                <label for="name">Name</label>
-                <input id="actuatorNameInput" type="text" name="name" ng-model="vm.clickedComponent.name" autocomplete="off">
-                <!-- <span>Enter your full name here</span> -->
-              </li>
-              <li>
-                <label for="type">Type</label>
-                <input id="actuatorTypeInput" type="text" name="type" ng-model="vm.clickedComponent.type" autocomplete="off">
-              </li>
-              <li>
-                <label for="adapter">Adapter</label>
-                <input id="actuatorAdapterInput" type="text" name="adapter" ng-model="vm.clickedComponent.adapter" autocomplete="off">
-              </li>
-              <li>
-                <label for="device">Device</label>
-                <input id="actuatorDeviceInput" type="text" name="device" ng-model="vm.clickedComponent.device" autocomplete="off">
-              </li>
-              <!-- <li> <input type="submit" value="Send This"> </li> -->
-            </ul>
-          </div>
-        </div>
-
-        <div class="panel panel-default" style="margin: 5px;" ng-show="vm.clickedComponent.category == 'SENSOR'">
-          <div class="panel-heading" style="text-align: center;">
-            <h4 class="panel-title">SENSOR</h4>
-          </div>
-
-          <div id="sensorInfo" class="input-list">
-            <ul>
-              <li>
-                <label for="name">Name</label>
-                <input id="sensorNameInput" type="text" name="name" ng-model="vm.clickedComponent.name" autocomplete="off">
-                <!-- <span>Enter your full name here</span> -->
-              </li>
-              <li>
-                <label for="type">Type</label>
-                <input id="sensorTypeInput" type="text" name="type" ng-model="vm.clickedComponent.type" autocomplete="off">
-              </li>
-              <li>
-                <label for="adapter">Adapter</label>
-                <input id="sensorAdapterInput" type="text" name="adapter" ng-model="vm.clickedComponent.adapter" autocomplete="off">
-              </li>
-              <li>
-                <label for="device">Device</label>
-                <input id="sensorDeviceInput" type="text" name="device" ng-model="vm.clickedComponent.device" autocomplete="off">
-              </li>
-              <!-- <li> <input type="submit" value="Send This"> </li> -->
-            </ul>
-          </div>
-        </div>
-
+      <div class="tool-header" style="box-shadow: 1px 1px 1px 1px grey;">
+        <span class="navbar-brand" style="color: black">Info</span>
       </div>
+
+      <div class="panel panel-default" style="margin: 5px;" ng-show="vm.clickedComponent.category == 'DEVICE'">
+        <div class="panel-heading" style="text-align: center;">
+          <h4 class="panel-title">DEVICE</h4>
+        </div>
+        <div id="deviceInfo" class="panel-body input-list">
+          <ul>
+            <li>
+              <label for="name">Name</label>
+              <input id="deviceNameInput" type="text" name="name" ng-model="vm.clickedComponent.name" autocomplete="off">
+              <!-- <span>Enter your full name here</span> -->
+            </li>
+            <li>
+              <label for="type">Type</label>
+              <input id="deviceTypeInput" type="text" name="type" ng-model="vm.clickedComponent.type" autocomplete="off">
+            </li>
+            <li>
+              <label for="mac">MAC</label>
+              <input id="deviceMacInput" type="text" name="mac" ng-model="vm.clickedComponent.mac" autocomplete="off" placeholder="HH-HH-HH-HH-HH-HH">
+            </li>
+            <li>
+              <label for="ip">IP</label>
+              <input id="deviceIpInput" type="text" name="ip" ng-model="vm.clickedComponent.ip" autocomplete="off">
+            </li>
+            <li>
+              <label for="username">Username</label>
+              <input id="deviceUsernameInput" type="text" name="username" ng-model="vm.clickedComponent.username" autocomplete="off">
+            </li>
+            <!-- <li> <input type="submit" value="Send This"> </li> -->
+          </ul>
+        </div>
+
+        <div class="panel-footer">
+          <button class="tool-button" id="registerComponentBtn" ng-click="vm.registerComponent()">Register</button>
+        </div>
+      </div>
+
+      <div class="panel panel-default" style="margin: 5px;" ng-show="vm.clickedComponent.category == 'ACTUATOR'">
+        <div class="panel-heading" style="text-align: center;">
+          <h4 class="panel-title">ACTUATOR</h4>
+        </div>
+
+        <div id="actuatorInfo" class="input-list">
+          <ul>
+            <li>
+              <label for="name">Name</label>
+              <input id="actuatorNameInput" type="text" name="name" ng-model="vm.clickedComponent.name" autocomplete="off">
+              <!-- <span>Enter your full name here</span> -->
+            </li>
+            <li>
+              <label for="type">Type</label>
+              <input id="actuatorTypeInput" type="text" name="type" ng-model="vm.clickedComponent.type" autocomplete="off">
+            </li>
+            <li>
+              <label for="adapter">Adapter</label>
+              <input id="actuatorAdapterInput" type="text" name="adapter" ng-model="vm.clickedComponent.adapter" autocomplete="off">
+            </li>
+            <li>
+              <label for="device">Device</label>
+              <input id="actuatorDeviceInput" type="text" name="device" ng-model="vm.clickedComponent.device" autocomplete="off">
+            </li>
+            <!-- <li> <input type="submit" value="Send This"> </li> -->
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel panel-default" style="margin: 5px;" ng-show="vm.clickedComponent.category == 'SENSOR'">
+        <div class="panel-heading" style="text-align: center;">
+          <h4 class="panel-title">SENSOR</h4>
+        </div>
+
+        <div id="sensorInfo" class="input-list">
+          <ul>
+            <li>
+              <label for="name">Name</label>
+              <input id="sensorNameInput" type="text" name="name" ng-model="vm.clickedComponent.name" autocomplete="off">
+              <!-- <span>Enter your full name here</span> -->
+            </li>
+            <li>
+              <label for="type">Type</label>
+              <input id="sensorTypeInput" type="text" name="type" ng-model="vm.clickedComponent.type" autocomplete="off">
+            </li>
+            <li>
+              <label for="adapter">Adapter</label>
+              <input id="sensorAdapterInput" type="text" name="adapter" ng-model="vm.clickedComponent.adapter" autocomplete="off">
+            </li>
+            <li>
+              <label for="device">Device</label>
+              <input id="sensorDeviceInput" type="text" name="device" ng-model="vm.clickedComponent.device" autocomplete="off">
+            </li>
+            <!-- <li> <input type="submit" value="Send This"> </li> -->
+          </ul>
+        </div>
+      </div>
+
+      <!-- </div> -->
     </div>
 
   </div>

@@ -10,34 +10,31 @@
   function ModelController($timeout, ModelService, FlashService) {
     var vm = this;
 
-    (function initController() {
-      // Load models
-      ModelService.GetModelsByUsername().then(function(response) {
-        FlashService.Success("Model loaded!", false);
-        console.log(response);
-      }, function(response) {
-        FlashService.Error("Loading error!", false);
-        console.log(response);
-      });
-    })();
-
     jsPlumb.ready(function() {
       var jsPlumbInstance;
       var canvasId = "#canvas";
-      var endpointList = [];
-      var sourcepointList = [];
       var elementCount = 0;
       var properties = {}; // keeps the properties of each element
       var element = ""; // the element which will be appended to the canvas
       var clicked = false; // true if an element from the palette was clicked
+      vm.selectedOptionName = "";
+      vm.loadedModels = [];
+      vm.currentModel = {};
       vm.clickedComponent = {};
+      vm.drawModel = drawModel;
+      vm.loadModels = loadModels;
       vm.saveModel = saveModel;
       vm.deleteModel = deleteModel;
       vm.clearCanvas = clearCanvas;
+      vm.newModel = newModel;
       vm.registerComponent = registerComponent;
       vm.registerComponents = registerComponents;
       vm.deployComponents = deployComponents;
       vm.undeployComponents = undeployComponents;
+
+      (function initController() {
+        vm.loadModels();
+      })();
 
       jsPlumbInstance = window.jsp = jsPlumb.getInstance({
         Endpoint: ["Dot", {
@@ -49,7 +46,9 @@
         },
         ConnectionOverlays: [
           ["Label", {
-            id: "label"
+            label: "FOO",
+            id: "label",
+            cssClass: "aLabel"
           }]
         ],
         Container: "canvas"
@@ -72,52 +71,6 @@
         connectionType: "basic"
       };
 
-      // //the source endpoint definition from which a connection can be started
-      // sourceEndpoint = {
-      //   endpoint: "Dot",
-      //   paintStyle: {
-      //     stroke: "#7AB02C",
-      //     fill: "transparent",
-      //     radius: 7,
-      //     strokeWidth: 3
-      //   },
-      //   isSource: true,
-      //   connector: ["Flowchart", {
-      //     stub: [40, 60],
-      //     gap: 5,
-      //     cornerRadius: 5,
-      //     alwaysRespectStubs: true
-      //   }],
-      //   connectorStyle: {
-      //       strokeWidth: 4,
-      //       stroke: "#61B7CF",
-      //       joinstyle: "round",
-      //       outlineColor: "white",
-      //       outlineWidth: 2
-      //     },
-      //   hoverPaintStyle: {
-      //     fill: "#216477",
-      //     stroke: "#216477"
-      //   },
-      //   connectorHoverStyle: {
-      //     strokeWidth: 4,
-      //     stroke: "#216477",
-      //     outlineWidth: 2,
-      //     outlineColor: "white"
-      //   },
-      //   EndpointOverlays: [],
-      //   maxConnections: -1,
-      //   dragOptions: {},
-      //   connectorOverlays: [
-      //     ["Label", {
-      //       location: 1,
-      //       visible: true,
-      //       id: "label",
-      //       direction: 1
-      //     }]
-      //   ]
-      // },
-
       var targetEndpoint = {
         dropOptions: {
           hoverClass: "dragHover"
@@ -126,29 +79,24 @@
         allowLoopback: false
       };
 
-      // //definition of the target endpoint the connector would end
-      // targetEndpoint = {
-      //   endpoint: "Dot",
-      //   paintStyle: {
-      //     fill: "#7AB02C",
-      //     radius: 9
-      //   },
-      //   maxConnections: -1,
-      //   dropOptions: {
-      //     hoverClass: "hover",
-      //     activeClass: "active"
-      //   },
-      //   hoverPaintStyle: endpointHoverStyle,
-      //   isTarget: true
-      // };
-
       // bind a click listener to each connection; the connection is deleted on click
       jsPlumbInstance.bind("click", jsPlumbInstance.deleteConnection);
 
       function makeResizable(id) {
         $(id).resizable({
+          start: function(event, ui) {
+            $(".close-icon").hide();
+            $(id).css({
+              'outline': "2px solid grey"
+            });
+          },
           resize: function(event, ui) {
             jsPlumbInstance.revalidate(ui.helper);
+          },
+          stop: function(event, ui) {
+            $(id).css({
+              'outline': "none"
+            });
           },
           handles: "all"
         });
@@ -179,7 +127,7 @@
             clicked = false;
             elementCount++;
             var id = "canvasWindow" + elementCount;
-            element = createElement(id);
+            element = createElement(id, undefined);
             drawElement(element);
             element = "";
           }
@@ -200,97 +148,86 @@
       // Temporary saved properties of clicked element in palette
       // The data is used to create the element on drop
       function loadProperties(clsName) {
+        properties = {};
         properties.clsName = clsName;
+        clicked = true;
       }
 
       //load properties of a room element once the end element in the palette is clicked
       $('#room').mousedown(function() {
         loadProperties("window room custom jtk-node");
-        clicked = true;
       });
 
       //load properties of a door element once the end element in the palette is clicked
       $('#door').mousedown(function() {
         loadProperties("window door custom jtk-node");
-        clicked = true;
       });
 
       //load properties of a device element once the end element in the palette is clicked
       $('#defaultDevice').mousedown(function() {
         loadProperties("window device default-device custom jtk-node");
-        clicked = true;
       });
 
       $('#defaultActuator').mousedown(function() {
         loadProperties("window actuator default-actuator custom jtk-node");
-        clicked = true;
       });
 
       $('#defaultSensor').mousedown(function() {
         loadProperties("window sensor default-sensor custom jtk-node");
-        clicked = true;
       });
 
       //create an element to be drawn on the canvas
-      function createElement(id) {
-        var element = $('<div>').addClass(properties.clsName).attr('id', id);
-        // The position to drop the element
-        element.css({
-          'top': properties.top,
-          'left': properties.left
-        });
+      function createElement(id, node) {
+        if (node) {
+          // Use node for loaded model
+          var element = $('<div>').addClass(node.clsName).attr('id', id);
+          // The position to create the element
+          element.css({
+            'top': node.positionY,
+            'left': node.positionX
+          });
+          // Define the size of the element
+          element.outerWidth(node.width);
+          element.outerHeight(node.height);
 
-        if (properties.clsName.indexOf("room") > -1) {
-          element.outerWidth("250px");
-          element.outerHeight("250px");
+          if (node.nodeType == "device") {
+            element.append("<div class=\"ep\"></div>");
+            element.data("name", node.name);
+            element.data("type", node.type);
+            element.data("mac", node.mac);
+            element.data("ip", node.ip);
+            element.data("username", node.username);
+          } else if (node.nodeType == "actuator" || node.nodeType == "sensor") {
+            element.data("name", node.name);
+            element.data("type", node.type);
+            element.data("adapter", node.adapter);
+            element.data("device", node.device);
+          }
+        } else {
+          // Use properties on drop
+          var element = $('<div>').addClass(properties.clsName).attr('id', id);
+          // The position to created the dropped element
+          element.css({
+            'top': properties.top,
+            'left': properties.left
+          });
+          // Increase the size of room
+          if (properties.clsName.indexOf("room") > -1) {
+            element.outerWidth("250px");
+            element.outerHeight("250px");
+          }
+          // Add connection square on device
+          if (properties.clsName.indexOf("device") > -1) {
+            element.append("<div class=\"ep\"></div>");
+          }
         }
 
-        if (properties.clsName.indexOf("device") > -1) {
-          element.append("<div class=\"ep\"></div>");
-        }
         element.append("<i style='display: none' class=\"fa fa-trash fa-lg close-icon\"><\/i>");
         return element;
       }
 
-      function addEndpoints(element) {
-        var type = element.attr('class').toString().split(" ")[1];
-        if (type == "device") {
-          jsPlumbInstance.makeSource(element, sourceEndpoint);
-        } else if (type == "actuator" || type == "sensor") {
-          jsPlumbInstance.makeTarget(element, targetEndpoint);
-        }
-      };
-
-      // //add the endpoints for the elements
-      // var ep;
-      //
-      // function addEndpoints(toId, sourceAnchors, targetAnchors) {
-      //   for (var i = 0; i < sourceAnchors.length; i++) {
-      //     var sourceUUID = toId + sourceAnchors[i];
-      //     ep = jsPlumbInstance.addEndpoint("canvas" + toId, sourceEndpoint, {
-      //       anchor: sourceAnchors[i],
-      //       uuid: sourceUUID
-      //     });
-      //     sourcepointList.push(["canvas" + toId, ep]);
-      //     ep.canvas.setAttribute("title", "Drag a connection from here");
-      //     ep = null;
-      //   }
-      //   for (var j = 0; j < targetAnchors.length; j++) {
-      //     var targetUUID = toId + targetAnchors[j];
-      //     ep = jsPlumbInstance.addEndpoint("canvas" + toId, targetEndpoint, {
-      //       anchor: targetAnchors[j],
-      //       uuid: targetUUID
-      //     });
-      //     endpointList.push(["canvas" + toId, ep]);
-      //     ep.canvas.setAttribute("title", "Drop a connection here");
-      //     ep = null;
-      //   }
-      // };
-
-
       function drawElement(element) {
         $(canvasId).append(element);
-        // addEndpoints(name, properties[0].startpoints, properties[0].endpoints);
         jsPlumbInstance.draggable(jsPlumbInstance.getSelector(".jtk-node"), {
           filter: ".ui-resizable-handle"
         });
@@ -298,51 +235,36 @@
         makeResizable(".custom");
       }
 
+      function addEndpoints(element) {
+        var type = element.attr('class').toString().split(" ")[1];
+        if (type == "device") {
+          jsPlumbInstance.makeSource(element, sourceEndpoint);
+          jsPlumbInstance.makeTarget(element, targetEndpoint);
+        } else if (type == "actuator" || type == "sensor") {
+          jsPlumbInstance.makeTarget(element, targetEndpoint);
+        }
+      }
 
-
-
-
-
-      $(document).on("click", ".custom", function() {
+      $(document).on("click", ".jtk-node", function() {
         loadData($(this));
 
-        var marginLeft = $(this).outerWidth() + 8 + "px";
+        var marginLeft = $(this).outerWidth() + 6 + "px";
         $(".close-icon").prop("title", "Delete the element");
         $(this).find("i").css({
-          'margin-left': marginLeft,
-          'margin-top': "-10px"
+          'margin-left': marginLeft
         }).show();
 
-        // if ($(this).attr("class").indexOf("diamond") == -1) {
-        //   var marginLeft = $(this).outerWidth() + 8 + "px";
-        //   $(".close-icon").prop("title", "Delete the element");
-        //   $(this).find("i").css({
-        //     'margin-left': marginLeft,
-        //     'margin-top': "-10px"
-        //   }).show();
-        // } else {
-        //   $(this).find("i").css({
-        //     'margin-left': "35px",
-        //     'margin-top': "-40px"
-        //   }).show();
-        // }
+        $(this).addClass("clicked-element");
+        if ($(this).attr("class").indexOf("room") > -1) {
+          $(this).css({
+            'outline': "2px solid red"
+          });
+        }
 
       });
 
       $(canvasId).on('click', function(e) {
         saveData();
-
-        $(".jtk-node").css({
-          'outline': "none"
-        });
-        $(".close-icon").hide();
-        if (e.target.nodeName == "P") {
-          e.target.parentElement.parentElement.style.outline = "4px solid red";
-        } else if (e.target.nodeName == "STRONG") {
-          e.target.parentElement.style.outline = "4px solid red";
-        } else if (e.target.getAttribute("class") != null && e.target.getAttribute("class").indexOf("jtk-node") > -1) { //when clicked the step, decision or i/o elements
-          e.target.style.outline = "4px solid red";
-        }
       });
 
       $(document).on("click", ".close-icon", function() {
@@ -402,114 +324,138 @@
         $timeout(function() {
           vm.clickedComponent = {};
         });
-      }
-
-
-      function loadModel(model) {
-        var environment = JSON.parse(model.value);
-        $.each(environment.nodes, function(index, node) {
-          // loadProperties(node.id...)
-          // createElement
-          // drawElement
+        $(".close-icon").hide();
+        $(".jtk-node").removeClass("clicked-element").css({
+          'outline': "none"
         });
-
       }
 
 
+      function drawModel(model) {
+        clearCanvas();
+        vm.currentModel = JSON.parse(model);
+        console.log(vm.currentModel);
+        var environment = JSON.parse(vm.currentModel.value);
+        $.each(environment.nodes, function(index, node) {
+          element = createElement(node.elementId, node);
+          drawElement(element);
+          element = "";
+        });
+        $.each(environment.connections, function(index, connection) {
+          jsPlumbInstance.connect({
+            source: connection.sourceId,
+            target: connection.targetId,
+            type: "basic"
+          });
+        });
+        elementCount = environment.numberOfElements;
+      }
+
+      function loadModels() {
+        ModelService.GetModelsByUsername().then(function(response) {
+          FlashService.Success("Model loaded!", false);
+          console.log(response);
+          vm.loadedModels = response.data;
+        }, function(response) {
+          FlashService.Error("Loading error!", false);
+          console.log(response);
+        });
+      }
 
       function saveModel() {
         saveData();
 
         var totalCount = 0;
+        var nodes = [];
 
-        if (elementCount == 0) {
-          alert("The blueprint should have at least one element");
-        } else {
-          var nodes = [];
+        $(".jtk-node").each(function(index, element) {
+          totalCount++;
+          var $element = $(element);
+          var type = $element.attr('class').toString().split(" ")[1];
 
-          $(".jtk-node").each(function(index, element) {
-            totalCount++;
-            var $element = $(element);
-            var type = $element.attr('class').toString().split(" ")[1];
-
-            if (type == "device") {
-              nodes.push({
-                nodeType: type,
-                elementId: $element.attr('id'),
-                clsName: $element.attr('class').toString(),
-                positionX: parseInt($element.css("left"), 10),
-                positionY: parseInt($element.css("top"), 10),
-                width: $element.outerWidth(),
-                height: $element.outerHeight(),
-                name: $element.data("name"),
-                type: $element.data("type"),
-                mac: $element.data("mac"),
-                ip: $element.data("ip"),
-                username: $element.data("username")
-              });
-            } else if (type == "actuator" || type == "sensor") {
-              nodes.push({
-                nodeType: type,
-                elementId: $element.attr('id'),
-                clsName: $element.attr('class').toString(),
-                positionX: parseInt($element.css("left"), 10),
-                positionY: parseInt($element.css("top"), 10),
-                width: $element.outerWidth(),
-                height: $element.outerHeight(),
-                name: $element.data("name"),
-                type: $element.data("type"),
-                adapter: $element.data("adapter"),
-                device: $element.data("device")
-              });
-            } else {
-              nodes.push({
-                nodeType: type,
-                elementId: $element.attr('id'),
-                clsName: $element.attr('class').toString(),
-                positionX: parseInt($element.css("left"), 10),
-                positionY: parseInt($element.css("top"), 10),
-                width: $element.outerWidth(),
-                height: $element.outerHeight(),
-              });
-            }
-
-          });
-
-          var connections = [];
-          $.each(jsPlumbInstance.getConnections(), function(index, connection) {
-            connections.push({
-              connectionId: connection.id,
-              sourceUUId: connection.endpoints[0].getUuid(),
-              targetUUId: connection.endpoints[1].getUuid()
+          if (type == "device") {
+            nodes.push({
+              nodeType: type,
+              elementId: $element.attr('id'),
+              clsName: $element.attr('class').toString(),
+              positionX: parseInt($element.css("left"), 10),
+              positionY: parseInt($element.css("top"), 10),
+              width: $element.outerWidth(),
+              height: $element.outerHeight(),
+              name: $element.data("name"),
+              type: $element.data("type"),
+              mac: $element.data("mac"),
+              ip: $element.data("ip"),
+              username: $element.data("username")
             });
+          } else if (type == "actuator" || type == "sensor") {
+            nodes.push({
+              nodeType: type,
+              elementId: $element.attr('id'),
+              clsName: $element.attr('class').toString(),
+              positionX: parseInt($element.css("left"), 10),
+              positionY: parseInt($element.css("top"), 10),
+              width: $element.outerWidth(),
+              height: $element.outerHeight(),
+              name: $element.data("name"),
+              type: $element.data("type"),
+              adapter: $element.data("adapter"),
+              device: $element.data("device")
+            });
+          } else {
+            nodes.push({
+              nodeType: type,
+              elementId: $element.attr('id'),
+              clsName: $element.attr('class').toString(),
+              positionX: parseInt($element.css("left"), 10),
+              positionY: parseInt($element.css("top"), 10),
+              width: $element.outerWidth(),
+              height: $element.outerHeight(),
+            });
+          }
+        });
+
+        var connections = [];
+        $.each(jsPlumbInstance.getConnections(), function(index, connection) {
+          connections.push({
+            id: connection.id,
+            sourceId: connection.source.id,
+            targetId: connection.target.id
           });
+        });
 
-          var environment = {};
-          environment.nodes = nodes;
-          environment.connections = connections;
-          environment.numberOfElements = totalCount;
+        var environment = {};
+        environment.nodes = nodes;
+        environment.connections = connections;
+        environment.numberOfElements = totalCount;
 
-          var model = {};
-          model.value = JSON.stringify(environment);
-          model.name = "House";
+        var model = {};
+        model.value = JSON.stringify(environment);
 
-          console.log(model.value);
-
-          ModelService.SaveModel(model).then(function(response) {
-            FlashService.Success("Model saved!", false);
-            console.log(response);
-          }, function(response) {
-            FlashService.Error("Saving error!", false);
-            console.log(response);
-          });
+        if (!vm.currentModel.name || vm.currentModel.name === "") {
+          vm.currentModel.name = "New model";
         }
+        model.name = vm.currentModel.name;
+
+        console.log(model);
+
+        ModelService.SaveModel(model).then(function(response) {
+          FlashService.Success("Model saved!", false);
+          console.log(response);
+          vm.selectedOptionName = model.name;
+          loadModels();
+        }, function(response) {
+          FlashService.Error("Saving error!", false);
+          console.log(response);
+        });
+
       }
 
       function deleteModel() {
-        clearCanvas();
-        ModelService.DeleteModel("House").then(function(response) {
+        ModelService.DeleteModel(vm.currentModel.name).then(function(response) {
           FlashService.Success("Model deleted!", false);
           console.log(response);
+          newModel();
         }, function(response) {
           FlashService.Error("Deletion error!", false);
           console.log(response);
@@ -521,6 +467,13 @@
         $timeout(function() {
           vm.clickedComponent = {};
         });
+      }
+
+      function newModel() {
+        vm.currentModel = {};
+        vm.selectedOptionName = "";
+        clearCanvas();
+        loadModels();
       }
 
       function registerComponent() {
