@@ -44,7 +44,7 @@ app.factory('NotificationService', function () {
             settings.type = chosenType.btType;
 
             //Show notification
-            $('body').notify(options, settings);
+            $.notify(options, settings);
         }
     };
 });

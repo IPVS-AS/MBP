@@ -103,9 +103,8 @@ app.controller('AdapterListController',
                         var affectedWarning = "";
 
                         if (result.success && (result.data.length > 0)) {
-                            affectedWarning = "<br/><br/><strong>Beware</strong>: " +
-                                "The following components are currently using this adapter" +
-                                " and will be deleted as well:<br/>";
+                            affectedWarning = "<br/><br/><strong>The following components are currently " +
+                                "using this adapter and will be deleted as well:</strong><br/>";
 
                             for(var i = 0; i < result.data.length; i++){
                                 affectedWarning += "- ";
@@ -118,7 +117,7 @@ app.controller('AdapterListController',
                         return Swal.fire({
                             title: 'Delete adapter',
                             type: 'warning',
-                            html: "Are you sure you want to delete adapter \"" +
+                            html: "Are you sure you want to delete the adapter \"" +
                              adapterName + "\"?" + affectedWarning,
                             showCancelButton: true,
                             confirmButtonText: 'Delete',

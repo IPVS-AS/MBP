@@ -29,9 +29,8 @@ app.controller('DeviceListController',
                     var affectedWarning = "";
 
                     if (result.success && (result.data.length > 0)) {
-                        affectedWarning = "<br/><br/><strong>Beware</strong>: " +
-                            "The following components are currently using this device" +
-                            " and will be deleted as well:<br/>";
+                        affectedWarning = "<br/><br/><strong>The following components are currently " +
+                            "using this device and will be deleted as well:</strong><br/>";
 
                         for(var i = 0; i < result.data.length; i++){
                             affectedWarning += "- ";
@@ -44,7 +43,7 @@ app.controller('DeviceListController',
                     return Swal.fire({
                         title: 'Delete device',
                         type: 'warning',
-                        html: "Are you sure you want to delete device \"" +
+                        html: "Are you sure you want to delete the device \"" +
                         deviceName + "\"?" + affectedWarning,
                         showCancelButton: true,
                         confirmButtonText: 'Delete',
