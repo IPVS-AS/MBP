@@ -39,9 +39,17 @@ public class SensorValidator implements Validator {
                 "The name cannot be empty!");
 
         ValidationUtils.rejectIfEmptyOrWhitespace(
+                errors, "componentType", "component.componentType.empty",
+                "The component type cannot be empty!");
+        
+        ValidationUtils.rejectIfEmptyOrWhitespace(
                 errors, "device", "component.device.empty",
                 "The device cannot be empty!");
-
+        
+        ValidationUtils.rejectIfEmptyOrWhitespace(
+                errors, "adapter", "component.adapter.empty",
+                "The adapter cannot be empty!");
+        
         Component another;
         if ((another = repository.findByName(component.getName())) != null) {
             if (component.getId() == null

@@ -1,11 +1,16 @@
 <div class="row clearfix" ng-hide>
     <!-- List of Adapters Card -->
-    <div class="col-lg-7">
+    <div class="col-lg-12">
         <div class="card">
             <div class="header">
-                <h2>
-                    List of adapters
-                </h2>
+                <div class="col-lg-6">
+					<h2>Adapters</h2>
+				</div>
+				<div class="align-right">	
+					<button id="add-button" type="button" class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0" data-toggle="modal" data-target="#addAdapterModal">
+		      				<i class="material-icons">add</i>
+		      		</button>
+		     	</div>
             </div>
             <div class="body">
                 <table class="table table-hover" st-table="displayedCollection" st-safe-src="adapterListCtrl.items">
@@ -13,24 +18,24 @@
                     <tr>
                         <th>Name</th>
                         <th>Description</th>
-                        <th>ID</th>
+						<th>Parameters</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
                         <td>{{item.name}}</td>
                         <td>{{item.description}}</td>
+                         <td><span ng-repeat="par in item.parameters">{{par.name}} ({{par.type}}) </span></td>
                         <td>
                             <form ng-submit="deleteAdapterCtrl.deleteItem()">
-                                <div ng-model="deleteAdapterCtrl.item.id"> {{item.id}}</div>
-                                <button type="submit" class="btn btn-primary m-t-15 waves-effect"
+                                <button type="submit" class="btn btn-danger m-t-0 waves-effect"
                                         ng-click="deleteAdapterCtrl.item.id = item.id"> Delete
                                 </button>
                             </form>
                         </td>
                     </tr>
                     <tr ng-show="adapterListCtrl.items.length === 0">
-                        <td>No adapters registered yet.</td>
+                        <td>No adapters registered.</td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -38,7 +43,7 @@
                     </tbody>
                     <tfoot>
                     <tr>
-                        <td class="text-center" st-pagination="" st-items-by-page="5" colspan="3">
+                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
                         </td>
                     </tr>
                     </tfoot>
@@ -47,132 +52,130 @@
         </div>
     </div>
     <!-- #END# List of Adapters Card -->
+	<!-- Modal -->
+	<div class="modal fade" id="addAdapterModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+	        		<h5 class="modal-title">Register a new device
+	        			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          				<span aria-hidden="true">&times;</span>
+	        			</button>
+	        		</h5>
 
-    <!-- Register Adapter Card -->
-    <div class="col-lg-5">
-        <div class="card">
-            <div class="header">
-                <h2>
-                    Register
-                </h2>
-            </div>
-            <div class="body">
-                <form ng-submit="addAdapterCtrl.addItem()">
-                    <fieldset id="adapter-form">
-                        <h2 class="card-inside-title">Add adapter</h2>
-                        <div class="row clearfix">
-                            <div class="col-xs-12">
-                                <!-- "global" error for addItem -->
-                                <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.global}">
-                                    <span class="alert alert-danger" ng-show="addAdapterCtrl.item.errors.global"> {{addAdapterCtrl.item.errors.global}} </span>
+	      		</div>
+		  		<form id="addAdapterForm" ng-submit="addAdapterCtrl.addItem()">
+					<fieldset id="adapter-form">
+		      			<div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.global}">
+                                <span class="alert alert-danger" ng-show="addAdapterCtrl.item.errors.global"> {{addAdapterCtrl.item.errors.global}} </span>
+                            </div>
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.name }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addAdapterCtrl.item.errors.name }">
+                                    <input class="form-control" id="adapter-form-input-name" type="text"
+                                           placeholder="Name" ng-model="addAdapterCtrl.item.name"/>
                                 </div>
-                                <!-- item.name group -->
-                                <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.name }">
-                                    <div class="form-line"
-                                         ng-class="{'focused error' : addAdapterCtrl.item.errors.name }">
-                                        <input class="form-control" id="adapter-form-input-name" type="text"
-                                               placeholder="Name" ng-model="addAdapterCtrl.item.name"/>
-                                    </div>
-                                    <span class="help-block" ng-show="addAdapterCtrl.item.errors.name">{{addAdapterCtrl.item.errors.name.message}}</span>
+                                <span class="help-block" ng-show="addAdapterCtrl.item.errors.name">{{addAdapterCtrl.item.errors.name.message}}</span>
+                            </div>
+                            <!-- item.description group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addAdapterCtrl.item.errors.description }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addAdapterCtrl.item.errors.description }">
+                                    <input class="form-control no-resize" placeholder="Describe this adapter..."
+                                           ng-model="addAdapterCtrl.item.description">
                                 </div>
-                                <!-- item.description group -->
-                                <div class="form-group"
-                                     ng-class="{'has-error' : addAdapterCtrl.item.errors.description }">
-                                    <div class="form-line"
-                                         ng-class="{'focused error' : addAdapterCtrl.item.errors.description }">
-                                        <input class="form-control no-resize" placeholder="Describe this adapter..."
-                                               ng-model="addAdapterCtrl.item.description">
-                                    </div>
-                                    <span class="help-block" ng-show="addAdapterCtrl.item.errors.description">{{addAdapterCtrl.item.errors.description.message}}</span>
+                                <span class="help-block" ng-show="addAdapterCtrl.item.errors.description">{{addAdapterCtrl.item.errors.description.message}}</span>
+                            </div>
+                            <!-- item.routine group -->
+                            <label>Adapter scripts:</label>
+                            <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.routines }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addAdapterCtrl.item.errors.routines }">
+                                    <div class="dropzone" options="ctrl.dzRoutinesOptions"
+                                         callbacks="ctrl.dzRoutinesCallbacks" methods="ctrl.dzMethods"
+                                         ng-dropzone></div>
                                 </div>
-                                <label>Adapter scripts:</label>
-                                <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.routines }">
-                                    <div class="form-line"
-                                         ng-class="{'focused error' : addAdapterCtrl.item.errors.routines }">
-                                        <div class="dropzone" options="ctrl.dzRoutinesOptions"
-                                             callbacks="ctrl.dzRoutinesCallbacks" methods="ctrl.dzMethods"
-                                             ng-dropzone></div>
-                                    </div>
-                                    <span class="help-block" ng-show="addAdapterCtrl.item.errors.routines">{{addAdapterCtrl.item.errors.routines.message}}</span>
+                                <span class="help-block" ng-show="addAdapterCtrl.item.errors.routines">{{addAdapterCtrl.item.errors.routines.message}}</span>
+                            </div>
+                            <!-- item.parameters group -->
+                            <label>Deployment parameters:</label>
+                            <div class="form-group">
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Unit</th>
+                                        <th>Req.</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr ng-repeat="parameter in ctrl.parameters">
+                                        <td>
+                                            <div class="form-line">
+                                                <input class="form-control" type="text" placeholder="Name"
+                                                       ng-model="parameter.name"/>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="form-line">
+                                                <select class="form-control show-tick" ng-model="parameter.type">
+                                                    <option value="" disabled>Select...</option>
+                                                    <option ng-repeat="type in ctrl.parameterTypes"
+                                                            value="{{type}}">
+                                                        {{type}}
+                                                    </option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="form-line">
+                                                <input class="form-control" type="text" placeholder="Unit"
+                                                       ng-model="parameter.unit"/>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="text-center" style="margin-top: 5px;">
+                                                <input id="{{$index}}" type="checkbox" class="filled-in"
+                                                       ng-model="parameter.mandatory">
+                                                <label for="{{$index}}"> </label></div>
+                                        </td>
+                                        <td>
+                                            <button ng-click="ctrl.deleteDeploymentParameter($index)"
+                                                    type="button" class="btn btn-default waves-effect btn-xs">
+                                                <i class="material-icons">delete</i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr ng-show="ctrl.parameters.length === 0">
+                                        <td colspan="3">No parameters specified.</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <div class="has-error" ng-show="addAdapterCtrl.item.errors.parameters">
+                                    <span class="help-block">{{addAdapterCtrl.item.errors.parameters.message}}</span>
                                 </div>
-                                <!-- item.parameters group -->
-                                <label>Deployment parameters:</label>
-                                <div class="form-group">
-                                    <table class="table">
-                                        <thead>
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Type</th>
-                                            <th>Unit</th>
-                                            <th>Req.</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr ng-repeat="parameter in ctrl.parameters">
-                                            <td>
-                                                <div class="form-line">
-                                                    <input class="form-control" type="text" placeholder="Name"
-                                                           ng-model="parameter.name"/>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="form-line">
-                                                    <select class="form-control show-tick" ng-model="parameter.type">
-                                                        <option value="" disabled>Select...</option>
-                                                        <option ng-repeat="type in ctrl.parameterTypes"
-                                                                value="{{type}}">
-                                                            {{type}}
-                                                        </option>
-                                                    </select>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="form-line">
-                                                    <input class="form-control" type="text" placeholder="Unit"
-                                                           ng-model="parameter.unit"/>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="text-center" style="margin-top: 5px;">
-                                                    <input id="{{$index}}" type="checkbox" class="filled-in"
-                                                           ng-model="parameter.mandatory">
-                                                    <label for="{{$index}}"> </label></div>
-                                            </td>
-                                            <td>
-                                                <button ng-click="ctrl.deleteDeploymentParameter($index)"
-                                                        type="button" class="btn btn-default waves-effect btn-xs">
-                                                    <i class="material-icons">delete</i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr ng-show="ctrl.parameters.length === 0">
-                                            <td colspan="3">No parameters specified.</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                    <div class="has-error" ng-show="addAdapterCtrl.item.errors.parameters">
-                                        <span class="help-block">{{addAdapterCtrl.item.errors.parameters.message}}</span>
-                                    </div>
-                                    <button type="button"
-                                            class="btn bg-light-green btn-circle waves-effect waves-circle waves-float"
-                                            ng-click="ctrl.addDeploymentParameter()">
-                                        <i class="material-icons">add</i>
-                                    </button>
+                                <div class="align-right">
+	                                <button type="button"
+	                                        class="btn bg-light-green btn-circle waves-effect waves-circle waves-float"
+	                                        ng-click="ctrl.addDeploymentParameter()">
+	                                    <i class="material-icons">add</i>
+	                                </button>
                                 </div>
                             </div>
-                            <div class="col-xs-12">
-                                <!-- buttons -->
-                                <div class="form-group align-right">
-                                    <button type="submit" class="btn btn-primary m-t-15 waves-effect">
-                                        Register
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </fieldset>
-                </form>
-            </div>
-        </div>
-    </div>
-    <!-- #END# Register Adapter Card -->
+		      			</div>
+					    <div class="modal-footer">
+					    	<button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">Close</button>
+					        <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+					    </div>  
+					</fieldset>
+				</form>
+			</div>
+		</div>
+	</div>
+    <!-- #END# Modal -->
 </div>
