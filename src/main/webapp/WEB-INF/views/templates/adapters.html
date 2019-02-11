@@ -85,17 +85,6 @@
                                     </div>
                                     <span class="help-block" ng-show="addAdapterCtrl.item.errors.description">{{addAdapterCtrl.item.errors.description.message}}</span>
                                 </div>
-                                <!-- item.service group -->
-
-                                <!--<label>Service (single .conf file) (optional)</label>
-                                <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.service }">
-                                    <div class="form-line" ng-class="{'focused error' : addAdapterCtrl.item.errors.service }">
-                                        <div class="dropzone" options="ctrl.dzServiceOptions" callbacks="ctrl.dzServiceCallbacks" methods="ctrl.dzMethods" ng-dropzone></div>
-                                        <input type="file" ng-dropzone ng-model="addAdapterCtrl.item.serviceFile" />
-                                    </div>
-                                    <span class="help-block" ng-show="addAdapterCtrl.item.errors.service">{{addAdapterCtrl.item.errors.service.message}}</span>
-                                </div> -->
-                                <!-- item.routine group -->
                                 <label>Adapter scripts:</label>
                                 <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.routines }">
                                     <div class="form-line"
@@ -103,7 +92,6 @@
                                         <div class="dropzone" options="ctrl.dzRoutinesOptions"
                                              callbacks="ctrl.dzRoutinesCallbacks" methods="ctrl.dzMethods"
                                              ng-dropzone></div>
-                                        <!--<input type="file" multiple ng-dropzone ng-model="addAdapterCtrl.item.routineFiles"  />-->
                                     </div>
                                     <span class="help-block" ng-show="addAdapterCtrl.item.errors.routines">{{addAdapterCtrl.item.errors.routines.message}}</span>
                                 </div>

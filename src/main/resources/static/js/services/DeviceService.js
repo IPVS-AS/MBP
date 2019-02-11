@@ -27,20 +27,27 @@ app.factory('DeviceService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT
         };
     }
 
+    //public
+    function formatMacAddress(address) {
+        if (address) {
+            return address.match(/.{1,2}/g).join('-').toUpperCase();
+        }
+        return address;
+    }
+
+    //public
+    function normalizeMacAddress(address) {
+        if (address) {
+            norm = address.replace(new RegExp('-', 'g'), '');
+            return norm.toLowerCase();
+        }
+        return address;
+    }
+
+    //Expose public functions
     return {
         getUsingComponents: getUsingComponents,
-        formatMacAddress: function (address) {
-            if (address) {
-                return address.match(/.{1,2}/g).join('-').toUpperCase();
-            }
-            return address;
-        },
-        normalizeMacAddress: function (address) {
-            if (address) {
-                norm = address.replace(new RegExp('-', 'g'), '');
-                return norm.toLowerCase();
-            }
-            return address;
-        }
+        formatMacAddress: formatMacAddress,
+        normalizeMacAddress: normalizeMacAddress
     };
 }]);

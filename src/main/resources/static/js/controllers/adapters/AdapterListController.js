@@ -56,17 +56,6 @@ app.controller('AdapterListController',
                 }
 
                 //private
-                function readService(service) {
-                    if (service) {
-                        return FileReader.readAsText(service, $scope);
-                    } else {
-                        // reject
-                        return '';
-                    	//return $q.reject('Service file must not be empty.');
-                    }
-                }
-
-                //private
                 function readRoutines(routines) {
                     if ((routines !== undefined) && (routines.constructor === Array)) {
                         //Read routines files
@@ -88,10 +77,19 @@ app.controller('AdapterListController',
                     });
                 }
 
+                /**
+                 * [Public]
+                 * Shows an alert that asks the user if he is sure that he wants to delete a certain adapter. It also
+                 * shows a list of all components that are affected by this deletion.
+                 *
+                 * @param data A data object that contains the id of the adapter that is supposed to be deleted
+                 * @returns A promise of the user's decision
+                 */
                 function confirmDelete(data) {
                     var adapterId = data.id;
                     var adapterName = "";
 
+                    //Determines the adapter's name by checking all adapters in the adapter list
                     for(var i = 0; i < adapterList.length; i++){
                         if(adapterId == adapterList[i].id){
                             adapterName = adapterList[i].name;
@@ -99,13 +97,17 @@ app.controller('AdapterListController',
                         }
                     }
 
+                    //Ask the server for all components that use this adapter
                     return AdapterService.getUsingComponents(data.id).then(function(result) {
                         var affectedWarning = "";
 
+                        //If the list is not empty, create a message that contains the names of all affected components
                         if (result.success && (result.data.length > 0)) {
+
                             affectedWarning = "<br/><br/><strong>The following components are currently " +
                                 "using this adapter and will be deleted as well:</strong><br/>";
 
+                            //Iterate over all affected components
                             for(var i = 0; i < result.data.length; i++){
                                 affectedWarning += "- ";
                                 affectedWarning += result.data[i].name;
@@ -114,6 +116,7 @@ app.controller('AdapterListController',
                             }
                         }
 
+                        //Show the alert to the user and return the resulting promise
                         return Swal.fire({
                             title: 'Delete adapter',
                             type: 'warning',
@@ -148,22 +151,6 @@ app.controller('AdapterListController',
                                     }, function (response) {
                                         return $q.reject(response);
                                     });
-
-//                                    return readService(data.serviceFile).then(
-//                                            function (response) {
-//                                                console.log('readService: ', response);
-//                                                data.service = response;
-//                                                return readRoutines(data.routineFiles)
-//                                                        .then(function (response) {
-//                                                            console.log('readRoutines: ', response);
-//                                                            data.routines = response;
-//                                                            return addAdapter(data);
-//                                                        }, function (response) {
-//                                                            return $q.reject(response);
-//                                                        });
-//                                            }, function (response) {
-//                                        return $q.reject(response);
-//                                    });
                                 }
                             }),
                     deleteAdapterCtrl: $controller('DeleteItemController as deleteAdapterCtrl',
@@ -200,7 +187,6 @@ app.controller('AdapterListController',
                         },
                         function() {
                           var id = vm.deleteAdapterCtrl.result;
-
                           vm.adapterListCtrl.removeItem(id);
                         }
                 );

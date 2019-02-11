@@ -19,10 +19,18 @@ app.controller('SensorListController',
         return "#";
       };
 
+      /**
+       * [Public]
+       * Shows an alert that asks the user if he is sure that he wants to delete a certain sensor.
+       *
+       * @param data A data object that contains the id of the sensor that is supposed to be deleted
+       * @returns A promise of the user's decision
+       */
       function confirmDelete(data) {
         var sensorId = data.id;
         var sensorName = "";
 
+        //Determines the sensor's name by checking all sensors in the sensor list
         for(var i = 0; i < sensorList.length; i++){
           if(sensorId == sensorList[i].id){
             sensorName = sensorList[i].name;
@@ -30,6 +38,7 @@ app.controller('SensorListController',
           }
         }
 
+        //Show the alert to the user and return the resulting promise
         return Swal.fire({
           title: 'Delete sensor',
           type: 'warning',
@@ -40,8 +49,7 @@ app.controller('SensorListController',
         });
       }
 
-      // expose variables
-
+      //Expose
       angular.extend(vm, {
         registeringDevice: false
       });

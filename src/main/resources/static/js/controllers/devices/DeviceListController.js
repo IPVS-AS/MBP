@@ -14,25 +14,36 @@ app.controller('DeviceListController',
                     DeviceService.formatMacAddress(deviceList[i].macAddress);
             }
 
+            /**
+             * [Public]
+             * Shows an alert that asks the user if he is sure that he wants to delete a certain device. It also
+             * shows a list of all components that are affected by this deletion.
+             *
+             * @param data A data object that contains the id of the device that is supposed to be deleted
+             * @returns A promise of the user's decision
+             */
             function confirmDelete(data) {
                 var deviceId = data.id;
                 var deviceName = "";
 
-                for(var i = 0; i < deviceList.length; i++){
-                    if(deviceId == deviceList[i].id){
+                //Determines the device's name by checking all devices in the device list
+                for (var i = 0; i < deviceList.length; i++) {
+                    if (deviceId == deviceList[i].id) {
                         deviceName = deviceList[i].name;
                         break;
                     }
                 }
 
-                return DeviceService.getUsingComponents(data.id).then(function(result) {
+                //Ask the server for all components that use this device
+                return DeviceService.getUsingComponents(data.id).then(function (result) {
                     var affectedWarning = "";
 
+                    //If the list is not empty, create a message that contains the names of all affected components
                     if (result.success && (result.data.length > 0)) {
                         affectedWarning = "<br/><br/><strong>The following components are currently " +
                             "using this device and will be deleted as well:</strong><br/>";
 
-                        for(var i = 0; i < result.data.length; i++){
+                        for (var i = 0; i < result.data.length; i++) {
                             affectedWarning += "- ";
                             affectedWarning += result.data[i].name;
                             affectedWarning += " (" + result.data[i].component + ")";
@@ -40,6 +51,7 @@ app.controller('DeviceListController',
                         }
                     }
 
+                    //Show the alert to the user and return the resulting promise
                     return Swal.fire({
                         title: 'Delete device',
                         type: 'warning',

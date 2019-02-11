@@ -19,10 +19,18 @@ app.controller('ActuatorListController',
         return "#";
       };
 
+      /**
+       * [Public]
+       * Shows an alert that asks the user if he is sure that he wants to delete a certain actuator.
+       *
+       * @param data A data object that contains the id of the actuator that is supposed to be deleted
+       * @returns A promise of the user's decision
+       */
       function confirmDelete(data) {
         var actuatorId = data.id;
         var actuatorName = "";
 
+        //Determines the actuator's name by checking all actuators in the actuator list
         for(var i = 0; i < actuatorList.length; i++){
           if(actuatorId == actuatorList[i].id){
             actuatorName = actuatorList[i].name;
@@ -30,6 +38,7 @@ app.controller('ActuatorListController',
           }
         }
 
+        //Show the alert to the user and return the resulting promise
         return Swal.fire({
           title: 'Delete actuator',
           type: 'warning',
@@ -40,7 +49,7 @@ app.controller('ActuatorListController',
         });
       }
 
-      // expose variables
+      //Expose
       angular.extend(vm, {
         registeringDevice: false
       });
