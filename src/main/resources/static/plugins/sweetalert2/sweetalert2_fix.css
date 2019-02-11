@@ -1,0 +1,7 @@
+/* Fix for an issue caused by bootstrap 3 which leads to very small SweetAlert2 boxes
+   See https://github.com/sweetalert2/sweetalert2/issues/834#issuecomment-362719586
+*/
+
+.swal2-container {
+    zoom: 1.5;
+}

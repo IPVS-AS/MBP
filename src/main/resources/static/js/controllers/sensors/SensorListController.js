@@ -30,11 +30,14 @@ app.controller('SensorListController',
           }
         }
 
-        return swal("Delete sensor",
-            "Are you sure you want to delete sensor \"" + sensorName + "\"?", "warning",
-            {
-              buttons: ["Cancel", "Delete sensor"]
-            });
+        return Swal.fire({
+          title: 'Delete sensor',
+          type: 'warning',
+          html: "Are you sure you want to delete sensor \"" + sensorName + "\"?",
+          showCancelButton: true,
+          confirmButtonText: 'Delete',
+          cancelButtonText: 'Cancel'
+        });
       }
 
       // expose variables

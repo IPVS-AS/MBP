@@ -30,11 +30,14 @@ app.controller('ActuatorListController',
           }
         }
 
-        return swal("Delete actuator",
-            "Are you sure you want to delete actuator \"" + actuatorName + "\"?", "warning",
-            {
-              buttons: ["Cancel", "Delete actuator"]
-            });
+        return Swal.fire({
+          title: 'Delete actuator',
+          type: 'warning',
+          html: "Are you sure you want to delete actuator \"" + actuatorName + "\"?",
+          showCancelButton: true,
+          confirmButtonText: 'Delete',
+          cancelButtonText: 'Cancel'
+        });
       }
 
       // expose variables

@@ -89,9 +89,6 @@ app.controller('AdapterListController',
                 }
 
                 function confirmDelete(data) {
-                    var usingComponents = AdapterService.getUsingComponents(data.id);
-                    console.log(usingComponents);
-
                     var adapterId = data.id;
                     var adapterName = "";
 
@@ -102,11 +99,32 @@ app.controller('AdapterListController',
                         }
                     }
 
-                    return swal("Delete adapter",
-                        "Are you sure you want to delete adapter \"" + adapterName + "\"?", "warning",
-                        {
-                            buttons: ["Cancel", "Delete adapter"]
+                    return AdapterService.getUsingComponents(data.id).then(function(result) {
+                        var affectedWarning = "";
+
+                        if (result.success && (result.data.length > 0)) {
+                            affectedWarning = "<br/><br/><strong>Beware</strong>: " +
+                                "The following components are currently using this adapter" +
+                                " and will be deleted as well:<br/>";
+
+                            for(var i = 0; i < result.data.length; i++){
+                                affectedWarning += "- ";
+                                affectedWarning += result.data[i].name;
+                                affectedWarning += " (" + result.data[i].component + ")";
+                                affectedWarning += "<br/>";
+                            }
+                        }
+
+                        return Swal.fire({
+                            title: 'Delete adapter',
+                            type: 'warning',
+                            html: "Are you sure you want to delete adapter \"" +
+                             adapterName + "\"?" + affectedWarning,
+                            showCancelButton: true,
+                            confirmButtonText: 'Delete',
+                            cancelButtonText: 'Cancel'
                         });
+                    });
                 }
 
                 // expose controller ($controller will auto-add to $scope)

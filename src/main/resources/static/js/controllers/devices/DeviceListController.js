@@ -25,11 +25,32 @@ app.controller('DeviceListController',
                     }
                 }
 
-                return swal("Delete device",
-                    "Are you sure you want to delete device \"" + deviceName + "\"?", "warning",
-                    {
-                        buttons: ["Cancel", "Delete device"]
+                return DeviceService.getUsingComponents(data.id).then(function(result) {
+                    var affectedWarning = "";
+
+                    if (result.success && (result.data.length > 0)) {
+                        affectedWarning = "<br/><br/><strong>Beware</strong>: " +
+                            "The following components are currently using this device" +
+                            " and will be deleted as well:<br/>";
+
+                        for(var i = 0; i < result.data.length; i++){
+                            affectedWarning += "- ";
+                            affectedWarning += result.data[i].name;
+                            affectedWarning += " (" + result.data[i].component + ")";
+                            affectedWarning += "<br/>";
+                        }
+                    }
+
+                    return Swal.fire({
+                        title: 'Delete device',
+                        type: 'warning',
+                        html: "Are you sure you want to delete device \"" +
+                        deviceName + "\"?" + affectedWarning,
+                        showCancelButton: true,
+                        confirmButtonText: 'Delete',
+                        cancelButtonText: 'Cancel'
                     });
+                });
             }
 
             // expose controller ($controller will auto-add to $scope)

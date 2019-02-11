@@ -2,14 +2,15 @@
 
 'use strict';
 
-app.controller('DeleteItemController', ['deleteItem', 'confirmDeletion', function (deleteItem, confirmDeletion) {
+app.controller('DeleteItemController', ['deleteItem', 'confirmDeletion', 'NotificationService',
+    function (deleteItem, confirmDeletion, NotificationService) {
         var vm = this;
 
         // public
         function deleteItemWithConfirm(){
             if (typeof confirmDeletion !== 'undefined'){
-                confirmDeletion(vm.item).then(function(confirm){
-                    if(confirm){
+                confirmDeletion(vm.item).then(function(result){
+                    if(result.value){
                         deleteItemPromise();
                     }
                 });
@@ -25,13 +26,16 @@ app.controller('DeleteItemController', ['deleteItem', 'confirmDeletion', functio
                     function (data) {
                         // success
                         vm.result = data;
-                        vm.success = 'Deleted successfully!';
+                        vm.success = 'Deleted successfully';
                         
                         // clean form
                         vm.item = {};
+
+                        //Notify the user
+                        NotificationService.notify('Successfully deleted.', 'success')
                     },
                     function (errors) {
-                        // fail - add form errors
+                        // Fail - add form errors
                         vm.item.errors = errors;
                     }
             );
