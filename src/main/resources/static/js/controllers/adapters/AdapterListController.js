@@ -124,6 +124,8 @@ app.controller('AdapterListController',
                              adapterName + "\"?" + affectedWarning,
                             showCancelButton: true,
                             confirmButtonText: 'Delete',
+                            confirmButtonClass: 'bg-red',
+                            focusConfirm: false,
                             cancelButtonText: 'Cancel'
                         });
                     });
