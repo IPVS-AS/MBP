@@ -1,8 +1,10 @@
 /* global app */
 
 app.controller('SensorDetailsController',
-    ['$scope', '$timeout', '$routeParams', '$controller', '$interval', 'CrudService', 'ComponentService', 'sensorDetails',
-        function ($scope, $timeout, $routeParams, $controller, $interval, CrudService, ComponentService, sensorDetails) {
+    ['$scope', '$timeout', '$routeParams', '$controller', '$interval', 'CrudService', 'ComponentService',
+        'NotificationService', 'sensorDetails',
+        function ($scope, $timeout, $routeParams, $controller, $interval, CrudService, ComponentService,
+                  NotificationService, sensorDetails) {
             var vm = this;
 
             vm.loader = {};
@@ -54,11 +56,17 @@ app.controller('SensorDetailsController',
                             vm.deployer.deployed = true;
                             vm.deployer.status = response.data;
                             vm.deployer.update();
+
+                            //Notify user
+                            NotificationService.notify('Successfully deployed.', 'success');
                         },
                         function (response) {
                             vm.deployer.processing = false;
                             vm.deployer.status = response.data;
                             vm.deployer.update();
+
+                            //Notify user
+                            NotificationService.notify('Unable to undeploy: ' + response.data.globalMessage, 'error');
                         });
             }
 
@@ -71,11 +79,17 @@ app.controller('SensorDetailsController',
                             vm.deployer.deployed = false;
                             vm.deployer.status = response.data;
                             vm.deployer.update();
+
+                            //Notify user
+                            NotificationService.notify('Successfully undeployed.', 'success');
                         },
                         function (response) {
                             vm.deployer.processing = false;
                             vm.deployer.status = response.data;
                             vm.deployer.update();
+
+                            //Notify user
+                            NotificationService.notify('Unable to undeploy: ' + response.data.globalMessage, 'error');
                         });
             }
 
@@ -116,6 +130,9 @@ app.controller('SensorDetailsController',
                                     error: 'Could not load values',
                                     response: response
                                 };
+
+                                //Notify user
+                                NotificationService.notify('Unable to retrieve sensor values.', 'error');
                             }
                         );
                     }, 500);

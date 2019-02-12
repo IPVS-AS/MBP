@@ -149,12 +149,12 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
         try {
             sshDeployer.deployComponent(component, parameterInstances);
         } catch (IOException e) {
-            ActionResponse response = new ActionResponse(false, "An error occurred during deployment.");
+            ActionResponse response = new ActionResponse(false, "An unknown error occurred");
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         //Success
-        ActionResponse response = new ActionResponse(true, "Successfully deployed");
+        ActionResponse response = new ActionResponse(true, "Success");
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -172,10 +172,10 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
         try {
             sshDeployer.undeployComponent(component);
         } catch (IOException e) {
-            ActionResponse response = new ActionResponse(false, "An error occurred during undeployment.");
+            ActionResponse response = new ActionResponse(false, "An unknown error occurred");
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        ActionResponse response = new ActionResponse(true, "Successfully undeployed");
+        ActionResponse response = new ActionResponse(true, "Success");
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

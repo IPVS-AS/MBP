@@ -8,8 +8,12 @@ app.factory('NotificationService', function () {
     //Private
     var typeList = {
         success: {
-            icon: 'done',
+            icon: 'check',
             btType: 'success'
+        },
+        error:{
+            icon: 'close',
+            btType: 'danger'
         }
     };
 

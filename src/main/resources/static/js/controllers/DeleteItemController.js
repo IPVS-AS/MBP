@@ -47,11 +47,14 @@ app.controller('DeleteItemController', ['deleteItem', 'confirmDeletion', 'Notifi
                     vm.item = {};
 
                     //Notify the user
-                    NotificationService.notify('Successfully deleted.', 'success')
+                    NotificationService.notify('Entitiy successfully deleted.', 'success')
                 },
                 function (errors) {
-                    // Failure, add the received errors to the form
+                    //Failure, add the received errors to the form
                     vm.item.errors = errors;
+
+                    //Notify the user
+                    NotificationService.notify('Could not delete entitiy.', 'error');
                 }
             );
         }

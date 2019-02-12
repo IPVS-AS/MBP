@@ -66,13 +66,6 @@
                         </div>
                     </div>
                     <div class="col-xs-12">
-                        <!-- Alert for global messages -->
-                        <div class="alert" ng-class="ctrl.deployer.status.success ? 'alert-success' : 'alert-danger'"
-                             ng-show="ctrl.deployer.status.globalMessage.length > 0">
-                            {{ctrl.deployer.status.globalMessage}}
-                        </div>
-                    </div>
-                    <div class="col-xs-12">
                         <form ng-submit="ctrl.deployer.doDeploy()">
                             <div class="row clearfix">
                                 <div class="col-xs-9" ng-show="!ctrl.deployer.deployed">
