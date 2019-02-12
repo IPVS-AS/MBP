@@ -45,6 +45,8 @@ app.controller('ActuatorListController',
           html: "Are you sure you want to delete actuator \"" + actuatorName + "\"?",
           showCancelButton: true,
           confirmButtonText: 'Delete',
+          confirmButtonClass: 'bg-red',
+          focusConfirm: false,
           cancelButtonText: 'Cancel'
         });
       }
