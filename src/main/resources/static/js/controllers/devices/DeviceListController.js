@@ -59,6 +59,8 @@ app.controller('DeviceListController',
                         deviceName + "\"?" + affectedWarning,
                         showCancelButton: true,
                         confirmButtonText: 'Delete',
+                        confirmButtonClass: 'bg-red',
+                        focusConfirm: false,
                         cancelButtonText: 'Cancel'
                     });
                 });
