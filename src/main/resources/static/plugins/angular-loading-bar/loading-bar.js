@@ -33,6 +33,7 @@ angular.module('cfp.loadingBarInterceptor', ['cfp.loadingBar'])
   .config(['$httpProvider', function ($httpProvider) {
 
     var interceptor = ['$q', '$cacheFactory', '$timeout', '$rootScope', '$log', 'cfpLoadingBar', function ($q, $cacheFactory, $timeout, $rootScope, $log, cfpLoadingBar) {
+    $rootScope.showLoading = true;
 
       /**
        * The total number of requests made
@@ -99,7 +100,7 @@ angular.module('cfp.loadingBarInterceptor', ['cfp.loadingBar'])
         'request': function(config) {
           // Check to make sure this request hasn't already been cached and that
           // the requester didn't explicitly ask us to ignore this request:
-          if (!config.ignoreLoadingBar && !isCached(config)) {
+          if (!config.ignoreLoadingBar && !isCached(config) && $rootScope.showLoading) {
             $rootScope.$broadcast('cfpLoadingBar:loading', {url: config.url});
             if (reqsTotal === 0) {
               startTimeout = $timeout(function() {
