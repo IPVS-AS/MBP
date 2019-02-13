@@ -6,6 +6,7 @@ import org.citopt.connde.domain.adapter.Adapter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Reference;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -24,11 +25,11 @@ public abstract class Component {
     
     @Indexed
     private String componentType;
-    
-    @Reference
+
+    @DBRef
     private Adapter adapter;
-    
-    @Reference
+
+    @DBRef
     private Device device;
 
     public String getId() {

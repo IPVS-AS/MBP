@@ -17,7 +17,7 @@
                     <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Status</th>
+                        <th class="align-center">Status</th>
                         <th>Device type</th>
                         <th>IP address</th>
                     </tr>
@@ -25,7 +25,34 @@
                     <tbody>
                     <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
                         <td>{{item.name}}</td>
-                        <td><span class="badge badge-info">not available</span></td>
+                        <td class="align-center">
+                            <div ng-switch="item.state">
+                                <div ng-switch-when="LOADING">
+                                    <div class="preloader pl-size-xs">
+                                        <div class="spinner-layer pl-blue">
+                                            <div class="circle-clipper left">
+                                                <div class="circle"></div>
+                                            </div>
+                                            <div class="circle-clipper right">
+                                                <div class="circle"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-switch-when="UNKNOWN">
+                                    <span class="label label-default">Unknown</span>
+                                </div>
+                                <div ng-switch-when="OFFLINE">
+                                    <span class="label label-danger">Unavailable</span>
+                                </div>
+                                <div ng-switch-when="ONLINE">
+                                    <span class="label label-warning">No SSH</span>
+                                </div>
+                                <div ng-switch-when="SSH_AVAILABLE">
+                                    <span class="label label-success">Available</span>
+                                </div>
+                            </div>
+                        </td>
                         <td>{{item.componentType}}</td>
                         <td>{{item.ipAddress}}</td>
                         <td>
