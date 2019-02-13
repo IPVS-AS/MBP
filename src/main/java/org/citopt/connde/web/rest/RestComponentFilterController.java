@@ -1,33 +1,28 @@
 package org.citopt.connde.web.rest;
 
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.domain.component.Actuator;
-import org.citopt.connde.domain.component.Component;
-import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.repository.ActuatorRepository;
-import org.citopt.connde.repository.AdapterRepository;
-import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.projection.ComponentProjection;
-import org.citopt.connde.service.deploy.SSHDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * REST Controller that extends the CRUD operations on basic resources, e.g. for cascade deletion.
+ * REST Controller that exposes methods that allow the filtering for certain components, e.g. by adapter/device id.
  *
  * @author Jan
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
-public class RestCrudExtensionController {
+public class RestComponentFilterController {
     @Autowired
     private ActuatorRepository actuatorRepository;
 

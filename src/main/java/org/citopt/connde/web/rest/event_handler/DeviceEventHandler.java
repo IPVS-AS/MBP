@@ -43,7 +43,7 @@ public class DeviceEventHandler {
     public void deleteDeviceHook(Device device) throws IOException {
         String deviceId = device.getId();
 
-        //Find actuators that use the device and delete them all safely
+        //Find actuators that use the device and delete them after undeployed
         List<ComponentProjection> affectedActuators = actuatorRepository.findAllByDeviceId(deviceId);
         for (ComponentProjection projection : affectedActuators) {
             Actuator actuator = actuatorRepository.findOne(projection.getId());
@@ -51,7 +51,7 @@ public class DeviceEventHandler {
             actuatorRepository.delete(projection.getId());
         }
 
-        //Find sensors that use the device and delete them all safely
+        //Find sensors that use the device and delete them after undeployed
         List<ComponentProjection> affectedSensors = sensorRepository.findAllByDeviceId(deviceId);
         for (ComponentProjection projection : affectedSensors) {
             Sensor sensor = sensorRepository.findOne(projection.getId());

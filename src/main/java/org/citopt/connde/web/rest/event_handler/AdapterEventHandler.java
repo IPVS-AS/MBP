@@ -43,7 +43,7 @@ public class AdapterEventHandler {
     public void deleteAdapterHook(Adapter adapter) throws IOException {
         String adapterId = adapter.getId();
 
-        //Find actuators that use the adapter and delete them all
+        //Find actuators that use the adapter and delete them after undeployed
         List<ComponentProjection> affectedActuators = actuatorRepository.findAllByAdapterId(adapterId);
         for (ComponentProjection projection : affectedActuators) {
             Actuator actuator = actuatorRepository.findOne(projection.getId());
@@ -51,7 +51,7 @@ public class AdapterEventHandler {
             actuatorRepository.delete(projection.getId());
         }
 
-        //Find sensors that use the adapter and delete them all
+        //Find sensors that use the adapter and delete them after undeployed
         List<ComponentProjection> affectedSensors = sensorRepository.findAllByAdapterId(adapterId);
         for (ComponentProjection projection : affectedSensors) {
             Sensor sensor = sensorRepository.findOne(projection.getId());
