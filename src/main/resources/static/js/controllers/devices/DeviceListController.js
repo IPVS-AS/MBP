@@ -14,6 +14,12 @@ app.controller('DeviceListController',
                     DeviceService.formatMacAddress(deviceList[i].macAddress);
             }
 
+            function loadDeviceStates(){
+
+            }
+
+
+
             // expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {
                 deviceListCtrl: $controller('ItemListController as deviceListCtrl', {
