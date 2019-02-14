@@ -42,7 +42,6 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
-
 public class RestDeploymentController implements ResourceProcessor<RepositoryLinksResource> {
 
     @Autowired

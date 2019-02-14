@@ -17,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.logging.Level;
@@ -35,6 +37,9 @@ public class SSHDeployer {
     private static final String START_SCRIPT_NAME = "start.sh";
     private static final String RUN_SCRIPT_NAME = "running.sh";
     private static final String STOP_SCRIPT_NAME = "stop.sh";
+
+    //Timeout for availability checks (ms)
+    private static final int AVAILABILITY_CHECK_TIMEOUT = 5000;
 
     @Autowired
     private NetworkService networkService;
@@ -67,6 +72,50 @@ public class SSHDeployer {
         return DEPLOY_DIR + "/" + DEPLOY_DIR_PREFIX + component.getId();
     }
 
+
+    /**
+     * Determines the current availability state of a given device.
+     *
+     * @param device The device to check
+     * @return The current state of the device
+     */
+    public DeviceState determineDeviceState(Device device){
+        //Get ip address
+        String ipAddress = device.getIpAddress();
+
+        //Check if device is reachable
+        boolean reachable = false;
+        try {
+            reachable = InetAddress.getByName(ipAddress).isReachable(AVAILABILITY_CHECK_TIMEOUT);
+        } catch (IOException e) {
+            return DeviceState.OFFLINE;
+        }
+
+        //Check if device was not reachable
+        if(!reachable){
+            return DeviceState.OFFLINE;
+        }
+
+        //Check if it is possible to establish a SSH connection
+        SSHSession sshSession;
+        try {
+            sshSession = establishSSHConnection(device);
+        } catch (UnknownHostException e) {
+            return DeviceState.ONLINE;
+        }
+
+        if(sshSession == null){
+            return DeviceState.ONLINE;
+        }
+
+        //Check if it is possible to execute a basic command
+        if(sshSession.isCommandExecutable()){
+            return DeviceState.SSH_AVAILABLE;
+        }else{
+            return DeviceState.ONLINE;
+        }
+    }
+
     /**
      * Deploys a component onto the dedicated remote device and passes deployment parameters to the starter script.
      *
@@ -83,8 +132,11 @@ public class SSHDeployer {
         LOGGER.log(Level.FINE, "Deploy request for component: " + "{0} (Type: {1})",
                 new Object[]{component.getId(), component.getComponentTypeName()});
 
+        //Get dedicated device of the component
+        Device device = component.getDevice();
+
         //Establish new SSH session
-        SSHSession sshSession = establishSSHConnection(component);
+        SSHSession sshSession = establishSSHConnection(device);
 
         //Resolve deployment path
         String deploymentPath = getDeploymentPath(component);
@@ -182,8 +234,11 @@ public class SSHDeployer {
         //Resolve deployment path
         String deploymentPath = getDeploymentPath(component);
 
+        //Get dedicated device of the component
+        Device device = component.getDevice();
+
         //Establish new SSH session
-        SSHSession sshSession = establishSSHConnection(component);
+        SSHSession sshSession = establishSSHConnection(device);
 
         //Get output stream of the session
         OutputStream stdOutStream = sshSession.getStdOutStream();
@@ -216,8 +271,11 @@ public class SSHDeployer {
         LOGGER.log(Level.FINE, "Undeploy request for component: " + "{0} (Type: {1})",
                 new Object[]{component.getId(), component.getComponentTypeName()});
 
+        //Get dedicated device of the component
+        Device device = component.getDevice();
+
         //Establish new SSH session
-        SSHSession sshSession = establishSSHConnection(component);
+        SSHSession sshSession = establishSSHConnection(device);
 
         //Resolve deployment path
         String deploymentPath = getDeploymentPath(component);
@@ -248,16 +306,17 @@ public class SSHDeployer {
     }
 
     /*
-    Establishes a SSH connection to the device that is referenced in the component object.
+     * Establishes a SSH connection to the device that is referenced in the component object.
+     *
+     * @param device To device to connect with
+     * @return The established SSH session
+     * @throws UnknownHostException In case the Host could not be found
      */
-    private SSHSession establishSSHConnection(Component component) throws UnknownHostException {
+    private SSHSession establishSSHConnection(Device device) throws UnknownHostException {
         //Validity check
-        if (component == null) {
-            throw new IllegalArgumentException("Component must not be null.");
+        if (device == null) {
+            throw new IllegalArgumentException("Device must not be null.");
         }
-
-        //Retrieve device
-        Device device = component.getDevice();
 
         //Validity check
         if (device == null) {
