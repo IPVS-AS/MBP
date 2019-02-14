@@ -20,6 +20,7 @@ public class SSHSession {
     private static final int DEFAULT_PORT = 22;
 
     //Definitions of shell commands
+    private static final String SHELL_COMMAND_TEST = "sudo test 5 -gt 2 && echo \"true\" || echo \"false\"";
     private static final String SHELL_CREATE_DIR = "sudo mkdir -p %s";
     private static final String SHELL_REMOVE_DIR = "sudo rm -rf %s";
     private static final String SHELL_CREATE_FILE = "sudo bash -c \"cat > %s/%s\"";
@@ -62,6 +63,29 @@ public class SSHSession {
         this.port = port;
         this.username = username;
         this.key = key;
+    }
+
+    /**
+     * Checks if it is possible to run basic commands by using the SSH session.
+     *
+     * @return True, if commands can be executed successfully; false otherwise
+     */
+    public boolean isCommandExecutable() {
+        checkConnectionState();
+
+        //Create input stream
+        ByteArrayInputStream inputStream = new ByteArrayInputStream("".getBytes());
+
+        //Execute command
+        try {
+            shell.exec(SHELL_COMMAND_TEST, inputStream, stdOutStream, stdErrStream);
+        } catch (IOException e) {
+            return false;
+        }
+
+        //Retrieve return value and check if it is correct
+        String returnValue = stdOutStream.toString().toLowerCase();
+        return returnValue.contains("true");
     }
 
     /**

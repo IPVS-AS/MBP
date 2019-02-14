@@ -1,14 +1,21 @@
 /* global app */
 
 app.controller('ActuatorDetailsController',
-    ['$scope', '$timeout', '$routeParams', '$controller', '$interval', 'CrudService', 'ComponentService',
+    ['$scope', '$rootScope', '$timeout', '$routeParams', '$controller', '$interval', 'CrudService', 'ComponentService',  'cfpLoadingBar', 
         'NotificationService', 'actuatorDetails',
-        function ($scope, $timeout, $routeParams, $controller, $interval, CrudService, ComponentService,
+        function ($scope, $rootScope, $timeout, $routeParams, $controller, $interval, CrudService, ComponentService, cfpLoadingBar,
                   NotificationService, actuatorDetails) {
+
             var vm = this;
 
             vm.loader = {};
             vm.parameterValues = [];
+
+            //Disable the loading bar for this page
+            $rootScope.showLoading = false;
+            $scope.$on('$locationChangeStart', function() {
+                $rootScope.showLoading = true;
+            });
 
             //private
             function initParameters() {
