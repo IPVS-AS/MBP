@@ -32,7 +32,11 @@ public class RestDeviceStateController {
     @Autowired
     private DeviceRepository deviceRepository;
 
-    @GetMapping("/devices/status")
+    /**
+     * Responds with the availability state for all devices in the device repository as a map.
+     * @return A map (device id -> device state) that contains the state of each device
+     */
+    @GetMapping("/devices/state")
     public ResponseEntity<Map<String, DeviceState>> getStatusAllDevices() {
         //Create result map (device id -> device state)
         Map<String, DeviceState> resultMap = new HashMap<>();
@@ -49,7 +53,12 @@ public class RestDeviceStateController {
         return new ResponseEntity<Map<String, DeviceState>>(resultMap, HttpStatus.OK);
     }
 
-    @GetMapping("/devices/status/{id}")
+    /**
+     * Responds with the availability state for a certain device.
+     * @param deviceId The id of the device which state is supposed to be retrieved
+     * @return The availability state of the device as plain string
+     */
+    @GetMapping("/devices/state/{id}")
     public ResponseEntity<DeviceState> getDeviceStatus(@PathVariable(value = "id") String deviceId) {
         //Retrieve device from repository
         Device device = deviceRepository.findOne(deviceId);

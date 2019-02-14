@@ -2,3 +2,14 @@
 table.parameter-table td {
     vertical-align: middle !important;
 }
+
+/* unused atm */
+.btn-icon {
+    background-color: transparent;
+    border-color: transparent;
+    margin-top: -4px;
+}
+
+.clickable {
+    cursor: pointer;
+}

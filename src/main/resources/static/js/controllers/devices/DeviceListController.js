@@ -5,31 +5,50 @@ app.controller('DeviceListController',
         function ($scope, $controller, $interval, DeviceService, deviceList, addDevice, deleteDevice, ComponentTypeService) {
             var vm = this;
 
+            /**
+             * Initializing function, sets up basic things.
+             */
             (function initController() {
                 loadDeviceTypes();
                 $interval(function () {
                         loadDeviceStates();
-                    }, 2 * 60 * 1000);
+                    }, 5 * 60 * 1000);
                 loadDeviceStates();
             })();
 
+            /**
+             * Returns a function that retrieves the status for a device at a certain index in the deviceList.
+             * @param index The index of the device in the deviceList
+             * @returns {Function}
+             */
+            function createReloadStateFunction(index) {
+                //Create function and return it
+                return function () {
+                    getDeviceState(index);
+                };
+            }
+
+            //Extend each device in deviceList for the formatted mac address, a state and a reload function
             for (var i in deviceList) {
-                deviceList[i].formattedMacAddress =
-                    DeviceService.formatMacAddress(deviceList[i].macAddress);
+                deviceList[i].formattedMacAddress = DeviceService.formatMacAddress(deviceList[i].macAddress);
                 deviceList[i].state = 'LOADING';
+                deviceList[i].reloadState = createReloadStateFunction(i);
             }
 
             /**
              * [Private]
+             * Sends a server request in order to retrieve the availability state of a device at a certain index
+             * in the deviceList. The state is then stored in the corresponding device object in deviceList.
              *
+             * @param index The index of the device which state is supposed to be retrieved in deviceList
              */
-            function loadDeviceStates(){
-                DeviceService.getAllDeviceStates().then(function(response){
-                    var statesObject = response.data;
-                    for (var i in deviceList) {
-                        var deviceId = deviceList[i].id;
-                        deviceList[i].state = statesObject[deviceId];
-                    }
+            function getDeviceState(index){
+                //Enable spinner
+                deviceList[index].state = 'LOADING';
+
+                //Perform server request and set state of the device object accordingly
+                DeviceService.getDeviceState(deviceList[index].id).then(function (response) {
+                    deviceList[index].state = response.data;
                 });
             }
 
@@ -82,6 +101,24 @@ app.controller('DeviceListController',
                         focusConfirm: false,
                         cancelButtonText: 'Cancel'
                     });
+                });
+            }
+
+            /**
+             * [Private]
+             * Sends a server request in order to retrieve the availability states of all registered devices.
+             * The states are then stored in the corresponding device objects in deviceList.
+             */
+            function loadDeviceStates(){
+                //Perform server request
+                DeviceService.getAllDeviceStates().then(function(response){
+                    var statesMap = response.data;
+
+                    //Iterate over all devices in deviceList and update the states of all devices accordingly
+                    for (var i in deviceList) {
+                        var deviceId = deviceList[i].id;
+                        deviceList[i].state = statesMap[deviceId];
+                    }
                 });
             }
 
