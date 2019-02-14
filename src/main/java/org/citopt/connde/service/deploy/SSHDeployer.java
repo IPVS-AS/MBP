@@ -185,7 +185,7 @@ public class SSHDeployer {
         }
 
         //Sanity check
-        if(brokerIP == null){
+        if (brokerIP == null) {
             throw new RuntimeException("Unable to resolve IP address of the broker.");
         }
 
@@ -288,7 +288,25 @@ public class SSHDeployer {
     }
 
     /**
-     * Establishes a SSH connection to a given device.
+     * Undeploys a component from the dedicated remote device if it is currently deployed.
+     *
+     * @param component The component to undeploy
+     * @throws IOException In case of an I/O issue
+     */
+    public void undeployIfRunning(Component component) throws IOException {
+        //Validity check
+        if (component == null) {
+            throw new IllegalArgumentException("Component must not be null.");
+        }
+
+        //Undeploy component if running
+        if (this.isComponentRunning(component)) {
+            this.undeployComponent(component);
+        }
+    }
+
+    /*
+     * Establishes a SSH connection to the device that is referenced in the component object.
      *
      * @param device To device to connect with
      * @return The established SSH session
@@ -333,10 +351,11 @@ public class SSHDeployer {
      * @param jsonArray The JSON array to convert
      * @return The corresponding JSON string (command line compatible)
      */
-    private String convertJSONToCmdLineString(JSONArray jsonArray){
+    private String convertJSONToCmdLineString(JSONArray jsonArray) {
         String jsonString = jsonArray.toString();
         //Escape backslashes
-        jsonString = jsonString.replace("\"","\\\"");;
+        jsonString = jsonString.replace("\"", "\\\"");
+        ;
         //Wrap string with double quotes
         jsonString = "\"" + jsonString + "\"";
 
@@ -345,7 +364,8 @@ public class SSHDeployer {
 
     /**
      * Converts a list of parameter instances into a JSON array.
-     * @param adapter The adapter that specifies the parameters
+     *
+     * @param adapter               The adapter that specifies the parameters
      * @param parameterInstanceList A list of parameter instances that correspond to the adapter parameters
      * @return A JSON array that contains the parameter instances
      */
@@ -380,7 +400,8 @@ public class SSHDeployer {
                     //Add properties to object
                     parameterObject.put("name", parameter.getName());
                     parameterObject.put("value", parameterInstance.getValue());
-                } catch (JSONException e) {}
+                } catch (JSONException e) {
+                }
                 //Add object to parameter
                 parameterArray.put(parameterObject);
             }
