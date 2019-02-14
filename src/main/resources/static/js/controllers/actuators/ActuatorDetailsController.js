@@ -1,10 +1,11 @@
 /* global app */
 
 app.controller('ActuatorDetailsController',
-    ['$scope', '$rootScope', '$timeout', '$routeParams', '$controller', '$interval', 'CrudService', 'ComponentService',
-        'cfpLoadingBar', 'actuatorDetails',
-        function ($scope, $rootScope, $timeout, $routeParams, $controller, $interval, CrudService, ComponentService,
-                  cfpLoadingBar, actuatorDetails) {
+    ['$scope', '$rootScope', '$timeout', '$routeParams', '$controller', '$interval', 'CrudService', 'ComponentService',  'cfpLoadingBar', 
+        'NotificationService', 'actuatorDetails',
+        function ($scope, $rootScope, $timeout, $routeParams, $controller, $interval, CrudService, ComponentService, cfpLoadingBar,
+                  NotificationService, actuatorDetails) {
+
             var vm = this;
 
             vm.loader = {};
@@ -62,11 +63,17 @@ app.controller('ActuatorDetailsController',
                             vm.deployer.deployed = true;
                             vm.deployer.status = response.data;
                             vm.deployer.update();
+
+                            //Notify user
+                            NotificationService.notify('Successfully deployed.', 'success');
                         },
                         function (response) {
                             vm.deployer.processing = false;
                             vm.deployer.status = response.data;
                             vm.deployer.update();
+
+                            //Notify user
+                            NotificationService.notify('Could not undeploy: ' + response.data.globalMessage, 'error');
                         });
             }
 
@@ -79,11 +86,17 @@ app.controller('ActuatorDetailsController',
                             vm.deployer.deployed = false;
                             vm.deployer.status = response.data;
                             vm.deployer.update();
+
+                            //Notify user
+                            NotificationService.notify('Successfully undeployed.', 'success');
                         },
                         function (response) {
                             vm.deployer.processing = false;
                             vm.deployer.status = response.data;
                             vm.deployer.update();
+
+                            //Notify user
+                            NotificationService.notify('Could not undeploy: ' + response.data.globalMessage, 'error');
                         });
             }
 
@@ -124,6 +137,9 @@ app.controller('ActuatorDetailsController',
                                     error: 'Could not load values',
                                     response: response
                                 };
+
+                                //Notify user
+                                NotificationService.notify('Unable to retrieve actuator values.', 'error');
                             }
                         );
                     }, 500);

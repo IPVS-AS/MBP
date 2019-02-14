@@ -7,7 +7,7 @@ app.controller('ItemListController',
             function ($scope, $route, list) {
                 var vm = this;
 
-                // public
+                //Public
                 function pushItem(item) {
                     if (item) {
                         vm.items.splice(0, 0, item);
@@ -26,7 +26,7 @@ app.controller('ItemListController',
                  }
                }
                
-                // expose
+                //Expose
                 angular.extend(vm,
                         {
                             items: list,
