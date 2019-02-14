@@ -1,12 +1,20 @@
 /* global app */
 
 app.controller('SensorDetailsController',
-    ['$scope', '$timeout', '$routeParams', '$controller', '$interval', 'CrudService', 'ComponentService', 'sensorDetails',
-        function ($scope, $timeout, $routeParams, $controller, $interval, CrudService, ComponentService, sensorDetails) {
+    ['$scope', '$rootScope', '$timeout', '$routeParams', '$controller', '$interval', 'CrudService', 'ComponentService',
+        'cfpLoadingBar', 'sensorDetails',
+        function ($scope, $rootScope, $timeout, $routeParams, $controller, $interval, CrudService, ComponentService,
+                  cfpLoadingBar, sensorDetails) {
             var vm = this;
 
             vm.loader = {};
             vm.parameterValues = [];
+
+            //Disable the loading bar for this page
+            $rootScope.showLoading = false;
+            $scope.$on('$locationChangeStart', function() {
+                $rootScope.showLoading = true;
+            });
 
             //private
             function initParameters() {
@@ -81,7 +89,6 @@ app.controller('SensorDetailsController',
 
             // sensor values
             var loadSensorValues = function (tableState) {
-
                 vm.loader.sensorValues = true;
 
                 var pagination = tableState.pagination || {};
