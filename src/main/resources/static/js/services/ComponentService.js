@@ -1,12 +1,32 @@
 /* global app */
 
-app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI', function ($http, $resource, $q, ENDPOINT_URI) {
-        return {
+app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
+    function ($http, $resource, $q, ENDPOINT_URI) {
+
+    //URL prefix for requests
+    const URL_PREFIX = ENDPOINT_URI + '/';
+    //URL suffix under which the deployment state of all components can be retrieved
+    const URL_SUFFIX_GET_ALL_COMPONENT_STATES = '/state';
+    //URL suffix under which the deployment state of a certain component can be retrieved
+    const URL_SUFFIX_GET_COMPONENT_STATE = '/state/';
+
+    //Performs a server request in order to retrieve the deployment states of all components of a certain type.
+    function getAllComponentStates(component) {
+        return $http.get(URL_PREFIX + component + URL_SUFFIX_GET_ALL_COMPONENT_STATES);
+    }
+
+    //Performs a server request in order to retrieve the deployment state of a certain component.
+    function getComponentState(componentId, component) {
+        return $http.get(URL_PREFIX + component + URL_SUFFIX_GET_COMPONENT_STATE + componentId);
+    }
+
+    return {
             COMPONENT: {
                 SENSOR: 'SENSOR',
                 ACTUATOR: 'ACTUATOR'
             },
-
+            getAllComponentStates: getAllComponentStates,
+            getComponentState: getComponentState,
             getValues: function (component, idref, parameters) {
                 var url = ENDPOINT_URI;
                 

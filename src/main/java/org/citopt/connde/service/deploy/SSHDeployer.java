@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -72,6 +71,40 @@ public class SSHDeployer {
         return DEPLOY_DIR + "/" + DEPLOY_DIR_PREFIX + component.getId();
     }
 
+    /**
+     * Determines the current deployment state of a given component.
+     *
+     * @param component The component to check
+     * @return The current state of the component
+     */
+    public ComponentState determineComponentState(Component component) {
+        //Validity check
+        if (component == null) {
+            throw new IllegalArgumentException("Component must not be null.");
+        }
+
+        //Get dedicated device of the component
+        Device device = component.getDevice();
+
+        //Determine availability state of the device
+        DeviceState deviceState = determineDeviceState(device);
+
+        //Check if device is available
+        if (deviceState != DeviceState.SSH_AVAILABLE) {
+            return ComponentState.NOT_READY;
+        }
+
+        //Check if component is deployed
+        try {
+            if (isComponentRunning(component)) {
+                return ComponentState.DEPLOYED;
+            } else {
+                return ComponentState.READY;
+            }
+        } catch (IOException e) {
+            return ComponentState.UNKNOWN;
+        }
+    }
 
     /**
      * Determines the current availability state of a given device.
@@ -79,7 +112,11 @@ public class SSHDeployer {
      * @param device The device to check
      * @return The current state of the device
      */
-    public DeviceState determineDeviceState(Device device){
+    public DeviceState determineDeviceState(Device device) {
+        if (device == null) {
+            throw new IllegalArgumentException("Device must not be null.");
+        }
+
         //Get ip address
         String ipAddress = device.getIpAddress();
 
@@ -92,7 +129,7 @@ public class SSHDeployer {
         }
 
         //Check if device was not reachable
-        if(!reachable){
+        if (!reachable) {
             return DeviceState.OFFLINE;
         }
 
@@ -104,14 +141,14 @@ public class SSHDeployer {
             return DeviceState.ONLINE;
         }
 
-        if(sshSession == null){
+        if (sshSession == null) {
             return DeviceState.ONLINE;
         }
 
         //Check if it is possible to execute a basic command
-        if(sshSession.isCommandExecutable()){
+        if (sshSession.isCommandExecutable()) {
             return DeviceState.SSH_AVAILABLE;
-        }else{
+        } else {
             return DeviceState.ONLINE;
         }
     }
