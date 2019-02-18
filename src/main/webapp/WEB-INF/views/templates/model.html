@@ -174,7 +174,7 @@
         <div class="panel-heading" style="text-align: center;">
           <h4 class="panel-title">DEVICE</h4>
         </div>
-        <div id="deviceInfo" class="panel-body input-list">
+        <div id="deviceInfo" class="input-list">
           <ul>
             <li>
               <label for="name">Name</label>
@@ -197,13 +197,15 @@
               <label for="username">Username</label>
               <input id="deviceUsernameInput" type="text" name="username" ng-model="vm.clickedComponent.username" autocomplete="off">
             </li>
-            <!-- <li> <input type="submit" value="Send This"> </li> -->
+            <li>
+              <label for="rsaKey">RSA Key</label>
+              <textarea id="deviceRsaKeyInput" type="text" name="rsaKey" placeholder="Private RSA key" ng-model="vm.clickedComponent.rsaKey" rows="4"></textarea>
+              <!-- <input id="deviceRsaKeyInput" type="text" name="rsaKey" ng-model="vm.clickedComponent.rsaKey" autocomplete="off"> -->
+            </li>
           </ul>
         </div>
 
-        <div class="panel-footer">
-          <button class="tool-button" id="registerComponentBtn" ng-click="vm.registerComponent()">Register</button>
-        </div>
+        <!-- <div class="panel-footer"> <button class="tool-button" id="registerComponentBtn" ng-click="vm.registerComponent()">Register</button> </div> -->
       </div>
 
       <div class="panel panel-default" style="margin: 5px;" ng-show="vm.clickedComponent.category == 'ACTUATOR'">
@@ -224,13 +226,14 @@
             </li>
             <li>
               <label for="adapter">Adapter</label>
-              <input id="actuatorAdapterInput" type="text" name="adapter" ng-model="vm.clickedComponent.adapter" autocomplete="off">
+              <select class="form-control show-tick" id="actuatorAdapterInput" ng-model="vm.clickedComponent.adapter" ng-options="t._links.self.href as (t.name) for t in adapterListCtrl.items">
+                <option value="">Select adapter</option>
+              </select>
             </li>
             <li>
               <label for="device">Device</label>
-              <input id="actuatorDeviceInput" type="text" name="device" ng-model="vm.clickedComponent.device" autocomplete="off">
+              <input id="actuatorDeviceInput" type="text" name="device" ng-model="vm.clickedComponent.device" autocomplete="off" disabled="disabled">
             </li>
-            <!-- <li> <input type="submit" value="Send This"> </li> -->
           </ul>
         </div>
       </div>
@@ -253,13 +256,14 @@
             </li>
             <li>
               <label for="adapter">Adapter</label>
-              <input id="sensorAdapterInput" type="text" name="adapter" ng-model="vm.clickedComponent.adapter" autocomplete="off">
+              <select class="form-control show-tick" id="sensorAdapterInput" ng-model="vm.clickedComponent.adapter" ng-options="t.id as (t.name) for t in adapterListCtrl.items">
+                <option value="">Select adapter</option>
+              </select>
             </li>
             <li>
               <label for="device">Device</label>
-              <input id="sensorDeviceInput" type="text" name="device" ng-model="vm.clickedComponent.device" autocomplete="off">
+              <input id="sensorDeviceInput" type="text" name="device" ng-model="vm.clickedComponent.device" autocomplete="off" disabled="disabled">
             </li>
-            <!-- <li> <input type="submit" value="Send This"> </li> -->
           </ul>
         </div>
       </div>

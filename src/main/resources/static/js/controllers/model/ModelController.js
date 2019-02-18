@@ -5,9 +5,9 @@
     .module('app')
     .controller('ModelController', ModelController);
 
-  ModelController.$inject = ['$timeout', 'ModelService', 'FlashService'];
+  ModelController.$inject = ['$scope', '$timeout', '$controller', 'ModelService', 'FlashService', 'deviceList', 'addDevice', 'deleteDevice', 'adapterList'];
 
-  function ModelController($timeout, ModelService, FlashService) {
+  function ModelController($scope, $timeout, $controller, ModelService, FlashService, deviceList, addDevice, deleteDevice, adapterList) {
     var vm = this;
 
     jsPlumb.ready(function() {
@@ -27,7 +27,6 @@
       vm.deleteModel = deleteModel;
       vm.clearCanvas = clearCanvas;
       vm.newModel = newModel;
-      vm.registerComponent = registerComponent;
       vm.registerComponents = registerComponents;
       vm.deployComponents = deployComponents;
       vm.undeployComponents = undeployComponents;
@@ -35,6 +34,31 @@
       (function initController() {
         vm.loadModels();
       })();
+
+      angular.extend(vm, {
+        // sensorListCtrl: $controller('ItemListController as sensorListCtrl', {
+        //   $scope: $scope,
+        //   list: sensorList
+        // }),
+        // addSensorCtrl: $controller('AddItemController as addSensorCtrl', {
+        //   $scope: $scope,
+        //   addItem: addSensor
+        // }),
+        // deleteSensorCtrl: $controller('DeleteItemController as deleteSensorCtrl', {
+        //   $scope: $scope,
+        //   deleteItem: deleteSensor
+        // }),
+        deviceCtrl: $controller('DeviceListController as deviceCtrl', {
+          $scope: $scope,
+          deviceList: deviceList,
+          addDevice: addDevice,
+          deleteDevice: deleteDevice
+        }),
+        adapterListCtrl: $controller('ItemListController as adapterListCtrl', {
+          $scope: $scope,
+          list: adapterList
+        })
+      });
 
       jsPlumbInstance = window.jsp = jsPlumb.getInstance({
         Endpoint: ["Dot", {
@@ -46,9 +70,10 @@
         },
         ConnectionOverlays: [
           ["Label", {
-            label: "FOO",
+            label: "NAME",
             id: "label",
-            cssClass: "aLabel"
+            cssClass: "aLabel",
+            visible: false
           }]
         ],
         Container: "canvas"
@@ -79,8 +104,17 @@
         allowLoopback: false
       };
 
-      // bind a click listener to each connection; the connection is deleted on click
-      jsPlumbInstance.bind("click", jsPlumbInstance.deleteConnection);
+      // bind a click listener to each connection; the connection is deleted on double click
+      jsPlumbInstance.bind("dblclick", jsPlumbInstance.deleteConnection);
+      jsPlumbInstance.bind("click", function(connection, originalEvent) {
+        var overlay = connection.getOverlay("label");
+        if (overlay.isVisible() && originalEvent.target.localName == 'path') {
+          overlay.hide();
+        } else if (!overlay.isVisible()) {
+          overlay.show();
+        }
+      });
+
 
       function makeResizable(id) {
         $(id).resizable({
@@ -197,6 +231,7 @@
             element.data("mac", node.mac);
             element.data("ip", node.ip);
             element.data("username", node.username);
+            element.data("rsaKey", node.rsaKey);
           } else if (node.nodeType == "actuator" || node.nodeType == "sensor") {
             element.data("name", node.name);
             element.data("type", node.type);
@@ -238,9 +273,11 @@
       function addEndpoints(element) {
         var type = element.attr('class').toString().split(" ")[1];
         if (type == "device") {
+          targetEndpoint.maxConnections = null;
           jsPlumbInstance.makeSource(element, sourceEndpoint);
           jsPlumbInstance.makeTarget(element, targetEndpoint);
         } else if (type == "actuator" || type == "sensor") {
+          targetEndpoint.maxConnections = 1;
           jsPlumbInstance.makeTarget(element, targetEndpoint);
         }
       }
@@ -268,8 +305,41 @@
       });
 
       $(document).on("click", ".close-icon", function() {
-        jsPlumbInstance.remove($(this).parent().attr("id"));
+        var element = $(this).parent();
+        $timeout(function() {
+          vm.clickedComponent = {};
+          jsPlumbInstance.remove(element);
+        });
       });
+
+      // Add device name to sensor or actuator when a connection was created
+      jsPlumbInstance.bind("connection", function(info) {
+        var source = $(info.source);
+        var target = $(info.target);
+        if (target.attr("class").indexOf("device") == -1) {
+          target.data("device", source.data("name"));
+        }
+      });
+
+      // Remove device name from sensor or actuator when a connection is removed
+      jsPlumbInstance.bind("connectionDetached", function(info) {
+        var target = $(info.target);
+        if (target.attr("class").indexOf("device") == -1) {
+          target.removeData("device");
+        }
+      });
+
+      // Update device name in sensor or actuator
+      function updateDeviceNameSA(device) {
+        $.each(jsPlumbInstance.getConnections({
+          source: device.attr("id")
+        }), function(index, connection) {
+          var target = $(connection.target);
+          if (target.attr("class").indexOf("device") == -1) {
+            target.data("device", device.data("name"));
+          }
+        });
+      }
 
       function loadData(element) {
         $timeout(function() {
@@ -280,6 +350,7 @@
             vm.clickedComponent.mac = element.data("mac");
             vm.clickedComponent.ip = element.data("ip");
             vm.clickedComponent.username = element.data("username");
+            vm.clickedComponent.rsaKey = element.data("rsaKey");
             vm.clickedComponent.element = element;
           } else if (element.attr("class").indexOf("actuator") > -1) {
             vm.clickedComponent.category = "ACTUATOR";
@@ -308,16 +379,16 @@
             element.data("mac", vm.clickedComponent.mac);
             element.data("ip", vm.clickedComponent.ip);
             element.data("username", vm.clickedComponent.username);
+            element.data("rsaKey", vm.clickedComponent.rsaKey);
+            updateDeviceNameSA(element);
           } else if (element.attr("class").indexOf("actuator") > -1) {
             element.data("name", vm.clickedComponent.name);
             element.data("type", vm.clickedComponent.type);
             element.data("adapter", vm.clickedComponent.adapter);
-            element.data("device", vm.clickedComponent.device);
           } else if (element.attr("class").indexOf("sensor") > -1) {
             element.data("name", vm.clickedComponent.name);
             element.data("type", vm.clickedComponent.type);
             element.data("adapter", vm.clickedComponent.adapter);
-            element.data("device", vm.clickedComponent.device);
           }
         }
 
@@ -342,11 +413,15 @@
           element = "";
         });
         $.each(environment.connections, function(index, connection) {
-          jsPlumbInstance.connect({
+          var conn = jsPlumbInstance.connect({
             source: connection.sourceId,
             target: connection.targetId,
             type: "basic"
           });
+          conn.getOverlay("label").label = connection.label;
+          if (connection.labelVisible) {
+            conn.getOverlay("label").show();
+          }
         });
         elementCount = environment.numberOfElements;
       }
@@ -386,7 +461,8 @@
               type: $element.data("type"),
               mac: $element.data("mac"),
               ip: $element.data("ip"),
-              username: $element.data("username")
+              username: $element.data("username"),
+              rsaKey: $element.data("rsaKey")
             });
           } else if (type == "actuator" || type == "sensor") {
             nodes.push({
@@ -420,7 +496,9 @@
           connections.push({
             id: connection.id,
             sourceId: connection.source.id,
-            targetId: connection.target.id
+            targetId: connection.target.id,
+            label: connection.getOverlay("label").canvas ? connection.getOverlay("label").canvas.innerText : connection.getOverlay("label").label,
+            labelVisible: connection.getOverlay("label").isVisible()
           });
         });
 
@@ -476,12 +554,21 @@
         loadModels();
       }
 
-      function registerComponent() {
-
-      }
-
       function registerComponents() {
+        $(".jtk-node").each(function(index, element) {
+          var $element = $(element);
+          var type = $element.attr('class').toString().split(" ")[1];
 
+          if (type == "device") {
+            $scope.addDeviceCtrl.item.name = $element.data("name");
+            $scope.addDeviceCtrl.item.componentType = $element.data("type");
+            $scope.addDeviceCtrl.item.formattedMacAddress = $element.data("mac");
+            $scope.addDeviceCtrl.item.ipAddress = $element.data("ip");
+            $scope.addDeviceCtrl.item.username = $element.data("username");
+            $scope.addDeviceCtrl.item.rsaKey = $element.data("rsaKey");
+            $scope.addDeviceCtrl.addItem();
+          }
+        });
       }
 
       function deployComponents() {

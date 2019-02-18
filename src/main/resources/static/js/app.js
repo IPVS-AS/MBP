@@ -102,7 +102,24 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
       // Model
       .when(viewPrefix + '/model', {
         templateUrl: 'templates/model',
-        controller: 'ModelController as vm'
+        controller: 'ModelController as vm',
+        resolve: {
+          deviceList: ['CrudService', function(CrudService) {
+            return CrudService.fetchAllItems('devices');
+          }],
+          addDevice: ['CrudService', function(CrudService) {
+            // bind category parameter
+            return angular.bind(this, CrudService.addItem, 'devices');
+          }],
+          deleteDevice: ['CrudService', function(CrudService) {
+            // bind category parameter
+            return angular.bind(this, CrudService.deleteItem, 'devices');
+            //return CrudService.deleteItem('devices', this);
+          }],
+          adapterList: ['CrudService', function(CrudService) {
+            return CrudService.fetchAllItems('adapters');
+          }]
+        }
       })
 
       // Actuator List and Register (includes Device List and Register)

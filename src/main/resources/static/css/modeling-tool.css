@@ -289,6 +289,9 @@ li {
   -webkit-transition: background-color 0.25s ease-in;
   -moz-transition: background-color 0.25s ease-in;
   transition: background-color 0.25s ease-in;
+  -webkit-user-modify: read-write;
+  -moz-user-modify: read-write;
+  user-modify: read-write;
 }
 
 .aLabel.jtk-hover, .jtk-source-hover, .jtk-target-hover, .dragHover {
@@ -305,7 +308,7 @@ li {
   padding: 0.2em;
   border-radius: 0.5em;
   border: 1px solid grey;
-  cursor: pointer;
+  cursor: text;
   font-size: 10px;
   z-index: 4;
 }
@@ -391,7 +394,7 @@ li {
 /* --- Rest ------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------- */
 .panel-body {
-  height: 250px;
+  height: 270px;
 }
 
 .panel-footer {
