@@ -11,10 +11,17 @@ app.controller('SensorListController',
 
             (function initController() {
                 loadSensorTypes();
-                $interval(function () {
+                loadSensorStates();
+
+                //Interval for updating sensor states on a regular basis
+                var interval = $interval(function () {
                     loadSensorStates();
                 }, 5 * 60 * 1000);
-                loadSensorStates();
+
+                //Cancel interval on route change
+                $scope.$on('$destroy', function () {
+                    $interval.cancel(interval);
+                });
             })();
 
             //Extend each sensor in sensorList for a state and a reload function

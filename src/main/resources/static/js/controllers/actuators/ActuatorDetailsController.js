@@ -7,10 +7,12 @@ app.controller('ActuatorDetailsController',
             var vm = this;
 
             angular.extend(vm, $controller('ComponentDetailsController as componentDetailsCtrl',
-                    {
-                        $scope: $scope,
-                        componentDetails: actuatorDetails
-                    })
+                {
+                    $scope: $scope,
+                    componentDetails: actuatorDetails,
+                    liveChartContainer: 'liveValues',
+                    historicalChartContainer: 'historicalValues'
+                })
             );
         }]
 );

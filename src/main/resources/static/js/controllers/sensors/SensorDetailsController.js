@@ -7,10 +7,12 @@ app.controller('SensorDetailsController',
             var vm = this;
 
             angular.extend(vm, $controller('ComponentDetailsController as componentDetailsCtrl',
-                    {
-                        $scope: $scope,
-                        componentDetails: sensorDetails
-                    })
+                {
+                    $scope: $scope,
+                    componentDetails: sensorDetails,
+                    liveChartContainer: 'liveValues',
+                    historicalChartContainer: 'historicalValues'
+                })
             );
         }]
 );

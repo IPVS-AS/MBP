@@ -9,6 +9,8 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
         const URL_SUFFIX_GET_ALL_COMPONENT_STATES = '/state';
         //URL suffix under which the deployment state of a certain component can be retrieved
         const URL_SUFFIX_GET_COMPONENT_STATE = '/state/';
+        //URL suffix under which the deployment state of a certain component can be retrieved
+        const URL_SUFFIX_GET_VALUE_LOG_STATS = '/stats/';
 
         //Performs a server request in order to retrieve the deployment states of all components of a certain type.
         function getAllComponentStates(component) {
@@ -20,6 +22,11 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
             return $http.get(URL_PREFIX + component + URL_SUFFIX_GET_COMPONENT_STATE + componentId);
         }
 
+        //Performs a server request in order to retrieve the value log stats of a certain component.
+        function getValueLogStats(componentId, component) {
+            return $http.get(URL_PREFIX + component + URL_SUFFIX_GET_VALUE_LOG_STATS + componentId);
+        }
+
         return {
             COMPONENT: {
                 SENSOR: 'SENSOR',
@@ -27,6 +34,7 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
             },
             getAllComponentStates: getAllComponentStates,
             getComponentState: getComponentState,
+            getValueLogStats: getValueLogStats,
             getValues: function (component, idref, parameters) {
                 var url = ENDPOINT_URI;
 

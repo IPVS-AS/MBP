@@ -12,7 +12,8 @@ import org.citopt.connde.repository.ComponentRepository;
 import org.citopt.connde.repository.ComponentTypeRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.deploy.SSHDeployer;
-import org.citopt.connde.service.settings.model.Settings;
+import org.citopt.connde.service.stats.ValueLogStatsService;
+import org.citopt.connde.service.stats.model.ValueLogStats;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.citopt.connde.web.rest.util.HeaderUtil;
 import org.citopt.connde.web.rest.util.PaginationUtil;
@@ -56,6 +57,7 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
     @Autowired
     private ComponentTypeRepository componentTypeRepository;
 
+
     @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.GET)
     public ResponseEntity<Boolean> isRunningActuator(@PathVariable(value = "id") String id) {
         return isRunningComponent(id, actuatorRepository);
@@ -74,7 +76,7 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
 
     @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.POST)
     public ResponseEntity<ActionResponse> deploySensor(@PathVariable(value = "id") String id,
-                                               @RequestBody List<ParameterInstance> parameters) {
+                                                       @RequestBody List<ParameterInstance> parameters) {
         return deployComponent(id, sensorRepository, parameters);
     }
 
@@ -121,23 +123,23 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
         Adapter adapter = component.getAdapter();
 
         //Iterate over all parameters
-        for(Parameter parameter : adapter.getParameters()){
+        for (Parameter parameter : adapter.getParameters()) {
             //Ignore parameter if not mandatory
-            if(!parameter.isMandatory()){
+            if (!parameter.isMandatory()) {
                 continue;
             }
 
             //Iterate over all provided parameter instances and check if there is a matching one
             boolean matchFound = false;
-            for(ParameterInstance parameterInstance : parameterInstances){
-                if(parameter.isInstanceValid(parameterInstance)){
+            for (ParameterInstance parameterInstance : parameterInstances) {
+                if (parameter.isInstanceValid(parameterInstance)) {
                     matchFound = true;
                     break;
                 }
             }
 
             //Check if no valid instance was found for this parameter
-            if(!matchFound){
+            if (!matchFound) {
                 ActionResponse response = new ActionResponse(false, "Invalid parameter configuration.");
                 response.addFieldError("parameters", "Parameter \"" + parameter.getName() + "\" is invalid.");
                 return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
@@ -179,7 +181,7 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
     }
 
     @RequestMapping(value = "/adapter/parameter-types", method = RequestMethod.GET)
-    public ResponseEntity<List<ParameterTypes>> getAllParameterTypes(){
+    public ResponseEntity<List<ParameterTypes>> getAllParameterTypes() {
         //Get all enum objects as list
         List<ParameterTypes> parameterList = Arrays.asList(ParameterTypes.values());
         return new ResponseEntity<>(parameterList, HttpStatus.OK);

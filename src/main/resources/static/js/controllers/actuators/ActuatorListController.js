@@ -11,10 +11,17 @@ app.controller('ActuatorListController',
 
         (function initController() {
           loadActuatorTypes();
-          $interval(function () {
+          loadActuatorStates();
+
+          //Interval for updating actuator states on a regular basis
+          var interval = $interval(function () {
             loadActuatorStates();
           }, 5 * 60 * 1000);
-          loadActuatorStates();
+
+          //Cancel interval on route change
+          $scope.$on('$destroy', function () {
+            $interval.cancel(interval);
+          });
         })();
 
         //Extend each actuator in actuatorList for a state and a reload function

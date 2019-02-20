@@ -1,7 +1,7 @@
 <div class="row clearfix">
     <!-- Sensor Properties Card -->
     <div class="col-lg-7">
-        <div class="card loading-box">
+        <div class="card deployment-card">
             <div class="header"
                  ng-class="{'bg-red': componentDetailsCtrl.deploymentState=='NOT_READY', 'bg-green': componentDetailsCtrl.deploymentState=='READY', 'bg-cyan': componentDetailsCtrl.deploymentState=='DEPLOYED', 'bg-grey': componentDetailsCtrl.deploymentState=='UNKNOWN'}">
                 <i class="material-icons" style="position: absolute; margin-top: 4px">settings_remote</i>
@@ -16,7 +16,7 @@
                 <ul class="header-dropdown m-r--5">
                     <li>
                         <a ng-click="componentDetailsCtrl.updateDeploymentState()" class="clickable">
-                            <i class="material-icons">loop</i>
+                            <i class="material-icons">refresh</i>
                         </a>
                     </li>
                 </ul>
@@ -139,74 +139,97 @@
     </div>
 
     <div class="col-lg-5">
-        <div class="card">
+        <div class="card stats-card">
             <div class="header">
                 <h2>
-                    Received values
-                    <small>Values sent by the sensor</small>
+                    Value overview
+                    <small>Overview about the values received from the sensor.</small>
                 </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="componentDetailsCtrl.updateValueLogStats()" class="clickable">
+                            <i class="material-icons">refresh</i>
+                        </a>
+                    </li>
+                </ul>
             </div>
-            <div class="body" uib-collapse="isCollapsedLog">
-                <p>
-                    The value field is parsed from the message received, so it may not be present. The raw message
-                    will
-                    be linked on the value field.
-                </p>
-                <!-- sensorValues loader -->
-                <div class="row clearfix" ng-show="ctrl.loader.sensorValues">
-                    <div class="col-xs-12 align-center">
-                        <div class="preloader">
-                            <div class="spinner-layer pl-blue">
-                                <div class="circle-clipper left">
-                                    <div class="circle"></div>
-                                </div>
-                                <div class="circle-clipper right">
-                                    <div class="circle"></div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
+            <div class="body">
+                <div ng-show="componentDetailsCtrl.valueLogStats.numberLogs == 0">
+                    <p>No sensor values received yet.</p>
                 </div>
-                <table class="table table-hover" ng-show="ctrl.sensorValues.data && !ctrl.loader.sensorValues"
-                       st-table="ctrl.sensorValues.data" st-pipe="ctrl.loadSensorValues"
-                       refresh-table="refreshSensorValues">
-                    <thead>
-                    <tr>
-                        <th>Value</th>
-                        <th>Date</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr id="{{v.id}}" ng-repeat="v in ctrl.sensorValues.data">
-                        <td>
-                            <button uib-popover="{{v.message}}" popover-title="{{'Raw Message'}}" type="button"
-                                    class="btn btn-default">
-                                {{v.value ? v.value : '-'}}
-                            </button>
-                        </td>
-                        <td>{{v.date}}</td>
-                    </tr>
-                    <tr ng-show="ctrl.sensorValues.data.length === 0">
-                        <td>No values received yet.</td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    </tbody>
-                    <tfoot>
-                    <tr>
-                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
-                    </tr>
-                    </tfoot>
-                </table>
+                <div ng-show="componentDetailsCtrl.valueLogStats.numberLogs > 0">
+                    <table class="table table-hover">
+                        <tbody>
+                        <tr>
+                            <th>Number of values:</th>
+                            <td>{{componentDetailsCtrl.valueLogStats.numberLogs}}</td>
+                        </tr>
+                        <tr>
+                            <th>Average:</th>
+                            <td>{{componentDetailsCtrl.valueLogStats.average}}</td>
+                        </tr>
+                        <tr>
+                            <th>Variance:</th>
+                            <td>{{componentDetailsCtrl.valueLogStats.variance}}</td>
+                        </tr>
+                        <tr>
+                            <th>First value:</th>
+                            <td>
+                                <button uib-popover="{{componentDetailsCtrl.valueLogStats.firstLog.message}}"
+                                        popover-title="{{componentDetailsCtrl.valueLogStats.firstLog.date}}"
+                                        type="button"
+                                        class="btn btn-default">
+                                    {{componentDetailsCtrl.valueLogStats.firstLog.value}}
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Last value:</th>
+                            <td>
+                                <button uib-popover="{{componentDetailsCtrl.valueLogStats.lastLog.message}}"
+                                        popover-title="{{componentDetailsCtrl.valueLogStats.lastLog.date}}"
+                                        type="button"
+                                        class="btn btn-default">
+                                    {{componentDetailsCtrl.valueLogStats.lastLog.value}}
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Minimum value:</th>
+                            <td>
+                                <button uib-popover="{{componentDetailsCtrl.valueLogStats.minimumLog.message}}"
+                                        popover-title="{{componentDetailsCtrl.valueLogStats.minimumLog.date}}"
+                                        type="button"
+                                        class="btn btn-default">
+                                    {{componentDetailsCtrl.valueLogStats.minimumLog.value}}
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Maximum value:</th>
+                            <td>
+                                <button uib-popover="{{componentDetailsCtrl.valueLogStats.maximumLog.message}}"
+                                        popover-title="{{componentDetailsCtrl.valueLogStats.maximumLog.date}}"
+                                        type="button"
+                                        class="btn btn-default">
+                                    {{componentDetailsCtrl.valueLogStats.maximumLog.value}}
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">No values received yet.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="row clearfix">
-    <div class="col-lg-7">
-        <div class="card">
+    <div class="col-lg-8">
+        <div class="card animate-show-hide" ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
             <div class="header">
                 <h2>
                     Live sensor values
@@ -220,17 +243,19 @@
 </div>
 
 <div class="row clearfix">
-    <div class="col-lg-7">
+    <div class="col-lg-8">
         <div class="card">
             <div class="header">
-                <div style="align: right">
-                    <button class="close" type="button" ng-click="ctrl.showCharts()">
-                        <i class="material-icons">refresh</i>
-                    </button>
-                </div>
                 <h2>
                     Historical sensor values
                 </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="componentDetailsCtrl.updateHistoricalChart()" class="clickable">
+                            <i class="material-icons">refresh</i>
+                        </a>
+                    </li>
+                </ul>
             </div>
             <div class="body">
                 <div id="historicalValues" style="width:100%; height:400px;"></div>
