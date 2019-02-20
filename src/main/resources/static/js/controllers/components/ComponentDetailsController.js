@@ -1,6 +1,6 @@
 app.controller('ComponentDetailsController',
-    ['$scope', '$rootScope', '$routeParams', 'componentDetails', 'ComponentService', 'DeviceService', 'NotificationService',
-        function ($scope, $rootScope, $routeParams, componentDetails, ComponentService, DeviceService, NotificationService) {
+    ['$scope', '$rootScope', '$routeParams', '$interval', 'componentDetails', 'ComponentService', 'DeviceService', 'NotificationService',
+        function ($scope, $rootScope, $routeParams, $interval, componentDetails, ComponentService, DeviceService, NotificationService) {
             const LOADING_BOX_SELECTOR = ".loading-box";
 
             const COMPONENT_ID = $routeParams.id;
@@ -26,20 +26,25 @@ app.controller('ComponentDetailsController',
                 initParameters();
                 updateDeploymentState();
                 updateDeviceState();
+                $interval(function () {
+                    updateDeploymentState();
+                    updateDeviceState();
+                }, 2 * 60 * 1000);
             })();
 
             /**
              * [Public]
              */
-            function updateDeploymentState() {
-                showLoadingThrobber("Determining sensor state...");
-                vm.deploymentState = 'LOADING';
+            function updateDeploymentState(noThrobber) {
+                if (!noThrobber) {
+                    showLoadingThrobber("Retrieving sensor state...");
+                }
 
                 ComponentService.getComponentState(COMPONENT_ID, COMPONENT_TYPE_URL).then(function (response) {
                     vm.deploymentState = response.data;
                 }, function (response) {
                     vm.deploymentState = 'UNKNOWN';
-                    NotificationService.notify('Could not load deployment state.', 'error');
+                    NotificationService.notify('Could not retrieve deployment state.', 'error');
                 }).then(function () {
                     hideLoadingThrobber();
                 });
@@ -50,6 +55,7 @@ app.controller('ComponentDetailsController',
              */
             function updateDeviceState() {
                 vm.deviceState = 'LOADING';
+
                 DeviceService.getDeviceState(componentDetails._embedded.device.id).then(function (response) {
                     vm.deviceState = response.data;
                 }, function (response) {
@@ -63,7 +69,6 @@ app.controller('ComponentDetailsController',
              */
             function deploy() {
                 showLoadingThrobber("Deploying...");
-                vm.deploymentState = 'LOADING';
 
                 ComponentService.deploy(vm.parameterValues, componentDetails._links.deploy.href)
                     .then(
@@ -74,7 +79,7 @@ app.controller('ComponentDetailsController',
                                 return;
                             }
                             vm.deploymentState = 'DEPLOYED';
-                            NotificationService.notify('Sensor successfully deployed.', 'success');
+                            NotificationService.notify('Sensor deployed successfully .', 'success');
                         },
                         function (response) {
                             vm.deploymentState = 'UNKNOWN';
@@ -89,7 +94,6 @@ app.controller('ComponentDetailsController',
              */
             function undeploy() {
                 showLoadingThrobber("Undeploying...");
-                vm.deploymentState = 'LOADING';
 
                 ComponentService.undeploy(componentDetails._links.deploy.href)
                     .then(
@@ -100,7 +104,7 @@ app.controller('ComponentDetailsController',
                                 return;
                             }
                             vm.deploymentState = 'READY';
-                            NotificationService.notify('Sensor successfully undeployed.', 'success');
+                            NotificationService.notify('Sensor undeployed successfully .', 'success');
                         },
                         function (response) {
                             vm.deploymentState = 'UNKNOWN';
@@ -141,7 +145,7 @@ app.controller('ComponentDetailsController',
                 $(LOADING_BOX_SELECTOR).waitMe({
                     effect: 'bounce',
                     text: text,
-                    bg: 'rgba(255,255,255,0.9)'
+                    bg: 'rgba(255,255,255,0.85)'
                 });
             }
 
