@@ -1,173 +1,148 @@
-<div class="row clearfix" ng-hide="ng-hide">
-    <!-- Sensor Details Card -->
-    <div class="col-lg-7">
-        <div class="card">
-            <div class="header">
-                <h2>
-                    Sensor
+<div class="row clearfix">
+    <!-- Sensor Properties Card -->
+    <div class="col-lg-8">
+        <div class="card loading-box">
+            <div class="header"
+                 ng-class="{'bg-red': componentDetailsCtrl.deploymentState=='NOT_READY', 'bg-green': componentDetailsCtrl.deploymentState=='READY', 'bg-cyan': componentDetailsCtrl.deploymentState=='DEPLOYED', 'bg-grey': componentDetailsCtrl.deploymentState=='UNKNOWN'}">
+                <i class="material-icons" style="position: absolute; margin-top: 4px">settings_remote</i>
+                <h2 style="margin-left: 35px;">
+                    {{componentDetailsCtrl.component.name}}
+                    <small>{{componentDetailsCtrl.deploymentState=='NOT_READY' ? 'Deployment impossible' :
+                        (componentDetailsCtrl.deploymentState=='READY' ? 'Ready for deployment':
+                        (componentDetailsCtrl.deploymentState=='DEPLOYED' ? 'Deployed' :
+                        (componentDetailsCtrl.deploymentState=='UNKNOWN' ? 'Unknown state' : 'Loading...')))}}
+                    </small>
                 </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="componentDetailsCtrl.updateDeploymentState()" class="clickable">
+                            <i class="material-icons">loop</i>
+                        </a>
+                    </li>
+                </ul>
             </div>
             <div class="body">
+                <h4>Properties</h4>
                 <table class="table table-hover">
                     <tbody>
-                    <tr id="{{item.id}}">
-                        <th>Name</th>
-                        <td>{{sensorDetailsCtrl.item.name}}
+                    <tr id="{{componentDetailsCtrl.component.id}}">
+                        <th>Name:</th>
+                        <td>{{componentDetailsCtrl.component.name}}
                         </td>
                     </tr>
                     <tr>
-                        <th>Sensor type</th>
-                        <td>{{sensorDetailsCtrl.item.componentType}}</td>
+                        <th>Sensor type:</th>
+                        <td>{{componentDetailsCtrl.component.componentType}}</td>
                     </tr>
                     <tr>
-                        <th>Adapter</th>
-                        <td>{{sensorDetailsCtrl.item._embedded.adapter.name}}</td>
+                        <th>Adapter:</th>
+                        <td>{{componentDetailsCtrl.component._embedded.adapter.name}}</td>
                     </tr>
                     <tr>
-                        <th>Device</th>
-                        <td>{{sensorDetailsCtrl.item._embedded.device.name}}
-                            (IP:
-                            {{sensorDetailsCtrl.item._embedded.device.ipAddress ?
-                            sensorDetailsCtrl.item._embedded.device.ipAddress : '-'}})
+                        <th>Device:</th>
+                        <td>{{componentDetailsCtrl.component._embedded.device.name}} (IP:
+                            {{componentDetailsCtrl.component._embedded.device.ipAddress}})
                         </td>
                     </tr>
-                    <tr ng-hide="ctrl.deployer.processing">
-                        <th>Status</th>
-                        <td>{{ctrl.deployer.available ? (ctrl.deployer.deployed ? 'RUNNING' : 'AVAILABLE') :
-                            'NOT AVAILABLE'}}
+                    <tr>
+                        <th>Device state:</th>
+                        <td>
+                            <div ng-switch="componentDetailsCtrl.deviceState"
+                                 ng-click="componentDetailsCtrl.updateDeviceState()" class="clickable">
+                                <div ng-switch-when="LOADING">
+                                    <div class="preloader pl-size-xs">
+                                        <div class="spinner-layer pl-blue">
+                                            <div class="circle-clipper left">
+                                                <div class="circle"></div>
+                                            </div>
+                                            <div class="circle-clipper right">
+                                                <div class="circle"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-switch-when="OFFLINE">
+                                    <span class="label label-danger">Unavailable</span>
+                                </div>
+                                <div ng-switch-when="ONLINE">
+                                    <span class="label label-warning">No SSH</span>
+                                </div>
+                                <div ng-switch-when="SSH_AVAILABLE">
+                                    <span class="label label-success">Available</span>
+                                </div>
+                                <div ng-switch-default>
+                                    <span class="label label-default">Unknown</span>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     </tbody>
                 </table>
-                <!-- deploy loader (show while deployment is being checked or executed) -->
-                <div class="row clearfix" ng-show="ctrl.deployer.processing">
-                    <div class="col-xs-12 align-center">
-                        <div class="preloader">
-                            <!-- dataDeploy.deploying -->
-                            <div class="spinner-layer pl-blue">
-                                <div class="circle-clipper left">
-                                    <div class="circle"></div>
-                                </div>
-                                <div class="circle-clipper right">
-                                    <div class="circle"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row clearfix" ng-hide="ctrl.deployer.processing">
-                    <div class="col-xs-12" ng-hide="ctrl.deployer.available">
-                        <!-- not deployer.available -->
-                        <div class="alert alert-warning">
-                            <button class="close" type="button" ng-click="ctrl.deployer.update()">
-                                <i class="material-icons">refresh</i>
-                            </button>
-                            Sensor is not available
-                        </div>
-                    </div>
-                    <div class="col-xs-12">
-                        <form ng-submit="ctrl.deployer.doDeploy()">
-                            <div class="row clearfix">
-                                <div class="col-xs-9" ng-show="!ctrl.deployer.deployed">
-                                    <label>Parameters:</label>
-                                    <table class="table parameter-table">
-                                        <thead></thead>
-                                        <tbody>
-                                        <tr ng-repeat="parameter in sensorDetailsCtrl.item._embedded.adapter.parameters">
-                                            <td>
-                                                <label>{{parameter.name}}:</label><br/>
-                                                <small ng-show="parameter.mandatory">(required)</small>
-                                            </td>
-                                            <td>
-                                                <div ng-switch="parameter.type">
-                                                    <div ng-switch-when="Text">
-                                                        <input class="form-control" type="text"
-                                                               ng-required="parameter.mandatory"
-                                                               ng-model="ctrl.parameterValues[$index].value"/>
-                                                    </div>
-                                                    <div ng-switch-when="Number">
-                                                        <input class="form-control" type="number"
-                                                               ng-required="parameter.mandatory"
-                                                               ng-model="ctrl.parameterValues[$index].value"/>
-                                                    </div>
-                                                    <div class="switch" ng-switch-when="Switch">
-                                                        <label>No
-                                                            <input type="checkbox"
-                                                                   ng-model="ctrl.parameterValues[$index].value">
-                                                            <span class="lever"></span>Yes</label>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="label bg-grey"
-                                                      ng-show="parameter.unit">{{parameter.unit}}</span>
-                                            </td>
-                                        </tr>
-                                        <tr ng-show="sensorDetailsCtrl.item._embedded.adapter.parameters.length === 0">
-                                            <td colspan="2">No parameters required.</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                    <div class="has-error" ng-show="ctrl.deployer.status.fieldErrors.parameters">
-                      <span class="help-block focused error">
-                        {{ctrl.deployer.status.fieldErrors.parameters}}
-                      </span>
+                <br/>
+                <h4>Deployment parameters</h4>
+                <div class="row clearfix">
+                    <table class="table parameter-table">
+                        <thead></thead>
+                        <tbody>
+                        <tr ng-repeat="parameter in ctrl.component._embedded.adapter.parameters">
+                            <td>
+                                <label>{{parameter.name}}:</label><br/>
+                                <small ng-show="parameter.mandatory">(required)</small>
+                            </td>
+                            <td>
+                                <div ng-switch="parameter.type">
+                                    <div ng-switch-when="Text">
+                                        <input class="form-control" type="text"
+                                               ng-required="parameter.mandatory"
+                                               ng-model="ctrl.parameterValues[$index].value"/>
+                                    </div>
+                                    <div ng-switch-when="Number">
+                                        <input class="form-control" type="number"
+                                               ng-required="parameter.mandatory"
+                                               ng-model="ctrl.parameterValues[$index].value"/>
+                                    </div>
+                                    <div class="switch" ng-switch-when="Switch">
+                                        <label>No
+                                            <input type="checkbox"
+                                                   ng-model="ctrl.parameterValues[$index].value">
+                                            <span class="lever"></span>Yes</label>
                                     </div>
                                 </div>
-                                <div class="col-xs-3" ng-show="!ctrl.deployer.deployed">
-                                    <button class="btn btn-primary waves-effect">Deploy</button>
-                                </div>
-                            </div>
-                        </form>
+                            </td>
+                            <td>
+                                                <span class="label bg-grey"
+                                                      ng-show="parameter.unit">{{parameter.unit}}</span>
+                            </td>
+                        </tr>
+                        <tr ng-show="ctrl.component._embedded.adapter.parameters.length === 0">
+                            <td colspan="2">No parameters required.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <div class="has-error" ng-show="ctrl.deployer.status.fieldErrors.parameters">
+                                        <span class="help-block focused error">
+                                            {{ctrl.deployer.status.fieldErrors.parameters}}
+                                        </span>
                     </div>
-                    <div class="col-xs-12" ng-show="ctrl.deployer.available && ctrl.deployer.deployed">
-                        <form ng-submit="ctrl.deployer.doUndeploy()">
-                            <div class="row clearfix">
-                                <div class="col-xs-3">
-                                    <button class="btn btn-warning waves-effect">Undeploy</button>
-                                </div>
-                            </div>
-                        </form>
+                </div>
+                <br/>
+                <div class="row clearfix">
+                    <div ng-show="componentDetailsCtrl.deploymentState=='READY'">
+                        <button class="btn btn-primary waves-effect" ng-click="componentDetailsCtrl.deploy()">
+                            Deploy sensor
+                        </button>
+                    </div>
+                    <div ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
+                        <button class="btn btn-warning waves-effect" ng-click="componentDetailsCtrl.undeploy()">
+                            Undeploy sensor
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- #END# Sensor Details Card -->
 
-    <div class="col-lg-7">
-        <div class="card">
-            <div class="header">
-                <h2>
-                    Live sensor values
-                </h2>
-            </div>
-            <div class="body">
-                <div id="liveValues" style="width:100%; height:400px;"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-7">
-        <div class="card">
-            <div class="header">
-                <div style="align: right">
-                    <button class="close" type="button" ng-click="ctrl.showCharts()">
-                        <i class="material-icons">refresh</i>
-                    </button>
-                </div>
-                <h2>
-                    Historical sensor values
-                </h2>
-
-            </div>
-            <div class="body">
-                <div id="historicalValues" style="width:100%; height:400px;"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-7">
+    <div class="col-lg-4">
         <div class="card">
             <div class="header">
                 <h2>
@@ -184,7 +159,8 @@
             </div>
             <div class="body" uib-collapse="isCollapsedLog">
                 <p>
-                    The value field is parsed from the message received, so it may not be present. The raw message will
+                    The value field is parsed from the message received, so it may not be present. The raw message
+                    will
                     be linked on the value field.
                 </p>
                 <!-- sensorValues loader -->
@@ -234,6 +210,41 @@
                     </tr>
                     </tfoot>
                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row clearfix">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="header">
+                <h2>
+                    Live sensor values
+                </h2>
+            </div>
+            <div class="body">
+                <div id="liveValues" style="width:100%; height:400px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row clearfix">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="header">
+                <div style="align: right">
+                    <button class="close" type="button" ng-click="ctrl.showCharts()">
+                        <i class="material-icons">refresh</i>
+                    </button>
+                </div>
+                <h2>
+                    Historical sensor values
+                </h2>
+            </div>
+            <div class="body">
+                <div id="historicalValues" style="width:100%; height:400px;"></div>
             </div>
         </div>
     </div>
