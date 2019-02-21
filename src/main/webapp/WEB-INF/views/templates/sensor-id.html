@@ -83,7 +83,7 @@
                 <table class="table parameter-table">
                     <thead></thead>
                     <tbody>
-                    <tr ng-repeat="parameter in ctrl.component._embedded.adapter.parameters">
+                    <tr ng-repeat="parameter in componentDetailsCtrl.component._embedded.adapter.parameters">
                         <td>
                             <label>{{parameter.name}}:</label><br/>
                             <small ng-show="parameter.mandatory">(required)</small>
@@ -93,17 +93,17 @@
                                 <div ng-switch-when="Text">
                                     <input class="form-control" type="text"
                                            ng-required="parameter.mandatory"
-                                           ng-model="ctrl.parameterValues[$index].value"/>
+                                           ng-model="componentDetailsCtrl.parameterValues[$index].value"/>
                                 </div>
                                 <div ng-switch-when="Number">
                                     <input class="form-control" type="number"
                                            ng-required="parameter.mandatory"
-                                           ng-model="ctrl.parameterValues[$index].value"/>
+                                           ng-model="componentDetailsCtrl.parameterValues[$index].value"/>
                                 </div>
                                 <div class="switch" ng-switch-when="Switch">
                                     <label>No
                                         <input type="checkbox"
-                                               ng-model="ctrl.parameterValues[$index].value">
+                                               ng-model="componentDetailsCtrl.parameterValues[$index].value">
                                         <span class="lever"></span>Yes</label>
                                 </div>
                             </div>
@@ -113,7 +113,7 @@
                                                       ng-show="parameter.unit">{{parameter.unit}}</span>
                         </td>
                     </tr>
-                    <tr ng-show="ctrl.component._embedded.adapter.parameters.length === 0">
+                    <tr ng-show="componentDetailsCtrl.component._embedded.adapter.parameters.length === 0">
                         <td colspan="2">No parameters required.</td>
                     </tr>
                     </tbody>
