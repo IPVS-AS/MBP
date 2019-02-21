@@ -142,7 +142,7 @@
         <div class="card stats-card">
             <div class="header">
                 <h2>
-                    Value overview
+                    Actuator values overview
                     <small>Overview about the values received from the actuator.</small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
@@ -171,6 +171,10 @@
                         <tr>
                             <th>Variance:</th>
                             <td>{{componentDetailsCtrl.valueLogStats.variance}}</td>
+                        </tr>
+                        <tr>
+                            <th>Standard deviation:</th>
+                            <td>{{componentDetailsCtrl.valueLogStats.standardDeviation}}</td>
                         </tr>
                         <tr>
                             <th>First value:</th>
@@ -215,9 +219,6 @@
                                     {{componentDetailsCtrl.valueLogStats.maximumLog.value}}
                                 </button>
                             </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">No values received yet.</td>
                         </tr>
                         </tbody>
                     </table>

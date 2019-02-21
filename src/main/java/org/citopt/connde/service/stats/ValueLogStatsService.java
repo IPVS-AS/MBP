@@ -67,6 +67,9 @@ public class ValueLogStatsService {
         float variance = varianceAccumulator / ((float) valueLogList.size());
         stats.setVariance(variance);
 
+        float standardDeviation = (float) Math.sqrt(variance);
+        stats.setStandardDeviation(standardDeviation);
+
         return stats;
     }
 }

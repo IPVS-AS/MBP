@@ -91,7 +91,7 @@ app.controller('ComponentDetailsController',
                 if (!noThrobber) {
                     $(STATS_CARD_SELECTOR).waitMe({
                         effect: 'bounce',
-                        text: "Loading data...",
+                        text: "Loading overview...",
                         bg: 'rgba(255,255,255,0.85)'
                     });
                 }

@@ -16,6 +16,7 @@ public class ValueLogStats {
 
     private float average = 0;
     private float variance = 0;
+    private float standardDeviation = 0;
 
     public ValueLogStats() {
     }
@@ -74,5 +75,13 @@ public class ValueLogStats {
 
     public void setVariance(float variance) {
         this.variance = variance;
+    }
+
+    public float getStandardDeviation() {
+        return standardDeviation;
+    }
+
+    public void setStandardDeviation(float standardDeviation) {
+        this.standardDeviation = standardDeviation;
     }
 }
