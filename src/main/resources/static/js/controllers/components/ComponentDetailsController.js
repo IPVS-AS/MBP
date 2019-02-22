@@ -15,6 +15,8 @@ app.controller('ComponentDetailsController',
             vm.deviceState = 'UNKNOWN';
             vm.valueLogStats = null;
 
+            vm.parameterValues = [];
+
             var liveChart = null;
             var historicalChart = null;
 
@@ -207,7 +209,7 @@ app.controller('ComponentDetailsController',
                             var value = data._embedded.valueLogs[i].value * 1;
                             var date = data._embedded.valueLogs[i].date;
                             date = date.replace(/\s/g, "T");
-                            date = new Date(date).toString();
+                            date = dateToString(new Date(date));
 
                             var tuple = [date, value];
                             finalValues.push(tuple);
@@ -222,6 +224,10 @@ app.controller('ComponentDetailsController',
              * [Private]
              */
             function retrieveAndDispatchData() {
+                var maxSamples = 20;
+                var count = 0;
+
+                var series = liveChart.series[0];
                 var lastDate = null;
 
                 var intervalFunction = function () {
@@ -235,26 +241,26 @@ app.controller('ComponentDetailsController',
                         }
 
                         if (lastDate == null) {
-                            liveChart.series[0].update({data: values.reverse()}, true);
-                            lastDate = values[0][0];
+                            for (var i = values.length - 1; i >= 0; i--) {
+                                series.addPoint(values[i], true, (++count >= maxSamples));
+                            }
                         } else {
                             var insert = false;
                             for (var i = values.length - 1; i >= 0; i--) {
                                 if (values[i][0] == lastDate) {
                                     insert = true;
                                 } else if (insert) {
-                                    liveChart.series[0].addPoint(values[i], true, true);
+                                    series.addPoint(values[i], true, (++count >= maxSamples));
                                 }
                             }
 
                             if (!insert) {
                                 for (var i = values.length - 1; i >= 0; i--) {
-                                    liveChart.series[0].addPoint(values[i], true, true);
+                                    series.addPoint(values[i], true, (++count >= maxSamples));
                                 }
                             }
-
-                            lastDate = values[0][0];
                         }
+                        lastDate = values[0][0];
                     }).then(function () {
                         $('#' + liveChartContainer).waitMe("hide");
                     });
@@ -273,12 +279,15 @@ app.controller('ComponentDetailsController',
              * [Private]
              */
             function initLiveChart() {
+                Highcharts.setOptions({
+                    global: {
+                        useUTC: false
+                    }
+                });
+
                 liveChart = Highcharts.stockChart(liveChartContainer, {
                     title: {
                         text: ''
-                    },
-                    global: {
-                        useUTC: false
                     },
                     rangeSelector: {
                         enabled: false
@@ -335,7 +344,6 @@ app.controller('ComponentDetailsController',
              * [Private]
              */
             function initParameters() {
-                vm.parameterValues = [];
                 var requiredParams = componentDetails._embedded.adapter.parameters;
                 for (var i = 0; i < requiredParams.length; i++) {
                     var value = "";
@@ -371,6 +379,28 @@ app.controller('ComponentDetailsController',
              */
             function hideDeploymentThrobber() {
                 $(DEPLOYMENT_CARD_SELECTOR).waitMe("hide");
+            }
+
+            /**
+             * [Private]
+             */
+            function dateToString(date) {
+
+                var year = date.getFullYear();
+                var month = '' + (date.getMonth() + 1);
+                var day = '' + date.getDate();
+                var hours = '' + date.getHours();
+                var minutes = '' + date.getMinutes();
+                var seconds = '' + date.getSeconds();
+
+                var values = [day, month, hours, minutes, seconds];
+
+                for (var i = 0; i < values.length; i++) {
+                    values[i] = '0' + values[i];
+                }
+
+                return ([values[0], values[1], year].join('.')) +
+                    ' ' + ([values[2], values[3], values[4]].join(':'));
             }
 
             angular.extend(vm, {
