@@ -1,5 +1,8 @@
 /* global app */
 
+/**
+ * Controller for the device list page.
+ */
 app.controller('DeviceListController',
     ['$scope', '$controller', '$interval', 'DeviceService', 'deviceList', 'addDevice', 'deleteDevice',
         'ComponentTypeService', 'NotificationService',
@@ -211,7 +214,7 @@ app.controller('DeviceListController',
                             console.log("Error loading device types!");
                         }
                     });
-            };
+            }
 
         }
     ]);

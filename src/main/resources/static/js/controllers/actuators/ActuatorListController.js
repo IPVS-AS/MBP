@@ -1,5 +1,8 @@
 /* global app */
 
+/**
+ * Controller for the actuator list page.
+ */
 app.controller('ActuatorListController',
     ['$scope', '$controller', '$interval', 'actuatorList', 'addActuator', 'deleteActuator',
       'deviceList', 'addDevice', 'deleteDevice', 'adapterList', 'ComponentService',
@@ -9,6 +12,9 @@ app.controller('ActuatorListController',
                 ComponentTypeService, NotificationService) {
         var vm = this;
 
+        /**
+         * Initializing function, sets up basic things.
+         */
         (function initController() {
           loadActuatorTypes();
           loadActuatorStates();

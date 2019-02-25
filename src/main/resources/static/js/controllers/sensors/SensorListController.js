@@ -1,5 +1,8 @@
 /* global app */
 
+/**
+ * Controller for the sensor list page.
+ */
 app.controller('SensorListController',
     ['$scope', '$controller', '$interval', 'sensorList', 'addSensor', 'deleteSensor',
         'deviceList', 'addDevice', 'deleteDevice', 'adapterList', 'ComponentService',
@@ -9,6 +12,9 @@ app.controller('SensorListController',
                   ComponentTypeService, NotificationService) {
             var vm = this;
 
+            /**
+             * Initializing function, sets up basic things.
+             */
             (function initController() {
                 loadSensorTypes();
                 loadSensorStates();
