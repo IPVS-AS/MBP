@@ -1,6 +1,8 @@
 app.controller('ComponentDetailsController',
-    ['$scope', '$rootScope', '$routeParams', '$interval', 'componentDetails', 'liveChartContainer', 'historicalChartContainer', 'ComponentService', 'CrudService', 'DeviceService', 'NotificationService',
-        function ($scope, $rootScope, $routeParams, $interval, componentDetails, liveChartContainer, historicalChartContainer, ComponentService, CrudService, DeviceService, NotificationService) {
+    ['$scope', '$rootScope', '$routeParams', '$interval', '$timeout', 'componentDetails', 'liveChartContainer', 'historicalChartContainer', 'ComponentService', 'CrudService', 'DeviceService', 'NotificationService',
+        function ($scope, $rootScope, $routeParams, $interval, $timeout, componentDetails, liveChartContainer, historicalChartContainer, ComponentService, CrudService, DeviceService, NotificationService) {
+            const LIVE_REFRESH_DELAY_SECONDS = 15;
+
             const DEPLOYMENT_CARD_SELECTOR = ".deployment-card";
             const STATS_CARD_SELECTOR = ".stats-card";
 
@@ -14,6 +16,11 @@ app.controller('ComponentDetailsController',
             vm.deploymentState = 'UNKNOWN';
             vm.deviceState = 'UNKNOWN';
             vm.valueLogStats = null;
+
+            vm.liveProgress = {
+                progress: 0,
+                delayTime: '0s'
+            };
 
             vm.parameterValues = [];
 
@@ -187,6 +194,21 @@ app.controller('ComponentDetailsController',
             /**
              * [Private]
              *
+             * @param time (seconds)
+             */
+            function runLiveFakeProgress(time) {
+                vm.liveProgress.delayTime = '0s';
+                vm.liveProgress.progress = 0;
+
+                $timeout(function () {
+                    vm.liveProgress.delayTime = time + 's';
+                    vm.liveProgress.progress = 100;
+                }, 10);
+            }
+
+            /**
+             * [Private]
+             *
              * @param numberElements
              * @param order (asc/desc)
              * @returns {*}
@@ -263,10 +285,11 @@ app.controller('ComponentDetailsController',
                         lastDate = values[0][0];
                     }).then(function () {
                         $('#' + liveChartContainer).waitMe("hide");
+                        runLiveFakeProgress(LIVE_REFRESH_DELAY_SECONDS);
                     });
                 };
 
-                var interval = $interval(intervalFunction, 1000 * 15);
+                var interval = $interval(intervalFunction, 1000 * LIVE_REFRESH_DELAY_SECONDS);
 
                 $scope.$on('$destroy', function () {
                     if (interval) {
@@ -353,7 +376,7 @@ app.controller('ComponentDetailsController',
                     }
 
                     vm.parameterValues.push({
-                        "name": requiredParams.name,
+                        "name": requiredParams[i].name,
                         "value": value
                     });
                 }
@@ -396,7 +419,9 @@ app.controller('ComponentDetailsController',
                 var values = [day, month, hours, minutes, seconds];
 
                 for (var i = 0; i < values.length; i++) {
-                    values[i] = '0' + values[i];
+                    if (values[i].length < 2) {
+                        values[i] = '0' + values[i];
+                    }
                 }
 
                 return ([values[0], values[1], year].join('.')) +
