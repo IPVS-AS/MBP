@@ -1,5 +1,8 @@
 /* global app */
 
+/**
+ * Provides services for dealing with components, retrieving their states and calculating stats.
+ */
 app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
     function ($http, $resource, $q, ENDPOINT_URI) {
 
