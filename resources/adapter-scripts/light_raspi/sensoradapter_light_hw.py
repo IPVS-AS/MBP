@@ -16,8 +16,8 @@ import spidev
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 
-# - Temperature
-temp_adc_channel = int(0)
+# - sensor channel
+adc_channel = int(2)
 
 ############################
 # MQTT Client
@@ -85,13 +85,21 @@ class analogInputReader(object):
       v0 = self.getLevel(adPin)
       temp = (((v0[0] * 1000) - 500)/10) # celsius
       return temp
+   
+   def getLight (self, adPin):
+      # light dependt resistor (LDR): resistence of the light sensor decreases when light intensity increases
+      v0 = self.getLevel(adPin)
+      #print (v0[0])
+      #print (v0[1])
+      resistenceSensor = ((1023 - v0[1])*10)/v0[1]
+      return resistenceSensor
 
 ############################
 # MAIN
 ############################
 def main(argv):
    #default interval for sending data
-   measureInterval = 30
+   measureInterval = 10
    
    configFileName = "connections.txt"
    topics = []
@@ -140,13 +148,13 @@ def main(argv):
    try:  
       while True:
          # messages in json format
-         # send message, topic: temperature
+         # send message
          t = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
-         # read temperature
-         measured_temp = aiReader.getTemperature(temp_adc_channel)
+         # reading
+         measured_value = aiReader.getLight(adc_channel)
          
-         msg_pub = {"component": component.upper(), "id": component_id, "value": "%.3f" % (measured_temp)}
+         msg_pub = {"component": component.upper(), "id": component_id, "value": "%.3f" % (measured_value)}
          publisher.sendMessage (topic_pub, json.dumps(msg_pub))
 
          time.sleep(measureInterval)
