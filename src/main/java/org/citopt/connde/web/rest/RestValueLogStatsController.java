@@ -54,6 +54,13 @@ public class RestValueLogStatsController {
         return calculateValueLogStats(sensorId, sensorRepository);
     }
 
+    /**
+     * Calculates the stats from value logs of a certain component in order to satisfy a server request.
+     *
+     * @param id         The id of the component for which the stats are supposed to be computed
+     * @param repository The component reposiotry in which the component can be found
+     * @return The server response containing an object that holds the calculated data
+     */
     private ResponseEntity<ValueLogStats> calculateValueLogStats(String id, ComponentRepository repository) {
         //Retrieve component from repository
         Component component = (Component) repository.findOne(id);
