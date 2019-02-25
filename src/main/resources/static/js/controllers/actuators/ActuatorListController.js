@@ -27,7 +27,7 @@ app.controller('ActuatorListController',
         //Extend each actuator in actuatorList for a state and a reload function
         for (var i in actuatorList) {
           actuatorList[i].state = 'LOADING';
-          actuatorList[i].reloadState = createReloadStateFunction(i);
+          actuatorList[i].reloadState = createReloadStateFunction(actuatorList[i].id);
         }
 
         /**
@@ -76,33 +76,46 @@ app.controller('ActuatorListController',
 
         /**
          * [Private]
-         * Returns a function that retrieves the state for a actuator at a certain index in actuatorList.
-         * @param index The index of the actuator in the actuatorList
+         * Returns a function that retrieves the state for a actuator with a certain id.
+         * @param id The id of the actuator
          * @returns {Function}
          */
-        function createReloadStateFunction(index) {
+        function createReloadStateFunction(id) {
           //Create function and return it
           return function () {
-            getActuatorState(index);
+            getActuatorState(id);
           };
         }
 
         /**
          * [Private]
-         * Sends a server request in order to retrieve the deployment state of a actuator at a certain index
-         * in actuatorList. The state is then stored in the corresponding actuator object in actuatorList.
+         * Sends a server request in order to retrieve the deployment state of a actuator with a certain id.
+         * The state is then stored in the corresponding actuator object in actuatorList.
          *
-         * @param index The index of the actuator whose state is supposed to be retrieved in actuatorList
+         * @param id The id of the actuator whose state is supposed to be retrieved
          */
-        function getActuatorState(index) {
+        function getActuatorState(id) {
+          //Resolve actuator object of the affected actuator
+          var actuator = null;
+          for (var i = 0; i < actuatorList.length; i++) {
+            if (actuatorList[i].id == id) {
+              actuator = actuatorList[i];
+            }
+          }
+
+          //Check if actuator could be found
+          if (actuator == null) {
+            return;
+          }
+
           //Enable spinner
-          actuatorList[index].state = 'LOADING';
+          actuator.state = 'LOADING';
 
           //Perform server request and set state of the actuator object accordingly
-          ComponentService.getComponentState(actuatorList[index].id, 'actuators').then(function (response) {
-            actuatorList[index].state = response.data;
+          ComponentService.getComponentState(actuator.id, 'actuators').then(function (response) {
+            actuator.state = response.data;
           }, function (response) {
-            actuatorList[index].state = 'UNKNOWN';
+            actuator.state = 'UNKNOWN';
             NotificationService.notify("Could not retrieve the actuator state.", "error");
           });
         }
@@ -165,16 +178,23 @@ app.controller('ActuatorListController',
         // $watch 'addActuator' result and add to 'actuatorList'
         $scope.$watch(
             function () {
-              // value being watched
+              //Value being watched
               return vm.addActuatorCtrl.result;
             },
             function () {
-              // callback
-              console.log('addActuatorCtrl.result modified.');
+              //Callback
+              var actuator = vm.addActuatorCtrl.result;
 
-              var data = vm.addActuatorCtrl.result;
-              if (data) {
-                vm.actuatorListCtrl.pushItem(vm.addActuatorCtrl.result);
+              if (actuator) {
+                //Add state and reload function to the new object
+                actuator.state = 'LOADING';
+                actuator.reloadState = createReloadStateFunction(actuator.id);
+
+                //Add actuator to actuator list
+                vm.actuatorListCtrl.pushItem(actuator);
+
+                //Retrieve state of the new actuator
+                getActuatorState(actuator.id);
               }
             }
         );

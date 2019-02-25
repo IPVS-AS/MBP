@@ -237,6 +237,12 @@
                 </h2>
             </div>
             <div class="body">
+                <div class="progress progress-small progress-in-card">
+                    <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar"
+                         style="width: {{componentDetailsCtrl.liveProgress.progress}}%; transition: width {{componentDetailsCtrl.liveProgress.delayTime}} ease-in-out;">
+                        <span class="sr-only"></span>
+                    </div>
+                </div>
                 <div id="liveValues" style="width:100%; height:400px;"></div>
             </div>
         </div>

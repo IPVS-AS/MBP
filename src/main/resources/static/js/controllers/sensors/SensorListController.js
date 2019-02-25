@@ -27,7 +27,7 @@ app.controller('SensorListController',
             //Extend each sensor in sensorList for a state and a reload function
             for (var i in sensorList) {
                 sensorList[i].state = 'LOADING';
-                sensorList[i].reloadState = createReloadStateFunction(i);
+                sensorList[i].reloadState = createReloadStateFunction(sensorList[i].id);
             }
 
             /**
@@ -76,33 +76,46 @@ app.controller('SensorListController',
 
             /**
              * [Private]
-             * Returns a function that retrieves the state for a sensor at a certain index in sensorList.
-             * @param index The index of the sensor in the sensorList
+             * Returns a function that retrieves the state for a sensor with a certain id.
+             * @param id The id of the sensor
              * @returns {Function}
              */
-            function createReloadStateFunction(index) {
+            function createReloadStateFunction(id) {
                 //Create function and return it
                 return function () {
-                    getSensorState(index);
+                    getSensorState(id);
                 };
             }
 
             /**
              * [Private]
-             * Sends a server request in order to retrieve the deployment state of a sensor at a certain index
-             * in sensorList. The state is then stored in the corresponding sensor object in sensorList.
+             * Sends a server request in order to retrieve the deployment state of a sensor with a certain id.
+             * The state is then stored in the corresponding sensor object in sensorList.
              *
-             * @param index The index of the sensor whose state is supposed to be retrieved in sensorList
+             * @param id The id of the sensor whose state is supposed to be retrieved
              */
-            function getSensorState(index) {
+            function getSensorState(id) {
+                //Resolve sensor object of the affected sensor
+                var sensor = null;
+                for (var i = 0; i < sensorList.length; i++) {
+                    if (sensorList[i].id == id) {
+                        sensor = sensorList[i];
+                    }
+                }
+
+                //Check if sensor could be found
+                if (sensor == null) {
+                    return;
+                }
+
                 //Enable spinner
-                sensorList[index].state = 'LOADING';
+                sensor.state = 'LOADING';
 
                 //Perform server request and set state of the sensor object accordingly
-                ComponentService.getComponentState(sensorList[index].id, 'sensors').then(function (response) {
-                    sensorList[index].state = response.data;
+                ComponentService.getComponentState(sensor.id, 'sensors').then(function (response) {
+                    sensor.state = response.data;
                 }, function (response) {
-                    sensorList[index].state = 'UNKNOWN';
+                    sensor.state = 'UNKNOWN';
                     NotificationService.notify("Could not retrieve the sensor state.", "error");
                 });
             }
@@ -165,16 +178,23 @@ app.controller('SensorListController',
             // $watch 'addSensor' result and add to 'sensorList'
             $scope.$watch(
                 function () {
-                    // value being watched
+                    //Value being watched
                     return vm.addSensorCtrl.result;
                 },
                 function () {
-                    // callback
-                    console.log('addSensorCtrl.result modified.');
+                    //Callback
+                    var sensor = vm.addSensorCtrl.result;
 
-                    var data = vm.addSensorCtrl.result;
-                    if (data) {
-                        vm.sensorListCtrl.pushItem(vm.addSensorCtrl.result);
+                    if (sensor) {
+                        //Add state and reload function to the new object
+                        sensor.state = 'LOADING';
+                        sensor.reloadState = createReloadStateFunction(sensor.id);
+
+                        //Add sensor to sensor list
+                        vm.sensorListCtrl.pushItem(sensor);
+
+                        //Retrieve state of the new sensor
+                        getSensorState(sensor.id);
                     }
                 }
             );
