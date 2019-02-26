@@ -1,10 +1,10 @@
 <div class="row clearfix">
     <!-- Actuator Properties Card -->
-    <div class="col-lg-7">
+    <div class="col-lg-6">
         <div class="card deployment-card">
             <div class="header"
                  ng-class="{'bg-red': componentDetailsCtrl.deploymentState=='NOT_READY', 'bg-green': componentDetailsCtrl.deploymentState=='READY', 'bg-cyan': componentDetailsCtrl.deploymentState=='DEPLOYED', 'bg-grey': componentDetailsCtrl.deploymentState=='UNKNOWN'}">
-                <i class="material-icons" style="position: absolute; margin-top: 4px">settings_remote</i>
+                <i class="material-icons" style="position: absolute; margin-top: 4px">wb_incandescent</i>
                 <h2 style="margin-left: 35px;">
                     {{componentDetailsCtrl.component.name}}
                     <small>{{componentDetailsCtrl.deploymentState=='NOT_READY' ? 'Deployment impossible' :
@@ -109,8 +109,7 @@
                             </div>
                         </td>
                         <td>
-                                                <span class="label bg-grey"
-                                                      ng-show="parameter.unit">{{parameter.unit}}</span>
+                            <span class="label bg-grey" ng-show="parameter.unit">{{parameter.unit}}</span>
                         </td>
                     </tr>
                     <tr ng-show="componentDetailsCtrl.component._embedded.adapter.parameters.length === 0">
@@ -119,9 +118,7 @@
                     </tbody>
                 </table>
                 <div class="has-error" ng-show="ctrl.deployer.status.fieldErrors.parameters">
-                                        <span class="help-block focused error">
-                                            {{ctrl.deployer.status.fieldErrors.parameters}}
-                                        </span>
+                    <span class="help-block focused error">{{ctrl.deployer.status.fieldErrors.parameters}}</span>
                 </div>
                 <br/>
                 <div ng-show="componentDetailsCtrl.deploymentState=='READY'">
@@ -138,7 +135,8 @@
         </div>
     </div>
 
-    <div class="col-lg-5">
+    <!-- Actuator Stats Card -->
+    <div class="col-lg-6">
         <div class="card stats-card">
             <div class="header">
                 <h2>
@@ -228,8 +226,9 @@
     </div>
 </div>
 
+<!-- Live Values Card -->
 <div class="row clearfix">
-    <div class="col-lg-8">
+    <div class="col-lg-12">
         <div class="card animate-show-hide" ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
             <div class="header">
                 <h2>
@@ -249,8 +248,9 @@
     </div>
 </div>
 
+<!-- Historical Values Card -->
 <div class="row clearfix">
-    <div class="col-lg-8">
+    <div class="col-lg-12">
         <div class="card">
             <div class="header">
                 <h2>
