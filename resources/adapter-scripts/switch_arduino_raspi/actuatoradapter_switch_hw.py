@@ -8,6 +8,11 @@ import json
 import os, fnmatch
 from os.path import expanduser
 
+# hardware imports
+import serial
+
+ser = serial.Serial('/dev/ttyUSB0',115200)
+
 ############################
 # MQTT Client
 ############################
@@ -17,6 +22,7 @@ class mqttClient(object):
    clientid = ''
    topic_sub = ''
    subscriber = False
+   lastCmd = '-'
    
    def __init__(self, hostname, port, clientid):
       self.hostname = hostname
@@ -40,7 +46,24 @@ class mqttClient(object):
    # The callback for when a PUBLISH message is received from the server.
    def on_message(self, client, userdata, msg):
       print(msg.topic + " " + str(msg.payload))
-                        
+      payload_json = json.loads(str(msg.payload))
+      if payload_json is not None:
+         value_str = payload_json ["value"]
+         value = float (value_str)
+         
+         if (value >= 1):
+            if (self.lastCmd != 'ON'):
+               # send command through serial interface
+               ser.write(b'ON')
+               self.lastCmd = 'ON'
+               print('ON')
+
+         else:
+            if (self.lastCmd != 'OFF'):
+               ser.write(b'OFF')
+               self.lastCmd = 'OFF'
+               print('OFF')
+
    # publishes message to MQTT broker
    def sendMessage(self, topic, msg):
       self.client.publish(topic=topic, payload=msg, qos=0, retain=False)
@@ -60,7 +83,6 @@ class mqttClient(object):
    def startAsSubcriber(self, topic_sub):
       self.subscriber = True
       self.topic_sub = topic_sub
-
       self.start()
   
 ############################
@@ -79,24 +101,25 @@ def main(argv):
    topic_sub = 'test'
 
    configFile = os.path.join(os.getcwd(), configFileName)
-
+   
    while (not configExists):
-      configExists = os.path.exists(configFile)
-      time.sleep(1)
-
+       configExists = os.path.exists(configFile)
+       time.sleep(1)
+       
    # BEGIN parsing file
    fileObject = open (configFile)
    fileLines = fileObject.readlines()
    fileObject.close()
 
    for line in fileLines:
-      pars = line.split('=')
-      topic = pars[0].strip('\n').strip()
-      ip = pars[1].strip('\n').strip()
-      topics.append(topic)
-      brokerIps.append(ip)
-# END parsing file
+       pars = line.split('=')
+       topic = pars[0].strip('\n').strip()
+       ip = pars[1].strip('\n').strip()
+       topics.append(topic)
+       brokerIps.append(ip)
 
+   # END parsing file
+       
    hostname = brokerIps [0]
    topic_sub = topics [0]
    topic_splitted = topic_sub.split('/')
@@ -112,6 +135,6 @@ def main(argv):
 
    while (True):
       time.sleep(measureInterval)
-
+      
 if __name__ == "__main__":
    main(sys.argv[1:])
