@@ -1,8 +1,13 @@
 /* global app */
 
+/**
+ * Controller for the device list page.
+ */
 app.controller('DeviceListController',
-    ['$scope', '$controller', '$interval', 'DeviceService', 'deviceList', 'addDevice', 'deleteDevice', 'ComponentTypeService',
-        function ($scope, $controller, $interval, DeviceService, deviceList, addDevice, deleteDevice, ComponentTypeService) {
+    ['$scope', '$controller', '$interval', 'DeviceService', 'deviceList', 'addDevice', 'deleteDevice',
+        'ComponentTypeService', 'NotificationService',
+        function ($scope, $controller, $interval, DeviceService, deviceList, addDevice, deleteDevice,
+                  ComponentTypeService, NotificationService) {
             var vm = this;
 
             /**
@@ -10,46 +15,24 @@ app.controller('DeviceListController',
              */
             (function initController() {
                 loadDeviceTypes();
-                $interval(function () {
-                        loadDeviceStates();
-                    }, 5 * 60 * 1000);
                 loadDeviceStates();
-            })();
 
-            /**
-             * Returns a function that retrieves the status for a device at a certain index in the deviceList.
-             * @param index The index of the device in the deviceList
-             * @returns {Function}
-             */
-            function createReloadStateFunction(index) {
-                //Create function and return it
-                return function () {
-                    getDeviceState(index);
-                };
-            }
+                //Interval for updating device states  on a regular basis
+                var interval = $interval(function () {
+                    loadDeviceStates();
+                }, 5 * 60 * 1000);
+
+                //Cancel interval on route change
+                $scope.$on('$destroy', function () {
+                    $interval.cancel(interval);
+                });
+            })();
 
             //Extend each device in deviceList for the formatted mac address, a state and a reload function
             for (var i in deviceList) {
                 deviceList[i].formattedMacAddress = DeviceService.formatMacAddress(deviceList[i].macAddress);
                 deviceList[i].state = 'LOADING';
                 deviceList[i].reloadState = createReloadStateFunction(i);
-            }
-
-            /**
-             * [Private]
-             * Sends a server request in order to retrieve the availability state of a device at a certain index
-             * in the deviceList. The state is then stored in the corresponding device object in deviceList.
-             *
-             * @param index The index of the device which state is supposed to be retrieved in deviceList
-             */
-            function getDeviceState(index){
-                //Enable spinner
-                deviceList[index].state = 'LOADING';
-
-                //Perform server request and set state of the device object accordingly
-                DeviceService.getDeviceState(deviceList[index].id).then(function (response) {
-                    deviceList[index].state = response.data;
-                });
             }
 
             /**
@@ -101,6 +84,41 @@ app.controller('DeviceListController',
                         focusConfirm: false,
                         cancelButtonText: 'Cancel'
                     });
+                }, function (response) {
+                    NotificationService.notify("Could not retrieve affected components.", "error");
+                });
+            }
+
+            /**
+             * [Private]
+             * Returns a function that retrieves the state for a device at a certain index in deviceList.
+             * @param index The index of the device in the deviceList
+             * @returns {Function}
+             */
+            function createReloadStateFunction(index) {
+                //Create function and return it
+                return function () {
+                    getDeviceState(index);
+                };
+            }
+
+            /**
+             * [Private]
+             * Sends a server request in order to retrieve the availability state of a device at a certain index
+             * in deviceList. The state is then stored in the corresponding device object in deviceList.
+             *
+             * @param index The index of the device whose state is supposed to be retrieved in deviceList
+             */
+            function getDeviceState(index) {
+                //Enable spinner
+                deviceList[index].state = 'LOADING';
+
+                //Perform server request and set state of the device object accordingly
+                DeviceService.getDeviceState(deviceList[index].id).then(function (response) {
+                    deviceList[index].state = response.data;
+                }, function (response) {
+                    deviceList[index].state = 'UNKNOWN';
+                    NotificationService.notify("Could not retrieve the device state.", "error");
                 });
             }
 
@@ -109,9 +127,9 @@ app.controller('DeviceListController',
              * Sends a server request in order to retrieve the availability states of all registered devices.
              * The states are then stored in the corresponding device objects in deviceList.
              */
-            function loadDeviceStates(){
+            function loadDeviceStates() {
                 //Perform server request
-                DeviceService.getAllDeviceStates().then(function(response){
+                DeviceService.getAllDeviceStates().then(function (response) {
                     var statesMap = response.data;
 
                     //Iterate over all devices in deviceList and update the states of all devices accordingly
@@ -119,6 +137,11 @@ app.controller('DeviceListController',
                         var deviceId = deviceList[i].id;
                         deviceList[i].state = statesMap[deviceId];
                     }
+                }, function (response) {
+                    for (var i in deviceList) {
+                        deviceList[i].state = 'UNKNOWN';
+                    }
+                    NotificationService.notify("Could not retrieve device states.", "error");
                 });
             }
 
@@ -191,7 +214,7 @@ app.controller('DeviceListController',
                             console.log("Error loading device types!");
                         }
                     });
-            };
+            }
 
         }
     ]);

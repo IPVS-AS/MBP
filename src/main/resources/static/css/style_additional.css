@@ -13,3 +13,15 @@ table.parameter-table td {
 .clickable {
     cursor: pointer;
 }
+
+/* Small progress bar*/
+.progress-small {
+    height: 4px;
+}
+
+.progress-in-card {
+    margin-left: -20px;
+    margin-right: -20px;
+    margin-top: -20px;
+    border-radius: 4px;
+}
