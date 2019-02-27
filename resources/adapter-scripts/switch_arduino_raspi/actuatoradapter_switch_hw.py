@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import sys, getopt
+import sys
 import paho.mqtt.client as mqtt
 from datetime import datetime
 import time
 import json
-import os, fnmatch
-from os.path import expanduser
+import os
 
 # hardware imports
 import serial
@@ -45,8 +44,7 @@ class mqttClient(object):
 
    # The callback for when a PUBLISH message is received from the server.
    def on_message(self, client, userdata, msg):
-      print(msg.topic + " " + str(msg.payload))
-      payload_json = json.loads(str(msg.payload))
+      payload_json = json.loads(msg.payload.decode('ascii'))
       if payload_json is not None:
          value_str = payload_json ["value"]
          value = float (value_str)
