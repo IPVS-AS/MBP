@@ -5,9 +5,12 @@
     .module('app')
     .controller('ModelController', ModelController);
 
-  ModelController.$inject = ['$scope', '$timeout', '$controller', 'ModelService', 'FlashService', 'deviceList', 'addDevice', 'deleteDevice', 'adapterList'];
+  ModelController.$inject = ['ENDPOINT_URI', '$scope', '$timeout', '$controller',
+    'ModelService', 'FlashService', 'ComponentService', 'DeviceService', 'CrudService', 'adapterList'
+  ];
 
-  function ModelController($scope, $timeout, $controller, ModelService, FlashService, deviceList, addDevice, deleteDevice, adapterList) {
+  function ModelController(ENDPOINT_URI, $scope, $timeout, $controller,
+    ModelService, FlashService, ComponentService, DeviceService, CrudService, adapterList) {
     var vm = this;
 
     jsPlumb.ready(function() {
@@ -17,6 +20,7 @@
       var properties = {}; // keeps the properties of each element
       var element = ""; // the element which will be appended to the canvas
       var clicked = false; // true if an element from the palette was clicked
+      vm.processing = false;
       vm.selectedOptionName = "";
       vm.loadedModels = [];
       vm.currentModel = {};
@@ -36,24 +40,6 @@
       })();
 
       angular.extend(vm, {
-        // sensorListCtrl: $controller('ItemListController as sensorListCtrl', {
-        //   $scope: $scope,
-        //   list: sensorList
-        // }),
-        // addSensorCtrl: $controller('AddItemController as addSensorCtrl', {
-        //   $scope: $scope,
-        //   addItem: addSensor
-        // }),
-        // deleteSensorCtrl: $controller('DeleteItemController as deleteSensorCtrl', {
-        //   $scope: $scope,
-        //   deleteItem: deleteSensor
-        // }),
-        deviceCtrl: $controller('DeviceListController as deviceCtrl', {
-          $scope: $scope,
-          deviceList: deviceList,
-          addDevice: addDevice,
-          deleteDevice: deleteDevice
-        }),
         adapterListCtrl: $controller('ItemListController as adapterListCtrl', {
           $scope: $scope,
           list: adapterList
@@ -226,6 +212,7 @@
 
           if (node.nodeType == "device") {
             element.append("<div class=\"ep\"></div>");
+            element.data("id", node.id);
             element.data("name", node.name);
             element.data("type", node.type);
             element.data("mac", node.mac);
@@ -233,10 +220,12 @@
             element.data("username", node.username);
             element.data("rsaKey", node.rsaKey);
           } else if (node.nodeType == "actuator" || node.nodeType == "sensor") {
+            element.data("id", node.id);
             element.data("name", node.name);
             element.data("type", node.type);
             element.data("adapter", node.adapter);
             element.data("device", node.device);
+            element.data("deviceId", node.deviceId);
           }
         } else {
           // Use properties on drop
@@ -318,6 +307,7 @@
         var target = $(info.target);
         if (target.attr("class").indexOf("device") == -1) {
           target.data("device", source.data("name"));
+          target.data("deviceId", source.data("id"));
         }
       });
 
@@ -326,17 +316,19 @@
         var target = $(info.target);
         if (target.attr("class").indexOf("device") == -1) {
           target.removeData("device");
+          target.removeData("deviceId");
         }
       });
 
       // Update device name in sensor or actuator
-      function updateDeviceNameSA(device) {
+      function updateDeviceSA(device) {
         $.each(jsPlumbInstance.getConnections({
           source: device.attr("id")
         }), function(index, connection) {
           var target = $(connection.target);
           if (target.attr("class").indexOf("device") == -1) {
             target.data("device", device.data("name"));
+            target.data("deviceId", device.data("id"));
           }
         });
       }
@@ -380,7 +372,7 @@
             element.data("ip", vm.clickedComponent.ip);
             element.data("username", vm.clickedComponent.username);
             element.data("rsaKey", vm.clickedComponent.rsaKey);
-            updateDeviceNameSA(element);
+            updateDeviceSA(element);
           } else if (element.attr("class").indexOf("actuator") > -1) {
             element.data("name", vm.clickedComponent.name);
             element.data("type", vm.clickedComponent.type);
@@ -457,6 +449,7 @@
               positionY: parseInt($element.css("top"), 10),
               width: $element.outerWidth(),
               height: $element.outerHeight(),
+              id: $element.data("id"),
               name: $element.data("name"),
               type: $element.data("type"),
               mac: $element.data("mac"),
@@ -473,10 +466,12 @@
               positionY: parseInt($element.css("top"), 10),
               width: $element.outerWidth(),
               height: $element.outerHeight(),
+              id: $element.data("id"),
               name: $element.data("name"),
               type: $element.data("type"),
               adapter: $element.data("adapter"),
-              device: $element.data("device")
+              device: $element.data("device"),
+              deviceId: $element.data("deviceId")
             });
           } else {
             nodes.push({
@@ -555,28 +550,157 @@
       }
 
       function registerComponents() {
+        vm.processing = true;
+
+        // First register devices
         $(".jtk-node").each(function(index, element) {
           var $element = $(element);
           var type = $element.attr('class').toString().split(" ")[1];
 
           if (type == "device") {
-            $scope.addDeviceCtrl.item.name = $element.data("name");
-            $scope.addDeviceCtrl.item.componentType = $element.data("type");
-            $scope.addDeviceCtrl.item.formattedMacAddress = $element.data("mac");
-            $scope.addDeviceCtrl.item.ipAddress = $element.data("ip");
-            $scope.addDeviceCtrl.item.username = $element.data("username");
-            $scope.addDeviceCtrl.item.rsaKey = $element.data("rsaKey");
-            $scope.addDeviceCtrl.addItem();
+            var item = {};
+            item.name = $element.data("name");
+            item.componentType = $element.data("type");
+            item.macAddress = DeviceService.normalizeMacAddress($element.data("mac"));
+            item.ipAddress = $element.data("ip");
+            item.username = $element.data("username");
+            item.rsaKey = $element.data("rsaKey");
+            register("devices", item, type, $element);
           }
         });
+
+        // Then register actuators and sensors
+        $(".jtk-node").each(function(index, element) {
+          var $element = $(element);
+          var type = $element.attr('class').toString().split(" ")[1];
+
+          if (type == "actuator" || type == "sensor") {
+            var item = {};
+            item.name = $element.data("name");
+            item.componentType = $element.data("type");
+            item.adapter = ENDPOINT_URI + "/adapters/" + $element.data("adapter");
+            item.device = ENDPOINT_URI + "/devices/" + $element.data("deviceId");
+            register(type + "s", item, type, $element);
+          }
+        });
+
+        $("#deployComponentsBtn").attr("disabled", false);
+        vm.processing = false;
+      }
+
+      function register(category, item, type, element) {
+        CrudService.addItem(category, item).then(
+          function(response) {
+            console.log(response);
+            if (type == "actuator" || type == "sensor") {
+              element.data("id", response.id);
+            } else if (type == "device") {
+              element.data("id", response.id);
+              updateDeviceSA(element);
+            }
+          },
+          function(response) {
+            console.log(response);
+          });
       }
 
       function deployComponents() {
+        $(".jtk-node").each(function(index, element) {
+          var $element = $(element);
+          var type = $element.attr('class').toString().split(" ")[1];
 
+          if (type == "actuator") {
+            deploy(ENDPOINT_URI + "/deploy/actuator/" + $element.data("id"));
+          } else if (type == "sensor") {
+            deploy(ENDPOINT_URI + "/deploy/sensor/" + $element.data("id"));
+          }
+        });
+
+        $("#saveModelBtn").attr("disabled", true);
+        $("#clearCanvasBtn").attr("disabled", true);
+        $("#deleteModelBtn").attr("disabled", true);
+        $("#registerComponentsBtn").attr("disabled", true);
+        $("#deployComponentsBtn").attr("disabled", true);
+        $("#undeployComponentsBtn").attr("disabled", false);
       }
 
       function undeployComponents() {
+        $(".jtk-node").each(function(index, element) {
+          var $element = $(element);
+          var type = $element.attr('class').toString().split(" ")[1];
 
+          if (type == "actuator") {
+            undeploy(ENDPOINT_URI + "/deploy/actuator/" + $element.data("id"));
+          } else if (type == "sensor") {
+            undeploy(ENDPOINT_URI + "/deploy/sensor/" + $element.data("id"));
+          }
+        });
+
+        $("#saveModelBtn").attr("disabled", false);
+        $("#clearCanvasBtn").attr("disabled", false);
+        $("#deleteModelBtn").attr("disabled", false);
+        $("#registerComponentsBtn").attr("disabled", false);
+        $("#deployComponentsBtn").attr("disabled", false);
+        $("#undeployComponentsBtn").attr("disabled", true);
+      }
+
+      // function update() { // update deployment status
+      //   vm.processing = true;
+      //   ComponentService.isDeployed(vm.sensorDetailsCtrl.item._links.deploy.href)
+      //     .then(
+      //       function(deployed) {
+      //         console.log('update: available, ' + deployed);
+      //         vm.processing = false;
+      //         vm.deployer.available = true;
+      //         vm.deployer.deployed = deployed;
+      //       },
+      //       function(response) {
+      //         console.log('update: unavailable');
+      //         vm.processing = false;
+      //         vm.deployer.available = false;
+      //       });
+      // }
+      //
+      // $scope.isCollapsedLog = false;
+
+      function deploy(component) {
+        vm.processing = true;
+        vm.parameterValues = [];
+
+        ComponentService.deploy(vm.parameterValues, component)
+          .then(
+            function(response) {
+              vm.processing = false;
+              // vm.deployer.deployed = true;
+              // vm.deployer.status = response.data;
+              // vm.deployer.update();
+              console.log(response.data);
+            },
+            function(response) {
+              vm.processing = false;
+              // vm.deployer.status = response.data;
+              // vm.deployer.update();
+              console.log(response.data);
+            });
+      }
+
+      function undeploy(component) {
+        vm.processing = true;
+        ComponentService.undeploy(component)
+          .then(
+            function(response) {
+              vm.processing = false;
+              // vm.deployer.deployed = false;
+              // vm.deployer.status = response.data;
+              // vm.deployer.update();
+              console.log(response.data);
+            },
+            function(response) {
+              vm.processing = false;
+              // vm.deployer.status = response.data;
+              // vm.deployer.update();
+              console.log(response.data);
+            });
       }
 
 

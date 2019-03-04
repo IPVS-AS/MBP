@@ -117,6 +117,21 @@
       <div class="tool-header" style="box-shadow: 1px 1px 1px 1px grey;">
         <div class="row" style="width: 100%; margin-left: 0px; margin-right: 0px">
           <span class="navbar-brand" style="color: black">Modeling area</span>
+          <div class="navbar-brand tool-header-right" ng-show="vm.processing">
+            <div class="col-xs-12 align-center">
+              <div class="preloader pl-size-xs">
+                <!-- dataDeploy.deploying -->
+                <div class="spinner-layer pl-blue">
+                  <div class="circle-clipper left">
+                    <div class="circle"></div>
+                  </div>
+                  <div class="circle-clipper right">
+                    <div class="circle"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="row" style="width: 100%; margin-left: 0px; margin-right: 0px">
           <div class="tool-header-left" style="width: 50%">
@@ -143,10 +158,10 @@
             <button id="registerComponentsBtn" title="Register components" ng-click="vm.registerComponents()">
               <i class="fas fa-share-square"></i>
             </button>
-            <button id="deployComponentsBtn" title="Deploy model" ng-click="vm.deployComponents()">
+            <button id="deployComponentsBtn" title="Deploy model" ng-click="vm.deployComponents()" disabled="disabled">
               <i class="fas fa-cogs"></i>
             </button>
-            <button id="undeployComponentsBtn" title="Undeploy model" ng-click="vm.undeployComponents()">
+            <button id="undeployComponentsBtn" title="Undeploy model" ng-click="vm.undeployComponents()" disabled="disabled">
               <span class="icon-stack">
                 <i class="fas fa-ban icon-stack-2x"></i>
                 <i class="fas fa-cog icon-stack-1x"></i>
@@ -226,7 +241,7 @@
             </li>
             <li>
               <label for="adapter">Adapter</label>
-              <select class="form-control show-tick" id="actuatorAdapterInput" ng-model="vm.clickedComponent.adapter" ng-options="t._links.self.href as (t.name) for t in adapterListCtrl.items">
+              <select class="form-control show-tick" id="actuatorAdapterInput" ng-model="vm.clickedComponent.adapter" ng-options="t.id as (t.name) for t in adapterListCtrl.items">
                 <option value="">Select adapter</option>
               </select>
             </li>
