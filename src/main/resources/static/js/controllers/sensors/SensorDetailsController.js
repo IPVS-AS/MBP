@@ -15,7 +15,8 @@ app.controller('SensorDetailsController',
                     $scope: $scope,
                     componentDetails: sensorDetails,
                     liveChartContainer: 'liveValues',
-                    historicalChartContainer: 'historicalValues'
+                    historicalChartContainer: 'historicalValues',
+                    historicalChartSlider: 'historicalChartSlider'
                 })
             );
         }]

@@ -66,8 +66,8 @@
     <!-- waitMe plugin -->
     <link th:href="@{/plugins/waitme/waitMe.min.css}" rel="stylesheet"/>
 
-    <!--<script src="https://code.highcharts.com/highcharts.js"></script> -->
-    <script src="http://code.highcharts.com/stock/highstock.js"></script>
+    <!-- Ion RangeSlider -->
+    <link th:href="@{/plugins/ion-rangeslider/ion.rangeSlider.min.css}" rel="stylesheet"/>
   </head>
 
   <body ng-class="expert ? 'theme-red' : 'theme-blue'" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
@@ -252,6 +252,12 @@
 
     <!-- waitMe plugin -->
     <script th:src="@{/plugins/waitme/waitMe.min.js}"></script>
+
+    <!-- Ion RangeSlider -->
+    <script th:src="@{/plugins/ion-rangeslider/ion.rangeSlider.min.js}"></script>
+
+    <!--<script src="https://code.highcharts.com/highcharts.js"></script> -->
+    <script src="http://code.highcharts.com/stock/highstock.js"></script>
 
     <!-- Angular -->
     <script th:src="@{/js/app.js}"></script>

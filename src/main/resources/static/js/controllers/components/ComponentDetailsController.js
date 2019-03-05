@@ -2,18 +2,24 @@
  * Controller for the component details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('ComponentDetailsController',
-    ['$scope', '$rootScope', '$routeParams', '$interval', '$timeout', 'componentDetails', 'liveChartContainer', 'historicalChartContainer', 'ComponentService', 'CrudService', 'DeviceService', 'NotificationService',
-        function ($scope, $rootScope, $routeParams, $interval, $timeout, componentDetails, liveChartContainer, historicalChartContainer, ComponentService, CrudService, DeviceService, NotificationService) {
+    ['$scope', '$rootScope', '$routeParams', '$interval', '$timeout', 'componentDetails', 'liveChartContainer', 'historicalChartContainer', 'historicalChartSlider', 'ComponentService', 'CrudService', 'DeviceService', 'NotificationService',
+        function ($scope, $rootScope, $routeParams, $interval, $timeout, componentDetails, liveChartContainer, historicalChartContainer, historicalChartSlider, ComponentService, CrudService, DeviceService, NotificationService) {
             //Interval with that the live value display is refreshed (seconds)
             const LIVE_REFRESH_DELAY_SECONDS = 15;
 
             //Maximum number of elements that may be displayed in the historical chart
             const LIVE_CHART_MAX_ELEMENTS = 20;
 
-            //Maximum number of elements that may be displayed in the historical chart
-            const HISTORICAL_CHART_MAX_ELEMENTS = 1000;
+            //Initial number of elements to display in the historical chart
+            const HISTORICAL_CHART_INITIAL_ELEMENTS_NUMBER = 200;
+
+            //Minimum/maximum number of elements that can be displayed in the historical chart
+            const HISTORICAL_CHART_MIN_ELEMENTS = 0;
+            const HISTORICAL_CHART_MAX_ELEMENTS = 5000;
 
             //Selectors that allow the selection of different ui cards
+            const LIVE_CHART_CARD_SELECTOR = ".live-chart-card";
+            const HISTORICAL_CHART_CARD_SELECTOR = ".historical-chart-card";
             const DEPLOYMENT_CARD_SELECTOR = ".deployment-card";
             const STATS_CARD_SELECTOR = ".stats-card";
 
@@ -38,6 +44,12 @@ app.controller('ComponentDetailsController',
 
             //Stores the parameters and their values as assigned by the user
             vm.parameterValues = [];
+
+            //Settings for the historical chart
+            vm.historicalChartSettings = {
+                numberOfValues: HISTORICAL_CHART_INITIAL_ELEMENTS_NUMBER,
+                mostRecent: true
+            };
 
             //Hold the chart objects after the charts have been initialized
             var liveChart = null;
@@ -226,25 +238,28 @@ app.controller('ComponentDetailsController',
                     return;
                 }
 
-                //Retrieve dedicated chart container
-                var chartDiv = $('#' + historicalChartContainer);
-
                 //Show waiting screen
-                chartDiv.waitMe({
+                $(HISTORICAL_CHART_CARD_SELECTOR).waitMe({
                     effect: 'bounce',
                     text: 'Updating chart...',
                     bg: 'rgba(255,255,255,0.85)'
                 });
 
-                //Retrieve a fixed number of value logs from the server (as defined in HISTORICAL_CHART_MAX_ELEMENTS)
-                retrieveComponentData(HISTORICAL_CHART_MAX_ELEMENTS).then(function (values) {
+                //Retrieve a fixed number of value logs from the server
+                retrieveComponentData(vm.historicalChartSettings.numberOfValues,
+                    vm.historicalChartSettings.mostRecent).then(function (values) {
+                    //Reverse the values array if ordered in descending order
+                    if (vm.historicalChartSettings.mostRecent) {
+                        values = values.reverse();
+                    }
+
                     //Update historical chart
                     historicalChart.series[0].update({
                         data: values
                     }, true); //True: Redraw chart
 
                     //Hide waiting screen
-                    chartDiv.waitMe("hide");
+                    $(HISTORICAL_CHART_CARD_SELECTOR).waitMe("hide");
                 });
             }
 
@@ -274,20 +289,23 @@ app.controller('ComponentDetailsController',
              * as a promise.
              *
              * @param numberLogs The number of logs to retrieve
-             * @param order The order (asc/desc) in which the value logs should be retrieved. By default, the logs
-             * are retrieved in ascending order ([oldest log] --> ... --> [most recent log])
+             * @param descending The order in which the value logs should be retrieved. True results in descending
+             * order, false in ascending order. By default, the logs are retrieved in ascending
+             * order ([oldest log] --> ... --> [most recent log])
              * @returns A promise that passes the logs as a parameter
              */
-            function retrieveComponentData(numberLogs, order) {
+            function retrieveComponentData(numberLogs, descending) {
                 //Set default order
-                if (!order) {
-                    order = 'asc';
+                if (descending) {
+                    descending = 'desc';
+                } else {
+                    descending = 'asc'
                 }
 
                 //Initialize parameters for the server request
                 var params = {
                     idref: COMPONENT_ID,
-                    sort: 'date,' + order,
+                    sort: 'date,' + descending,
                     size: numberLogs
                 };
 
@@ -337,7 +355,7 @@ app.controller('ComponentDetailsController',
                     }
 
                     //Retrieve the most recent component data
-                    retrieveComponentData(LIVE_CHART_MAX_ELEMENTS, 'desc').then(function (values) {
+                    retrieveComponentData(LIVE_CHART_MAX_ELEMENTS, true).then(function (values) {
                         //Abort of no data is available
                         if (values.length < 1) {
                             return;
@@ -382,7 +400,7 @@ app.controller('ComponentDetailsController',
                         lastDate = values[0][0];
                     }).then(function () {
                         //Hide the waiting screen for the case it was displayed before
-                        $('#' + liveChartContainer).waitMe("hide");
+                        $(LIVE_CHART_CARD_SELECTOR).waitMe("hide");
 
                         //Visualize the time until the next refreshment
                         runLiveFakeProgress(LIVE_REFRESH_DELAY_SECONDS);
@@ -441,7 +459,7 @@ app.controller('ComponentDetailsController',
                 });
 
                 //Show the waiting screen
-                $('#' + liveChartContainer).waitMe({
+                $(LIVE_CHART_CARD_SELECTOR).waitMe({
                     effect: 'bounce',
                     text: 'Loading chart...',
                     bg: 'rgba(255,255,255,0.85)'
@@ -469,6 +487,36 @@ app.controller('ComponentDetailsController',
                     }]
                 });
 
+                //Initialize slider
+                $("#" + historicalChartSlider).ionRangeSlider({
+                    skin: "flat",
+                    type: "single",
+                    grid: true,
+                    grid_num: 5,
+                    grid_snap: false,
+                    step: 1,
+                    min: HISTORICAL_CHART_MIN_ELEMENTS,
+                    max: HISTORICAL_CHART_MAX_ELEMENTS,
+                    from: vm.historicalChartSettings.numberOfValues,
+                    onFinish: function (data) {
+                        //Update chart with new values
+                        vm.historicalChartSettings.numberOfValues = data.from;
+                        updateHistoricalChart();
+                    }
+                });
+
+                //Watch value type and update chart on change
+                $scope.$watch(
+                    //Value to watch
+                    function () {
+                        return vm.historicalChartSettings.mostRecent;
+                    },
+                    //Callback
+                    function () {
+                        updateHistoricalChart();
+                    }
+                );
+
                 //Populate the chart
                 updateHistoricalChart();
             }
@@ -483,7 +531,7 @@ app.controller('ComponentDetailsController',
 
                 //Iterate over all parameters
                 for (var i = 0; i < requiredParams.length; i++) {
-                    //Set dempty default values for these parameters
+                    //Set empty default values for these parameters
                     var value = "";
 
                     if (requiredParams[i].type == "Switch") {

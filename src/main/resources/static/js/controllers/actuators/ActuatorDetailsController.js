@@ -15,7 +15,8 @@ app.controller('ActuatorDetailsController',
                     $scope: $scope,
                     componentDetails: actuatorDetails,
                     liveChartContainer: 'liveValues',
-                    historicalChartContainer: 'historicalValues'
+                    historicalChartContainer: 'historicalValues',
+                    historicalChartSlider: 'historicalChartSlider'
                 })
             );
         }]
