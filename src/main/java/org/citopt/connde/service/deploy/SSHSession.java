@@ -7,7 +7,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.UnknownHostException;
 
 /**
  * Objects of this class wrap SSH connection parameters and represent SSH sessions that can be used in order
@@ -27,11 +26,13 @@ public class SSHSession {
     private static final String SHELL_CREATE_FILE_BASE64 = "sudo bash -c \"base64 -d > %s/%s\"";
     private static final String SHELL_CHANGE_FILE_PERMISSIONS = "sudo chmod %s %s";
     private static final String SHELL_EXECUTE_SHELL_SCRIPT = "sudo bash %s%s";
+    private static final String SHELL_ENTER_SUDO_PASSWORD = "echo \"%s\" | sudo -S echo \"unlocked\"";
 
     //Session parameters
     private String url;
     private int port;
     private String username;
+    private String password;
     private String key;
 
     //Internal objects to maintain and use the ssh connection
@@ -44,10 +45,11 @@ public class SSHSession {
      *
      * @param url      The URL to connect to via SSH
      * @param username The username to use on the target device
+     * @param password The password which is required for executing sudo commands
      * @param key      The private SSH key to use
      */
-    public SSHSession(String url, String username, String key) {
-        this(url, DEFAULT_PORT, username, key);
+    public SSHSession(String url, String username, String password, String key) {
+        this(url, DEFAULT_PORT, username, password, key);
     }
 
     /**
@@ -56,12 +58,14 @@ public class SSHSession {
      * @param url      The URL to connect to via SSH
      * @param port     The port to use (typically 22)
      * @param username The username to use on the target device
+     * @param password The password which is required for executing sudo commands
      * @param key      The private SSH key to use
      */
-    public SSHSession(String url, int port, String username, String key) {
+    public SSHSession(String url, int port, String username, String password, String key) {
         this.url = url;
         this.port = port;
         this.username = username;
+        this.password = password;
         this.key = key;
     }
 
@@ -219,12 +223,20 @@ public class SSHSession {
     /**
      * Establishes the SSH connection with the parameters that were set previously.
      *
-     * @throws UnknownHostException In case the host cannot be found
+     * @throws IOException In case of an I/O issue
      */
-    public void connect() throws UnknownHostException {
+    public void connect() throws IOException {
+        //Create new safe shell instance
         shell = new Shell.Safe(new SSH(url, port, username, key));
+
+        //Create corresponding streams for further usage
         stdOutStream = new ByteArrayOutputStream();
         stdErrStream = new ByteArrayOutputStream();
+
+        //Try to unlock sudo commands with a password in case one was provided
+        if ((password != null) && (!password.isEmpty())) {
+            enterSudoPassword();
+        }
     }
 
     /**
@@ -329,9 +341,40 @@ public class SSHSession {
         return stdErrStream;
     }
 
-    /*
-        Checks whether the SSH connection is already established and throws an exception if this is not the case.
-         */
+    /**
+     * Enters the sudo password (if necessary) in order to unlock sudo commands which can then be used in this session.
+     *
+     * @return True, if entering the password and unlocking the sudo commands was successful; false otherwise
+     * @throws IOException In case of an I/O issue
+     */
+    public boolean enterSudoPassword() throws IOException {
+        //Ensure that the SH connection has already been established
+        checkConnectionState();
+
+        //Check if password is available
+        if ((password == null) || password.isEmpty()) {
+            return false;
+        }
+
+        //Build corresponding command
+        String command = String.format(SHELL_ENTER_SUDO_PASSWORD, password);
+
+        //Create input stream
+        ByteArrayInputStream inputStream = new ByteArrayInputStream("".getBytes());
+
+        //Execute command
+        shell.exec(command, inputStream, stdOutStream, stdErrStream);
+
+        //Get resulting output string
+        String outputString = stdOutStream.toString().toLowerCase();
+
+        //Check if unlocking the sudo commands was successful
+        return outputString.contains("unlocked");
+    }
+
+    /**
+     * Checks whether the SSH connection is already established and throws an exception if this is not the case.
+     */
     private void checkConnectionState() {
         if (shell == null) {
             throw new IllegalStateException("No connection has been established yet.");

@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -137,7 +136,7 @@ public class SSHDeployer {
         SSHSession sshSession;
         try {
             sshSession = establishSSHConnection(device);
-        } catch (UnknownHostException e) {
+        } catch (IOException e) {
             return DeviceState.ONLINE;
         }
 
@@ -347,9 +346,9 @@ public class SSHDeployer {
      *
      * @param device To device to connect with
      * @return The established SSH session
-     * @throws UnknownHostException In case the Host could not be found
+     * @throws IOException In case of an I/O issue
      */
-    private SSHSession establishSSHConnection(Device device) throws UnknownHostException {
+    private SSHSession establishSSHConnection(Device device) throws IOException {
         //Validity check
         if (device == null) {
             throw new IllegalArgumentException("Device must not be null.");
@@ -371,12 +370,13 @@ public class SSHDeployer {
         //Retrieve ssh connection parameter
         String url = device.getIpAddress();
         String username = device.getUsername();
+        String password = device.getPassword();
 
         LOGGER.log(Level.FINE, "Establishing SSH connection to {0} (user: {1})",
                 new Object[]{url, username});
 
         //Create new ssh session and connect
-        SSHSession sshSession = new SSHSession(url, SSH_PORT, username, rsaKey);
+        SSHSession sshSession = new SSHSession(url, SSH_PORT, username, password, rsaKey);
         sshSession.connect();
 
         return sshSession;
