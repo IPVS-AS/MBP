@@ -32,7 +32,7 @@ app.controller('DeviceListController',
             for (var i in deviceList) {
                 deviceList[i].formattedMacAddress = DeviceService.formatMacAddress(deviceList[i].macAddress);
                 deviceList[i].state = 'LOADING';
-                deviceList[i].reloadState = createReloadStateFunction(i);
+                deviceList[i].reloadState = createReloadStateFunction(deviceList[i].id);
             }
 
             /**
@@ -91,33 +91,46 @@ app.controller('DeviceListController',
 
             /**
              * [Private]
-             * Returns a function that retrieves the state for a device at a certain index in deviceList.
-             * @param index The index of the device in the deviceList
+             * Returns a function that retrieves the state for a device with a certain id.
+             * @param id The id of the device
              * @returns {Function}
              */
-            function createReloadStateFunction(index) {
+            function createReloadStateFunction(id) {
                 //Create function and return it
                 return function () {
-                    getDeviceState(index);
+                    getDeviceState(id);
                 };
             }
 
             /**
              * [Private]
-             * Sends a server request in order to retrieve the availability state of a device at a certain index
-             * in deviceList. The state is then stored in the corresponding device object in deviceList.
+             * Sends a server request in order to retrieve the availability state of a device with a certain id.
+             * The state is then stored in the corresponding device object in deviceList.
              *
-             * @param index The index of the device whose state is supposed to be retrieved in deviceList
+             * @param id The id of the device whose state is supposed to be retrieved
              */
-            function getDeviceState(index) {
+            function getDeviceState(id) {
+                //Resolve device object of the affected device
+                var device = null;
+                for (var i = 0; i < deviceList.length; i++) {
+                    if (deviceList[i].id == id) {
+                        device = deviceList[i];
+                    }
+                }
+
+                //Check if device could be found
+                if (device == null) {
+                    return;
+                }
+
                 //Enable spinner
-                deviceList[index].state = 'LOADING';
+                device.state = 'LOADING';
 
                 //Perform server request and set state of the device object accordingly
-                DeviceService.getDeviceState(deviceList[index].id).then(function (response) {
-                    deviceList[index].state = response.data;
+                DeviceService.getDeviceState(device.id).then(function (response) {
+                    device.state = response.data;
                 }, function (response) {
-                    deviceList[index].state = 'UNKNOWN';
+                    device.state = 'UNKNOWN';
                     NotificationService.notify("Could not retrieve the device state.", "error");
                 });
             }
@@ -177,17 +190,26 @@ app.controller('DeviceListController',
             // $watch 'addItem' result and add to 'itemList'
             $scope.$watch(
                 function () {
-                    // value being watched
+                    //Value being watched
                     return vm.addDeviceCtrl.result;
                 },
                 function () {
-                    // callback
-                    console.log('addDeviceCtrl.result modified.');
+                    //Callback
+                    var device = vm.addDeviceCtrl.result;
 
-                    var data = vm.addDeviceCtrl.result;
-                    if (data) {
-                        data.formattedMacAddress = DeviceService.formatMacAddress(data.macAddress);
-                        vm.deviceListCtrl.pushItem(data);
+                    if (device) {
+                        //Add state and reload function to the new object
+                        device.state = 'LOADING';
+                        device.reloadState = createReloadStateFunction(device.id);
+
+                        //Add formatted MAC address
+                        device.formattedMacAddress = DeviceService.formatMacAddress(device.macAddress);
+
+                        //Add device to device list
+                        vm.deviceListCtrl.pushItem(device);
+
+                        //Retrieve state of the new device
+                        getDeviceState(device.id);
                     }
                 }
             );
