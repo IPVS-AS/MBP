@@ -19,14 +19,15 @@ public class SSHSession {
     private static final int DEFAULT_PORT = 22;
 
     //Definitions of shell commands
-    private static final String SHELL_COMMAND_TEST = "sudo test 5 -gt 2 && echo \"true\" || echo \"false\"";
-    private static final String SHELL_CREATE_DIR = "sudo mkdir -p %s";
-    private static final String SHELL_REMOVE_DIR = "sudo rm -rf %s";
-    private static final String SHELL_CREATE_FILE = "sudo bash -c \"cat > %s/%s\"";
-    private static final String SHELL_CREATE_FILE_BASE64 = "sudo bash -c \"base64 -d > %s/%s\"";
-    private static final String SHELL_CHANGE_FILE_PERMISSIONS = "sudo chmod %s %s";
-    private static final String SHELL_EXECUTE_SHELL_SCRIPT = "sudo bash %s%s";
-    private static final String SHELL_ENTER_SUDO_PASSWORD = "echo \"%s\" | sudo -S echo \"unlocked\"";
+    private static final String SHELL_COMMAND_TEST = "test 5 -gt 2 && echo \"true\" || echo \"false\"";
+    private static final String SHELL_CREATE_DIR = "mkdir -p %s";
+    private static final String SHELL_REMOVE_DIR = "rm -rf %s";
+    private static final String SHELL_CREATE_FILE = "bash -c \"cat > %s/%s\"";
+    private static final String SHELL_CREATE_FILE_BASE64 = "bash -c \"base64 -d > %s/%s\"";
+    private static final String SHELL_CHANGE_FILE_PERMISSIONS = "chmod %s %s";
+    private static final String SHELL_EXECUTE_SHELL_SCRIPT = "bash %s%s";
+
+    private static final String SHELL_PREFIX_SUDO_PASSWORD = "echo \"%s\" | sudo -S ";
 
     //Session parameters
     private String url;
@@ -82,7 +83,7 @@ public class SSHSession {
 
         //Execute command
         try {
-            shell.exec(SHELL_COMMAND_TEST, inputStream, stdOutStream, stdErrStream);
+            executeShellCommand(SHELL_COMMAND_TEST, inputStream);
         } catch (IOException e) {
             return false;
         }
@@ -117,7 +118,7 @@ public class SSHSession {
         ByteArrayInputStream inputStream = new ByteArrayInputStream("".getBytes());
 
         //Execute command
-        shell.exec(command, inputStream, stdOutStream, stdErrStream);
+        executeShellCommand(command, inputStream);
     }
 
     /**
@@ -137,7 +138,7 @@ public class SSHSession {
         ByteArrayInputStream inputStream = new ByteArrayInputStream("".getBytes());
 
         //Execute command
-        shell.exec(command, inputStream, stdOutStream, stdErrStream);
+        executeShellCommand(command, inputStream);
     }
 
     /**
@@ -158,7 +159,7 @@ public class SSHSession {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
 
         //Execute command
-        shell.exec(command, inputStream, stdOutStream, stdErrStream);
+        executeShellCommand(command, inputStream);
     }
 
     /**
@@ -179,7 +180,7 @@ public class SSHSession {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
 
         //Execute command
-        shell.exec(command, inputStream, stdOutStream, stdErrStream);
+        executeShellCommand(command, inputStream);
     }
 
     /**
@@ -198,7 +199,7 @@ public class SSHSession {
         ByteArrayInputStream inputStream = new ByteArrayInputStream("".getBytes());
 
         //Execute command
-        shell.exec(command, inputStream, stdOutStream, stdErrStream);
+        executeShellCommand(command, inputStream);
     }
 
     /**
@@ -217,7 +218,7 @@ public class SSHSession {
         ByteArrayInputStream inputStream = new ByteArrayInputStream("".getBytes());
 
         //Execute command
-        shell.exec(command, inputStream, stdOutStream, stdErrStream);
+        executeShellCommand(command, inputStream);
     }
 
     /**
@@ -232,11 +233,6 @@ public class SSHSession {
         //Create corresponding streams for further usage
         stdOutStream = new ByteArrayOutputStream();
         stdErrStream = new ByteArrayOutputStream();
-
-        //Try to unlock sudo commands with a password in case one was provided
-        if ((password != null) && (!password.isEmpty())) {
-            enterSudoPassword();
-        }
     }
 
     /**
@@ -341,35 +337,18 @@ public class SSHSession {
         return stdErrStream;
     }
 
-    /**
-     * Enters the sudo password (if necessary) in order to unlock sudo commands which can then be used in this session.
-     *
-     * @return True, if entering the password and unlocking the sudo commands was successful; false otherwise
-     * @throws IOException In case of an I/O issue
-     */
-    public boolean enterSudoPassword() throws IOException {
-        //Ensure that the SH connection has already been established
-        checkConnectionState();
+    private int executeShellCommand(String command, ByteArrayInputStream inputStream) throws IOException {
+        command = addCommandPrefix(command);
+        return shell.exec(command, inputStream, stdOutStream, stdErrStream);
+    }
 
+    private String addCommandPrefix(String command) {
         //Check if password is available
         if ((password == null) || password.isEmpty()) {
-            return false;
+            return "sudo " + command;
         }
 
-        //Build corresponding command
-        String command = String.format(SHELL_ENTER_SUDO_PASSWORD, password);
-
-        //Create input stream
-        ByteArrayInputStream inputStream = new ByteArrayInputStream("".getBytes());
-
-        //Execute command
-        shell.exec(command, inputStream, stdOutStream, stdErrStream);
-
-        //Get resulting output string
-        String outputString = stdOutStream.toString().toLowerCase();
-
-        //Check if unlocking the sudo commands was successful
-        return outputString.contains("unlocked");
+        return String.format(SHELL_PREFIX_SUDO_PASSWORD, password) + command;
     }
 
     /**

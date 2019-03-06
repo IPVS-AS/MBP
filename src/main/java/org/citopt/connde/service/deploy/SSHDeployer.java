@@ -354,11 +354,6 @@ public class SSHDeployer {
             throw new IllegalArgumentException("Device must not be null.");
         }
 
-        //Validity check
-        if (device == null) {
-            throw new IllegalArgumentException("Device must not be null.");
-        }
-
         //Retrieve private rsa key
         String rsaKey = device.getRsaKey();
 
