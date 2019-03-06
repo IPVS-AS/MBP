@@ -27,7 +27,7 @@ public class SSHSession {
     private static final String SHELL_CHANGE_FILE_PERMISSIONS = "chmod %s %s";
     private static final String SHELL_EXECUTE_SHELL_SCRIPT = "bash %s%s";
 
-    private static final String SHELL_PREFIX_SUDO_PASSWORD = "echo \"%s\" | sudo -S ";
+    private static final String SHELL_PREFIX_SUDO_PASSWORD = "sudo -S ";
 
     //Session parameters
     private String url;
@@ -78,12 +78,9 @@ public class SSHSession {
     public boolean isCommandExecutable() {
         checkConnectionState();
 
-        //Create input stream
-        ByteArrayInputStream inputStream = new ByteArrayInputStream("".getBytes());
-
         //Execute command
         try {
-            executeShellCommand(SHELL_COMMAND_TEST, inputStream);
+            executeShellCommand(SHELL_COMMAND_TEST);
         } catch (IOException e) {
             return false;
         }
@@ -114,11 +111,8 @@ public class SSHSession {
         //Build corresponding command
         String command = String.format(SHELL_EXECUTE_SHELL_SCRIPT, filePath, parametersString.toString());
 
-        //Create input stream
-        ByteArrayInputStream inputStream = new ByteArrayInputStream("".getBytes());
-
         //Execute command
-        executeShellCommand(command, inputStream);
+        executeShellCommand(command);
     }
 
     /**
@@ -134,11 +128,8 @@ public class SSHSession {
         //Build corresponding command
         String command = String.format(SHELL_CHANGE_FILE_PERMISSIONS, permissions, filePath);
 
-        //Create input stream
-        ByteArrayInputStream inputStream = new ByteArrayInputStream("".getBytes());
-
         //Execute command
-        executeShellCommand(command, inputStream);
+        executeShellCommand(command);
     }
 
     /**
@@ -155,11 +146,8 @@ public class SSHSession {
         //Build corresponding command
         String command = String.format(SHELL_CREATE_FILE_BASE64, dirPath, fileName);
 
-        //Create input stream
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
-
         //Execute command
-        executeShellCommand(command, inputStream);
+        executeShellCommand(command, fileContent);
     }
 
     /**
@@ -176,11 +164,8 @@ public class SSHSession {
         //Build corresponding command
         String command = String.format(SHELL_CREATE_FILE, dirPath, fileName);
 
-        //Create input stream
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
-
         //Execute command
-        executeShellCommand(command, inputStream);
+        executeShellCommand(command, fileContent);
     }
 
     /**
@@ -195,11 +180,8 @@ public class SSHSession {
         //Build corresponding command
         String command = String.format(SHELL_REMOVE_DIR, path);
 
-        //Create input stream
-        ByteArrayInputStream inputStream = new ByteArrayInputStream("".getBytes());
-
         //Execute command
-        executeShellCommand(command, inputStream);
+        executeShellCommand(command);
     }
 
     /**
@@ -214,11 +196,8 @@ public class SSHSession {
         //Build corresponding command
         String command = String.format(SHELL_CREATE_DIR, path);
 
-        //Create input stream
-        ByteArrayInputStream inputStream = new ByteArrayInputStream("".getBytes());
-
         //Execute command
-        executeShellCommand(command, inputStream);
+        executeShellCommand(command);
     }
 
     /**
@@ -337,18 +316,54 @@ public class SSHSession {
         return stdErrStream;
     }
 
-    private int executeShellCommand(String command, ByteArrayInputStream inputStream) throws IOException {
-        command = addCommandPrefix(command);
-        return shell.exec(command, inputStream, stdOutStream, stdErrStream);
+    /**
+     * Executes a shell command with sudo permissions via the currently active SSH session. The password that
+     * was provided to this session will be used in order to execute sudo. However, if no password is available,
+     * it will try to execute sudo without password.
+     *
+     * @param command The shell command to execute via SSH
+     * @return The integer return value of the
+     * @throws IOException In case of an I/O issue
+     */
+    private int executeShellCommand(String command) throws IOException {
+        //Wrap and delegate
+        return executeShellCommand(command, null);
     }
 
-    private String addCommandPrefix(String command) {
-        //Check if password is available
-        if ((password == null) || password.isEmpty()) {
-            return "sudo " + command;
+    /**
+     * Executes a shell command with sudo permissions via the currently active SSH session. The password that
+     * was provided to this session will be used in order to execute sudo. However, if no password is available,
+     * it will try to execute sudo without password. It is possible to provide a string that should be
+     * injected into the input stream of the target process and may be required for the execution of the command.
+     *
+     * @param command           The shell command to execute via SSH
+     * @param inputStreamString The sting to inject into the input stream
+     * @return The integer return value of the
+     * @throws IOException In case of an I/O issue
+     */
+    private int executeShellCommand(String command, String inputStreamString) throws IOException {
+        checkConnectionState();
+
+        //Ensure valid input stream string
+        if (inputStreamString == null) {
+            inputStreamString = "";
         }
 
-        return String.format(SHELL_PREFIX_SUDO_PASSWORD, password) + command;
+        //Check if password is available
+        if ((password == null) || password.isEmpty()) {
+            //No password, try to use sudo without one
+            command = "sudo " + command;
+        } else {
+            //Extend command for sudo with password and provide password via input stream
+            command = SHELL_PREFIX_SUDO_PASSWORD + command;
+            inputStreamString = password + "\n" + inputStreamString;
+        }
+
+        //Create corresponding input stream
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(inputStreamString.getBytes());
+
+        //Execute shell command remotely
+        return shell.exec(command, inputStream, stdOutStream, stdErrStream);
     }
 
     /**
