@@ -10,6 +10,7 @@ import org.citopt.connde.domain.component.SensorValidator;
 import org.citopt.connde.domain.componentType.ComponentType;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.device.DeviceValidator;
+import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.user.Authority;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.web.rest.RestDeploymentController;
@@ -24,7 +25,6 @@ import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Contains crucial rest configurations for the application.
@@ -48,7 +48,7 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
         System.out.println("load RepositoryRestMvcConfiguration");
 
         config.setBasePath(BASE_PATH);
-        config.exposeIdsFor(Device.class, Adapter.class, Actuator.class, Sensor.class, User.class, Authority.class, ComponentType.class);
+        config.exposeIdsFor(Device.class, Adapter.class, MonitoringAdapter.class, Actuator.class, Sensor.class, User.class, Authority.class, ComponentType.class);
     }
 
     /**

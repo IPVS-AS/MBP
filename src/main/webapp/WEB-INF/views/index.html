@@ -170,6 +170,12 @@
               <span>Adapters</span>
             </a>
           </li>
+          <li href="view/monitoring-adapters" ng-show="expert" menu-item="menu-item">
+            <a href="view/monitoring-adapters">
+              <i class="material-icons">timeline</i>
+              <span>Monitoring Adapters</span>
+            </a>
+          </li>
           <li href="view/settings" ng-show="expert" menu-item="menu-item">
             <a href="view/settings">
               <i class="material-icons">settings</i>
@@ -292,6 +298,7 @@
     <script th:src="@{/js/controllers/sensors/SensorListController.js}"></script>
     <script th:src="@{/js/controllers/devices/DeviceListController.js}"></script>
     <script th:src="@{/js/controllers/adapters/AdapterListController.js}"></script>
+    <script th:src="@{/js/controllers/monitoring-adapters/MonitoringAdapterListController.js}"></script>
     <script th:src="@{/js/controllers/components/ComponentDetailsController.js}"></script>
     <script th:src="@{/js/controllers/actuators/ActuatorDetailsController.js}"></script>
     <script th:src="@{/js/controllers/sensors/SensorDetailsController.js}"></script>
