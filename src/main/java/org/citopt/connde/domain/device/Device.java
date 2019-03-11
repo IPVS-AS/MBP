@@ -1,11 +1,11 @@
 package org.citopt.connde.domain.device;
 
-import javax.persistence.GeneratedValue;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 
+import javax.persistence.GeneratedValue;
+
 /**
- *
  * @author rafaelkperes
  */
 public class Device {
@@ -13,13 +13,13 @@ public class Device {
     @Id
     @GeneratedValue
     private String id;
-    
+
     @Indexed(unique = true)
     private String name;
-    
+
     @Indexed
     private String componentType;
-    
+
     @Indexed(unique = true)
     private String macAddress;
 
@@ -28,11 +28,13 @@ public class Device {
     private String iface;
 
     private String date;
-    
+
     private String username;
 
+    private String password;
+
     private String rsaKey;
-    
+
     public static String formatMAC(String raw) {
         if (raw != null) {
             String formatted = raw.replaceAll("(.{2})", "$1" + "-").substring(0, 17);
@@ -73,14 +75,14 @@ public class Device {
     public void setName(String name) {
         this.name = name;
     }
-    
-    public String getComponentType() {
-		return componentType;
-	}
 
-	public void setComponentType(String componentType) {
-		this.componentType = componentType;
-	}
+    public String getComponentType() {
+        return componentType;
+    }
+
+    public void setComponentType(String componentType) {
+        this.componentType = componentType;
+    }
 
     public String getMacAddress() {
         return macAddress;
@@ -105,13 +107,21 @@ public class Device {
     public void setDate(String date) {
         this.date = date;
     }
-    
+
     public String getUsername() {
         return username;
     }
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getRsaKey() {

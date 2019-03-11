@@ -154,6 +154,15 @@
                                </div>
                                <span class="help-block" ng-show="addDeviceCtrl.item.errors.username">{{addDeviceCtrl.item.errors.username.message}}</span>
                            </div>
+                            <!-- item.password group -->
+                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.password }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDeviceCtrl.item.errors.password }">
+                                    <input class="form-control" id="device-form-input-password" type="text"
+                                           placeholder="Password" ng-model="addDeviceCtrl.item.password"/>
+                                </div>
+                                <span class="help-block" ng-show="addDeviceCtrl.item.errors.password">{{addDeviceCtrl.item.errors.password.message}}</span>
+                            </div>
                            <!-- item.rsaKey group -->
                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.rsaKey }">
                                <div class="form-line"
@@ -168,7 +177,7 @@
 					    <div class="modal-footer">
 					    	<button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">Close</button>
 					        <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
-					    </div>  
+					    </div>
 					</fieldset>
 				</form>
 			</div>
