@@ -11,6 +11,7 @@ import org.citopt.connde.domain.componentType.ComponentType;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
+import org.citopt.connde.domain.monitoring.MonitoringAdapterValidator;
 import org.citopt.connde.domain.user.Authority;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.web.rest.RestDeploymentController;
@@ -62,6 +63,10 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
         //Adapters
         v.addValidator("beforeSave", new AdapterValidator());
         v.addValidator("beforeCreate", new AdapterValidator());
+
+        //Monitoring adapters
+        v.addValidator("beforeSave", new MonitoringAdapterValidator());
+        v.addValidator("beforeCreate", new MonitoringAdapterValidator());
 
         //Sensors
         v.addValidator("beforeSave", new SensorValidator());

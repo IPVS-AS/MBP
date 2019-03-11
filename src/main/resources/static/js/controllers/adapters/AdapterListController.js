@@ -1,8 +1,8 @@
 /* global app */
 
 app.controller('AdapterListController',
-        ['$scope', '$controller', '$q', 'adapterList', 'addAdapter', 'deleteAdapter', 'FileReader', 'ParameterTypeService', 'AdapterService',
-            function ($scope, $controller, $q, adapterList, addAdapter, deleteAdapter, FileReader, ParameterTypeService, AdapterService) {
+        ['$scope', '$controller', '$q', 'adapterList', 'addAdapter', 'deleteAdapter', 'FileReader', 'parameterTypesList', 'AdapterService', 'NotificationService',
+            function ($scope, $controller, $q, adapterList, addAdapter, deleteAdapter, FileReader, parameterTypesList, AdapterService, NotificationService) {
                 var vm = this;
 
                 vm.dzServiceOptions = {
@@ -35,9 +35,12 @@ app.controller('AdapterListController',
 
                 vm.dzMethods = {};
 
-                vm.parameterTypes = [];
-
                 vm.parameters = [];
+                vm.parameterTypes = parameterTypesList;
+
+                if(parameterTypesList.length < 1){
+                    NotificationService.notify("Could not load parameter types.", "error");
+                }
 
                 //public
                 function addDeploymentParameter(){
@@ -64,17 +67,6 @@ app.controller('AdapterListController',
                         //Return empty promise (no routine files)
                         return $q.all([]);
                     }
-                }
-
-                //private
-                function loadParameterTypes() {
-                    ParameterTypeService.getAll().then(function(response) {
-                        if (response.success) {
-                            vm.parameterTypes = response.data;
-                        } else {
-                            console.log("Error while loading parameter types.");
-                        }
-                    });
                 }
 
                 /**
@@ -192,7 +184,4 @@ app.controller('AdapterListController',
                           vm.adapterListCtrl.removeItem(id);
                         }
                 );
-
-                //Load parameter types for select
-                loadParameterTypes();
             }]);

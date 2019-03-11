@@ -1,6 +1,6 @@
 'use strict';
 
-var app = angular.module('app', ['ngRoute', 'ngResource', 'ngCookies', 'ngSanitize', 'smart-table', 'ui.bootstrap', 'ui.select', 'ngFileUpload', 'thatisuday.dropzone', 'angular-loading-bar']);
+var app = angular.module('app', ['ngRoute', 'ngResource', 'ngCookies', 'ngSanitize', 'smart-table', 'ui.bootstrap', 'ngFileUpload', 'thatisuday.dropzone', 'angular-loading-bar']);
 
 app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvider', 'dropzoneOpsProvider',
     function ($provide, $routeProvider, $locationProvider, $resourceProvider, dropzoneOpsProvider) {
@@ -242,6 +242,15 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 controller: 'AdapterListController as ctrl',
                 resolve: {
                     isExpert: ['$location', 'SessionService', redirectExpert],
+                    parameterTypesList: ['ParameterTypeService', function (ParameterTypeService) {
+                        return ParameterTypeService.getAll().then(function (response) {
+                            if (response.success) {
+                                return response.data;
+                            } else {
+                                return [];
+                            }
+                        });
+                    }],
                     adapterList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('adapters');
                     }],
@@ -263,6 +272,22 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 controller: 'MonitoringAdapterListController as ctrl',
                 resolve: {
                     isExpert: ['$location', 'SessionService', redirectExpert],
+                    deviceTypesList: ['ComponentTypeService', function (ComponentTypeService) {
+                        return ComponentTypeService.GetByComponent('device').then(function (response) {
+                            return response.data;
+                        }, function () {
+                            return [];
+                        });
+                    }],
+                    parameterTypesList: ['ParameterTypeService', function (ParameterTypeService) {
+                        return ParameterTypeService.getAll().then(function (response) {
+                            if (response.success) {
+                                return response.data;
+                            } else {
+                                return [];
+                            }
+                        });
+                    }],
                     monitoringAdapterList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('monitoring-adapters');
                     }],

@@ -150,8 +150,7 @@
                                     <select class="form-control show-tick" id="sensor-form-select-device"
                                             ng-model="addSensorCtrl.item.device"
                                             ng-options="d._links.self.href as (d.name +       ' - ' +       d.formattedMacAddress) for d in deviceListCtrl.items">
-                                        <option value="">Select device
-                                        <option/>
+                                        <option value="">Select device<option/>
                                     </select>
                                 </div>
                                 <span class="help-block" ng-show="addSensorCtrl.item.errors.device">{{addSensorCtrl.item.errors.device.message}}</span>

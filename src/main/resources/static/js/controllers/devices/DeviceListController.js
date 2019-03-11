@@ -231,7 +231,7 @@ app.controller('DeviceListController',
                 ComponentTypeService.GetByComponent('DEVICE')
                     .then(function (response) {
                         if (response.success) {
-                            vm.deviceTypes = response.data;
+                            vm.deviceTypesList = response.data;
                         } else {
                             console.log("Error loading device types!");
                         }
