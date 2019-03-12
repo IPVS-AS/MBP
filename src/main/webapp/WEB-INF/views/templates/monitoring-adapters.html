@@ -14,19 +14,15 @@
                     </button>
                 </div>
             </div>
-            <div class="body" ng-init="activeTab = 'all'">
-                <ul class="nav nav-tabs tab-nav-right" role="tablist">
-                    <li role="presentation" class="active" ng-click="activeTab = 'all'">
-                        <a href="#adapterTableContainer" data-toggle="tab">All</a>
-                    </li>
-                    <li role="presentation" class="" ng-repeat="deviceType in ctrl.deviceTypesList" ng-click="activeTab = deviceType.id">
-                        <a href="#adapterTableContainer" data-toggle="tab">{{deviceType.name}}</a>
+            <div class="body">
+                <ul class="nav nav-tabs tab-nav-right" role="tablist" id="adapterFilter">
+                    <li role="presentation" ng-repeat="deviceType in ctrl.deviceTypesList">
+                        <a data-target="#adapterTable-{{deviceType.id}}" data-toggle="tab">{{deviceType.name}}</a>
                     </li>
                 </ul>
-
                 <div class="tab-content">
-                    <div id="adapterTableContainer" class="tab-pane fade in active">
-                        <p>{{activeTab}}</p>
+                    <div ng-repeat="deviceType in ctrl.deviceTypesList" id="adapterTable-{{deviceType.id}}"
+                         class="tab-pane fade in">
                         <table class="table table-hover" st-table="displayedCollection"
                                st-safe-src="adapterListCtrl.items">
                             <thead>
@@ -37,7 +33,8 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                            <tr id="{{item.id}}" ng-repeat="item in displayedCollection"
+                                ng-show="(deviceType.id == 'all') || (item.deviceTypesList.indexOf(deviceType.id) !== -1)">
                                 <td>{{item.name}}</td>
                                 <td>{{item.description}}</td>
                                 <td><span ng-repeat="par in item.parameters">{{par.name}} ({{par.type}}) </span></td>
@@ -101,7 +98,8 @@
                             <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.deviceTypes }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addAdapterCtrl.item.errors.deviceTypes }">
-                                    <select class="form-control selectpicker"
+                                    <select class="form-control selectpicker" title="Device types"
+                                            data-header="Device types"
                                             ng-options="deviceType.href as deviceType.name for deviceType in ctrl.deviceTypesList"
                                             ng-model="addAdapterCtrl.item.deviceTypes" multiple>
                                     </select>
