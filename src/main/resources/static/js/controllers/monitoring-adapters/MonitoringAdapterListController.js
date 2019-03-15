@@ -21,14 +21,17 @@ app.controller('MonitoringAdapterListController',
                     NotificationService.notify('Could not load available device types.', 'error');
                     return;
                 }
-                //Add "all" device type filter to the beginning
-                deviceTypesList.unshift({
+
+                //Store list of available device types
+                vm.deviceTypesList = deviceTypesList;
+
+                //Store list of available filters and add an "all" filter to the beginning
+                vm.typeFiltersList = deviceTypesList.slice();
+                vm.typeFiltersList.unshift({
                     id: 'all',
                     name: 'All',
                     component: 'DEVICE'
                 });
-
-                vm.deviceTypesList = deviceTypesList;
             })();
 
             /**
@@ -38,13 +41,23 @@ app.controller('MonitoringAdapterListController',
              * @param adapter The adapter to preprocess
              */
             function monitoringAdapterPreprocessing(adapter) {
-                var typesList = [];
+                var deviceTypes = null;
+
+                //Check where the device types for this adapter are stored
+                if(adapter.deviceTypes){
+                    deviceTypes = adapter.deviceTypes;
+                }else{
+                    deviceTypes = adapter._embedded.deviceTypes;
+                }
+
+                //List to collect all type ids
+                var typesIdList = [];
 
                 //Iterate over all device type objects of this adapter
-                for (var j = 0; j < adapter.deviceTypes.length; j++) {
-                    typesList.push(adapter.deviceTypes[j].id);
+                for (var j = 0; j < deviceTypes.length; j++) {
+                    typesIdList.push(deviceTypes[j].id);
                 }
-                adapter.deviceTypesList = typesList;
+                adapter.deviceTypesList = typesIdList;
             }
 
             //Extend the controller for the AdapterListController and pass all relevant data

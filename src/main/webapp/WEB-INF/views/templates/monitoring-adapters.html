@@ -16,13 +16,14 @@
             </div>
             <div class="body">
                 <ul class="nav nav-tabs tab-nav-right" role="tablist" id="adapterFilter">
-                    <li role="presentation" ng-repeat="deviceType in ctrl.deviceTypesList">
+                    <li role="presentation" ng-repeat="deviceType in ctrl.typeFiltersList"
+                        ng-class="{'active': $index == 0}">
                         <a data-target="#adapterTable-{{deviceType.id}}" data-toggle="tab">{{deviceType.name}}</a>
                     </li>
                 </ul>
                 <div class="tab-content">
-                    <div ng-repeat="deviceType in ctrl.deviceTypesList" id="adapterTable-{{deviceType.id}}"
-                         class="tab-pane fade in">
+                    <div ng-repeat="deviceType in ctrl.typeFiltersList" id="adapterTable-{{deviceType.id}}"
+                         class="tab-pane fade in" ng-class="{'active': $index == 0}">
                         <table class="table table-hover" st-table="displayedCollection"
                                st-safe-src="adapterListCtrl.items">
                             <thead>
