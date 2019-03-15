@@ -44,9 +44,9 @@ app.controller('MonitoringAdapterListController',
                 var deviceTypes = null;
 
                 //Check where the device types for this adapter are stored
-                if(adapter.deviceTypes){
+                if (adapter.deviceTypes) {
                     deviceTypes = adapter.deviceTypes;
-                }else{
+                } else {
                     deviceTypes = adapter._embedded.deviceTypes;
                 }
 

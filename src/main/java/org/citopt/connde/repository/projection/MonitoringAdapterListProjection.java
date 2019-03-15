@@ -9,6 +9,9 @@ import javax.persistence.Embedded;
 import javax.persistence.EmbeddedId;
 import java.util.List;
 
+/**
+ * Projection for monitoring adapters which is suitable for lists.
+ */
 @Projection(name = "list", types = MonitoringAdapter.class)
 public interface MonitoringAdapterListProjection extends AdapterListProjection {
     List<ComponentType> getDeviceTypes();

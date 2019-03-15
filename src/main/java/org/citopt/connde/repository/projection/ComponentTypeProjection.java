@@ -4,7 +4,7 @@ import org.citopt.connde.domain.componentType.ComponentType;
 import org.springframework.data.rest.core.config.Projection;
 
 /**
- * Projection interface for component types.
+ * Excerpt projection interface for component types that is e.g. suitable for lists.
  *
  * @author Jan
  */
