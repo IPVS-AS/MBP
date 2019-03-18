@@ -270,6 +270,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 controller: 'AdapterListController as ctrl',
                 resolve: {
                     isExpert: ['$location', 'SessionService', redirectExpert],
+                    adapterPreprocessing: function(){},
                     parameterTypesList: ['ParameterTypeService', function (ParameterTypeService) {
                         return ParameterTypeService.getAll().then(function (response) {
                             if (response.success) {

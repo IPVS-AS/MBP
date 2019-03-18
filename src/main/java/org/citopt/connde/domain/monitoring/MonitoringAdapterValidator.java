@@ -39,7 +39,7 @@ public class MonitoringAdapterValidator extends AdapterValidator {
      */
     @Override
     public boolean supports(Class<?> type) {
-        return Adapter.class.isAssignableFrom(type);
+        return MonitoringAdapter.class.isAssignableFrom(type);
     }
 
     @Override
