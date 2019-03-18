@@ -77,6 +77,16 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                                 return 0;
                             }
                         );
+                    }],
+                    countMonitoringAdapters: ['CrudService', function (CrudService) {
+                        return CrudService.countItems('monitoring-adapters').then(
+                            function (count) {
+                                return count;
+                            },
+                            function (response) {
+                                return 0;
+                            }
+                        );
                     }]
                 }
             })

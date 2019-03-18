@@ -6,11 +6,13 @@
 app.controller('MonitoringAdapterListController',
     ['$scope', '$controller', 'deviceTypesList', 'monitoringAdapterList', 'addMonitoringAdapter', 'deleteMonitoringAdapter', 'parameterTypesList', 'NotificationService',
         function ($scope, $controller, deviceTypesList, monitoringAdapterList, addMonitoringAdapter, deleteMonitoringAdapter, parameterTypesList, NotificationService) {
+            //Array of colors to be used for the different device types
+            var DEVICE_TYPES_COLORS = ['bg-pink', 'bg-purple', 'bg-deep-purple', 'bg-indigo', 'bg-blue',
+                'bg-light-blue', 'bg-cyan', 'bg-teal', 'bg-green', 'bg-light-green', 'bg-lime', 'bg-yellow',
+                'bg-amber', 'bg-orange', 'bg-deep-orange'];
+
 
             var vm = this;
-
-            //Initial adapter filter configuration
-            vm.typeFilter = 'all';
 
             /**
              * Initializing function, sets up basic things.
@@ -22,16 +24,14 @@ app.controller('MonitoringAdapterListController',
                     return;
                 }
 
+                //Extend device types list for color
+                for(var i = 0; i < deviceTypesList.length; i++){
+                    var colorIndex = i % DEVICE_TYPES_COLORS.length;
+                    deviceTypesList[i].color = DEVICE_TYPES_COLORS[colorIndex];
+                }
+
                 //Store list of available device types
                 vm.deviceTypesList = deviceTypesList;
-
-                //Store list of available filters and add an "all" filter to the beginning
-                vm.typeFiltersList = deviceTypesList.slice();
-                vm.typeFiltersList.unshift({
-                    id: 'all',
-                    name: 'All',
-                    component: 'DEVICE'
-                });
             })();
 
             /**
@@ -41,21 +41,27 @@ app.controller('MonitoringAdapterListController',
              * @param adapter The adapter to preprocess
              */
             function monitoringAdapterPreprocessing(adapter) {
-                var deviceTypes = null;
-
                 //Check where the device types for this adapter are stored
-                if (adapter.deviceTypes) {
-                    deviceTypes = adapter.deviceTypes;
-                } else {
-                    deviceTypes = adapter._embedded.deviceTypes;
+                if (!adapter.deviceTypes) {
+                    adapter.deviceTypes = adapter._embedded.deviceTypes;
                 }
 
                 //List to collect all type ids
                 var typesIdList = [];
 
                 //Iterate over all device type objects of this adapter
-                for (var j = 0; j < deviceTypes.length; j++) {
-                    typesIdList.push(deviceTypes[j].id);
+                for (var i = 0; i < adapter.deviceTypes.length; i++) {
+                    //Add device type id to list
+                    typesIdList.push(adapter.deviceTypes[i].id);
+
+                    //Find and add matching color for this device type
+                    adapter.deviceTypes[i].color = 'label-default';
+                    for(var j = 0; j < deviceTypesList.length; j++){
+                        if(deviceTypesList[j].id == adapter.deviceTypes[i].id){
+                            adapter.deviceTypes[i].color = deviceTypesList[j].color;
+                            break;
+                        }
+                    }
                 }
                 adapter.deviceTypesList = typesIdList;
             }

@@ -16,14 +16,58 @@
             </div>
             <div class="body">
                 <ul class="nav nav-tabs tab-nav-right" role="tablist" id="adapterFilter">
-                    <li role="presentation" ng-repeat="deviceType in ctrl.typeFiltersList"
-                        ng-class="{'active': $index == 0}">
+                    <li role="presentation" class="active">
+                        <a data-target="#adapterTable-all" data-toggle="tab"><strong>All</strong></a>
+                    </li>
+                    <li role="presentation" ng-repeat="deviceType in ctrl.deviceTypesList">
                         <a data-target="#adapterTable-{{deviceType.id}}" data-toggle="tab">{{deviceType.name}}</a>
                     </li>
                 </ul>
                 <div class="tab-content">
-                    <div ng-repeat="deviceType in ctrl.typeFiltersList" id="adapterTable-{{deviceType.id}}"
-                         class="tab-pane fade in" ng-class="{'active': $index == 0}">
+                    <div id="adapterTable-all" class="tab-pane fade in active">
+                        <table class="table table-hover" st-table="displayedCollection"
+                               st-safe-src="adapterListCtrl.items">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Device types</th>
+                                <th>Description</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="item in displayedCollection">
+                                <td>{{item.name}}</td>
+                                <td>
+                                    <span ng-repeat="deviceType in item.deviceTypes">
+                                        <span class="label {{deviceType.color}}">{{deviceType.name}}</span>&nbsp;
+                                    </span>
+                                </td>
+                                <td>{{item.description}}</td>
+                                <td>
+                                    <form ng-submit="deleteAdapterCtrl.deleteItem()">
+                                        <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                                ng-click="deleteAdapterCtrl.item.id = item.id"> Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr ng-show="adapterListCtrl.items.length === 0">
+                                <td>No adapters registered.</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div ng-repeat="deviceType in ctrl.deviceTypesList" id="adapterTable-{{deviceType.id}}"
+                         class="tab-pane fade in">
                         <table class="table table-hover" st-table="displayedCollection"
                                st-safe-src="adapterListCtrl.items">
                             <thead>
@@ -46,12 +90,6 @@
                                         </button>
                                     </form>
                                 </td>
-                            </tr>
-                            <tr ng-show="adapterListCtrl.items.length === 0">
-                                <td>No adapters registered.</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
                             </tr>
                             </tbody>
                             <tfoot>
