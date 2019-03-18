@@ -5,11 +5,11 @@
     .module('app')
     .controller('ModelController', ModelController);
 
-  ModelController.$inject = ['ENDPOINT_URI', '$scope', '$timeout', '$controller',
+  ModelController.$inject = ['ENDPOINT_URI', '$scope', '$timeout', '$q', '$controller',
     'ModelService', 'FlashService', 'ComponentService', 'DeviceService', 'CrudService', 'adapterList'
   ];
 
-  function ModelController(ENDPOINT_URI, $scope, $timeout, $controller,
+  function ModelController(ENDPOINT_URI, $scope, $timeout, $q, $controller,
     ModelService, FlashService, ComponentService, DeviceService, CrudService, adapterList) {
     var vm = this;
 
@@ -32,6 +32,7 @@
       vm.clearCanvas = clearCanvas;
       vm.newModel = newModel;
       vm.registerComponents = registerComponents;
+      vm.registeringStatus = {};
       vm.deployComponents = deployComponents;
       vm.undeployComponents = undeployComponents;
 
@@ -283,7 +284,7 @@
         $(this).addClass("clicked-element");
         if ($(this).attr("class").indexOf("room") > -1) {
           $(this).css({
-            'outline': "2px solid red"
+            'outline': "2px solid #4863A0"
           });
         }
 
@@ -337,26 +338,32 @@
         $timeout(function() {
           if (element.attr("class").indexOf("device") > -1) {
             vm.clickedComponent.category = "DEVICE";
+            vm.clickedComponent.id = element.data("id");
             vm.clickedComponent.name = element.data("name");
             vm.clickedComponent.type = element.data("type");
             vm.clickedComponent.mac = element.data("mac");
             vm.clickedComponent.ip = element.data("ip");
             vm.clickedComponent.username = element.data("username");
             vm.clickedComponent.rsaKey = element.data("rsaKey");
+            vm.clickedComponent.error = element.data("error");
             vm.clickedComponent.element = element;
           } else if (element.attr("class").indexOf("actuator") > -1) {
             vm.clickedComponent.category = "ACTUATOR";
+            vm.clickedComponent.id = element.data("id");
             vm.clickedComponent.name = element.data("name");
             vm.clickedComponent.type = element.data("type");
             vm.clickedComponent.adapter = element.data("adapter");
             vm.clickedComponent.device = element.data("device");
+            vm.clickedComponent.error = element.data("error");
             vm.clickedComponent.element = element;
           } else if (element.attr("class").indexOf("sensor") > -1) {
             vm.clickedComponent.category = "SENSOR";
+            vm.clickedComponent.id = element.data("id");
             vm.clickedComponent.name = element.data("name");
             vm.clickedComponent.type = element.data("type");
             vm.clickedComponent.adapter = element.data("adapter");
             vm.clickedComponent.device = element.data("device");
+            vm.clickedComponent.error = element.data("error");
             vm.clickedComponent.element = element;
           }
         });
@@ -551,8 +558,11 @@
 
       function registerComponents() {
         vm.processing = true;
+        vm.registeringStatus.success = true;
+        vm.registeringStatus.finished = false;
 
         // First register devices
+        var devicePromises = [];
         $(".jtk-node").each(function(index, element) {
           var $element = $(element);
           var type = $element.attr('class').toString().split(" ")[1];
@@ -565,31 +575,40 @@
             item.ipAddress = $element.data("ip");
             item.username = $element.data("username");
             item.rsaKey = $element.data("rsaKey");
-            register("devices", item, type, $element);
+            var promise = register("devices", item, type, $element);
+            devicePromises.push(promise);
           }
         });
 
-        // Then register actuators and sensors
-        $(".jtk-node").each(function(index, element) {
-          var $element = $(element);
-          var type = $element.attr('class').toString().split(" ")[1];
+        // After all http requests
+        $q.all(devicePromises).then(function() {
+          // Then register actuators and sensors
+          var actuatorSensorPromises = [];
+          $(".jtk-node").each(function(index, element) {
+            var $element = $(element);
+            var type = $element.attr('class').toString().split(" ")[1];
 
-          if (type == "actuator" || type == "sensor") {
-            var item = {};
-            item.name = $element.data("name");
-            item.componentType = $element.data("type");
-            item.adapter = ENDPOINT_URI + "/adapters/" + $element.data("adapter");
-            item.device = ENDPOINT_URI + "/devices/" + $element.data("deviceId");
-            register(type + "s", item, type, $element);
-          }
+            if (type == "actuator" || type == "sensor") {
+              var item = {};
+              item.name = $element.data("name");
+              item.componentType = $element.data("type");
+              item.adapter = ENDPOINT_URI + "/adapters/" + $element.data("adapter");
+              item.device = ENDPOINT_URI + "/devices/" + $element.data("deviceId");
+              var promise = register(type + "s", item, type, $element);
+              actuatorSensorPromises.push(promise);
+            }
+          });
+
+          $q.all(actuatorSensorPromises).then(function() {
+            $("#deployComponentsBtn").attr("disabled", false);
+            vm.processing = false;
+            vm.registeringStatus.finished = true;
+          });
         });
-
-        $("#deployComponentsBtn").attr("disabled", false);
-        vm.processing = false;
       }
 
       function register(category, item, type, element) {
-        CrudService.addItem(category, item).then(
+        return CrudService.addItem(category, item).then(
           function(response) {
             console.log(response);
             if (type == "actuator" || type == "sensor") {
@@ -598,9 +617,15 @@
               element.data("id", response.id);
               updateDeviceSA(element);
             }
+            element.removeClass("error-element");
+            element.addClass("success-element");
           },
           function(response) {
             console.log(response);
+            element.data("error", response.name.message);
+            element.removeClass("success-element");
+            element.addClass("error-element");
+            vm.registeringStatus.success = false;
           });
       }
 

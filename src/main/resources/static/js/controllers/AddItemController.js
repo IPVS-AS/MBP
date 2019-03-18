@@ -2,7 +2,7 @@
 
 'use strict';
 
-app.controller('AddItemController', ['addItem', function (addItem) {
+app.controller('AddItemController', ['addItem', 'NotificationService', function (addItem, NotificationService) {
         var vm = this;
 
         // public
@@ -10,16 +10,22 @@ app.controller('AddItemController', ['addItem', function (addItem) {
             vm.item.errors = {};
             return addItem(vm.item).then(
                     function (data) {
-                        // success
+                        //Success
                         vm.result = data;
                         vm.success = 'Registered successfully!';
-                        
-                        // clean form
+
+                        //Clean the form
                         vm.item = {};
+
+                        //Notify the user
+                        NotificationService.notify('Entitiy successfully created.', 'success')
                     },
                     function (errors) {
-                        // fail - add form errors
+                        //Failure, add the received errors to the form
                         vm.item.errors = errors;
+
+                        //Notify the user
+                        NotificationService.notify('Could not create entitiy.', 'error')
                     }
             );
 

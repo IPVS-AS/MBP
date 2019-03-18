@@ -57,6 +57,8 @@
     <!-- Angular Dropzone Plugin -->
     <link th:href="@{/plugins/angular-dropzone/css/ng-dropzone.min.css}" rel="stylesheet"/>
 
+    <!-- Size fix for SweetAlert2 -->
+    <link th:href="@{/plugins/sweetalert2/sweetalert2_fix.css}" rel="stylesheet"/>
     <!-- Font Awesome -->
     <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
 
@@ -72,9 +74,14 @@
     <!-- Modeling Tool Css -->
     <link th:href="@{/css/modeling-tool.css}" rel="stylesheet"/>
 
-    <!--<script src="https://code.highcharts.com/highcharts.js"></script> -->
-    <script src="http://code.highcharts.com/stock/highstock.js"></script>
+    <!-- Angular loading bar -->
+    <link th:href="@{/plugins/angular-loading-bar/loading-bar.min.css}" rel="stylesheet"/>
 
+    <!-- waitMe plugin -->
+    <link th:href="@{/plugins/waitme/waitMe.min.css}" rel="stylesheet"/>
+
+    <!-- Ion RangeSlider -->
+    <link th:href="@{/plugins/ion-rangeslider/ion.rangeSlider.min.css}" rel="stylesheet"/>
   </head>
 
   <body ng-class="expert ? 'theme-red' : 'theme-blue'" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
@@ -191,7 +198,8 @@
       <!-- Footer -->
       <div class="legal">
         <div class="copyright">
-          &copy; {{ctrl.getDate()| date:'yyyy'}}
+          &copy;
+          {{ctrl.getDate()| date:'yyyy'}}
           <a href="javascript:void(0);">MBP</a>.
         </div>
         <!--<div class="version"> <b>Version: </b> 0.2.0 </div>-->
@@ -248,6 +256,24 @@
     <!-- Angular Smart Table Plugin -->
     <script th:src="@{/plugins/angular-smart-table/js/smart-table.min.js}"></script>
 
+    <!-- SweetAlert plugin -->
+    <script th:src="@{/plugins/sweetalert2/sweetalert2.all.min.js}"></script>
+
+    <!-- Bootstrap notify plugin -->
+    <script th:src="@{/plugins/bootstrap-notify/bootstrap-notify.min.js}"></script>
+
+    <!-- Angular loading bar -->
+    <script th:src="@{/plugins/angular-loading-bar/loading-bar.min.js}"></script>
+
+    <!-- waitMe plugin -->
+    <script th:src="@{/plugins/waitme/waitMe.min.js}"></script>
+
+    <!-- Ion RangeSlider -->
+    <script th:src="@{/plugins/ion-rangeslider/ion.rangeSlider.min.js}"></script>
+
+    <!--<script src="https://code.highcharts.com/highcharts.js"></script> -->
+    <script src="http://code.highcharts.com/stock/highstock.js"></script>
+
     <!-- JQuery UI -->
     <script th:src="@{/plugins/jquery-ui/jquery-ui.js}"></script>
 
@@ -268,6 +294,8 @@
     <script th:src="@{/js/services/ComponentTypeService.js}"></script>
     <script th:src="@{/js/services/ModelService.js}"></script>
     <script th:src="@{/js/services/ParameterTypeService.js}"></script>
+    <script th:src="@{/js/services/NotificationService.js}"></script>
+
     <script th:src="@{/js/directives/menuItem.js}"></script>
     <script th:src="@{/js/directives/popover.js}"></script>
     <script th:src="@{/js/directives/fileModel.js}"></script>
@@ -286,6 +314,7 @@
     <script th:src="@{/js/controllers/sensors/SensorListController.js}"></script>
     <script th:src="@{/js/controllers/devices/DeviceListController.js}"></script>
     <script th:src="@{/js/controllers/adapters/AdapterListController.js}"></script>
+    <script th:src="@{/js/controllers/components/ComponentDetailsController.js}"></script>
     <script th:src="@{/js/controllers/actuators/ActuatorDetailsController.js}"></script>
     <script th:src="@{/js/controllers/sensors/SensorDetailsController.js}"></script>
     <script th:src="@{/js/controllers/settings/SettingsController.js}"></script>

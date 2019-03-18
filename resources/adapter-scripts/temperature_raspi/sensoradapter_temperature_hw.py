@@ -90,52 +90,36 @@ class analogInputReader(object):
 # MAIN
 ############################
 def main(argv):
-
+   #default interval for sending data
+   measureInterval = 30
+   
    configFileName = "connections.txt"
-   home = os.path.expandvars('$HOME/scripts')
-   pattern = 'connde*'
-   dirList = []
    topics = []
    brokerIps = []
+   configExists = False
 
    hostname = 'localhost'
    topic_pub = 'test'
    
-   # walk through directory
-   for root, dirs, files in os.walk(home):
-       for dirName in dirs:
-           # match search string
-           if fnmatch.fnmatch(dirName, pattern):
-               dirList.append(os.path.join(root, dirName))
-               print (os.path.join(root, dirName))
+   configFile = os.path.join(os.getcwd(), configFileName)
 
-   if (len(dirList) > 0):
-       # check if configuration file exists
-       configExists = False
-       configFile = os.path.join(dirList[0], configFileName)
+   while (not configExists):
+       configExists = os.path.exists(configFile)
+       time.sleep(1)
 
-       while (not configExists):
-           configExists = os.path.exists(configFile)
-           time.sleep(1)
+   # BEGIN parsing file
+   fileObject = open (configFile)
+   fileLines = fileObject.readlines()
+   fileObject.close()
 
-       # BEGIN parsing file
-       fileObject = open (configFile)
-       fileLines = fileObject.readlines()
-       fileObject.close()
+   for line in fileLines:
+       pars = line.split('=')
+       topic = pars[0].strip('\n').strip()
+       ip = pars[1].strip('\n').strip()
+       topics.append(topic)
+       brokerIps.append(ip)
 
-       for line in fileLines:
-           pars = line.split('=')
-           topic = pars[0].strip('\n').strip()
-           ip = pars[1].strip('\n').strip()
-           topics.append(topic)
-           brokerIps.append(ip)
-
-       # END parsing file
-       
-   else:
-       print("Could not find root directory")
-       sys.exit()
-
+   # END parsing file
 
    hostname = brokerIps [0]
    topic_pub = topics [0]
@@ -162,13 +146,13 @@ def main(argv):
          # read temperature
          measured_temp = aiReader.getTemperature(temp_adc_channel)
          
-         msg_pub = {"component": component.upper(), "id": component_id, "value": "%.3f" % (measured_temp) }
+         msg_pub = {"component": component.upper(), "id": component_id, "value": "%.3f" % (measured_temp)}
          publisher.sendMessage (topic_pub, json.dumps(msg_pub))
-         #publisher.sendMessage (topic_pub, "42")
 
-         time.sleep(30)
+         time.sleep(measureInterval)
    except:
-      print ("end")
-      
+      e = sys.exc_info()
+      print ("end due to: ", str(e))
+
 if __name__ == "__main__":
    main(sys.argv[1:])

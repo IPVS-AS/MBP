@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.UnknownHostException;
+import java.net.InetAddress;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +35,9 @@ public class SSHDeployer {
     private static final String START_SCRIPT_NAME = "start.sh";
     private static final String RUN_SCRIPT_NAME = "running.sh";
     private static final String STOP_SCRIPT_NAME = "stop.sh";
+
+    //Timeout for availability checks (ms)
+    private static final int AVAILABILITY_CHECK_TIMEOUT = 5000;
 
     @Autowired
     private NetworkService networkService;
@@ -68,6 +71,88 @@ public class SSHDeployer {
     }
 
     /**
+     * Determines the current deployment state of a given component.
+     *
+     * @param component The component to check
+     * @return The current state of the component
+     */
+    public ComponentState determineComponentState(Component component) {
+        //Validity check
+        if (component == null) {
+            throw new IllegalArgumentException("Component must not be null.");
+        }
+
+        //Get dedicated device of the component
+        Device device = component.getDevice();
+
+        //Determine availability state of the device
+        DeviceState deviceState = determineDeviceState(device);
+
+        //Check if device is available
+        if (deviceState != DeviceState.SSH_AVAILABLE) {
+            return ComponentState.NOT_READY;
+        }
+
+        //Check if component is deployed
+        try {
+            if (isComponentRunning(component)) {
+                return ComponentState.DEPLOYED;
+            } else {
+                return ComponentState.READY;
+            }
+        } catch (IOException e) {
+            return ComponentState.UNKNOWN;
+        }
+    }
+
+    /**
+     * Determines the current availability state of a given device.
+     *
+     * @param device The device to check
+     * @return The current state of the device
+     */
+    public DeviceState determineDeviceState(Device device) {
+        if (device == null) {
+            throw new IllegalArgumentException("Device must not be null.");
+        }
+
+        //Get ip address
+        String ipAddress = device.getIpAddress();
+
+        //Check if device is reachable
+        boolean reachable = false;
+        try {
+            reachable = InetAddress.getByName(ipAddress).isReachable(AVAILABILITY_CHECK_TIMEOUT);
+        } catch (IOException e) {
+            return DeviceState.OFFLINE;
+        }
+
+        //Check if device was not reachable
+        if (!reachable) {
+            return DeviceState.OFFLINE;
+        }
+
+        //Check if it is possible to establish a SSH connection
+        SSHSession sshSession;
+        try {
+            sshSession = establishSSHConnection(device);
+        } catch (IOException e) {
+            return DeviceState.ONLINE;
+        }
+
+        if (sshSession == null) {
+            return DeviceState.ONLINE;
+        }
+
+        //Check if it is possible to execute a basic command
+        if (sshSession.isCommandExecutable()) {
+            return DeviceState.SSH_AVAILABLE;
+        } else {
+            return DeviceState.ONLINE;
+        }
+    }
+
+    /**
      * Deploys a component onto the dedicated remote device and passes deployment parameters to the starter script.
      *
      * @param component             The component to deploy
@@ -83,8 +168,11 @@ public class SSHDeployer {
         LOGGER.log(Level.FINE, "Deploy request for component: " + "{0} (Type: {1})",
                 new Object[]{component.getId(), component.getComponentTypeName()});
 
+        //Get dedicated device of the component
+        Device device = component.getDevice();
+
         //Establish new SSH session
-        SSHSession sshSession = establishSSHConnection(component);
+        SSHSession sshSession = establishSSHConnection(device);
 
         //Resolve deployment path
         String deploymentPath = getDeploymentPath(component);
@@ -133,7 +221,7 @@ public class SSHDeployer {
         }
 
         //Sanity check
-        if(brokerIP == null){
+        if (brokerIP == null) {
             throw new RuntimeException("Unable to resolve IP address of the broker.");
         }
 
@@ -182,8 +270,11 @@ public class SSHDeployer {
         //Resolve deployment path
         String deploymentPath = getDeploymentPath(component);
 
+        //Get dedicated device of the component
+        Device device = component.getDevice();
+
         //Establish new SSH session
-        SSHSession sshSession = establishSSHConnection(component);
+        SSHSession sshSession = establishSSHConnection(device);
 
         //Get output stream of the session
         OutputStream stdOutStream = sshSession.getStdOutStream();
@@ -216,8 +307,11 @@ public class SSHDeployer {
         LOGGER.log(Level.FINE, "Undeploy request for component: " + "{0} (Type: {1})",
                 new Object[]{component.getId(), component.getComponentTypeName()});
 
+        //Get dedicated device of the component
+        Device device = component.getDevice();
+
         //Establish new SSH session
-        SSHSession sshSession = establishSSHConnection(component);
+        SSHSession sshSession = establishSSHConnection(device);
 
         //Resolve deployment path
         String deploymentPath = getDeploymentPath(component);
@@ -229,18 +323,32 @@ public class SSHDeployer {
         sshSession.removeDir(deploymentPath);
     }
 
-    /*
-    Establishes a SSH connection to the device that is referenced in the component object.
+    /**
+     * Undeploys a component from the dedicated remote device if it is currently deployed.
+     *
+     * @param component The component to undeploy
+     * @throws IOException In case of an I/O issue
      */
-    private SSHSession establishSSHConnection(Component component) throws UnknownHostException {
+    public void undeployIfRunning(Component component) throws IOException {
         //Validity check
         if (component == null) {
             throw new IllegalArgumentException("Component must not be null.");
         }
 
-        //Retrieve device
-        Device device = component.getDevice();
+        //Undeploy component if running
+        if (this.isComponentRunning(component)) {
+            this.undeployComponent(component);
+        }
+    }
 
+    /*
+     * Establishes a SSH connection to the device that is referenced in the component object.
+     *
+     * @param device To device to connect with
+     * @return The established SSH session
+     * @throws IOException In case of an I/O issue
+     */
+    private SSHSession establishSSHConnection(Device device) throws IOException {
         //Validity check
         if (device == null) {
             throw new IllegalArgumentException("Device must not be null.");
@@ -257,12 +365,13 @@ public class SSHDeployer {
         //Retrieve ssh connection parameter
         String url = device.getIpAddress();
         String username = device.getUsername();
+        String password = device.getPassword();
 
         LOGGER.log(Level.FINE, "Establishing SSH connection to {0} (user: {1})",
                 new Object[]{url, username});
 
         //Create new ssh session and connect
-        SSHSession sshSession = new SSHSession(url, SSH_PORT, username, rsaKey);
+        SSHSession sshSession = new SSHSession(url, SSH_PORT, username, password, rsaKey);
         sshSession.connect();
 
         return sshSession;
@@ -274,10 +383,11 @@ public class SSHDeployer {
      * @param jsonArray The JSON array to convert
      * @return The corresponding JSON string (command line compatible)
      */
-    private String convertJSONToCmdLineString(JSONArray jsonArray){
+    private String convertJSONToCmdLineString(JSONArray jsonArray) {
         String jsonString = jsonArray.toString();
         //Escape backslashes
-        jsonString = jsonString.replace("\"","\\\"");;
+        jsonString = jsonString.replace("\"", "\\\"");
+        ;
         //Wrap string with double quotes
         jsonString = "\"" + jsonString + "\"";
 
@@ -286,7 +396,8 @@ public class SSHDeployer {
 
     /**
      * Converts a list of parameter instances into a JSON array.
-     * @param adapter The adapter that specifies the parameters
+     *
+     * @param adapter               The adapter that specifies the parameters
      * @param parameterInstanceList A list of parameter instances that correspond to the adapter parameters
      * @return A JSON array that contains the parameter instances
      */
@@ -321,7 +432,8 @@ public class SSHDeployer {
                     //Add properties to object
                     parameterObject.put("name", parameter.getName());
                     parameterObject.put("value", parameterInstance.getValue());
-                } catch (JSONException e) {}
+                } catch (JSONException e) {
+                }
                 //Add object to parameter
                 parameterArray.put(parameterObject);
             }

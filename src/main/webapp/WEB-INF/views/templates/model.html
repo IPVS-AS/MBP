@@ -132,6 +132,20 @@
               </div>
             </div>
           </div>
+          <div class="navbar-brand tool-header-right" ng-show="vm.registeringStatus.finished">
+            <div ng-show="vm.registeringStatus.success">
+              <span style="color: green; font-size: 12px">
+                All components registered successfully
+              </span>
+              <i class="fas fa-check-circle" style="color: green"></i>
+            </div>
+            <div ng-show="!vm.registeringStatus.success">
+              <span style="color: red; font-size: 12px">
+                Registering error
+              </span>
+              <i class="fas fa-times-circle" style="color: red"></i>
+            </div>
+          </div>
         </div>
         <div class="row" style="width: 100%; margin-left: 0px; margin-right: 0px">
           <div class="tool-header-left" style="width: 50%">
@@ -220,7 +234,21 @@
           </ul>
         </div>
 
-        <!-- <div class="panel-footer"> <button class="tool-button" id="registerComponentBtn" ng-click="vm.registerComponent()">Register</button> </div> -->
+        <div class="panel-footer" style="height: 100%; overflow-x: scroll">
+          <span>
+            <b>Status</b>
+          </span>
+          <br>
+          <span>
+            Registered:
+            <i class="fas fa-check-circle" ng-show="vm.clickedComponent.id"></i>
+            <i class="fas fa-times-circle" ng-show="!vm.clickedComponent.id"></i>
+            <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.error">
+              <br>
+              {{vm.clickedComponent.error}}
+            </span>
+          </span>
+        </div>
       </div>
 
       <div class="panel panel-default" style="margin: 5px;" ng-show="vm.clickedComponent.category == 'ACTUATOR'">
@@ -251,6 +279,27 @@
             </li>
           </ul>
         </div>
+
+        <div class="panel-footer" style="height: 100%; overflow-x: scroll">
+          <span>
+            <b>Status</b>
+          </span>
+          <br>
+          <span>
+            Registered:
+            <i class="fas fa-check-circle" ng-show="vm.clickedComponent.id"></i>
+            <i class="fas fa-times-circle" ng-show="!vm.clickedComponent.id"></i>
+            <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.error">
+              <br>
+              {{vm.clickedComponent.error}}
+            </span>
+          </span>
+          <br>
+          <span>
+            Deployed:&nbsp;&nbsp;&nbsp;
+            <i class="fas fa-times-circle"></i>
+          </span>
+        </div>
       </div>
 
       <div class="panel panel-default" style="margin: 5px;" ng-show="vm.clickedComponent.category == 'SENSOR'">
@@ -280,6 +329,27 @@
               <input id="sensorDeviceInput" type="text" name="device" ng-model="vm.clickedComponent.device" autocomplete="off" disabled="disabled">
             </li>
           </ul>
+        </div>
+
+        <div class="panel-footer" style="height: 100%; overflow-x: scroll">
+          <span>
+            <b>Status</b>
+          </span>
+          <br>
+          <span>
+            Registered:
+            <i class="fas fa-check-circle" ng-show="vm.clickedComponent.id"></i>
+            <i class="fas fa-times-circle" ng-show="!vm.clickedComponent.id"></i>
+            <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.error">
+              <br>
+              {{vm.clickedComponent.error}}
+            </span>
+          </span>
+          <br>
+          <span>
+            Deployed:&nbsp;&nbsp;&nbsp;
+            <i class="fas fa-times-circle"></i>
+          </span>
         </div>
       </div>
 

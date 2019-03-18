@@ -1,246 +1,290 @@
-<div class="row clearfix" ng-hide="ng-hide">
-    <!-- Sensor Details Card -->
-    <div class="col-lg-7">
-        <div class="card">
-            <div class="header">
-                <h2>
-                    Sensor
-                </h2>
-            </div>
-            <div class="body">
-                <table class="table table-hover">
-                    <tbody>
-                    <tr id="{{item.id}}">
-                        <th>Name</th>
-                        <td>{{sensorDetailsCtrl.item.name}}
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Sensor type</th>
-                        <td>{{sensorDetailsCtrl.item.componentType}}</td>
-                    </tr>
-                    <tr>
-                        <th>Adapter</th>
-                        <td>{{sensorDetailsCtrl.item._embedded.adapter.name}}</td>
-                    </tr>
-                    <tr>
-                        <th>Device</th>
-                        <td>{{sensorDetailsCtrl.item._embedded.device.name}}
-                            (IP:
-                            {{sensorDetailsCtrl.item._embedded.device.ipAddress ?
-                            sensorDetailsCtrl.item._embedded.device.ipAddress : '-'}})
-                        </td>
-                    </tr>
-                    <tr ng-hide="ctrl.deployer.processing">
-                        <th>Status</th>
-                        <td>{{ctrl.deployer.available ? (ctrl.deployer.deployed ? 'RUNNING' : 'AVAILABLE') :
-                            'NOT AVAILABLE'}}
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-                <!-- deploy loader (show while deployment is being checked or executed) -->
-                <div class="row clearfix" ng-show="ctrl.deployer.processing">
-                    <div class="col-xs-12 align-center">
-                        <div class="preloader">
-                            <!-- dataDeploy.deploying -->
-                            <div class="spinner-layer pl-blue">
-                                <div class="circle-clipper left">
-                                    <div class="circle"></div>
-                                </div>
-                                <div class="circle-clipper right">
-                                    <div class="circle"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row clearfix" ng-hide="ctrl.deployer.processing">
-                    <div class="col-xs-12" ng-hide="ctrl.deployer.available">
-                        <!-- not deployer.available -->
-                        <div class="alert alert-warning">
-                            <button class="close" type="button" ng-click="ctrl.deployer.update()">
-                                <i class="material-icons">refresh</i>
-                            </button>
-                            Sensor is not available
-                        </div>
-                    </div>
-                    <div class="col-xs-12">
-                        <!-- Alert for global messages -->
-                        <div class="alert" ng-class="ctrl.deployer.status.success ? 'alert-success' : 'alert-danger'"
-                             ng-show="ctrl.deployer.status.globalMessage.length > 0">
-                            {{ctrl.deployer.status.globalMessage}}
-                        </div>
-                    </div>
-                    <div class="col-xs-12">
-                        <form ng-submit="ctrl.deployer.doDeploy()">
-                            <div class="row clearfix">
-                                <div class="col-xs-9" ng-show="!ctrl.deployer.deployed">
-                                    <label>Parameters:</label>
-                                    <table class="table parameter-table">
-                                        <thead></thead>
-                                        <tbody>
-                                        <tr ng-repeat="parameter in sensorDetailsCtrl.item._embedded.adapter.parameters">
-                                            <td>
-                                                <label>{{parameter.name}}:</label><br/>
-                                                <small ng-show="parameter.mandatory">(required)</small>
-                                            </td>
-                                            <td>
-                                                <div ng-switch="parameter.type">
-                                                    <div ng-switch-when="Text">
-                                                        <input class="form-control" type="text"
-                                                               ng-required="parameter.mandatory"
-                                                               ng-model="ctrl.parameterValues[$index].value"/>
-                                                    </div>
-                                                    <div ng-switch-when="Number">
-                                                        <input class="form-control" type="number"
-                                                               ng-required="parameter.mandatory"
-                                                               ng-model="ctrl.parameterValues[$index].value"/>
-                                                    </div>
-                                                    <div class="switch" ng-switch-when="Switch">
-                                                        <label>No
-                                                            <input type="checkbox"
-                                                                   ng-model="ctrl.parameterValues[$index].value">
-                                                            <span class="lever"></span>Yes</label>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="label bg-grey"
-                                                      ng-show="parameter.unit">{{parameter.unit}}</span>
-                                            </td>
-                                        </tr>
-                                        <tr ng-show="sensorDetailsCtrl.item._embedded.adapter.parameters.length === 0">
-                                            <td colspan="2">No parameters required.</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                    <div class="has-error" ng-show="ctrl.deployer.status.fieldErrors.parameters">
-                      <span class="help-block focused error">
-                        {{ctrl.deployer.status.fieldErrors.parameters}}
-                      </span>
-                                    </div>
-                                </div>
-                                <div class="col-xs-3" ng-show="!ctrl.deployer.deployed">
-                                    <button class="btn btn-primary waves-effect">Deploy</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="col-xs-12" ng-show="ctrl.deployer.available && ctrl.deployer.deployed">
-                        <form ng-submit="ctrl.deployer.doUndeploy()">
-                            <div class="row clearfix">
-                                <div class="col-xs-3">
-                                    <button class="btn btn-warning waves-effect">Undeploy</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- #END# Sensor Details Card -->
-
-    <div class="col-lg-7">
-        <div class="card">
-            <div class="header">
-                <h2>
-                    Live sensor values
-                </h2>
-            </div>
-            <div class="body">
-                <div id="liveValues" style="width:100%; height:400px;"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-7">
-        <div class="card">
-            <div class="header">
-                <div style="align: right">
-                    <button class="close" type="button" ng-click="ctrl.showCharts()">
-                        <i class="material-icons">refresh</i>
-                    </button>
-                </div>
-                <h2>
-                    Historical sensor values
-                </h2>
-
-            </div>
-            <div class="body">
-                <div id="historicalValues" style="width:100%; height:400px;"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-7">
-        <div class="card">
-            <div class="header">
-                <h2>
-                    Received values
-                    <small>Values sent by the sensor</small>
+<div class="row clearfix">
+    <!-- Sensor Properties Card -->
+    <div class="col-lg-6">
+        <div class="card deployment-card">
+            <div class="header"
+                 ng-class="{'bg-red': componentDetailsCtrl.deploymentState=='NOT_READY', 'bg-green': componentDetailsCtrl.deploymentState=='READY', 'bg-cyan': componentDetailsCtrl.deploymentState=='DEPLOYED', 'bg-grey': componentDetailsCtrl.deploymentState=='UNKNOWN'}">
+                <i class="material-icons" style="position: absolute; margin-top: 4px">settings_remote</i>
+                <h2 style="margin-left: 35px;">
+                    {{componentDetailsCtrl.component.name}}
+                    <small>{{componentDetailsCtrl.deploymentState=='NOT_READY' ? 'Deployment impossible' :
+                        (componentDetailsCtrl.deploymentState=='READY' ? 'Ready for deployment':
+                        (componentDetailsCtrl.deploymentState=='DEPLOYED' ? 'Deployed' :
+                        (componentDetailsCtrl.deploymentState=='UNKNOWN' ? 'Unknown state' : 'Loading...')))}}
+                    </small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
                     <li>
-                        <a role="button" ng-click="isCollapsedLog = !isCollapsedLog">
-                            <i class="material-icons">keyboard_arrow_down</i>
+                        <a ng-click="componentDetailsCtrl.updateDeploymentState()" class="clickable">
+                            <i class="material-icons">refresh</i>
                         </a>
                     </li>
                 </ul>
             </div>
-            <div class="body" uib-collapse="isCollapsedLog">
-                <p>
-                    The value field is parsed from the message received, so it may not be present. The raw message will
-                    be linked on the value field.
-                </p>
-                <!-- sensorValues loader -->
-                <div class="row clearfix" ng-show="ctrl.loader.sensorValues">
-                    <div class="col-xs-12 align-center">
-                        <div class="preloader">
-                            <div class="spinner-layer pl-blue">
-                                <div class="circle-clipper left">
-                                    <div class="circle"></div>
-                                </div>
-                                <div class="circle-clipper right">
-                                    <div class="circle"></div>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <table class="table table-hover" ng-show="ctrl.sensorValues.data && !ctrl.loader.sensorValues"
-                       st-table="ctrl.sensorValues.data" st-pipe="ctrl.loadSensorValues"
-                       refresh-table="refreshSensorValues">
-                    <thead>
-                    <tr>
-                        <th>Value</th>
-                        <th>Date</th>
-                    </tr>
-                    </thead>
+            <div class="body">
+                <h4>Properties</h4>
+                <table class="table table-hover">
                     <tbody>
-                    <tr id="{{v.id}}" ng-repeat="v in ctrl.sensorValues.data">
-                        <td>
-                            <button uib-popover="{{v.message}}" popover-title="{{'Raw Message'}}" type="button"
-                                    class="btn btn-default">
-                                {{v.value ? v.value : '-'}}
-                            </button>
+                    <tr id="{{componentDetailsCtrl.component.id}}">
+                        <th>Name:</th>
+                        <td>{{componentDetailsCtrl.component.name}}
                         </td>
-                        <td>{{v.date}}</td>
                     </tr>
-                    <tr ng-show="ctrl.sensorValues.data.length === 0">
-                        <td>No values received yet.</td>
-                        <td></td>
-                        <td></td>
+                    <tr>
+                        <th>Sensor type:</th>
+                        <td>{{componentDetailsCtrl.component.componentType}}</td>
+                    </tr>
+                    <tr>
+                        <th>Adapter:</th>
+                        <td>{{componentDetailsCtrl.component._embedded.adapter.name}}</td>
+                    </tr>
+                    <tr>
+                        <th>Device:</th>
+                        <td>{{componentDetailsCtrl.component._embedded.device.name}} (IP:
+                            {{componentDetailsCtrl.component._embedded.device.ipAddress}})
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Device state:</th>
+                        <td>
+                            <div ng-switch="componentDetailsCtrl.deviceState"
+                                 ng-click="componentDetailsCtrl.updateDeviceState()" class="clickable">
+                                <div ng-switch-when="LOADING">
+                                    <div class="preloader pl-size-xs">
+                                        <div class="spinner-layer pl-blue">
+                                            <div class="circle-clipper left">
+                                                <div class="circle"></div>
+                                            </div>
+                                            <div class="circle-clipper right">
+                                                <div class="circle"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-switch-when="OFFLINE">
+                                    <span class="label label-danger">Unavailable</span>
+                                </div>
+                                <div ng-switch-when="ONLINE">
+                                    <span class="label label-warning">No SSH</span>
+                                </div>
+                                <div ng-switch-when="SSH_AVAILABLE">
+                                    <span class="label label-success">Available</span>
+                                </div>
+                                <div ng-switch-default>
+                                    <span class="label label-default">Unknown</span>
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                     </tbody>
-                    <tfoot>
-                    <tr>
-                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
-                    </tr>
-                    </tfoot>
                 </table>
+                <br/>
+                <h4>Deployment parameters</h4>
+                <table class="table parameter-table">
+                    <thead></thead>
+                    <tbody>
+                    <tr ng-repeat="parameter in componentDetailsCtrl.component._embedded.adapter.parameters">
+                        <td>
+                            <label>{{parameter.name}}:</label><br/>
+                            <small ng-show="parameter.mandatory">(required)</small>
+                        </td>
+                        <td>
+                            <div ng-switch="parameter.type">
+                                <div ng-switch-when="Text">
+                                    <input class="form-control" type="text"
+                                           ng-required="parameter.mandatory"
+                                           ng-model="componentDetailsCtrl.parameterValues[$index].value"/>
+                                </div>
+                                <div ng-switch-when="Number">
+                                    <input class="form-control" type="number"
+                                           ng-required="parameter.mandatory"
+                                           ng-model="componentDetailsCtrl.parameterValues[$index].value"/>
+                                </div>
+                                <div class="switch" ng-switch-when="Switch">
+                                    <label>No
+                                        <input type="checkbox"
+                                               ng-model="componentDetailsCtrl.parameterValues[$index].value">
+                                        <span class="lever"></span>Yes</label>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="label bg-grey" ng-show="parameter.unit">{{parameter.unit}}</span>
+                        </td>
+                    </tr>
+                    <tr ng-show="componentDetailsCtrl.component._embedded.adapter.parameters.length === 0">
+                        <td colspan="2">No parameters required.</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="has-error" ng-show="ctrl.deployer.status.fieldErrors.parameters">
+                    <span class="help-block focused error">{{ctrl.deployer.status.fieldErrors.parameters}}</span>
+                </div>
+                <br/>
+                <div ng-show="componentDetailsCtrl.deploymentState=='READY'">
+                    <button class="btn btn-primary waves-effect" ng-click="componentDetailsCtrl.deploy()">
+                        Deploy sensor
+                    </button>
+                </div>
+                <div ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
+                    <button class="btn btn-warning waves-effect" ng-click="componentDetailsCtrl.undeploy()">
+                        Undeploy sensor
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sensor Stats Card -->
+    <div class="col-lg-6">
+        <div class="card stats-card">
+            <div class="header">
+                <h2>
+                    Sensor values overview
+                    <small>Overview about the values received from the sensor.</small>
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="componentDetailsCtrl.updateValueLogStats()" class="clickable">
+                            <i class="material-icons">refresh</i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="body">
+                <div ng-show="componentDetailsCtrl.valueLogStats.numberLogs == 0">
+                    <p>No sensor values received yet.</p>
+                </div>
+                <div ng-show="componentDetailsCtrl.valueLogStats.numberLogs > 0">
+                    <table class="table table-hover">
+                        <tbody>
+                        <tr>
+                            <th>Number of values:</th>
+                            <td>{{componentDetailsCtrl.valueLogStats.numberLogs}}</td>
+                        </tr>
+                        <tr>
+                            <th>Average:</th>
+                            <td>{{componentDetailsCtrl.valueLogStats.average}}</td>
+                        </tr>
+                        <tr>
+                            <th>Variance:</th>
+                            <td>{{componentDetailsCtrl.valueLogStats.variance}}</td>
+                        </tr>
+                        <tr>
+                            <th>Standard deviation:</th>
+                            <td>{{componentDetailsCtrl.valueLogStats.standardDeviation}}</td>
+                        </tr>
+                        <tr>
+                            <th>First value:</th>
+                            <td>
+                                <button uib-popover="{{componentDetailsCtrl.valueLogStats.firstLog.message}}"
+                                        popover-title="{{componentDetailsCtrl.valueLogStats.firstLog.date}}"
+                                        type="button"
+                                        class="btn btn-default">
+                                    {{componentDetailsCtrl.valueLogStats.firstLog.value}}
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Last value:</th>
+                            <td>
+                                <button uib-popover="{{componentDetailsCtrl.valueLogStats.lastLog.message}}"
+                                        popover-title="{{componentDetailsCtrl.valueLogStats.lastLog.date}}"
+                                        type="button"
+                                        class="btn btn-default">
+                                    {{componentDetailsCtrl.valueLogStats.lastLog.value}}
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Minimum value:</th>
+                            <td>
+                                <button uib-popover="{{componentDetailsCtrl.valueLogStats.minimumLog.message}}"
+                                        popover-title="{{componentDetailsCtrl.valueLogStats.minimumLog.date}}"
+                                        type="button"
+                                        class="btn btn-default">
+                                    {{componentDetailsCtrl.valueLogStats.minimumLog.value}}
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Maximum value:</th>
+                            <td>
+                                <button uib-popover="{{componentDetailsCtrl.valueLogStats.maximumLog.message}}"
+                                        popover-title="{{componentDetailsCtrl.valueLogStats.maximumLog.date}}"
+                                        type="button"
+                                        class="btn btn-default">
+                                    {{componentDetailsCtrl.valueLogStats.maximumLog.value}}
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Values Card -->
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card live-chart-card animate-show-hide" ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
+            <div class="header">
+                <h2>
+                    Live sensor values <i class="material-icons" style="color: red;">live_tv</i>
+                </h2>
+            </div>
+            <div class="body">
+                <div class="progress progress-small progress-in-card">
+                    <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar"
+                         style="width: {{componentDetailsCtrl.liveProgress.progress}}%; transition: width {{componentDetailsCtrl.liveProgress.delayTime}} ease-in-out;">
+                        <span class="sr-only"></span>
+                    </div>
+                </div>
+                <div id="liveValues" style="width:100%; height:400px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Historical Values Card -->
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card historical-chart-card">
+            <div class="header">
+                <h2>
+                    Historical sensor values
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="componentDetailsCtrl.updateHistoricalChart()" class="clickable">
+                            <i class="material-icons">refresh</i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="body">
+                <div id="historicalValues" style="width:100%; height:400px;"></div>
+                <p>
+                    <b>Values to display:</b>
+                </p>
+                <div class="switch">
+                    <label>
+                        Oldest
+                        <input type="checkbox"
+                               ng-model="componentDetailsCtrl.historicalChartSettings.mostRecent">
+                        <span class="lever"></span>
+                        Most recent
+                    </label>
+                </div>
+                <br/>
+                <p>
+                    <b>Number of values:</b>
+                </p>
+                <div class="range-slider">
+                    <input type="text" id="historicalChartSlider"/>
+                </div>
             </div>
         </div>
     </div>

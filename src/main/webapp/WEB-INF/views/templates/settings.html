@@ -21,13 +21,13 @@
                                 </div>
                                 <div class="form-group">
                                     <div class="radio">
-                                        <input type="radio" id="broker_location_local"
+                                        <input type="radio" class="with-gap" id="broker_location_local"
                                                ng-model="ctrl.settings.brokerLocation"
                                                value="LOCAL"/>
                                         <label for="broker_location_local">Use local broker</label>
                                     </div>
                                     <div class="radio">
-                                        <input type="radio" id="broker_location_remote"
+                                        <input type="radio" class="with-gap" id="broker_location_remote"
                                                ng-model="ctrl.settings.brokerLocation"
                                                value="REMOTE"/>
                                         <label for="broker_location_remote">Use remote broker</label>
@@ -49,12 +49,6 @@
                         </div>
                     </fieldset>
                 </form>
-                <div class="alert alert-success" ng-show="ctrl.response.success">
-                    The settings were saved successfully.
-                </div>
-                <div class="alert alert-danger" ng-show="ctrl.response.error">
-                    The settings could not be saved.
-                </div>
             </div>
         </div>
     </div>

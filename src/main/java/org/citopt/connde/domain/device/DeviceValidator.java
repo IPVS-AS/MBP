@@ -1,6 +1,8 @@
 package org.citopt.connde.domain.device;
 
+import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.util.Validation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
@@ -14,6 +16,13 @@ import org.springframework.validation.Validator;
  */
 @org.springframework.stereotype.Component
 public class DeviceValidator implements Validator {
+
+    private static DeviceRepository deviceRepository;
+
+    @Autowired
+    public void setDeviceRepository(DeviceRepository deviceRepository) {
+        DeviceValidator.deviceRepository = deviceRepository;
+    }
 
     /**
      * Checks whether the validator can be applied to objects of a given class. However, this validator can
@@ -43,11 +52,11 @@ public class DeviceValidator implements Validator {
                 errors, "name", "device.name.empty",
                 "The name must not be empty.");
 
-      //Check if device type was provided (mandatory)
+        //Check if device type was provided (mandatory)
         ValidationUtils.rejectIfEmptyOrWhitespace(
                 errors, "componentType", "component.componentType.empty",
                 "The component type cannot be empty!");
-        
+
         //Check if ip address was provided (mandatory)
         ValidationUtils.rejectIfEmptyOrWhitespace(
                 errors, "ipAddress", "device.ipAddress.empty",
@@ -62,6 +71,13 @@ public class DeviceValidator implements Validator {
         ValidationUtils.rejectIfEmptyOrWhitespace(
                 errors, "rsaKey", "device.rsaKey.empty",
                 "The RSA key must not be empty!");
+
+        //Check if name is unique
+        Device anotherDevice = deviceRepository.findByName(device.getName());
+        if (anotherDevice != null) {
+            errors.rejectValue("name", "device.name.duplicate",
+                    "The name is already registered.");
+        }
 
         //Retrieve fields that need to be of a certain format
         String ipAddress = device.getIpAddress();

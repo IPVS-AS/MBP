@@ -1,152 +1,172 @@
 <div>
 	<!-- List of Actuators Card -->
 	<div class="col-lg-12">
-			<div class="card">
-				<div class="header">
-					<div class="col-lg-6">
-						<h2>Actuators</h2>
-					</div>
-					<div class="align-right">	
-						<button id="toggle-device-form" type="button" class="btn bg-blue btn-circle waves-effect waves-circle waves-float" data-toggle="modal" data-target="#addActuatorModal">
-	        				<i class="material-icons">add</i>
-	        			</button>
-        			</div>
-
-
+		<div class="card">
+			<div class="header">
+				<div class="col-lg-6">
+					<h2>Actuators</h2>
 				</div>
-				<div class="body">
-					<table class="table table-hover" st-table="displayedCollection"
-						st-safe-src="actuatorListCtrl.items">
-						<thead>
-							<tr>
-								<th>Name</th>
-								<th>Status</th>
-								<th>Actuator type</th>
-								<th>Adapter</th>
-								<th>Device</th>
-								<th></th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr id="{{item.id}}" ng-repeat="item in displayedCollection">			
-								<td>
-									<a ng-href="{{detailsLink(item)}}">{{item.name}}
-								</td>
-								<td><span class="badge badge-info">not connected</span></td>
-								<td>{{item.componentType}}</td>
-								<td>{{item._embedded.adapter.name}}</td>
-								<td>{{item._embedded.device.name}}</td>
-								<td>
-									<form ng-submit="deleteActuatorCtrl.deleteItem()">
-										<button type="submit" class="btn btn-danger m-t-0 waves-effect" 
-										ng-click="deleteActuatorCtrl.item.id = item.id">Delete</button>
-									</form>
-								</td>
-							</tr>
-							<tr ng-show="actuatorListCtrl.items.length === 0">
-								<td>No actuators registered.</td>
-								<td></td>
-								<td></td>
-								<td></td>
-							</tr>
-						</tbody>
-						<tfoot>
-							<tr>
-								<td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
-							</tr>
-						</tfoot>
-					</table>
+				<div class="align-right">
+					<button id="add-button" type="button"
+							class="btn bg-blue btn-circle waves-effect waves-circle waves-float" data-toggle="modal"
+							data-target="#addActuatorModal">
+						<i class="material-icons">add</i>
+					</button>
 				</div>
 			</div>
+			<div class="body">
+				<table class="table table-hover" st-table="displayedCollection" st-safe-src="actuatorListCtrl.items">
+					<thead>
+					<tr>
+						<th>Name</th>
+						<th class="align-center">State</th>
+						<th>Actuator type</th>
+						<th>Adapter</th>
+						<th>Device</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+						<td>
+							<a ng-href="{{detailsLink(item)}}">{{item.name}}</a>
+						</td>
+						<td class="align-center">
+							<div ng-switch="item.state" ng-click="item.reloadState()" class="clickable">
+								<div ng-switch-when="LOADING">
+									<div class="preloader pl-size-xs">
+										<div class="spinner-layer pl-blue">
+											<div class="circle-clipper left">
+												<div class="circle"></div>
+											</div>
+											<div class="circle-clipper right">
+												<div class="circle"></div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div ng-switch-when="NOT_READY">
+									<span class="label label-danger">Not Ready</span>
+								</div>
+								<div ng-switch-when="READY">
+									<span class="label label-success">Ready</span>
+								</div>
+								<div ng-switch-when="DEPLOYED">
+									<span class="label label-info">Deployed</span>
+								</div>
+								<div ng-switch-default>
+									<span class="label label-default">Unknown</span>
+								</div>
+							</div>
+						</td>
+						<td>{{item.componentType}}</td>
+						<td>{{item._embedded.adapter.name}}</td>
+						<td>{{item._embedded.device.name}}</td>
+						<td>
+							<form ng-submit="deleteActuatorCtrl.deleteItem()">
+								<button type="submit" class="btn btn-danger m-t-0 waves-effect"
+										ng-click="deleteActuatorCtrl.item.id = item.id">
+									Delete
+								</button>
+							</form>
+						</td>
+					</tr>
+					<tr ng-show="actuatorListCtrl.items.length === 0">
+						<td>No actuators registered.</td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+					</tbody>
+					<tfoot>
+					<tr>
+						<td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+					</tr>
+					</tfoot>
+				</table>
+			</div>
+		</div>
 	</div>
 	<!-- #END# List of Actuators Card -->
+
 	<!-- Modal -->
 	<div class="modal fade" id="addActuatorModal" tabindex="-1" role="dialog">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-	        		<h5 class="modal-title">Register a new actuator
-	        			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-	          				<span aria-hidden="true">&times;</span>
-	        			</button>
-	        		</h5>
+					<h5 class="modal-title">Register a new actuator
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</h5>
 
-	      		</div>
-		  		<form id="addActuatorForm" ng-submit="addActuatorCtrl.addItem()">
+				</div>
+				<form id="addActuatorForm" ng-submit="addActuatorCtrl.addItem()">
 					<fieldset id="actuator-form">
-		      			<div class="modal-body">
+						<div class="modal-body">
 							<!-- "global" error for addItem -->
 							<div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.global}">
-								<span class="alert alert-danger"
-									ng-show="addActuatorCtrl.item.errors.global">
-									{{addActuatorCtrl.item.errors.global}} </span>
+			                    <span class="alert alert-danger" ng-show="addActuatorCtrl.item.errors.global">
+			                      {{addActuatorCtrl.item.errors.global}}
+			                    </span>
 							</div>
-							<!-- Name -->
-							<div class="form-group"
-								ng-class="{'has-error' : addActuatorCtrl.item.errors.name }">
-								<div class="form-line"
-									ng-class="{'focused error' : addActuatorCtrl.item.errors.name }">
-										<input class="form-control" id="actuator-form-input-name"
-											type="text" placeholder="Name"
-											ng-model="addActuatorCtrl.item.name" />
+							<!-- item.name group -->
+							<div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.name }">
+								<div class="form-line" ng-class="{'focused error' : addActuatorCtrl.item.errors.name }">
+									<input class="form-control" id="actuator-form-input-name" type="text"
+										   placeholder="Name" ng-model="addActuatorCtrl.item.name"/>
 								</div>
-								<span class="help-block"
-									ng-show="addActuatorCtrl.item.errors.name">{{addActuatorCtrl.item.errors.name.message}}</span>
+								<span class="help-block" ng-show="addActuatorCtrl.item.errors.name">{{addActuatorCtrl.item.errors.name.message}}</span>
 							</div>
 							<!-- item.componentType group -->
 							<div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.componentType }">
 								<div class="form-line"
-									ng-class="{'focused error' : addActuatorCtrl.item.errors.componentType }">
-									<select class="form-control show-tick"
-										id="actuator-form-select-component-type"
-										ng-model="addActuatorCtrl.item.componentType">
+									 ng-class="{'focused error' : addActuatorCtrl.item.errors.componentType }">
+									<select class="form-control show-tick" id="actuator-form-select-component-type"
+											ng-model="addActuatorCtrl.item.componentType">
 										<option value="">Select actuator type</option>
-										<option ng-repeat="type in ctrl.actuatorTypes"
-											value="{{type.name}}">{{type.name}}</option>
+										<option ng-repeat="type in ctrl.actuatorTypes" value="{{type.name}}">
+											{{type.name}}
+										</option>
 									</select>
 								</div>
-								<span class="help-block"
-									ng-show="addActuatorCtrl.item.errors.componentType">{{addActuatorCtrl.item.errors.componentType.message}}</span>
+								<span class="help-block" ng-show="addActuatorCtrl.item.errors.componentType">{{addActuatorCtrl.item.errors.componentType.message}}</span>
 							</div>
 							<!-- item.adpter group -->
-							<div class="form-group"
-								ng-class="{'has-error' : addActuatorCtrl.item.errors.adapter }">
+							<div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.adapter }">
 								<div class="form-line"
-									ng-class="{'focused error' : addActuatorCtrl.item.errors.adapter }">
-									<select class="form-control show-tick"
-										id="actuator-form-select-adapter"
-										ng-model="addActuatorCtrl.item.adapter"
-										ng-options="t._links.self.href as (t.name) for t in adapterListCtrl.items">
-										<option value="">Select adapter<option />
+									 ng-class="{'focused error' : addActuatorCtrl.item.errors.adapter }">
+									<select class="form-control show-tick" id="actuator-form-select-adapter"
+											ng-model="addActuatorCtrl.item.adapter"
+											ng-options="t._links.self.href as (t.name) for t in adapterListCtrl.items">
+										<option value="">Select adapter
+										<option/>
 									</select>
 								</div>
-								<span class="help-block"
-									ng-show="addActuatorCtrl.item.errors.adapter">{{addActuatorCtrl.item.errors.adapter.message}}</span>
+								<span class="help-block" ng-show="addActuatorCtrl.item.errors.adapter">{{addActuatorCtrl.item.errors.adapter.message}}</span>
 							</div>
 							<!-- item.device group -->
-							<div class="form-group"
-								ng-class="{'has-error' : addActuatorCtrl.item.errors.device }">
-								<div class="form-line"
-									ng-class="{'focused error' : addActuatorCtrl.item.errors.device }">
-									<select class="form-control show-tick"
-										id="actuator-form-select-device"
-										ng-model="addActuatorCtrl.item.device"
-										ng-options="d._links.self.href as (d.name +    ' - ' +    d.formattedMacAddress) for d in deviceListCtrl.items">
-										<option value="">Select device<option />
+							<div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.device }">
+								<div class="form-line" ng-class="{'focused error' : addActuatorCtrl.item.errors.device }">
+									<select class="form-control show-tick" id="actuator-form-select-device"
+											ng-model="addActuatorCtrl.item.device"
+											ng-options="d._links.self.href as (d.name +       ' - ' +       d.formattedMacAddress) for d in deviceListCtrl.items">
+										<option value="">Select device
+										<option/>
 									</select>
 								</div>
-								<span class="help-block"
-									ng-show="addActuatorCtrl.item.errors.device">{{addActuatorCtrl.item.errors.device.message}}</span>
+								<span class="help-block" ng-show="addActuatorCtrl.item.errors.device">{{addActuatorCtrl.item.errors.device.message}}</span>
 							</div>
-		      			</div>
-					    <div class="modal-footer">
-					    	<button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">Close</button>
-					        <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
-					    </div>  
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+								Close
+							</button>
+							<button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+						</div>
 					</fieldset>
 				</form>
 			</div>
 		</div>
 	</div>
-
+	<!-- #END# Modal -->
 </div>

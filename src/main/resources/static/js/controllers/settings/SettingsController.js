@@ -4,8 +4,8 @@
  * Controller for the settings page.
  */
 app.controller('SettingsController',
-    ['$scope', '$http', '$q', 'ENDPOINT_URI',
-        function ($scope, $http, $q, ENDPOINT_URI) {
+    ['$scope', '$http', '$q', 'ENDPOINT_URI', 'NotificationService',
+        function ($scope, $http, $q, ENDPOINT_URI, NotificationService) {
             var vm = this;
 
             //Full URL for REST requests
@@ -17,22 +17,12 @@ app.controller('SettingsController',
                 brokerIPAddress: ""
             };
 
-            //Remembers the server responses and controls whether success/error messages are displayed
-            vm.response = {
-                success: false,
-                error: false
-            };
-
             /**
              * Creates a REST request in order to save the settings on the server.
              *
              * @returns The created REST request
              */
             function saveSettings() {
-                //Nothing to display so far
-                vm.response.success = false;
-                vm.response.error = false;
-
                 //Create REST request with the settings object as payload
                 return $http({
                     data: vm.settings,
@@ -41,13 +31,11 @@ app.controller('SettingsController',
                 }).then(
                     //Success callback
                     function (response) {
-                        vm.response.success = true;
-                        vm.response.error = false;
+                        NotificationService.notify('The settings were saved successfully.', 'success');
                     },
                     //Error callback
                     function (response) {
-                        vm.response.success = false;
-                        vm.response.error = true;
+                        NotificationService.notify('The settings could not be saved.', 'error');
                         return $q.reject(response);
                     });
             }

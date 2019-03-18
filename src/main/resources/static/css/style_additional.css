@@ -2,3 +2,26 @@
 table.parameter-table td {
     vertical-align: middle !important;
 }
+
+/* unused atm */
+.btn-icon {
+    background-color: transparent;
+    border-color: transparent;
+    margin-top: -4px;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+/* Small progress bar*/
+.progress-small {
+    height: 4px;
+}
+
+.progress-in-card {
+    margin-left: -20px;
+    margin-right: -20px;
+    margin-top: -20px;
+    border-radius: 4px;
+}
