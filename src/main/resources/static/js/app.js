@@ -245,6 +245,24 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
+            //Device Details
+            .when(viewPrefix + '/devices/:id', {
+                category: 'devices',
+                templateUrl: 'templates/device-id.html',
+                controller: 'DeviceDetailsController as ctrl',
+                resolve: {
+                    deviceDetails: ['$route', '$location', 'CrudService', function ($route, $location, CrudService) {
+                        return CrudService.fetchSpecificItem('devices', $route.current.params.id).then(
+                            function (data) {
+                                return data;
+                            },
+                            function () {
+                                $location.url(viewPrefix + '/404');
+                            });
+                    }]
+                }
+            })
+
             // Adapters list
             .when(viewPrefix + '/adapters', {
                 category: 'adapters',

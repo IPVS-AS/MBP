@@ -45,4 +45,22 @@ public class MonitoringAdapter extends Adapter {
         }
         return deviceTypes.size();
     }
+
+    /**
+     * Checks whether this adapter can be used for devices of a certain type.
+     *
+     * @param deviceTypeName The name of the device type to check
+     * @return True, if the adapter is compatible; false otherwise
+     */
+    public boolean isCompatibleWith(String deviceTypeName){
+        //Iterate over all component types of this device and check for equality
+        for(ComponentType currentType : deviceTypes){
+            if(currentType.getName().equals(deviceTypeName)){
+                return true;
+            }
+        }
+
+        //No match found
+        return false;
+    }
 }

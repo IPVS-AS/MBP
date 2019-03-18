@@ -26,6 +26,14 @@ app.controller('DeviceListController',
                 $scope.$on('$destroy', function () {
                     $interval.cancel(interval);
                 });
+
+                //Provide details link for a given device
+                $scope.detailsLink = function (device) {
+                    if (device.id) {
+                        return "view/devices/" + device.id;
+                    }
+                    return "#";
+                };
             })();
 
             //Extend each device in deviceList for the formatted mac address, a state and a reload function

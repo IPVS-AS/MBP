@@ -24,7 +24,9 @@
                     </thead>
                     <tbody>
                     <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
-                        <td>{{item.name}}</td>
+                        <td>
+                            <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>
+                        </td>
                         <td class="align-center">
                             <div ng-switch="item.state" ng-click="item.reloadState()" class="clickable">
                                 <div ng-switch-when="LOADING">
@@ -118,8 +120,8 @@
                                    <select class="form-control show-tick" id="device-form-select-component-type"
                                            ng-model="addDeviceCtrl.item.componentType">
                                        <option value="">Select device type</option>
-                                       <option ng-repeat="type in ctrl.deviceTypes" value="{{type.name}}">
-                                           {{type.name}}
+                                       <option ng-repeat="deviceType in ctrl.deviceTypesList" value="{{deviceType.name}}">
+                                           {{deviceType.name}}
                                        </option>
                                    </select>
                                </div>

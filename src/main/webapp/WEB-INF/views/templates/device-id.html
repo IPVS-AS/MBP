@@ -1,0 +1,109 @@
+<div class="row clearfix">
+    <!-- Device Details Card -->
+    <div class="col-lg-4">
+        <div class="card details-card">
+            <div class="header"
+                 ng-class="{'bg-red': ctrl.deviceState=='OFFLINE', 'bg-orange': ctrl.deviceState=='ONLINE', 'bg-green': ctrl.deviceState=='SSH_AVAILABLE', 'bg-grey': ctrl.deviceState=='UNKNOWN'}">
+                <i class="material-icons" style="position: absolute; margin-top: 4px">devices</i>
+                <h2 style="margin-left: 35px;">
+                    {{ctrl.device.name}}
+                    <small>{{ctrl.deviceState=='OFFLINE' ? 'Device unavailable' :
+                        (ctrl.deviceState=='ONLINE' ? 'Device available, but no SSH connection possible':
+                        (ctrl.deviceState=='SSH_AVAILABLE' ? 'Available for monitoring' :
+                        (ctrl.deviceState=='UNKNOWN' ? 'Unknown state' : 'Loading...')))}}
+                    </small>
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="ctrl.updateDeviceState()" class="clickable">
+                            <i class="material-icons">refresh</i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="body">
+                <h4>Properties</h4>
+                <table class="table table-hover">
+                    <tbody>
+                    <tr id="{{ctrl.device.id}}">
+                        <th>Name:</th>
+                        <td>{{ctrl.device.name}}</td>
+                    </tr>
+                    <tr>
+                        <th>Device type:</th>
+                        <td>{{ctrl.device.componentType}}</td>
+                    </tr>
+                    <tr ng-hide="(ctrl.device.macAddress==null) || (ctrl.device.macAddress=='')">
+                        <th>MAC address:</th>
+                        <td>{{ctrl.device.macAddress}}</td>
+                    </tr>
+                    <tr>
+                        <th>IP address:</th>
+                        <td>{{ctrl.device.ipAddress}}</td>
+                    </tr>
+                    <tr>
+                        <th>User name:</th>
+                        <td>{{ctrl.device.username}}</td>
+                    </tr>
+                    <tr>
+                        <th>Password:</th>
+                        <td>{{ctrl.device.usesPassword ? 'Yes' : 'No'}}</td>
+                    </tr>
+                    <tr>
+                        <th>RSA key:</th>
+                        <td>{{ctrl.device.usesRSAKey ? 'Yes' : 'No'}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monitoring Control Card -->
+    <div class="col-lg-8">
+        <div class="card control-card">
+            <div class="header">
+                <h2>
+                    Monitoring Control
+                    <small>Options to enable and disable monitoring for this device.</small>
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="" class="clickable">
+                            <i class="material-icons">refresh</i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="body">
+                <h4>Available monitoring adapters</h4>
+                <table class="table table-hover">
+                    <tbody>
+                    <tr>
+                        <th>Name</th>
+                        <th>Parameters</th>
+                        <th>State</th>
+                        <th>Toggle</th>
+                    </tr>
+                    <tr>
+                        <td>ABC</td>
+                        <td>Parameters</td>
+                        <td>State...</td>
+                        <td>
+                            <button></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>ABC</td>
+                        <td>Parameters</td>
+                        <td>State...</td>
+                        <td>
+                            <button></button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
