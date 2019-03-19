@@ -143,6 +143,14 @@ public class RestMonitoringController {
         return deploymentWrapper.getComponentState(monitoringComponent);
     }
 
+    /**
+     * Creates a deployable component object which wraps a device and a monitoring adapter. For this purpose,
+     * the objects for the provided ids are looked up in the dedicated repository.
+     *
+     * @param deviceId            The id of the device to wrap
+     * @param monitoringAdapterId The id of the monitoring adapter to wrap
+     * @return The deployable component object
+     */
     private MonitoringComponent createComponent(String deviceId, String monitoringAdapterId) {
         //Retrieve corresponding device and adapter from their repositories
         Device device = deviceRepository.findOne(deviceId);
@@ -195,6 +203,13 @@ public class RestMonitoringController {
         return new ResponseEntity<>(adapterProjectionList, HttpStatus.OK);
     }
 
+    /**
+     * Retrieves a list of all monitoring adapters in the corresponding repository
+     * that are compatible with a certain device.
+     *
+     * @param device The device for which the compatible monitoring adapters should be determined
+     * @return A list of monitoring adapters that are compatible with the device
+     */
     private List<MonitoringAdapter> getCompatibleAdapters(Device device) {
         //Validity check
         if (device == null) {

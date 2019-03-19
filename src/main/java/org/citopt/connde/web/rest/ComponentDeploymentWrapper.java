@@ -31,6 +31,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Component that wraps the methods provided by the SSHDeployer in order to offer consistent deployment features
+ * across various components. Each method of this component returns a response entity that can be directly
+ * used in order to satisfy REST request that were issued by the user. Thus, this component ensures that all
+ * deployment-related REST tasks offer the same behaviour.
+ *
  * @author Jan
  */
 @org.springframework.stereotype.Component
@@ -39,7 +44,13 @@ public class ComponentDeploymentWrapper {
     @Autowired
     private SSHDeployer sshDeployer;
 
-    public ResponseEntity isRunningComponent(Component component) {
+    /**
+     * Checks if a component is currently running. If this is the case, true is returned; otherwise false.
+     *
+     * @param component The component to check
+     * @return A ResponseEntity object that contains the result
+     */
+    public ResponseEntity<Boolean> isRunningComponent(Component component) {
         //Validity check
         if (component == null) {
             return new ResponseEntity<Boolean>(HttpStatus.NOT_FOUND);
@@ -55,6 +66,13 @@ public class ComponentDeploymentWrapper {
         return new ResponseEntity<Boolean>(result, HttpStatus.OK);
     }
 
+    /**
+     * Deploys a component by using a list of parameter instances that contain a corresponding value.
+     *
+     * @param component          The component to deploy
+     * @param parameterInstances A list of parameter instances to use for the deployment
+     * @return A ResponseEntity object that contains an ActionResponse which describes the result of the deployment
+     */
     public ResponseEntity<ActionResponse> deployComponent(Component component, List<ParameterInstance> parameterInstances) {
         //Validity check
         if (component == null) {
@@ -102,6 +120,12 @@ public class ComponentDeploymentWrapper {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    /**
+     * Deploys a component by using a list of parameter instances that contain a corresponding value.
+     *
+     * @param component The component to undeploy
+     * @return A ResponseEntity object that contains an ActionResponse which describes the result of the undeployment
+     */
     public ResponseEntity<ActionResponse> undeployComponent(Component component) {
         //Validity check
         if (component == null) {
@@ -120,6 +144,13 @@ public class ComponentDeploymentWrapper {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * Retrieves a map that holds the current state for each component that is part of a given list.
+     *
+     * @param componentList A list of components for which the single states should be determined
+     * @return A ResponseEntity object that contains a map (component id -> component state) which holds
+     * the state for each component
+     */
     public ResponseEntity<Map<String, ComponentState>> getStatesAllComponents(List<Component> componentList) {
         //Create result map (component id -> component state)
         Map<String, ComponentState> resultMap = new HashMap<>();
@@ -133,6 +164,12 @@ public class ComponentDeploymentWrapper {
         return new ResponseEntity<>(resultMap, HttpStatus.OK);
     }
 
+    /**
+     * Retrieves the current component state for a given component.
+     *
+     * @param component The component for which the state is supposed to be determined
+     * @return A ResponseEntity object that holds the component state of the component
+     */
     public ResponseEntity<ComponentState> getComponentState(Component component) {
         //Validity check
         if (component == null) {

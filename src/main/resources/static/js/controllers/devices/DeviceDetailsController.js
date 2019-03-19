@@ -1,7 +1,7 @@
 /* global app */
 
 /**
- * Controller for the sensor details page that implements the ComponentDetailsController.
+ * Controller for the device details page.
  */
 app.controller('DeviceDetailsController',
     ['$scope', '$controller', '$routeParams', '$interval', 'deviceDetails', 'compatibleAdapters', 'DeviceService', 'MonitoringService', 'NotificationService',
@@ -248,6 +248,10 @@ app.controller('DeviceDetailsController',
                 });
             }
 
+            /**
+             * [Private]
+             * Initializes the data structures that are required for the deployment parameters of the monitoring adapters.
+             */
             function initParameters() {
                 //Extend parameter array for one array per compatible adapter
                 for (var i = 0; i < compatibleAdapters.length; i++) {

@@ -1,6 +1,5 @@
 package org.citopt.connde.domain.monitoring;
 
-import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.device.Device;
 
@@ -23,6 +22,7 @@ public class MonitoringComponent extends Component {
         String deviceId = device.getId();
         setId(adapterId + "@" + deviceId);
 
+        //Use given adapter and device
         setAdapter(monitoringAdapter);
         setDevice(device);
     }
