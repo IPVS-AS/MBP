@@ -18,6 +18,11 @@ public class MonitoringComponent extends Component {
      * @param device            The corresponding device
      */
     public MonitoringComponent(MonitoringAdapter monitoringAdapter, Device device) {
+        //Create id
+        String adapterId = monitoringAdapter.getId();
+        String deviceId = device.getId();
+        setId(adapterId + "@" + deviceId);
+
         setAdapter(monitoringAdapter);
         setDevice(device);
     }

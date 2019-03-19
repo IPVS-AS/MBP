@@ -28,7 +28,7 @@ import java.util.Map;
 @RequestMapping(RestConfiguration.BASE_PATH)
 public class RestComponentStateController {
     @Autowired
-    private SSHDeployer sshDeployer;
+    private ComponentDeploymentWrapper deploymentWrapper;
 
     @Autowired
     private ActuatorRepository actuatorRepository;
@@ -79,33 +79,18 @@ public class RestComponentStateController {
     }
 
     private ResponseEntity<Map<String, ComponentState>> getStatesAllComponents(ComponentRepository repository) {
-        //Create result map (component id -> component state)
-        Map<String, ComponentState> resultMap = new HashMap<>();
-
         //Get all components
         List<Component> componentList = repository.findAll();
 
-        //Iterate over all components and determine their state
-        for (Component component : componentList) {
-            ComponentState state = sshDeployer.determineComponentState(component);
-            resultMap.put(component.getId(), state);
-        }
-
-        return new ResponseEntity<>(resultMap, HttpStatus.OK);
+        //Get states for all components
+        return deploymentWrapper.getStatesAllComponents(componentList);
     }
 
     private ResponseEntity<ComponentState> getComponentState(String componentId, ComponentRepository repository) {
         //Retrieve component from repository
         Component component = (Component) repository.findOne(componentId);
 
-        //Validity check
-        if (component == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
-        //Determine component state
-        ComponentState componentState = sshDeployer.determineComponentState(component);
-
-        return new ResponseEntity<>(componentState, HttpStatus.OK);
+        //Get component state
+        return deploymentWrapper.getComponentState(component);
     }
 }

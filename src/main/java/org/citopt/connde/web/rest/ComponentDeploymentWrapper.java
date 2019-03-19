@@ -8,6 +8,7 @@ import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.repository.ComponentRepository;
 import org.citopt.connde.service.NetworkService;
+import org.citopt.connde.service.deploy.ComponentState;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.citopt.connde.service.settings.SettingsService;
 import org.citopt.connde.service.settings.model.BrokerLocation;
@@ -23,7 +24,9 @@ import org.springframework.http.ResponseEntity;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -115,5 +118,30 @@ public class ComponentDeploymentWrapper {
         }
         ActionResponse response = new ActionResponse(true, "Success");
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    public ResponseEntity<Map<String, ComponentState>> getStatesAllComponents(List<Component> componentList) {
+        //Create result map (component id -> component state)
+        Map<String, ComponentState> resultMap = new HashMap<>();
+
+        //Iterate over all components and determine their state
+        for (Component component : componentList) {
+            ComponentState state = sshDeployer.determineComponentState(component);
+            resultMap.put(component.getId(), state);
+        }
+
+        return new ResponseEntity<>(resultMap, HttpStatus.OK);
+    }
+
+    public ResponseEntity<ComponentState> getComponentState(Component component) {
+        //Validity check
+        if (component == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Determine component state
+        ComponentState componentState = sshDeployer.determineComponentState(component);
+
+        return new ResponseEntity<>(componentState, HttpStatus.OK);
     }
 }
