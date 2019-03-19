@@ -4,7 +4,7 @@ table.parameter-table td {
 }
 
 .vertical-align{
-    vertical-align: middle;
+    vertical-align: middle !important;
 }
 
 /* unused atm */

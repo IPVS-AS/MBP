@@ -69,7 +69,7 @@
                 </h2>
             </div>
             <div class="body">
-                <table class="table">
+                <table class="table table-hover">
                     <thead>
                     <tr>
                         <th>Name</th>
@@ -80,7 +80,7 @@
                     </thead>
                     <tbody>
                     <tr ng-repeat="adapter in ctrl.compatibleAdapters" id="adapter-{{adapter.id}}">
-                        <th class="vertical-align">{{adapter.name}}</th>
+                        <td class="vertical-align">{{adapter.name}}</td>
                         <td>
                             <table class="table parameter-table" ng-show="adapter.parameters.length > 0">
                                 <tbody>

@@ -188,8 +188,6 @@ app.controller('DeviceDetailsController',
              * @param parameterValuesList List of parameter values to use for the adapter.
              */
             function enableMonitoring(adapter, parameterValuesList) {
-                console.log(vm.parameterValues);
-
                 //Show waiting screen
                 showMonitoringControlWaitingScreen("Enabling monitoring...");
 
@@ -210,7 +208,7 @@ app.controller('DeviceDetailsController',
                     function (response) {
                         //Failure
                         adapter.state = 'UNKNOWN';
-                        NotificationService.notify('Monitoring enabling failed.', 'error');
+                        NotificationService.notify('Enabling of monitoring failed.', 'error');
                     }).then(function () {
                     //Finally hide the waiting screen
                     hideMonitoringControlWaitingScreen();
@@ -243,7 +241,7 @@ app.controller('DeviceDetailsController',
                     function (response) {
                         //Failure
                         adapter.state = 'UNKNOWN';
-                        NotificationService.notify('Monitoring disabling failed.', 'error');
+                        NotificationService.notify('Disabling of monitoring failed.', 'error');
                     }).then(function () {
                     //Finally hide the waiting screen
                     hideMonitoringControlWaitingScreen();
