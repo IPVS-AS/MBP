@@ -9,7 +9,18 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
         const URL_GET_COMPATIBLE_ADAPTERS = ENDPOINT_URI + '/monitoring-adapters/by-device/';
 
         const URL_MONITORING_PREFIX = ENDPOINT_URI + '/monitoring/';
-        const URL_MONITORING_SUFFIX = '?adapter=';
+        const URL_MONITORING_STATE = ENDPOINT_URI + '/monitoring/state/';
+        const URL_MONITORING_ADAPTER_SUFFIX = '?adapter=';
+
+        //Performs a server request in order to retrieve the monitoring state for all adapters that are compatible to a certain device
+        function getDeviceMonitoringState(deviceId) {
+            return $http.get(URL_MONITORING_STATE + deviceId);
+        }
+
+        //Performs a server request in order to retrieve the monitoring state for a certain adapter and device.
+        function getMonitoringState(deviceId, monitoringAdapterId) {
+            return $http.get(URL_MONITORING_STATE + deviceId + URL_MONITORING_ADAPTER_SUFFIX + monitoringAdapterId);
+        }
 
         //Performs a server request in order to retrieve a list of all compatible monitoring adapters for a device.
         function getCompatibleMonitoringAdapters(deviceId) {
@@ -44,10 +55,12 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          * @param monitoringAdapterId Id of the affected monitoring adapter
          */
         function generateMonitoringURL(deviceId, monitoringAdapterId) {
-            return URL_MONITORING_PREFIX + deviceId + URL_MONITORING_SUFFIX + monitoringAdapterId;
+            return URL_MONITORING_PREFIX + deviceId + URL_MONITORING_ADAPTER_SUFFIX + monitoringAdapterId;
         }
 
         return {
+            getDeviceMonitoringState: getDeviceMonitoringState,
+            getMonitoringState: getMonitoringState,
             getCompatibleMonitoringAdapters: getCompatibleMonitoringAdapters,
             isMonitoringActive: isMonitoringActive,
             enableMonitoring: enableMonitoring,

@@ -9,7 +9,7 @@ import org.citopt.connde.domain.device.Device;
  * for monitoring of devices.
  */
 public class MonitoringComponent extends Component {
-    private static final String COMPONENT_TYPE_NAME = "monitoring-component";
+    private static final String COMPONENT_TYPE_NAME = "monitoring";
 
     /**
      * Creates a new monitoring component, consisting out of a monitoring adapter and a compatible device.

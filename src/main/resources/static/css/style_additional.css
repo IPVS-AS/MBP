@@ -3,6 +3,10 @@ table.parameter-table td {
     vertical-align: middle !important;
 }
 
+.vertical-align{
+    vertical-align: middle;
+}
+
 /* unused atm */
 .btn-icon {
     background-color: transparent;
