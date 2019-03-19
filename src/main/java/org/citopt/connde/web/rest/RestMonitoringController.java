@@ -1,23 +1,24 @@
 package org.citopt.connde.web.rest;
 
 import org.citopt.connde.RestConfiguration;
+import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
+import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.MonitoringAdapterRepository;
+import org.citopt.connde.repository.projection.MonitoringAdapterListProjection;
+import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * REST Controller that exposes methods for monitoring devices.
+ * REST Controller that exposes methods for the purpose of device monitoring.
  *
  * @author Jan
  */
@@ -26,10 +27,90 @@ import java.util.List;
 public class RestMonitoringController {
 
     @Autowired
+    ComponentDeploymentWrapper deploymentWrapper;
+
+    @Autowired
     private DeviceRepository deviceRepository;
 
     @Autowired
     private MonitoringAdapterRepository monitoringAdapterRepository;
+
+    @GetMapping(value = "/monitoring/{deviceId}")
+    public ResponseEntity<Boolean> isMonitoringActive(@PathVariable(value = "deviceId") String deviceId,
+                                                      @RequestParam("adapter") String monitoringAdapterId) {
+        //Validity check
+        if ((deviceId == null) || deviceId.isEmpty() || (monitoringAdapterId == null) || monitoringAdapterId.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        //Create new monitoring component
+        MonitoringComponent monitoringComponent = createComponent(deviceId, monitoringAdapterId);
+
+        //Validity check
+        if (monitoringComponent == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Do check
+        return deploymentWrapper.isRunningComponent(monitoringComponent);
+    }
+
+    @PostMapping(value = "/monitoring/{deviceId}")
+    public ResponseEntity<ActionResponse> enableMonitoring(@PathVariable(value = "deviceId") String deviceId,
+                                                           @RequestParam("adapter") String monitoringAdapterId,
+                                                           @RequestBody List<ParameterInstance> parameters) {
+        //Validity check
+        if ((deviceId == null) || deviceId.isEmpty() || (monitoringAdapterId == null) || monitoringAdapterId.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        //Create new monitoring component
+        MonitoringComponent monitoringComponent = createComponent(deviceId, monitoringAdapterId);
+
+        //Validity check
+        if (monitoringComponent == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Deploy
+        return deploymentWrapper.deployComponent(monitoringComponent, parameters);
+    }
+
+    @DeleteMapping(value = "/monitoring/{deviceId}")
+    public ResponseEntity<ActionResponse> disableMonitoring(@PathVariable(value = "deviceId") String deviceId,
+                                                            @RequestParam("adapter") String monitoringAdapterId) {
+        //Validity check
+        if ((deviceId == null) || deviceId.isEmpty() || (monitoringAdapterId == null) || monitoringAdapterId.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        //Create new monitoring component
+        MonitoringComponent monitoringComponent = createComponent(deviceId, monitoringAdapterId);
+
+        //Validity check
+        if (monitoringComponent == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Undeploy
+        return deploymentWrapper.undeployComponent(monitoringComponent);
+    }
+
+    private MonitoringComponent createComponent(String deviceId, String monitoringAdapterId) {
+        //Retrieve corresponding device and adapter from their repositories
+        Device device = deviceRepository.findOne(deviceId);
+        MonitoringAdapter monitoringAdapter = monitoringAdapterRepository.findOne(monitoringAdapterId);
+
+        //Check if both objects were found
+        if ((device == null) || (monitoringAdapter == null)) {
+            return null;
+        }
+
+        //Create new monitoring component (wrapper)
+        MonitoringComponent monitoringComponent = new MonitoringComponent(monitoringAdapter, device);
+
+        return monitoringComponent;
+    }
 
     /**
      * Returns a list of monitoring adapters that are compatible with a certain device.
@@ -38,9 +119,9 @@ public class RestMonitoringController {
      * @return A list of all monitoring adapters that are compatible with the device
      */
     @GetMapping("/monitoring-adapters/by-device/{id}")
-    public ResponseEntity<List<MonitoringAdapter>> getCompatibleMonitoringAdaptersForDevice(@PathVariable(value = "id") String deviceId) {
+    public ResponseEntity<List<MonitoringAdapterListProjection>> getCompatibleMonitoringAdaptersForDevice(@PathVariable(value = "id") String deviceId) {
         //Validity check
-        if((deviceId == null) || deviceId.isEmpty()){
+        if ((deviceId == null) || deviceId.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
@@ -54,12 +135,14 @@ public class RestMonitoringController {
         List<MonitoringAdapter> allAdapters = monitoringAdapterRepository.findAll();
 
         //Create a list for all compatible adapters
-        List<MonitoringAdapter> compatibleAdapterList = new ArrayList<>();
+        List<MonitoringAdapterListProjection> compatibleAdapterList = new ArrayList<>();
 
         //Iterate over all adapters and check for compatibility
-        for(MonitoringAdapter adapter : allAdapters){
-            if(adapter.isCompatibleWith(deviceTyp)){
-                compatibleAdapterList.add(adapter);
+        for (MonitoringAdapter adapter : allAdapters) {
+            if (adapter.isCompatibleWith(deviceTyp)) {
+                //Get projection for this matching adapter and add it to the list
+                MonitoringAdapterListProjection projection = monitoringAdapterRepository.findById(adapter.getId());
+                compatibleAdapterList.add(projection);
             }
         }
 

@@ -64,7 +64,7 @@
         <div class="card control-card">
             <div class="header">
                 <h2>
-                    Monitoring Control
+                    Available monitoring adapters
                     <small>Options to enable and disable monitoring for this device.</small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
@@ -76,26 +76,56 @@
                 </ul>
             </div>
             <div class="body">
-                <h4>Available monitoring adapters</h4>
                 <table class="table table-hover">
-                    <tbody>
+                    <thead>
                     <tr>
                         <th>Name</th>
                         <th>Parameters</th>
                         <th>State</th>
                         <th>Toggle</th>
                     </tr>
-                    <tr>
-                        <td>ABC</td>
-                        <td>Parameters</td>
-                        <td>State...</td>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="adapter in ctrl.compatibleAdapters" id="adapter-{{adapter.id}}">
+                        <th>{{adapter.name}}</th>
                         <td>
-                            <button></button>
+                            <table class="table parameter-table">
+                                <tbody>
+                                <tr ng-repeat="parameter in adapter.parameters">
+                                    <td>
+                                        <label>{{parameter.name}}:</label><br/>
+                                        <small ng-show="parameter.mandatory">(required)</small>
+                                    </td>
+                                    <td>
+                                        <div ng-switch="parameter.type">
+                                            <div ng-switch-when="Text">
+                                                <input class="form-control" type="text"
+                                                       ng-required="parameter.mandatory"
+                                                       ng-model="ctrl.parameterValues[$parent.$index][$index].value"/>
+                                            </div>
+                                            <div ng-switch-when="Number">
+                                                <input class="form-control" type="number"
+                                                       ng-required="parameter.mandatory"
+                                                       ng-model="ctrl.parameterValues[$parent.$index][$index].value"/>
+                                            </div>
+                                            <div class="switch" ng-switch-when="Switch">
+                                                <label>No
+                                                    <input type="checkbox"
+                                                           ng-model="ctrl.parameterValues[$parent.$index][$index].value">
+                                                    <span class="lever"></span>Yes</label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="label bg-grey" ng-show="parameter.unit">{{parameter.unit}}</span>
+                                    </td>
+                                </tr>
+                                <tr ng-show="adapter.parameters.length == 0">
+                                    <td colspan="2">No parameters</td>
+                                </tr>
+                                </tbody>
+                            </table>
                         </td>
-                    </tr>
-                    <tr>
-                        <td>ABC</td>
-                        <td>Parameters</td>
                         <td>State...</td>
                         <td>
                             <button></button>

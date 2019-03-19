@@ -259,6 +259,13 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                             function () {
                                 $location.url(viewPrefix + '/404');
                             });
+                    }],
+                    compatibleAdapters: ['$route', 'MonitoringService', function ($route, MonitoringService) {
+                        return MonitoringService.getCompatibleMonitoringAdapters($route.current.params.id).then(function (response) {
+                            return response.data;
+                        }, function () {
+                            return null;
+                        });
                     }]
                 }
             })
@@ -270,7 +277,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 controller: 'AdapterListController as ctrl',
                 resolve: {
                     isExpert: ['$location', 'SessionService', redirectExpert],
-                    adapterPreprocessing: function(){},
+                    adapterPreprocessing: function () {
+                    },
                     parameterTypesList: ['ParameterTypeService', function (ParameterTypeService) {
                         return ParameterTypeService.getAll().then(function (response) {
                             if (response.success) {
