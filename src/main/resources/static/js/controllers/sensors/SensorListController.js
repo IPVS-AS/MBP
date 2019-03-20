@@ -168,16 +168,6 @@ app.controller('SensorListController',
                     $scope: $scope,
                     deleteItem: deleteSensor,
                     confirmDeletion: confirmDelete
-                }),
-                deviceCtrl: $controller('DeviceListController as deviceCtrl', {
-                    $scope: $scope,
-                    deviceList: deviceList,
-                    addDevice: addDevice,
-                    deleteDevice: deleteDevice
-                }),
-                adapterListCtrl: $controller('ItemListController as adapterListCtrl', {
-                    $scope: $scope,
-                    list: adapterList
                 })
             });
 

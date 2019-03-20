@@ -80,7 +80,7 @@
                     </thead>
                     <tbody>
                     <tr ng-repeat="adapter in ctrl.compatibleAdapters" id="adapter-{{adapter.id}}">
-                        <td class="vertical-align">{{adapter.name}}</td>
+                        <td>{{adapter.name}}</td>
                         <td>
                             <table class="table parameter-table" ng-show="adapter.parameters.length > 0">
                                 <tbody>
@@ -93,17 +93,20 @@
                                         <div ng-switch="parameter.type">
                                             <div ng-switch-when="Text">
                                                 <input class="form-control" type="text"
+                                                       ng-disabled="(adapter.state == 'DEPLOYED') || (adapter.state == 'LOADING')"
                                                        ng-required="parameter.mandatory"
                                                        ng-model="ctrl.parameterValues[$parent.$parent.$index][$index].value"/>
                                             </div>
                                             <div ng-switch-when="Number">
                                                 <input class="form-control" type="number"
+                                                       ng-disabled="(adapter.state == 'DEPLOYED') || (adapter.state == 'LOADING')"
                                                        ng-required="parameter.mandatory"
                                                        ng-model="ctrl.parameterValues[$parent.$parent.$index][$index].value"/>
                                             </div>
                                             <div class="switch" ng-switch-when="Switch">
                                                 <label>No
                                                     <input type="checkbox"
+                                                           ng-disabled="(adapter.state == 'DEPLOYED') || (adapter.state == 'LOADING')"
                                                            ng-model="ctrl.parameterValues[$parent.$parent.$index][$index].value">
                                                     <span class="lever"></span>Yes</label>
                                             </div>
