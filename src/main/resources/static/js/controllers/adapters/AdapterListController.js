@@ -1,8 +1,8 @@
 /* global app */
 
 app.controller('AdapterListController',
-        ['$scope', '$controller', '$q', 'adapterList', 'addAdapter', 'deleteAdapter', 'FileReader', 'ParameterTypeService', 'AdapterService',
-            function ($scope, $controller, $q, adapterList, addAdapter, deleteAdapter, FileReader, ParameterTypeService, AdapterService) {
+        ['$scope', '$controller', '$q', 'adapterList', 'adapterPreprocessing', 'addAdapter', 'deleteAdapter', 'FileReader', 'parameterTypesList', 'AdapterService', 'NotificationService',
+            function ($scope, $controller, $q, adapterList, adapterPreprocessing, addAdapter, deleteAdapter, FileReader, parameterTypesList, AdapterService, NotificationService) {
                 var vm = this;
 
                 vm.dzServiceOptions = {
@@ -35,9 +35,26 @@ app.controller('AdapterListController',
 
                 vm.dzMethods = {};
 
-                vm.parameterTypes = [];
-
                 vm.parameters = [];
+                vm.parameterTypes = parameterTypesList;
+
+
+                /**
+                 * Initializing function, sets up basic things.
+                 */
+                (function initController() {
+                    //Validity check for parameter types
+                    if(parameterTypesList.length < 1){
+                        NotificationService.notify("Could not load parameter types.", "error");
+                    }
+
+                    //Modify each adapter according to the preprocessing function (if provided)
+                    if(adapterPreprocessing){
+                        for (var i = 0; i < adapterList.length; i++) {
+                            adapterPreprocessing(adapterList[i]);
+                        }
+                    }
+                })();
 
                 //public
                 function addDeploymentParameter(){
@@ -64,17 +81,6 @@ app.controller('AdapterListController',
                         //Return empty promise (no routine files)
                         return $q.all([]);
                     }
-                }
-
-                //private
-                function loadParameterTypes() {
-                    ParameterTypeService.getAll().then(function(response) {
-                        if (response.success) {
-                            vm.parameterTypes = response.data;
-                        } else {
-                            console.log("Error while loading parameter types.");
-                        }
-                    });
                 }
 
                 /**
@@ -166,16 +172,16 @@ app.controller('AdapterListController',
                 // $watch 'addItem' result and add to 'itemList'
                 $scope.$watch(
                         function () {
-                            // value being watched
+                            //Value being watched
                             return vm.addAdapterCtrl.result;
                         },
                         function () {
-                            // callback
-                            console.log('addAdapterCtrl.result modified.');
-
+                            //Callback
                             var data = vm.addAdapterCtrl.result;
                             if (data) {
-                                console.log('pushItem.');
+                                if(adapterPreprocessing){
+                                    adapterPreprocessing(data);
+                                }
                                 vm.adapterListCtrl.pushItem(data);
                             }
                         }
@@ -192,7 +198,4 @@ app.controller('AdapterListController',
                           vm.adapterListCtrl.removeItem(id);
                         }
                 );
-
-                //Load parameter types for select
-                loadParameterTypes();
             }]);

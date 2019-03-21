@@ -52,7 +52,7 @@
     <link th:href="@{/plugins/angular-ui/bootstrap/css/angular-ui-fix.css}" rel="stylesheet"/>
 
     <!-- Angular UI Select Plugin -->
-    <link th:href="@{/plugins/angular-ui-select/css/select.min.css}" rel="stylesheet"/>
+    <!--<link th:href="@{/plugins/angular-ui-select/css/select.min.css}" rel="stylesheet"/>-->
 
     <!-- Angular Dropzone Plugin -->
     <link th:href="@{/plugins/angular-dropzone/css/ng-dropzone.min.css}" rel="stylesheet"/>
@@ -65,6 +65,9 @@
 
     <!-- waitMe plugin -->
     <link th:href="@{/plugins/waitme/waitMe.min.css}" rel="stylesheet"/>
+
+    <!-- Bootstrap Select -->
+    <link th:href="@{/plugins/bootstrap-select/bootstrap-select.min.css}" rel="stylesheet"/>
 
     <!-- Ion RangeSlider -->
     <link th:href="@{/plugins/ion-rangeslider/ion.rangeSlider.min.css}" rel="stylesheet"/>
@@ -170,6 +173,12 @@
               <span>Adapters</span>
             </a>
           </li>
+          <li href="view/monitoring-adapters" ng-show="expert" menu-item="menu-item">
+            <a href="view/monitoring-adapters">
+              <i class="material-icons">timeline</i>
+              <span>Monitoring Adapters</span>
+            </a>
+          </li>
           <li href="view/settings" ng-show="expert" menu-item="menu-item">
             <a href="view/settings">
               <i class="material-icons">settings</i>
@@ -230,7 +239,7 @@
     <script th:src="@{/plugins/angular-ui/bootstrap/js/ui-bootstrap-tpls-2.4.0.min.js}"></script>
 
     <!-- Angular UI Select Plugin -->
-    <script th:src="@{/plugins/angular-ui-select/js/select.min.js}"></script>
+    <!-- <script th:src="@{/plugins/angular-ui-select/js/select.min.js}"></script>-->
 
     <!-- Angular File Upload Plugin -->
     <script th:src="@{/plugins/angular-file-upload/js/ng-file-upload.min.js}"></script>
@@ -255,6 +264,9 @@
 
     <!-- Ion RangeSlider -->
     <script th:src="@{/plugins/ion-rangeslider/ion.rangeSlider.min.js}"></script>
+
+    <!-- Bootstrap select -->
+    <script th:src="@{/plugins/bootstrap-select/bootstrap-select.min.js}"></script>
 
     <!--<script src="https://code.highcharts.com/highcharts.js"></script> -->
     <script src="http://code.highcharts.com/stock/highstock.js"></script>
@@ -292,6 +304,7 @@
     <script th:src="@{/js/controllers/sensors/SensorListController.js}"></script>
     <script th:src="@{/js/controllers/devices/DeviceListController.js}"></script>
     <script th:src="@{/js/controllers/adapters/AdapterListController.js}"></script>
+    <script th:src="@{/js/controllers/monitoring-adapters/MonitoringAdapterListController.js}"></script>
     <script th:src="@{/js/controllers/components/ComponentDetailsController.js}"></script>
     <script th:src="@{/js/controllers/actuators/ActuatorDetailsController.js}"></script>
     <script th:src="@{/js/controllers/sensors/SensorDetailsController.js}"></script>

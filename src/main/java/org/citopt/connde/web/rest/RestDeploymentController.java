@@ -12,8 +12,6 @@ import org.citopt.connde.repository.ComponentRepository;
 import org.citopt.connde.repository.ComponentTypeRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.deploy.SSHDeployer;
-import org.citopt.connde.service.stats.ValueLogStatsService;
-import org.citopt.connde.service.stats.model.ValueLogStats;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.citopt.connde.web.rest.util.HeaderUtil;
 import org.citopt.connde.web.rest.util.PaginationUtil;
@@ -214,6 +212,7 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
 
     @GetMapping("/component-types/{component}")
     public ResponseEntity<List<ComponentType>> getSpecificComponentTypes(@PathVariable String component, Pageable pageable) {
+        component = component.toUpperCase();
         List<ComponentType> componentTypes = componentTypeRepository.findAllByComponent(component, pageable);
         return new ResponseEntity<>(componentTypes, HttpStatus.OK);
     }

@@ -10,6 +10,11 @@ table.parameter-table td {
     margin-top: -4px;
 }
 
+/* Fore more beautiful select pickers */
+.btn-no-shadow{
+    box-shadow: none !important;
+}
+
 .clickable {
     cursor: pointer;
 }
