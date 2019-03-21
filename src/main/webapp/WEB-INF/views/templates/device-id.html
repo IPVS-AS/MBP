@@ -1,0 +1,167 @@
+<div class="row clearfix">
+    <!-- Device Details Card -->
+    <div class="col-lg-4">
+        <div class="card details-card">
+            <div class="header"
+                 ng-class="{'bg-red': ctrl.deviceState=='OFFLINE', 'bg-orange': ctrl.deviceState=='ONLINE', 'bg-green': ctrl.deviceState=='SSH_AVAILABLE', 'bg-grey': ctrl.deviceState=='UNKNOWN'}">
+                <i class="material-icons" style="position: absolute; margin-top: 4px">devices</i>
+                <h2 style="margin-left: 35px;">
+                    {{ctrl.device.name}}
+                    <small>{{ctrl.deviceState=='OFFLINE' ? 'Device unavailable' :
+                        (ctrl.deviceState=='ONLINE' ? 'Device available, but no SSH connection possible':
+                        (ctrl.deviceState=='SSH_AVAILABLE' ? 'Available for monitoring' :
+                        (ctrl.deviceState=='UNKNOWN' ? 'Unknown state' : 'Loading...')))}}
+                    </small>
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="ctrl.updateDeviceState()" class="clickable">
+                            <i class="material-icons">refresh</i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="body">
+                <h4>Properties</h4>
+                <table class="table table-hover">
+                    <tbody>
+                    <tr id="{{ctrl.device.id}}">
+                        <th>Name:</th>
+                        <td>{{ctrl.device.name}}</td>
+                    </tr>
+                    <tr>
+                        <th>Device type:</th>
+                        <td>{{ctrl.device.componentType}}</td>
+                    </tr>
+                    <tr ng-hide="(ctrl.device.macAddress==null) || (ctrl.device.macAddress=='')">
+                        <th>MAC address:</th>
+                        <td>{{ctrl.device.macAddress}}</td>
+                    </tr>
+                    <tr>
+                        <th>IP address:</th>
+                        <td>{{ctrl.device.ipAddress}}</td>
+                    </tr>
+                    <tr>
+                        <th>User name:</th>
+                        <td>{{ctrl.device.username}}</td>
+                    </tr>
+                    <tr>
+                        <th>Password:</th>
+                        <td>{{ctrl.device.usesPassword ? 'Yes' : 'No'}}</td>
+                    </tr>
+                    <tr>
+                        <th>RSA key:</th>
+                        <td>{{ctrl.device.usesRSAKey ? 'Yes' : 'No'}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monitoring Control Card -->
+    <div class="col-lg-8">
+        <div class="card control-card">
+            <div class="header">
+                <h2>
+                    Available monitoring adapters
+                    <small>Options to enable and disable monitoring for this device.</small>
+                </h2>
+            </div>
+            <div class="body">
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Parameters</th>
+                        <th class="align-center">State</th>
+                        <th class="align-center">Enable</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="adapter in ctrl.compatibleAdapters" id="adapter-{{adapter.id}}">
+                        <td>{{adapter.name}}</td>
+                        <td>
+                            <table class="table parameter-table" ng-show="adapter.parameters.length > 0">
+                                <tbody>
+                                <tr ng-repeat="parameter in adapter.parameters">
+                                    <td>
+                                        <label>{{parameter.name}}:</label><br/>
+                                        <small ng-show="parameter.mandatory">(required)</small>
+                                    </td>
+                                    <td>
+                                        <div ng-switch="parameter.type">
+                                            <div ng-switch-when="Text">
+                                                <input class="form-control" type="text"
+                                                       ng-disabled="(adapter.state == 'DEPLOYED') || (adapter.state == 'LOADING')"
+                                                       ng-required="parameter.mandatory"
+                                                       ng-model="ctrl.parameterValues[$parent.$parent.$index][$index].value"/>
+                                            </div>
+                                            <div ng-switch-when="Number">
+                                                <input class="form-control" type="number"
+                                                       ng-disabled="(adapter.state == 'DEPLOYED') || (adapter.state == 'LOADING')"
+                                                       ng-required="parameter.mandatory"
+                                                       ng-model="ctrl.parameterValues[$parent.$parent.$index][$index].value"/>
+                                            </div>
+                                            <div class="switch" ng-switch-when="Switch">
+                                                <label>No
+                                                    <input type="checkbox"
+                                                           ng-disabled="(adapter.state == 'DEPLOYED') || (adapter.state == 'LOADING')"
+                                                           ng-model="ctrl.parameterValues[$parent.$parent.$index][$index].value">
+                                                    <span class="lever"></span>Yes</label>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="label bg-grey" ng-show="parameter.unit">{{parameter.unit}}</span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            <span ng-show="adapter.parameters.length == 0">No parameters</span>
+                        </td>
+                        <td class="align-center">
+                            <div ng-switch="adapter.state" ng-click="adapter.reloadState()" class="clickable">
+                                <div ng-switch-when="LOADING">
+                                    <div class="preloader pl-size-xs">
+                                        <div class="spinner-layer pl-blue">
+                                            <div class="circle-clipper left">
+                                                <div class="circle"></div>
+                                            </div>
+                                            <div class="circle-clipper right">
+                                                <div class="circle"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-switch-when="NOT_READY">
+                                    <span class="label label-danger">Not ready</span>
+                                </div>
+                                <div ng-switch-when="READY">
+                                    <span class="label label-success">Ready</span>
+                                </div>
+                                <div ng-switch-when="DEPLOYED">
+                                    <span class="label label-info">Active</span>
+                                </div>
+                                <div ng-switch-default>
+                                    <span class="label label-default">Unknown</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="align-center">
+                            <div class="switch">
+                                <label>
+                                    <input type="checkbox" ng-model="adapter.enable"
+                                           ng-change="adapter.onMonitoringToggle()"
+                                           ng-disabled="(adapter.state!='READY') && (adapter.state!='DEPLOYED')">
+                                    <span class="lever"></span>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

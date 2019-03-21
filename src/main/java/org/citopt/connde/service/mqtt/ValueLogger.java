@@ -24,7 +24,7 @@ import java.io.IOException;
 @Service
 public class ValueLogger {
     //Set of topics to subscribe to
-    private static final String[] SUBSCRIBE_TOPICS = {"device/#", "sensor/#", "actuator/#"};
+    private static final String[] SUBSCRIBE_TOPICS = {"device/#", "sensor/#", "actuator/#", "monitoring/#"};
     //URL frame of the broker to use (protocol and port, address will be filled in)
     private static final String BROKER_URL = "tcp://%s:1883";
     //Client id that is supposed to be assigned to the client instance

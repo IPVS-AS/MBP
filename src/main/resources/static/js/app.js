@@ -245,6 +245,31 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
+            //Device Details
+            .when(viewPrefix + '/devices/:id', {
+                category: 'devices',
+                templateUrl: 'templates/device-id.html',
+                controller: 'DeviceDetailsController as ctrl',
+                resolve: {
+                    deviceDetails: ['$route', '$location', 'CrudService', function ($route, $location, CrudService) {
+                        return CrudService.fetchSpecificItem('devices', $route.current.params.id).then(
+                            function (data) {
+                                return data;
+                            },
+                            function () {
+                                $location.url(viewPrefix + '/404');
+                            });
+                    }],
+                    compatibleAdapters: ['$route', 'MonitoringService', function ($route, MonitoringService) {
+                        return MonitoringService.getCompatibleMonitoringAdapters($route.current.params.id).then(function (response) {
+                            return response.data;
+                        }, function () {
+                            return null;
+                        });
+                    }]
+                }
+            })
+
             // Adapters list
             .when(viewPrefix + '/adapters', {
                 category: 'adapters',
@@ -252,7 +277,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 controller: 'AdapterListController as ctrl',
                 resolve: {
                     isExpert: ['$location', 'SessionService', redirectExpert],
-                    adapterPreprocessing: function(){},
+                    adapterPreprocessing: function () {
+                    },
                     parameterTypesList: ['ParameterTypeService', function (ParameterTypeService) {
                         return ParameterTypeService.getAll().then(function (response) {
                             if (response.success) {

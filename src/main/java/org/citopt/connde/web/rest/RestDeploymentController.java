@@ -44,7 +44,7 @@ import java.util.stream.Collectors;
 public class RestDeploymentController implements ResourceProcessor<RepositoryLinksResource> {
 
     @Autowired
-    private SSHDeployer sshDeployer;
+    private ComponentDeploymentWrapper deploymentWrapper;
 
     @Autowired
     private SensorRepository sensorRepository;
@@ -92,90 +92,24 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
         //Retrieve component from repository
         Component component = (Component) repository.findOne(id);
 
-        //Component not found?
-        if (component == null) {
-            return new ResponseEntity<Boolean>(HttpStatus.NOT_FOUND);
-        }
-
-        //Determine component status
-        Boolean result;
-        try {
-            result = sshDeployer.isComponentRunning(component);
-        } catch (IOException e) {
-            return new ResponseEntity<Boolean>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity<Boolean>(result, HttpStatus.OK);
+        //Check if running
+        return deploymentWrapper.isRunningComponent(component);
     }
 
     private ResponseEntity<ActionResponse> deployComponent(String id, ComponentRepository repository, List<ParameterInstance> parameterInstances) {
         //Retrieve component from repository
         Component component = (Component) repository.findOne(id);
 
-        //Component not found?
-        if (component == null) {
-            ActionResponse response = new ActionResponse(false, "The component does not exist.");
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        }
-
-        //Get adapter for parmaeter comparison
-        Adapter adapter = component.getAdapter();
-
-        //Iterate over all parameters
-        for (Parameter parameter : adapter.getParameters()) {
-            //Ignore parameter if not mandatory
-            if (!parameter.isMandatory()) {
-                continue;
-            }
-
-            //Iterate over all provided parameter instances and check if there is a matching one
-            boolean matchFound = false;
-            for (ParameterInstance parameterInstance : parameterInstances) {
-                if (parameter.isInstanceValid(parameterInstance)) {
-                    matchFound = true;
-                    break;
-                }
-            }
-
-            //Check if no valid instance was found for this parameter
-            if (!matchFound) {
-                ActionResponse response = new ActionResponse(false, "Invalid parameter configuration.");
-                response.addFieldError("parameters", "Parameter \"" + parameter.getName() + "\" is invalid.");
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
-        }
-
-        //Deploy component
-        try {
-            sshDeployer.deployComponent(component, parameterInstances);
-        } catch (IOException e) {
-            ActionResponse response = new ActionResponse(false, "An unknown error occurred");
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        //Success
-        ActionResponse response = new ActionResponse(true, "Success");
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        //Do deployment
+        return deploymentWrapper.deployComponent(component, parameterInstances);
     }
 
     private ResponseEntity<ActionResponse> undeployComponent(String id, ComponentRepository repository) {
         //Retrieve component from repository
         Component component = (Component) repository.findOne(id);
 
-        //Component not found?
-        if (component == null) {
-            ActionResponse response = new ActionResponse(false, "The component does not exist.");
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        }
-
-        //Undeploy component
-        try {
-            sshDeployer.undeployComponent(component);
-        } catch (IOException e) {
-            ActionResponse response = new ActionResponse(false, "An unknown error occurred");
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        ActionResponse response = new ActionResponse(true, "Success");
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        //Do undeployment
+        return deploymentWrapper.undeployComponent(component);
     }
 
     @RequestMapping(value = "/adapter/parameter-types", method = RequestMethod.GET)
