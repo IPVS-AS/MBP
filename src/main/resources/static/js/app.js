@@ -17,17 +17,17 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
         $provide.value('ENDPOINT_URI', ENDPOINT_URI);
         $provide.value('BASE_URI', BASE_URI);
 
-        function redirectExpert($location, SessionService) {
-            if (!SessionService.isExpert()) {
-                $location.path('/');
-            }
-        }
-
         dropzoneOpsProvider.setOptions({
             url: 'a',
             maxFilesize: '100',
             autoProcessQueue: false
         });
+
+        function redirectExpert($location, SessionService) {
+            if (!SessionService.isExpert()) {
+                $location.path('/');
+            }
+        }
 
         var viewPrefix = '/view';
         // configure the routing rules here

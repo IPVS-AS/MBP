@@ -1,9 +1,16 @@
-﻿/* Parameter tables*/
+﻿/* Scrollable drop down */
+.dropdown-scrollable {
+    height: auto;
+    max-height: 350px;
+    overflow-x: hidden;
+}
+
+/* Parameter tables*/
 table.parameter-table td {
     vertical-align: middle !important;
 }
 
-.vertical-align{
+.vertical-align {
     vertical-align: middle !important;
 }
 
@@ -15,7 +22,7 @@ table.parameter-table td {
 }
 
 /* Fore more beautiful select pickers */
-.btn-no-shadow{
+.btn-no-shadow {
     box-shadow: none !important;
 }
 

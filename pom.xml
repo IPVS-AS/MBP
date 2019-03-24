@@ -112,6 +112,13 @@
             <version>2.0.4</version>
         </dependency>
         <!-- end thymeleaf -->
+
+        <!-- https://mvnrepository.com/artifact/org.jscience/jscience -->
+        <dependency>
+            <groupId>org.jscience</groupId>
+            <artifactId>jscience</artifactId>
+            <version>4.3.1</version>
+        </dependency>
     </dependencies>
 
     <build>

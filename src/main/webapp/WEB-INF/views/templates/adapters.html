@@ -6,7 +6,7 @@
                 <div class="col-lg-6">
 					<h2>Adapters</h2>
 				</div>
-				<div class="align-right">	
+				<div class="align-right">
 					<button id="add-button" type="button" class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0" data-toggle="modal" data-target="#addAdapterModal">
 		      				<i class="material-icons">add</i>
 		      		</button>
@@ -90,6 +90,15 @@
                                 </div>
                                 <span class="help-block" ng-show="addAdapterCtrl.item.errors.description">{{addAdapterCtrl.item.errors.description.message}}</span>
                             </div>
+                            <!-- item.unit group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addAdapterCtrl.item.errors.unit }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addAdapterCtrl.item.errors.unit }">
+                                    <unit-input ng-model="addAdapterCtrl.item.unit"></unit-input>
+                                </div>
+                                <span class="help-block" ng-show="addAdapterCtrl.item.errors.unit">{{addAdapterCtrl.item.errors.unit.message}}</span>
+                            </div>
                             <!-- item.routine group -->
                             <label>Adapter scripts:</label>
                             <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.routines }">
@@ -171,7 +180,7 @@
 					    <div class="modal-footer">
 					    	<button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">Close</button>
 					        <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
-					    </div>  
+					    </div>
 					</fieldset>
 				</form>
 			</div>
