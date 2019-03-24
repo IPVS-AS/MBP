@@ -28,6 +28,8 @@ public class Adapter {
 
     private String description;
 
+    private String unit;
+
     private Code service;
     private List<Code> routines;
 
@@ -97,6 +99,14 @@ public class Adapter {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 
     public Code getService() {
