@@ -4,7 +4,7 @@
         <div class="card deployment-card">
             <div class="header"
                  ng-class="{'bg-red': componentDetailsCtrl.deploymentState=='NOT_READY', 'bg-green': componentDetailsCtrl.deploymentState=='READY', 'bg-cyan': componentDetailsCtrl.deploymentState=='DEPLOYED', 'bg-grey': componentDetailsCtrl.deploymentState=='UNKNOWN'}">
-                <i class="material-icons" style="position: absolute; margin-top: 4px">settings_remote</i>
+                <i class="material-icons" style="position: absolute; margin-top: 4px">wb_incandescent</i>
                 <h2 style="margin-left: 35px;">
                     {{componentDetailsCtrl.component.name}}
                     <small>{{componentDetailsCtrl.deploymentState=='NOT_READY' ? 'Deployment impossible' :
@@ -37,6 +37,12 @@
                     <tr>
                         <th>Adapter:</th>
                         <td>{{componentDetailsCtrl.component._embedded.adapter.name}}</td>
+                    </tr>
+                    <tr>
+                        <th>Unit:</th>
+                        <td>{{componentDetailsCtrl.component._embedded.adapter.unit ?
+                            componentDetailsCtrl.component._embedded.adapter.unit : 'None'}}
+                        </td>
                     </tr>
                     <tr>
                         <th>Device:</th>
@@ -156,23 +162,36 @@
                     <p>No actuator values received yet.</p>
                 </div>
                 <div ng-show="componentDetailsCtrl.valueLogStats.numberLogs > 0">
+                    <h4>Display unit</h4>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <unit-input ng-model="componentDetailsCtrl.displayUnitInput"
+                                        unit-filter="{{componentDetailsCtrl.component._embedded.adapter.unit}}"></unit-input>
+                        </div>
+                        <span class="help-block" ng-show="false"></span><br/>
+                        <button class="btn btn-primary m-t-0 waves-effect" ng-click="ctrl.onDisplayUnitChange()">
+                            Update
+                        </button>
+                    </div>
+                    <br/>
+                    <h4>Value statistics</h4>
                     <table class="table table-hover">
                         <tbody>
                         <tr>
                             <th>Number of values:</th>
-                            <td>{{componentDetailsCtrl.valueLogStats.numberLogs}}</td>
+                            <td>{{componentDetailsCtrl.valueLogStats.numberLogs}}&nbsp;{{componentDetailsCtrl.displayUnit}}</td>
                         </tr>
                         <tr>
                             <th>Average:</th>
-                            <td>{{componentDetailsCtrl.valueLogStats.average}}</td>
+                            <td>{{componentDetailsCtrl.valueLogStats.average}}&nbsp;{{componentDetailsCtrl.displayUnit}}</td>
                         </tr>
                         <tr>
                             <th>Variance:</th>
-                            <td>{{componentDetailsCtrl.valueLogStats.variance}}</td>
+                            <td>{{componentDetailsCtrl.valueLogStats.variance}}&nbsp;({{componentDetailsCtrl.displayUnit}})&sup2;</td>
                         </tr>
                         <tr>
                             <th>Standard deviation:</th>
-                            <td>{{componentDetailsCtrl.valueLogStats.standardDeviation}}</td>
+                            <td>{{componentDetailsCtrl.valueLogStats.standardDeviation}}&nbsp;{{(componentDetailsCtrl.displayUnit)}}</td>
                         </tr>
                         <tr>
                             <th>First value:</th>
@@ -183,6 +202,7 @@
                                         class="btn btn-default">
                                     {{componentDetailsCtrl.valueLogStats.firstLog.value}}
                                 </button>
+                                <span>&nbsp;{{(componentDetailsCtrl.displayUnit)}}</span>
                             </td>
                         </tr>
                         <tr>
@@ -194,6 +214,7 @@
                                         class="btn btn-default">
                                     {{componentDetailsCtrl.valueLogStats.lastLog.value}}
                                 </button>
+                                <span>&nbsp;{{(componentDetailsCtrl.displayUnit)}}</span>
                             </td>
                         </tr>
                         <tr>
@@ -205,6 +226,7 @@
                                         class="btn btn-default">
                                     {{componentDetailsCtrl.valueLogStats.minimumLog.value}}
                                 </button>
+                                <span>&nbsp;{{(componentDetailsCtrl.displayUnit)}}</span>
                             </td>
                         </tr>
                         <tr>
@@ -216,6 +238,7 @@
                                         class="btn btn-default">
                                     {{componentDetailsCtrl.valueLogStats.maximumLog.value}}
                                 </button>
+                                <span>&nbsp;{{(componentDetailsCtrl.displayUnit)}}</span>
                             </td>
                         </tr>
                         </tbody>
