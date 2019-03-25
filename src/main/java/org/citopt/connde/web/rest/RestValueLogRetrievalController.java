@@ -51,7 +51,7 @@ public class RestValueLogRetrievalController {
      */
     @GetMapping("/actuators/{id}/valueLogs")
     public ResponseEntity<Page<ValueLog>> getActuatorValueLogs(@PathVariable(value = "id") String id,
-                                                               @RequestParam(value = "unit") String unit,
+                                                               @RequestParam(value = "unit", required = false) String unit,
                                                                Pageable pageable) {
         return getValueLogs(id, actuatorRepository, unit, pageable);
     }
@@ -66,7 +66,7 @@ public class RestValueLogRetrievalController {
      */
     @GetMapping("/sensors/{id}/valueLogs")
     public ResponseEntity<Page<ValueLog>> getSensorValueLogs(@PathVariable(value = "id") String id,
-                                                             @RequestParam(value = "unit") String unit,
+                                                             @RequestParam(value = "unit", required = false) String unit,
                                                              Pageable pageable) {
         return getValueLogs(id, sensorRepository, unit, pageable);
     }
