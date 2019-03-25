@@ -102,7 +102,9 @@ public enum PredefinedQuantities {
     }),
 
     ELECTRIC_RESISTANCE("Electric resistance", new PredefinedUnit[]{
-            new PredefinedUnit<>("Ohm", OHM)
+            new PredefinedUnit<>("Ohm", OHM),
+            new PredefinedUnit<>("Kilo Ohm", KILO(OHM)),
+            new PredefinedUnit<>("Mega Ohm", MEGA(OHM))
     }),
 
     ENERGY("Energy", new PredefinedUnit[]{
