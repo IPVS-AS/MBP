@@ -10,9 +10,16 @@ import java.util.List;
 
 import static javax.measure.unit.SI.*;
 
+/**
+ * Enumeration of objects that represent predefined quantities holding predefined units. They may
+ * be used as unit suggestions by the user.
+ *
+ * @author Jan
+ */
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum PredefinedQuantities {
 
+    //No dimension
     DIMENSIONLESS("Dimensionless", new PredefinedUnit[]{
             new PredefinedUnit<>("No Unit", Unit.ONE),
             new PredefinedUnit<>("Percent", NonSI.PERCENT),
@@ -204,15 +211,29 @@ public enum PredefinedQuantities {
             new PredefinedUnit<>("Cubic meter per second", VolumetricFlowRate.UNIT)
     });
 
+    //Quantity name
     private String name;
 
+    //List of units for the quantity
     private PredefinedUnit[] units;
 
+    /**
+     * Creates a new predefined quantity that holds predefined units which are related to it.
+     *
+     * @param name  The name of the quantity
+     * @param units Array of predefined units that are related to the quantity
+     */
     PredefinedQuantities(String name, PredefinedUnit[] units) {
         this.name = name;
         this.units = units;
     }
 
+    /**
+     * Returns a list of predefined quantities, holding predefined units which are compatible to a given unit.
+     *
+     * @param compatibleUnit A string specifying the unit for which compatible units are supposed to be retrieved
+     * @return A list of predefined quantities holding predefined units
+     */
     public static List<PredefinedQuantities> getCompatibleQuantities(String compatibleUnit) {
         //Create new empty list for quantities
         List<PredefinedQuantities> quantitiesList = new ArrayList<>();
@@ -238,18 +259,38 @@ public enum PredefinedQuantities {
         return quantitiesList;
     }
 
+    /**
+     * Returns the name of the quantity.
+     *
+     * @return The name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Sets the name of the quantity.
+     *
+     * @param name The name to set
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     * Returns a array of predefined units that are related to the quantity.
+     *
+     * @return The predefined units
+     */
     public PredefinedUnit[] getUnits() {
         return units;
     }
 
+    /**
+     * Sets a array of predefined units that are related to the quantity.
+     *
+     * @param units The predefined units to set
+     */
     public void setUnits(PredefinedUnit[] units) {
         this.units = units;
     }

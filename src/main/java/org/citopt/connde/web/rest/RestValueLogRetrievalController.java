@@ -41,6 +41,14 @@ public class RestValueLogRetrievalController {
     @Autowired
     private SensorRepository sensorRepository;
 
+    /**
+     * Replies with a pageable list of value logs of a certain actuator.
+     *
+     * @param id       The id of the actuator for which the value logs should be retrieved
+     * @param unit     A string specifying the unit of the value log values
+     * @param pageable Pageable parameters that specify the value logs to retrieve
+     * @return A pageable list of value logs
+     */
     @GetMapping("/actuators/{id}/valueLogs")
     public ResponseEntity<Page<ValueLog>> getActuatorValueLogs(@PathVariable(value = "id") String id,
                                                                @RequestParam(value = "unit") String unit,
@@ -48,6 +56,14 @@ public class RestValueLogRetrievalController {
         return getValueLogs(id, actuatorRepository, unit, pageable);
     }
 
+    /**
+     * Replies with a pageable list of value logs of a certain sensor.
+     *
+     * @param id       The id of the sensor for which the value logs should be retrieved
+     * @param unit     A string specifying the unit of the value log values
+     * @param pageable Pageable parameters that specify the value logs to retrieve
+     * @return A pageable list of value logs
+     */
     @GetMapping("/sensors/{id}/valueLogs")
     public ResponseEntity<Page<ValueLog>> getSensorValueLogs(@PathVariable(value = "id") String id,
                                                              @RequestParam(value = "unit") String unit,
@@ -55,6 +71,15 @@ public class RestValueLogRetrievalController {
         return getValueLogs(id, sensorRepository, unit, pageable);
     }
 
+    /**
+     * Returns a response entity that contains a pageable list of value logs of a certain sensor.
+     *
+     * @param id         The id of the component for which the value logs should be retrieved
+     * @param repository A component repository that contains the component
+     * @param unit       A string specifying the unit of the value log values
+     * @param pageable   Pageable parameters that specify the value logs to retrieve
+     * @return A pageable list of value logs
+     */
     private ResponseEntity<Page<ValueLog>> getValueLogs(String id, ComponentRepository repository, String unit, Pageable pageable) {
         //Retrieve component from repository
         Component component = (Component) repository.findOne(id);
@@ -87,12 +112,8 @@ public class RestValueLogRetrievalController {
         UnitConverter converter = startUnit.getConverterTo(targetUnit);
 
         //Iterate over all value logs of this
-        Iterator<ValueLog> iterator = page.iterator();
-        while (iterator.hasNext()) {
-            //Get next value log
-            ValueLog valueLog = iterator.next();
-
-            //Convert it
+        for (ValueLog valueLog : page) {
+            //Convert value
             unitConverterService.convertValueLogValue(valueLog, converter);
         }
 
