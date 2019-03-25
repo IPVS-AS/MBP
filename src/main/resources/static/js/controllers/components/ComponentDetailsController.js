@@ -2,8 +2,8 @@
  * Controller for the component details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('ComponentDetailsController',
-    ['$scope', '$rootScope', '$routeParams', '$interval', '$timeout', 'componentDetails', 'liveChartContainer', 'historicalChartContainer', 'historicalChartSlider', 'ComponentService', 'CrudService', 'DeviceService', 'NotificationService',
-        function ($scope, $rootScope, $routeParams, $interval, $timeout, componentDetails, liveChartContainer, historicalChartContainer, historicalChartSlider, ComponentService, CrudService, DeviceService, NotificationService) {
+    ['$scope', '$rootScope', '$routeParams', '$interval', '$timeout', 'componentDetails', 'liveChartContainer', 'historicalChartContainer', 'historicalChartSlider', 'ComponentService', 'CrudService', 'DeviceService', 'UnitService', 'NotificationService',
+        function ($scope, $rootScope, $routeParams, $interval, $timeout, componentDetails, liveChartContainer, historicalChartContainer, historicalChartSlider, ComponentService, CrudService, DeviceService, UnitService, NotificationService) {
             //Interval with that the live value display is refreshed (seconds)
             const LIVE_REFRESH_DELAY_SECONDS = 15;
 
@@ -27,6 +27,7 @@ app.controller('ComponentDetailsController',
             const COMPONENT_ID = $routeParams.id;
             const COMPONENT_TYPE = componentDetails.componentTypeName;
             const COMPONENT_TYPE_URL = COMPONENT_TYPE + 's';
+            const COMPONENT_ADAPTER_UNIT = componentDetails._embedded.adapter.unit;
 
             //Initialization of variables that are used in the frontend by angular
             var vm = this;
@@ -35,6 +36,10 @@ app.controller('ComponentDetailsController',
             vm.deploymentState = 'UNKNOWN';
             vm.deviceState = 'UNKNOWN';
             vm.valueLogStats = null;
+            vm.displayUnit = COMPONENT_ADAPTER_UNIT;
+            vm.unitConvFactor = 1.0;
+            vm.unitConvOffset = 0.0;
+            vm.displayUnitInput = COMPONENT_ADAPTER_UNIT;
 
             //Contains data for the live progress
             vm.liveProgress = {
@@ -162,6 +167,31 @@ app.controller('ComponentDetailsController',
                 }).then(function () {
                     //Finally hide the waiting screen
                     $(STATS_CARD_SELECTOR).waitMe("hide");
+                });
+            }
+
+            /**
+             *
+             */
+            function onDisplayUnitChange() {
+                var startUnit = COMPONENT_ADAPTER_UNIT;
+                var targetUnit = vm.displayUnitInput;
+
+                UnitService.getConversionFactor(startUnit, targetUnit).then(function (response) {
+                    var conversion = response.data;
+
+                    if (!conversion.convertible) {
+                        NotificationService.notify("The adapter unit is incompatible with unit \"" +
+                            conversion.targetUnit + "\".", "error");
+                        return;
+                    }
+
+                    vm.displayUnit = conversion.targetUnit;
+                    vm.unitConvFactor = conversion.conversionFactor;
+                    vm.unitConvOffset = conversion.conversionOffset;
+                }, function () {
+                    NotificationService.notify("Unable to retrieve conversion factor for the display unit.",
+                        "error");
                 });
             }
 
@@ -607,6 +637,7 @@ app.controller('ComponentDetailsController',
                 updateDeploymentState: updateDeploymentState,
                 updateDeviceState: updateDeviceState,
                 updateValueLogStats: updateValueLogStats,
+                onDisplayUnitChange: onDisplayUnitChange,
                 deploy: deploy,
                 undeploy: undeploy,
                 updateHistoricalChart: updateHistoricalChart

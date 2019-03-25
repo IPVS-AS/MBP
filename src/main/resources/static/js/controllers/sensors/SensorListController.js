@@ -5,12 +5,15 @@
  */
 app.controller('SensorListController',
     ['$scope', '$controller', '$interval', 'sensorList', 'addSensor', 'deleteSensor',
-        'deviceList', 'addDevice', 'deleteDevice', 'adapterList', 'ComponentService',
+        'deviceList', 'adapterList', 'ComponentService',
         'ComponentTypeService', 'NotificationService',
         function ($scope, $controller, $interval, sensorList, addSensor, deleteSensor,
-                  deviceList, addDevice, deleteDevice, adapterList, ComponentService,
+                  deviceList, adapterList, ComponentService,
                   ComponentTypeService, NotificationService) {
             var vm = this;
+
+            vm.adapterList = adapterList;
+            vm.deviceList = deviceList;
 
             /**
              * Initializing function, sets up basic things.
@@ -205,24 +208,6 @@ app.controller('SensorListController',
                     var id = vm.deleteSensorCtrl.result;
 
                     vm.sensorListCtrl.removeItem(id);
-                }
-            );
-
-            // $watch 'addDevice' result and select on sensor form
-            $scope.$watch(
-                function () {
-                    // value being watched
-                    return $scope.addDeviceCtrl.result;
-                },
-                function () {
-                    // callback
-                    console.log('addDeviceCtrl.result modified.');
-
-                    var data = $scope.addDeviceCtrl.result;
-                    if (data) {
-                        $scope.addSensorCtrl.item.device = data._links.self.href;
-                        vm.registeringDevice = false;
-                    }
                 }
             );
 

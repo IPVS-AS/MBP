@@ -39,6 +39,12 @@
                         <td>{{componentDetailsCtrl.component._embedded.adapter.name}}</td>
                     </tr>
                     <tr>
+                        <th>Unit:</th>
+                        <td>{{componentDetailsCtrl.component._embedded.adapter.unit ?
+                            componentDetailsCtrl.component._embedded.adapter.unit : 'None'}}
+                        </td>
+                    </tr>
+                    <tr>
                         <th>Device:</th>
                         <td>{{componentDetailsCtrl.component._embedded.device.name}} (IP:
                             {{componentDetailsCtrl.component._embedded.device.ipAddress}})
@@ -156,6 +162,19 @@
                     <p>No sensor values received yet.</p>
                 </div>
                 <div ng-show="componentDetailsCtrl.valueLogStats.numberLogs > 0">
+                    <h4>Display unit</h4>
+                    <div class="form-group">
+                        <div class="form-line">
+                            <unit-input ng-model="componentDetailsCtrl.displayUnitInput"
+                                        unit-filter="{{componentDetailsCtrl.component._embedded.adapter.unit}}"></unit-input>
+                        </div>
+                        <span class="help-block" ng-show="false"></span><br/>
+                        <button class="btn btn-primary m-t-0 waves-effect" ng-click="ctrl.onDisplayUnitChange()">
+                            Update
+                        </button>
+                    </div>
+                    <br/>
+                    <h4>Value statistics</h4>
                     <table class="table table-hover">
                         <tbody>
                         <tr>
@@ -164,7 +183,7 @@
                         </tr>
                         <tr>
                             <th>Average:</th>
-                            <td>{{componentDetailsCtrl.valueLogStats.average}}</td>
+                            <td>{{componentDetailsCtrl.valueLogStats.average * componentDetailsCtrl.unitConvFactor + componentDetailsCtrl.unitConvOffset}}</td>
                         </tr>
                         <tr>
                             <th>Variance:</th>

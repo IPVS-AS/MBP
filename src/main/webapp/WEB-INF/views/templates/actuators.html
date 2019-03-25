@@ -137,7 +137,7 @@
 									 ng-class="{'focused error' : addActuatorCtrl.item.errors.adapter }">
 									<select class="form-control show-tick" id="actuator-form-select-adapter"
 											ng-model="addActuatorCtrl.item.adapter"
-											ng-options="t._links.self.href as (t.name) for t in adapterListCtrl.items">
+											ng-options="t._links.self.href as (t.name) for t in ctrl.adapterList">
 										<option value="">Select adapter
 										<option/>
 									</select>
@@ -149,7 +149,7 @@
 								<div class="form-line" ng-class="{'focused error' : addActuatorCtrl.item.errors.device }">
 									<select class="form-control show-tick" id="actuator-form-select-device"
 											ng-model="addActuatorCtrl.item.device"
-											ng-options="d._links.self.href as (d.name +       ' - ' +       d.formattedMacAddress) for d in deviceListCtrl.items">
+											ng-options="d._links.self.href as (d.name) for d in ctrl.deviceList">
 										<option value="">Select device
 										<option/>
 									</select>

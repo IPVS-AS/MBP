@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import javax.measure.quantity.*;
 import javax.measure.unit.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static javax.measure.unit.SI.*;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
@@ -208,6 +211,31 @@ public enum PredefinedQuantities {
     PredefinedQuantities(String name, PredefinedUnit[] units) {
         this.name = name;
         this.units = units;
+    }
+
+    public static List<PredefinedQuantities> getCompatibleQuantities(String compatibleUnit) {
+        //Create new empty list for quantities
+        List<PredefinedQuantities> quantitiesList = new ArrayList<>();
+
+        //Try to get unit object from given unit string
+        Unit givenUnit = Unit.valueOf(compatibleUnit);
+
+        //Iterate over all quantities and filter the ones that are compatible
+        for (PredefinedQuantities quantity : PredefinedQuantities.values()) {
+            //Skip quantity if it has no units
+            if ((quantity.units == null) || (quantity.units.length < 1)) {
+                continue;
+            }
+
+            //Get first unit of this quantity
+            PredefinedUnit firstUnit = quantity.units[0];
+
+            //Check for compatibility
+            if (firstUnit.getUnit().isCompatible(givenUnit)) {
+                quantitiesList.add(quantity);
+            }
+        }
+        return quantitiesList;
     }
 
     public String getName() {

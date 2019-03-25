@@ -25,9 +25,19 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
             return $http.get(URL_PREFIX + component + URL_SUFFIX_GET_COMPONENT_STATE + componentId);
         }
 
-        //Performs a server request in order to retrieve the value log stats of a certain component.
-        function getValueLogStats(componentId, component) {
-            return $http.get(URL_PREFIX + component + URL_SUFFIX_GET_VALUE_LOG_STATS + componentId);
+        /* Performs a server request in order to retrieve the value log stats of a certain component. Optionally,
+        a unit may be provided in which the values are supposed to be displayed. */
+        function getValueLogStats(componentId, component, unit) {
+            var parameters = {};
+
+            //Check if unit was provided
+            if (unit) {
+                parameters.unit = unit;
+            }
+
+            return $http.get(URL_PREFIX + component + URL_SUFFIX_GET_VALUE_LOG_STATS + componentId, {
+                params: parameters
+            });
         }
 
         return {

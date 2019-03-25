@@ -135,15 +135,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     deviceList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('devices');
                     }],
-                    addDevice: ['CrudService', function (CrudService) {
-                        // bind category parameter
-                        return angular.bind(this, CrudService.addItem, 'devices');
-                    }],
-                    deleteDevice: ['CrudService', function (CrudService) {
-                        // bind category parameter
-                        return angular.bind(this, CrudService.deleteItem, 'devices');
-                        //return CrudService.deleteItem('devices', this);
-                    }],
                     adapterList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('adapters');
                     }]
@@ -188,15 +179,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }],
                     deviceList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('devices');
-                    }],
-                    addDevice: ['CrudService', function (CrudService) {
-                        // bind category parameter
-                        return angular.bind(this, CrudService.addItem, 'devices');
-                    }],
-                    deleteDevice: ['CrudService', function (CrudService) {
-                        // bind category parameter
-                        return angular.bind(this, CrudService.deleteItem, 'devices');
-                        //return CrudService.deleteItem('devices', this);
                     }],
                     adapterList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('adapters');

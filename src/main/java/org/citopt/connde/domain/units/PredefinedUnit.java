@@ -2,7 +2,6 @@ package org.citopt.connde.domain.units;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import javax.measure.unit.Unit;
 
 public class PredefinedUnit<Q extends javax.measure.quantity.Quantity> {
@@ -36,5 +35,10 @@ public class PredefinedUnit<Q extends javax.measure.quantity.Quantity> {
     @JsonProperty("format")
     public String getSymbolString() {
         return this.unit.toString();
+    }
+
+    @JsonProperty("standardUnit")
+    public boolean isStandardUnit() {
+        return this.unit.isStandardUnit();
     }
 }
