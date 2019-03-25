@@ -21,7 +21,7 @@ import java.util.List;
 @Service
 public class ValueLogStatsService {
     //Number of decimal places to spare from rounding
-    private static final int ROUNDING_DECIMAL_PLACES = 4;
+    private static final int ROUNDING_DECIMAL_PLACES = 2;
 
     @Autowired
     UnitConverterService unitConverterService;
