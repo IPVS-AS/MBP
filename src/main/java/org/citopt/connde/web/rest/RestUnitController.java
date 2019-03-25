@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.measure.unit.Unit;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,5 +36,25 @@ public class RestUnitController {
             //Catch parsing exceptions
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @GetMapping(value = "/units", params = {"first", "second"})
+    public ResponseEntity<Boolean> checkUnitsForCompatibility(@RequestParam("first") String firstUnitString,
+                                                              @RequestParam("second") String secondUnitString) {
+        Unit firstUnit, secondUnit;
+
+        //Try to convert both strings to units
+        try {
+            firstUnit = Unit.valueOf(firstUnitString);
+            secondUnit = Unit.valueOf(secondUnitString);
+        } catch (Exception e) {
+            //Catch parsing exceptions
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        //Check compatibility
+        boolean compatible = firstUnit.isCompatible(secondUnit);
+
+        return new ResponseEntity<>(compatible, HttpStatus.OK);
     }
 }

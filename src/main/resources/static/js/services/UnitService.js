@@ -1,12 +1,12 @@
 'use strict';
 
 /*
- * This service retrieves a list of all available predefined units.
+ * Provides services for executing unit-related server requests.
  */
 app.factory('UnitService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT_URI) {
 
-    //URL under which the list of predefined units is available
-    const URL_GET_PREDEFINED_UNITS = ENDPOINT_URI + '/units';
+    //URL under which the unit operations are available
+    const URL_UNITS = ENDPOINT_URI + '/units';
 
     /**
      * Performs a server request in order to retrieve a list of all predefined units. If a unit string is passed as
@@ -23,11 +23,31 @@ app.factory('UnitService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT_U
             parameters.compatible = compatibleUnit;
         }
 
-        return $http.get(URL_GET_PREDEFINED_UNITS, {params: parameters});
+        return $http.get(URL_UNITS, {params: parameters});
     }
+
+    /**
+     * Performs a server request in order to check whether two units - given as strings - are compatible to each
+     * other. In this case, true is returned by the server; false otherwise
+     *
+     * @param firstUnit A string specifying the first unit
+     * @param secondUnit A string specifying the second unit
+     * @returns {*}
+     */
+    function checkUnitsForCompatibility(firstUnit, secondUnit) {
+        //Create corresponding parameter object
+        var parameters = {
+            first: firstUnit,
+            second: secondUnit
+        };
+
+        return $http.get(URL_UNITS, {params: parameters});
+    }
+
 
     //Expose
     return {
-        getPredefinedUnits: getPredefinedUnits
+        getPredefinedUnits: getPredefinedUnits,
+        checkUnitsForCompatibility: checkUnitsForCompatibility
     };
 }]);

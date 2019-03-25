@@ -172,22 +172,41 @@ app.controller('ComponentDetailsController',
             }
 
             /**
-             *
+             * [Public]
+             * Called, when the user updates the unit in which the values should be displayed
+             * by clicking on the update button.
              */
             function onDisplayUnitChange() {
-                vm.displayUnit = vm.displayUnitInput;
+                //Retrieve entered unit
+                var inputUnit = vm.displayUnitInput;
 
-                updateValueLogStats();
-                updateHistoricalChart();
+                //Check whether the entered unit is compatible with the adapter unit
+                UnitService.checkUnitsForCompatibility(COMPONENT_ADAPTER_UNIT, inputUnit).then(function (response) {
+                    //Check compatibility according to server response
+                    if (!response.data) {
+                        NotificationService.notify("The entered unit is not compatible to the adapter unit.", "error");
+                        return;
+                    }
 
-                cancelLiveChartUpdate();
-                initLiveChart();
-                initLiveChartUpdate();
+                    /*
+                    Units are compatible, take user input and update everything accordingly
+                    */
+                    vm.displayUnit = vm.displayUnitInput;
 
-                //var startUnit = COMPONENT_ADAPTER_UNIT;
-                //var targetUnit = vm.displayUnitInput;
+                    //Value stats
+                    updateValueLogStats();
 
-                //TODO
+                    //Historical chart
+                    updateHistoricalChart();
+
+                    //Live chart
+                    cancelLiveChartUpdate();
+                    initLiveChart();
+                    initLiveChartUpdate();
+
+                }, function () {
+                    NotificationService.notify("The entered unit is invalid.", "error");
+                });
             }
 
             /**
@@ -269,9 +288,6 @@ app.controller('ComponentDetailsController',
                     text: 'Updating chart...',
                     bg: 'rgba(255,255,255,0.85)'
                 });
-
-                console.log("Chart:");
-                console.log(historicalChart);
 
                 //Set y-axis and tooltip unit to currently displayed unit and redraw chart
                 historicalChart.yAxis[0].labelFormatter = function () {

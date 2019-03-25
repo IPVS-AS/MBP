@@ -1,5 +1,6 @@
 package org.citopt.connde.domain.adapter;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.exception.InsertFailureException;
 import org.citopt.connde.exception.NotFoundException;
@@ -110,6 +111,7 @@ public class Adapter {
         this.unit = unit;
     }
 
+    @JsonIgnore
     public Unit getUnitObject() {
         try {
             return Unit.valueOf(this.unit);
