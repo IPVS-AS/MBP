@@ -117,10 +117,9 @@
       <div class="tool-header" style="box-shadow: 1px 1px 1px 1px grey;">
         <div class="row" style="width: 100%; margin-left: 0px; margin-right: 0px">
           <span class="navbar-brand" style="color: black">Modeling area</span>
-          <div class="navbar-brand tool-header-right" ng-show="vm.processing">
+          <div class="navbar-brand tool-header-right" ng-show="vm.processing.status">
             <div class="col-xs-12 align-center">
               <div class="preloader pl-size-xs">
-                <!-- dataDeploy.deploying -->
                 <div class="spinner-layer pl-blue">
                   <div class="circle-clipper left">
                     <div class="circle"></div>
@@ -132,16 +131,16 @@
               </div>
             </div>
           </div>
-          <div class="navbar-brand tool-header-right" ng-show="vm.registeringStatus.finished">
-            <div ng-show="vm.registeringStatus.success">
+          <div class="navbar-brand tool-header-right" ng-show="vm.processing.finished">
+            <div ng-show="vm.processing.success">
               <span style="color: green; font-size: 12px">
-                All components registered successfully
+                {{vm.processing.message}}
               </span>
               <i class="fas fa-check-circle" style="color: green"></i>
             </div>
-            <div ng-show="!vm.registeringStatus.success">
+            <div ng-show="!vm.processing.success">
               <span style="color: red; font-size: 12px">
-                Registering error
+                {{vm.processing.message}}
               </span>
               <i class="fas fa-times-circle" style="color: red"></i>
             </div>
@@ -172,10 +171,10 @@
             <button id="registerComponentsBtn" title="Register components" ng-click="vm.registerComponents()">
               <i class="fas fa-share-square"></i>
             </button>
-            <button id="deployComponentsBtn" title="Deploy model" ng-click="vm.deployComponents()" disabled="disabled">
+            <button id="deployComponentsBtn" title="Deploy model" ng-click="vm.deployComponents()">
               <i class="fas fa-cogs"></i>
             </button>
-            <button id="undeployComponentsBtn" title="Undeploy model" ng-click="vm.undeployComponents()" disabled="disabled">
+            <button id="undeployComponentsBtn" title="Undeploy model" ng-click="vm.undeployComponents()">
               <span class="icon-stack">
                 <i class="fas fa-ban icon-stack-2x"></i>
                 <i class="fas fa-cog icon-stack-1x"></i>
@@ -243,9 +242,9 @@
             Registered:
             <i class="fas fa-check-circle" ng-show="vm.clickedComponent.id"></i>
             <i class="fas fa-times-circle" ng-show="!vm.clickedComponent.id"></i>
-            <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.error">
+            <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.regError">
               <br>
-              {{vm.clickedComponent.error}}
+              {{vm.clickedComponent.regError}}
             </span>
           </span>
         </div>
@@ -289,15 +288,20 @@
             Registered:
             <i class="fas fa-check-circle" ng-show="vm.clickedComponent.id"></i>
             <i class="fas fa-times-circle" ng-show="!vm.clickedComponent.id"></i>
-            <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.error">
+            <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.regError">
               <br>
-              {{vm.clickedComponent.error}}
+              {{vm.clickedComponent.regError}}
             </span>
           </span>
           <br>
           <span>
             Deployed:&nbsp;&nbsp;&nbsp;
-            <i class="fas fa-times-circle"></i>
+            <i class="fas fa-check-circle" ng-show="vm.clickedComponent.deployed"></i>
+            <i class="fas fa-times-circle" ng-show="!vm.clickedComponent.deployed"></i>
+            <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.depError">
+              <br>
+              {{vm.clickedComponent.depError}}
+            </span>
           </span>
         </div>
       </div>
@@ -340,15 +344,20 @@
             Registered:
             <i class="fas fa-check-circle" ng-show="vm.clickedComponent.id"></i>
             <i class="fas fa-times-circle" ng-show="!vm.clickedComponent.id"></i>
-            <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.error">
+            <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.regError">
               <br>
-              {{vm.clickedComponent.error}}
+              {{vm.clickedComponent.regError}}
             </span>
           </span>
           <br>
           <span>
             Deployed:&nbsp;&nbsp;&nbsp;
-            <i class="fas fa-times-circle"></i>
+            <i class="fas fa-check-circle" ng-show="vm.clickedComponent.deployed"></i>
+            <i class="fas fa-times-circle" ng-show="!vm.clickedComponent.deployed"></i>
+            <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.depError">
+              <br>
+              {{vm.clickedComponent.depError}}
+            </span>
           </span>
         </div>
       </div>

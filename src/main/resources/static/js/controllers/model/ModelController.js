@@ -6,21 +6,21 @@
     .controller('ModelController', ModelController);
 
   ModelController.$inject = ['ENDPOINT_URI', '$scope', '$timeout', '$q', '$controller',
-    'ModelService', 'FlashService', 'ComponentService', 'DeviceService', 'CrudService', 'adapterList'
+    'ModelService', 'ComponentService', 'DeviceService', 'CrudService', 'adapterList'
   ];
 
   function ModelController(ENDPOINT_URI, $scope, $timeout, $q, $controller,
-    ModelService, FlashService, ComponentService, DeviceService, CrudService, adapterList) {
+    ModelService, ComponentService, DeviceService, CrudService, adapterList) {
     var vm = this;
 
     jsPlumb.ready(function() {
       var jsPlumbInstance;
       var canvasId = "#canvas";
-      var elementCount = 0;
+      var elementIdCount = 0;
       var properties = {}; // keeps the properties of each element
       var element = ""; // the element which will be appended to the canvas
       var clicked = false; // true if an element from the palette was clicked
-      vm.processing = false;
+      vm.processing = {};
       vm.selectedOptionName = "";
       vm.loadedModels = [];
       vm.currentModel = {};
@@ -32,7 +32,6 @@
       vm.clearCanvas = clearCanvas;
       vm.newModel = newModel;
       vm.registerComponents = registerComponents;
-      vm.registeringStatus = {};
       vm.deployComponents = deployComponents;
       vm.undeployComponents = undeployComponents;
 
@@ -146,8 +145,8 @@
         drop: function(event, ui) {
           if (clicked) {
             clicked = false;
-            elementCount++;
-            var id = "canvasWindow" + elementCount;
+            elementIdCount++;
+            var id = "canvasWindow" + elementIdCount;
             element = createElement(id, undefined);
             drawElement(element);
             element = "";
@@ -220,6 +219,7 @@
             element.data("ip", node.ip);
             element.data("username", node.username);
             element.data("rsaKey", node.rsaKey);
+            element.data("regError", node.regError);
           } else if (node.nodeType == "actuator" || node.nodeType == "sensor") {
             element.data("id", node.id);
             element.data("name", node.name);
@@ -227,6 +227,9 @@
             element.data("adapter", node.adapter);
             element.data("device", node.device);
             element.data("deviceId", node.deviceId);
+            element.data("deployed", node.deployed);
+            element.data("regError", node.regError);
+            element.data("depError", node.depError);
           }
         } else {
           // Use properties on drop
@@ -263,7 +266,7 @@
       function addEndpoints(element) {
         var type = element.attr('class').toString().split(" ")[1];
         if (type == "device") {
-          targetEndpoint.maxConnections = null;
+          targetEndpoint.maxConnections = -1;
           jsPlumbInstance.makeSource(element, sourceEndpoint);
           jsPlumbInstance.makeTarget(element, targetEndpoint);
         } else if (type == "actuator" || type == "sensor") {
@@ -345,7 +348,7 @@
             vm.clickedComponent.ip = element.data("ip");
             vm.clickedComponent.username = element.data("username");
             vm.clickedComponent.rsaKey = element.data("rsaKey");
-            vm.clickedComponent.error = element.data("error");
+            vm.clickedComponent.regError = element.data("regError");
             vm.clickedComponent.element = element;
           } else if (element.attr("class").indexOf("actuator") > -1) {
             vm.clickedComponent.category = "ACTUATOR";
@@ -354,7 +357,9 @@
             vm.clickedComponent.type = element.data("type");
             vm.clickedComponent.adapter = element.data("adapter");
             vm.clickedComponent.device = element.data("device");
-            vm.clickedComponent.error = element.data("error");
+            vm.clickedComponent.regError = element.data("regError");
+            vm.clickedComponent.depError = element.data("depError");
+            vm.clickedComponent.deployed = element.data("deployed");
             vm.clickedComponent.element = element;
           } else if (element.attr("class").indexOf("sensor") > -1) {
             vm.clickedComponent.category = "SENSOR";
@@ -363,7 +368,9 @@
             vm.clickedComponent.type = element.data("type");
             vm.clickedComponent.adapter = element.data("adapter");
             vm.clickedComponent.device = element.data("device");
-            vm.clickedComponent.error = element.data("error");
+            vm.clickedComponent.regError = element.data("regError");
+            vm.clickedComponent.depError = element.data("depError");
+            vm.clickedComponent.deployed = element.data("deployed");
             vm.clickedComponent.element = element;
           }
         });
@@ -422,22 +429,30 @@
             conn.getOverlay("label").show();
           }
         });
-        elementCount = environment.numberOfElements;
+        elementIdCount = environment.elementIdCount;
       }
 
       function loadModels() {
         ModelService.GetModelsByUsername().then(function(response) {
-          FlashService.Success("Model loaded!", false);
           console.log(response);
           vm.loadedModels = response.data;
         }, function(response) {
-          FlashService.Error("Loading error!", false);
           console.log(response);
         });
       }
 
       function saveModel() {
         saveData();
+
+        var savingIndividual = true;
+        if (vm.processing.status) {
+          savingIndividual = false;
+        } else {
+          vm.processing = {};
+          vm.processing.status = true;
+          vm.processing.finished = false;
+        }
+        vm.processing.saved = true;
 
         var totalCount = 0;
         var nodes = [];
@@ -462,7 +477,8 @@
               mac: $element.data("mac"),
               ip: $element.data("ip"),
               username: $element.data("username"),
-              rsaKey: $element.data("rsaKey")
+              rsaKey: $element.data("rsaKey"),
+              regError: $element.data("regError")
             });
           } else if (type == "actuator" || type == "sensor") {
             nodes.push({
@@ -478,7 +494,10 @@
               type: $element.data("type"),
               adapter: $element.data("adapter"),
               device: $element.data("device"),
-              deviceId: $element.data("deviceId")
+              deviceId: $element.data("deviceId"),
+              deployed: $element.data("deployed"),
+              regError: $element.data("regError"),
+              depError: $element.data("depError")
             });
           } else {
             nodes.push({
@@ -508,6 +527,7 @@
         environment.nodes = nodes;
         environment.connections = connections;
         environment.numberOfElements = totalCount;
+        environment.elementIdCount = elementIdCount;
 
         var model = {};
         model.value = JSON.stringify(environment);
@@ -519,25 +539,45 @@
 
         console.log(model);
 
-        ModelService.SaveModel(model).then(function(response) {
-          FlashService.Success("Model saved!", false);
+        return ModelService.SaveModel(model).then(function(response) {
+          if (savingIndividual) {
+            vm.processing.message = "Model saved";
+            vm.processing.success = true;
+            vm.processing.status = false;
+            vm.processing.finished = true;
+          }
           console.log(response);
           vm.selectedOptionName = model.name;
           loadModels();
         }, function(response) {
-          FlashService.Error("Saving error!", false);
+          if (savingIndividual) {
+            vm.processing.message = "Model saving error";
+            vm.processing.success = false;
+            vm.processing.status = false;
+            vm.processing.finished = true;
+          }
+          vm.processing.saved = false;
           console.log(response);
         });
 
       }
 
       function deleteModel() {
+        vm.processing = {};
+        vm.processing.status = true;
+        vm.processing.finished = false;
         ModelService.DeleteModel(vm.currentModel.name).then(function(response) {
-          FlashService.Success("Model deleted!", false);
+          vm.processing.message = vm.currentModel.name + " deleted";
+          vm.processing.success = true;
+          vm.processing.status = false;
+          vm.processing.finished = true;
           console.log(response);
           newModel();
         }, function(response) {
-          FlashService.Error("Deletion error!", false);
+          vm.processing.message = "Deletion error";
+          vm.processing.success = false;
+          vm.processing.status = false;
+          vm.processing.finished = true;
           console.log(response);
         });
       }
@@ -550,6 +590,7 @@
       }
 
       function newModel() {
+        elementIdCount = 0;
         vm.currentModel = {};
         vm.selectedOptionName = "";
         clearCanvas();
@@ -557,9 +598,12 @@
       }
 
       function registerComponents() {
-        vm.processing = true;
-        vm.registeringStatus.success = true;
-        vm.registeringStatus.finished = false;
+        saveData();
+
+        vm.processing = {};
+        vm.processing.status = true;
+        vm.processing.registered = true;
+        vm.processing.finished = false;
 
         // First register devices
         var devicePromises = [];
@@ -567,7 +611,7 @@
           var $element = $(element);
           var type = $element.attr('class').toString().split(" ")[1];
 
-          if (type == "device") {
+          if (type == "device" && !$element.data("id")) {
             var item = {};
             item.name = $element.data("name");
             item.componentType = $element.data("type");
@@ -588,7 +632,7 @@
             var $element = $(element);
             var type = $element.attr('class').toString().split(" ")[1];
 
-            if (type == "actuator" || type == "sensor") {
+            if ((type == "actuator" || type == "sensor") && !$element.data("id")) {
               var item = {};
               item.name = $element.data("name");
               item.componentType = $element.data("type");
@@ -600,9 +644,23 @@
           });
 
           $q.all(actuatorSensorPromises).then(function() {
-            $("#deployComponentsBtn").attr("disabled", false);
-            vm.processing = false;
-            vm.registeringStatus.finished = true;
+            saveModel().then(function(response) {
+              if (vm.processing.registered && vm.processing.saved) {
+                vm.processing.message = "Registration completed, model saved";
+                vm.processing.success = true;
+              } else if (vm.processing.registered && !vm.processing.saved) {
+                vm.processing.message = "Registration completed, model saving error";
+                vm.processing.success = false;
+              } else if (!vm.processing.registered && vm.processing.saved) {
+                vm.processing.message = "Registration error, model saved";
+                vm.processing.success = false;
+              } else if (!vm.processing.registered && !vm.processing.saved) {
+                vm.processing.message = "Registration error, model saving error";
+                vm.processing.success = false;
+              }
+              vm.processing.status = false;
+              vm.processing.finished = true;
+            });
           });
         });
       }
@@ -617,117 +675,174 @@
               element.data("id", response.id);
               updateDeviceSA(element);
             }
+            element.removeData("regError");
             element.removeClass("error-element");
             element.addClass("success-element");
           },
           function(response) {
             console.log(response);
-            element.data("error", response.name.message);
+            element.data("regError", response.name ? response.name.message : response.status);
             element.removeClass("success-element");
             element.addClass("error-element");
-            vm.registeringStatus.success = false;
+            vm.processing.registered = false;
           });
       }
 
       function deployComponents() {
+        vm.processing = {};
+        vm.processing.status = true;
+        vm.processing.deployed = true;
+        vm.processing.finished = false;
+
+        var deployPromises = [];
         $(".jtk-node").each(function(index, element) {
           var $element = $(element);
           var type = $element.attr('class').toString().split(" ")[1];
 
-          if (type == "actuator") {
-            deploy(ENDPOINT_URI + "/deploy/actuator/" + $element.data("id"));
-          } else if (type == "sensor") {
-            deploy(ENDPOINT_URI + "/deploy/sensor/" + $element.data("id"));
+          if (type == "actuator" && !$element.data("deployed")) {
+            var promise = deploy(ENDPOINT_URI + "/deploy/actuator/" + $element.data("id"), $element);
+            deployPromises.push(promise);
+          } else if (type == "sensor" && !$element.data("deployed")) {
+            var promise = deploy(ENDPOINT_URI + "/deploy/sensor/" + $element.data("id"), $element);
+            deployPromises.push(promise);
           }
         });
 
-        $("#saveModelBtn").attr("disabled", true);
-        $("#clearCanvasBtn").attr("disabled", true);
-        $("#deleteModelBtn").attr("disabled", true);
-        $("#registerComponentsBtn").attr("disabled", true);
-        $("#deployComponentsBtn").attr("disabled", true);
-        $("#undeployComponentsBtn").attr("disabled", false);
+        $q.all(deployPromises).then(function() {
+          saveModel().then(function(response) {
+            if (vm.processing.deployed && vm.processing.saved) {
+              vm.processing.message = "Deployment completed, model saved";
+              vm.processing.success = true;
+            } else if (vm.processing.deployed && !vm.processing.saved) {
+              vm.processing.message = "Deployment completed, model saving error";
+              vm.processing.success = false;
+            } else if (!vm.processing.deployed && vm.processing.saved) {
+              vm.processing.message = "Deployment error, model saved";
+              vm.processing.success = false;
+            } else if (!vm.processing.deployed && !vm.processing.saved) {
+              vm.processing.message = "Deployment error, model saving error";
+              vm.processing.success = false;
+            }
+            vm.processing.status = false;
+            vm.processing.finished = true;
+          });
+        });
+
+        // $("#saveModelBtn").attr("disabled", true);
+        // $("#clearCanvasBtn").attr("disabled", true);
+        // $("#deleteModelBtn").attr("disabled", true);
+        // $("#registerComponentsBtn").attr("disabled", true);
+        // $("#deployComponentsBtn").attr("disabled", true);
+        // $("#undeployComponentsBtn").attr("disabled", false);
+      }
+
+      function deploy(component, element) {
+        vm.parameterValues = [];
+        return ComponentService.deploy(vm.parameterValues, component).then(
+          function(response) {
+            console.log(response);
+            element.data("deployed", true);
+            element.removeData("depError");
+            element.removeClass("error-element");
+            element.removeClass("success-element");
+            element.addClass("deployed-element");
+          },
+          function(response) {
+            console.log(response);
+            element.data("depError", response.data ? response.data.globalMessage : response.status);
+            element.removeClass("success-element");
+            element.removeClass("deployed-element");
+            element.addClass("error-element");
+            vm.processing.deployed = false;
+          });
       }
 
       function undeployComponents() {
+        vm.processing = {};
+        vm.processing.status = true;
+        vm.processing.undeployed = true;
+        vm.processing.finished = false;
+
+        var undeployPromises = [];
         $(".jtk-node").each(function(index, element) {
           var $element = $(element);
           var type = $element.attr('class').toString().split(" ")[1];
 
-          if (type == "actuator") {
-            undeploy(ENDPOINT_URI + "/deploy/actuator/" + $element.data("id"));
-          } else if (type == "sensor") {
-            undeploy(ENDPOINT_URI + "/deploy/sensor/" + $element.data("id"));
+          if (type == "actuator" && $element.data("deployed")) {
+            var promise = undeploy(ENDPOINT_URI + "/deploy/actuator/" + $element.data("id"), $element);
+            undeployPromises.push(promise);
+          } else if (type == "sensor" && $element.data("deployed")) {
+            var promise = undeploy(ENDPOINT_URI + "/deploy/sensor/" + $element.data("id"), $element);
+            undeployPromises.push(promise);
           }
         });
 
-        $("#saveModelBtn").attr("disabled", false);
-        $("#clearCanvasBtn").attr("disabled", false);
-        $("#deleteModelBtn").attr("disabled", false);
-        $("#registerComponentsBtn").attr("disabled", false);
-        $("#deployComponentsBtn").attr("disabled", false);
-        $("#undeployComponentsBtn").attr("disabled", true);
+        $q.all(undeployPromises).then(function() {
+          saveModel().then(function(response) {
+            if (vm.processing.undeployed && vm.processing.saved) {
+              vm.processing.message = "Undeployment completed, model saved";
+              vm.processing.success = true;
+            } else if (vm.processing.undeployed && !vm.processing.saved) {
+              vm.processing.message = "Undeployment completed, model saving error";
+              vm.processing.success = false;
+            } else if (!vm.processing.undeployed && vm.processing.saved) {
+              vm.processing.message = "Undeployment error, model saved";
+              vm.processing.success = false;
+            } else if (!vm.processing.undeployed && !vm.processing.saved) {
+              vm.processing.message = "Undeployment error, model saving error";
+              vm.processing.success = false;
+            }
+            vm.processing.status = false;
+            vm.processing.finished = true;
+          });
+        });
+
+        // $("#saveModelBtn").attr("disabled", false);
+        // $("#clearCanvasBtn").attr("disabled", false);
+        // $("#deleteModelBtn").attr("disabled", false);
+        // $("#registerComponentsBtn").attr("disabled", false);
+        // $("#deployComponentsBtn").attr("disabled", false);
+        // $("#undeployComponentsBtn").attr("disabled", true);
+      }
+
+      function undeploy(component, element) {
+        return ComponentService.undeploy(component).then(
+          function(response) {
+            console.log(response);
+            element.data("deployed", false);
+            element.removeData("depError");
+            element.removeClass("error-element");
+            element.removeClass("deployed-element");
+            element.addClass("success-element");
+          },
+          function(response) {
+            console.log(response);
+            element.data("depError", response.data ? response.data.globalMessage : response.status);
+            element.removeClass("success-element");
+            element.removeClass("deployed-element");
+            element.addClass("error-element");
+            vm.processing.undeployed = false;
+          });
       }
 
       // function update() { // update deployment status
-      //   vm.processing = true;
+      //   vm.processing.status = true;
       //   ComponentService.isDeployed(vm.sensorDetailsCtrl.item._links.deploy.href)
       //     .then(
       //       function(deployed) {
       //         console.log('update: available, ' + deployed);
-      //         vm.processing = false;
+      //         vm.processing.status = false;
       //         vm.deployer.available = true;
       //         vm.deployer.deployed = deployed;
       //       },
       //       function(response) {
       //         console.log('update: unavailable');
-      //         vm.processing = false;
+      //         vm.processing.status = false;
       //         vm.deployer.available = false;
       //       });
       // }
       //
       // $scope.isCollapsedLog = false;
-
-      function deploy(component) {
-        vm.processing = true;
-        vm.parameterValues = [];
-
-        ComponentService.deploy(vm.parameterValues, component)
-          .then(
-            function(response) {
-              vm.processing = false;
-              // vm.deployer.deployed = true;
-              // vm.deployer.status = response.data;
-              // vm.deployer.update();
-              console.log(response.data);
-            },
-            function(response) {
-              vm.processing = false;
-              // vm.deployer.status = response.data;
-              // vm.deployer.update();
-              console.log(response.data);
-            });
-      }
-
-      function undeploy(component) {
-        vm.processing = true;
-        ComponentService.undeploy(component)
-          .then(
-            function(response) {
-              vm.processing = false;
-              // vm.deployer.deployed = false;
-              // vm.deployer.status = response.data;
-              // vm.deployer.update();
-              console.log(response.data);
-            },
-            function(response) {
-              vm.processing = false;
-              // vm.deployer.status = response.data;
-              // vm.deployer.update();
-              console.log(response.data);
-            });
-      }
-
 
     });
 
