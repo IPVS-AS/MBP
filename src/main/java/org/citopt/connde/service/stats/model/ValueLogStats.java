@@ -1,6 +1,6 @@
 package org.citopt.connde.service.stats.model;
 
-import org.citopt.connde.repository.projection.ValueLogProjection;
+import org.citopt.connde.domain.valueLog.ValueLog;
 
 /**
  * Objects of this class are models that hold basic descriptive statistical information for a set of value logs
@@ -13,15 +13,15 @@ public class ValueLogStats {
     private int numberLogs = 0;
 
     //Remarkable logs
-    private ValueLogProjection firstLog = null;
-    private ValueLogProjection lastLog = null;
-    private ValueLogProjection minimumLog = null;
-    private ValueLogProjection maximumLog = null;
+    private ValueLog firstLog = null;
+    private ValueLog lastLog = null;
+    private ValueLog minimumLog = null;
+    private ValueLog maximumLog = null;
 
     //Descriptive statistics
-    private float average = 0;
-    private float variance = 0;
-    private float standardDeviation = 0;
+    private double average = 0;
+    private double variance = 0;
+    private double standardDeviation = 0;
 
     /**
      * Creates a new and empty stats object.
@@ -52,7 +52,7 @@ public class ValueLogStats {
      *
      * @return The first log
      */
-    public ValueLogProjection getFirstLog() {
+    public ValueLog getFirstLog() {
         return firstLog;
     }
 
@@ -61,7 +61,7 @@ public class ValueLogStats {
      *
      * @param firstLog The first log
      */
-    public void setFirstLog(ValueLogProjection firstLog) {
+    public void setFirstLog(ValueLog firstLog) {
         this.firstLog = firstLog;
     }
 
@@ -70,7 +70,7 @@ public class ValueLogStats {
      *
      * @return The last log
      */
-    public ValueLogProjection getLastLog() {
+    public ValueLog getLastLog() {
         return lastLog;
     }
 
@@ -79,7 +79,7 @@ public class ValueLogStats {
      *
      * @param lastLog The last log
      */
-    public void setLastLog(ValueLogProjection lastLog) {
+    public void setLastLog(ValueLog lastLog) {
         this.lastLog = lastLog;
     }
 
@@ -88,7 +88,7 @@ public class ValueLogStats {
      *
      * @return The log with the smallest value
      */
-    public ValueLogProjection getMinimumLog() {
+    public ValueLog getMinimumLog() {
         return minimumLog;
     }
 
@@ -97,7 +97,7 @@ public class ValueLogStats {
      *
      * @param minimumLog The log with the smallest value
      */
-    public void setMinimumLog(ValueLogProjection minimumLog) {
+    public void setMinimumLog(ValueLog minimumLog) {
         this.minimumLog = minimumLog;
     }
 
@@ -106,7 +106,7 @@ public class ValueLogStats {
      *
      * @return The log with the biggest value
      */
-    public ValueLogProjection getMaximumLog() {
+    public ValueLog getMaximumLog() {
         return maximumLog;
     }
 
@@ -115,7 +115,7 @@ public class ValueLogStats {
      *
      * @param maximumLog The log with the biggest value
      */
-    public void setMaximumLog(ValueLogProjection maximumLog) {
+    public void setMaximumLog(ValueLog maximumLog) {
         this.maximumLog = maximumLog;
     }
 
@@ -124,7 +124,7 @@ public class ValueLogStats {
      *
      * @return The average
      */
-    public float getAverage() {
+    public double getAverage() {
         return average;
     }
 
@@ -133,7 +133,7 @@ public class ValueLogStats {
      *
      * @param average The average
      */
-    public void setAverage(float average) {
+    public void setAverage(double average) {
         this.average = average;
     }
 
@@ -142,7 +142,7 @@ public class ValueLogStats {
      *
      * @return The variance
      */
-    public float getVariance() {
+    public double getVariance() {
         return variance;
     }
 
@@ -151,7 +151,7 @@ public class ValueLogStats {
      *
      * @param variance The variance
      */
-    public void setVariance(float variance) {
+    public void setVariance(double variance) {
         this.variance = variance;
     }
 
@@ -160,7 +160,7 @@ public class ValueLogStats {
      *
      * @return The standard deviation
      */
-    public float getStandardDeviation() {
+    public double getStandardDeviation() {
         return standardDeviation;
     }
 
@@ -169,7 +169,7 @@ public class ValueLogStats {
      *
      * @param standardDeviation The standard deviation
      */
-    public void setStandardDeviation(float standardDeviation) {
+    public void setStandardDeviation(double standardDeviation) {
         this.standardDeviation = standardDeviation;
     }
 }

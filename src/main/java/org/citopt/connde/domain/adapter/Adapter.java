@@ -7,6 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.measure.unit.Unit;
 import javax.persistence.GeneratedValue;
 import java.util.ArrayList;
 import java.util.List;
@@ -107,6 +108,14 @@ public class Adapter {
 
     public void setUnit(String unit) {
         this.unit = unit;
+    }
+
+    public Unit getUnitObject() {
+        try {
+            return Unit.valueOf(this.unit);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public Code getService() {

@@ -2,8 +2,8 @@
  * Controller for the component details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('ComponentDetailsController',
-    ['$scope', '$rootScope', '$routeParams', '$interval', '$timeout', 'componentDetails', 'liveChartContainer', 'historicalChartContainer', 'historicalChartSlider', 'ComponentService', 'CrudService', 'DeviceService', 'UnitService', 'NotificationService',
-        function ($scope, $rootScope, $routeParams, $interval, $timeout, componentDetails, liveChartContainer, historicalChartContainer, historicalChartSlider, ComponentService, CrudService, DeviceService, UnitService, NotificationService) {
+    ['$scope', '$rootScope', '$routeParams', '$interval', '$timeout', 'componentDetails', 'liveChartContainer', 'historicalChartContainer', 'historicalChartSlider', 'ComponentService', 'DeviceService', 'UnitService', 'NotificationService',
+        function ($scope, $rootScope, $routeParams, $interval, $timeout, componentDetails, liveChartContainer, historicalChartContainer, historicalChartSlider, ComponentService, DeviceService, UnitService, NotificationService) {
             //Interval with that the live value display is refreshed (seconds)
             const LIVE_REFRESH_DELAY_SECONDS = 15;
 
@@ -37,8 +37,6 @@ app.controller('ComponentDetailsController',
             vm.deviceState = 'UNKNOWN';
             vm.valueLogStats = null;
             vm.displayUnit = COMPONENT_ADAPTER_UNIT;
-            vm.unitConvFactor = 1.0;
-            vm.unitConvOffset = 0.0;
             vm.displayUnitInput = COMPONENT_ADAPTER_UNIT;
 
             //Contains data for the live progress
@@ -59,6 +57,9 @@ app.controller('ComponentDetailsController',
             //Hold the chart objects after the charts have been initialized
             var liveChart = null;
             var historicalChart = null;
+
+            //Update interval for the live chart
+            var liveChartInterval = null;
 
             /**
              * Initializing function, sets up basic things.
@@ -158,7 +159,7 @@ app.controller('ComponentDetailsController',
                 }
 
                 //Retrieve value log stats for this component
-                ComponentService.getValueLogStats(COMPONENT_ID, COMPONENT_TYPE_URL).then(function (response) {
+                ComponentService.getValueLogStats(COMPONENT_ID, COMPONENT_TYPE_URL, vm.displayUnit).then(function (response) {
                     //Success
                     vm.valueLogStats = response.data;
                 }, function (response) {
@@ -174,25 +175,19 @@ app.controller('ComponentDetailsController',
              *
              */
             function onDisplayUnitChange() {
-                var startUnit = COMPONENT_ADAPTER_UNIT;
-                var targetUnit = vm.displayUnitInput;
+                vm.displayUnit = vm.displayUnitInput;
 
-                UnitService.getConversionFactor(startUnit, targetUnit).then(function (response) {
-                    var conversion = response.data;
+                updateValueLogStats();
+                updateHistoricalChart();
 
-                    if (!conversion.convertible) {
-                        NotificationService.notify("The adapter unit is incompatible with unit \"" +
-                            conversion.targetUnit + "\".", "error");
-                        return;
-                    }
+                cancelLiveChartUpdate();
+                initLiveChart();
+                initLiveChartUpdate();
 
-                    vm.displayUnit = conversion.targetUnit;
-                    vm.unitConvFactor = conversion.conversionFactor;
-                    vm.unitConvOffset = conversion.conversionOffset;
-                }, function () {
-                    NotificationService.notify("Unable to retrieve conversion factor for the display unit.",
-                        "error");
-                });
+                //var startUnit = COMPONENT_ADAPTER_UNIT;
+                //var targetUnit = vm.displayUnitInput;
+
+                //TODO
             }
 
             /**
@@ -275,6 +270,15 @@ app.controller('ComponentDetailsController',
                     bg: 'rgba(255,255,255,0.85)'
                 });
 
+                console.log("Chart:");
+                console.log(historicalChart);
+
+                //Set y-axis and tooltip unit to currently displayed unit and redraw chart
+                historicalChart.yAxis[0].labelFormatter = function () {
+                    return this.value + ' ' + vm.displayUnit;
+                };
+                historicalChart.series[0].tooltipOptions.valueSuffix = ' ' + vm.displayUnit;
+
                 //Retrieve a fixed number of value logs from the server
                 retrieveComponentData(vm.historicalChartSettings.numberOfValues,
                     vm.historicalChartSettings.mostRecent).then(function (values) {
@@ -333,22 +337,23 @@ app.controller('ComponentDetailsController',
                 }
 
                 //Initialize parameters for the server request
-                var params = {
-                    idref: COMPONENT_ID,
+                var pageDetails = {
                     sort: 'date,' + descending,
                     size: numberLogs
                 };
 
                 //Perform the server request in order to retrieve the data
-                return CrudService.searchPage('valueLogs', 'findAllByIdref', params).then(function (data) {
+                return ComponentService.getValueLogs(COMPONENT_ID, COMPONENT_TYPE, pageDetails, vm.displayUnit).then(function (response) {
                         //Array that stores the finally formatted value logs
                         var finalValues = [];
 
+                        var receivedLogs = response.data.content;
+
                         //Iterate over all received value logs
-                        for (var i = 0; i < data._embedded.valueLogs.length; i++) {
+                        for (var i = 0; i < receivedLogs.length; i++) {
                             //Extract value and date for the current log and format them
-                            var value = data._embedded.valueLogs[i].value * 1;
-                            var date = data._embedded.valueLogs[i].date;
+                            var value = receivedLogs[i].value * 1;
+                            var date = receivedLogs[i].date;
                             date = date.replace(/\s/g, "T");
                             date = dateToString(new Date(date));
 
@@ -438,14 +443,22 @@ app.controller('ComponentDetailsController',
                 };
 
                 //Create an interval that calls the update function on a regular basis
-                var interval = $interval(intervalFunction, 1000 * LIVE_REFRESH_DELAY_SECONDS);
+                liveChartInterval = $interval(intervalFunction, 1000 * LIVE_REFRESH_DELAY_SECONDS);
 
                 //Ensure that the interval is cancelled in case the user switches the page
                 $scope.$on('$destroy', function () {
-                    if (interval) {
-                        $interval.cancel(interval);
-                    }
+                    cancelLiveChartUpdate();
                 });
+            }
+
+            /**
+             * [Private]
+             * Cancels the live chart update.
+             */
+            function cancelLiveChartUpdate() {
+                if (liveChartInterval) {
+                    $interval.cancel(liveChartInterval);
+                }
             }
 
             /**
@@ -459,6 +472,11 @@ app.controller('ComponentDetailsController',
                         useUTC: false
                     }
                 });
+
+                //Destroy chart if already existing
+                if (liveChart) {
+                    liveChart.destroy();
+                }
 
                 //Create new chart with certain options
                 liveChart = Highcharts.stockChart(liveChartContainer, {
@@ -474,6 +492,9 @@ app.controller('ComponentDetailsController',
                             format: '{value}'
                         }
                     },
+                    yAxis: {
+                        opposite: false
+                    },
                     navigator: {
                         xAxis: {
                             type: 'datetime',
@@ -485,8 +506,18 @@ app.controller('ComponentDetailsController',
                     series: [{
                         name: 'Value',
                         data: []
-                    }]
+                    }],
+                    tooltip: {
+                        valueDecimals: 2,
+                        valuePrefix: '',
+                        valueSuffix: ' ' + vm.displayUnit
+                    }
                 });
+
+                //Set y-axis unit to currently displayed unit
+                liveChart.yAxis[0].labelFormatter = function () {
+                    return this.value + ' ' + vm.displayUnit;
+                };
 
                 //Show the waiting screen
                 $(LIVE_CHART_CARD_SELECTOR).waitMe({
@@ -506,7 +537,6 @@ app.controller('ComponentDetailsController',
                     title: {
                         text: ''
                     },
-
                     chart: {
                         zoomType: 'xy'
                     },
@@ -514,7 +544,12 @@ app.controller('ComponentDetailsController',
                         name: 'Value',
                         data: [],
                         showInLegend: false
-                    }]
+                    }],
+                    tooltip: {
+                        valueDecimals: 2,
+                        valuePrefix: '',
+                        valueSuffix: ' ' + vm.displayUnit
+                    },
                 });
 
                 //Initialize slider

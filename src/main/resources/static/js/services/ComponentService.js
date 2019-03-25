@@ -15,6 +15,8 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
         //URL suffix under which the deployment state of a certain component can be retrieved
         const URL_SUFFIX_GET_VALUE_LOG_STATS = '/stats/';
 
+        const URL_SUFFIX_GET_VALUE_LOGS = '/valueLogs';
+
         //Performs a server request in order to retrieve the deployment states of all components of a certain type.
         function getAllComponentStates(component) {
             return $http.get(URL_PREFIX + component + URL_SUFFIX_GET_ALL_COMPONENT_STATES);
@@ -40,6 +42,19 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
             });
         }
 
+        function getValueLogs(componentId, component, pageDetails, unit) {
+            var parameters = pageDetails;
+
+            //Check if unit was provided
+            if (unit) {
+                parameters.unit = unit;
+            }
+
+            return $http.get(URL_PREFIX + component + 's/' + componentId + URL_SUFFIX_GET_VALUE_LOGS, {
+                params: parameters
+            });
+        }
+
         return {
             COMPONENT: {
                 SENSOR: 'SENSOR',
@@ -48,40 +63,7 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
             getAllComponentStates: getAllComponentStates,
             getComponentState: getComponentState,
             getValueLogStats: getValueLogStats,
-            getValues: function (component, idref, parameters) {
-                var url = ENDPOINT_URI;
-
-                var params = {} || parameters;
-
-                if (idref) {
-                    url += '/valueLogs/search/findAllByIdref';
-                    params.idref = idref;
-                } else if (component) {
-                    url += '/valueLogs/search/findAllByComponent';
-                    params.component = component;
-                } else {
-                    url += '/valueLogs';
-                    params.sort = 'date,desc';
-                }
-
-                return $http({
-                    method: 'GET',
-                    url: url,
-                    params: params
-                })
-                    .then(
-                        function (response) {
-                            if (typeof response.data === 'object') {
-                                return response.data;
-                            } else {
-                                return $q.reject(response);
-                            }
-                        },
-                        function (response) {
-                            return $q.reject(response);
-                        });
-            },
-
+            getValueLogs: getValueLogs,
             isDeployed: function (url) {
                 return $http({
                     method: 'GET',
