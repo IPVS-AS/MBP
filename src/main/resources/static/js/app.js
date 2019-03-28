@@ -17,17 +17,17 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
         $provide.value('ENDPOINT_URI', ENDPOINT_URI);
         $provide.value('BASE_URI', BASE_URI);
 
-        function redirectExpert($location, SessionService) {
-            if (!SessionService.isExpert()) {
-                $location.path('/');
-            }
-        }
-
         dropzoneOpsProvider.setOptions({
             url: 'a',
             maxFilesize: '100',
             autoProcessQueue: false
         });
+
+        function redirectExpert($location, SessionService) {
+            if (!SessionService.isExpert()) {
+                $location.path('/');
+            }
+        }
 
         var viewPrefix = '/view';
         // configure the routing rules here
@@ -135,15 +135,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     deviceList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('devices');
                     }],
-                    addDevice: ['CrudService', function (CrudService) {
-                        // bind category parameter
-                        return angular.bind(this, CrudService.addItem, 'devices');
-                    }],
-                    deleteDevice: ['CrudService', function (CrudService) {
-                        // bind category parameter
-                        return angular.bind(this, CrudService.deleteItem, 'devices');
-                        //return CrudService.deleteItem('devices', this);
-                    }],
                     adapterList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('adapters');
                     }]
@@ -188,15 +179,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }],
                     deviceList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('devices');
-                    }],
-                    addDevice: ['CrudService', function (CrudService) {
-                        // bind category parameter
-                        return angular.bind(this, CrudService.addItem, 'devices');
-                    }],
-                    deleteDevice: ['CrudService', function (CrudService) {
-                        // bind category parameter
-                        return angular.bind(this, CrudService.deleteItem, 'devices');
-                        //return CrudService.deleteItem('devices', this);
                     }],
                     adapterList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('adapters');

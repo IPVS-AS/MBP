@@ -28,12 +28,6 @@ public class ValueLog {
     private String component; // sensor or actuator
     private String value;
 
-    @Reference
-    private Sensor sensorRef;
-
-    @Reference
-    private Actuator actuatorRef;
-
     public String getId() {
         return id;
     }
@@ -97,21 +91,4 @@ public class ValueLog {
     public void setValue(String value) {
         this.value = value;
     }
-
-    public Sensor getSensorRef() {
-        return sensorRef;
-    }
-
-    public void setSensorRef(Sensor sensorRef) {
-        this.sensorRef = sensorRef;
-    }
-
-    public Actuator getActuatorRef() {
-        return actuatorRef;
-    }
-
-    public void setActuatorRef(Actuator actuatorRef) {
-        this.actuatorRef = actuatorRef;
-    }
-
 }

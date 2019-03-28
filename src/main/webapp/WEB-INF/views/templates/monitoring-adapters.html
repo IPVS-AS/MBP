@@ -32,6 +32,7 @@
                                 <th>Name</th>
                                 <th>Device types</th>
                                 <th>Description</th>
+                                <th>Unit</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -43,6 +44,7 @@
                                     </span>
                                 </td>
                                 <td>{{item.description}}</td>
+                                <td>{{item.unit ? item.unit : 'None'}}</td>
                                 <td>
                                     <form ng-submit="deleteAdapterCtrl.deleteItem()">
                                         <button type="submit" class="btn btn-danger m-t-0 waves-effect"
@@ -154,6 +156,15 @@
                                            ng-model="addAdapterCtrl.item.description">
                                 </div>
                                 <span class="help-block" ng-show="addAdapterCtrl.item.errors.description">{{addAdapterCtrl.item.errors.description.message}}</span>
+                            </div>
+                            <!-- item.unit group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addAdapterCtrl.item.errors.unit }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addAdapterCtrl.item.errors.unit }">
+                                    <unit-input ng-model="addAdapterCtrl.item.unit"></unit-input>
+                                </div>
+                                <span class="help-block" ng-show="addAdapterCtrl.item.errors.unit">{{addAdapterCtrl.item.errors.unit.message}}</span>
                             </div>
                             <!-- item.routine group -->
                             <label>Adapter scripts:</label>

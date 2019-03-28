@@ -2,6 +2,8 @@ package org.citopt.connde.util;
 
 import org.apache.commons.validator.routines.InetAddressValidator;
 
+import javax.measure.unit.Unit;
+
 /**
  * This class provides methods for validating input data.
  *
@@ -74,5 +76,22 @@ public class Validation {
 
         //Test with regular expression
         return rsaKey.matches(REGEX_PRIVATE_RSA_KEY);
+    }
+
+    /**
+     * Checks if a given string specifies a unit in a valid way.
+     *
+     * @param unitString The string to check
+     * @return True, if the string is a valid unit; false otherwise
+     */
+    public static boolean isValidUnit(String unitString) {
+        try {
+            //Check if string can be parsed to unit
+            Unit.valueOf(unitString);
+        } catch (Exception e) {
+            //Exception thrown, string is not valid
+            return false;
+        }
+        return true;
     }
 }

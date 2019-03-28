@@ -18,5 +18,7 @@ public interface AdapterListProjection {
 
     String getDescription();
 
+    String getUnit();
+
     List getParameters();
 }

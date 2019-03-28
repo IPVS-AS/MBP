@@ -2,8 +2,8 @@
  * Controller for the component details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('ComponentDetailsController',
-    ['$scope', '$rootScope', '$routeParams', '$interval', '$timeout', 'componentDetails', 'liveChartContainer', 'historicalChartContainer', 'historicalChartSlider', 'ComponentService', 'CrudService', 'DeviceService', 'NotificationService',
-        function ($scope, $rootScope, $routeParams, $interval, $timeout, componentDetails, liveChartContainer, historicalChartContainer, historicalChartSlider, ComponentService, CrudService, DeviceService, NotificationService) {
+    ['$scope', '$rootScope', '$routeParams', '$interval', '$timeout', 'componentDetails', 'liveChartContainer', 'historicalChartContainer', 'historicalChartSlider', 'ComponentService', 'DeviceService', 'UnitService', 'NotificationService',
+        function ($scope, $rootScope, $routeParams, $interval, $timeout, componentDetails, liveChartContainer, historicalChartContainer, historicalChartSlider, ComponentService, DeviceService, UnitService, NotificationService) {
             //Interval with that the live value display is refreshed (seconds)
             const LIVE_REFRESH_DELAY_SECONDS = 15;
 
@@ -27,6 +27,7 @@ app.controller('ComponentDetailsController',
             const COMPONENT_ID = $routeParams.id;
             const COMPONENT_TYPE = componentDetails.componentTypeName;
             const COMPONENT_TYPE_URL = COMPONENT_TYPE + 's';
+            const COMPONENT_ADAPTER_UNIT = componentDetails._embedded.adapter.unit;
 
             //Initialization of variables that are used in the frontend by angular
             var vm = this;
@@ -35,6 +36,8 @@ app.controller('ComponentDetailsController',
             vm.deploymentState = 'UNKNOWN';
             vm.deviceState = 'UNKNOWN';
             vm.valueLogStats = null;
+            vm.displayUnit = COMPONENT_ADAPTER_UNIT;
+            vm.displayUnitInput = COMPONENT_ADAPTER_UNIT;
 
             //Contains data for the live progress
             vm.liveProgress = {
@@ -54,6 +57,9 @@ app.controller('ComponentDetailsController',
             //Hold the chart objects after the charts have been initialized
             var liveChart = null;
             var historicalChart = null;
+
+            //Update interval for the live chart
+            var liveChartInterval = null;
 
             /**
              * Initializing function, sets up basic things.
@@ -153,7 +159,7 @@ app.controller('ComponentDetailsController',
                 }
 
                 //Retrieve value log stats for this component
-                ComponentService.getValueLogStats(COMPONENT_ID, COMPONENT_TYPE_URL).then(function (response) {
+                ComponentService.getValueLogStats(COMPONENT_ID, COMPONENT_TYPE_URL, vm.displayUnit).then(function (response) {
                     //Success
                     vm.valueLogStats = response.data;
                 }, function (response) {
@@ -162,6 +168,44 @@ app.controller('ComponentDetailsController',
                 }).then(function () {
                     //Finally hide the waiting screen
                     $(STATS_CARD_SELECTOR).waitMe("hide");
+                });
+            }
+
+            /**
+             * [Public]
+             * Called, when the user updates the unit in which the values should be displayed
+             * by clicking on the update button.
+             */
+            function onDisplayUnitChange() {
+                //Retrieve entered unit
+                var inputUnit = vm.displayUnitInput;
+
+                //Check whether the entered unit is compatible with the adapter unit
+                UnitService.checkUnitsForCompatibility(COMPONENT_ADAPTER_UNIT, inputUnit).then(function (response) {
+                    //Check compatibility according to server response
+                    if (!response.data) {
+                        NotificationService.notify("The entered unit is not compatible to the adapter unit.", "error");
+                        return;
+                    }
+
+                    /*
+                    Units are compatible, take user input and update everything accordingly
+                    */
+                    vm.displayUnit = vm.displayUnitInput;
+
+                    //Value stats
+                    updateValueLogStats();
+
+                    //Historical chart
+                    updateHistoricalChart();
+
+                    //Live chart
+                    cancelLiveChartUpdate();
+                    initLiveChart();
+                    initLiveChartUpdate();
+
+                }, function () {
+                    NotificationService.notify("The entered unit is invalid.", "error");
                 });
             }
 
@@ -245,6 +289,12 @@ app.controller('ComponentDetailsController',
                     bg: 'rgba(255,255,255,0.85)'
                 });
 
+                //Set y-axis and tooltip unit to currently displayed unit and redraw chart
+                historicalChart.yAxis[0].labelFormatter = function () {
+                    return this.value + ' ' + vm.displayUnit;
+                };
+                historicalChart.series[0].tooltipOptions.valueSuffix = ' ' + vm.displayUnit;
+
                 //Retrieve a fixed number of value logs from the server
                 retrieveComponentData(vm.historicalChartSettings.numberOfValues,
                     vm.historicalChartSettings.mostRecent).then(function (values) {
@@ -303,22 +353,23 @@ app.controller('ComponentDetailsController',
                 }
 
                 //Initialize parameters for the server request
-                var params = {
-                    idref: COMPONENT_ID,
+                var pageDetails = {
                     sort: 'date,' + descending,
                     size: numberLogs
                 };
 
                 //Perform the server request in order to retrieve the data
-                return CrudService.searchPage('valueLogs', 'findAllByIdref', params).then(function (data) {
+                return ComponentService.getValueLogs(COMPONENT_ID, COMPONENT_TYPE, pageDetails, vm.displayUnit).then(function (response) {
                         //Array that stores the finally formatted value logs
                         var finalValues = [];
 
+                        var receivedLogs = response.data.content;
+
                         //Iterate over all received value logs
-                        for (var i = 0; i < data._embedded.valueLogs.length; i++) {
+                        for (var i = 0; i < receivedLogs.length; i++) {
                             //Extract value and date for the current log and format them
-                            var value = data._embedded.valueLogs[i].value * 1;
-                            var date = data._embedded.valueLogs[i].date;
+                            var value = receivedLogs[i].value * 1;
+                            var date = receivedLogs[i].date;
                             date = date.replace(/\s/g, "T");
                             date = dateToString(new Date(date));
 
@@ -408,14 +459,22 @@ app.controller('ComponentDetailsController',
                 };
 
                 //Create an interval that calls the update function on a regular basis
-                var interval = $interval(intervalFunction, 1000 * LIVE_REFRESH_DELAY_SECONDS);
+                liveChartInterval = $interval(intervalFunction, 1000 * LIVE_REFRESH_DELAY_SECONDS);
 
                 //Ensure that the interval is cancelled in case the user switches the page
                 $scope.$on('$destroy', function () {
-                    if (interval) {
-                        $interval.cancel(interval);
-                    }
+                    cancelLiveChartUpdate();
                 });
+            }
+
+            /**
+             * [Private]
+             * Cancels the live chart update.
+             */
+            function cancelLiveChartUpdate() {
+                if (liveChartInterval) {
+                    $interval.cancel(liveChartInterval);
+                }
             }
 
             /**
@@ -429,6 +488,11 @@ app.controller('ComponentDetailsController',
                         useUTC: false
                     }
                 });
+
+                //Destroy chart if already existing
+                if (liveChart) {
+                    liveChart.destroy();
+                }
 
                 //Create new chart with certain options
                 liveChart = Highcharts.stockChart(liveChartContainer, {
@@ -444,6 +508,9 @@ app.controller('ComponentDetailsController',
                             format: '{value}'
                         }
                     },
+                    yAxis: {
+                        opposite: false
+                    },
                     navigator: {
                         xAxis: {
                             type: 'datetime',
@@ -455,8 +522,18 @@ app.controller('ComponentDetailsController',
                     series: [{
                         name: 'Value',
                         data: []
-                    }]
+                    }],
+                    tooltip: {
+                        valueDecimals: 2,
+                        valuePrefix: '',
+                        valueSuffix: ' ' + vm.displayUnit
+                    }
                 });
+
+                //Set y-axis unit to currently displayed unit
+                liveChart.yAxis[0].labelFormatter = function () {
+                    return this.value + ' ' + vm.displayUnit;
+                };
 
                 //Show the waiting screen
                 $(LIVE_CHART_CARD_SELECTOR).waitMe({
@@ -476,7 +553,6 @@ app.controller('ComponentDetailsController',
                     title: {
                         text: ''
                     },
-
                     chart: {
                         zoomType: 'xy'
                     },
@@ -484,7 +560,12 @@ app.controller('ComponentDetailsController',
                         name: 'Value',
                         data: [],
                         showInLegend: false
-                    }]
+                    }],
+                    tooltip: {
+                        valueDecimals: 2,
+                        valuePrefix: '',
+                        valueSuffix: ' ' + vm.displayUnit
+                    },
                 });
 
                 //Initialize slider
@@ -607,6 +688,7 @@ app.controller('ComponentDetailsController',
                 updateDeploymentState: updateDeploymentState,
                 updateDeviceState: updateDeviceState,
                 updateValueLogStats: updateValueLogStats,
+                onDisplayUnitChange: onDisplayUnitChange,
                 deploy: deploy,
                 undeploy: undeploy,
                 updateHistoricalChart: updateHistoricalChart
