@@ -195,7 +195,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     sensorDetails: ['$route', '$location', 'CrudService', function ($route, $location, CrudService) {
                         return CrudService.fetchSpecificItem('sensors', $route.current.params.id).then(
                             function (data) {
-                                console.log(data);
                                 return data;
                             },
                             function () {
