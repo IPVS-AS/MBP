@@ -241,7 +241,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
         scope: {
             //The unit in which the values are supposed to be displayed
             unit: '@unit',
-            //Functions that are called when the chart loads data/finishes loading data
+            //Functions that are called when the chart loads/finishes loading data
             loadingStart: '&loadingStart',
             loadingFinish: '&loadingFinish',
             //Function for updating the displayed data
