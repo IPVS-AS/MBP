@@ -12,7 +12,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
     //Maximum number of elements that may be displayed in the chart
     const CHART_MAX_ELEMENTS = 20;
 
-    //Interval with that the live value display is refreshed (seconds)
+    //Interval with that the chart data is refreshed (seconds)
     const REFRESH_DELAY_SECONDS = 15;
 
     /**
@@ -31,7 +31,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
 
         /**
          * [Private]
-         * Initializes the live chart.
+         * Initializes the chart.
          */
         function initChart() {
             //Set required global library options
@@ -100,7 +100,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
             //Counts the number of retrieved logs for ensuring the log limit
             var count = 0;
 
-            //Get series from the live chart that is supposed to be updated
+            //Get series from the chart that is supposed to be updated
             var series = chart.series[0];
 
             var lastDate = null;
@@ -126,14 +126,14 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                      * is used to remember the date of the most recent log displayed in the chart.
                      */
 
-                    //Check if there is already data in the live chart
+                    //Check if there is already data in the chart
                     if (lastDate == null) {
-                        //No data in the live chart, thus add all received value logs
+                        //No data in the chart, thus add all received value logs
                         for (var i = values.length - 1; i >= 0; i--) {
                             series.addPoint(values[i], true, (++count >= CHART_MAX_ELEMENTS));
                         }
                     } else {
-                        /* There is already data in the live chart, so iterate over all value logs but
+                        /* There is already data in the chart, so iterate over all value logs but
                          only take the ones from the array that occur before the log with lastDate */
                         var insert = false;
                         for (var i = values.length - 1; i >= 0; i--) {
@@ -176,7 +176,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
 
         /**
          * [Private]
-         * Cancels the live chart update.
+         * Cancels the chart update.
          */
         function cancelChartUpdate() {
             if (chartInterval) {
@@ -214,7 +214,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
         scope.$watch(function () {
             return scope.unit;
         }, function (newValue, oldValue) {
-            //Update diagram if unit was changed
+            //Update chart if unit was changed
             cancelChartUpdate();
             initChart();
             initChartUpdate();
@@ -239,14 +239,14 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
             '<div class="chart-container"></div>',
         link: link,
         scope: {
-            //THe unit in which the values are supposed to be displayed
+            //The unit in which the values are supposed to be displayed
             unit: '@unit',
-            //Functions that are called when the diagram loads data/finishes loading data
+            //Functions that are called when the chart loads data/finishes loading data
             loadingStart: '&loadingStart',
             loadingFinish: '&loadingFinish',
             //Function for updating the displayed data
             getData: '&getData',
-            //Function that checks whether the diagram is allowed to update its data
+            //Function that checks whether the chart is allowed to update its data
             isUpdateable: '&isUpdateable'
         }
     };

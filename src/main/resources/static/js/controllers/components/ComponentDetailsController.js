@@ -2,15 +2,8 @@
  * Controller for the component details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('ComponentDetailsController',
-    ['$scope', '$rootScope', '$routeParams', '$interval', '$timeout', 'componentDetails', 'historicalChartContainer', 'historicalChartSlider', 'ComponentService', 'DeviceService', 'UnitService', 'NotificationService',
-        function ($scope, $rootScope, $routeParams, $interval, $timeout, componentDetails, historicalChartContainer, historicalChartSlider, ComponentService, DeviceService, UnitService, NotificationService) {
-            //Initial number of elements to display in the historical chart
-            const HISTORICAL_CHART_INITIAL_ELEMENTS_NUMBER = 200;
-
-            //Minimum/maximum number of elements that can be displayed in the historical chart
-            const HISTORICAL_CHART_MIN_ELEMENTS = 0;
-            const HISTORICAL_CHART_MAX_ELEMENTS = 5000;
-
+    ['$scope', '$rootScope', '$routeParams', '$interval', '$timeout', 'componentDetails', 'ComponentService', 'DeviceService', 'UnitService', 'NotificationService',
+        function ($scope, $rootScope, $routeParams, $interval, $timeout, componentDetails, ComponentService, DeviceService, UnitService, NotificationService) {
             //Selectors that allow the selection of different ui cards
             const LIVE_CHART_CARD_SELECTOR = ".live-chart-card";
             const HISTORICAL_CHART_CARD_SELECTOR = ".historical-chart-card";
@@ -35,15 +28,6 @@ app.controller('ComponentDetailsController',
 
             //Stores the parameters and their values as assigned by the user
             vm.parameterValues = [];
-
-            //Settings for the historical chart
-            vm.historicalChartSettings = {
-                numberOfValues: HISTORICAL_CHART_INITIAL_ELEMENTS_NUMBER,
-                mostRecent: true
-            };
-
-            //Hold the chart objects after the charts have been initialized
-            var historicalChart = null;
 
             /**
              * Initializing function, sets up basic things.
@@ -176,10 +160,6 @@ app.controller('ComponentDetailsController',
 
                     //Value stats
                     updateValueLogStats();
-
-                    //Historical chart
-                    updateHistoricalChart();
-
                 }, function () {
                     NotificationService.notify("The entered unit is invalid.", "error");
                 });
@@ -248,48 +228,6 @@ app.controller('ComponentDetailsController',
             }
 
             /**
-             * [Public]
-             * Updates the historical chart. While the refreshment, a waiting screen is displayed.
-             */
-            function updateHistoricalChart() {
-                //Check if historical chart has already been initialized
-                if (historicalChart == null) {
-                    console.error("The historical chart has not been initialized yet.");
-                    return;
-                }
-
-                //Show waiting screen
-                $(HISTORICAL_CHART_CARD_SELECTOR).waitMe({
-                    effect: 'bounce',
-                    text: 'Updating chart...',
-                    bg: 'rgba(255,255,255,0.85)'
-                });
-
-                //Set y-axis and tooltip unit to currently displayed unit and redraw chart
-                historicalChart.yAxis[0].labelFormatter = function () {
-                    return this.value + ' ' + vm.displayUnit;
-                };
-                historicalChart.series[0].tooltipOptions.valueSuffix = ' ' + vm.displayUnit;
-
-                //Retrieve a fixed number of value logs from the server
-                retrieveComponentData(vm.historicalChartSettings.numberOfValues,
-                    vm.historicalChartSettings.mostRecent).then(function (values) {
-                    //Reverse the values array if ordered in descending order
-                    if (vm.historicalChartSettings.mostRecent) {
-                        values = values.reverse();
-                    }
-
-                    //Update historical chart
-                    historicalChart.series[0].update({
-                        data: values
-                    }, true); //True: Redraw chart
-
-                    //Hide waiting screen
-                    $(HISTORICAL_CHART_CARD_SELECTOR).waitMe("hide");
-                });
-            }
-
-            /**
              * [Private]
              * Retrieves a certain number of value log data (in a specific order) for the current component
              * as a promise.
@@ -346,7 +284,7 @@ app.controller('ComponentDetailsController',
              */
             function initLiveChart() {
                 /**
-                 * Function that is called when the diagram loads something
+                 * Function that is called when the chart loads something
                  */
                 function loadingStart() {
                     //Show the waiting screen
@@ -358,7 +296,7 @@ app.controller('ComponentDetailsController',
                 }
 
                 /**
-                 * Function that is called when the diagram finished loading
+                 * Function that is called when the chart finished loading
                  */
                 function loadingFinish() {
                     //Hide the waiting screen for the case it was displayed before
@@ -366,8 +304,8 @@ app.controller('ComponentDetailsController',
                 }
 
                 /**
-                 * Function that checks whether the diagram is allowed to update its data.
-                 * @returns {boolean} True, if the diagram may update; false otherwise
+                 * Function that checks whether the chart is allowed to update its data.
+                 * @returns {boolean} True, if the chart may update; false otherwise
                  */
                 function isUpdateable() {
                     return vm.deploymentState == 'DEPLOYED';
@@ -384,61 +322,35 @@ app.controller('ComponentDetailsController',
 
             /**
              * [Private]
-             * Initializes the historical chart in order to display all sensor values (up to a certain limit).
+             * Initializes the historical chart for displaying all sensor values (up to a certain limit).
              */
             function initHistoricalChart() {
-                //Create chart
-                historicalChart = Highcharts.chart(historicalChartContainer, {
-                    title: {
-                        text: ''
-                    },
-                    chart: {
-                        zoomType: 'xy'
-                    },
-                    series: [{
-                        name: 'Value',
-                        data: [],
-                        showInLegend: false
-                    }],
-                    tooltip: {
-                        valueDecimals: 2,
-                        valuePrefix: '',
-                        valueSuffix: ' ' + vm.displayUnit
-                    },
-                });
+                /**
+                 * Function that is called when the chart loads something
+                 */
+                function loadingStart() {
+                    //Show the waiting screen
+                    $(HISTORICAL_CHART_CARD_SELECTOR).waitMe({
+                        effect: 'bounce',
+                        text: 'Loading chart...',
+                        bg: 'rgba(255,255,255,0.85)'
+                    });
+                }
 
-                //Initialize slider
-                $("#" + historicalChartSlider).ionRangeSlider({
-                    skin: "flat",
-                    type: "single",
-                    grid: true,
-                    grid_num: 5,
-                    grid_snap: false,
-                    step: 1,
-                    min: HISTORICAL_CHART_MIN_ELEMENTS,
-                    max: HISTORICAL_CHART_MAX_ELEMENTS,
-                    from: vm.historicalChartSettings.numberOfValues,
-                    onFinish: function (data) {
-                        //Update chart with new values
-                        vm.historicalChartSettings.numberOfValues = data.from;
-                        updateHistoricalChart();
-                    }
-                });
+                /**
+                 * Function that is called when the chart finished loading
+                 */
+                function loadingFinish() {
+                    //Hide the waiting screen for the case it was displayed before
+                    $(HISTORICAL_CHART_CARD_SELECTOR).waitMe("hide");
+                }
 
-                //Watch value type and update chart on change
-                $scope.$watch(
-                    //Value to watch
-                    function () {
-                        return vm.historicalChartSettings.mostRecent;
-                    },
-                    //Callback
-                    function () {
-                        updateHistoricalChart();
-                    }
-                );
-
-                //Populate the chart
-                updateHistoricalChart();
+                //Expose
+                vm.historicalChart = {
+                    loadingStart: loadingStart,
+                    loadingFinish: loadingFinish,
+                    getData: retrieveComponentData
+                };
             }
 
             /**
@@ -529,8 +441,7 @@ app.controller('ComponentDetailsController',
                 updateValueLogStats: updateValueLogStats,
                 onDisplayUnitChange: onDisplayUnitChange,
                 deploy: deploy,
-                undeploy: undeploy,
-                updateHistoricalChart: updateHistoricalChart
+                undeploy: undeploy
             });
 
         }]
