@@ -4,7 +4,7 @@
         <div class="card deployment-card">
             <div class="header"
                  ng-class="{'bg-red': componentDetailsCtrl.deploymentState=='NOT_READY', 'bg-green': componentDetailsCtrl.deploymentState=='READY', 'bg-cyan': componentDetailsCtrl.deploymentState=='DEPLOYED', 'bg-grey': componentDetailsCtrl.deploymentState=='UNKNOWN'}">
-                <i class="material-icons" style="position: absolute; margin-top: 4px">wb_incandescent</i>
+                <i class="material-icons" style="position: absolute; margin-top: 4px">settings_remote</i>
                 <h2 style="margin-left: 35px;">
                     {{componentDetailsCtrl.component.name}}
                     <small>{{componentDetailsCtrl.deploymentState=='NOT_READY' ? 'Deployment impossible' :
@@ -183,11 +183,16 @@
                         </tr>
                         <tr>
                             <th>Average:</th>
-                            <td>{{componentDetailsCtrl.valueLogStats.average}}&nbsp;{{componentDetailsCtrl.displayUnit}}</td>
+                            <td>
+                                {{componentDetailsCtrl.valueLogStats.average}}&nbsp;{{componentDetailsCtrl.displayUnit}}
+                            </td>
                         </tr>
                         <tr>
                             <th>Variance:</th>
-                            <td>{{componentDetailsCtrl.valueLogStats.variance}}&nbsp;({{componentDetailsCtrl.displayUnit}})&sup2;</td>
+                            <td>{{componentDetailsCtrl.valueLogStats.variance}}&nbsp;
+                                {{componentDetailsCtrl.displayUnit ? '(' + componentDetailsCtrl.displayUnit + ')&sup2;'
+                                : ''}}
+                            </td>
                         </tr>
                         <tr>
                             <th>Standard deviation:</th>
@@ -259,13 +264,12 @@
                 </h2>
             </div>
             <div class="body">
-                <div class="progress progress-small progress-in-card">
-                    <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar"
-                         style="width: {{componentDetailsCtrl.liveProgress.progress}}%; transition: width {{componentDetailsCtrl.liveProgress.delayTime}} ease-in-out;">
-                        <span class="sr-only"></span>
-                    </div>
-                </div>
-                <div id="liveValues" style="width:100%; height:400px;"></div>
+                <live-chart loading-start="componentDetailsCtrl.liveChart.loadingStart()"
+                            loading-finish="componentDetailsCtrl.liveChart.loadingFinish()"
+                            get-data="componentDetailsCtrl.liveChart.getData(numberLogs, descending)"
+                            is-updateable="componentDetailsCtrl.liveChart.isUpdateable()"
+                            unit="{{componentDetailsCtrl.displayUnit}}">
+                </live-chart>
             </div>
         </div>
     </div>
@@ -281,33 +285,19 @@
                 </h2>
                 <ul class="header-dropdown m-r--5">
                     <li>
-                        <a ng-click="componentDetailsCtrl.updateHistoricalChart()" class="clickable">
+                        <a ng-click="historicalChartApi.updateChart()" class="clickable">
                             <i class="material-icons">refresh</i>
                         </a>
                     </li>
                 </ul>
             </div>
             <div class="body">
-                <div id="historicalValues" style="width:100%; height:400px;"></div>
-                <p>
-                    <b>Values to display:</b>
-                </p>
-                <div class="switch">
-                    <label>
-                        Oldest
-                        <input type="checkbox"
-                               ng-model="componentDetailsCtrl.historicalChartSettings.mostRecent">
-                        <span class="lever"></span>
-                        Most recent
-                    </label>
-                </div>
-                <br/>
-                <p>
-                    <b>Number of values:</b>
-                </p>
-                <div class="range-slider">
-                    <input type="text" id="historicalChartSlider"/>
-                </div>
+                <historical-chart api="historicalChartApi"
+                                  loading-start="componentDetailsCtrl.historicalChart.loadingStart()"
+                                  loading-finish="componentDetailsCtrl.historicalChart.loadingFinish()"
+                                  get-data="componentDetailsCtrl.historicalChart.getData(numberLogs, descending)"
+                                  unit="{{componentDetailsCtrl.displayUnit}}">
+                </historical-chart>
             </div>
         </div>
     </div>
