@@ -213,9 +213,9 @@ li {
 .icon-stack {
   position: relative;
   display: inline-block;
-  width: 1.5em;
-  height: 1.5em;
-  line-height: 1.5em;
+  width: 1.3em;
+  height: 1.3em;
+  line-height: 1.3em;
   vertical-align: middle;
 }
 
@@ -234,7 +234,7 @@ li {
 }
 
 .icon-stack-2x {
-  font-size: 1.5em;
+  font-size: 1.2em;
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
