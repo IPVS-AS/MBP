@@ -2,14 +2,8 @@
  * Controller for the component details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('ComponentDetailsController',
-    ['$scope', '$rootScope', '$routeParams', '$interval', '$timeout', 'componentDetails', 'liveChartContainer', 'historicalChartContainer', 'historicalChartSlider', 'ComponentService', 'DeviceService', 'UnitService', 'NotificationService',
-        function ($scope, $rootScope, $routeParams, $interval, $timeout, componentDetails, liveChartContainer, historicalChartContainer, historicalChartSlider, ComponentService, DeviceService, UnitService, NotificationService) {
-            //Interval with that the live value display is refreshed (seconds)
-            const LIVE_REFRESH_DELAY_SECONDS = 15;
-
-            //Maximum number of elements that may be displayed in the historical chart
-            const LIVE_CHART_MAX_ELEMENTS = 20;
-
+    ['$scope', '$rootScope', '$routeParams', '$interval', '$timeout', 'componentDetails', 'historicalChartContainer', 'historicalChartSlider', 'ComponentService', 'DeviceService', 'UnitService', 'NotificationService',
+        function ($scope, $rootScope, $routeParams, $interval, $timeout, componentDetails, historicalChartContainer, historicalChartSlider, ComponentService, DeviceService, UnitService, NotificationService) {
             //Initial number of elements to display in the historical chart
             const HISTORICAL_CHART_INITIAL_ELEMENTS_NUMBER = 200;
 
@@ -39,12 +33,6 @@ app.controller('ComponentDetailsController',
             vm.displayUnit = COMPONENT_ADAPTER_UNIT;
             vm.displayUnitInput = COMPONENT_ADAPTER_UNIT;
 
-            //Contains data for the live progress
-            vm.liveProgress = {
-                progress: 0,
-                delayTime: '0s'
-            };
-
             //Stores the parameters and their values as assigned by the user
             vm.parameterValues = [];
 
@@ -55,11 +43,7 @@ app.controller('ComponentDetailsController',
             };
 
             //Hold the chart objects after the charts have been initialized
-            var liveChart = null;
             var historicalChart = null;
-
-            //Update interval for the live chart
-            var liveChartInterval = null;
 
             /**
              * Initializing function, sets up basic things.
@@ -77,9 +61,6 @@ app.controller('ComponentDetailsController',
                 //Initialize charts
                 initLiveChart();
                 initHistoricalChart();
-
-                //Initialize data retriever and dispatcher
-                initLiveChartUpdate();
 
                 //Interval for updating states on a regular basis
                 var interval = $interval(function () {
@@ -199,11 +180,6 @@ app.controller('ComponentDetailsController',
                     //Historical chart
                     updateHistoricalChart();
 
-                    //Live chart
-                    cancelLiveChartUpdate();
-                    initLiveChart();
-                    initLiveChartUpdate();
-
                 }, function () {
                     NotificationService.notify("The entered unit is invalid.", "error");
                 });
@@ -315,26 +291,6 @@ app.controller('ComponentDetailsController',
 
             /**
              * [Private]
-             *  Displays a fake progress bar in the live chart in order to indicate when the live data is refreshed.
-             *  The bar does not show a real progress, but just the time that is left until a certain time is passed.
-             *
-             * @param time The time (in seconds) during which the progress bar is supposed to be active.
-             */
-            function runLiveFakeProgress(time) {
-                //Reset progress bar instantly
-                vm.liveProgress.delayTime = '0s';
-                vm.liveProgress.progress = 0;
-
-                //Wait until the ui has updated
-                $timeout(function () {
-                    //Start the progress bar, the animation is achieved through a css transition time
-                    vm.liveProgress.delayTime = time + 's';
-                    vm.liveProgress.progress = 100;
-                }, 10);
-            }
-
-            /**
-             * [Private]
              * Retrieves a certain number of value log data (in a specific order) for the current component
              * as a promise.
              *
@@ -386,161 +342,44 @@ app.controller('ComponentDetailsController',
 
             /**
              * [Private]
-             * Initializes the update mechanics that are required in order to retrieve the most recent value logs
-             * from the server and to update the live chart accordingly.
-             */
-            function initLiveChartUpdate() {
-                //Counts the number of retrieved logs for ensuring the log limit
-                var count = 0;
-
-                //Get series from the live chart that is supposed to be updated
-                var series = liveChart.series[0];
-
-                var lastDate = null;
-
-                //Define the update function that can be called on a regular basis
-                var intervalFunction = function () {
-                    //Do not update in case the sensor is not deployed
-                    if (vm.deploymentState != 'DEPLOYED') {
-                        return;
-                    }
-
-                    //Retrieve the most recent component data
-                    retrieveComponentData(LIVE_CHART_MAX_ELEMENTS, true).then(function (values) {
-                        //Abort of no data is available
-                        if (values.length < 1) {
-                            return;
-                        }
-
-                        /*
-                         * The server requests returns a number of most recent logs; however, it is possible
-                         * that some of the value logs are already displayed in the chart and do not need
-                         * to be added again. Thus, filtering is needed, for which the variable lastDate
-                         * is used to remember the date of the most recent log displayed in the chart.
-                         */
-
-                        //Check if there is already data in the live chart
-                        if (lastDate == null) {
-                            //No data in the live chart, thus add all received value logs
-                            for (var i = values.length - 1; i >= 0; i--) {
-                                series.addPoint(values[i], true, (++count >= LIVE_CHART_MAX_ELEMENTS));
-                            }
-                        } else {
-                            /* There is already data in the live chart, so iterate over all value logs but
-                             only take the ones from the array that occur before the log with lastDate */
-                            var insert = false;
-                            for (var i = values.length - 1; i >= 0; i--) {
-                                //Try to find the log with lastdate in the array
-                                if (values[i][0] == lastDate) {
-                                    insert = true;
-                                } else if (insert) {
-                                    //This is a log before the log with lastedate
-                                    series.addPoint(values[i], true, (++count >= LIVE_CHART_MAX_ELEMENTS));
-                                }
-                            }
-
-                            /* In case the log with lastDate could not be found, this means that all data is relevant
-                             and needs to be added to the chart */
-                            if (!insert) {
-                                for (var i = values.length - 1; i >= 0; i--) {
-                                    series.addPoint(values[i], true, (++count >= LIVE_CHART_MAX_ELEMENTS));
-                                }
-                            }
-                        }
-                        //Update lastDate with the most recent log that was added to the chart
-                        lastDate = values[0][0];
-                    }).then(function () {
-                        //Hide the waiting screen for the case it was displayed before
-                        $(LIVE_CHART_CARD_SELECTOR).waitMe("hide");
-
-                        //Visualize the time until the next refreshment
-                        runLiveFakeProgress(LIVE_REFRESH_DELAY_SECONDS);
-                    });
-                };
-
-                //Create an interval that calls the update function on a regular basis
-                liveChartInterval = $interval(intervalFunction, 1000 * LIVE_REFRESH_DELAY_SECONDS);
-
-                //Ensure that the interval is cancelled in case the user switches the page
-                $scope.$on('$destroy', function () {
-                    cancelLiveChartUpdate();
-                });
-            }
-
-            /**
-             * [Private]
-             * Cancels the live chart update.
-             */
-            function cancelLiveChartUpdate() {
-                if (liveChartInterval) {
-                    $interval.cancel(liveChartInterval);
-                }
-            }
-
-            /**
-             * [Private]
-             * Initializes the live chart in order to always display the most recent sensor values.
+             * Initializes the live chart for displaying the most recent sensor values.
              */
             function initLiveChart() {
-                //Set required global library options
-                Highcharts.setOptions({
-                    global: {
-                        useUTC: false
-                    }
-                });
-
-                //Destroy chart if already existing
-                if (liveChart) {
-                    liveChart.destroy();
+                /**
+                 * Function that is called when the diagram loads something
+                 */
+                function loadingStart() {
+                    //Show the waiting screen
+                    $(LIVE_CHART_CARD_SELECTOR).waitMe({
+                        effect: 'bounce',
+                        text: 'Loading chart...',
+                        bg: 'rgba(255,255,255,0.85)'
+                    });
                 }
 
-                //Create new chart with certain options
-                liveChart = Highcharts.stockChart(liveChartContainer, {
-                    title: {
-                        text: ''
-                    },
-                    rangeSelector: {
-                        enabled: false
-                    },
-                    xAxis: {
-                        type: 'datetime',
-                        labels: {
-                            format: '{value}'
-                        }
-                    },
-                    yAxis: {
-                        opposite: false
-                    },
-                    navigator: {
-                        xAxis: {
-                            type: 'datetime',
-                            labels: {
-                                format: '{value}'
-                            }
-                        }
-                    },
-                    series: [{
-                        name: 'Value',
-                        data: []
-                    }],
-                    tooltip: {
-                        valueDecimals: 2,
-                        valuePrefix: '',
-                        valueSuffix: ' ' + vm.displayUnit
-                    }
-                });
+                /**
+                 * Function that is called when the diagram finished loading
+                 */
+                function loadingFinish() {
+                    //Hide the waiting screen for the case it was displayed before
+                    $(LIVE_CHART_CARD_SELECTOR).waitMe("hide");
+                }
 
-                //Set y-axis unit to currently displayed unit
-                liveChart.yAxis[0].labelFormatter = function () {
-                    return this.value + ' ' + vm.displayUnit;
+                /**
+                 * Function that checks whether the diagram is allowed to update its data.
+                 * @returns {boolean} True, if the diagram may update; false otherwise
+                 */
+                function isUpdateable() {
+                    return vm.deploymentState == 'DEPLOYED';
+                }
+
+                //Expose
+                vm.liveChart = {
+                    loadingStart: loadingStart,
+                    loadingFinish: loadingFinish,
+                    isUpdateable: isUpdateable,
+                    getData: retrieveComponentData
                 };
-
-                //Show the waiting screen
-                $(LIVE_CHART_CARD_SELECTOR).waitMe({
-                    effect: 'bounce',
-                    text: 'Loading chart...',
-                    bg: 'rgba(255,255,255,0.85)'
-                });
             }
 
             /**
