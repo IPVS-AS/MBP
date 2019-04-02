@@ -228,7 +228,7 @@ app.controller('ComponentDetailsController',
             }
 
             /**
-             * [Private]
+             * [Public]
              * Retrieves a certain number of value log data (in a specific order) for the current component
              * as a promise.
              *
@@ -236,9 +236,10 @@ app.controller('ComponentDetailsController',
              * @param descending The order in which the value logs should be retrieved. True results in descending
              * order, false in ascending order. By default, the logs are retrieved in ascending
              * order ([oldest log] --> ... --> [most recent log])
+             * @param unit The unit in which the values are supposed to be retrieved
              * @returns A promise that passes the logs as a parameter
              */
-            function retrieveComponentData(numberLogs, descending) {
+            function retrieveComponentData(numberLogs, descending, unit) {
                 //Set default order
                 if (descending) {
                     descending = 'desc';
@@ -253,29 +254,7 @@ app.controller('ComponentDetailsController',
                 };
 
                 //Perform the server request in order to retrieve the data
-                return ComponentService.getValueLogs(COMPONENT_ID, COMPONENT_TYPE, pageDetails, vm.displayUnit).then(function (response) {
-                        //Array that stores the finally formatted value logs
-                        var finalValues = [];
-
-                        var receivedLogs = response.data.content;
-
-                        //Iterate over all received value logs
-                        for (var i = 0; i < receivedLogs.length; i++) {
-                            //Extract value and date for the current log and format them
-                            var value = receivedLogs[i].value * 1;
-                            var date = receivedLogs[i].date;
-                            date = date.replace(/\s/g, "T");
-                            date = dateToString(new Date(date));
-
-                            //Create a (date, value) tuple and add it to the array
-                            var tuple = [date, value];
-                            finalValues.push(tuple);
-                        }
-
-                        //Return final value log array so that it is accessible in the promise
-                        return finalValues;
-                    }
-                );
+                return ComponentService.getValueLogs(COMPONENT_ID, COMPONENT_TYPE, pageDetails, unit);
             }
 
             /**
@@ -403,35 +382,6 @@ app.controller('ComponentDetailsController',
              */
             function hideDeploymentWaitingScreen() {
                 $(DEPLOYMENT_CARD_SELECTOR).waitMe("hide");
-            }
-
-            /**
-             * [Private]
-             * Converts a javascript date object to a human-readable date string in the "dd.mm.yyyy hh:mm:ss" format.
-             *
-             * @param date The date object to convert
-             * @returns The generated date string in the corresponding format
-             */
-            function dateToString(date) {
-                //Retrieve all properties from the date object
-                var year = date.getFullYear();
-                var month = '' + (date.getMonth() + 1);
-                var day = '' + date.getDate();
-                var hours = '' + date.getHours();
-                var minutes = '' + date.getMinutes();
-                var seconds = '' + date.getSeconds();
-
-                //Add a leading zero (if necessary) to all properties except the year
-                var values = [day, month, hours, minutes, seconds];
-                for (var i = 0; i < values.length; i++) {
-                    if (values[i].length < 2) {
-                        values[i] = '0' + values[i];
-                    }
-                }
-
-                //Generate and return the date string
-                return ([values[0], values[1], year].join('.')) +
-                    ' ' + ([values[2], values[3], values[4]].join(':'));
             }
 
             //Extend the controller object for the public functions to make them available from outside

@@ -10,6 +10,8 @@ app.controller('DeviceDetailsController',
             //Selectors that allow the selection of different ui cards
             const DETAILS_CARD_SELECTOR = ".details-card";
             const MONITORING_CONTROL_CARD_SELECTOR = ".control-card";
+            const LIVE_CHART_SELECTOR_PREFIX = "#live-chart-";
+            const HISTORICAL_CHART_SELECTOR_PREFIX = "#historical-chart-";
 
             //Important properties of the currently considered device
             const DEVICE_ID = $routeParams.id;
@@ -41,8 +43,14 @@ app.controller('DeviceDetailsController',
                     //Add required properties
                     adapter.enable = false;
                     adapter.state = 'LOADING';
+                    adapter.displayUnit = adapter.unit;
                     adapter.reloadState = createReloadStateFunction(compatibleAdapters[i].id);
                     adapter.onMonitoringToggle = createMonitoringToggleFunction(compatibleAdapters[i].id);
+                    adapter.loadingLive = createLoadingFunctions(compatibleAdapters[i].id, LIVE_CHART_SELECTOR_PREFIX);
+                    adapter.loadingHistorical = createLoadingFunctions(compatibleAdapters[i].id,
+                        HISTORICAL_CHART_SELECTOR_PREFIX);
+                    adapter.getData = createDataRetrievalFunction(compatibleAdapters[i].id);
+                    adapter.isUpdateable = createUpdateCheckFunction(compatibleAdapters[i].id);
                 }
 
                 //Stores the parameters and their values as assigned by the user
@@ -69,6 +77,69 @@ app.controller('DeviceDetailsController',
 
             /**
              * [Private]
+             * Returns a function that checks whether the live chart of an adapter is allowed to update its data.
+             *
+             * @param monitoringAdapterId The id of the affected monitoring adapter
+             * @returns {Function}
+             */
+            function createUpdateCheckFunction(monitoringAdapterId) {
+                //Create function and return it
+                return function () {
+                    //Try to find an monitoring adapter with this id
+                    var adapter = getMonitoringAdapterById(monitoringAdapterId);
+                    if (adapter == null) {
+                        return;
+                    }
+
+                    return adapter.state == 'DEPLOYED';
+                }
+            }
+
+            /**
+             * [Private]
+             * Returns a function that allows the retrieval of monitoring log data.
+             *
+             * @param monitoringAdapterId The id of the affected monitoring adapter
+             * @returns {Function}
+             */
+            function createDataRetrievalFunction(monitoringAdapterId) {
+                //Create function and return it
+                return function (numberLogs, descending, unit) {
+                    return retrieveMonitoringData(monitoringAdapterId, numberLogs, descending, unit);
+                }
+            }
+
+            /**
+             * [Private]
+             * Returns an object of functions that display a waiting screen when the chart wants to load data
+             * and hide the waiting screen again after loading has finished.
+             *
+             * @param monitoringAdapterId The id of the affected monitoring adapter
+             * @param chartSelectorPrefix The selector prefix for the chart container for which the waiting screen
+             * is supposed to be displayed
+             * @returns {{start: DeviceDetailsController.start, finish: DeviceDetailsController.finish}}
+             */
+            function createLoadingFunctions(monitoringAdapterId, chartSelectorPrefix) {
+                //Create object of functions and return it
+                return {
+                    start: function () {
+                        //Show waiting screen
+                        $(chartSelectorPrefix + monitoringAdapterId).waitMe({
+                            effect: 'bounce',
+                            text: "Loading chart...",
+                            bg: 'rgba(255,255,255,0.85)'
+                        });
+                    },
+                    finish: function () {
+                        //Hide waiting screen
+                        $(chartSelectorPrefix + monitoringAdapterId).waitMe("hide");
+                    }
+                }
+            }
+
+
+            /**
+             * [Private]
              * Returns a function that handles monitoring toggle events triggered by the user.
              * @param monitoringAdapterId The id of the affected monitoring adapter
              * @returns {Function}
@@ -76,38 +147,22 @@ app.controller('DeviceDetailsController',
             function createMonitoringToggleFunction(monitoringAdapterId) {
                 //Create function and return it
                 return function () {
-                    onMonitoringToggle(monitoringAdapterId);
-                };
-            }
-
-            /**
-             * [Private]
-             * Handles monitoring toggle events triggered by the user by enabling or disabling the monitoring for
-             * a certain monitoring adapter.
-             *
-             * @param monitoringAdapterId The id of the affected monitoring adapter
-             */
-            function onMonitoringToggle(monitoringAdapterId) {
-                //Find adapter with this id
-                var adapter = null;
-                for (var i = 0; i < compatibleAdapters.length; i++) {
-                    if (monitoringAdapterId == compatibleAdapters[i].id) {
-                        adapter = compatibleAdapters[i];
-                        break;
+                    //Try to find an monitoring adapter with this id
+                    var adapter = getMonitoringAdapterById(monitoringAdapterId);
+                    if (adapter == null) {
+                        return;
                     }
-                }
 
-                //Ensure adapter could be found
-                if (adapter == null) {
-                    return;
-                }
+                    //Get index of adapter in adapter list
+                    var index = compatibleAdapters.indexOf(adapter)
 
-                //Check what the user wants
-                if (adapter.enable) {
-                    enableMonitoring(adapter, vm.parameterValues[i]);
-                } else {
-                    disableMonitoring(adapter);
-                }
+                    //Check what the user wants
+                    if (adapter.enable) {
+                        enableMonitoring(adapter, vm.parameterValues[index]);
+                    } else {
+                        disableMonitoring(adapter);
+                    }
+                };
             }
 
             /**
@@ -119,43 +174,46 @@ app.controller('DeviceDetailsController',
             function createReloadStateFunction(monitoringAdapterId) {
                 //Create function and return it
                 return function () {
-                    getMonitoringAdapterState(monitoringAdapterId);
+                    //Try to find an monitoring adapter with this id
+                    var adapter = getMonitoringAdapterById(monitoringAdapterId);
+                    if (adapter == null) {
+                        return;
+                    }
+
+                    //Enable spinner
+                    adapter.state = 'LOADING';
+
+                    //Perform server request and set state of the adapter object accordingly
+                    MonitoringService.getMonitoringState(DEVICE_ID, adapter.id).then(function (response) {
+                        adapter.state = response.data;
+                        adapter.enable = (adapter.state === "DEPLOYED");
+                    }, function (response) {
+                        adapter.state = 'UNKNOWN';
+                        NotificationService.notify("Could not retrieve monitoring state.", "error");
+                    });
                 };
             }
 
             /**
-             * [Private]
-             * Sends a server request in order to retrieve the monitoring state of a monitoring adapter
-             * with a certain id. The state is then stored in the corresponding adapter object.
+             * Returns the monitoring adapter object that corresponds to a certain adapter id, as
+             * it is contained in the list of compatible adapters.
              *
-             * @param monitoringAdapterId The id of the monitoring adapter whose state is supposed to be retrieved
+             * @param monitoringAdapterId
+             * @returns {*}
              */
-            function getMonitoringAdapterState(monitoringAdapterId) {
-                //Get adapter object
+            function getMonitoringAdapterById(monitoringAdapterId) {
                 var adapter = null;
+
+                //Iterate over all adapters and find the matching one
                 for (var i = 0; i < compatibleAdapters.length; i++) {
-                    if (compatibleAdapters[i].id == monitoringAdapterId) {
+                    if (monitoringAdapterId === compatibleAdapters[i].id) {
                         adapter = compatibleAdapters[i];
+                        break;
                     }
                 }
-
-                //Check if adapter could be found
-                if (adapter == null) {
-                    return;
-                }
-
-                //Enable spinner
-                adapter.state = 'LOADING';
-
-                //Perform server request and set state of the adapter object accordingly
-                MonitoringService.getMonitoringState(DEVICE_ID, adapter.id).then(function (response) {
-                    adapter.state = response.data;
-                    adapter.enable = (adapter.state == "DEPLOYED");
-                }, function (response) {
-                    adapter.state = 'UNKNOWN';
-                    NotificationService.notify("Could not retrieve monitoring state.", "error");
-                });
+                return adapter;
             }
+
 
             /**
              * [Private]
@@ -250,6 +308,37 @@ app.controller('DeviceDetailsController',
 
             /**
              * [Private]
+             * Retrieves a certain number of monitoring value log data (in a specific order) for the current component
+             * as a promise.
+             *
+             * @param monitoringAdapterId The id of the monitoring adapter for which data is supposed to be retrieved
+             * @param numberLogs The number of logs to retrieve
+             * @param descending The order in which the value logs should be retrieved. True results in descending
+             * order, false in ascending order. By default, the logs are retrieved in ascending
+             * order ([oldest log] --> ... --> [most recent log])
+             * @param unit The unit in which the values are supposed to be retrieved
+             * @returns {*}
+             */
+            function retrieveMonitoringData(monitoringAdapterId, numberLogs, descending, unit) {
+                //Set default order
+                if (descending) {
+                    descending = 'desc';
+                } else {
+                    descending = 'asc'
+                }
+
+                //Initialize parameters for the server request
+                var pageDetails = {
+                    sort: 'date,' + descending,
+                    size: numberLogs
+                };
+
+                //Perform the server request in order to retrieve the data
+                return MonitoringService.getMonitoringValueLogs(DEVICE_ID, monitoringAdapterId, pageDetails, unit);
+            }
+
+            /**
+             * [Private]
              * Initializes the data structures that are required for the deployment parameters of the monitoring adapters.
              */
             function initParameters() {
@@ -279,33 +368,6 @@ app.controller('DeviceDetailsController',
                     //Add parameter array for this adapter to the global array
                     vm.parameterValues.push(adapterParameterArray);
                 }
-            }
-
-            /**
-             * {Public]
-             * Updates the device state. By default, a waiting screen is displayed during the update.
-             * However, this can be deactivated.
-             *
-             * @param noWaitingScreen If set to true, no waiting screen is displayed during the refreshment
-             */
-            function updateDeviceState(noWaitingScreen) {
-                //Check if waiting screen is supposed to be displayed
-                if (!noWaitingScreen) {
-                    showDetailsWaitingScreen("Retrieving device state...");
-                }
-
-                //Retrieve the state of the current device
-                DeviceService.getDeviceState(DEVICE_ID).then(function (response) {
-                    //Success
-                    vm.deviceState = response.data;
-                }, function (response) {
-                    //Failure
-                    vm.deviceState = 'UNKNOWN';
-                    NotificationService.notify('Could not retrieve device state.', 'error');
-                }).then(function () {
-                    //Finally hide the waiting screen again
-                    hideDetailsWaitingScreen();
-                });
             }
 
             /**
@@ -362,8 +424,37 @@ app.controller('DeviceDetailsController',
                 $(DETAILS_CARD_SELECTOR).waitMe("hide");
             }
 
+            /**
+             * {Public]
+             * Updates the device state. By default, a waiting screen is displayed during the update.
+             * However, this can be deactivated.
+             *
+             * @param noWaitingScreen If set to true, no waiting screen is displayed during the refreshment
+             */
+            function updateDeviceState(noWaitingScreen) {
+                //Check if waiting screen is supposed to be displayed
+                if (!noWaitingScreen) {
+                    showDetailsWaitingScreen("Retrieving device state...");
+                }
+
+                //Retrieve the state of the current device
+                DeviceService.getDeviceState(DEVICE_ID).then(function (response) {
+                    //Success
+                    vm.deviceState = response.data;
+                }, function (response) {
+                    //Failure
+                    vm.deviceState = 'UNKNOWN';
+                    NotificationService.notify('Could not retrieve device state.', 'error');
+                }).then(function () {
+                    //Finally hide the waiting screen again
+                    hideDetailsWaitingScreen();
+                });
+            }
+
+
             angular.extend(vm, {
-                updateDeviceState: updateDeviceState
+                updateDeviceState: updateDeviceState,
+                getData: retrieveMonitoringData
             });
         }]
 );

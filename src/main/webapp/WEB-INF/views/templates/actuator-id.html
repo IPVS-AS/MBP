@@ -266,7 +266,7 @@
             <div class="body">
                 <live-chart loading-start="componentDetailsCtrl.liveChart.loadingStart()"
                             loading-finish="componentDetailsCtrl.liveChart.loadingFinish()"
-                            get-data="componentDetailsCtrl.liveChart.getData(numberLogs, descending)"
+                            get-data="componentDetailsCtrl.liveChart.getData(numberLogs, descending, unit)"
                             is-updateable="componentDetailsCtrl.liveChart.isUpdateable()"
                             unit="{{componentDetailsCtrl.displayUnit}}">
                 </live-chart>
@@ -295,7 +295,7 @@
                 <historical-chart api="historicalChartApi"
                                   loading-start="componentDetailsCtrl.historicalChart.loadingStart()"
                                   loading-finish="componentDetailsCtrl.historicalChart.loadingFinish()"
-                                  get-data="componentDetailsCtrl.historicalChart.getData(numberLogs, descending)"
+                                  get-data="componentDetailsCtrl.historicalChart.getData(numberLogs, descending, unit)"
                                   unit="{{componentDetailsCtrl.displayUnit}}">
                 </historical-chart>
             </div>

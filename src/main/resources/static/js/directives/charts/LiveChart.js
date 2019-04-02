@@ -29,6 +29,9 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
         var chart = null;
         var chartInterval = null;
 
+        //Progress jQuery element
+        var progressBar = element.find('.progress-bar');
+
         /**
          * [Private]
          * Initializes the chart.
@@ -113,7 +116,11 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                 }
 
                 //Retrieve the most recent component data
-                scope.getData({numberLogs: CHART_MAX_ELEMENTS, descending: true}).then(function (values) {
+                scope.getData({
+                    numberLogs: CHART_MAX_ELEMENTS,
+                    descending: true,
+                    unit: scope.unit
+                }).then(function (values) {
                     //Abort of no data is available
                     if (values.length < 1) {
                         return;
@@ -192,23 +199,10 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
          * @param time The time in seconds during which the progress bar is supposed to be active
          */
         function runProgress(time) {
-            //Reset progress bar without animation
-            scope.progressBar.delayTime = '0s';
-            scope.progressBar.progress = 0;
-
-            //Wait until the ui has updated
-            $timeout(function () {
-                //Start progress bar with a css transition animation
-                scope.progressBar.delayTime = time + 's';
-                scope.progressBar.progress = 100;
-            }, 10);
+            progressBar.stop(true).width(0).animate({
+                width: "100%",
+            }, 15 * 1000);
         }
-
-        //Control variables for progress bar
-        scope.progressBar = {
-            delayTime: '0s',
-            progress: 0
-        };
 
         //Watch the unit parameter
         scope.$watch(function () {
@@ -230,9 +224,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
         restrict: 'E', //Elements only
         template:
             '<div class="progress chart-progress">' +
-            '<div class="progress-bar progress-bar-success progress-bar-striped active"' +
-            'role="progressbar" style="width: {{progressBar.progress}}%;' +
-            'transition: width {{progressBar.delayTime}} ease-in-out;">' +
+            '<div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" style="transition: unset">' +
             '<span class="sr-only"></span>' +
             '</div>' +
             '</div>' +

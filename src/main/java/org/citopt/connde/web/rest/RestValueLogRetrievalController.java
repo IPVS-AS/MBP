@@ -1,12 +1,14 @@
 package org.citopt.connde.web.rest;
 
 import org.citopt.connde.RestConfiguration;
+import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Component;
+import org.citopt.connde.domain.component.Sensor;
+import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.domain.monitoring.MonitoringAdapter;
+import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.domain.valueLog.ValueLog;
-import org.citopt.connde.repository.ActuatorRepository;
-import org.citopt.connde.repository.ComponentRepository;
-import org.citopt.connde.repository.SensorRepository;
-import org.citopt.connde.repository.ValueLogRepository;
+import org.citopt.connde.repository.*;
 import org.citopt.connde.service.UnitConverterService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -41,6 +43,12 @@ public class RestValueLogRetrievalController {
     @Autowired
     private SensorRepository sensorRepository;
 
+    @Autowired
+    private DeviceRepository deviceRepository;
+
+    @Autowired
+    private MonitoringAdapterRepository monitoringAdapterRepository;
+
     /**
      * Replies with a pageable list of value logs of a certain actuator.
      *
@@ -53,7 +61,9 @@ public class RestValueLogRetrievalController {
     public ResponseEntity<Page<ValueLog>> getActuatorValueLogs(@PathVariable(value = "id") String id,
                                                                @RequestParam(value = "unit", required = false) String unit,
                                                                Pageable pageable) {
-        return getValueLogs(id, actuatorRepository, unit, pageable);
+        //Get actuator object
+        Actuator actuator = (Actuator) getComponentById(id, actuatorRepository);
+        return getValueLogs(actuator, unit, pageable);
     }
 
     /**
@@ -68,29 +78,46 @@ public class RestValueLogRetrievalController {
     public ResponseEntity<Page<ValueLog>> getSensorValueLogs(@PathVariable(value = "id") String id,
                                                              @RequestParam(value = "unit", required = false) String unit,
                                                              Pageable pageable) {
-        return getValueLogs(id, sensorRepository, unit, pageable);
+        //Get sensor object
+        Sensor sensor = (Sensor) getComponentById(id, sensorRepository);
+        return getValueLogs(sensor, unit, pageable);
     }
 
     /**
-     * Returns a response entity that contains a pageable list of value logs of a certain sensor.
+     * Replies with a pageable list of value logs of a certain monitoring component.
      *
-     * @param id         The id of the component for which the value logs should be retrieved
-     * @param repository A component repository that contains the component
-     * @param unit       A string specifying the unit of the value log values
-     * @param pageable   Pageable parameters that specify the value logs to retrieve
+     * @param deviceId            The id of the device for which monitoring data is supposed to be retrieved
+     * @param monitoringAdapterId The id of the monitoring adapter for which monitoring data is supposed to be retrieved
+     * @param unit                A string specifying the unit of the value log values
+     * @param pageable            Pageable parameters that specify the value logs to retrieve
      * @return A pageable list of value logs
      */
-    private ResponseEntity<Page<ValueLog>> getValueLogs(String id, ComponentRepository repository, String unit, Pageable pageable) {
-        //Retrieve component from repository
-        Component component = (Component) repository.findOne(id);
+    @GetMapping("/monitoring/{deviceId}/valueLogs")
+    public ResponseEntity<Page<ValueLog>> getMonitoringValueLogs(@PathVariable(value = "deviceId") String deviceId,
+                                                                 @RequestParam("adapter") String monitoringAdapterId,
+                                                                 @RequestParam(value = "unit", required = false) String unit,
+                                                                 Pageable pageable) {
+        //Get monitoring component object
+        MonitoringComponent monitoringComponent = getMonitoringComponent(deviceId, monitoringAdapterId);
+        return getValueLogs(monitoringComponent, unit, pageable);
+    }
 
+    /**
+     * Returns a response entity that contains a pageable list of value logs of a certain component.
+     *
+     * @param component The component for which the value logs should be retrieved
+     * @param unit      A string specifying the unit of the value log values
+     * @param pageable  Pageable parameters that specify the value logs to retrieve
+     * @return A pageable list of value logs
+     */
+    private ResponseEntity<Page<ValueLog>> getValueLogs(Component component, String unit, Pageable pageable) {
         //Component not found?
         if (component == null) {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
 
         //Get value logs for this component
-        Page<ValueLog> page = valueLogRepository.findAllByIdref(id, pageable);
+        Page<ValueLog> page = valueLogRepository.findAllByIdref(component.getId(), pageable);
 
         //Check if a valid unit was provided, otherwise return the result already
         if ((unit == null) || unit.isEmpty()) {
@@ -119,5 +146,37 @@ public class RestValueLogRetrievalController {
 
         //All values converted, now return
         return new ResponseEntity<>(page, HttpStatus.OK);
+    }
+
+    /**
+     * Fetches a component with a certain id from its repository.
+     *
+     * @param componentId The id of the component that is supposed to be retrieved
+     * @param repository  The repository in which the component is contained
+     * @return The corresponding component object
+     */
+    private Component getComponentById(String componentId, ComponentRepository repository) {
+        return (Component) repository.findOne(componentId);
+    }
+
+
+    /**
+     * Retrieves a monitoring component object for a device and a monitoring adapter, given by their ids.
+     *
+     * @param deviceId            The id of the device that is supposed to be part of the component
+     * @param monitoringAdapterId The id of the monitoring adapter that is supposed to be part of the component
+     * @return
+     */
+    private MonitoringComponent getMonitoringComponent(String deviceId, String monitoringAdapterId) {
+        //Find device and monitoring adapter in their repositories
+        Device device = deviceRepository.findOne(deviceId);
+        MonitoringAdapter monitoringAdapter = monitoringAdapterRepository.findOne(monitoringAdapterId);
+
+        //Ensure that both objects could be found
+        if ((device == null) || (monitoringAdapter == null)) {
+            return null;
+        }
+
+        return new MonitoringComponent(monitoringAdapter, device);
     }
 }

@@ -125,7 +125,8 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             //Retrieve a fixed number of value logs from the server
             scope.getData({
                 numberLogs: scope.settings.numberOfValues,
-                descending: scope.settings.mostRecent
+                descending: scope.settings.mostRecent,
+                unit: scope.unit
             }).then(function (values) {
                 //Reverse the values array if ordered in descending order
                 if (scope.settings.mostRecent) {
