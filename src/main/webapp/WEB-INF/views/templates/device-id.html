@@ -235,8 +235,8 @@
                     </div>
                     <div role="tabpanel" class="tab-pane fade" id="value-stats-{{adapter.id}}">
                         <value-log-stats api="adapter.valueLogStatsApi"
-                                         loading-start="adapter.loadingStats.loadingStart()"
-                                         loading-finish="adapter.loadingStats.loadingFinish()"
+                                         loading-start="adapter.loadingStats.start()"
+                                         loading-finish="adapter.loadingStats.finish()"
                                          get-stats="adapter.getStats(unit)"
                                          unit="{{adapter.displayUnit}}">
                         </value-log-stats>
