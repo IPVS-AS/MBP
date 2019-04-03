@@ -169,77 +169,85 @@
 </div>
 
 <!-- Chart cards -->
-<div class="row clearfix" ng-repeat="adapter in ctrl.compatibleAdapters">
-    <div class="col-lg-12">
-        <div class="card historical-chart-card">
-            <div class="header">
-                <h2>
-                    {{adapter.name}}
-                </h2>
-                <ul class="header-dropdown m-r--5">
-                    <li>
-                        <a ng-click="adapter.historicalChartApi.updateChart(); adapter.valueLogStatsApi.updateStats();"
-                           class="clickable">
-                            <i class="material-icons">refresh</i>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div class="body">
-                <div class="form-group" style="margin-bottom: 10px">
-                    <div class="form-line">
-                        <unit-input ng-model="adapter.displayUnitInput" unit-filter="{{adapter.unit}}"></unit-input>
-                    </div>
-                    <span class="help-block" ng-show="false"></span>
-                    <button class="btn btn-primary m-t-0 waves-effect" ng-click="adapter.onDisplayUnitChange()"
-                            style="margin-top: 5px">
-                        Update
-                    </button>
+<div ng-repeat="adapter in ctrl.compatibleAdapters">
+    <div class="row clearfix">
+        <div class="col-lg-12">
+            <div class="card historical-chart-card">
+                <div class="header">
+                    <h2>
+                        {{adapter.name}}
+                    </h2>
+                    <ul class="header-dropdown m-r--5">
+                        <li>
+                            <a ng-click="adapter.historicalChartApi.updateChart(); adapter.valueLogStatsApi.updateStats();"
+                               class="clickable">
+                                <i class="material-icons">refresh</i>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="clickable" data-toggle="collapse" data-target="#card-body-{{adapter.id}}">
+                                <i class="material-icons">keyboard_arrow_down</i>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
-                <ul class="nav nav-tabs tab-nav-right" role="tablist">
-                    <li role="presentation" ng-show="adapter.state == 'DEPLOYED'">
-                        <a data-target="#live-chart-{{adapter.id}}"
-                           ng-attr-data-toggle="{{adapter.state == 'DEPLOYED' ? 'tab' : '' }}">
-                            <i class="material-icons" style="color: red;">live_tv</i>&nbsp;Live Chart
-                        </a>
-                    </li>
-                    <li role="presentation" class="active">
-                        <a data-target="#historical-chart-{{adapter.id}}" data-toggle="tab">
-                            <i class="material-icons">access_time</i>&nbsp;Historical Chart
-                        </a>
-                    </li>
-                    <li role="presentation">
-                        <a data-target="#value-stats-{{adapter.id}}" data-toggle="tab">
-                            <i class="material-icons">equalizer</i>&nbsp;Value Statistics
-                        </a>
-                    </li>
-                </ul>
-                <div class="tab-content">
-                    <div role="tabpanel" class="tab-pane fade" id="live-chart-{{adapter.id}}">
-                        <br/>
-                        <live-chart is-updateable="adapter.isUpdateable()"
-                                    loading-start="adapter.loadingLive.start()"
-                                    loading-finish="adapter.loadingLive.finish()"
-                                    get-data="adapter.getData(numberLogs, descending, unit)"
-                                    unit="{{adapter.displayUnit}}">
-                        </live-chart>
+                <div class="body collapse in" id="card-body-{{adapter.id}}">
+                    <div class="form-group" style="margin-bottom: 10px">
+                        <div class="form-line">
+                            <unit-input ng-model="adapter.displayUnitInput"
+                                        unit-filter="{{adapter.unit}}"></unit-input>
+                        </div>
+                        <span class="help-block" ng-show="false"></span>
+                        <button class="btn btn-primary m-t-0 waves-effect" ng-click="adapter.onDisplayUnitChange()"
+                                style="margin-top: 5px">
+                            Update
+                        </button>
                     </div>
-                    <div role="tabpanel" class="tab-pane fade in active" id="historical-chart-{{adapter.id}}">
-                        <br/>
-                        <historical-chart api="adapter.historicalChartApi"
-                                          loading-start="adapter.loadingHistorical.start()"
-                                          loading-finish="adapter.loadingHistorical.finish()"
-                                          get-data="adapter.getData(numberLogs, descending, unit)"
-                                          unit="{{adapter.displayUnit}}">
-                        </historical-chart>
-                    </div>
-                    <div role="tabpanel" class="tab-pane fade" id="value-stats-{{adapter.id}}">
-                        <value-log-stats api="adapter.valueLogStatsApi"
-                                         loading-start="adapter.loadingStats.start()"
-                                         loading-finish="adapter.loadingStats.finish()"
-                                         get-stats="adapter.getStats(unit)"
-                                         unit="{{adapter.displayUnit}}">
-                        </value-log-stats>
+                    <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                        <li role="presentation" ng-show="adapter.state == 'DEPLOYED'">
+                            <a data-target="#live-chart-{{adapter.id}}"
+                               ng-attr-data-toggle="{{adapter.state == 'DEPLOYED' ? 'tab' : '' }}">
+                                <i class="material-icons" style="color: red;">live_tv</i>&nbsp;Live Chart
+                            </a>
+                        </li>
+                        <li role="presentation" class="active">
+                            <a data-target="#historical-chart-{{adapter.id}}" data-toggle="tab">
+                                <i class="material-icons">access_time</i>&nbsp;Historical Chart
+                            </a>
+                        </li>
+                        <li role="presentation">
+                            <a data-target="#value-stats-{{adapter.id}}" data-toggle="tab">
+                                <i class="material-icons">equalizer</i>&nbsp;Value Statistics
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane fade" id="live-chart-{{adapter.id}}">
+                            <br/>
+                            <live-chart is-updateable="adapter.isUpdateable()"
+                                        loading-start="adapter.loadingLive.start()"
+                                        loading-finish="adapter.loadingLive.finish()"
+                                        get-data="adapter.getData(numberLogs, descending, unit)"
+                                        unit="{{adapter.displayUnit}}">
+                            </live-chart>
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade in active" id="historical-chart-{{adapter.id}}">
+                            <br/>
+                            <historical-chart api="adapter.historicalChartApi"
+                                              loading-start="adapter.loadingHistorical.start()"
+                                              loading-finish="adapter.loadingHistorical.finish()"
+                                              get-data="adapter.getData(numberLogs, descending, unit)"
+                                              unit="{{adapter.displayUnit}}">
+                            </historical-chart>
+                        </div>
+                        <div role="tabpanel" class="tab-pane fade" id="value-stats-{{adapter.id}}">
+                            <value-log-stats api="adapter.valueLogStatsApi"
+                                             loading-start="adapter.loadingStats.start()"
+                                             loading-finish="adapter.loadingStats.finish()"
+                                             get-stats="adapter.getStats(unit)"
+                                             unit="{{adapter.displayUnit}}">
+                            </value-log-stats>
+                        </div>
                     </div>
                 </div>
             </div>
