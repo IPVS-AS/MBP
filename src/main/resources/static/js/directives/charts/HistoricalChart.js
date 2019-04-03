@@ -160,9 +160,14 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
         restrict: 'E', //Elements only
         template:
             '<div class="chart-container"></div>' +
-            '<p>' +
-            '<b>Values to display:</b>' +
-            '</p>' +
+            '<br/>' +
+            '<table>' +
+            '<tr>' +
+            '<th style="min-width: 195px">Values to display:</th>' +
+            '<th style="width: 100%">Number of values:</th>' +
+            '</tr>' +
+            '<tr>' +
+            '<td>' +
             '<div class="switch">' +
             '<label>' +
             'Oldest' +
@@ -170,14 +175,14 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             '<span class="lever"></span>' +
             'Most recent' +
             '</label>' +
-            '</div>' +
-            '<br/>' +
-            '<p>' +
-            '   <b>Number of values:</b>' +
-            '</p>' +
+            '</td>' +
+            '<td>' +
             '<div class="range-slider">' +
             '<input type="text" class="chart-slider"/>' +
-            '</div>',
+            '</div>' +
+            '</td>' +
+            '<tr>' +
+            '</table>',
         link: link,
         scope: {
             //Public api that provides functions for controlling the chart

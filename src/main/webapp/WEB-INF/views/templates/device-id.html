@@ -176,15 +176,42 @@
                 <h2>
                     {{adapter.name}}
                 </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="adapter.historicalChartApi.updateChart(); adapter.valueLogStatsApi.updateStats();"
+                           class="clickable">
+                            <i class="material-icons">refresh</i>
+                        </a>
+                    </li>
+                </ul>
             </div>
             <div class="body">
+                <div class="form-group" style="margin-bottom: 10px">
+                    <div class="form-line">
+                        <unit-input ng-model="adapter.displayUnitInput" unit-filter="{{adapter.unit}}"></unit-input>
+                    </div>
+                    <span class="help-block" ng-show="false"></span>
+                    <button class="btn btn-primary m-t-0 waves-effect" ng-click="adapter.onDisplayUnitChange()"
+                            style="margin-top: 5px">
+                        Update
+                    </button>
+                </div>
                 <ul class="nav nav-tabs tab-nav-right" role="tablist">
-                    <li role="presentation" class=""><a data-target="#live-chart-{{adapter.id}}"
-                                                        ng-attr-data-toggle="{{adapter.state == 'DEPLOYED' ? 'tab' : '' }}">
-                        Live Chart</a></li>
+                    <li role="presentation" ng-show="adapter.state == 'DEPLOYED'">
+                        <a data-target="#live-chart-{{adapter.id}}"
+                           ng-attr-data-toggle="{{adapter.state == 'DEPLOYED' ? 'tab' : '' }}">
+                            <i class="material-icons" style="color: red;">live_tv</i>&nbsp;Live Chart
+                        </a>
+                    </li>
                     <li role="presentation" class="active">
-                        <a data-target="#historical-chart-{{adapter.id}}"
-                           data-toggle="tab">Historical Chart</a>
+                        <a data-target="#historical-chart-{{adapter.id}}" data-toggle="tab">
+                            <i class="material-icons">access_time</i>&nbsp;Historical Chart
+                        </a>
+                    </li>
+                    <li role="presentation">
+                        <a data-target="#value-stats-{{adapter.id}}" data-toggle="tab">
+                            <i class="material-icons">equalizer</i>&nbsp;Value Statistics
+                        </a>
                     </li>
                 </ul>
                 <div class="tab-content">
@@ -199,12 +226,20 @@
                     </div>
                     <div role="tabpanel" class="tab-pane fade in active" id="historical-chart-{{adapter.id}}">
                         <br/>
-                        <historical-chart api="historicalChartApi"
+                        <historical-chart api="adapter.historicalChartApi"
                                           loading-start="adapter.loadingHistorical.start()"
                                           loading-finish="adapter.loadingHistorical.finish()"
                                           get-data="adapter.getData(numberLogs, descending, unit)"
                                           unit="{{adapter.displayUnit}}">
                         </historical-chart>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="value-stats-{{adapter.id}}">
+                        <value-log-stats api="adapter.valueLogStatsApi"
+                                         loading-start="adapter.loadingStats.loadingStart()"
+                                         loading-finish="adapter.loadingStats.loadingFinish()"
+                                         get-stats="adapter.getStats(unit)"
+                                         unit="{{adapter.displayUnit}}">
+                        </value-log-stats>
                     </div>
                 </div>
             </div>

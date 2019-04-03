@@ -110,6 +110,12 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
 
             //Define the update function that can be called on a regular basis
             var intervalFunction = function () {
+                //Ensure that the chart has already been initialized
+                if (chart == null) {
+                    console.error("The live chart has not been initialized yet.");
+                    return;
+                }
+
                 //Do not update in case it is not possible/necessary
                 if (!scope.isUpdateable()) {
                     return;

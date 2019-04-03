@@ -8,9 +8,10 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
         //URLs for server requests
         const URL_GET_COMPATIBLE_ADAPTERS = ENDPOINT_URI + '/monitoring-adapters/by-device/';
         const URL_MONITORING_PREFIX = ENDPOINT_URI + '/monitoring/';
-        const URL_GET_MONITORING_STATE = ENDPOINT_URI + '/monitoring/state/';
-        const URL_GET_MONITORING_ADAPTER_SUFFIX = '?adapter=';
+        const URL_GET_STATE = ENDPOINT_URI + '/monitoring/state/';
+        const URL_GET_VALUE_LOG_STATS = ENDPOINT_URI + '/monitoring/stats/';
         const URL_GET_VALUE_LOGS_SUFFIX = '/valueLogs';
+        const URL_ADAPTER_SUFFIX = '?adapter=';
 
         /**
          * [Public]
@@ -20,7 +21,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          * @returns {*}
          */
         function getDeviceMonitoringState(deviceId) {
-            return $http.get(URL_GET_MONITORING_STATE + deviceId);
+            return $http.get(URL_GET_STATE + deviceId);
         }
 
         /**
@@ -32,7 +33,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          * @returns {*}
          */
         function getMonitoringState(deviceId, monitoringAdapterId) {
-            return $http.get(URL_GET_MONITORING_STATE + deviceId + URL_GET_MONITORING_ADAPTER_SUFFIX + monitoringAdapterId);
+            return $http.get(URL_GET_STATE + deviceId + URL_ADAPTER_SUFFIX + monitoringAdapterId);
         }
 
         /**
@@ -94,6 +95,33 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
 
         /**
          * [Public]
+         * Performs a server request in order to retrieve the value log stats of a certain monioring component.
+         * Optionally, a unit may be provided in which the values are supposed to be displayed.
+         *
+         * @param deviceId The id of the device for which the stats are supposed to be retrieved
+         * @param monitoringAdapterId The id of the monitoring adapter for which the stats are supposed to be retrieved
+         * @param unit The unit in which the values are supposed to be retrieved
+         * @returns {*}
+         */
+        function getMonitoringValueLogStats(deviceId, monitoringAdapterId, unit) {
+            var parameters = {};
+
+            //Extend parameters for adapter id
+            parameters.adapter = monitoringAdapterId;
+
+            //Check if unit was provided
+            if (unit) {
+                parameters.unit = unit;
+            }
+
+            //Execute request
+            return $http.get(URL_GET_VALUE_LOG_STATS + deviceId, {
+                params: parameters
+            });
+        }
+
+        /**
+         * [Public]
          * Performs a server request in order to retrieve monitoring value logs for a certain monitoring component.
          *
          * @param deviceId The id of the device for which monitoring data is supposed to be retrieved
@@ -130,7 +158,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          * @param monitoringAdapterId Id of the affected monitoring adapter
          */
         function generateMonitoringURL(deviceId, monitoringAdapterId) {
-            return URL_MONITORING_PREFIX + deviceId + URL_GET_MONITORING_ADAPTER_SUFFIX + monitoringAdapterId;
+            return URL_MONITORING_PREFIX + deviceId + URL_ADAPTER_SUFFIX + monitoringAdapterId;
         }
 
         //Expose public methods
@@ -141,6 +169,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
             isMonitoringActive: isMonitoringActive,
             enableMonitoring: enableMonitoring,
             disableMonitoring: disableMonitoring,
+            getMonitoringValueLogStats: getMonitoringValueLogStats,
             getMonitoringValueLogs: getMonitoringValueLogs
         }
     }

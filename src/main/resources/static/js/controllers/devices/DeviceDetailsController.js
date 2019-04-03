@@ -4,14 +4,15 @@
  * Controller for the device details page.
  */
 app.controller('DeviceDetailsController',
-    ['$scope', '$controller', '$routeParams', '$interval', 'deviceDetails', 'compatibleAdapters', 'DeviceService', 'MonitoringService', 'NotificationService',
-        function ($scope, $controller, $routeParams, $interval, deviceDetails, compatibleAdapters, DeviceService, MonitoringService, NotificationService) {
+    ['$scope', '$controller', '$routeParams', '$interval', 'deviceDetails', 'compatibleAdapters', 'DeviceService', 'MonitoringService', 'UnitService', 'NotificationService',
+        function ($scope, $controller, $routeParams, $interval, deviceDetails, compatibleAdapters, DeviceService, MonitoringService, UnitService, NotificationService) {
 
             //Selectors that allow the selection of different ui cards
             const DETAILS_CARD_SELECTOR = ".details-card";
             const MONITORING_CONTROL_CARD_SELECTOR = ".control-card";
             const LIVE_CHART_SELECTOR_PREFIX = "#live-chart-";
             const HISTORICAL_CHART_SELECTOR_PREFIX = "#historical-chart-";
+            const STATS_SELECTOR_PREFIX = "#value-stats-";
 
             //Important properties of the currently considered device
             const DEVICE_ID = $routeParams.id;
@@ -46,11 +47,16 @@ app.controller('DeviceDetailsController',
                     adapter.displayUnit = adapter.unit;
                     adapter.reloadState = createReloadStateFunction(compatibleAdapters[i].id);
                     adapter.onMonitoringToggle = createMonitoringToggleFunction(compatibleAdapters[i].id);
-                    adapter.loadingLive = createLoadingFunctions(compatibleAdapters[i].id, LIVE_CHART_SELECTOR_PREFIX);
-                    adapter.loadingHistorical = createLoadingFunctions(compatibleAdapters[i].id,
-                        HISTORICAL_CHART_SELECTOR_PREFIX);
                     adapter.getData = createDataRetrievalFunction(compatibleAdapters[i].id);
                     adapter.isUpdateable = createUpdateCheckFunction(compatibleAdapters[i].id);
+                    adapter.getStats = createStatsRetrievalFunction(compatibleAdapters[i].id);
+                    adapter.loadingLive = createLoadingFunctions(compatibleAdapters[i].id, LIVE_CHART_SELECTOR_PREFIX,
+                        "Loading live chart...");
+                    adapter.loadingHistorical = createLoadingFunctions(compatibleAdapters[i].id,
+                        HISTORICAL_CHART_SELECTOR_PREFIX, "Loading historical chart...");
+                    adapter.loadingStats = createLoadingFunctions(compatibleAdapters[i].id, STATS_SELECTOR_PREFIX,
+                        "Loading value statistics...");
+                    adapter.onDisplayUnitChange = createOnDisplayUnitChangeFunction(compatibleAdapters[i].id);
                 }
 
                 //Stores the parameters and their values as assigned by the user
@@ -109,6 +115,31 @@ app.controller('DeviceDetailsController',
                 }
             }
 
+
+            /**
+             * [Private]
+             * Returns a function that allows the retrieval of value log statistics data.
+             *
+             * @param monitoringAdapterId The id of the affected monitoring adapter
+             * @returns {Function}
+             */
+            function createStatsRetrievalFunction(monitoringAdapterId) {
+                //Create function and return it
+                return function (unit) {
+                    //Return resulting promise
+                    return MonitoringService.getMonitoringValueLogStats(DEVICE_ID, monitoringAdapterId, unit).then(function (response) {
+                        //Success, pass statistics data
+                        return response.data;
+                    }, function (response) {
+                        //Failure
+                        NotificationService.notify('Could not load monitoring value log statistics.', 'error');
+                        return {};
+                    });
+
+                }
+            }
+
+
             /**
              * [Private]
              * Returns an object of functions that display a waiting screen when the chart wants to load data
@@ -117,16 +148,17 @@ app.controller('DeviceDetailsController',
              * @param monitoringAdapterId The id of the affected monitoring adapter
              * @param chartSelectorPrefix The selector prefix for the chart container for which the waiting screen
              * is supposed to be displayed
+             * @param displayText The text to display on the waiting screen
              * @returns {{start: DeviceDetailsController.start, finish: DeviceDetailsController.finish}}
              */
-            function createLoadingFunctions(monitoringAdapterId, chartSelectorPrefix) {
+            function createLoadingFunctions(monitoringAdapterId, chartSelectorPrefix, displayText) {
                 //Create object of functions and return it
                 return {
                     start: function () {
                         //Show waiting screen
                         $(chartSelectorPrefix + monitoringAdapterId).waitMe({
                             effect: 'bounce',
-                            text: "Loading chart...",
+                            text: displayText,
                             bg: 'rgba(255,255,255,0.85)'
                         });
                     },
@@ -190,6 +222,39 @@ app.controller('DeviceDetailsController',
                     }, function (response) {
                         adapter.state = 'UNKNOWN';
                         NotificationService.notify("Could not retrieve monitoring state.", "error");
+                    });
+                };
+            }
+
+            /**
+             * [Private]
+             * Returns a function that handles display unit changes triggered by the user.
+             *
+             * @param monitoringAdapterId The id of the affected monitoring adapter
+             * @returns {Function}
+             */
+            function createOnDisplayUnitChangeFunction(monitoringAdapterId) {
+                //Create function and return it
+                return function () {
+                    //Try to find an monitoring adapter with this id
+                    var adapter = getMonitoringAdapterById(monitoringAdapterId);
+                    if (adapter == null) {
+                        return;
+                    }
+
+                    //Check whether the entered unit is compatible with the adapter unit
+                    UnitService.checkUnitsForCompatibility(adapter.unit, adapter.displayUnitInput).then(function (response) {
+                        //Check compatibility according to server response
+                        if (!response.data) {
+                            NotificationService.notify("The entered unit is not compatible to the adapter unit.", "error");
+                            return;
+                        }
+
+                        //Units are compatible, take user input as new unit
+                        adapter.displayUnit = adapter.displayUnitInput;
+
+                    }, function () {
+                        NotificationService.notify("The entered unit is invalid.", "error");
                     });
                 };
             }

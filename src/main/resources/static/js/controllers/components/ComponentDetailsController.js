@@ -22,7 +22,6 @@ app.controller('ComponentDetailsController',
             vm.isLoading = false;
             vm.deploymentState = 'UNKNOWN';
             vm.deviceState = 'UNKNOWN';
-            vm.valueLogStats = null;
             vm.displayUnit = COMPONENT_ADAPTER_UNIT;
             vm.displayUnitInput = COMPONENT_ADAPTER_UNIT;
 
@@ -40,7 +39,9 @@ app.controller('ComponentDetailsController',
                 initParameters();
                 updateDeploymentState();
                 updateDeviceState();
-                updateValueLogStats();
+
+                //Initialize value log stats
+                initValueLogStats();
 
                 //Initialize charts
                 initLiveChart();
@@ -50,7 +51,6 @@ app.controller('ComponentDetailsController',
                 var interval = $interval(function () {
                     updateDeploymentState(true);
                     updateDeviceState();
-                    updateValueLogStats();
                 }, 2 * 60 * 1000);
 
                 //Cancel interval on route change and enable the loading bar again
@@ -108,36 +108,6 @@ app.controller('ComponentDetailsController',
 
             /**
              * [Public]
-             * Updates the value log stats of the currently considered component. By default, a waiting screen
-             * is displayed during the update. However, this can be deactivated.
-             *
-             * @param noWaitingScreen If set to true, no waiting screen is displayed during the refreshment
-             */
-            function updateValueLogStats(noWaitingScreen) {
-                //Display waiting screen if desired
-                if (!noWaitingScreen) {
-                    $(STATS_CARD_SELECTOR).waitMe({
-                        effect: 'bounce',
-                        text: "Loading overview...",
-                        bg: 'rgba(255,255,255,0.85)'
-                    });
-                }
-
-                //Retrieve value log stats for this component
-                ComponentService.getValueLogStats(COMPONENT_ID, COMPONENT_TYPE_URL, vm.displayUnit).then(function (response) {
-                    //Success
-                    vm.valueLogStats = response.data;
-                }, function (response) {
-                    //Failure
-                    NotificationService.notify('Could not load value log statistics.', 'error');
-                }).then(function () {
-                    //Finally hide the waiting screen
-                    $(STATS_CARD_SELECTOR).waitMe("hide");
-                });
-            }
-
-            /**
-             * [Public]
              * Called, when the user updates the unit in which the values should be displayed
              * by clicking on the update button.
              */
@@ -153,13 +123,9 @@ app.controller('ComponentDetailsController',
                         return;
                     }
 
-                    /*
-                    Units are compatible, take user input and update everything accordingly
-                    */
+                    //Units are compatible, take user input as new unit
                     vm.displayUnit = vm.displayUnitInput;
 
-                    //Value stats
-                    updateValueLogStats();
                 }, function () {
                     NotificationService.notify("The entered unit is invalid.", "error");
                 });
@@ -255,6 +221,54 @@ app.controller('ComponentDetailsController',
 
                 //Perform the server request in order to retrieve the data
                 return ComponentService.getValueLogs(COMPONENT_ID, COMPONENT_TYPE, pageDetails, unit);
+            }
+
+
+            /**
+             * [Private]
+             * Initializes the value log stats display.
+             */
+            function initValueLogStats(){
+                /**
+                 * Function that is called when the value log stats display loads something
+                 */
+                function loadingStart() {
+                    //Show waiting screen
+                    $(STATS_CARD_SELECTOR).waitMe({
+                        effect: 'bounce',
+                        text: 'Loading value statistics...',
+                        bg: 'rgba(255,255,255,0.85)'
+                    });
+                }
+
+                /**
+                 * Function that is called when the value log stats display finished loading
+                 */
+                function loadingFinish() {
+                    //Hide the waiting screen for the case it was displayed before
+                    $(STATS_CARD_SELECTOR).waitMe("hide");
+                }
+
+                /**
+                 * Function that is used by the value log stats display to retrieve the statistics in a specific unit
+                 * from the server.
+                 */
+                function getStats(unit){
+                    return ComponentService.getValueLogStats(COMPONENT_ID, COMPONENT_TYPE_URL, unit).then(function (response) {
+                        //Success, pass statistics data
+                        return response.data;
+                    }, function (response) {
+                        //Failure
+                        NotificationService.notify('Could not load value log statistics.', 'error');
+                        return {};
+                    });
+                }
+
+                vm.valueLogStats = {
+                    loadingStart: loadingStart,
+                    loadingFinish: loadingFinish,
+                    getStats: getStats
+                };
             }
 
             /**
@@ -388,7 +402,6 @@ app.controller('ComponentDetailsController',
             angular.extend(vm, {
                 updateDeploymentState: updateDeploymentState,
                 updateDeviceState: updateDeviceState,
-                updateValueLogStats: updateValueLogStats,
                 onDisplayUnitChange: onDisplayUnitChange,
                 deploy: deploy,
                 undeploy: undeploy

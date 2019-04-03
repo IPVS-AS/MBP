@@ -52,34 +52,34 @@ public class RestValueLogRetrievalController {
     /**
      * Replies with a pageable list of value logs of a certain actuator.
      *
-     * @param id       The id of the actuator for which the value logs should be retrieved
+     * @param actuatorId       The id of the actuator for which the value logs should be retrieved
      * @param unit     A string specifying the unit of the value log values
      * @param pageable Pageable parameters that specify the value logs to retrieve
      * @return A pageable list of value logs
      */
     @GetMapping("/actuators/{id}/valueLogs")
-    public ResponseEntity<Page<ValueLog>> getActuatorValueLogs(@PathVariable(value = "id") String id,
+    public ResponseEntity<Page<ValueLog>> getActuatorValueLogs(@PathVariable(value = "id") String actuatorId,
                                                                @RequestParam(value = "unit", required = false) String unit,
                                                                Pageable pageable) {
         //Get actuator object
-        Actuator actuator = (Actuator) getComponentById(id, actuatorRepository);
+        Actuator actuator = (Actuator) getComponentById(actuatorId, actuatorRepository);
         return getValueLogs(actuator, unit, pageable);
     }
 
     /**
      * Replies with a pageable list of value logs of a certain sensor.
      *
-     * @param id       The id of the sensor for which the value logs should be retrieved
+     * @param sensorId       The id of the sensor for which the value logs should be retrieved
      * @param unit     A string specifying the unit of the value log values
      * @param pageable Pageable parameters that specify the value logs to retrieve
      * @return A pageable list of value logs
      */
     @GetMapping("/sensors/{id}/valueLogs")
-    public ResponseEntity<Page<ValueLog>> getSensorValueLogs(@PathVariable(value = "id") String id,
+    public ResponseEntity<Page<ValueLog>> getSensorValueLogs(@PathVariable(value = "id") String sensorId,
                                                              @RequestParam(value = "unit", required = false) String unit,
                                                              Pageable pageable) {
         //Get sensor object
-        Sensor sensor = (Sensor) getComponentById(id, sensorRepository);
+        Sensor sensor = (Sensor) getComponentById(sensorId, sensorRepository);
         return getValueLogs(sensor, unit, pageable);
     }
 
@@ -165,7 +165,7 @@ public class RestValueLogRetrievalController {
      *
      * @param deviceId            The id of the device that is supposed to be part of the component
      * @param monitoringAdapterId The id of the monitoring adapter that is supposed to be part of the component
-     * @return
+     * @return The resulting monitoring component
      */
     private MonitoringComponent getMonitoringComponent(String deviceId, String monitoringAdapterId) {
         //Find device and monitoring adapter in their repositories

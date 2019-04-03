@@ -4,7 +4,7 @@
         <div class="card deployment-card">
             <div class="header"
                  ng-class="{'bg-red': componentDetailsCtrl.deploymentState=='NOT_READY', 'bg-green': componentDetailsCtrl.deploymentState=='READY', 'bg-cyan': componentDetailsCtrl.deploymentState=='DEPLOYED', 'bg-grey': componentDetailsCtrl.deploymentState=='UNKNOWN'}">
-                <i class="material-icons" style="position: absolute; margin-top: 4px">settings_remote</i>
+                <i class="material-icons" style="position: absolute; margin-top: 4px">wb_incandescent</i>
                 <h2 style="margin-left: 35px;">
                     {{componentDetailsCtrl.component.name}}
                     <small>{{componentDetailsCtrl.deploymentState=='NOT_READY' ? 'Deployment impossible' :
@@ -151,104 +151,32 @@
                 </h2>
                 <ul class="header-dropdown m-r--5">
                     <li>
-                        <a ng-click="componentDetailsCtrl.updateValueLogStats()" class="clickable">
+                        <a ng-click="valueLogStatsApi.updateStats()" class="clickable">
                             <i class="material-icons">refresh</i>
                         </a>
                     </li>
                 </ul>
             </div>
             <div class="body">
-                <div ng-show="componentDetailsCtrl.valueLogStats.numberLogs == 0">
-                    <p>No actuator values received yet.</p>
-                </div>
-                <div ng-show="componentDetailsCtrl.valueLogStats.numberLogs > 0">
-                    <h4>Display unit</h4>
-                    <div class="form-group">
-                        <div class="form-line">
-                            <unit-input ng-model="componentDetailsCtrl.displayUnitInput"
-                                        unit-filter="{{componentDetailsCtrl.component._embedded.adapter.unit}}"></unit-input>
-                        </div>
-                        <span class="help-block" ng-show="false"></span><br/>
-                        <button class="btn btn-primary m-t-0 waves-effect" ng-click="ctrl.onDisplayUnitChange()">
-                            Update
-                        </button>
+                <h4>Display unit</h4>
+                <div class="form-group">
+                    <div class="form-line">
+                        <unit-input ng-model="componentDetailsCtrl.displayUnitInput"
+                                    unit-filter="{{componentDetailsCtrl.component._embedded.adapter.unit}}"></unit-input>
                     </div>
-                    <br/>
-                    <h4>Value statistics</h4>
-                    <table class="table table-hover">
-                        <tbody>
-                        <tr>
-                            <th>Number of values:</th>
-                            <td>{{componentDetailsCtrl.valueLogStats.numberLogs}}</td>
-                        </tr>
-                        <tr>
-                            <th>Average:</th>
-                            <td>
-                                {{componentDetailsCtrl.valueLogStats.average}}&nbsp;{{componentDetailsCtrl.displayUnit}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Variance:</th>
-                            <td>{{componentDetailsCtrl.valueLogStats.variance}}&nbsp;
-                                {{componentDetailsCtrl.displayUnit ? '(' + componentDetailsCtrl.displayUnit + ')&sup2;'
-                                : ''}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Standard deviation:</th>
-                            <td>{{componentDetailsCtrl.valueLogStats.standardDeviation}}&nbsp;{{(componentDetailsCtrl.displayUnit)}}</td>
-                        </tr>
-                        <tr>
-                            <th>First value:</th>
-                            <td>
-                                <button uib-popover="{{componentDetailsCtrl.valueLogStats.firstLog.message}}"
-                                        popover-title="{{componentDetailsCtrl.valueLogStats.firstLog.date}}"
-                                        type="button"
-                                        class="btn btn-default">
-                                    {{componentDetailsCtrl.valueLogStats.firstLog.value}}
-                                </button>
-                                <span>&nbsp;{{(componentDetailsCtrl.displayUnit)}}</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Last value:</th>
-                            <td>
-                                <button uib-popover="{{componentDetailsCtrl.valueLogStats.lastLog.message}}"
-                                        popover-title="{{componentDetailsCtrl.valueLogStats.lastLog.date}}"
-                                        type="button"
-                                        class="btn btn-default">
-                                    {{componentDetailsCtrl.valueLogStats.lastLog.value}}
-                                </button>
-                                <span>&nbsp;{{(componentDetailsCtrl.displayUnit)}}</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Minimum value:</th>
-                            <td>
-                                <button uib-popover="{{componentDetailsCtrl.valueLogStats.minimumLog.message}}"
-                                        popover-title="{{componentDetailsCtrl.valueLogStats.minimumLog.date}}"
-                                        type="button"
-                                        class="btn btn-default">
-                                    {{componentDetailsCtrl.valueLogStats.minimumLog.value}}
-                                </button>
-                                <span>&nbsp;{{(componentDetailsCtrl.displayUnit)}}</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Maximum value:</th>
-                            <td>
-                                <button uib-popover="{{componentDetailsCtrl.valueLogStats.maximumLog.message}}"
-                                        popover-title="{{componentDetailsCtrl.valueLogStats.maximumLog.date}}"
-                                        type="button"
-                                        class="btn btn-default">
-                                    {{componentDetailsCtrl.valueLogStats.maximumLog.value}}
-                                </button>
-                                <span>&nbsp;{{(componentDetailsCtrl.displayUnit)}}</span>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+                    <span class="help-block" ng-show="false"></span><br/>
+                    <button class="btn btn-primary m-t-0 waves-effect" ng-click="ctrl.onDisplayUnitChange()">
+                        Update
+                    </button>
                 </div>
+                <br/>
+                <h4>Value statistics</h4>
+                <value-log-stats api="valueLogStatsApi"
+                                 loading-start="componentDetailsCtrl.valueLogStats.loadingStart()"
+                                 loading-finish="componentDetailsCtrl.valueLogStats.loadingFinish()"
+                                 get-stats="componentDetailsCtrl.valueLogStats.getStats(unit)"
+                                 unit="{{componentDetailsCtrl.displayUnit}}">
+                </value-log-stats>
             </div>
         </div>
     </div>
@@ -260,7 +188,7 @@
         <div class="card live-chart-card animate-show-hide" ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
             <div class="header">
                 <h2>
-                    Live actuator values <i class="material-icons" style="color: red;">live_tv</i>
+                    Live actuator values&nbsp;<i class="material-icons" style="color: red;">live_tv</i>
                 </h2>
             </div>
             <div class="body">
