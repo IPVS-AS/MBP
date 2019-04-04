@@ -1,4 +1,14 @@
-﻿/* Scrollable drop down */
+﻿/* Rotate collapse icons */
+li > a.collapsed > i.material-icons {
+    transform: rotate(90deg);
+}
+
+/* Animation for icon style changes */
+li > a > i.material-icons {
+    transition: .3s transform ease-in-out;
+}
+
+/* Scrollable drop down */
 .dropdown-scrollable {
     height: auto;
     max-height: 350px;
@@ -29,16 +39,4 @@ table.parameter-table td {
 
 .clickable {
     cursor: pointer;
-}
-
-/* Small progress bar*/
-.progress-small {
-    height: 4px;
-}
-
-.progress-in-card {
-    margin-left: -20px;
-    margin-right: -20px;
-    margin-top: -20px;
-    border-radius: 4px;
 }
