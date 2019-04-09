@@ -185,6 +185,9 @@ app.controller('SensorListController',
                     var sensor = vm.addSensorCtrl.result;
 
                     if (sensor) {
+                        //Close modal on success
+                        $("#addSensorModal").modal('toggle');
+
                         //Add state and reload function to the new object
                         sensor.state = 'LOADING';
                         sensor.reloadState = createReloadStateFunction(sensor.id);

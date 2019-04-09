@@ -179,6 +179,9 @@ app.controller('AdapterListController',
                             //Callback
                             var data = vm.addAdapterCtrl.result;
                             if (data) {
+                                //Close modal on success
+                                $("#addAdapterModal").modal('toggle');
+
                                 if(adapterPreprocessing){
                                     adapterPreprocessing(data);
                                 }
