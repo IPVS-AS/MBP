@@ -48,7 +48,7 @@ public class RestValueLogStatsController {
      * @param unit       A string specifying the desired unit of the value log stats
      * @return The value log stats of the actuator
      */
-    @GetMapping("/actuators/stats/{id}")
+    @GetMapping("/actuators/{id}/stats")
     public ResponseEntity<ValueLogStats> getActuatorValueLogStats(@PathVariable(value = "id") String actuatorId,
                                                                   @RequestParam(value = "unit", required = false) String unit) {
         //Get actuator object
@@ -63,7 +63,7 @@ public class RestValueLogStatsController {
      * @param unit     A string specifying the desired unit of the value log stats
      * @return The value log stats of the sensor
      */
-    @GetMapping("/sensors/stats/{id}")
+    @GetMapping("/sensors/{id}/stats")
     public ResponseEntity<ValueLogStats> getSensorValueLogStats(@PathVariable(value = "id") String sensorId,
                                                                 @RequestParam(value = "unit", required = false) String unit) {
         //Get sensor object
@@ -79,7 +79,7 @@ public class RestValueLogStatsController {
      * @param unit                A string specifying the desired unit of the value log stats
      * @return The value log stats of the sensor
      */
-    @GetMapping("/monitoring/stats/{deviceId}")
+    @GetMapping("/monitoring/{deviceId}/stats")
     public ResponseEntity<ValueLogStats> getMonitoringValueLogStats(@PathVariable(value = "deviceId") String deviceId,
                                                                     @RequestParam("adapter") String monitoringAdapterId,
                                                                     @RequestParam(value = "unit", required = false) String unit) {
