@@ -225,10 +225,51 @@ app.controller('ComponentDetailsController',
 
 
             /**
+             * [Public]
+             * Asks the user if he really wants to delete all value logs for the current component. If this is the case,
+             * the deletion is executed by creating the corresponding server request.
+             */
+            function deleteValueLogs() {
+                /**
+                 * Executes the deletion of the value logs by performing the server request.
+                 */
+                function executeDeletion() {
+                    ComponentService.deleteValueLogs(COMPONENT_ID, COMPONENT_TYPE).then(function (response) {
+                        //Update historical chart and stats
+                        $scope.historicalChartApi.updateChart();
+                        $scope.valueLogStatsApi.updateStats();
+
+                        NotificationService.notify("Value logs were deleted successfully.", "success");
+                    }, function (response) {
+                        NotificationService.notify("Could not delete value logs.", "error");
+                    });
+                }
+
+                //Ask the user to confirm the deletion
+                return Swal.fire({
+                    title: 'Delete value data',
+                    type: 'warning',
+                    html: "Are you sure you want to delete all value data that has been recorded so far for this " +
+                        "component? This action cannot be undone.",
+                    showCancelButton: true,
+                    confirmButtonText: 'Delete',
+                    confirmButtonClass: 'bg-red',
+                    focusConfirm: false,
+                    cancelButtonText: 'Cancel'
+                }).then(function (result) {
+                    //Check if the user confirmed the deletion
+                    if (result.value) {
+                        executeDeletion();
+                    }
+                });
+            }
+
+
+            /**
              * [Private]
              * Initializes the value log stats display.
              */
-            function initValueLogStats(){
+            function initValueLogStats() {
                 /**
                  * Function that is called when the value log stats display loads something
                  */
@@ -253,7 +294,7 @@ app.controller('ComponentDetailsController',
                  * Function that is used by the value log stats display to retrieve the statistics in a specific unit
                  * from the server.
                  */
-                function getStats(unit){
+                function getStats(unit) {
                     return ComponentService.getValueLogStats(COMPONENT_ID, COMPONENT_TYPE_URL, unit).then(function (response) {
                         //Success, pass statistics data
                         return response.data;
@@ -404,7 +445,8 @@ app.controller('ComponentDetailsController',
                 updateDeviceState: updateDeviceState,
                 onDisplayUnitChange: onDisplayUnitChange,
                 deploy: deploy,
-                undeploy: undeploy
+                undeploy: undeploy,
+                deleteValueLogs: deleteValueLogs
             });
 
         }]

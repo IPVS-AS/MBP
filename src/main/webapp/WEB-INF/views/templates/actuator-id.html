@@ -177,6 +177,11 @@
                                  get-stats="componentDetailsCtrl.valueLogStats.getStats(unit)"
                                  unit="{{componentDetailsCtrl.displayUnit}}">
                 </value-log-stats>
+                <div style="height: 20px"></div>
+                <h4>Delete data</h4>
+                <button class="btn btn-danger waves-effect" ng-click="componentDetailsCtrl.deleteValueLogs()">
+                    Delete all actuator data
+                </button>
             </div>
         </div>
     </div>
@@ -230,3 +235,6 @@
         </div>
     </div>
 </div>
+                
+                
+                

@@ -57,6 +57,7 @@ app.controller('DeviceDetailsController',
                     adapter.loadingStats = createLoadingFunctions(compatibleAdapters[i].id, STATS_SELECTOR_PREFIX,
                         "Loading value statistics...");
                     adapter.onDisplayUnitChange = createOnDisplayUnitChangeFunction(compatibleAdapters[i].id);
+                    adapter.deleteValueLogs = createValueLogDeletionFunction(compatibleAdapters[i].id);
                 }
 
                 //Stores the parameters and their values as assigned by the user
@@ -258,6 +259,62 @@ app.controller('DeviceDetailsController',
                     });
                 };
             }
+
+            /**
+             * [Private]
+             * Returns a function that allows the deletion of all recorded value logs of the corresponding
+             * monitoring component after the user confirmed the decision.
+             *
+             * @param monitoringAdapterId The id of the affected monitoring adapter
+             * @returns {Function}
+             */
+            function createValueLogDeletionFunction(monitoringAdapterId) {
+                //Create function and return it
+                return function () {
+                    /**
+                     * Executes the deletion of the value logs by performing the server request.
+                     */
+                    function executeDeletion(adapter) {
+                        MonitoringService.deleteMonitoringValueLogs(DEVICE_ID, monitoringAdapterId)
+                            .then(function (response) {
+                                //Update historical chart and stats
+                                adapter.historicalChartApi.updateChart();
+                                adapter.valueLogStatsApi.updateStats();
+
+                                NotificationService.notify("Monitoring data was deleted successfully.", "success");
+                            }, function (response) {
+                                NotificationService.notify("Could not delete monitoring data.", "error");
+                            });
+                    }
+
+                    //Try to find an monitoring adapter with this id
+                    var adapter = getMonitoringAdapterById(monitoringAdapterId);
+                    if (adapter == null) {
+                        return;
+                    }
+
+                    //Ask the user to confirm the deletion
+                    return Swal.fire({
+                        title: 'Delete value data',
+                        type: 'warning',
+                        html: "Are you sure you want to delete all monitoring data that has been recorded so far " +
+                            "for this monitoring component? This action cannot be undone.",
+                        showCancelButton: true,
+                        confirmButtonText: 'Delete',
+                        confirmButtonClass: 'bg-red',
+                        focusConfirm: false,
+                        cancelButtonText: 'Cancel'
+                    }).then(function (result) {
+                        //Check if the user confirmed the deletion
+                        if (result.value) {
+                            executeDeletion(adapter);
+                        }
+                    });
+
+
+                };
+            }
+
 
             /**
              * Returns the monitoring adapter object that corresponds to a certain adapter id, as
