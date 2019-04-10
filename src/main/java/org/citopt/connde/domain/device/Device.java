@@ -1,7 +1,5 @@
 package org.citopt.connde.domain.device;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -23,7 +21,6 @@ public class Device {
     @Indexed
     private String componentType;
 
-    @Indexed(unique = true)
     private String macAddress;
 
     private String ipAddress;
@@ -34,10 +31,10 @@ public class Device {
 
     private String username;
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String rsaKey;
 
     public static String formatMAC(String raw) {
