@@ -15,7 +15,7 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
         //URL suffix under which the deployment state of a certain component can be retrieved
         const URL_GET_VALUE_LOG_STATS_SUFFIX = '/stats/';
         //URL suffix under which the value logs of a certain component can be retrieved
-        const URL_GET_VALUE_LOGS_SUFFIX = '/valueLogs';
+        const URL_VALUE_LOGS_SUFFIX = '/valueLogs';
 
 
         /**
@@ -84,13 +84,28 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
             }
 
             //Execute request
-            return $http.get(URL_PREFIX + component + 's/' + componentId + URL_GET_VALUE_LOGS_SUFFIX, {
+            return $http.get(URL_PREFIX + component + 's/' + componentId + URL_VALUE_LOGS_SUFFIX, {
                 params: parameters
             }).then(function (response) {
                 //Process received logs in order to be able to display them in a chart
                 return processValueLogs(response.data.content);
             });
         }
+
+
+        /**
+         * [Public]
+         * Performs a server request in order to delete all recorded value logs of a certain component.
+         *
+         * @param componentId The id of the component whose value logs are supposed to be deleted
+         * @param component The type of the component
+         * @returns {*}
+         */
+        function deleteValueLogs(componentId, component) {
+            //Execute request
+            return $http.delete(URL_PREFIX + component + 's/' + componentId + URL_VALUE_LOGS_SUFFIX);
+        }
+
 
         /**
          * [Public]
@@ -160,6 +175,7 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
             getComponentState: getComponentState,
             getValueLogStats: getValueLogStats,
             getValueLogs: getValueLogs,
+            deleteValueLogs: deleteValueLogs,
             isDeployed: function (url) {
                 return $http({
                     method: 'GET',

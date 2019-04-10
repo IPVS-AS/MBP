@@ -10,7 +10,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
         const URL_MONITORING_PREFIX = ENDPOINT_URI + '/monitoring/';
         const URL_GET_STATE = ENDPOINT_URI + '/monitoring/state/';
         const URL_GET_VALUE_LOG_STATS = ENDPOINT_URI + '/monitoring/stats/';
-        const URL_GET_VALUE_LOGS_SUFFIX = '/valueLogs';
+        const URL_VALUE_LOGS_SUFFIX = '/valueLogs';
         const URL_ADAPTER_SUFFIX = '?adapter=';
 
         /**
@@ -142,13 +142,38 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
             }
 
             //Execute request
-            return $http.get(URL_MONITORING_PREFIX + deviceId + URL_GET_VALUE_LOGS_SUFFIX, {
+            return $http.get(URL_MONITORING_PREFIX + deviceId + URL_VALUE_LOGS_SUFFIX, {
                 params: parameters
             }).then(function (response) {
                 //Process received logs in order to be able to display them in a chart
                 return ComponentService.processValueLogs(response.data.content);
             });
         }
+
+
+        /**
+         * [Public]
+         * Performs a server request in order to delete all recorded value logs of a certain monitoring component.
+         *
+         * @param componentId The id of the component whose value logs are supposed to be deleted
+         * @param component The type of the component
+         * @param deviceId The id of the device that is part of the monitoring component whose value logs
+         * are supposed to be deleted
+         * @param monitoringAdapterId The id of the monitoring adapter that is part of the monitoring component
+         * whose value logs are supposed to be deleted
+         * @returns {*}
+         */
+        function deleteMonitoringValueLogs(deviceId, monitoringAdapterId) {
+            var parameters = {
+                adapter: monitoringAdapterId
+            };
+
+            //Execute request
+            return $http.delete(URL_MONITORING_PREFIX + deviceId + URL_VALUE_LOGS_SUFFIX, {
+                params: parameters
+            });
+        }
+
 
         /**
          * [Private]
@@ -170,7 +195,8 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
             enableMonitoring: enableMonitoring,
             disableMonitoring: disableMonitoring,
             getMonitoringValueLogStats: getMonitoringValueLogStats,
-            getMonitoringValueLogs: getMonitoringValueLogs
+            getMonitoringValueLogs: getMonitoringValueLogs,
+            deleteMonitoringValueLogs: deleteMonitoringValueLogs
         }
     }
 ]);

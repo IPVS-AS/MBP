@@ -179,9 +179,14 @@
                     </h2>
                     <ul class="header-dropdown m-r--5">
                         <li>
-                            <a ng-click="adapter.historicalChartApi.updateChart(); adapter.valueLogStatsApi.updateStats();"
-                               class="clickable">
+                            <a class="clickable"
+                               ng-click="adapter.historicalChartApi.updateChart(); adapter.valueLogStatsApi.updateStats();">
                                 <i class="material-icons">refresh</i>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="clickable" ng-click="adapter.deleteValueLogs()">
+                                <i class="material-icons">delete</i>
                             </a>
                         </li>
                         <li>

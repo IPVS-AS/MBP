@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.measure.converter.UnitConverter;
 import javax.measure.unit.Unit;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * REST Controller for retrieving value logs for certain components. Furthermore, it provides
@@ -29,7 +30,7 @@ import java.util.Iterator;
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
-public class RestValueLogRetrievalController {
+public class RestValueLogController {
 
     @Autowired
     UnitConverterService unitConverterService;
@@ -52,9 +53,9 @@ public class RestValueLogRetrievalController {
     /**
      * Replies with a pageable list of value logs of a certain actuator.
      *
-     * @param actuatorId       The id of the actuator for which the value logs should be retrieved
-     * @param unit     A string specifying the unit of the value log values
-     * @param pageable Pageable parameters that specify the value logs to retrieve
+     * @param actuatorId The id of the actuator for which the value logs should be retrieved
+     * @param unit       A string specifying the unit of the value log values
+     * @param pageable   Pageable parameters that specify the value logs to retrieve
      * @return A pageable list of value logs
      */
     @GetMapping("/actuators/{id}/valueLogs")
@@ -69,7 +70,7 @@ public class RestValueLogRetrievalController {
     /**
      * Replies with a pageable list of value logs of a certain sensor.
      *
-     * @param sensorId       The id of the sensor for which the value logs should be retrieved
+     * @param sensorId The id of the sensor for which the value logs should be retrieved
      * @param unit     A string specifying the unit of the value log values
      * @param pageable Pageable parameters that specify the value logs to retrieve
      * @return A pageable list of value logs
@@ -100,6 +101,53 @@ public class RestValueLogRetrievalController {
         //Get monitoring component object
         MonitoringComponent monitoringComponent = getMonitoringComponent(deviceId, monitoringAdapterId);
         return getValueLogs(monitoringComponent, unit, pageable);
+    }
+
+    /**
+     * Deletes all recorded +value logs of a certain actuator.
+     *
+     * @param actuatorId The id of the actuator whose data is supposed to be deleted
+     * @return A response entity that may be returned to the client
+     */
+    @DeleteMapping("/actuators/{id}/valueLogs")
+    public ResponseEntity<Page<ValueLog>> deleteActuatorValueLogs(@PathVariable(value = "id") String actuatorId) {
+        //Get actuator object
+        Actuator actuator = (Actuator) getComponentById(actuatorId, actuatorRepository);
+
+        //Delete value logs of this actuator
+        return deleteValueLogs(actuator);
+    }
+
+    /**
+     * Deletes all recorded +value logs of a certain sensor.
+     *
+     * @param sensorId The id of the sensor whose data is supposed to be deleted
+     * @return A response entity that may be returned to the client
+     */
+    @DeleteMapping("/sensors/{id}/valueLogs")
+    public ResponseEntity<Page<ValueLog>> deleteSensorValueLogs(@PathVariable(value = "id") String sensorId) {
+        //Get sensor object
+        Sensor sensor = (Sensor) getComponentById(sensorId, sensorRepository);
+
+        //Delete value logs of this sensor
+        return deleteValueLogs(sensor);
+    }
+
+    /**
+     * Deletes all recorded +value logs of a certain monitoring component.
+     *
+     * @param deviceId            The id of the device whose data is supposed to be deleted
+     * @param monitoringAdapterId The id of the device whose data is supposed to be deleted
+     * @return A response entity that may be returned to the client
+     */
+    @DeleteMapping("/monitoring/{deviceId}/valueLogs")
+    public ResponseEntity<Page<ValueLog>> deleteMonitoringValueLogs(@PathVariable(value = "deviceId") String deviceId,
+                                                                    @RequestParam("adapter") String monitoringAdapterId) {
+        //Get monitoring component object
+        MonitoringComponent monitoringComponent = getMonitoringComponent(deviceId, monitoringAdapterId);
+
+        //Delete value logs of this component
+        return deleteValueLogs(monitoringComponent);
     }
 
     /**
@@ -146,6 +194,30 @@ public class RestValueLogRetrievalController {
 
         //All values converted, now return
         return new ResponseEntity<>(page, HttpStatus.OK);
+    }
+
+    /**
+     * Deletes all recorded +value logs of a certain component.
+     *
+     * @param component The component whose data is supposed to be deleted
+     * @return A response entity that may be returned to the client
+     */
+    private ResponseEntity deleteValueLogs(Component component) {
+        //Component not found?
+        if (component == null) {
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+
+        //Get list of all value logs for this component
+        List<ValueLog> valueLogs = valueLogRepository.findListByIdref(component.getId());
+
+        //Iterate over all value logs and delete them one by one
+        for (ValueLog valueLog : valueLogs) {
+            valueLogRepository.delete(valueLog);
+        }
+
+        //Return success response
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     /**
