@@ -210,12 +210,12 @@
                                 <i class="material-icons" style="color: red;">live_tv</i>&nbsp;Live Chart
                             </a>
                         </li>
-                        <li role="presentation" class="active">
+                        <li role="presentation" class="active" ng-click="adapter.historicalChartApi.updateChart()">
                             <a data-target="#historical-chart-{{adapter.id}}" data-toggle="tab">
                                 <i class="material-icons">access_time</i>&nbsp;Historical Chart
                             </a>
                         </li>
-                        <li role="presentation">
+                        <li role="presentation" ng-click="adapter.valueLogStatsApi.updateStats()">
                             <a data-target="#value-stats-{{adapter.id}}" data-toggle="tab">
                                 <i class="material-icons">equalizer</i>&nbsp;Value Statistics
                             </a>
