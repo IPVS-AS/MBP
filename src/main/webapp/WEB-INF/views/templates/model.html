@@ -149,32 +149,32 @@
         <div class="row" style="width: 100%; margin-left: 0px; margin-right: 0px">
           <div class="tool-header-left" style="width: 50%">
             <select class="form-control show-tick" id="select-models" ng-change="vm.drawModel(model)" ng-model="model" style="display: inline-block; width: 50%">
+              <option disabled="disabled" value="">
+                -- Select model --
+              </option>
               <option ng-repeat="model in vm.loadedModels" value="{{model}}" ng-selected="model.name === vm.selectedOptionName">{{model.name}}</option>
             </select>
-            <input id="modelNameInput" type="text" name="name" ng-model="vm.currentModel.name" autocomplete="off" placeholder="Name" style="display: inline-block; width: 50%"/>
+            <input id="modelNameInput" type="text" name="name" ng-model="vm.currentModel.name" autocomplete="off" placeholder="Name required" style="display: inline-block; width: 50%"/>
           </div>
           <div class="tool-header-right">
             <button id="newModelBtn" title="New model" ng-click="vm.newModel()">
               <i class="fas fa-plus-circle"></i>
             </button>
             &nbsp;&nbsp;
-            <button id="saveModelBtn" title="Save" ng-click="vm.saveModel()">
+            <button id="saveModelBtn" title="Save" ng-click="vm.saveModel()" ng-disabled="!vm.currentModel.name || vm.currentModel.name === ''">
               <i class="fas fa-save"></i>
             </button>
-            <button id="clearCanvasBtn" title="Clear" ng-click="vm.clearCanvas()">
-              <i class="fas fa-eraser"></i>
-            </button>
-            <button id="deleteModelBtn" title="Delete" ng-click="vm.deleteModel()">
+            <button id="deleteModelBtn" title="Delete" ng-click="vm.deleteModel()" ng-disabled="!vm.currentModel.name || vm.currentModel.name === ''">
               <i class="fas fa-trash-alt"></i>
             </button>
             &nbsp;&nbsp;
-            <button id="registerComponentsBtn" title="Register components" ng-click="vm.registerComponents()">
+            <button id="registerComponentsBtn" title="Register components" ng-click="vm.registerComponents()" ng-disabled="!vm.currentModel.name || vm.currentModel.name === ''">
               <i class="fas fa-share-square"></i>
             </button>
-            <button id="deployComponentsBtn" title="Deploy model" ng-click="vm.deployComponents()">
+            <button id="deployComponentsBtn" title="Deploy model" ng-click="vm.deployComponents()" ng-disabled="!vm.currentModel.name || vm.currentModel.name === ''">
               <i class="fas fa-cogs"></i>
             </button>
-            <button id="undeployComponentsBtn" title="Undeploy model" ng-click="vm.undeployComponents()">
+            <button id="undeployComponentsBtn" title="Undeploy model" ng-click="vm.undeployComponents()" ng-disabled="!vm.currentModel.name || vm.currentModel.name === ''">
               <span class="icon-stack">
                 <i class="fas fa-slash icon-stack-2x"></i>
                 <i class="fas fa-cogs icon-stack-1x"></i>

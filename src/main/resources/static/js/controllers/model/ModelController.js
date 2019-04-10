@@ -91,18 +91,6 @@
         allowLoopback: false
       };
 
-      // bind a click listener to each connection; the connection is deleted on double click
-      jsPlumbInstance.bind("dblclick", jsPlumbInstance.deleteConnection);
-      jsPlumbInstance.bind("click", function(connection, originalEvent) {
-        var overlay = connection.getOverlay("label");
-        if (overlay.isVisible() && originalEvent.target.localName == 'path') {
-          overlay.hide();
-        } else if (!overlay.isVisible()) {
-          overlay.show();
-        }
-      });
-
-
       function makeResizable(id) {
         $(id).resizable({
           start: function(event, ui) {
@@ -385,6 +373,7 @@
           function(response) {
             console.log(response);
             element.removeData("id");
+            element.removeData("depError");
             element.removeData("regError");
             element.removeClass("error-element");
             element.removeClass("success-element");
@@ -422,6 +411,17 @@
         });
       }
 
+      // bind a click listener to each connection; the connection is deleted on double click
+      jsPlumbInstance.bind("dblclick", jsPlumbInstance.deleteConnection);
+      jsPlumbInstance.bind("click", function(connection, originalEvent) {
+        var overlay = connection.getOverlay("label");
+        if (overlay.isVisible() && originalEvent.target.localName == 'path') {
+          overlay.hide();
+        } else if (!overlay.isVisible()) {
+          overlay.show();
+        }
+      });
+
       // Add device name and id to sensor or actuator when a connection was created
       jsPlumbInstance.bind("connection", function(info) {
         saveData();
@@ -435,6 +435,10 @@
 
       // Undeploy, deregister and remove device name and id from sensor or actuator when a connection is removed
       jsPlumbInstance.bind("connectionDetached", function(info) {
+        onDetach(info);
+      });
+
+      function onDetach(info) {
         vm.processing = {};
         vm.processing.status = true;
         vm.processing.finished = false;
@@ -473,7 +477,7 @@
         } else {
           vm.processing.status = false;
         }
-      });
+      }
 
       // Update device name in sensor or actuator
       function updateDeviceSA(device) {
@@ -575,7 +579,6 @@
         });
       }
 
-
       function drawModel(model) {
         clearCanvas();
         vm.currentModel = JSON.parse(model);
@@ -601,7 +604,7 @@
       }
 
       function loadModels() {
-        ModelService.GetModelsByUsername().then(function(response) {
+        return ModelService.GetModelsByUsername().then(function(response) {
           console.log(response);
           vm.loadedModels = response.data;
         }, function(response) {
@@ -699,32 +702,32 @@
 
         var model = {};
         model.value = JSON.stringify(environment);
-
-        if (!vm.currentModel.name || vm.currentModel.name === "") {
-          vm.currentModel.name = "New model";
-        }
         model.name = vm.currentModel.name;
+        model.id = vm.currentModel.id;
 
         console.log(model);
 
-        return ModelService.SaveModel(model).then(function(response) {
-          if (savingIndividual) {
-            vm.processing.message = "Model saved";
-            vm.processing.success = true;
-            processingTimeout();
-          }
-          console.log(response);
-          vm.selectedOptionName = model.name;
-          loadModels();
-        }, function(response) {
-          if (savingIndividual) {
-            vm.processing.message = "Model saving error";
-            vm.processing.success = false;
-            processingTimeout();
-          }
-          vm.processing.saved = false;
-          console.log(response);
-        });
+        return ModelService.SaveModel(model).then(
+          function(response) {
+            if (savingIndividual) {
+              vm.processing.message = "Model saved";
+              vm.processing.success = true;
+              processingTimeout();
+            }
+            console.log(response);
+            vm.currentModel = response.data;
+            vm.selectedOptionName = vm.currentModel.name;
+            loadModels();
+          },
+          function(response) {
+            if (savingIndividual) {
+              vm.processing.message = response.headers('X-MBP-error') ? response.headers('X-MBP-error') : "Model saving error";
+              vm.processing.success = false;
+              processingTimeout();
+            }
+            vm.processing.saved = false;
+            console.log(response);
+          });
 
       }
 
@@ -770,18 +773,26 @@
       }
 
       function clearCanvas() {
+        jsPlumbInstance.unbind("connectionDetached");
         jsPlumbInstance.empty("canvas");
         $timeout(function() {
           vm.clickedComponent = {};
+        });
+        jsPlumbInstance.bind("connectionDetached", function(info) {
+          onDetach(info);
         });
       }
 
       function newModel() {
         elementIdCount = 0;
         vm.currentModel = {};
-        vm.selectedOptionName = "";
         clearCanvas();
-        loadModels();
+        loadModels().then(function(response) {
+          $timeout(function() {
+            vm.selectedOptionName = "";
+            $("#select-models").val("");
+          });
+        });
       }
 
       function registerComponents() {
@@ -866,6 +877,7 @@
               updateDeviceSA(element);
             }
             element.removeData("regError");
+            element.removeData("depError");
             element.removeClass("error-element");
             element.addClass("success-element");
           },
@@ -937,6 +949,7 @@
           function(response) {
             console.log(response);
             element.data("deployed", true);
+            element.removeData("regError");
             element.removeData("depError");
             element.removeClass("error-element");
             element.removeClass("success-element");
@@ -1011,6 +1024,7 @@
             console.log(response);
             element.data("deployed", false);
             element.removeData("depError");
+            element.removeData("regError");
             element.removeClass("error-element");
             element.removeClass("deployed-element");
             element.addClass("success-element");

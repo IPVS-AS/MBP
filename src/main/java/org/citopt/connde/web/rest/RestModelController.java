@@ -11,6 +11,7 @@ import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.model.Model;
 import org.citopt.connde.repository.ModelRepository;
 import org.citopt.connde.security.SecurityUtils;
+import org.citopt.connde.web.rest.util.HeaderUtil;
 import org.citopt.connde.web.rest.util.PaginationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -53,14 +54,13 @@ public class RestModelController {
 		
 		Model newModel = null;
         Optional<Model> dbModel = modelRepository.findOneByNameAndUsername(model.getName(), model.getUsername());
-        if (dbModel.isPresent()) {
-        	dbModel.get().setValue(model.getValue());
-        	newModel = modelRepository.save(dbModel.get());
+        if (dbModel.isPresent() && !dbModel.get().getId().equals(model.getId())) {
+			return ResponseEntity.badRequest()
+					.headers(HeaderUtil.createFailureAlert("The name already exists", dbModel.get().getName())).body(null);
         } else {
     		newModel = modelRepository.save(model);
+    		return ResponseEntity.ok().body(newModel);
         }
-        
-		return ResponseEntity.ok().body(newModel);
 	}
 	
 	/**
