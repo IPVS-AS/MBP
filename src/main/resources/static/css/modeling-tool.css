@@ -402,16 +402,23 @@ li {
   border: 2px solid grey;
 }
 
+/* --- Devices ------------------------------------------------------------------------------------------- */
 .default-device {
-  background-image: url("../images/default-device.png");
+  background-image: url("../images/model/default-device.png");
 }
 
+/* --- Actuators ------------------------------------------------------------------------------------------- */
 .default-actuator {
-  background-image: url("../images/default-actuator.png");
+  background-image: url("../images/model/default-actuator.png");
+}
+
+/* --- Sensors ------------------------------------------------------------------------------------------- */
+.location-sensor {
+  background-image: url("../images/model/location-sensor.png");
 }
 
 .default-sensor {
-  background-image: url("../images/default-sensor.png");
+  background-image: url("../images/model/default-sensor.png");
 }
 
 /* ---------------------------------------------------------------------------------------------------- */

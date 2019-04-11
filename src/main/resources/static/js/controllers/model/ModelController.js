@@ -126,6 +126,7 @@
       makeDraggable("#door", "window door custom");
       makeDraggable("#defaultDevice", "window device default-device custom");
       makeDraggable("#defaultActuator", "window actuator default-actuator custom");
+      makeDraggable("#locationSensor", "window sensor location-sensor custom");
       makeDraggable("#defaultSensor", "window sensor default-sensor custom");
 
       //make the editor canvas droppable
@@ -156,33 +157,38 @@
 
       // Temporary saved properties of clicked element in palette
       // The data is used to create the element on drop
-      function loadProperties(clsName) {
+      function loadProperties(clsName, type) {
         properties = {};
         properties.clsName = clsName;
+        properties.type = type;
         clicked = true;
       }
 
       //load properties of a room element once the end element in the palette is clicked
       $('#room').mousedown(function() {
-        loadProperties("window room custom jtk-node");
+        loadProperties("window room custom jtk-node", undefined);
       });
 
       //load properties of a door element once the end element in the palette is clicked
       $('#door').mousedown(function() {
-        loadProperties("window door custom jtk-node");
+        loadProperties("window door custom jtk-node", undefined);
       });
 
       //load properties of a device element once the end element in the palette is clicked
       $('#defaultDevice').mousedown(function() {
-        loadProperties("window device default-device custom jtk-node");
+        loadProperties("window device default-device custom jtk-node", undefined);
       });
 
       $('#defaultActuator').mousedown(function() {
-        loadProperties("window actuator default-actuator custom jtk-node");
+        loadProperties("window actuator default-actuator custom jtk-node", undefined);
+      });
+
+      $('#locationSensor').mousedown(function() {
+        loadProperties("window sensor location-sensor custom jtk-node", "Location");
       });
 
       $('#defaultSensor').mousedown(function() {
-        loadProperties("window sensor default-sensor custom jtk-node");
+        loadProperties("window sensor default-sensor custom jtk-node", undefined);
       });
 
       //create an element to be drawn on the canvas
@@ -236,6 +242,10 @@
           // Add connection square on device
           if (properties.clsName.indexOf("device") > -1) {
             element.append("<div class=\"ep\"></div>");
+          }
+
+          if (properties.type) {
+            element.data("type", properties.type);
           }
         }
 
@@ -509,6 +519,9 @@
               $("#deviceInfo *").attr("disabled", true).off('click');
             } else {
               $("#deviceInfo *").attr("disabled", false).on('click');
+              if (element.attr("class").indexOf("default") == -1) {
+                $("#deviceTypeInput").attr("disabled", true);
+              }
             }
           } else if (element.attr("class").indexOf("actuator") > -1) {
             vm.clickedComponent.category = "ACTUATOR";
@@ -526,6 +539,9 @@
             } else {
               $("#actuatorInfo *").attr("disabled", false).on('click');
               $("#actuatorDeviceInput").attr("disabled", true);
+              if (element.attr("class").indexOf("default") == -1) {
+                $("#actuatorTypeInput").attr("disabled", true);
+              }
             }
           } else if (element.attr("class").indexOf("sensor") > -1) {
             vm.clickedComponent.category = "SENSOR";
@@ -543,6 +559,9 @@
             } else {
               $("#sensorInfo *").attr("disabled", false).on('click');
               $("#sensorDeviceInput").attr("disabled", true);
+              if (element.attr("class").indexOf("default") == -1) {
+                $("#sensorTypeInput").attr("disabled", true);
+              }
             }
           }
         });
