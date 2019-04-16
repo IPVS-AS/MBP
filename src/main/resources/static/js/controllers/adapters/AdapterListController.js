@@ -13,7 +13,6 @@ app.controller('AdapterListController',
 
                 vm.dzServiceCallbacks = {
                     'addedfile': function (file) {
-                        console.log(file);
                         vm.addAdapterCtrl.item.serviceFile = file;
                     }
                 };
@@ -186,6 +185,11 @@ app.controller('AdapterListController',
                                     adapterPreprocessing(data);
                                 }
                                 vm.adapterListCtrl.pushItem(data);
+
+                                //Clear parameter array
+                                vm.parameters = [];
+
+                                vm.addAdapterCtrl.item.deviceTypes = {};
                             }
                         }
                 );
