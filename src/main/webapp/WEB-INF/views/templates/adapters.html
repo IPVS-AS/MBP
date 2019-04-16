@@ -32,12 +32,9 @@
                         <td>{{item.unit ? item.unit : 'None'}}</td>
                         <td>
                             <button ng-repeat-start="parameter in item.parameters"
-                                    class="btn btn-default"
-                                    role="button"
-                                    data-html="true"
-                                    data-toggle="popover"
-                                    data-placement="top"
-                                    title="Parameter"
+                                    class="btn btn-default" role="button"
+                                    data-html="true" data-toggle="popover"
+                                    data-placement="top" title="Parameter"
                                     data-content="<strong>Name:</strong> {{parameter.name}}<br/>
                                     <strong>Type:</strong> {{parameter.type}}<br/>
                                     <strong>Unit:</strong> {{parameter.unit ? parameter.unit : 'None'}}">
