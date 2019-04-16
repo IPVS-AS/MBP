@@ -37,7 +37,6 @@ app.controller('AdapterListController',
                 vm.parameters = [];
                 vm.parameterTypes = parameterTypesList;
 
-
                 /**
                  * Initializing function, sets up basic things.
                  */
@@ -181,15 +180,16 @@ app.controller('AdapterListController',
                                 //Close modal on success
                                 $("#addAdapterModal").modal('toggle');
 
+                                //Call pre processing function
                                 if(adapterPreprocessing){
                                     adapterPreprocessing(data);
                                 }
+
+                                //Add new item to list
                                 vm.adapterListCtrl.pushItem(data);
 
                                 //Clear parameter array
-                                vm.parameters = [];
-
-                                vm.addAdapterCtrl.item.deviceTypes = {};
+                                vm.parameters.length = 0;
                             }
                         }
                 );
