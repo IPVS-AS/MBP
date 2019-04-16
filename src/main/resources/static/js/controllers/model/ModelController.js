@@ -124,9 +124,34 @@
 
       makeDraggable("#room", "window room custom");
       makeDraggable("#door", "window door custom");
+
+      makeDraggable("#computerDevice", "window device computer-device custom");
+      makeDraggable("#laptopDevice", "window device laptop-device custom");
+      makeDraggable("#tvDevice", "window device tv-device custom");
+      makeDraggable("#smartphoneDevice", "window device smartphone-device custom");
+      makeDraggable("#smartwatchDevice", "window device smartwatch-device custom");
+      makeDraggable("#audioSystemDevice", "window device audio-system-device custom");
+      makeDraggable("#cameraDevice", "window device camera-device custom");
       makeDraggable("#defaultDevice", "window device default-device custom");
+
+      makeDraggable("#lightActuator", "window actuator light-actuator custom");
+      makeDraggable("#speakerActuator", "window actuator speaker-actuator custom");
+      makeDraggable("#buzzerActuator", "window actuator buzzer-actuator custom");
+      makeDraggable("#vibrationActuator", "window actuator vibration-actuator custom");
+      makeDraggable("#airConditionerActuator", "window actuator air-conditioner-actuator custom");
+      makeDraggable("#switchActuator", "window actuator switch-actuator custom");
       makeDraggable("#defaultActuator", "window actuator default-actuator custom");
+
+      makeDraggable("#cameraSensor", "window sensor camera-sensor custom");
+      makeDraggable("#soundSensor", "window sensor sound-sensor custom");
+      makeDraggable("#humiditySensor", "window sensor humidity-sensor custom");
+      makeDraggable("#gasSensor", "window sensor gas-sensor custom");
+      makeDraggable("#lightSensor", "window sensor light-sensor custom");
       makeDraggable("#locationSensor", "window sensor location-sensor custom");
+      makeDraggable("#gyroscopeSensor", "window sensor gyroscope-sensor custom");
+      makeDraggable("#proximitySensor", "window sensor proximity-sensor custom");
+      makeDraggable("#touchSensor", "window sensor touch-sensor custom");
+      makeDraggable("#vibrationSensor", "window sensor vibration-sensor custom");
       makeDraggable("#defaultSensor", "window sensor default-sensor custom");
 
       //make the editor canvas droppable
@@ -164,27 +189,113 @@
         clicked = true;
       }
 
-      //load properties of a room element once the end element in the palette is clicked
+      //load properties of an element once the element in the palette is clicked
       $('#room').mousedown(function() {
         loadProperties("window room custom jtk-node", undefined);
       });
 
-      //load properties of a door element once the end element in the palette is clicked
       $('#door').mousedown(function() {
         loadProperties("window door custom jtk-node", undefined);
       });
 
-      //load properties of a device element once the end element in the palette is clicked
+      $('#computerDevice').mousedown(function() {
+        loadProperties("window device computer-device custom jtk-node", "Computer");
+      });
+
+      $('#laptopDevice').mousedown(function() {
+        loadProperties("window device laptop-device custom jtk-node", "Laptop");
+      });
+
+      $('#tvDevice').mousedown(function() {
+        loadProperties("window device tv-device custom jtk-node", "TV");
+      });
+
+      $('#smartphoneDevice').mousedown(function() {
+        loadProperties("window device smartphone-device custom jtk-node", "Smartphone");
+      });
+
+      $('#smartwatchDevice').mousedown(function() {
+        loadProperties("window device smartwatch-device custom jtk-node", "Smartwatch");
+      });
+
+      $('#audioSystemDevice').mousedown(function() {
+        loadProperties("window device audio-system-device custom jtk-node", "Audio System");
+      });
+
+      $('#cameraDevice').mousedown(function() {
+        loadProperties("window device camera-device custom jtk-node", "Camera");
+      });
+
       $('#defaultDevice').mousedown(function() {
         loadProperties("window device default-device custom jtk-node", undefined);
+      });
+
+      $('#lightActuator').mousedown(function() {
+        loadProperties("window actuator light-actuator custom jtk-node", "Light");
+      });
+
+      $('#speakerActuator').mousedown(function() {
+        loadProperties("window actuator speaker-actuator custom jtk-node", "Speaker");
+      });
+
+      $('#buzzerActuator').mousedown(function() {
+        loadProperties("window actuator buzzer-actuator custom jtk-node", "Buzzer");
+      });
+
+      $('#vibrationActuator').mousedown(function() {
+        loadProperties("window actuator vibration-actuator custom jtk-node", "Vibration");
+      });
+
+      $('#airConditionerActuator').mousedown(function() {
+        loadProperties("window actuator air-conditioner-actuator custom jtk-node", "Air Conditioner");
+      });
+
+      $('#switchActuator').mousedown(function() {
+        loadProperties("window actuator switch-actuator custom jtk-node", "Switch");
       });
 
       $('#defaultActuator').mousedown(function() {
         loadProperties("window actuator default-actuator custom jtk-node", undefined);
       });
 
+      $('#cameraSensor').mousedown(function() {
+        loadProperties("window sensor camera-sensor custom jtk-node", "Camera");
+      });
+
+      $('#soundSensor').mousedown(function() {
+        loadProperties("window sensor sound-sensor custom jtk-node", "Sound");
+      });
+
+      $('#humiditySensor').mousedown(function() {
+        loadProperties("window sensor humidity-sensor custom jtk-node", "Humidity");
+      });
+
+      $('#gasSensor').mousedown(function() {
+        loadProperties("window sensor gas-sensor custom jtk-node", "Gas");
+      });
+
+      $('#lightSensor').mousedown(function() {
+        loadProperties("window sensor light-sensor custom jtk-node", "Light");
+      });
+
       $('#locationSensor').mousedown(function() {
         loadProperties("window sensor location-sensor custom jtk-node", "Location");
+      });
+
+      $('#gyroscopeSensor').mousedown(function() {
+        loadProperties("window sensor gyroscope-sensor custom jtk-node", "Gyroscope");
+      });
+
+      $('#proximitySensor').mousedown(function() {
+        loadProperties("window sensor proximity-sensor custom jtk-node", "Proximity");
+      });
+
+      $('#touchSensor').mousedown(function() {
+        loadProperties("window sensor touch-sensor custom jtk-node", "Touch");
+      });
+
+      $('#vibrationSensor').mousedown(function() {
+        loadProperties("window sensor vibration-sensor custom jtk-node", "Vibration");
       });
 
       $('#defaultSensor').mousedown(function() {

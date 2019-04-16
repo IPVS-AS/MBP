@@ -403,18 +403,106 @@ li {
 }
 
 /* --- Devices ------------------------------------------------------------------------------------------- */
+.computer-device {
+  background-image: url("../images/model/computer-device.png");
+}
+
+.laptop-device {
+  background-image: url("../images/model/laptop-device.png");
+}
+
+.tv-device {
+  background-image: url("../images/model/tv-device.png");
+}
+
+.smartphone-device {
+  background-image: url("../images/model/smartphone-device.png");
+}
+
+.smartwatch-device {
+  background-image: url("../images/model/smartwatch-device.png");
+}
+
+.audio-system-device {
+  background-image: url("../images/model/audio-system-device.png");
+}
+
+.camera-device {
+  background-image: url("../images/model/camera-device.png");
+}
+
 .default-device {
   background-image: url("../images/model/default-device.png");
 }
 
-/* --- Actuators ------------------------------------------------------------------------------------------- */
+/* --- Actuators ----------------------------------------------------------------------------------------- */
+.light-actuator {
+  background-image: url("../images/model/light-actuator.png");
+}
+
+.speaker-actuator {
+  background-image: url("../images/model/speaker-actuator.png");
+}
+
+.buzzer-actuator {
+  background-image: url("../images/model/buzzer-actuator.png");
+}
+
+.vibration-actuator {
+  background-image: url("../images/model/vibration-actuator.png");
+}
+
+.air-conditioner-actuator {
+  background-image: url("../images/model/air-conditioner-actuator.png");
+}
+
+.switch-actuator {
+  background-image: url("../images/model/switch-actuator.png");
+}
+
 .default-actuator {
   background-image: url("../images/model/default-actuator.png");
 }
 
 /* --- Sensors ------------------------------------------------------------------------------------------- */
+.camera-sensor {
+  background-image: url("../images/model/camera-sensor.png");
+}
+
+.sound-sensor {
+  background-image: url("../images/model/sound-sensor.png");
+}
+
+.humidity-sensor {
+  background-image: url("../images/model/humidity-sensor.png");
+}
+
+.gas-sensor {
+  background-image: url("../images/model/gas-sensor.png");
+}
+
+.light-sensor {
+  background-image: url("../images/model/light-sensor.png");
+}
+
 .location-sensor {
   background-image: url("../images/model/location-sensor.png");
+}
+
+.gyroscope-sensor {
+  background-image: url("../images/model/gyroscope-sensor.png");
+}
+
+.proximity-sensor {
+  background-image: url("../images/model/proximity-sensor.png");
+}
+
+.touch-sensor {
+  background-image: url("../images/model/touch-sensor.png");
+}
+
+.vibration-sensor {
+  background-image: url("../images/model/vibration-sensor.png");
 }
 
 .default-sensor {
