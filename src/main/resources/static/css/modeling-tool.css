@@ -1,10 +1,28 @@
 /* ---------------------------------------------------------------------------------------------------- */
-/* --- tool-header ---------------------------------------------------------------------------------------- */
+/* --- tool --------------------------------------------------------------------------------------------*/
+/* ---------------------------------------------------------------------------------------------------- */
+#modelingToolView {
+  width: 100%;
+  white-space: nowrap;
+  box-shadow: 1px 1px 1px 1px grey;
+  height: 100%;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-image: url('../images/model/grey-white-background.jpg');
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* --- tool-header -------------------------------------------------------------------------------------*/
 /* ---------------------------------------------------------------------------------------------------- */
 /* Style the tool-header with a grey background and some padding */
 .tool-header {
   overflow: hidden;
-  background-color: #f1f1f1;
+  box-shadow: 1px 1px 1px 1px grey;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-image: url('../images/model/grey-background.jpg');
   margin-bottom: 15px;
   padding: 2px;
 }
@@ -21,12 +39,12 @@
 .tool-button {
   position: relative;
   z-index: 2;
-  padding: 4px 20px;
+  padding: 1px 14px;
   margin: 10px auto;
   transition: transform 0.3s;
   border-radius: 50px;
   background-color: transparent;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 /* Add media queries for responsiveness - when the screen is 500px wide or less, stack the links on top of each other */
