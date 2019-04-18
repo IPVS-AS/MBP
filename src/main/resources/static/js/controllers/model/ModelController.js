@@ -122,31 +122,50 @@
         });
       }
 
-      makeDraggable("#room", "window room custom");
-      makeDraggable("#door", "window door custom");
+      makeDraggable("#roomFloorplan", "window floorplan room-floorplan custom");
+      makeDraggable("#wallFloorplan", "window floorplan wall-floorplan custom");
+      makeDraggable("#doorFloorplan", "window floorplan door-floorplan custom");
+      makeDraggable("#windowFloorplan", "window floorplan window-floorplan custom");
+      makeDraggable("#stairsFloorplan", "window floorplan stairs-floorplan custom");
+      makeDraggable("#tableFloorplan", "window floorplan table-floorplan custom");
+      makeDraggable("#chairFloorplan", "window floorplan chair-floorplan custom");
+      makeDraggable("#couchFloorplan", "window floorplan couch-floorplan custom");
+      makeDraggable("#bedFloorplan", "window floorplan bed-floorplan custom");
+      makeDraggable("#kitchenSinkFloorplan", "window floorplan kitchen-sink-floorplan custom");
+      makeDraggable("#bathtubFloorplan", "window floorplan bathtub-floorplan custom");
+      makeDraggable("#bathSinkFloorplan", "window floorplan bath-sink-floorplan custom");
+      makeDraggable("#toiletFloorplan", "window floorplan toilet-floorplan custom");
 
+      makeDraggable("#raspberryPiDevice", "window device raspberry-pi-device custom");
+      makeDraggable("#arduinoDevice", "window device arduino-device custom");
       makeDraggable("#computerDevice", "window device computer-device custom");
       makeDraggable("#laptopDevice", "window device laptop-device custom");
       makeDraggable("#tvDevice", "window device tv-device custom");
       makeDraggable("#smartphoneDevice", "window device smartphone-device custom");
       makeDraggable("#smartwatchDevice", "window device smartwatch-device custom");
       makeDraggable("#audioSystemDevice", "window device audio-system-device custom");
+      makeDraggable("#voiceControllerDevice", "window device voice-controller-device custom");
       makeDraggable("#cameraDevice", "window device camera-device custom");
       makeDraggable("#defaultDevice", "window device default-device custom");
 
       makeDraggable("#lightActuator", "window actuator light-actuator custom");
+      makeDraggable("#ledActuator", "window actuator led-actuator custom");
       makeDraggable("#speakerActuator", "window actuator speaker-actuator custom");
       makeDraggable("#buzzerActuator", "window actuator buzzer-actuator custom");
       makeDraggable("#vibrationActuator", "window actuator vibration-actuator custom");
+      makeDraggable("#heaterActuator", "window actuator heater-actuator custom");
       makeDraggable("#airConditionerActuator", "window actuator air-conditioner-actuator custom");
       makeDraggable("#switchActuator", "window actuator switch-actuator custom");
+      makeDraggable("#motorActuator", "window actuator motor-actuator custom");
       makeDraggable("#defaultActuator", "window actuator default-actuator custom");
 
       makeDraggable("#cameraSensor", "window sensor camera-sensor custom");
       makeDraggable("#soundSensor", "window sensor sound-sensor custom");
+      makeDraggable("#temperatureSensor", "window sensor temperature-sensor custom");
       makeDraggable("#humiditySensor", "window sensor humidity-sensor custom");
       makeDraggable("#gasSensor", "window sensor gas-sensor custom");
       makeDraggable("#lightSensor", "window sensor light-sensor custom");
+      makeDraggable("#motionSensor", "window sensor motion-sensor custom");
       makeDraggable("#locationSensor", "window sensor location-sensor custom");
       makeDraggable("#gyroscopeSensor", "window sensor gyroscope-sensor custom");
       makeDraggable("#proximitySensor", "window sensor proximity-sensor custom");
@@ -159,6 +178,8 @@
         accept: ".window",
         drop: function(event, ui) {
           if (clicked) {
+            properties.top = ui.offset.top - $(this).offset().top;
+            properties.left = ui.offset.left - $(this).offset().left;
             clicked = false;
             elementIdCount++;
             var id = "canvasWindow" + elementIdCount;
@@ -170,15 +191,15 @@
       });
 
       //take the x, y coordinates of the current mouse position
-      var x, y;
-      $(document).on("mousemove", function(event) {
-        x = event.pageX;
-        y = event.pageY;
-        if (clicked) {
-          properties.top = y - 108;
-          properties.left = x - 268;
-        }
-      });
+      // var x, y;
+      // $(document).on("mousemove", function(event) {
+      //   x = event.pageX;
+      //   y = event.pageY;
+      //   if (clicked) {
+      //     properties.top = y - 108;
+      //     properties.left = x - 268;
+      //   }
+      // });
 
       // Temporary saved properties of clicked element in palette
       // The data is used to create the element on drop
@@ -190,12 +211,64 @@
       }
 
       //load properties of an element once the element in the palette is clicked
-      $('#room').mousedown(function() {
-        loadProperties("window room custom jtk-node", undefined);
+      $('#roomFloorplan').mousedown(function() {
+        loadProperties("window floorplan room-floorplan custom jtk-node", undefined);
       });
 
-      $('#door').mousedown(function() {
-        loadProperties("window door custom jtk-node", undefined);
+      $('#wallFloorplan').mousedown(function() {
+        loadProperties("window floorplan wall-floorplan custom jtk-node", undefined);
+      });
+
+      $('#doorFloorplan').mousedown(function() {
+        loadProperties("window floorplan door-floorplan custom jtk-node", undefined);
+      });
+
+      $('#windowFloorplan').mousedown(function() {
+        loadProperties("window floorplan window-floorplan custom jtk-node", undefined);
+      });
+
+      $('#stairsFloorplan').mousedown(function() {
+        loadProperties("window floorplan stairs-floorplan custom jtk-node", undefined);
+      });
+
+      $('#tableFloorplan').mousedown(function() {
+        loadProperties("window floorplan table-floorplan custom jtk-node", undefined);
+      });
+
+      $('#chairFloorplan').mousedown(function() {
+        loadProperties("window floorplan chair-floorplan custom jtk-node", undefined);
+      });
+
+      $('#couchFloorplan').mousedown(function() {
+        loadProperties("window floorplan couch-floorplan custom jtk-node", undefined);
+      });
+
+      $('#bedFloorplan').mousedown(function() {
+        loadProperties("window floorplan bed-floorplan custom jtk-node", undefined);
+      });
+
+      $('#kitchenSinkFloorplan').mousedown(function() {
+        loadProperties("window floorplan kitchen-sink-floorplan custom jtk-node", undefined);
+      });
+
+      $('#bathtubFloorplan').mousedown(function() {
+        loadProperties("window floorplan bathtub-floorplan custom jtk-node", undefined);
+      });
+
+      $('#bathSinkFloorplan').mousedown(function() {
+        loadProperties("window floorplan bath-sink-floorplan custom jtk-node", undefined);
+      });
+
+      $('#toiletFloorplan').mousedown(function() {
+        loadProperties("window floorplan toilet-floorplan custom jtk-node", undefined);
+      });
+
+      $('#raspberryPiDevice').mousedown(function() {
+        loadProperties("window device raspberry-pi-device custom jtk-node", "Raspberry Pi");
+      });
+
+      $('#arduinoDevice').mousedown(function() {
+        loadProperties("window device arduino-device custom jtk-node", "Arduino");
       });
 
       $('#computerDevice').mousedown(function() {
@@ -222,6 +295,10 @@
         loadProperties("window device audio-system-device custom jtk-node", "Audio System");
       });
 
+      $('#voiceControllerDevice').mousedown(function() {
+        loadProperties("window device voice-controller-device custom jtk-node", "Voice Controller");
+      });
+
       $('#cameraDevice').mousedown(function() {
         loadProperties("window device camera-device custom jtk-node", "Camera");
       });
@@ -232,6 +309,10 @@
 
       $('#lightActuator').mousedown(function() {
         loadProperties("window actuator light-actuator custom jtk-node", "Light");
+      });
+
+      $('#ledActuator').mousedown(function() {
+        loadProperties("window actuator led-actuator custom jtk-node", "LED");
       });
 
       $('#speakerActuator').mousedown(function() {
@@ -246,12 +327,20 @@
         loadProperties("window actuator vibration-actuator custom jtk-node", "Vibration");
       });
 
+      $('#heaterActuator').mousedown(function() {
+        loadProperties("window actuator heater-actuator custom jtk-node", "Heater");
+      });
+
       $('#airConditionerActuator').mousedown(function() {
         loadProperties("window actuator air-conditioner-actuator custom jtk-node", "Air Conditioner");
       });
 
       $('#switchActuator').mousedown(function() {
         loadProperties("window actuator switch-actuator custom jtk-node", "Switch");
+      });
+
+      $('#motorActuator').mousedown(function() {
+        loadProperties("window actuator motor-actuator custom jtk-node", "Motor");
       });
 
       $('#defaultActuator').mousedown(function() {
@@ -266,6 +355,10 @@
         loadProperties("window sensor sound-sensor custom jtk-node", "Sound");
       });
 
+      $('#temperatureSensor').mousedown(function() {
+        loadProperties("window sensor temperature-sensor custom jtk-node", "Temperature");
+      });
+
       $('#humiditySensor').mousedown(function() {
         loadProperties("window sensor humidity-sensor custom jtk-node", "Humidity");
       });
@@ -276,6 +369,10 @@
 
       $('#lightSensor').mousedown(function() {
         loadProperties("window sensor light-sensor custom jtk-node", "Light");
+      });
+
+      $('#motionSensor').mousedown(function() {
+        loadProperties("window sensor motion-sensor custom jtk-node", "Motion");
       });
 
       $('#locationSensor').mousedown(function() {
@@ -316,6 +413,12 @@
           element.outerWidth(node.width);
           element.outerHeight(node.height);
 
+          // Set rotation angle; no need for room
+          if (node.angle && (node.clsName.indexOf("room-floorplan") == -1)) {
+            element.data("angle", node.angle);
+            setAngle(element, false);
+          }
+
           if (node.nodeType == "device") {
             element.append("<div class=\"ep\"></div>");
             element.data("id", node.id);
@@ -346,7 +449,7 @@
             'left': properties.left
           });
           // Increase the size of room
-          if (properties.clsName.indexOf("room") > -1) {
+          if (properties.clsName.indexOf("room-floorplan") > -1) {
             element.outerWidth("250px");
             element.outerHeight("250px");
           }
@@ -360,7 +463,7 @@
           }
         }
 
-        element.append("<i style='display: none' class=\"fa fa-trash fa-lg close-icon\"><\/i>");
+        element.append("<i style='display: none' class=\"fa fa-times fa-lg close-icon\"><\/i>");
         return element;
       }
 
@@ -395,13 +498,40 @@
         }).show();
 
         $(this).addClass("clicked-element");
-        if ($(this).attr("class").indexOf("room") > -1) {
+        if ($(this).attr("class").indexOf("room-floorplan") > -1) {
           $(this).css({
             'outline': "2px solid #4863A0"
           });
         }
 
       });
+
+      $(document).on('dblclick', ".jtk-node", function() {
+        if ($(this).attr("class").indexOf("room-floorplan") == -1) {
+          setAngle($(this), true);
+        }
+      });
+
+      function setAngle(element, rotate) {
+        var angle = 0;
+        if (rotate) {
+          angle = (element.data('angle') + 90) || 90;
+        } else {
+          angle = element.data("angle");
+        }
+        element.css({
+          '-webkit-transform': 'rotate(' + angle + 'deg)',
+          '-moz-transform': 'rotate(' + angle + 'deg)',
+          '-ms-transform': 'rotate(' + angle + 'deg)',
+          'transform': 'rotate(' + angle + 'deg)',
+        });
+        element.data('angle', angle);
+        if (element.outerHeight() > element.outerWidth()) {
+          element.outerWidth(element.outerHeight());
+        } else {
+          element.outerHeight(element.outerWidth());
+        }
+      }
 
       $(canvasId).on('click', function(e) {
         saveData();
@@ -772,6 +902,7 @@
               positionY: parseInt($element.css("top"), 10),
               width: $element.outerWidth(),
               height: $element.outerHeight(),
+              angle: $element.data("angle"),
               id: $element.data("id"),
               name: $element.data("name"),
               type: $element.data("type"),
@@ -790,6 +921,7 @@
               positionY: parseInt($element.css("top"), 10),
               width: $element.outerWidth(),
               height: $element.outerHeight(),
+              angle: $element.data("angle"),
               id: $element.data("id"),
               name: $element.data("name"),
               type: $element.data("type"),
@@ -809,6 +941,7 @@
               positionY: parseInt($element.css("top"), 10),
               width: $element.outerWidth(),
               height: $element.outerHeight(),
+              angle: $element.data("angle")
             });
           }
         });

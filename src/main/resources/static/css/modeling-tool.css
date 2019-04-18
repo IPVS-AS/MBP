@@ -365,11 +365,11 @@ li {
   box-shadow: 2px 2px 19px black;
 }
 
-/* .window.jtk-connected {
-  border: 2px solid green;
-} */
-.room {
-  border: 7px solid #595959;
+/* --- Floorplans --------------------------------------------------------------------------------------- */
+.floorplan {}
+
+.room-floorplan {
+  border: 7px solid black;
   -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
   -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
@@ -378,8 +378,8 @@ li {
   z-index: 2;
 }
 
-.door {
-  background-image: url("../images/door.png");
+.wall-floorplan {
+  background-image: url("../images/model/wall-floorplan.png");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center center;
@@ -388,6 +388,117 @@ li {
   z-index: 3;
 }
 
+.door-floorplan {
+  background-image: url("../images/model/door-floorplan.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  text-align: center;
+  display: inline-block;
+  z-index: 9;
+}
+
+.window-floorplan {
+  background-image: url("../images/model/window-floorplan.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  text-align: center;
+  display: inline-block;
+  z-index: 9;
+}
+
+.stairs-floorplan {
+  background-image: url("../images/model/stairs-floorplan.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  text-align: center;
+  display: inline-block;
+  z-index: 3;
+}
+
+.table-floorplan {
+  background-image: url("../images/model/table-floorplan.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  text-align: center;
+  display: inline-block;
+  z-index: 8;
+}
+
+.chair-floorplan {
+  background-image: url("../images/model/chair-floorplan.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  text-align: center;
+  display: inline-block;
+  z-index: 7;
+}
+
+.couch-floorplan {
+  background-image: url("../images/model/couch-floorplan.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  text-align: center;
+  display: inline-block;
+  z-index: 6;
+}
+
+.bed-floorplan {
+  background-image: url("../images/model/bed-floorplan.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  text-align: center;
+  display: inline-block;
+  z-index: 6;
+}
+
+.kitchen-sink-floorplan {
+  background-image: url("../images/model/kitchen-sink-floorplan.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  text-align: center;
+  display: inline-block;
+  z-index: 6;
+}
+
+.bathtub-floorplan {
+  background-image: url("../images/model/bathtub-floorplan.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  text-align: center;
+  display: inline-block;
+  z-index: 6;
+}
+
+.bath-sink-floorplan {
+  background-image: url("../images/model/bath-sink-floorplan.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  text-align: center;
+  display: inline-block;
+  z-index: 6;
+}
+
+.toilet-floorplan {
+  background-image: url("../images/model/toilet-floorplan.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  text-align: center;
+  display: inline-block;
+  z-index: 6;
+}
+
+/* --- device, actuator, sensor --------------------------------------------------------------------------- */
 .device, .actuator, .sensor {
   border-radius: 10px;
   background-size: contain;
@@ -395,7 +506,7 @@ li {
   background-position: center center;
   text-align: center;
   display: inline-block;
-  z-index: 5;
+  z-index: 10;
 }
 
 .device:hover, .actuator:hover, .sensor:hover {
@@ -403,6 +514,14 @@ li {
 }
 
 /* --- Devices ------------------------------------------------------------------------------------------- */
+.raspberry-pi-device {
+  background-image: url("../images/model/raspberry-pi-device.png");
+}
+
+.arduino-device {
+  background-image: url("../images/model/arduino-device.png");
+}
+
 .computer-device {
   background-image: url("../images/model/computer-device.png");
 }
@@ -427,6 +546,10 @@ li {
   background-image: url("../images/model/audio-system-device.png");
 }
 
+.voice-controller-device {
+  background-image: url("../images/model/voice-controller-device.png");
+}
+
 .camera-device {
   background-image: url("../images/model/camera-device.png");
 }
@@ -438,6 +561,10 @@ li {
 /* --- Actuators ----------------------------------------------------------------------------------------- */
 .light-actuator {
   background-image: url("../images/model/light-actuator.png");
+}
+
+.led-actuator {
+  background-image: url("../images/model/led-actuator.png");
 }
 
 .speaker-actuator {
@@ -452,12 +579,20 @@ li {
   background-image: url("../images/model/vibration-actuator.png");
 }
 
+.heater-actuator {
+  background-image: url("../images/model/heater-actuator.png");
+}
+
 .air-conditioner-actuator {
   background-image: url("../images/model/air-conditioner-actuator.png");
 }
 
 .switch-actuator {
   background-image: url("../images/model/switch-actuator.png");
+}
+
+.motor-actuator {
+  background-image: url("../images/model/motor-actuator.png");
 }
 
 .default-actuator {
@@ -473,6 +608,10 @@ li {
   background-image: url("../images/model/sound-sensor.png");
 }
 
+.temperature-sensor {
+  background-image: url("../images/model/temperature-sensor.png");
+}
+
 .humidity-sensor {
   background-image: url("../images/model/humidity-sensor.png");
 }
@@ -483,6 +622,10 @@ li {
 
 .light-sensor {
   background-image: url("../images/model/light-sensor.png");
+}
+
+.motion-sensor {
+  background-image: url("../images/model/motion-sensor.png");
 }
 
 .location-sensor {
