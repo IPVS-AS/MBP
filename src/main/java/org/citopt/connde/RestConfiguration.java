@@ -12,6 +12,9 @@ import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringAdapterValidator;
+import org.citopt.connde.domain.rules.Rule;
+import org.citopt.connde.domain.rules.RuleAction;
+import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.domain.user.Authority;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.web.rest.RestDeploymentController;
@@ -49,7 +52,8 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
         System.out.println("load RepositoryRestMvcConfiguration");
 
         config.setBasePath(BASE_PATH);
-        config.exposeIdsFor(Device.class, Adapter.class, MonitoringAdapter.class, Actuator.class, Sensor.class, User.class, Authority.class, ComponentType.class);
+        config.exposeIdsFor(Device.class, Adapter.class, MonitoringAdapter.class, Actuator.class, Sensor.class,
+                User.class, Authority.class, ComponentType.class, Rule.class, RuleTrigger.class, RuleAction.class);
     }
 
     /**
