@@ -22,7 +22,7 @@
   background-size: 100% 100%;
   background-repeat: no-repeat;
   background-position: center center;
-  background-image: url('../images/model/grey-background.jpg');
+  background-image: url('../images/model/white-background.jpg');
   margin-bottom: 15px;
   padding: 2px;
 }
@@ -295,7 +295,7 @@ li {
 }
 
 .modeling-tool .jtk-connector {
-  z-index: 4;
+  z-index: 22;
 }
 
 .modeling-tool .jtk-endpoint, path {
@@ -524,11 +524,28 @@ li {
   background-position: center center;
   text-align: center;
   display: inline-block;
-  z-index: 10;
+  z-index: 11;
 }
 
 .device:hover, .actuator:hover, .sensor:hover {
   border: 2px solid grey;
+}
+
+.as-container {
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  text-align: center;
+  display: inline-block;
+  background-image: url("../images/model/container.png");
+  background-size: cover;
+  border-radius: 10px;
+  border: 2px solid grey;
+  min-height: 50px !important;
+  min-width: 50px !important;
+  overflow: auto;
+  cursor: default;
+  z-index: 10;
 }
 
 /* --- Devices ------------------------------------------------------------------------------------------- */

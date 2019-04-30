@@ -158,6 +158,7 @@
       makeDraggable("#switchActuator", "window actuator switch-actuator custom");
       makeDraggable("#motorActuator", "window actuator motor-actuator custom");
       makeDraggable("#defaultActuator", "window actuator default-actuator custom");
+      makeDraggable("#aContainer", "window as-container custom");
 
       makeDraggable("#cameraSensor", "window sensor camera-sensor custom");
       makeDraggable("#soundSensor", "window sensor sound-sensor custom");
@@ -172,6 +173,7 @@
       makeDraggable("#touchSensor", "window sensor touch-sensor custom");
       makeDraggable("#vibrationSensor", "window sensor vibration-sensor custom");
       makeDraggable("#defaultSensor", "window sensor default-sensor custom");
+      makeDraggable("#sContainer", "window as-container custom");
 
       //make the editor canvas droppable
       $(canvasId).droppable({
@@ -185,7 +187,7 @@
             var id = "canvasWindow" + elementIdCount;
             element = createElement(id, undefined);
             drawElement(element);
-            element = "";
+            // element = "";
           }
         }
       });
@@ -347,6 +349,10 @@
         loadProperties("window actuator default-actuator custom jtk-node", undefined);
       });
 
+      $('#aContainer').mousedown(function() {
+        loadProperties("window as-container custom jtk-node", undefined);
+      });
+
       $('#cameraSensor').mousedown(function() {
         loadProperties("window sensor camera-sensor custom jtk-node", "Camera");
       });
@@ -399,6 +405,10 @@
         loadProperties("window sensor default-sensor custom jtk-node", undefined);
       });
 
+      $('#sContainer').mousedown(function() {
+        loadProperties("window as-container custom jtk-node", undefined);
+      });
+
       //create an element to be drawn on the canvas
       function createElement(id, node) {
         if (node) {
@@ -439,6 +449,8 @@
             element.data("deployed", node.deployed);
             element.data("regError", node.regError);
             element.data("depError", node.depError);
+          } else if (node.nodeType == "as-container") {
+            element.data("containerNodes", node.containerNodes);
           }
         } else {
           // Use properties on drop
@@ -467,12 +479,52 @@
         return element;
       }
 
-      function drawElement(element) {
-        $(canvasId).append(element);
+      function drawElement($element) {
+        $(canvasId).append($element);
         jsPlumbInstance.draggable(jsPlumbInstance.getSelector(".jtk-node"), {
           filter: ".ui-resizable-handle"
         });
-        addEndpoints(element);
+
+        if ($element.attr("class").indexOf("as-container") > -1) {
+          console.log("Actuator node draw " + $element.attr("id"));
+          // jsPlumbInstance.draggable(jsPlumbInstance.getSelector(".group-node"), {
+          //   filter: ".ui-resizable-handle"
+          // });
+          $element.droppable({
+            accept: ".actuator, .sensor",
+            drop: function(event, ui) {
+              console.log("Actuator node dropped");
+              element.css({
+                'top': ui.offset.top - $(this).offset().top,
+                'left': ui.offset.left - $(this).offset().left
+              });
+              // clicked = false;
+              // elementIdCount++;
+              // var id = "canvasWindow" + elementIdCount;
+              // element = createElement(id, undefined);
+              $element.append(element);
+              // jsPlumbInstance.draggable(jsPlumbInstance.getSelector(".jtk-node"), {
+              //   filter: ".ui-resizable-handle"
+              // });
+              // addEndpoints(element);
+              // makeResizable(".custom");
+              // element = "";
+            }
+          });
+
+          if ($element.data("containerNodes")) {
+            var containerNodes = $element.data("containerNodes");
+            containerNodes.forEach(function(value, index, array) {
+              var nodeElement = createElement(value.elementId, value);
+              $element.append(nodeElement);
+              addEndpoints(nodeElement);
+            });
+          }
+        }
+        $element.scroll(function() {
+          jsPlumbInstance.repaintEverything();
+        });
+        addEndpoints($element);
         makeResizable(".custom");
       }
 
@@ -507,7 +559,8 @@
       });
 
       $(document).on('dblclick', ".jtk-node", function() {
-        if ($(this).attr("class").indexOf("room-floorplan") == -1) {
+        if ($(this).attr("class").indexOf("room-floorplan") == -1 &&
+          $(this).attr("class").indexOf("as-container") == -1) {
           setAngle($(this), true);
         }
       });
@@ -913,6 +966,54 @@
               regError: $element.data("regError")
             });
           } else if (type == "actuator" || type == "sensor") {
+            var parent = $($element.parent());
+            // Do not add if parent is container. The elements are added below
+            if (parent.attr("class").indexOf("as-container") == -1) {
+              nodes.push({
+                nodeType: type,
+                elementId: $element.attr('id'),
+                clsName: $element.attr('class').toString(),
+                positionX: parseInt($element.css("left"), 10),
+                positionY: parseInt($element.css("top"), 10),
+                width: $element.outerWidth(),
+                height: $element.outerHeight(),
+                angle: $element.data("angle"),
+                id: $element.data("id"),
+                name: $element.data("name"),
+                type: $element.data("type"),
+                adapter: $element.data("adapter"),
+                device: $element.data("device"),
+                deviceId: $element.data("deviceId"),
+                deployed: $element.data("deployed"),
+                regError: $element.data("regError"),
+                depError: $element.data("depError")
+              });
+            }
+          } else if (type == "as-container") {
+            var containerNodes = [];
+            // Get the chlidren from the container, which are sensors and actuators
+            $element.children(".jtk-node").each(function(indexC, elementC) {
+              var $elementC = $(elementC);
+              containerNodes.push({
+                nodeType: $elementC.attr('class').toString().split(" ")[1],
+                elementId: $elementC.attr('id'),
+                clsName: $elementC.attr('class').toString(),
+                positionX: parseInt($elementC.css("left"), 10),
+                positionY: parseInt($elementC.css("top"), 10),
+                width: $elementC.outerWidth(),
+                height: $elementC.outerHeight(),
+                angle: $elementC.data("angle"),
+                id: $elementC.data("id"),
+                name: $elementC.data("name"),
+                type: $elementC.data("type"),
+                adapter: $elementC.data("adapter"),
+                device: $elementC.data("device"),
+                deviceId: $elementC.data("deviceId"),
+                deployed: $elementC.data("deployed"),
+                regError: $elementC.data("regError"),
+                depError: $elementC.data("depError")
+              });
+            });
             nodes.push({
               nodeType: type,
               elementId: $element.attr('id'),
@@ -922,15 +1023,7 @@
               width: $element.outerWidth(),
               height: $element.outerHeight(),
               angle: $element.data("angle"),
-              id: $element.data("id"),
-              name: $element.data("name"),
-              type: $element.data("type"),
-              adapter: $element.data("adapter"),
-              device: $element.data("device"),
-              deviceId: $element.data("deviceId"),
-              deployed: $element.data("deployed"),
-              regError: $element.data("regError"),
-              depError: $element.data("depError")
+              containerNodes: containerNodes
             });
           } else {
             nodes.push({
