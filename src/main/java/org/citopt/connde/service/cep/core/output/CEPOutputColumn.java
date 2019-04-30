@@ -1,4 +1,4 @@
-package org.citopt.connde.service.cep.core.queries.output;
+package org.citopt.connde.service.cep.core.output;
 
 import java.util.Map;
 import java.util.Set;

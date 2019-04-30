@@ -1,6 +1,6 @@
 package org.citopt.connde.service.cep.core.queries;
 
-import org.citopt.connde.service.cep.core.queries.output.CEPOutput;
+import org.citopt.connde.service.cep.core.output.CEPOutput;
 
 /**
  * Interface for CEP query subscribers,
