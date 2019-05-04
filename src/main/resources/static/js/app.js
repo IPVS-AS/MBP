@@ -389,22 +389,6 @@ app.run(['$rootScope', '$timeout', 'SessionService', '$location', '$cookieStore'
 
                 // set expert
                 $rootScope.expert = SessionService.isExpert();
-
-                // copied from admin.js
-                var loadAdminBSB = function () {
-                    $.AdminBSB.browser.activate();
-                    $.AdminBSB.leftSideBar.activate();
-                    //$.AdminBSB.navbar.activate();
-                    $.AdminBSB.dropdownMenu.activate();
-                    $.AdminBSB.input.activate();
-                    $.AdminBSB.select.activate();
-                    $.AdminBSB.search.activate();
-
-                    setTimeout(function () {
-                        $('.page-loader-wrapper').fadeOut();
-                    }, 50);
-                };
-                loadAdminBSB();
             });
         });
     }
