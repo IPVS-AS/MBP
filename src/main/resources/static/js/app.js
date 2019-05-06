@@ -115,6 +115,43 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 // controller: 'ModelController as vm',
             })
 
+            // Rule Actions
+            /*
+            .when(viewPrefix + '/rule-actions', {
+                category: 'rule-actions',
+                templateUrl: 'templates/rule-actions',
+                controller: 'RuleActionListController as ctrl',
+                resolve: {
+                    ruleActionList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rule-actions');
+                    }],
+                    addRuleAction: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'rule-actions');
+                    }],
+                    deleteRuleAction: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'rule-actions');
+                    }]
+                }
+            })*/
+
+            // Actuator List and Register (includes Device List and Register)
+            .when(viewPrefix + '/rule-actions', {
+                category: 'actuators',
+                templateUrl: 'templates/rule-actions',
+                controller: 'RuleActionListController as ctrl',
+                resolve: {
+                    ruleActionList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rule-actions');
+                    }],
+                    addRuleAction: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'rule-actions');
+                    }],
+                    deleteRuleAction: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'rule-actions');
+                    }]
+                }
+            })
+
             // Actuator List and Register (includes Device List and Register)
             .when(viewPrefix + '/actuators', {
                 category: 'actuators',
