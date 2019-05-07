@@ -115,8 +115,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 // controller: 'ModelController as vm',
             })
 
-            // Rule Actions
-            /*
+            //Rule actions list
             .when(viewPrefix + '/rule-actions', {
                 category: 'rule-actions',
                 templateUrl: 'templates/rule-actions',
@@ -132,22 +131,22 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         return angular.bind(this, CrudService.deleteItem, 'rule-actions');
                     }]
                 }
-            })*/
+            })
 
-            // Actuator List and Register (includes Device List and Register)
-            .when(viewPrefix + '/rule-actions', {
-                category: 'actuators',
-                templateUrl: 'templates/rule-actions',
-                controller: 'RuleActionListController as ctrl',
+            //Rule triggers list
+            .when(viewPrefix + '/rule-triggers', {
+                category: 'rule-triggers',
+                templateUrl: 'templates/rule-triggers',
+                controller: 'RuleTriggerListController as ctrl',
                 resolve: {
-                    ruleActionList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('rule-actions');
+                    ruleTriggerList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rule-triggers');
                     }],
-                    addRuleAction: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.addItem, 'rule-actions');
+                    addRuleTrigger: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'rule-triggers');
                     }],
-                    deleteRuleAction: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.deleteItem, 'rule-actions');
+                    deleteRuleTrigger: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'rule-triggers');
                     }]
                 }
             })

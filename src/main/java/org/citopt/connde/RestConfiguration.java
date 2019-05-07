@@ -12,10 +12,7 @@ import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringAdapterValidator;
-import org.citopt.connde.domain.rules.Rule;
-import org.citopt.connde.domain.rules.RuleAction;
-import org.citopt.connde.domain.rules.RuleActionValidator;
-import org.citopt.connde.domain.rules.RuleTrigger;
+import org.citopt.connde.domain.rules.*;
 import org.citopt.connde.domain.user.Authority;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.web.rest.RestDeploymentController;
@@ -88,6 +85,10 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
         //Rule actions
         v.addValidator("beforeSave", new RuleActionValidator());
         v.addValidator("beforeCreate", new RuleActionValidator());
+
+        //Rule triggers
+        v.addValidator("beforeSave", new RuleTriggerValidator());
+        v.addValidator("beforeCreate", new RuleTriggerValidator());
     }
 
     /**

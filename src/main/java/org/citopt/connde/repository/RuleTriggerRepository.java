@@ -10,7 +10,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
  * of rules. The repository is exposed for CRUD operations and provides additional methods for finding certain
  * rule actions within it.
  */
-@RepositoryRestResource(path="rule-triggers")
+@RepositoryRestResource(collectionResourceRel = "rule-triggers", path = "rule-triggers")
 public interface RuleTriggerRepository extends MongoRepository<RuleTrigger, String> {
 
     /**

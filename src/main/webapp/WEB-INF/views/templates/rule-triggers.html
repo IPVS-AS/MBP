@@ -1,0 +1,101 @@
+<div>
+    <!-- List Card -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>Rule Triggers</h2>
+                </div>
+                <div class="align-right">
+                    <button id="add-button" type="button"
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float" data-toggle="modal"
+                            data-target="#addRuleTriggerModal" data-backdrop="static" data-keyboard="false">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
+            </div>
+            <div class="body">
+                <table class="table table-hover" st-table="displayedCollection" st-safe-src="ruleTriggerListCtrl.items">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                        <td>
+                            {{item.name}}
+                        </td>
+                        <td>
+                            <form ng-submit="deleteRuleTriggerCtrl.deleteItem()">
+                                <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                        ng-click="deleteRuleTriggerCtrl.item.id = item.id">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr ng-show="ruleTriggerListCtrl.items.length === 0">
+                        <td>No rule actions registered.</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="addRuleTriggerModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register a new rule action
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form id="addRuleTriggerForm" ng-submit="addRuleTriggerCtrl.addItem()">
+                    <fieldset>
+                        <div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <div class="form-group" ng-class="{'has-error' : addRuleTriggerCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addRuleTriggerCtrl.item.errors.global">
+			                      {{addRuleTriggerCtrl.item.errors.global}}
+			                    </span>
+                            </div>
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : addRuleTriggerCtrl.item.errors.name }">
+                                <div class="form-line" ng-class="{'focused error' : addRuleTriggerCtrl.item.errors.name }">
+                                    <input class="form-control" type="text" placeholder="Name"
+                                           ng-model="addRuleTriggerCtrl.item.name"/>
+                                </div>
+                                <span class="help-block" ng-show="addRuleTriggerCtrl.item.errors.name">{{addRuleTriggerCtrl.item.errors.name.message}}</span>
+                            </div>
+                            <!-- item.query group -->
+                            <div class="form-group" ng-class="{'has-error' : addRuleTriggerCtrl.item.errors.query }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addRuleTriggerCtrl.item.errors.query }">
+                                   <textarea class="form-control" type="text" placeholder="CEP query"
+                                             ng-model="addRuleTriggerCtrl.item.query" rows="4"></textarea>
+                                </div>
+                                <span class="help-block" ng-show="addRuleTriggerCtrl.item.errors.query">{{addRuleTriggerCtrl.item.errors.query.message}}</span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
