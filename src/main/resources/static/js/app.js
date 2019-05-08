@@ -115,6 +115,30 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 // controller: 'ModelController as vm',
             })
 
+            //Rules list
+            .when(viewPrefix + '/rules', {
+                category: 'rules',
+                templateUrl: 'templates/rules',
+                controller: 'RuleListController as ctrl',
+                resolve: {
+                    ruleList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rules');
+                    }],
+                    addRule: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'rules');
+                    }],
+                    deleteRule: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'rules');
+                    }],
+                    ruleActionList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rule-actions');
+                    }],
+                    ruleTriggerList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rule-triggers');
+                    }]
+                }
+            })
+
             //Rule actions list
             .when(viewPrefix + '/rule-actions', {
                 category: 'rule-actions',

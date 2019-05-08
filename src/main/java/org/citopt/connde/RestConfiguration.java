@@ -82,6 +82,10 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
         v.addValidator("beforeSave", new DeviceValidator());
         v.addValidator("beforeCreate", new DeviceValidator());
 
+        //Rules
+        v.addValidator("beforeSave", new RuleValidator());
+        v.addValidator("beforeCreate", new RuleValidator());
+
         //Rule actions
         v.addValidator("beforeSave", new RuleActionValidator());
         v.addValidator("beforeCreate", new RuleActionValidator());

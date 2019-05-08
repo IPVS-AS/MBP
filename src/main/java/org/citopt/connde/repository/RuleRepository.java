@@ -11,7 +11,7 @@ import java.util.List;
  * Repository for rules that were created by the user. The repository is exposed for CRUD operations
  * and provides additional methods for finding certain rules within it.
  */
-@RepositoryRestResource
+@RepositoryRestResource(collectionResourceRel = "rules", path = "rules")
 public interface RuleRepository extends MongoRepository<Rule, String> {
 
     /**

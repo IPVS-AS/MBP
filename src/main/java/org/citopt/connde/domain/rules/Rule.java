@@ -31,10 +31,13 @@ public class Rule {
     private RuleAction action;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Date lastExecution;
+    private Date lastExecution = null;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private int executions;
+    private int executions = 0;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private boolean active = false;
 
     /**
      * Returns the id of the rule.
@@ -156,5 +159,23 @@ public class Rule {
      */
     public void increaseExecutions() {
         this.executions++;
+    }
+
+    /**
+     * Returns whether the rule is currently active.
+     *
+     * @return True, if the rule is active; false otherwise
+     */
+    public boolean isActive() {
+        return active;
+    }
+
+    /**
+     * Sets whether the rule is currently active.
+     *
+     * @param active True, if the rule is active; false otherwise
+     */
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }
