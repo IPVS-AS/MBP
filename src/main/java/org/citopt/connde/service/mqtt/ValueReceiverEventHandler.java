@@ -21,7 +21,7 @@ import java.util.Date;
  *
  * Created by Jan on 18.11.2018.
  */
-public class ValueLoggerEventHandler implements MqttCallback {
+public class ValueReceiverEventHandler implements MqttCallback {
 
     //Format in which dates are stores
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -44,7 +44,7 @@ public class ValueLoggerEventHandler implements MqttCallback {
      *
      * @param valueLogRepository The value log repository to write logs into
      */
-    protected ValueLoggerEventHandler(ValueLogRepository valueLogRepository) {
+    protected ValueReceiverEventHandler(ValueLogRepository valueLogRepository) {
         this.valueLogRepository = valueLogRepository;
     }
 

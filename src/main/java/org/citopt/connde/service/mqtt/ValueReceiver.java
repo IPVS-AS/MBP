@@ -1,7 +1,5 @@
 package org.citopt.connde.service.mqtt;
 
-import org.citopt.connde.repository.ActuatorRepository;
-import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.ValueLogRepository;
 import org.citopt.connde.service.settings.SettingsService;
 import org.citopt.connde.service.settings.model.BrokerLocation;
@@ -22,7 +20,7 @@ import java.io.IOException;
  * @author Jan
  */
 @Service
-public class ValueLogger {
+public class ValueReceiver {
     //Set of topics to subscribe to
     private static final String[] SUBSCRIBE_TOPICS = {"device/#", "sensor/#", "actuator/#", "monitoring/#"};
     //URL frame of the broker to use (protocol and port, address will be filled in)
@@ -44,7 +42,7 @@ public class ValueLogger {
      * @param valueLogRepository The value log repository to write logs into
      */
     @Autowired
-    public ValueLogger(SettingsService settingsService, ValueLogRepository valueLogRepository) {
+    public ValueReceiver(SettingsService settingsService, ValueLogRepository valueLogRepository) {
         this.settingsService = settingsService;
         this.valueLogRepository = valueLogRepository;
 
@@ -93,7 +91,7 @@ public class ValueLogger {
         mqttClient.subscribe(SUBSCRIBE_TOPICS);
 
         //Create new callback handler for messages and register it
-        MqttCallback callback = new ValueLoggerEventHandler(valueLogRepository);
+        MqttCallback callback = new ValueReceiverEventHandler(valueLogRepository);
         mqttClient.setCallback(callback);
     }
 }
