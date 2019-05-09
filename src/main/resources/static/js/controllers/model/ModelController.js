@@ -723,7 +723,7 @@
             }
           },
           function(response) {
-            element.data("regError", response.name ? response.name.message : response.status);
+            element.data("regError", response.status);
             element.removeClass("success-element");
             element.addClass("error-element");
             vm.processing.undeployedDeregistered = false;
@@ -1319,7 +1319,12 @@
             element.addClass("success-element");
           },
           function(response) {
-            element.data("regError", response.name ? response.name.message : response.status);
+            console.log(response);
+            if (response.response.data) {
+              element.data("regError", response.response.data.errors[0].message);
+            } else {
+              element.data("regError", response.response.status);
+            }
             element.removeClass("success-element");
             element.addClass("error-element");
             vm.processing.registered = false;
