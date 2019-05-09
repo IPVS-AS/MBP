@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------------------------------------------------- */
-/* --- tool --------------------------------------------------------------------------------------------*/
+/* --- Tool --------------------------------------------------------------------------------------------*/
 /* ---------------------------------------------------------------------------------------------------- */
 #modelingToolView {
   width: 100%;
@@ -65,7 +65,6 @@
   width: 100%;
   max-width: 1500px;
   position: relative;
-  /* margin-top: 98px; */
 }
 
 .jtk-main .description {
@@ -108,11 +107,9 @@ li {
 /* ---------------------------------------------------------------------------------------------------- */
 .input-list {
   max-width: 400px;
-  /* margin:50px auto; */
   background: #fff;
   border-radius: 2px;
   padding: 5px;
-  /* font-family: Georgia, "Times New Roman", Times, serif; */
 }
 
 .input-list h1 {
@@ -139,11 +136,6 @@ li {
   border-radius: 3px;
 }
 
-/* .input-list li:last-child{
-	border:none;
-	margin-bottom: 0px;
-	text-align: center;
-} */
 .input-list li>label {
   display: block;
   float: left;
@@ -154,7 +146,6 @@ li {
   color: #a3a3a3;
   font-size: 12px;
   overflow: hidden;
-  /* font-family: Arial, Helvetica, sans-serif; */
 }
 
 .input-list input[type="text"],
@@ -179,7 +170,6 @@ li {
   line-height: 20px;
   font-size: 13px;
   padding: 2px;
-  /* font-family: Georgia, "Times New Roman", Times, serif; */
 }
 
 .input-list input[type="text"]:focus,
@@ -328,7 +318,7 @@ li {
   border: 1px solid grey;
   cursor: text;
   font-size: 10px;
-  z-index: 4;
+  z-index: 23;
 }
 
 .clicked-element {
@@ -367,8 +357,6 @@ li {
   position: absolute;
   bottom: 37%;
   right: 0px;
-  /* width: 1em;
-  height: 1em; */
   width: 30%;
   height: 30%;
   background-color: green;

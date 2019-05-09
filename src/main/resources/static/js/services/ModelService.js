@@ -27,25 +27,6 @@
     function DeleteModel(name) {
       return $http.delete(ENDPOINT_URI + '/models/' + name);
     }
-
-    // private functions
-
-    // function handleSuccess(res) {
-    //   return {
-    //     success: true,
-    //     message: res.headers('X-MBP-alert'),
-    //     data: res.data
-    //   };
-    // }
-    //
-    // function handleError(res) {
-    //   return {
-    //     success: false,
-    //     message: res.headers('X-MBP-error'),
-    //     status: res.status
-    //   };
-    // }
-
   }
 
 })();

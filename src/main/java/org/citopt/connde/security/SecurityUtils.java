@@ -17,7 +17,6 @@ public final class SecurityUtils {
 
     /**
      * Get the username of the current user.
-     *
      * @return the username of the current user
      */
     public static String getCurrentUserUsername() {
@@ -37,7 +36,6 @@ public final class SecurityUtils {
 
     /**
      * Check if a user is authenticated.
-     *
      * @return true if the user is authenticated, false otherwise
      */
     public static boolean isAuthenticated() {
@@ -52,7 +50,6 @@ public final class SecurityUtils {
 
     /**
      * If the current user has a specific authority (security role).
-     *
      * @param authority the authority to check
      * @return true if the current user has the authority, false otherwise
      */

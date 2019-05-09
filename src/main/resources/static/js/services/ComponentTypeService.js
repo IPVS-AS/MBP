@@ -28,8 +28,6 @@
       return $http.get(ENDPOINT_URI + '/component-types/' + component).then(handleSuccess, handleError);
     }
 
-    // private functions
-
     function handleSuccess(res) {
       return {
         success: true,

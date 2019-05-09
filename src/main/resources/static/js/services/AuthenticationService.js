@@ -36,6 +36,9 @@
       });
     }
 
+    /*
+     * Set the authorization header and save the data in a cookie
+     */
     function SetCredentials(username, password) {
       var authdata = Base64.encode(username + ':' + password);
 
@@ -57,6 +60,9 @@
       });
     }
 
+    /*
+     * Remove the header and delete the cookie
+     */
     function ClearCredentials() {
       $rootScope.globals = {};
       $cookieStore.remove('globals');

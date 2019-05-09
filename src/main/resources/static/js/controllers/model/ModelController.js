@@ -13,14 +13,17 @@
     ModelService, ComponentService, DeviceService, CrudService, adapterList) {
     var vm = this;
 
+    /*
+     * Ensures that jsPlumb is initialized - the rest is wrapped inside this function
+     */
     jsPlumb.ready(function() {
       var jsPlumbInstance;
       var canvasId = "#canvas";
-      var elementIdCount = 0;
-      var properties = {}; // keeps the properties of each element
+      var elementIdCount = 0; // used for canvas ID uniquness
+      var properties = {}; // keeps the properties of each element to draw on canvas
       var element = ""; // the element which will be appended to the canvas
       var clicked = false; // true if an element from the palette was clicked
-      vm.processing = {};
+      vm.processing = {}; // used to show/hide the progress circle
       vm.deletionPromises = [];
       vm.selectedOptionName = "";
       vm.loadedModels = [];
@@ -36,16 +39,23 @@
       vm.deployComponents = deployComponents;
       vm.undeployComponents = undeployComponents;
 
+      // On initialization load the models from the database
       (function initController() {
         vm.loadModels();
       })();
 
+      // Use the AdapterListController to load the adapters
       angular.extend(vm, {
         adapterListCtrl: $controller('ItemListController as adapterListCtrl', {
           $scope: $scope,
           list: adapterList
         })
       });
+
+
+      /*
+       * Define the types and look of the nodes and connections
+       */
 
       jsPlumbInstance = window.jsp = jsPlumb.getInstance({
         Endpoint: ["Dot", {
@@ -91,6 +101,9 @@
         allowLoopback: false
       };
 
+      /*
+       * jQuery makes the element with the given ID resizable
+       */
       function makeResizable(id) {
         $(id).resizable({
           start: function(event, ui) {
@@ -111,6 +124,9 @@
         });
       }
 
+      /*
+       * jQuery makes the element draggable
+       */
       function makeDraggable(id, className) {
         $(id).draggable({
           helper: function() {
@@ -121,6 +137,11 @@
           revert: false
         });
       }
+
+
+      /*
+       * Make all the elements from the palette draggable
+       */
 
       makeDraggable("#roomFloorplan", "window floorplan room-floorplan custom");
       makeDraggable("#wallFloorplan", "window floorplan wall-floorplan custom");
@@ -175,16 +196,18 @@
       makeDraggable("#defaultSensor", "window sensor default-sensor custom");
       makeDraggable("#sContainer", "window as-container custom");
 
-      //make the editor canvas droppable
+      // jQuery makes the canvas droppable
       $(canvasId).droppable({
         accept: ".window",
         drop: function(event, ui) {
           if (clicked) {
+            // Get the drop position
             properties.top = ui.offset.top - $(this).offset().top;
             properties.left = ui.offset.left - $(this).offset().left;
             clicked = false;
             elementIdCount++;
             var id = "canvasWindow" + elementIdCount;
+            // Create and draw the element in the canvas
             element = createElement(id, undefined);
             drawElement(element);
             // element = "";
@@ -192,19 +215,10 @@
         }
       });
 
-      //take the x, y coordinates of the current mouse position
-      // var x, y;
-      // $(document).on("mousemove", function(event) {
-      //   x = event.pageX;
-      //   y = event.pageY;
-      //   if (clicked) {
-      //     properties.top = y - 108;
-      //     properties.left = x - 268;
-      //   }
-      // });
-
-      // Temporary saved properties of clicked element in palette
-      // The data is used to create the element on drop
+      /*
+       * Temporary saved properties of clicked element in palette
+       * The data is used to create the element on drop
+       */
       function loadProperties(clsName, type) {
         properties = {};
         properties.clsName = clsName;
@@ -212,7 +226,12 @@
         clicked = true;
       }
 
-      //load properties of an element once the element in the palette is clicked
+
+      /*
+       * Load properties of an element once the element in the palette is clicked
+       */
+
+      // Floorplan
       $('#roomFloorplan').mousedown(function() {
         loadProperties("window floorplan room-floorplan custom jtk-node", undefined);
       });
@@ -265,6 +284,7 @@
         loadProperties("window floorplan toilet-floorplan custom jtk-node", undefined);
       });
 
+      // Devices
       $('#raspberryPiDevice').mousedown(function() {
         loadProperties("window device raspberry-pi-device custom jtk-node", "Raspberry Pi");
       });
@@ -309,6 +329,7 @@
         loadProperties("window device default-device custom jtk-node", undefined);
       });
 
+      // Actuators
       $('#lightActuator').mousedown(function() {
         loadProperties("window actuator light-actuator custom jtk-node", "Light");
       });
@@ -353,6 +374,7 @@
         loadProperties("window as-container custom jtk-node", undefined);
       });
 
+      // Sensors
       $('#cameraSensor').mousedown(function() {
         loadProperties("window sensor camera-sensor custom jtk-node", "Camera");
       });
@@ -409,10 +431,11 @@
         loadProperties("window as-container custom jtk-node", undefined);
       });
 
-      //create an element to be drawn on the canvas
+      /*
+       * Create an element to be drawn on the canvas
+       */
       function createElement(id, node) {
-        if (node) {
-          // Use node for loaded model
+        if (node) { // Use node for loaded model
           var element = $('<div>').addClass(node.clsName).attr('id', id);
           // The position to create the element
           element.css({
@@ -429,6 +452,7 @@
             setAngle(element, false);
           }
 
+          // Append the data to the element
           if (node.nodeType == "device") {
             element.append("<div class=\"ep\"></div>");
             element.data("id", node.id);
@@ -450,12 +474,12 @@
             element.data("regError", node.regError);
             element.data("depError", node.depError);
           } else if (node.nodeType == "as-container") {
+            // Append the children/elements
             element.data("containerNodes", node.containerNodes);
           }
-        } else {
-          // Use properties on drop
+        } else { // Use properties on drop
           var element = $('<div>').addClass(properties.clsName).attr('id', id);
-          // The position to created the dropped element
+          // The position to create the dropped element
           element.css({
             'top': properties.top,
             'left': properties.left
@@ -475,43 +499,36 @@
           }
         }
 
+        // Append the close icon, which is used to delete the element
         element.append("<i style='display: none' class=\"fa fa-times fa-lg close-icon\"><\/i>");
         return element;
       }
 
+      /*
+       * Draw/append the element on the canvas
+       */
       function drawElement($element) {
         $(canvasId).append($element);
+        // Make the element on the canvas draggable
         jsPlumbInstance.draggable(jsPlumbInstance.getSelector(".jtk-node"), {
           filter: ".ui-resizable-handle"
         });
 
+        // If the container is the element to draw
         if ($element.attr("class").indexOf("as-container") > -1) {
-          console.log("Actuator node draw " + $element.attr("id"));
-          // jsPlumbInstance.draggable(jsPlumbInstance.getSelector(".group-node"), {
-          //   filter: ".ui-resizable-handle"
-          // });
+          // Make the container droppable; accept only sensors and actuators
           $element.droppable({
             accept: ".actuator, .sensor",
             drop: function(event, ui) {
-              console.log("Actuator node dropped");
               element.css({
                 'top': ui.offset.top - $(this).offset().top,
                 'left': ui.offset.left - $(this).offset().left
               });
-              // clicked = false;
-              // elementIdCount++;
-              // var id = "canvasWindow" + elementIdCount;
-              // element = createElement(id, undefined);
               $element.append(element);
-              // jsPlumbInstance.draggable(jsPlumbInstance.getSelector(".jtk-node"), {
-              //   filter: ".ui-resizable-handle"
-              // });
-              // addEndpoints(element);
-              // makeResizable(".custom");
-              // element = "";
             }
           });
 
+          // If the container contains elements, create and add them
           if ($element.data("containerNodes")) {
             var containerNodes = $element.data("containerNodes");
             containerNodes.forEach(function(value, index, array) {
@@ -520,14 +537,18 @@
               addEndpoints(nodeElement);
             });
           }
+
+          $element.scroll(function() {
+            jsPlumbInstance.repaintEverything();
+          });
         }
-        $element.scroll(function() {
-          jsPlumbInstance.repaintEverything();
-        });
         addEndpoints($element);
         makeResizable(".custom");
       }
 
+      /*
+       * Define the sources and targets for making connections
+       */
       function addEndpoints(element) {
         var type = element.attr('class').toString().split(" ")[1];
         if (type == "device") {
@@ -540,24 +561,28 @@
         }
       }
 
+      // When the element on the canvas is clicked
       $(document).on("click", ".jtk-node", function() {
+        // Load the corresponding data to show it in the tool
         loadData($(this));
 
+        // Show the close icon
         var marginLeft = $(this).outerWidth() + 6 + "px";
         $(".close-icon").prop("title", "Delete the element");
         $(this).find("i").css({
           'margin-left': marginLeft
         }).show();
 
+        // Add the colored outline
         $(this).addClass("clicked-element");
         if ($(this).attr("class").indexOf("room-floorplan") > -1) {
           $(this).css({
             'outline': "2px solid #4863A0"
           });
         }
-
       });
 
+      // Rotate the element on double click
       $(document).on('dblclick', ".jtk-node", function() {
         if ($(this).attr("class").indexOf("room-floorplan") == -1 &&
           $(this).attr("class").indexOf("as-container") == -1) {
@@ -565,6 +590,9 @@
         }
       });
 
+      /*
+       * Rotate the element with css
+       */
       function setAngle(element, rotate) {
         var angle = 0;
         if (rotate) {
@@ -586,10 +614,13 @@
         }
       }
 
+      // When the canvas is clicked, save the data from the input fields to the corresponding element
       $(canvasId).on('click', function(e) {
         saveData();
       });
 
+
+      // When the close icon is clicked to delete the element, first undeploy and deregister
       $(document).on("click", ".close-icon", function() {
         vm.processing = {};
         vm.processing.status = true;
@@ -599,8 +630,7 @@
         var element = $(this).parent();
         var type = element.attr('class').toString().split(" ")[1];
 
-        // Case: A device has attached sensors and actuators, which are deployed or registered
-        if (type == "device" && element.data("id")) {
+        if (type == "device" && element.data("id")) { // Case: A device has attached sensors and actuators, which are deployed or registered
           vm.deletionPromises = [];
           $.each(jsPlumbInstance.getConnections({
             source: element.attr("id")
@@ -608,6 +638,7 @@
             var target = $(connection.target);
             var targetType = target.attr('class').toString().split(" ")[1];
             if (targetType == "sensor" || targetType == "actuator") {
+              // Undeploy and deregister the attached sensor/actuator
               if (target.data("deployed")) {
                 var promise = undeployComponent(targetType, target, false);
                 vm.deletionPromises.push(promise);
@@ -618,6 +649,7 @@
             }
           });
 
+          // Save the model afterwards to stay updated
           $q.all(vm.deletionPromises).then(function() {
             if (vm.processing.undeployedDeregistered) {
               deregisterComponent(type, element, true);
@@ -629,7 +661,7 @@
               });
             }
           });
-        } else {
+        } else { // Case: device, sensor or actuator
           if (element.data("deployed")) {
             undeployComponent(type, element, true);
           } else if (element.data("id")) {
@@ -641,20 +673,22 @@
         }
       });
 
+      /*
+       * Undeploy and deregister the element
+       */
       function undeployComponent(type, element, deleteFromModel) {
         return ComponentService.undeploy(ENDPOINT_URI + "/deploy/" + type + "/" + element.data("id")).then(
           function(response) {
-            console.log(response);
             element.data("deployed", false);
             element.removeData("depError");
             element.removeClass("error-element");
             element.removeClass("deployed-element");
             element.addClass("success-element");
+            // Deregister the element in second step
             var promise = deregisterComponent(type, element, deleteFromModel);
             vm.deletionPromises.push(promise);
           },
           function(response) {
-            console.log(response);
             element.data("depError", response.data ? response.data.globalMessage : response.status);
             element.removeClass("success-element");
             element.removeClass("deployed-element");
@@ -670,23 +704,25 @@
           });
       }
 
+      /*
+       * Deregister and delete the element from canvas
+       */
       function deregisterComponent(type, element, deleteFromModel) {
         var item = {};
         item.id = element.data("id");
         return CrudService.deleteItem(type + "s", item).then(
           function(response) {
-            console.log(response);
             element.removeData("id");
             element.removeData("depError");
             element.removeData("regError");
             element.removeClass("error-element");
             element.removeClass("success-element");
+            // On success delete the element from canvas
             if (deleteFromModel) {
               deleteElementFromCanvas(element, true);
             }
           },
           function(response) {
-            console.log(response);
             element.data("regError", response.name ? response.name.message : response.status);
             element.removeClass("success-element");
             element.addClass("error-element");
@@ -701,6 +737,9 @@
           });
       }
 
+      /*
+       * Delete the element from the canvas and jsPlumbInstance
+       */
       function deleteElementFromCanvas(element, savingModel) {
         $timeout(function() {
           vm.clickedComponent = {};
@@ -715,8 +754,15 @@
         });
       }
 
-      // bind a click listener to each connection; the connection is deleted on double click
+
+      /*
+       * Bind listeners to the connections
+       */
+
+      // The connection is deleted on double click
       jsPlumbInstance.bind("dblclick", jsPlumbInstance.deleteConnection);
+
+      // Show the name input on click
       jsPlumbInstance.bind("click", function(connection, originalEvent) {
         var overlay = connection.getOverlay("label");
         if (overlay.isVisible() && originalEvent.target.localName == 'path') {
@@ -726,7 +772,7 @@
         }
       });
 
-      // Add device name and id to sensor or actuator when a connection was created
+      // Add device name and id to sensor or actuator when a connection is created
       jsPlumbInstance.bind("connection", function(info) {
         saveData();
         var source = $(info.source);
@@ -762,6 +808,7 @@
             vm.processing.status = false;
           }
 
+          // Save the model after undeployment and deregistration
           $q.all(vm.deletionPromises).then(function() {
             if (vm.deletionPromises.length !== 0) {
               saveModel().then(function(response) {
@@ -783,19 +830,9 @@
         }
       }
 
-      // Update device name in sensor or actuator
-      function updateDeviceSA(device) {
-        $.each(jsPlumbInstance.getConnections({
-          source: device.attr("id")
-        }), function(index, connection) {
-          var target = $(connection.target);
-          if (target.attr("class").indexOf("device") == -1) {
-            target.data("device", device.data("name"));
-            target.data("deviceId", device.data("id"));
-          }
-        });
-      }
-
+      /*
+       * Load the data from the element to show it in the tool and input fields
+       */
       function loadData(element) {
         $timeout(function() {
           if (element.attr("class").indexOf("device") > -1) {
@@ -809,6 +846,7 @@
             vm.clickedComponent.rsaKey = element.data("rsaKey");
             vm.clickedComponent.regError = element.data("regError");
             vm.clickedComponent.element = element;
+            // If device is registered then disable the input fields
             if (element.data("id")) {
               $("#deviceInfo *").attr("disabled", true).off('click');
             } else {
@@ -828,6 +866,7 @@
             vm.clickedComponent.depError = element.data("depError");
             vm.clickedComponent.deployed = element.data("deployed");
             vm.clickedComponent.element = element;
+            // Disable the input fields if registered
             if (element.data("id")) {
               $("#actuatorInfo *").attr("disabled", true).off('click');
             } else {
@@ -848,6 +887,7 @@
             vm.clickedComponent.depError = element.data("depError");
             vm.clickedComponent.deployed = element.data("deployed");
             vm.clickedComponent.element = element;
+            // Disable the input fields if registered
             if (element.data("id")) {
               $("#sensorInfo *").attr("disabled", true).off('click');
             } else {
@@ -861,6 +901,9 @@
         });
       }
 
+      /*
+       * Save the data from the input fields in the element
+       */
       function saveData() {
         var element = vm.clickedComponent.element;
         if (element) {
@@ -892,16 +935,35 @@
         });
       }
 
+      /*
+       * Update device name and ID in the attached sensors and actuators
+       */
+      function updateDeviceSA(device) {
+        $.each(jsPlumbInstance.getConnections({
+          source: device.attr("id")
+        }), function(index, connection) {
+          var target = $(connection.target);
+          if (target.attr("class").indexOf("device") == -1) {
+            target.data("device", device.data("name"));
+            target.data("deviceId", device.data("id"));
+          }
+        });
+      }
+
+      /*
+       * Draw a model on the canvas based on the saved JSON representation
+       */
       function drawModel(model) {
         clearCanvas();
         vm.currentModel = JSON.parse(model);
-        console.log(vm.currentModel);
         var environment = JSON.parse(vm.currentModel.value);
+        // Draw first the nodes
         $.each(environment.nodes, function(index, node) {
           element = createElement(node.elementId, node);
           drawElement(element);
           element = "";
         });
+        // Connect the created nodes
         $.each(environment.connections, function(index, connection) {
           var conn = jsPlumbInstance.connect({
             source: connection.sourceId,
@@ -916,18 +978,22 @@
         elementIdCount = environment.elementIdCount;
       }
 
+      /*
+       * Load models from database
+       */
       function loadModels() {
         return ModelService.GetModelsByUsername().then(function(response) {
-          console.log(response);
           vm.loadedModels = response.data;
-        }, function(response) {
-          console.log(response);
-        });
+        }, function(response) {});
       }
 
+      /*
+       * Create the JSON representation and save it in the database
+       */
       function saveModel() {
         saveData();
 
+        // Distinguishing between saving with button and saving after registration/deployment because of the feedback
         var savingIndividual = true;
         if (vm.processing.status) {
           savingIndividual = false;
@@ -941,6 +1007,7 @@
         var totalCount = 0;
         var nodes = [];
 
+        // Get all nodes from the canvas
         $(".jtk-node").each(function(index, element) {
           totalCount++;
           var $element = $(element);
@@ -967,7 +1034,7 @@
             });
           } else if (type == "actuator" || type == "sensor") {
             var parent = $($element.parent());
-            // Do not add if parent is container. The elements are added below
+            // Do not add if parent is container - the elements are added below
             if (parent.attr("class").indexOf("as-container") == -1) {
               nodes.push({
                 nodeType: type,
@@ -1025,7 +1092,7 @@
               angle: $element.data("angle"),
               containerNodes: containerNodes
             });
-          } else {
+          } else { // Floorplans
             nodes.push({
               nodeType: type,
               elementId: $element.attr('id'),
@@ -1039,6 +1106,7 @@
           }
         });
 
+        // Get all connections
         var connections = [];
         $.each(jsPlumbInstance.getConnections(), function(index, connection) {
           connections.push({
@@ -1050,6 +1118,7 @@
           });
         });
 
+        // Create the JSON representation
         var environment = {};
         environment.nodes = nodes;
         environment.connections = connections;
@@ -1061,8 +1130,7 @@
         model.name = vm.currentModel.name;
         model.id = vm.currentModel.id;
 
-        console.log(model);
-
+        // Save the model in the database
         return ModelService.SaveModel(model).then(
           function(response) {
             if (savingIndividual) {
@@ -1070,7 +1138,6 @@
               vm.processing.success = true;
               processingTimeout();
             }
-            console.log(response);
             vm.currentModel = response.data;
             vm.selectedOptionName = vm.currentModel.name;
             loadModels();
@@ -1082,17 +1149,19 @@
               processingTimeout();
             }
             vm.processing.saved = false;
-            console.log(response);
           });
-
       }
 
+      /*
+       * Delete the model from the database considering the registration and deployment
+       */
       function deleteModel() {
         vm.processing = {};
         vm.processing.status = true;
         vm.processing.finished = false;
         vm.processing.undeployedDeregistered = true;
 
+        // Undeploy and deregister each node if needed
         vm.deletionPromises = [];
         $(".jtk-node").each(function(index, element) {
           var $element = $(element);
@@ -1106,19 +1175,18 @@
           }
         });
 
+        // After all deregistrations and undeployments - delete the model
         $q.all(vm.deletionPromises).then(function() {
           if (vm.processing.undeployedDeregistered) {
             ModelService.DeleteModel(vm.currentModel.name).then(function(response) {
               vm.processing.message = vm.currentModel.name + " deleted";
               vm.processing.success = true;
               processingTimeout();
-              console.log(response);
               newModel();
             }, function(response) {
               vm.processing.message = "Deletion error";
               vm.processing.success = false;
               processingTimeout();
-              console.log(response);
             });
           } else {
             vm.processing.message = "Undeployment or deregistration error";
@@ -1128,6 +1196,9 @@
         });
       }
 
+      /*
+       * Remove all elements from canvas
+       */
       function clearCanvas() {
         jsPlumbInstance.unbind("connectionDetached");
         jsPlumbInstance.empty("canvas");
@@ -1139,6 +1210,9 @@
         });
       }
 
+      /*
+       * Clear the canvas to make a new model
+       */
       function newModel() {
         elementIdCount = 0;
         vm.currentModel = {};
@@ -1151,6 +1225,9 @@
         });
       }
 
+      /*
+       * Register all components on the canvas
+       */
       function registerComponents() {
         saveData();
 
@@ -1197,6 +1274,7 @@
             }
           });
 
+          // Save the model after all registrations
           $q.all(actuatorSensorPromises).then(function() {
             if (devicePromises.length === 0 && actuatorSensorPromises.length === 0) {
               vm.processing.message = "No components to register";
@@ -1224,12 +1302,15 @@
         });
       }
 
+      /*
+       * Register a component
+       */
       function register(type, item, element) {
         return CrudService.addItem(type + "s", item).then(
           function(response) {
-            console.log(response);
             element.data("id", response.id);
             if (type == "device") {
+              // Update the attached sensors and actuators with generated ID of the device, need for their registration
               updateDeviceSA(element);
             }
             element.removeData("regError");
@@ -1238,7 +1319,6 @@
             element.addClass("success-element");
           },
           function(response) {
-            console.log(response);
             element.data("regError", response.name ? response.name.message : response.status);
             element.removeClass("success-element");
             element.addClass("error-element");
@@ -1246,12 +1326,16 @@
           });
       }
 
+      /*
+       * Deploy all sensors and actuators on the canvas
+       */
       function deployComponents() {
         vm.processing = {};
         vm.processing.status = true;
         vm.processing.deployed = true;
         vm.processing.finished = false;
 
+        // Get and deploy all undeployed sensors and actuators
         var deployPromises = [];
         $(".jtk-node").each(function(index, element) {
           var $element = $(element);
@@ -1266,6 +1350,7 @@
           }
         });
 
+        // Save the model after the deployment
         $q.all(deployPromises).then(function() {
           if (deployPromises.length === 0) {
             vm.processing.message = "No components to deploy";
@@ -1290,20 +1375,15 @@
             });
           }
         });
-
-        // $("#saveModelBtn").attr("disabled", true);
-        // $("#clearCanvasBtn").attr("disabled", true);
-        // $("#deleteModelBtn").attr("disabled", true);
-        // $("#registerComponentsBtn").attr("disabled", true);
-        // $("#deployComponentsBtn").attr("disabled", true);
-        // $("#undeployComponentsBtn").attr("disabled", false);
       }
 
+      /*
+       * Deploy a component
+       */
       function deploy(component, element) {
         vm.parameterValues = [];
         return ComponentService.deploy(vm.parameterValues, component).then(
           function(response) {
-            console.log(response);
             element.data("deployed", true);
             element.removeData("regError");
             element.removeData("depError");
@@ -1312,7 +1392,6 @@
             element.addClass("deployed-element");
           },
           function(response) {
-            console.log(response);
             element.data("depError", response.data ? response.data.globalMessage : response.status);
             element.removeClass("success-element");
             element.removeClass("deployed-element");
@@ -1321,6 +1400,9 @@
           });
       }
 
+      /*
+       * Undeploy all deployed sensors and actuators on the canvas
+       */
       function undeployComponents() {
         vm.processing = {};
         vm.processing.status = true;
@@ -1341,6 +1423,7 @@
           }
         });
 
+        // save the model after the undeployment
         $q.all(undeployPromises).then(function() {
           if (undeployPromises.length === 0) {
             vm.processing.message = "No components to undeploy";
@@ -1365,19 +1448,14 @@
             });
           }
         });
-
-        // $("#saveModelBtn").attr("disabled", false);
-        // $("#clearCanvasBtn").attr("disabled", false);
-        // $("#deleteModelBtn").attr("disabled", false);
-        // $("#registerComponentsBtn").attr("disabled", false);
-        // $("#deployComponentsBtn").attr("disabled", false);
-        // $("#undeployComponentsBtn").attr("disabled", true);
       }
 
+      /*
+       * Undeploy a component
+       */
       function undeploy(component, element) {
         return ComponentService.undeploy(component).then(
           function(response) {
-            console.log(response);
             element.data("deployed", false);
             element.removeData("depError");
             element.removeData("regError");
@@ -1386,7 +1464,6 @@
             element.addClass("success-element");
           },
           function(response) {
-            console.log(response);
             element.data("depError", response.data ? response.data.globalMessage : response.status);
             element.removeClass("success-element");
             element.removeClass("deployed-element");
@@ -1395,25 +1472,9 @@
           });
       }
 
-      // function update() { // update deployment status
-      //   vm.processing.status = true;
-      //   ComponentService.isDeployed(vm.sensorDetailsCtrl.item._links.deploy.href)
-      //     .then(
-      //       function(deployed) {
-      //         console.log('update: available, ' + deployed);
-      //         vm.processing.status = false;
-      //         vm.deployer.available = true;
-      //         vm.deployer.deployed = deployed;
-      //       },
-      //       function(response) {
-      //         console.log('update: unavailable');
-      //         vm.processing.status = false;
-      //         vm.deployer.available = false;
-      //       });
-      // }
-      //
-      // $scope.isCollapsedLog = false;
-
+      /*
+       * Defines how long the feedback message is displayed in the tool
+       */
       function processingTimeout() {
         vm.processing.status = false;
         vm.processing.finished = true;
