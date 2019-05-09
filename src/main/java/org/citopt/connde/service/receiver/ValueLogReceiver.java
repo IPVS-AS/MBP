@@ -1,6 +1,5 @@
-package org.citopt.connde.service.mqtt;
+package org.citopt.connde.service.receiver;
 
-import org.citopt.connde.repository.ValueLogRepository;
 import org.citopt.connde.service.settings.SettingsService;
 import org.citopt.connde.service.settings.model.BrokerLocation;
 import org.citopt.connde.service.settings.model.Settings;
@@ -12,16 +11,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Background service that receives incoming value messages of actuators and sensors that comply to certain topics
- * and stores them into the value log repository for further processing.
- *
- * @author Jan
+ * Background service that receives incoming MQTT value log messages of that comply to certain topics. The service
+ * implements the observer pattern which allows other other components to register themselves to the ValueLogReceiver
+ * and get notified when a new value message arrives.
  */
 @Service
-public class ValueReceiver {
-    //Set of topics to subscribe to
+public class ValueLogReceiver {
+    //Set of MQTT topics to subscribe to
     private static final String[] SUBSCRIBE_TOPICS = {"device/#", "sensor/#", "actuator/#", "monitoring/#"};
     //URL frame of the broker to use (protocol and port, address will be filled in)
     private static final String BROKER_URL = "tcp://%s:1883";
@@ -30,21 +30,24 @@ public class ValueReceiver {
 
     //Autowired components
     private SettingsService settingsService;
-    private ValueLogRepository valueLogRepository;
 
     //Stores the reference of the mqtt client
     private MqttClient mqttClient = null;
 
+    //Set ob observers that want to be notified about incoming value logs
+    private Set<ValueLogReceiverObserver> observerSet;
+
     /**
      * Initializes the value logger service.
      *
-     * @param settingsService    Settings service that manages the application settings
-     * @param valueLogRepository The value log repository to write logs into
+     * @param settingsService Settings service that manages the application settings
      */
     @Autowired
-    public ValueReceiver(SettingsService settingsService, ValueLogRepository valueLogRepository) {
+    public ValueLogReceiver(SettingsService settingsService) {
         this.settingsService = settingsService;
-        this.valueLogRepository = valueLogRepository;
+
+        //Initialize set of observers
+        observerSet = new HashSet<>();
 
         //Setup the mqtt client
         try {
@@ -54,6 +57,44 @@ public class ValueReceiver {
         } catch (IOException e) {
             System.err.println("IOException: " + e.getMessage());
         }
+    }
+
+    /**
+     * Registers an observer at the ValueLogReceiver which then will be notified about incoming value logs.
+     *
+     * @param observer The observer to register
+     */
+    public void registerObserver(ValueLogReceiverObserver observer) {
+        //Sanity check
+        if (observer == null) {
+            throw new IllegalArgumentException("Observer must not be null.");
+        }
+
+        //Add observer to set
+        observerSet.add(observer);
+    }
+
+    /**
+     * Unregisters an observer from the ValueLogReceiver which then will not be notified anymore about incoming
+     * value logs.
+     *
+     * @param observer The observer to unregister
+     */
+    public void unregisterObserver(ValueLogReceiverObserver observer) {
+        //Sanity check
+        if (observer == null) {
+            throw new IllegalArgumentException("Observer must not be null.");
+        }
+
+        //Remove observer from set
+        observerSet.remove(observer);
+    }
+
+    /**
+     * Unregisters all observers.
+     */
+    public void clearObservers() {
+        observerSet.clear();
     }
 
     /**
@@ -91,7 +132,7 @@ public class ValueReceiver {
         mqttClient.subscribe(SUBSCRIBE_TOPICS);
 
         //Create new callback handler for messages and register it
-        MqttCallback callback = new ValueReceiverEventHandler(valueLogRepository);
+        MqttCallback callback = new ValueLogReceiverArrivalHandler(observerSet);
         mqttClient.setCallback(callback);
     }
 }

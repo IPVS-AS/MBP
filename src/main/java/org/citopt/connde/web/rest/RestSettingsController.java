@@ -1,7 +1,7 @@
 package org.citopt.connde.web.rest;
 
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.service.mqtt.ValueReceiver;
+import org.citopt.connde.service.receiver.ValueLogReceiver;
 import org.citopt.connde.service.settings.SettingsService;
 import org.citopt.connde.service.settings.model.Settings;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -27,7 +27,7 @@ public class RestSettingsController {
     @Autowired
     private SettingsService settingsService;
     @Autowired
-    private ValueReceiver valueReceiver;
+    private ValueLogReceiver valueLogReceiver;
 
     /**
      * Called when the client wants to retrieve the settings.
@@ -56,7 +56,7 @@ public class RestSettingsController {
         //Save settings and restart value logger, since it needs to use a different ip address now
         try {
             settingsService.saveSettings(settings);
-            valueReceiver.setupAndStart();
+            valueLogReceiver.setupAndStart();
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (MqttException e) {
