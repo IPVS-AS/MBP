@@ -26,6 +26,14 @@ app.controller('DeviceListController',
                 $scope.$on('$destroy', function () {
                     $interval.cancel(interval);
                 });
+
+                //Provide details link for a given device
+                $scope.detailsLink = function (device) {
+                    if (device.id) {
+                        return "view/devices/" + device.id;
+                    }
+                    return "#";
+                };
             })();
 
             //Extend each device in deviceList for the formatted mac address, a state and a reload function
@@ -198,6 +206,9 @@ app.controller('DeviceListController',
                     var device = vm.addDeviceCtrl.result;
 
                     if (device) {
+                        //Close modal on success
+                        $("#addDeviceModal").modal('toggle');
+
                         //Add state and reload function to the new object
                         device.state = 'LOADING';
                         device.reloadState = createReloadStateFunction(device.id);
@@ -231,7 +242,7 @@ app.controller('DeviceListController',
                 ComponentTypeService.GetByComponent('DEVICE')
                     .then(function (response) {
                         if (response.success) {
-                            vm.deviceTypes = response.data;
+                            vm.deviceTypesList = response.data;
                         } else {
                             console.log("Error loading device types!");
                         }

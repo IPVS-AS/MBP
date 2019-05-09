@@ -1,5 +1,6 @@
 package org.citopt.connde.domain.adapter;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.exception.InsertFailureException;
 import org.citopt.connde.exception.NotFoundException;
@@ -7,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.measure.unit.Unit;
 import javax.persistence.GeneratedValue;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,8 @@ public class Adapter {
     private String name;
 
     private String description;
+
+    private String unit;
 
     private Code service;
     private List<Code> routines;
@@ -97,6 +101,23 @@ public class Adapter {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
+    @JsonIgnore
+    public Unit getUnitObject() {
+        try {
+            return Unit.valueOf(this.unit);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public Code getService() {

@@ -4,13 +4,16 @@
         <div class="card">
             <div class="header">
                 <div class="col-lg-6">
-					<h2>Adapters</h2>
-				</div>
-				<div class="align-right">	
-					<button id="add-button" type="button" class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0" data-toggle="modal" data-target="#addAdapterModal">
-		      				<i class="material-icons">add</i>
-		      		</button>
-		     	</div>
+                    <h2>Adapters</h2>
+                </div>
+                <div class="align-right">
+                    <button id="add-button" type="button"
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                            data-toggle="modal" data-target="#addAdapterModal" data-backdrop="static"
+                            data-keyboard="false">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
             </div>
             <div class="body">
                 <table class="table table-hover" st-table="displayedCollection" st-safe-src="adapterListCtrl.items">
@@ -18,14 +21,26 @@
                     <tr>
                         <th>Name</th>
                         <th>Description</th>
-						<th>Parameters</th>
+                        <th>Unit</th>
+                        <th>Parameters</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
                         <td>{{item.name}}</td>
                         <td>{{item.description}}</td>
-                         <td><span ng-repeat="par in item.parameters">{{par.name}} ({{par.type}}) </span></td>
+                        <td>{{item.unit ? item.unit : 'None'}}</td>
+                        <td>
+                            <button ng-repeat-start="parameter in item.parameters"
+                                    class="btn btn-default" role="button"
+                                    data-html="true" data-toggle="popover"
+                                    data-placement="top" title="{{parameter.name}}"
+                                    data-content="<strong>Type:</strong> {{parameter.type}}<br/>
+                                    <strong>Unit:</strong> {{parameter.unit ? parameter.unit : 'None'}}">
+                                {{parameter.name}}
+                            </button>
+                            <span ng-repeat-end="">&nbsp;</span>
+                        </td>
                         <td>
                             <form ng-submit="deleteAdapterCtrl.deleteItem()">
                                 <button type="submit" class="btn btn-danger m-t-0 waves-effect"
@@ -52,21 +67,21 @@
         </div>
     </div>
     <!-- #END# List of Adapters Card -->
-	<!-- Modal -->
-	<div class="modal fade" id="addAdapterModal" tabindex="-1" role="dialog">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-	        		<h5 class="modal-title">Register a new device
-	        			<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-	          				<span aria-hidden="true">&times;</span>
-	        			</button>
-	        		</h5>
+    <!-- Modal -->
+    <div class="modal fade" id="addAdapterModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register a new adapter
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
 
-	      		</div>
-		  		<form id="addAdapterForm" ng-submit="addAdapterCtrl.addItem()">
-					<fieldset id="adapter-form">
-		      			<div class="modal-body">
+                </div>
+                <form id="addAdapterForm" ng-submit="addAdapterCtrl.addItem()">
+                    <fieldset id="adapter-form">
+                        <div class="modal-body">
                             <!-- "global" error for addItem -->
                             <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.global}">
                                 <span class="alert alert-danger" ng-show="addAdapterCtrl.item.errors.global"> {{addAdapterCtrl.item.errors.global}} </span>
@@ -89,6 +104,15 @@
                                            ng-model="addAdapterCtrl.item.description">
                                 </div>
                                 <span class="help-block" ng-show="addAdapterCtrl.item.errors.description">{{addAdapterCtrl.item.errors.description.message}}</span>
+                            </div>
+                            <!-- item.unit group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addAdapterCtrl.item.errors.unit }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addAdapterCtrl.item.errors.unit }">
+                                    <unit-input ng-model="addAdapterCtrl.item.unit"></unit-input>
+                                </div>
+                                <span class="help-block" ng-show="addAdapterCtrl.item.errors.unit">{{addAdapterCtrl.item.errors.unit.message}}</span>
                             </div>
                             <!-- item.routine group -->
                             <label>Adapter scripts:</label>
@@ -160,22 +184,24 @@
                                     <span class="help-block">{{addAdapterCtrl.item.errors.parameters.message}}</span>
                                 </div>
                                 <div class="align-right">
-	                                <button type="button"
-	                                        class="btn bg-light-green btn-circle waves-effect waves-circle waves-float"
-	                                        ng-click="ctrl.addDeploymentParameter()">
-	                                    <i class="material-icons">add</i>
-	                                </button>
+                                    <button type="button"
+                                            class="btn bg-light-green btn-circle waves-effect waves-circle waves-float"
+                                            ng-click="ctrl.addDeploymentParameter()">
+                                        <i class="material-icons">add</i>
+                                    </button>
                                 </div>
                             </div>
-		      			</div>
-					    <div class="modal-footer">
-					    	<button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">Close</button>
-					        <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
-					    </div>  
-					</fieldset>
-				</form>
-			</div>
-		</div>
-	</div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
     <!-- #END# Modal -->
 </div>

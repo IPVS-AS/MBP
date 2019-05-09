@@ -2,6 +2,7 @@ package org.citopt.connde.domain.adapter;
 
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.repository.AdapterRepository;
+import org.citopt.connde.util.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
@@ -21,7 +22,7 @@ public class AdapterValidator implements Validator {
     //Max length of parameter units
     private static final int PARAMETER_UNIT_MAX_LENGTH = 20;
 
-    static AdapterRepository repository;
+    private static AdapterRepository repository;
 
     @Autowired
     public void setTypeRepository(AdapterRepository adapterRepository) {
@@ -51,30 +52,36 @@ public class AdapterValidator implements Validator {
                     "Routine files must be provided.");
         }
 
+        //Check unit for validity
+        if (!Validation.isValidUnit(adapter.getUnit())) {
+            errors.rejectValue("unit", "adapter.unit.invalid",
+                    "Unable to parse unit specification.");
+        }
+
         //Check parameters for validity
         Set<String> nameSet = new HashSet<>();
-        for(Parameter parameter : adapter.getParameters()){
+        for (Parameter parameter : adapter.getParameters()) {
             String name = parameter.getName();
             //Check name
-            if((name == null) || name.isEmpty()){
+            if ((name == null) || name.isEmpty()) {
                 errors.rejectValue("parameters", "adapter.parameters.empty",
                         "Parameter names must not be empty.");
                 break;
             }
             //Check name for uniqueness
-            if(nameSet.contains(name)){
+            if (nameSet.contains(name)) {
                 errors.rejectValue("parameters", "adapter.parameters.duplicate",
                         "Parameter names must be unique.");
                 break;
             }
             //Check type
-            if(parameter.getType() == null){
+            if (parameter.getType() == null) {
                 errors.rejectValue("parameters", "adapter.parameters.untyped",
                         "Valid parameter types must be provided.");
                 break;
             }
             //Check unit
-            if((parameter.getUnit() != null) && (parameter.getUnit().length() > PARAMETER_UNIT_MAX_LENGTH)){
+            if ((parameter.getUnit() != null) && (parameter.getUnit().length() > PARAMETER_UNIT_MAX_LENGTH)) {
                 errors.rejectValue("parameters", "adapter.parameters.invalid_unit",
                         "Units must not be longer than " + PARAMETER_UNIT_MAX_LENGTH + " characters.");
                 break;

@@ -1,6 +1,7 @@
 package org.citopt.connde.repository.projection;
 
 import org.citopt.connde.domain.device.Device;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.rest.core.config.Projection;
 
 /**

@@ -1,5 +1,27 @@
-﻿/* Parameter tables*/
+﻿/* Rotate collapse icons */
+li > a.collapsed > i.material-icons {
+    transform: rotate(90deg);
+}
+
+/* Animation for icon style changes */
+li > a > i.material-icons {
+    transition: .3s transform ease-in-out;
+}
+
+/* Scrollable drop down */
+.dropdown-scrollable {
+    height: auto;
+    max-height: 350px;
+    overflow-x: hidden;
+}
+
+/* Parameter tables*/
 table.parameter-table td {
+    vertical-align: middle !important;
+}
+
+/* Vertical align */
+.vertical-align {
     vertical-align: middle !important;
 }
 
@@ -10,18 +32,11 @@ table.parameter-table td {
     margin-top: -4px;
 }
 
+/* Fore more beautiful select pickers */
+.btn-no-shadow {
+    box-shadow: none !important;
+}
+
 .clickable {
     cursor: pointer;
-}
-
-/* Small progress bar*/
-.progress-small {
-    height: 4px;
-}
-
-.progress-in-card {
-    margin-left: -20px;
-    margin-right: -20px;
-    margin-top: -20px;
-    border-radius: 4px;
 }

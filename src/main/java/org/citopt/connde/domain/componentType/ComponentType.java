@@ -4,12 +4,13 @@ import javax.persistence.GeneratedValue;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Type entity.
  * @author Imeri Amil
  */
-
+@Document
 public class ComponentType {
 	
     @Id

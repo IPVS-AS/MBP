@@ -9,69 +9,173 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
         //URL prefix for requests
         const URL_PREFIX = ENDPOINT_URI + '/';
         //URL suffix under which the deployment state of all components can be retrieved
-        const URL_SUFFIX_GET_ALL_COMPONENT_STATES = '/state';
+        const URL_GET_ALL_COMPONENT_STATES_SUFFIX = '/state';
         //URL suffix under which the deployment state of a certain component can be retrieved
-        const URL_SUFFIX_GET_COMPONENT_STATE = '/state/';
+        const URL_GET_COMPONENT_STATE_SUFFIX = '/state/';
         //URL suffix under which the deployment state of a certain component can be retrieved
-        const URL_SUFFIX_GET_VALUE_LOG_STATS = '/stats/';
+        const URL_GET_VALUE_LOG_STATS_SUFFIX = '/stats/';
+        //URL suffix under which the value logs of a certain component can be retrieved
+        const URL_VALUE_LOGS_SUFFIX = '/valueLogs';
 
-        //Performs a server request in order to retrieve the deployment states of all components of a certain type.
+
+        /**
+         * [Public]
+         *  Performs a server request in order to retrieve the deployment states of all components of a certain type.
+         *
+         * @param component The component type for which the states of all components should be retrieved
+         * @returns {*}
+         */
         function getAllComponentStates(component) {
-            return $http.get(URL_PREFIX + component + URL_SUFFIX_GET_ALL_COMPONENT_STATES);
+            return $http.get(URL_PREFIX + component + URL_GET_ALL_COMPONENT_STATES_SUFFIX);
         }
 
-        //Performs a server request in order to retrieve the deployment state of a certain component.
+        /**
+         * [Public]
+         * Performs a server request in order to retrieve the deployment state of a certain component.
+         *
+         * @param componentId The id of the affected component
+         * @param component The type of the component
+         * @returns {*}
+         */
         function getComponentState(componentId, component) {
-            return $http.get(URL_PREFIX + component + URL_SUFFIX_GET_COMPONENT_STATE + componentId);
+            return $http.get(URL_PREFIX + component + URL_GET_COMPONENT_STATE_SUFFIX + componentId);
         }
 
-        //Performs a server request in order to retrieve the value log stats of a certain component.
-        function getValueLogStats(componentId, component) {
-            return $http.get(URL_PREFIX + component + URL_SUFFIX_GET_VALUE_LOG_STATS + componentId);
+        /**
+         * [Public]
+         * Performs a server request in order to retrieve the value log stats of a certain component. Optionally,
+         * a unit may be provided in which the values are supposed to be displayed.
+         *
+         * @param componentId The id of the component for which the stats are supposed to be retrieved
+         * @param component The type of the component
+         * @param unit The unit in which the values are supposed to be retrieved
+         * @returns {*}
+         */
+        function getValueLogStats(componentId, component, unit) {
+            var parameters = {};
+
+            //Check if unit was provided
+            if (unit) {
+                parameters.unit = unit;
+            }
+
+            //Execute request
+            return $http.get(URL_PREFIX + component + URL_GET_VALUE_LOG_STATS_SUFFIX + componentId, {
+                params: parameters
+            });
         }
 
+        /**
+         * [Public]
+         * Performs a server request in order to retrieve value logs for a certain component.
+         *
+         * @param componentId The id of the component for which the logs are supposed to be retrieved
+         * @param component The type of the component
+         * @param pageDetails Page details object (size, order etc.) that specifies the logs to retrieve
+         * @param unit The unit in which the values are supposed to be retrieved
+         * @returns {*}
+         */
+        function getValueLogs(componentId, component, pageDetails, unit) {
+            var parameters = pageDetails;
+
+            //Check if unit was provided
+            if (unit) {
+                parameters.unit = unit;
+            }
+
+            //Execute request
+            return $http.get(URL_PREFIX + component + 's/' + componentId + URL_VALUE_LOGS_SUFFIX, {
+                params: parameters
+            }).then(function (response) {
+                //Process received logs in order to be able to display them in a chart
+                return processValueLogs(response.data.content);
+            });
+        }
+
+
+        /**
+         * [Public]
+         * Performs a server request in order to delete all recorded value logs of a certain component.
+         *
+         * @param componentId The id of the component whose value logs are supposed to be deleted
+         * @param component The type of the component
+         * @returns {*}
+         */
+        function deleteValueLogs(componentId, component) {
+            //Execute request
+            return $http.delete(URL_PREFIX + component + 's/' + componentId + URL_VALUE_LOGS_SUFFIX);
+        }
+
+
+        /**
+         * [Public]
+         * Processes an array of value logs as they are retrieved from the server. As a result, an array of
+         * value logs is returned that can be directly used for charts.
+         *
+         * @param receivedLogs An array of value log objects as returned by the server
+         */
+        function processValueLogs(receivedLogs) {
+            //Array that stores the finally formatted value logs
+            var finalValues = [];
+
+            //Iterate over all received value logs
+            for (var i = 0; i < receivedLogs.length; i++) {
+                //Extract value and date for the current log and format them
+                var value = receivedLogs[i].value * 1;
+                var date = receivedLogs[i].date;
+                date = date.replace(/\s/g, "T");
+                date = dateToString(new Date(date));
+
+                //Create a (date, value) tuple and add it to the array
+                var tuple = [date, value];
+                finalValues.push(tuple);
+            }
+
+            //Return final value log array so that it is accessible in the promise
+            return finalValues;
+        }
+
+        /**
+         * [Private]
+         * Converts a javascript date object to a human-readable date string in the "dd.mm.yyyy hh:mm:ss" format.
+         *
+         * @param date The date object to convert
+         * @returns The generated date string in the corresponding format
+         */
+        function dateToString(date) {
+            //Retrieve all properties from the date object
+            var year = date.getFullYear();
+            var month = '' + (date.getMonth() + 1);
+            var day = '' + date.getDate();
+            var hours = '' + date.getHours();
+            var minutes = '' + date.getMinutes();
+            var seconds = '' + date.getSeconds();
+
+            //Add a leading zero (if necessary) to all properties except the year
+            var values = [day, month, hours, minutes, seconds];
+            for (var i = 0; i < values.length; i++) {
+                if (values[i].length < 2) {
+                    values[i] = '0' + values[i];
+                }
+            }
+
+            //Generate and return the date string
+            return ([values[0], values[1], year].join('.')) +
+                ' ' + ([values[2], values[3], values[4]].join(':'));
+        }
+
+        //Expose
         return {
             COMPONENT: {
                 SENSOR: 'SENSOR',
                 ACTUATOR: 'ACTUATOR'
             },
+            processValueLogs: processValueLogs,
             getAllComponentStates: getAllComponentStates,
             getComponentState: getComponentState,
             getValueLogStats: getValueLogStats,
-            getValues: function (component, idref, parameters) {
-                var url = ENDPOINT_URI;
-
-                var params = {} || parameters;
-
-                if (idref) {
-                    url += '/valueLogs/search/findAllByIdref';
-                    params.idref = idref;
-                } else if (component) {
-                    url += '/valueLogs/search/findAllByComponent';
-                    params.component = component;
-                } else {
-                    url += '/valueLogs';
-                    params.sort = 'date,desc';
-                }
-
-                return $http({
-                    method: 'GET',
-                    url: url,
-                    params: params
-                })
-                    .then(
-                        function (response) {
-                            if (typeof response.data === 'object') {
-                                return response.data;
-                            } else {
-                                return $q.reject(response);
-                            }
-                        },
-                        function (response) {
-                            return $q.reject(response);
-                        });
-            },
-
+            getValueLogs: getValueLogs,
+            deleteValueLogs: deleteValueLogs,
             isDeployed: function (url) {
                 return $http({
                     method: 'GET',

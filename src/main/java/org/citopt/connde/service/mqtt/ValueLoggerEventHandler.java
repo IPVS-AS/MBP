@@ -38,20 +38,14 @@ public class ValueLoggerEventHandler implements MqttCallback {
 
     //Repository beans
     private ValueLogRepository valueLogRepository;
-    private ActuatorRepository actuatorRepository;
-    private SensorRepository sensorRepository;
 
     /**
      * Creates a new value logger event handler.
      *
      * @param valueLogRepository The value log repository to write logs into
-     * @param actuatorRepository The repository in which actuators are stored
-     * @param sensorRepository The repository in which sensors are stored
      */
-    protected ValueLoggerEventHandler(ValueLogRepository valueLogRepository, ActuatorRepository actuatorRepository, SensorRepository sensorRepository) {
+    protected ValueLoggerEventHandler(ValueLogRepository valueLogRepository) {
         this.valueLogRepository = valueLogRepository;
-        this.actuatorRepository = actuatorRepository;
-        this.sensorRepository = sensorRepository;
     }
 
     /**
@@ -96,15 +90,6 @@ public class ValueLoggerEventHandler implements MqttCallback {
         valueLog.setIdref(componentID);
         valueLog.setValue(json.getString(JSON_KEY_VALUE));
         valueLog.setComponent(componentType);
-
-        //Lookup the object of the actuator/sensor the message origins from and reference it
-        if (componentType.equals(IDENTIFIER_ACTUATOR)) {
-            Actuator actuator = actuatorRepository.findOne(componentID);
-            valueLog.setActuatorRef(actuator);
-        } else if (componentType.equals(IDENTIFIER_SENSOR)) {
-            Sensor sensor = sensorRepository.findOne(componentID);
-            valueLog.setSensorRef(sensor);
-        }
 
         //Insert log into repository
         valueLogRepository.insert(valueLog);

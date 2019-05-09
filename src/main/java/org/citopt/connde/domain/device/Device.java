@@ -1,5 +1,6 @@
 package org.citopt.connde.domain.device;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 
@@ -20,7 +21,6 @@ public class Device {
     @Indexed
     private String componentType;
 
-    @Indexed(unique = true)
     private String macAddress;
 
     private String ipAddress;
@@ -31,8 +31,10 @@ public class Device {
 
     private String username;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String rsaKey;
 
     public static String formatMAC(String raw) {
@@ -130,5 +132,15 @@ public class Device {
 
     public void setRsaKey(String rsaKey) {
         this.rsaKey = rsaKey;
+    }
+
+    @JsonProperty("usesPassword")
+    public boolean hasPassword() {
+        return (password != null) && (!password.isEmpty());
+    }
+
+    @JsonProperty("usesRSAKey")
+    public boolean hasRSAKey() {
+        return (rsaKey != null) && (!rsaKey.isEmpty());
     }
 }

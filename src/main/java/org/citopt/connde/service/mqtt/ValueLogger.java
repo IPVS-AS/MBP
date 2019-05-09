@@ -24,7 +24,7 @@ import java.io.IOException;
 @Service
 public class ValueLogger {
     //Set of topics to subscribe to
-    private static final String[] SUBSCRIBE_TOPICS = {"device/#", "sensor/#", "actuator/#"};
+    private static final String[] SUBSCRIBE_TOPICS = {"device/#", "sensor/#", "actuator/#", "monitoring/#"};
     //URL frame of the broker to use (protocol and port, address will be filled in)
     private static final String BROKER_URL = "tcp://%s:1883";
     //Client id that is supposed to be assigned to the client instance
@@ -33,8 +33,6 @@ public class ValueLogger {
     //Autowired components
     private SettingsService settingsService;
     private ValueLogRepository valueLogRepository;
-    private ActuatorRepository actuatorRepository;
-    private SensorRepository sensorRepository;
 
     //Stores the reference of the mqtt client
     private MqttClient mqttClient = null;
@@ -44,15 +42,11 @@ public class ValueLogger {
      *
      * @param settingsService    Settings service that manages the application settings
      * @param valueLogRepository The value log repository to write logs into
-     * @param actuatorRepository The repository in which actuators are stored
-     * @param sensorRepository   The repository in which sensors are stored
      */
     @Autowired
-    public ValueLogger(SettingsService settingsService, ValueLogRepository valueLogRepository, ActuatorRepository actuatorRepository, SensorRepository sensorRepository) {
+    public ValueLogger(SettingsService settingsService, ValueLogRepository valueLogRepository) {
         this.settingsService = settingsService;
         this.valueLogRepository = valueLogRepository;
-        this.actuatorRepository = actuatorRepository;
-        this.sensorRepository = sensorRepository;
 
         //Setup the mqtt client
         try {
@@ -99,7 +93,7 @@ public class ValueLogger {
         mqttClient.subscribe(SUBSCRIBE_TOPICS);
 
         //Create new callback handler for messages and register it
-        MqttCallback callback = new ValueLoggerEventHandler(valueLogRepository, actuatorRepository, sensorRepository);
+        MqttCallback callback = new ValueLoggerEventHandler(valueLogRepository);
         mqttClient.setCallback(callback);
     }
 }
