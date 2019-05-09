@@ -206,6 +206,9 @@ app.controller('DeviceListController',
                     var device = vm.addDeviceCtrl.result;
 
                     if (device) {
+                        //Close modal on success
+                        $("#addDeviceModal").modal('toggle');
+
                         //Add state and reload function to the new object
                         device.state = 'LOADING';
                         device.reloadState = createReloadStateFunction(device.id);

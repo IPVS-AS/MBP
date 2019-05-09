@@ -2,8 +2,8 @@
  * Controller for the component details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('ComponentDetailsController',
-    ['$scope', '$rootScope', '$routeParams', '$interval', '$timeout', 'componentDetails', 'ComponentService', 'DeviceService', 'UnitService', 'NotificationService',
-        function ($scope, $rootScope, $routeParams, $interval, $timeout, componentDetails, ComponentService, DeviceService, UnitService, NotificationService) {
+    ['$scope', '$rootScope', '$routeParams', '$interval', 'componentDetails', 'ComponentService', 'DeviceService', 'UnitService', 'NotificationService',
+        function ($scope, $rootScope, $routeParams, $interval, componentDetails, ComponentService, DeviceService, UnitService, NotificationService) {
             //Selectors that allow the selection of different ui cards
             const LIVE_CHART_CARD_SELECTOR = ".live-chart-card";
             const HISTORICAL_CHART_CARD_SELECTOR = ".historical-chart-card";
