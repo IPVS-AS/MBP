@@ -151,13 +151,29 @@
               <span>IoT Models</span>
             </a>
           </li>
+            <li menu-item="menu-item">
+                <a class="menu-toggle">
+                    <i class="material-icons">call_split</i>
+                    <span>Rules</span>
+                </a>
+                <ul class="ml-menu">
+                  <li>
+                    <a href="view/rules">Rule Definitions</a>
+                  </li>
+                  <li>
+                    <a href="view/rule-triggers">Rule Triggers</a>
+                  </li>
+                  <li>
+                    <a href="view/rule-actions">Rule Actions</a>
+                  </li>
+                </ul>
+            </li>
           <li href="view/devices" menu-item="menu-item">
             <a href="view/devices">
               <i class="material-icons">devices</i>
               <span>Devices</span>
             </a>
           </li>
-
           <li href="view/sensors" menu-item="menu-item">
             <a href="view/sensors">
               <i class="material-icons">settings_remote</i>
@@ -318,6 +334,9 @@
     <script th:src="@{/js/controllers/components/ComponentDetailsController.js}"></script>
     <script th:src="@{/js/controllers/actuators/ActuatorDetailsController.js}"></script>
     <script th:src="@{/js/controllers/sensors/SensorDetailsController.js}"></script>
+    <script th:src="@{/js/controllers/rules/RuleListController.js}"></script>
+    <script th:src="@{/js/controllers/rules/RuleActionListController.js}"></script>
+    <script th:src="@{/js/controllers/rules/RuleTriggerListController.js}"></script>
     <script th:src="@{/js/controllers/settings/SettingsController.js}"></script>
     <script th:src="@{/js/controllers/user/LoginController.js}"></script>
     <script th:src="@{/js/controllers/user/RegisterController.js}"></script>
