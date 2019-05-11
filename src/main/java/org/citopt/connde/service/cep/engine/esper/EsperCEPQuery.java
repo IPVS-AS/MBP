@@ -1,14 +1,14 @@
-package org.citopt.connde.service.cep.core.queries;
+package org.citopt.connde.service.cep.engine.esper;
 
 import com.espertech.esper.client.EPStatement;
 import com.espertech.esper.client.EPStatementState;
-import com.espertech.esper.client.EventBean;
-import com.espertech.esper.client.UpdateListener;
+import org.citopt.connde.service.cep.engine.core.queries.CEPQuery;
+import org.citopt.connde.service.cep.engine.core.queries.CEPQuerySubscriber;
 
 /**
- * Objects of this class wrap CEP queries that were created by the CEP engine.
+ * Objects of this class wrap Esper CEP queries that were created by the Esper CEP engine.
  */
-public class CEPQuery {
+public class EsperCEPQuery implements CEPQuery {
     //The dedicated query statement created by the engine
     private EPStatement statement;
 
@@ -17,12 +17,12 @@ public class CEPQuery {
      *
      * @param statement The statement of the query to wrap
      */
-    public CEPQuery(EPStatement statement) {
+    EsperCEPQuery(EPStatement statement) {
         setStatement(statement);
     }
 
     /**
-     * Sets the subscriber of the query. The subscriber needs to implement the CEPQuerySubscriber interface.
+     * Sets the subscriber of the query which needs to implement the CEPQuerySubscriber interface.
      * Only one subscriber may be registered at the query; multiple calls of this method with different
      * subscribers make the subscriber override each other.
      *
@@ -35,7 +35,7 @@ public class CEPQuery {
         }
 
         //Create subscriber dispatcher that will notify the subscriber on callback
-        CEPQueryCallbackDispatcher dispatcher = new CEPQueryCallbackDispatcher(subscriber);
+        EsperCEPQueryDispatcher dispatcher = new EsperCEPQueryDispatcher(subscriber);
 
         //Set subscriber
         statement.setSubscriber(dispatcher);

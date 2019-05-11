@@ -1,20 +1,18 @@
-package org.citopt.connde.service.cep.core;
+package org.citopt.connde.service.cep.engine.esper;
 
 import com.espertech.esper.client.*;
-import org.citopt.connde.service.cep.core.events.CEPPrimitiveDataTypes;
-import org.citopt.connde.service.cep.core.events.CEPEvent;
-import org.citopt.connde.service.cep.core.events.CEPEventType;
-import org.citopt.connde.service.cep.core.queries.CEPQuery;
-import org.springframework.stereotype.Component;
+import org.citopt.connde.service.cep.engine.core.CEPEngine;
+import org.citopt.connde.service.cep.engine.core.events.CEPPrimitiveDataTypes;
+import org.citopt.connde.service.cep.engine.core.events.CEPEvent;
+import org.citopt.connde.service.cep.engine.core.events.CEPEventType;
 
 import java.util.*;
 
 /**
- * This component works as a wrapper for the CEP engine Esper (http://esper.espertech.com) and
- * provides basic functionality for working with this engine independently from the MBP.
+ * This component implements the interface of CEP engines by making use of the
+ * CEP engine Esper (http://esper.espertech.com). It provides basic functionality for working with this engine.
  */
-@Component
-public class CEPEngine {
+public class EsperCEPEngine implements CEPEngine {
     //Internal fields
     private EPServiceProvider cepService;
     private EPAdministrator cepAdmin;
@@ -26,7 +24,7 @@ public class CEPEngine {
     /**
      * Creates the component by initializing Esper and the corresponding internal fields.
      */
-    private CEPEngine() {
+    public EsperCEPEngine() {
         //Get and initialize CEP service
         cepService = EPServiceProviderManager.getDefaultProvider();
         cepService.initialize();
@@ -40,15 +38,15 @@ public class CEPEngine {
     }
 
     /**
-     * Creates and registers a new CEP query from a given name and a query string in EPL (Event Processing Language).
-     * The registered query is then returned as a CEPQuery object which provides further functionality, such as
-     * means for subscription.
+     * Creates and registers a new CEP query from a given name and a query string. The registered query is then
+     * returned as a CEPQuery object which provides further functionality, such as means for subscription.
      *
      * @param name        The name of the query to create
-     * @param queryString The query string of the query described in Esper's Event Processing Language
+     * @param queryString The query string of the query
+     *
      * @return The CEPQuery object representing the query
      */
-    public CEPQuery createQuery(String name, String queryString) {
+    public EsperCEPQuery createQuery(String name, String queryString) {
         //Sanity checks
         if ((name == null) || (name.isEmpty())) {
             throw new IllegalArgumentException("Name must not be null or empty.");
@@ -66,16 +64,16 @@ public class CEPEngine {
         EPStatement statement = cepAdmin.createEPL(queryString, name);
 
         //Create query object from statement and return
-        return new CEPQuery(statement);
+        return new EsperCEPQuery(statement);
     }
 
     /**
      * Returns a CEPQuery object for a certain query given by its name.
      *
-     * @param name The name of the query for which the CEPQuery object is supposed to be returne
+     * @param name The name of the query for which the CEPQuery object is supposed to be returned
      * @return A dedicated CEPQuery object representing the query
      */
-    public CEPQuery getQueryByName(String name) {
+    public EsperCEPQuery getQueryByName(String name) {
         //Sanity check
         if ((name == null) || (name.isEmpty())) {
             throw new IllegalArgumentException("Name must not be null or empty.");
@@ -90,11 +88,11 @@ public class CEPEngine {
         }
 
         //Create query object from statement and return
-        return new CEPQuery(statement);
+        return new EsperCEPQuery(statement);
     }
 
     /**
-     * Registers a new event type to the CEP engine. After that, events of the new event type might be
+     * Registers a new event type at the CEP engine. After that, events of the new event type might be
      * sent to the engine or used in queries.
      *
      * @param eventType The event type to register
@@ -150,7 +148,7 @@ public class CEPEngine {
     }
 
     /**
-     * Sends a given event to the CEP engine such that it can be processed by Esper. The type of the event
+     * Sends a given event to the CEP engine so that it can be processed. The type of the event
      * that is supposed to be sent to the engine needs to be registered before.
      *
      * @param event The event to send

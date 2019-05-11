@@ -1,6 +1,5 @@
-package org.citopt.connde.service.cep.core.events;
+package org.citopt.connde.service.cep.engine.core.events;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -1,6 +1,7 @@
-package org.citopt.connde.service.cep.core.queries;
+package org.citopt.connde.service.cep.engine.esper;
 
-import org.citopt.connde.service.cep.core.output.CEPOutput;
+import org.citopt.connde.service.cep.engine.core.output.CEPOutput;
+import org.citopt.connde.service.cep.engine.core.queries.CEPQuerySubscriber;
 
 import java.util.Map;
 
@@ -8,7 +9,7 @@ import java.util.Map;
  * Dispatcher for CEP query callbacks that converts the output to a CEPOutput object, creates a new thread
  * and notifies the subscriber within this thread.
  */
-class CEPQueryCallbackDispatcher {
+class EsperCEPQueryDispatcher {
     //The subscriber that should be notified by the dispatcher
     private CEPQuerySubscriber subscriber;
 
@@ -18,7 +19,7 @@ class CEPQueryCallbackDispatcher {
      *
      * @param subscriber The subscriber
      */
-    CEPQueryCallbackDispatcher(CEPQuerySubscriber subscriber) {
+    EsperCEPQueryDispatcher(CEPQuerySubscriber subscriber) {
         setSubscriber(subscriber);
     }
 

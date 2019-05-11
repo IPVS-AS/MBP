@@ -1,4 +1,4 @@
-package org.citopt.connde.service.cep.core.events;
+package org.citopt.connde.service.cep.engine.core.events;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
