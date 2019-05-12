@@ -97,9 +97,10 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
             return;
         }
 
+        //Unregister query
+        query.disable();
         query.unregister();
     }
-
 
     /**
      * Called in case a new value message arrives at the ValueLogReceiver. The transformed message is passed

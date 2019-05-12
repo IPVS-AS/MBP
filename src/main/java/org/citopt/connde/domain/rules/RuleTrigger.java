@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
+import java.util.Objects;
 
 /**
  * Objects of this class represent triggers of rules that induce the execution of the containing rules. They consist out of a
@@ -74,5 +75,29 @@ public class RuleTrigger {
      */
     public void setQuery(String query) {
         this.query = query;
+    }
+
+    /**
+     * Overrides the equals method by only considering the ids of rule triggers.
+     *
+     * @param o The object to compare
+     * @return True, if both objects are identical (i.e. have the same id); false otherwise
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RuleTrigger that = (RuleTrigger) o;
+        return id.equals(that.id);
+    }
+
+    /**
+     * Overrides the hash code method by using the id of rule triggers.
+     *
+     * @return The hash code of the object
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

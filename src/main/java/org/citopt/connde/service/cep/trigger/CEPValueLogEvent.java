@@ -42,7 +42,7 @@ public class CEPValueLogEvent extends CEPEvent {
      */
     @Override
     public String getEventTypeName() {
-        return generateEventTypeName(valueLog.getComponent(), valueLog.getIdref());
+        return generateEventTypeName(valueLog.getIdref(), valueLog.getComponent());
     }
 
     /**
@@ -62,9 +62,10 @@ public class CEPValueLogEvent extends CEPEvent {
      * @return The generated event name
      */
     public static String generateEventTypeName(String componentId, String componentTypeName) {
-        //Get normalized component id
-        String normalizedId = componentId.replace("@", "_");
+        //Normalize component id and type name
+        String normalizedTypeName = componentTypeName.toLowerCase();
+        String normalizedId = componentId.replace("@", "_").toLowerCase();
 
-        return componentTypeName + "_" + normalizedId;
+        return normalizedTypeName + "_" + normalizedId;
     }
 }

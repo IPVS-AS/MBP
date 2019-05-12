@@ -37,7 +37,7 @@ public class Rule {
     private int executions = 0;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private boolean active = false;
+    private boolean enabled = false;
 
     /**
      * Returns the id of the rule.
@@ -166,16 +166,16 @@ public class Rule {
      *
      * @return True, if the rule is active; false otherwise
      */
-    public boolean isActive() {
-        return active;
+    public boolean isEnabled() {
+        return enabled;
     }
 
     /**
      * Sets whether the rule is currently active.
      *
-     * @param active True, if the rule is active; false otherwise
+     * @param enabled True, if the rule is active; false otherwise
      */
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 }

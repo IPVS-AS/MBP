@@ -6,7 +6,7 @@ import org.citopt.connde.service.cep.engine.core.queries.CEPQuerySubscriber;
 import java.util.Map;
 
 /**
- * Dispatcher for CEP query callbacks that converts the output to a CEPOutput object, creates a new thread
+ * Dispatcher for CEP query callbacks that converts the query result to a CEPOutput object, creates a new thread
  * and notifies the subscriber within this thread.
  */
 class EsperCEPQueryDispatcher {
@@ -23,11 +23,17 @@ class EsperCEPQueryDispatcher {
         setSubscriber(subscriber);
     }
 
-    public void update(Map<String, Map<String, Object>> outputMap) {
-        //Create object from output
-        CEPOutput output = new CEPOutput(outputMap);
+    /**
+     * Called in case the dedicated CEP query matches the event stream.
+     *
+     * @param resultMap The result of the CEP query
+     */
+    public void update(Map resultMap) {
+        //Create object from result
+        CEPOutput result = new CEPOutput(resultMap);
 
-        Thread subscriberThread = new Thread(() -> subscriber.onQueryTriggered(output));
+        //Create new thread so that Esper is not blocked
+        Thread subscriberThread = new Thread(() -> subscriber.onQueryTriggered(result));
         subscriberThread.start();
     }
 
