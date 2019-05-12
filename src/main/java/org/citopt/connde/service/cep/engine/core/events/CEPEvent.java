@@ -16,7 +16,7 @@ public abstract class CEPEvent {
     /**
      * Creates a new CEP event.
      */
-    public CEPEvent() {
+    protected CEPEvent() {
         this.fieldValues = new HashMap<>();
     }
 

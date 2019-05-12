@@ -2,9 +2,10 @@ package org.citopt.connde.service.cep.engine.esper;
 
 import com.espertech.esper.client.*;
 import org.citopt.connde.service.cep.engine.core.CEPEngine;
-import org.citopt.connde.service.cep.engine.core.events.CEPPrimitiveDataTypes;
 import org.citopt.connde.service.cep.engine.core.events.CEPEvent;
 import org.citopt.connde.service.cep.engine.core.events.CEPEventType;
+import org.citopt.connde.service.cep.engine.core.events.CEPPrimitiveDataTypes;
+import org.citopt.connde.service.cep.engine.core.exceptions.EventNotRegisteredException;
 
 import java.util.*;
 
@@ -43,7 +44,6 @@ public class EsperCEPEngine implements CEPEngine {
      *
      * @param name        The name of the query to create
      * @param queryString The query string of the query
-     *
      * @return The CEPQuery object representing the query
      */
     public EsperCEPQuery createQuery(String name, String queryString) {
@@ -68,7 +68,8 @@ public class EsperCEPEngine implements CEPEngine {
     }
 
     /**
-     * Returns a CEPQuery object for a certain query given by its name.
+     * Returns a CEPQuery object for a certain query given by its name. If no query with such a name
+     * is registered, null is returned.
      *
      * @param name The name of the query for which the CEPQuery object is supposed to be returned
      * @return A dedicated CEPQuery object representing the query
@@ -84,7 +85,7 @@ public class EsperCEPEngine implements CEPEngine {
 
         //Sanity check
         if (statement == null) {
-            throw new IllegalArgumentException("A query with name \"" + name + "\" is not registered.");
+            return null;
         }
 
         //Create query object from statement and return
@@ -153,7 +154,7 @@ public class EsperCEPEngine implements CEPEngine {
      *
      * @param event The event to send
      */
-    public void sendEvent(CEPEvent event) {
+    public void sendEvent(CEPEvent event) throws EventNotRegisteredException {
         //Iterate over all registered event types and Try to find matching event type
         CEPEventType matchingEventType = null;
         for (CEPEventType eventType : registeredEventTypes) {
@@ -166,7 +167,7 @@ public class EsperCEPEngine implements CEPEngine {
 
         //Check if event type could be found
         if (matchingEventType == null) {
-            throw new IllegalArgumentException("No event type has been registered for this event.");
+            throw new EventNotRegisteredException("No event type has been registered for event \"" + event.getEventTypeName() + "\".");
         }
 
         //Send valid event to Esper

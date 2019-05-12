@@ -2,7 +2,8 @@ package org.citopt.connde.service.cep.engine.core;
 
 import org.citopt.connde.service.cep.engine.core.events.CEPEvent;
 import org.citopt.connde.service.cep.engine.core.events.CEPEventType;
-import org.citopt.connde.service.cep.engine.esper.EsperCEPQuery;
+import org.citopt.connde.service.cep.engine.core.queries.CEPQuery;
+import org.citopt.connde.service.cep.engine.core.exceptions.EventNotRegisteredException;
 
 import java.util.List;
 
@@ -19,7 +20,7 @@ public interface CEPEngine {
      * @param queryString The query string of the query
      * @return The CEPQuery object representing the query
      */
-    EsperCEPQuery createQuery(String name, String queryString);
+    CEPQuery createQuery(String name, String queryString);
 
     /**
      * Returns a CEPQuery object for a certain query given by its name.
@@ -27,7 +28,7 @@ public interface CEPEngine {
      * @param name The name of the query for which the CEPQuery object is supposed to be returned
      * @return A dedicated CEPQuery object representing the query
      */
-    EsperCEPQuery getQueryByName(String name);
+    CEPQuery getQueryByName(String name);
 
     /**
      * Registers a new event type at the CEP engine. After that, events of the new event type might be
@@ -43,7 +44,7 @@ public interface CEPEngine {
      *
      * @param event The event to send
      */
-    void sendEvent(CEPEvent event);
+    void sendEvent(CEPEvent event) throws EventNotRegisteredException;
 
     /**
      * Returns a list of all names of queries that are currently registered at the engine.
