@@ -58,16 +58,44 @@ public class RuleEngine {
     }
 
     public void disableRule(Rule rule) {
+        //Sanity check
+        if (rule == null) {
+            throw new IllegalArgumentException("Rule must not be null.");
+        }
 
+        //Get rule trigger
+        RuleTrigger trigger = rule.getTrigger();
+
+        if (!triggerMap.containsKey(trigger)) {
+            return;
+        }
+
+        //Get set of rules for this trigger
+        Set<Rule> rules = triggerMap.get(trigger);
+
+        //Remove rule from set
+        rules.remove(rule);
+
+        //Check if rule set is now empty
+        if (rules.isEmpty()) {
+            //Unregister trigger from trigger service
+            triggerService.unregisterTrigger(trigger);
+
+            //Remove entry from trigger map
+            triggerMap.remove(trigger);
+        }
+
+        rule.setEnabled(false);
+        ruleRepository.save(rule);
     }
 
     private void loadRulesOnStartup() {
         List<Rule> rules = ruleRepository.findAll();
 
         for (Rule rule : rules) {
-            //if (rule.isEnabled()) {
-            enableRule(rule);
-            //}
+            if (rule.isEnabled()) {
+                enableRule(rule);
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.repository.RuleRepository;
 import org.citopt.connde.service.cep.trigger.CEPTriggerService;
+import org.citopt.connde.service.rules.RuleEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
@@ -22,7 +23,7 @@ public class RuleTriggerEventHandler {
     private RuleRepository ruleRepository;
 
     @Autowired
-    private CEPTriggerService triggerService;
+    private RuleEngine ruleEngine;
 
     /**
      * Called, when a rule trigger is supposed to be deleted. This method then takes care of deleting
@@ -32,16 +33,16 @@ public class RuleTriggerEventHandler {
      */
     @HandleBeforeDelete
     public void beforeRuleTriggerDelete(RuleTrigger ruleTrigger) {
-        //Unregister trigger from CEP engine
-        triggerService.unregisterTrigger(ruleTrigger);
-
         //Get trigger id
         String id = ruleTrigger.getId();
 
         //Get rules that are affected by this trigger
         List<Rule> affectedRules = ruleRepository.findAllByTriggerId(id);
 
-        //Delete all affected rules
-        ruleRepository.delete(affectedRules);
+        //Iterate over all affected rules, disable and delete them
+        for(Rule affectedRule : affectedRules){
+            ruleEngine.disableRule(affectedRule);
+            ruleRepository.delete(affectedRule);
+        }
     }
 }
