@@ -1,5 +1,7 @@
 package org.citopt.connde.domain.rules;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -8,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * Objects of this class represent rules that consist out of a trigger and an action. These rules are then managed
@@ -30,6 +33,7 @@ public class Rule {
     @DBRef
     private RuleAction action;
 
+    @JsonFormat(pattern="dd.MM.yyyy HH:mm:ss")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Date lastExecution = null;
 
@@ -177,5 +181,49 @@ public class Rule {
      */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    /**
+     * Returns the name of the trigger of the rule.
+     *
+     * @return The name of the trigger
+     */
+    @JsonProperty("triggerName")
+    public String getTriggerName() {
+        return this.trigger.getName();
+    }
+
+    /**
+     * Returns the name of the action of the rule.
+     *
+     * @return The name of the action
+     */
+    @JsonProperty("actionName")
+    public String getActionName() {
+        return this.action.getName();
+    }
+
+    /**
+     * Overrides the equals method by only considering the ids of rules.
+     *
+     * @param o The object to compare
+     * @return True, if both objects are identical (i.e. have the same id); false otherwise
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Rule that = (Rule) o;
+        return id.equals(that.id);
+    }
+
+    /**
+     * Overrides the hash code method by using the id of rules.
+     *
+     * @return The hash code of the object
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

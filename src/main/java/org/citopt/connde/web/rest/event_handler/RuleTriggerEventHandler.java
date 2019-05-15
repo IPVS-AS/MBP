@@ -6,6 +6,7 @@ import org.citopt.connde.repository.RuleRepository;
 import org.citopt.connde.service.cep.trigger.CEPTriggerService;
 import org.citopt.connde.service.rules.RuleEngine;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.core.annotation.HandleAfterCreate;
 import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;

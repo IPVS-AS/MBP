@@ -71,7 +71,8 @@
                             </div>
                             <!-- item.name group -->
                             <div class="form-group" ng-class="{'has-error' : addRuleTriggerCtrl.item.errors.name }">
-                                <div class="form-line" ng-class="{'focused error' : addRuleTriggerCtrl.item.errors.name }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addRuleTriggerCtrl.item.errors.name }">
                                     <input class="form-control" type="text" placeholder="Name"
                                            ng-model="addRuleTriggerCtrl.item.name"/>
                                 </div>
@@ -86,6 +87,8 @@
                                 </div>
                                 <span class="help-block" ng-show="addRuleTriggerCtrl.item.errors.query">{{addRuleTriggerCtrl.item.errors.query.message}}</span>
                             </div>
+                            <span><strong>Tip:</strong> Try something like
+                            <code>select * from sensor_5c97dc2583aeb6078c5ab672(value > 30)</code></span>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">

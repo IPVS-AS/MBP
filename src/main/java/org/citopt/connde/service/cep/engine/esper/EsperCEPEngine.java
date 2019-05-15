@@ -6,6 +6,7 @@ import org.citopt.connde.service.cep.engine.core.events.CEPEvent;
 import org.citopt.connde.service.cep.engine.core.events.CEPEventType;
 import org.citopt.connde.service.cep.engine.core.events.CEPPrimitiveDataTypes;
 import org.citopt.connde.service.cep.engine.core.exceptions.EventNotRegisteredException;
+import org.citopt.connde.service.cep.engine.core.queries.CEPQueryValidation;
 
 import java.util.*;
 
@@ -172,6 +173,37 @@ public class EsperCEPEngine implements CEPEngine {
 
         //Send valid event to Esper
         cepRuntime.sendEvent(event.getFieldValues(), event.getEventTypeName());
+    }
+
+    /**
+     * Validates a given query string and checks whether it is syntactically and semantically valid.
+     *
+     * @param queryString The query string to check
+     * @return The result of the validation wrapped in a validation object
+     */
+    @Override
+    public CEPQueryValidation validateQuery(String queryString) {
+        //Sanity check
+        if ((queryString) == null || queryString.isEmpty()) {
+            throw new IllegalArgumentException("Query string must not be null or empty.");
+        }
+
+        //Try to register a temporary statement with this query and check if this fails
+        EPStatement testStatement = null;
+        try {
+            testStatement = cepAdmin.createEPL(queryString);
+        } catch (EPException e) {
+            //Statement creation failed, query is not valid
+            return new CEPQueryValidation(queryString, false, e.getMessage());
+        } finally {
+            //Destroy test statement in every case (if created)
+            if (testStatement != null) {
+                testStatement.destroy();
+            }
+        }
+
+        //Validation successful
+        return new CEPQueryValidation(queryString, true);
     }
 
     /**

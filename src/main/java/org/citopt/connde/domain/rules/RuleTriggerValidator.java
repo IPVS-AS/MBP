@@ -1,6 +1,8 @@
 package org.citopt.connde.domain.rules;
 
 import org.citopt.connde.repository.RuleTriggerRepository;
+import org.citopt.connde.service.cep.engine.core.queries.CEPQueryValidation;
+import org.citopt.connde.service.cep.trigger.CEPTriggerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
@@ -13,16 +15,19 @@ import org.springframework.validation.Validator;
 @org.springframework.stereotype.Component
 public class RuleTriggerValidator implements Validator {
 
-    //Repository for rule triggers
+    private static CEPTriggerService triggerService;
+
     private static RuleTriggerRepository ruleTriggerRepository;
 
     /**
-     * Sets the rule trigger repository (autowired).
+     * Sets the CEPTriggerService and the RuleTriggerRepository (autowired).
      *
-     * @param ruleTriggerRepository The rule trigger repository to set
+     * @param triggerService        The CEPTriggerService to set
+     * @param ruleTriggerRepository The RuleTriggerRepository to set
      */
     @Autowired
-    public void setRuleActionRepository(RuleTriggerRepository ruleTriggerRepository) {
+    public void setAutowired(CEPTriggerService triggerService, RuleTriggerRepository ruleTriggerRepository) {
+        RuleTriggerValidator.triggerService = triggerService;
         RuleTriggerValidator.ruleTriggerRepository = ruleTriggerRepository;
     }
 
@@ -65,5 +70,21 @@ public class RuleTriggerValidator implements Validator {
         ValidationUtils.rejectIfEmptyOrWhitespace(
                 errors, "query", "ruleTrigger.query.empty",
                 "The query string must not be empty.");
+
+        //Validate trigger query
+        CEPQueryValidation queryValidation = triggerService.isValidTriggerQuery(ruleTrigger);
+
+        //Is query not valid?
+        if (!queryValidation.isValid()) {
+            String errorMessage = "Invalid query.";
+
+            //Check if an error message was provided
+            if (queryValidation.hasErrorMessage()) {
+                errorMessage = "Invalid query: " + queryValidation.getErrorMessage();
+            }
+
+            //Reject
+            errors.rejectValue("query", "ruleTrigger.query.invalid", errorMessage);
+        }
     }
 }

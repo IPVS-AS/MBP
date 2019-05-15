@@ -15,6 +15,7 @@ import org.citopt.connde.service.cep.engine.core.events.CEPEventType;
 import org.citopt.connde.service.cep.engine.core.events.CEPPrimitiveDataTypes;
 import org.citopt.connde.service.cep.engine.core.exceptions.EventNotRegisteredException;
 import org.citopt.connde.service.cep.engine.core.queries.CEPQuery;
+import org.citopt.connde.service.cep.engine.core.queries.CEPQueryValidation;
 import org.citopt.connde.service.receiver.ValueLogReceiver;
 import org.citopt.connde.service.receiver.ValueLogReceiverObserver;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,6 +160,26 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
 
         //Register event type
         engine.registerEventType(eventType);
+    }
+
+    /**
+     * Validates the query string of a given rule trigger by checking whether it is
+     * syntactically and semantically valid.
+     *
+     * @param ruleTrigger The rule trigger to validate
+     * @return The result of the validation wrapped in a validation object
+     */
+    public CEPQueryValidation isValidTriggerQuery(RuleTrigger ruleTrigger) {
+        //Sanity check
+        if (ruleTrigger == null) {
+            System.out.println("Rule trigger must not be null.");
+        }
+
+        //Extract query
+        String query = ruleTrigger.getQuery();
+
+        //Validity check
+        return engine.validateQuery(query);
     }
 
     /**

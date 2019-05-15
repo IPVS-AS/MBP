@@ -2,8 +2,9 @@ package org.citopt.connde.service.cep.engine.core;
 
 import org.citopt.connde.service.cep.engine.core.events.CEPEvent;
 import org.citopt.connde.service.cep.engine.core.events.CEPEventType;
-import org.citopt.connde.service.cep.engine.core.queries.CEPQuery;
 import org.citopt.connde.service.cep.engine.core.exceptions.EventNotRegisteredException;
+import org.citopt.connde.service.cep.engine.core.queries.CEPQuery;
+import org.citopt.connde.service.cep.engine.core.queries.CEPQueryValidation;
 
 import java.util.List;
 
@@ -45,6 +46,14 @@ public interface CEPEngine {
      * @param event The event to send
      */
     void sendEvent(CEPEvent event) throws EventNotRegisteredException;
+
+    /**
+     * Validates a given query string and checks whether it is syntactically and semantically valid.
+     *
+     * @param queryString The query string to check
+     * @return The result of the validation wrapped in a validation object
+     */
+    CEPQueryValidation validateQuery(String queryString);
 
     /**
      * Returns a list of all names of queries that are currently registered at the engine.

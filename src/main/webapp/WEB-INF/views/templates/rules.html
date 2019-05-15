@@ -19,17 +19,42 @@
                     <thead>
                     <tr>
                         <th>Name</th>
+                        <th class="align-center">Trigger</th>
+                        <th class="align-center">Action</th>
+                        <th class="align-center">Executions</th>
+                        <th class="align-center">Last</th>
+                        <th class="align-center">Active</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                    <tr id="{{rule.id}}" ng-repeat="rule in displayedCollection">
                         <td>
-                            {{item.name}}
+                            {{rule.name}}
+                        </td>
+                        <td class="align-center">
+                            {{rule.triggerName}}
+                        </td>
+                        <td class="align-center">
+                            {{rule.actionName}}
+                        </td>
+                        <td class="align-center">
+                            {{rule.executions}}
+                        </td>
+                        <td class="align-center">
+                            {{rule.lastExecution ? rule.lastExecution : "Never"}}
+                        </td>
+                        <td class="align-center">
+                            <div class="switch">
+                                <label>
+                                    <input type="checkbox" ng-model="rule.enabled" ng-change="rule.onToggle()">
+                                    <span class="lever"></span>
+                                </label>
+                            </div>
                         </td>
                         <td>
                             <form ng-submit="deleteRuleCtrl.deleteItem()">
                                 <button type="submit" class="btn btn-danger m-t-0 waves-effect"
-                                        ng-click="deleteRuleCtrl.item.id = item.id">
+                                        ng-click="deleteRuleCtrl.item.id = rule.id">
                                     Delete
                                 </button>
                             </form>
@@ -72,7 +97,8 @@
                             <!-- item.name group -->
                             <div class="form-group" ng-class="{'has-error' : addRuleCtrl.item.errors.name }">
                                 <div class="form-line" ng-class="{'focused error' : addRuleCtrl.item.errors.name }">
-                                    <input class="form-control" type="text" placeholder="Name" ng-model="addRuleCtrl.item.name"/>
+                                    <input class="form-control" type="text" placeholder="Name"
+                                           ng-model="addRuleCtrl.item.name"/>
                                 </div>
                                 <span class="help-block" ng-show="addRuleCtrl.item.errors.name">{{addRuleCtrl.item.errors.name.message}}</span>
                             </div>

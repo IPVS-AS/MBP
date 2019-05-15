@@ -16,12 +16,15 @@ public class RuleEngine {
 
     private CEPTriggerService triggerService;
 
+    private RuleExecutor ruleExecutor;
+
     private Map<RuleTrigger, Set<Rule>> triggerMap;
 
     @Autowired
-    private RuleEngine(RuleRepository ruleRepository, CEPTriggerService triggerService) {
+    private RuleEngine(RuleRepository ruleRepository, CEPTriggerService triggerService, RuleExecutor ruleExecutor) {
         this.ruleRepository = ruleRepository;
         this.triggerService = triggerService;
+        this.ruleExecutor = ruleExecutor;
 
         //Initialize trigger map
         triggerMap = new HashMap<>();
@@ -44,8 +47,10 @@ public class RuleEngine {
             Set<Rule> rulesOfTrigger = triggerMap.get(trigger);
             rulesOfTrigger.add(rule);
         } else {
+            //Register trigger at the trigger service
             triggerService.registerTrigger(trigger, (ruleTrigger, output) -> {
-                System.out.println("asdfasdfasdf");
+                //Induce the executions of rules that use this trigger on callback
+                induceRuleExecution(ruleTrigger);
             });
 
             Set<Rule> rulesOfTrigger = new HashSet<>();
@@ -87,6 +92,21 @@ public class RuleEngine {
 
         rule.setEnabled(false);
         ruleRepository.save(rule);
+    }
+
+    private void induceRuleExecution(RuleTrigger ruleTrigger) {
+        //Sanity check
+        if (ruleTrigger == null) {
+            throw new IllegalArgumentException("Rule object most not be null.");
+        }
+
+        //Get all rules from the map that use the given trigger
+        Set<Rule> ruleSet = triggerMap.get(ruleTrigger);
+
+        //Iterate over all rules and execute them
+        for (Rule rule : ruleSet) {
+            ruleExecutor.executeRule(rule);
+        }
     }
 
     private void loadRulesOnStartup() {
