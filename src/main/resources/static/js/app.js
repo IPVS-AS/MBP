@@ -109,11 +109,16 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 controller: 'UsersController as vm'
             })
 
-            // Model
-            .when(viewPrefix + '/model', {
-                templateUrl: 'templates/model'
-                // controller: 'ModelController as vm',
-            })
+      // Model
+      .when(viewPrefix + '/model', {
+        templateUrl: 'templates/model',
+        controller: 'ModelController as vm',
+        resolve: {
+          adapterList: ['CrudService', function(CrudService) {
+            return CrudService.fetchAllItems('adapters');
+          }]
+        }
+      })
 
             // Actuator List and Register (includes Device List and Register)
             .when(viewPrefix + '/actuators', {

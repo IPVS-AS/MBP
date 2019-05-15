@@ -16,7 +16,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 /**
- * Authenticate a user from the database.
+ * Load a user from the database.
  * @author Imeri Amil
  */
 @Component
