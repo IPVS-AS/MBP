@@ -28,6 +28,7 @@
     }
 
     function GetByComponent(component) {
+      component = component.toUpperCase();
       return $http.get(ENDPOINT_URI + RESOURCE_LOCATION +  '/' + component).then(handleSuccess, handleError);
     }
 

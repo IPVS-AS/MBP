@@ -1,4 +1,4 @@
-package org.citopt.connde.web.rest;
+package org.citopt.connde.web.rest.helper;
 
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.Code;
@@ -35,11 +35,9 @@ import java.util.logging.Logger;
  * across various components. Each method of this component returns a response entity that can be directly
  * used in order to satisfy REST request that were issued by the user. Thus, this component ensures that all
  * deployment-related REST tasks offer the same behaviour.
- *
- * @author Jan
  */
 @org.springframework.stereotype.Component
-public class ComponentDeploymentWrapper {
+public class DeploymentWrapper {
 
     @Autowired
     private SSHDeployer sshDeployer;

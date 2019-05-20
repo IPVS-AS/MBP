@@ -1,21 +1,18 @@
 package org.citopt.connde.web.rest;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.domain.adapter.Adapter;
-import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.adapter.parameters.ParameterTypes;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.ComponentRepository;
 import org.citopt.connde.repository.SensorRepository;
-import org.citopt.connde.service.deploy.SSHDeployer;
+import org.citopt.connde.web.rest.helper.DeploymentWrapper;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.RepositoryLinksResource;
@@ -38,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class RestDeploymentController implements ResourceProcessor<RepositoryLinksResource> {
 
     @Autowired
-    private ComponentDeploymentWrapper deploymentWrapper;
+    private DeploymentWrapper deploymentWrapper;
 
     @Autowired
     private SensorRepository sensorRepository;
