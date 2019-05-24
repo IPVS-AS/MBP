@@ -205,6 +205,30 @@ public class SSHSession {
     }
 
     /**
+     * Checks whether a directory at a given path exists.
+     *
+     * @param path The path of the directory to check
+     * @return True, if the directory exists; false otherwise
+     * @throws IOException In case of an I/O issue
+     */
+    public boolean dirExists(String path) throws IOException {
+        checkConnectionState();
+
+        //Remove trailing slashes from path
+        path = path.replaceAll("/$", "");
+
+        //Build corresponding command
+        String command = String.format("[ -d \"%s\" ] && echo true || echo false", path);
+
+        //Execute command
+        executeShellCommand(command);
+
+        //Retrieve return value and check its value
+        String returnValue = stdOutStream.toString().toLowerCase();
+        return returnValue.contains("true");
+    }
+
+    /**
      * Establishes the SSH connection with the parameters that were set previously.
      *
      * @throws IOException In case of an I/O issue
@@ -299,6 +323,9 @@ public class SSHSession {
             //Execution failed, sudo password needed
             return true;
         }
+
+        //Flush output stream
+        stdOutStream.flush();
 
         //Execution did not fail, no password needed
         return false;

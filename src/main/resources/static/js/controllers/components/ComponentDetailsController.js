@@ -149,7 +149,7 @@ app.controller('ComponentDetailsController',
                             return;
                         }
                         //Notify user
-                        vm.deploymentState = 'DEPLOYED';
+                        vm.deploymentState = 'RUNNING';
                         NotificationService.notify('Component deployed successfully.', 'success');
                     },
                     function (response) {
@@ -342,7 +342,7 @@ app.controller('ComponentDetailsController',
                  * @returns {boolean} True, if the chart may update; false otherwise
                  */
                 function isUpdateable() {
-                    return vm.deploymentState == 'DEPLOYED';
+                    return vm.deploymentState === 'RUNNING';
                 }
 
                 //Expose

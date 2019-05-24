@@ -30,32 +30,32 @@ import java.util.logging.Logger;
  */
 @org.springframework.stereotype.Component
 public class SSHDeployer {
+    //Deployment location on remote devices
+    private static final String DEPLOY_DIR = "$HOME/scripts";
+    private static final String DEPLOY_DIR_PREFIX = "connde";
+
     //Names of the adapter scripts
     private static final String INSTALL_SCRIPT_NAME = "install.sh";
     private static final String START_SCRIPT_NAME = "start.sh";
     private static final String RUN_SCRIPT_NAME = "running.sh";
     private static final String STOP_SCRIPT_NAME = "stop.sh";
 
-    //Timeout for availability checks (ms)
-    private static final int AVAILABILITY_CHECK_TIMEOUT = 5000;
-
-    @Autowired
-    private NetworkService networkService;
-    @Autowired
-    private SettingsService settingsService;
-
-    //Class internal logger
-    private static final Logger LOGGER = Logger.getLogger(SSHDeployer.class.getName());
-
-    //Deployment location on remote devices
-    private static final String DEPLOY_DIR = "$HOME/scripts";
-    private static final String DEPLOY_DIR_PREFIX = "connde";
-
     //Port of the remote devices to use for SSH connections
     private static final int SSH_PORT = 22;
 
     //Prefix for base64 encoded files
     private static final String REGEX_BASE64_PREFIX = "^data\\:[a-zA-Z0-9\\/,\\-]*\\;base64\\,";
+
+    //Timeout for availability checks (ms)
+    private static final int AVAILABILITY_CHECK_TIMEOUT = 5000;
+
+    //Class internal logger
+    private static final Logger LOGGER = Logger.getLogger(SSHDeployer.class.getName());
+
+    @Autowired
+    private NetworkService networkService;
+    @Autowired
+    private SettingsService settingsService;
 
     /**
      * Returns the path to the directory to which the component is deployed.
@@ -93,12 +93,28 @@ public class SSHDeployer {
             return ComponentState.NOT_READY;
         }
 
-        //Check if component is deployed
+        //Check if component is deployed /running
+        SSHSession sshSession;
+
         try {
-            if (isComponentRunning(component)) {
-                return ComponentState.DEPLOYED;
-            } else {
+            //Establish new ssh session
+            sshSession = establishSSHConnection(device);
+
+            //Check if component is not deployed
+            if (!isComponentDeployed(sshSession, component)) {
+                sshSession.close();
                 return ComponentState.READY;
+            }
+
+            //Check if deployed component is running
+            boolean isRunning = isComponentRunning(sshSession, component);
+            sshSession.close();
+
+            //Return matching state based on the result
+            if (isRunning) {
+                return ComponentState.RUNNING;
+            } else {
+                return ComponentState.DEPLOYED;
             }
         } catch (IOException e) {
             return ComponentState.UNKNOWN;
@@ -140,6 +156,7 @@ public class SSHDeployer {
             return DeviceState.ONLINE;
         }
 
+        //Sanity check
         if (sshSession == null) {
             return DeviceState.ONLINE;
         }
@@ -254,11 +271,33 @@ public class SSHDeployer {
     /**
      * Checks whether the component is currently running on the dedicated remote device.
      *
-     * @param component The component to check
+     * @param component  The component to check
      * @return True, if the component is running; false otherwise
      * @throws IOException In case of an I/O issue
      */
     public boolean isComponentRunning(Component component) throws IOException {
+        //Validity check
+        if (component == null) {
+            throw new IllegalArgumentException("Component must not be null.");
+        }
+
+        //Establish new SSH session
+        SSHSession sshSession = establishSSHConnection(component.getDevice());
+
+        //Call private method
+        return isComponentRunning(sshSession, component);
+    }
+
+    /**
+     * Checks whether the component is currently running on the dedicated remote device by using
+     * a given ssh session.
+     *
+     * @param sshSession A valid and connected ssh session to use
+     * @param component  The component to check
+     * @return True, if the component is running; false otherwise
+     * @throws IOException In case of an I/O issue
+     */
+    private boolean isComponentRunning(SSHSession sshSession, Component component) throws IOException {
         //Validity check
         if (component == null) {
             throw new IllegalArgumentException("Component must not be null.");
@@ -272,9 +311,6 @@ public class SSHDeployer {
 
         //Get dedicated device of the component
         Device device = component.getDevice();
-
-        //Establish new SSH session
-        SSHSession sshSession = establishSSHConnection(device);
 
         //Get output stream of the session
         OutputStream stdOutStream = sshSession.getStdOutStream();
@@ -290,6 +326,27 @@ public class SSHDeployer {
             LOGGER.log(Level.INFO, "Adapter has not been deployed yet or is not running");
         }
         return false;
+    }
+
+    /**
+     * Checks whether a given component is currently deployed on the dedicated remote device.
+     *
+     * @param sshSession A valid and connected ssh session to use
+     * @param component  The component to check
+     * @return True, if the component is deployed; false otherwise
+     * @throws IOException In case of an I/O issue
+     */
+    private boolean isComponentDeployed(SSHSession sshSession, Component component) throws IOException {
+        //Validity check
+        if (component == null) {
+            throw new IllegalArgumentException("Component must not be null.");
+        }
+
+        //Resolve deployment path
+        String deploymentPath = getDeploymentPath(component);
+
+        //Check if deployment folder exists
+        return sshSession.dirExists(deploymentPath);
     }
 
     /**
@@ -335,8 +392,17 @@ public class SSHDeployer {
             throw new IllegalArgumentException("Component must not be null.");
         }
 
+        //Establish new SSH session
+        SSHSession sshSession = establishSSHConnection(component.getDevice());
+
+        //Check if component is running
+        boolean isRunning = isComponentRunning(sshSession, component);
+
+        //Close session
+        sshSession.close();
+
         //Undeploy component if running
-        if (this.isComponentRunning(component)) {
+        if (isRunning) {
             this.undeployComponent(component);
         }
     }

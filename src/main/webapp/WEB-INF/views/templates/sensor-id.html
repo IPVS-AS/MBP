@@ -3,14 +3,15 @@
     <div class="col-lg-6">
         <div class="card deployment-card">
             <div class="header"
-                 ng-class="{'bg-red': componentDetailsCtrl.deploymentState=='NOT_READY', 'bg-green': componentDetailsCtrl.deploymentState=='READY', 'bg-cyan': componentDetailsCtrl.deploymentState=='DEPLOYED', 'bg-grey': componentDetailsCtrl.deploymentState=='UNKNOWN'}">
+                 ng-class="{'bg-red': componentDetailsCtrl.deploymentState=='NOT_READY', 'bg-green': componentDetailsCtrl.deploymentState=='READY', 'bg-teal': componentDetailsCtrl.deploymentState=='DEPLOYED', 'bg-cyan': componentDetailsCtrl.deploymentState=='RUNNING', 'bg-grey': componentDetailsCtrl.deploymentState=='UNKNOWN'}">
                 <i class="material-icons" style="position: absolute; margin-top: 4px">settings_remote</i>
                 <h2 style="margin-left: 35px;">
                     {{componentDetailsCtrl.component.name}}
                     <small>{{componentDetailsCtrl.deploymentState=='NOT_READY' ? 'Deployment impossible' :
                         (componentDetailsCtrl.deploymentState=='READY' ? 'Ready for deployment':
                         (componentDetailsCtrl.deploymentState=='DEPLOYED' ? 'Deployed' :
-                        (componentDetailsCtrl.deploymentState=='UNKNOWN' ? 'Unknown state' : 'Loading...')))}}
+                        (componentDetailsCtrl.deploymentState=='RUNNING' ? 'Running' :
+                        (componentDetailsCtrl.deploymentState=='UNKNOWN' ? 'Unknown state' : 'Loading...'))))}}
                     </small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
@@ -132,7 +133,7 @@
                         Deploy sensor
                     </button>
                 </div>
-                <div ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
+                <div ng-show="['DEPLOYED', 'RUNNING'].includes(componentDetailsCtrl.deploymentState)">
                     <button class="btn btn-warning waves-effect" ng-click="componentDetailsCtrl.undeploy()">
                         Undeploy sensor
                     </button>
@@ -190,7 +191,7 @@
 <!-- Live Values Card -->
 <div class="row clearfix">
     <div class="col-lg-12">
-        <div class="card live-chart-card animate-show-hide" ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
+        <div class="card live-chart-card animate-show-hide" ng-show="componentDetailsCtrl.deploymentState=='RUNNING'">
             <div class="header">
                 <h2>
                     Live sensor values&nbsp;<i class="material-icons" style="color: red;">live_tv</i>
