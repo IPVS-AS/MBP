@@ -19,7 +19,8 @@ public class SSHSession {
     private static final int DEFAULT_PORT = 22;
 
     //Definitions of shell commands
-    private static final String SHELL_COMMAND_TEST = "test 5 -gt 2 && echo \"true\" || echo \"false\"";
+    private static final String SHELL_TEST_AVAILABILITY = "test 5 -gt 2 && echo \"true\" || echo \"false\"";
+    private static final String SHELL_TEST_SUDO_PW_REQUIRED = "sudo -n echo \"success\"";
     private static final String SHELL_CREATE_DIR = "mkdir -p %s";
     private static final String SHELL_REMOVE_DIR = "rm -rf %s";
     private static final String SHELL_CREATE_FILE = "bash -c \"cat > %s/%s\"";
@@ -35,6 +36,9 @@ public class SSHSession {
     private String username;
     private String password;
     private String key;
+
+    //Remembers whether a sudo password is required
+    private boolean passwordRequired = false;
 
     //Internal objects to maintain and use the ssh connection
     private Shell shell;
@@ -80,7 +84,7 @@ public class SSHSession {
 
         //Execute command
         try {
-            executeShellCommand(SHELL_COMMAND_TEST);
+            executeShellCommand(SHELL_TEST_AVAILABILITY);
         } catch (IOException e) {
             return false;
         }
@@ -212,6 +216,9 @@ public class SSHSession {
         //Create corresponding streams for further usage
         stdOutStream = new ByteArrayOutputStream();
         stdErrStream = new ByteArrayOutputStream();
+
+        //Remember whether a password is required
+        passwordRequired = isSudoPasswordRequired();
     }
 
     /**
@@ -224,6 +231,86 @@ public class SSHSession {
         stdOutStream.close();
         stdErrStream.close();
         shell = null;
+    }
+
+    /**
+     * Executes a shell command with sudo permissions via the currently active SSH session. The password that
+     * was provided to this session will be used in order to execute sudo. However, if no password is available,
+     * it will try to execute sudo without password.
+     *
+     * @param command The shell command to execute via SSH
+     * @return The integer return value of the
+     * @throws IOException In case of an I/O issue
+     */
+    private int executeShellCommand(String command) throws IOException {
+        //Wrap and delegate
+        return executeShellCommand(command, null);
+    }
+
+    /**
+     * Executes a shell command with sudo permissions via the currently active SSH session. The password that
+     * was provided to this session will be used in order to execute sudo. However, if no password is available,
+     * it will try to execute sudo without password. It is possible to provide a string that should be
+     * injected into the input stream of the target process and may be required for the execution of the command.
+     *
+     * @param command           The shell command to execute via SSH
+     * @param inputStreamString The sting to inject into the input stream
+     * @return The integer return value of the
+     * @throws IOException In case of an I/O issue
+     */
+    private int executeShellCommand(String command, String inputStreamString) throws IOException {
+        checkConnectionState();
+
+        //Ensure valid input stream string
+        if (inputStreamString == null) {
+            inputStreamString = "";
+        }
+
+        //Check if password is available and required
+        if ((password == null) || password.isEmpty() || !(passwordRequired)) {
+            //No password, try to use sudo without one
+            command = "sudo " + command;
+        } else {
+            //Extend command for sudo with password and provide password via input stream
+            command = SHELL_PREFIX_SUDO_PASSWORD + command;
+            inputStreamString = password + "\n" + inputStreamString;
+        }
+
+        //Create corresponding input stream
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(inputStreamString.getBytes());
+
+        //Execute shell command remotely
+        return shell.exec(command, inputStream, stdOutStream, stdErrStream);
+    }
+
+    /**
+     * Checks whether a sudo password is actually required in order to run sudo commands within the current session.
+     *
+     * @return True, if a sudo password is required; false otherwise
+     * @throws IOException In case of an I/O issue
+     */
+    private boolean isSudoPasswordRequired() throws IOException {
+        checkConnectionState();
+
+        //Try to execute the corresponding test command without password and check if it fails
+        try {
+            shell.exec(SHELL_TEST_SUDO_PW_REQUIRED, new ByteArrayInputStream("".getBytes()), stdOutStream, stdErrStream);
+        } catch (IllegalArgumentException e) {
+            //Execution failed, sudo password needed
+            return true;
+        }
+
+        //Execution did not fail, no password needed
+        return false;
+    }
+
+    /**
+     * Checks whether the SSH connection is already established and throws an exception if this is not the case.
+     */
+    private void checkConnectionState() {
+        if (shell == null) {
+            throw new IllegalStateException("No connection has been established yet.");
+        }
     }
 
     /**
@@ -314,64 +401,5 @@ public class SSHSession {
      */
     public OutputStream getStdErrStream() {
         return stdErrStream;
-    }
-
-    /**
-     * Executes a shell command with sudo permissions via the currently active SSH session. The password that
-     * was provided to this session will be used in order to execute sudo. However, if no password is available,
-     * it will try to execute sudo without password.
-     *
-     * @param command The shell command to execute via SSH
-     * @return The integer return value of the
-     * @throws IOException In case of an I/O issue
-     */
-    private int executeShellCommand(String command) throws IOException {
-        //Wrap and delegate
-        return executeShellCommand(command, null);
-    }
-
-    /**
-     * Executes a shell command with sudo permissions via the currently active SSH session. The password that
-     * was provided to this session will be used in order to execute sudo. However, if no password is available,
-     * it will try to execute sudo without password. It is possible to provide a string that should be
-     * injected into the input stream of the target process and may be required for the execution of the command.
-     *
-     * @param command           The shell command to execute via SSH
-     * @param inputStreamString The sting to inject into the input stream
-     * @return The integer return value of the
-     * @throws IOException In case of an I/O issue
-     */
-    private int executeShellCommand(String command, String inputStreamString) throws IOException {
-        checkConnectionState();
-
-        //Ensure valid input stream string
-        if (inputStreamString == null) {
-            inputStreamString = "";
-        }
-
-        //Check if password is available
-        if ((password == null) || password.isEmpty()) {
-            //No password, try to use sudo without one
-            command = "sudo " + command;
-        } else {
-            //Extend command for sudo with password and provide password via input stream
-            command = SHELL_PREFIX_SUDO_PASSWORD + command;
-            inputStreamString = password + "\n" + inputStreamString;
-        }
-
-        //Create corresponding input stream
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(inputStreamString.getBytes());
-
-        //Execute shell command remotely
-        return shell.exec(command, inputStream, stdOutStream, stdErrStream);
-    }
-
-    /**
-     * Checks whether the SSH connection is already established and throws an exception if this is not the case.
-     */
-    private void checkConnectionState() {
-        if (shell == null) {
-            throw new IllegalStateException("No connection has been established yet.");
-        }
     }
 }
