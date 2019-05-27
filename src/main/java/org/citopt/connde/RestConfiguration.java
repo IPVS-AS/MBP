@@ -102,8 +102,7 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
                 String id = resource.getContent().getId();
                 //Link sensor with deployment
                 Link link = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.
-                        methodOn(RestDeploymentController.class).deploySensor(id, new ArrayList<ParameterInstance>() {
-                }))
+                        methodOn(RestDeploymentController.class).deploySensor(id))
                         .withRel("deploy");
                 resource.add(link);
                 return resource;

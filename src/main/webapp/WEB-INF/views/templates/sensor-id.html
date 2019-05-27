@@ -128,15 +128,32 @@
                     <span class="help-block focused error">{{ctrl.deployer.status.fieldErrors.parameters}}</span>
                 </div>
                 <br/>
-                <div ng-show="componentDetailsCtrl.deploymentState=='READY'">
-                    <button class="btn btn-primary waves-effect" ng-click="componentDetailsCtrl.deploy()">
-                        Deploy sensor
-                    </button>
-                </div>
-                <div ng-show="['DEPLOYED', 'RUNNING'].includes(componentDetailsCtrl.deploymentState)">
-                    <button class="btn btn-warning waves-effect" ng-click="componentDetailsCtrl.undeploy()">
-                        Undeploy sensor
-                    </button>
+
+                <div>
+                    <span ng-show="componentDetailsCtrl.deploymentState=='READY'">
+                        <button class="btn btn-primary waves-effect" ng-click="componentDetailsCtrl.deploy()">
+                            <i class="material-icons">file_download</i>
+                            <span>Deploy sensor</span>
+                        </button>
+                    </span>
+                    <span ng-show="['DEPLOYED', 'RUNNING'].includes(componentDetailsCtrl.deploymentState)">
+                        <button class="btn bg-deep-orange waves-effect" ng-click="componentDetailsCtrl.undeploy()">
+                            <i class="material-icons">file_upload</i>
+                            <span>Undeploy sensor</span>
+                        </button>
+                    </span>
+                    <span ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
+                        <button class="btn bg-cyan waves-effect" ng-click="componentDetailsCtrl.startComponent()">
+                            <i class="material-icons">play_arrow</i>
+                            <span>Start sensor</span>
+                        </button>
+                    </span>
+                    <span ng-show="componentDetailsCtrl.deploymentState=='RUNNING'">
+                        <button class="btn bg-orange waves-effect" ng-click="componentDetailsCtrl.stopComponent()">
+                            <i class="material-icons">pause</i>
+                            <span>Pause sensor</span>
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>

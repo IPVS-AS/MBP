@@ -10,6 +10,8 @@ import org.citopt.connde.service.NetworkService;
 import org.citopt.connde.service.settings.SettingsService;
 import org.citopt.connde.service.settings.model.BrokerLocation;
 import org.citopt.connde.service.settings.model.Settings;
+import org.citopt.connde.service.ssh.SSHSession;
+import org.citopt.connde.service.ssh.SSHSessionPool;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,11 +42,8 @@ public class SSHDeployer {
     private static final String RUN_SCRIPT_NAME = "running.sh";
     private static final String STOP_SCRIPT_NAME = "stop.sh";
 
-    //Port of the remote devices to use for SSH connections
-    private static final int SSH_PORT = 22;
-
     //Prefix for base64 encoded files
-    private static final String REGEX_BASE64_PREFIX = "^data\\:[a-zA-Z0-9\\/,\\-]*\\;base64\\,";
+    private static final String REGEX_BASE64_PREFIX = "^data:[a-zA-Z0-9/,\\-]*;base64,";
 
     //Timeout for availability checks (ms)
     private static final int AVAILABILITY_CHECK_TIMEOUT = 5000;
@@ -52,6 +51,8 @@ public class SSHDeployer {
     //Class internal logger
     private static final Logger LOGGER = Logger.getLogger(SSHDeployer.class.getName());
 
+    @Autowired
+    private SSHSessionPool sshSessionPool;
     @Autowired
     private NetworkService networkService;
     @Autowired
@@ -93,25 +94,14 @@ public class SSHDeployer {
             return ComponentState.NOT_READY;
         }
 
-        //Check if component is deployed /running
-        SSHSession sshSession;
-
         try {
-            //Establish new ssh session
-            sshSession = establishSSHConnection(device);
-
             //Check if component is not deployed
-            if (!isComponentDeployed(sshSession, component)) {
-                sshSession.close();
+            if (!isComponentDeployed(component)) {
                 return ComponentState.READY;
             }
 
-            //Check if deployed component is running
-            boolean isRunning = isComponentRunning(sshSession, component);
-            sshSession.close();
-
             //Return matching state based on the result
-            if (isRunning) {
+            if (isComponentRunning(component)) {
                 return ComponentState.RUNNING;
             } else {
                 return ComponentState.DEPLOYED;
@@ -136,7 +126,7 @@ public class SSHDeployer {
         String ipAddress = device.getIpAddress();
 
         //Check if device is reachable
-        boolean reachable = false;
+        boolean reachable;
         try {
             reachable = InetAddress.getByName(ipAddress).isReachable(AVAILABILITY_CHECK_TIMEOUT);
         } catch (IOException e) {
@@ -151,7 +141,9 @@ public class SSHDeployer {
         //Check if it is possible to establish a SSH connection
         SSHSession sshSession;
         try {
-            sshSession = establishSSHConnection(device);
+            //Get new SSH session from pool
+            sshSessionPool.unregisterSSHSession(device.getId());
+            sshSession = sshSessionPool.getSSHSession(device);
         } catch (IOException e) {
             return DeviceState.ONLINE;
         }
@@ -170,34 +162,23 @@ public class SSHDeployer {
     }
 
     /**
-     * Deploys a component onto the dedicated remote device and passes deployment parameters to the starter script.
+     * Starts a component on the dedicated remote device and passes deployment parameters to the starter script.
      *
-     * @param component             The component to deploy
+     * @param component             The component to start
      * @param parameterInstanceList List of parameter instances to pass to the start script
      * @throws IOException In case of an I/O issue
      */
-    public void deployComponent(Component component, List<ParameterInstance> parameterInstanceList) throws IOException {
+    public void startComponent(Component component, List<ParameterInstance> parameterInstanceList) throws IOException {
         //Validity check
         if (component == null) {
             throw new IllegalArgumentException("Component must not be null.");
         }
 
-        LOGGER.log(Level.FINE, "Deploy request for component: " + "{0} (Type: {1})",
+        LOGGER.log(Level.FINE, "Start request for component: " + "{0} (Type: {1})",
                 new Object[]{component.getId(), component.getComponentTypeName()});
-
-        //Get dedicated device of the component
-        Device device = component.getDevice();
-
-        //Establish new SSH session
-        SSHSession sshSession = establishSSHConnection(device);
 
         //Resolve deployment path
         String deploymentPath = getDeploymentPath(component);
-
-        //Create deployment directory
-        LOGGER.log(Level.FINE, "Deploying to directory {1} ...", new Object[]{deploymentPath});
-        sshSession.createDir(deploymentPath);
-        LOGGER.log(Level.FINE, "Created directory successfully");
 
         //Retrieve adapter
         Adapter adapter = component.getAdapter();
@@ -206,6 +187,89 @@ public class SSHDeployer {
         if (adapter == null) {
             throw new IllegalArgumentException("Adapter must not be null.");
         }
+
+        //Get dedicated device of the component
+        Device device = component.getDevice();
+
+        //Get SSH session from pool
+        SSHSession sshSession = sshSessionPool.getSSHSession(device);
+
+        //Create JSON string from parameters
+        JSONArray parameterArray = convertParametersToJSON(adapter, parameterInstanceList);
+        String jsonString = convertJSONToCmdLineString(parameterArray);
+
+        //Execute start script with parameters
+        sshSession.executeShellScript(deploymentPath + "/" + START_SCRIPT_NAME, deploymentPath, jsonString);
+
+        LOGGER.log(Level.FINE, "Start was successful");
+    }
+
+    /**
+     * Stops a component on the dedicated remote device.
+     *
+     * @param component The component to stop
+     * @throws IOException In case of an I/O issue
+     */
+    public void stopComponent(Component component) throws IOException {
+        //Validity check
+        if (component == null) {
+            throw new IllegalArgumentException("Component must not be null.");
+        }
+
+        LOGGER.log(Level.FINE, "Stop request for component: " + "{0} (Type: {1})",
+                new Object[]{component.getId(), component.getComponentTypeName()});
+
+        //Resolve deployment path
+        String deploymentPath = getDeploymentPath(component);
+
+        //Get dedicated device of the component
+        Device device = component.getDevice();
+
+        //Get SSH session from pool
+        SSHSession sshSession = sshSessionPool.getSSHSession(device);
+
+        //Execute start script with parameters
+        sshSession.executeShellScript(deploymentPath + "/" + STOP_SCRIPT_NAME);
+
+        LOGGER.log(Level.FINE, "Stop was successful");
+    }
+
+    /**
+     * Deploys a component onto the dedicated remote device.
+     *
+     * @param component The component to deploy
+     * @throws IOException In case of an I/O issue
+     */
+    public void deployComponent(Component component) throws IOException {
+        //Validity check
+        if (component == null) {
+            throw new IllegalArgumentException("Component must not be null.");
+        }
+
+        LOGGER.log(Level.FINE, "Deploy request for component: " + "{0} (Type: {1})",
+                new Object[]{component.getId(), component.getComponentTypeName()});
+
+        //Retrieve adapter
+        Adapter adapter = component.getAdapter();
+
+        //Validity check
+        if (adapter == null) {
+            throw new IllegalArgumentException("Adapter must not be null.");
+        }
+
+        //Get dedicated device of the component
+        Device device = component.getDevice();
+
+        //Get SSH session from pool
+        SSHSession sshSession = sshSessionPool.getSSHSession(device);
+
+        //Resolve deployment path
+        String deploymentPath = getDeploymentPath(component);
+
+        //Create deployment directory
+        LOGGER.log(Level.FINE, "Deploying to directory {1} ...", new Object[]{deploymentPath});
+        sshSession.createDir(deploymentPath);
+        LOGGER.log(Level.FINE, "Created directory successfully");
 
         LOGGER.log(Level.FINE, "Copying adapter files to target device....");
 
@@ -251,17 +315,8 @@ public class SSHDeployer {
 
         LOGGER.log(Level.FINE, "Installation was successful");
 
-        //Create JSON string from parameters
-        JSONArray parameterArray = convertParametersToJSON(adapter, parameterInstanceList);
-        String jsonString = convertJSONToCmdLineString(parameterArray);
-
-        //Execute start script with parameters
-        sshSession.changeFilePermissions(deploymentPath + "/" + START_SCRIPT_NAME, "u+rwx");
-        sshSession.executeShellScript(deploymentPath + "/" + START_SCRIPT_NAME, deploymentPath, jsonString);
-
-        LOGGER.log(Level.FINE, "Start was successful");
-
         //Set permissions of other shell scripts
+        sshSession.changeFilePermissions(deploymentPath + "/" + START_SCRIPT_NAME, "u+rwx");
         sshSession.changeFilePermissions(deploymentPath + "/" + RUN_SCRIPT_NAME, "+x");
         sshSession.changeFilePermissions(deploymentPath + "/" + STOP_SCRIPT_NAME, "+x");
 
@@ -269,35 +324,13 @@ public class SSHDeployer {
     }
 
     /**
-     * Checks whether the component is currently running on the dedicated remote device.
+     * Checks whether the component is currently running on its dedicated remote.
      *
-     * @param component  The component to check
+     * @param component The component to check
      * @return True, if the component is running; false otherwise
      * @throws IOException In case of an I/O issue
      */
     public boolean isComponentRunning(Component component) throws IOException {
-        //Validity check
-        if (component == null) {
-            throw new IllegalArgumentException("Component must not be null.");
-        }
-
-        //Establish new SSH session
-        SSHSession sshSession = establishSSHConnection(component.getDevice());
-
-        //Call private method
-        return isComponentRunning(sshSession, component);
-    }
-
-    /**
-     * Checks whether the component is currently running on the dedicated remote device by using
-     * a given ssh session.
-     *
-     * @param sshSession A valid and connected ssh session to use
-     * @param component  The component to check
-     * @return True, if the component is running; false otherwise
-     * @throws IOException In case of an I/O issue
-     */
-    private boolean isComponentRunning(SSHSession sshSession, Component component) throws IOException {
         //Validity check
         if (component == null) {
             throw new IllegalArgumentException("Component must not be null.");
@@ -311,6 +344,12 @@ public class SSHDeployer {
 
         //Get dedicated device of the component
         Device device = component.getDevice();
+
+        //Get SSH session from pool
+        SSHSession sshSession = sshSessionPool.getSSHSession(device);
+
+        //Reset output stream of session
+        sshSession.resetStdOutStream();
 
         //Get output stream of the session
         OutputStream stdOutStream = sshSession.getStdOutStream();
@@ -331,16 +370,18 @@ public class SSHDeployer {
     /**
      * Checks whether a given component is currently deployed on the dedicated remote device.
      *
-     * @param sshSession A valid and connected ssh session to use
-     * @param component  The component to check
+     * @param component The component to check
      * @return True, if the component is deployed; false otherwise
      * @throws IOException In case of an I/O issue
      */
-    private boolean isComponentDeployed(SSHSession sshSession, Component component) throws IOException {
+    private boolean isComponentDeployed(Component component) throws IOException {
         //Validity check
         if (component == null) {
             throw new IllegalArgumentException("Component must not be null.");
         }
+
+        //Get SSH session from pool
+        SSHSession sshSession = sshSessionPool.getSSHSession(component.getDevice());
 
         //Resolve deployment path
         String deploymentPath = getDeploymentPath(component);
@@ -367,8 +408,8 @@ public class SSHDeployer {
         //Get dedicated device of the component
         Device device = component.getDevice();
 
-        //Establish new SSH session
-        SSHSession sshSession = establishSSHConnection(device);
+        //Get SSH session from pool
+        SSHSession sshSession = sshSessionPool.getSSHSession(device);
 
         //Resolve deployment path
         String deploymentPath = getDeploymentPath(component);
@@ -392,55 +433,10 @@ public class SSHDeployer {
             throw new IllegalArgumentException("Component must not be null.");
         }
 
-        //Establish new SSH session
-        SSHSession sshSession = establishSSHConnection(component.getDevice());
-
-        //Check if component is running
-        boolean isRunning = isComponentRunning(sshSession, component);
-
-        //Close session
-        sshSession.close();
-
         //Undeploy component if running
-        if (isRunning) {
+        if (isComponentRunning(component)) {
             this.undeployComponent(component);
         }
-    }
-
-    /*
-     * Establishes a SSH connection to the device that is referenced in the component object.
-     *
-     * @param device To device to connect with
-     * @return The established SSH session
-     * @throws IOException In case of an I/O issue
-     */
-    private SSHSession establishSSHConnection(Device device) throws IOException {
-        //Validity check
-        if (device == null) {
-            throw new IllegalArgumentException("Device must not be null.");
-        }
-
-        //Retrieve private rsa key
-        String rsaKey = device.getRsaKey();
-
-        //Check key for validity
-        if ((rsaKey == null) || (rsaKey.isEmpty())) {
-            throw new IllegalArgumentException("No private RSA key for SSH connection provided.");
-        }
-
-        //Retrieve ssh connection parameter
-        String url = device.getIpAddress();
-        String username = device.getUsername();
-        String password = device.getPassword();
-
-        LOGGER.log(Level.FINE, "Establishing SSH connection to {0} (user: {1})",
-                new Object[]{url, username});
-
-        //Create new ssh session and connect
-        SSHSession sshSession = new SSHSession(url, SSH_PORT, username, password, rsaKey);
-        sshSession.connect();
-
-        return sshSession;
     }
 
     /**
@@ -453,7 +449,7 @@ public class SSHDeployer {
         String jsonString = jsonArray.toString();
         //Escape backslashes
         jsonString = jsonString.replace("\"", "\\\"");
-        ;
+
         //Wrap string with double quotes
         jsonString = "\"" + jsonString + "\"";
 
@@ -498,7 +494,7 @@ public class SSHDeployer {
                     //Add properties to object
                     parameterObject.put("name", parameter.getName());
                     parameterObject.put("value", parameterInstance.getValue());
-                } catch (JSONException e) {
+                } catch (JSONException ignored) {
                 }
                 //Add object to parameter
                 parameterArray.put(parameterObject);
