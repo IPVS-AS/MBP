@@ -27,8 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * REST Controller for deployment related REST requests.
- *
- * @author rafaelkperes, Jan
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
@@ -76,8 +74,7 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
     }
 
     @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.POST)
-    public ResponseEntity<ActionResponse> deployActuator(@PathVariable(value = "id") String id,
-                                                         @RequestBody List<ParameterInstance> parameters) {
+    public ResponseEntity<ActionResponse> deployActuator(@PathVariable(value = "id") String id) {
         return deployComponent(id, actuatorRepository);
     }
 

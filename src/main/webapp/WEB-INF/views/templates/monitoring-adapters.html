@@ -179,7 +179,7 @@
                                 <span class="help-block" ng-show="addAdapterCtrl.item.errors.routines">{{addAdapterCtrl.item.errors.routines.message}}</span>
                             </div>
                             <!-- item.parameters group -->
-                            <label>Deployment parameters:</label>
+                            <label>Parameters:</label>
                             <div class="form-group">
                                 <table class="table">
                                     <thead>
@@ -222,7 +222,7 @@
                                                 <label for="{{$index}}"> </label></div>
                                         </td>
                                         <td>
-                                            <button ng-click="ctrl.deleteDeploymentParameter($index)"
+                                            <button ng-click="ctrl.deleteParameter($index)"
                                                     type="button" class="btn btn-default waves-effect btn-xs">
                                                 <i class="material-icons">delete</i>
                                             </button>
@@ -239,7 +239,7 @@
                                 <div class="align-right">
                                     <button type="button"
                                             class="btn bg-light-green btn-circle waves-effect waves-circle waves-float"
-                                            ng-click="ctrl.addDeploymentParameter()">
+                                            ng-click="ctrl.addParameter()">
                                         <i class="material-icons">add</i>
                                     </button>
                                 </div>

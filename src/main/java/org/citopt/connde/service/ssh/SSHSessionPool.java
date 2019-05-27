@@ -69,30 +69,26 @@ public class SSHSessionPool {
     }
 
     /**
-     * Unregisters the SSH session of a certain device from the SSH session pool. As an outcome,
-     * a new session will be created on the next request.
+     * Unregisters an existing SSH session of a certain device from the SSH session pool, creates
+     * a new session for the device registers it at the session pool and returns it.
      *
-     * @param deviceId The id of the device for which the SSH session is supposed to be unregistered from the pool.
+     * @param device The device for which a new SSH session is supposed to be returned
+     * @return The new SSH session for the device
      */
-    public void unregisterSSHSession(String deviceId) throws IOException {
+    public SSHSession getNewSSHSession(Device device) throws IOException {
         //Sanity check
-        if ((deviceId == null) || deviceId.isEmpty()) {
-            throw new IllegalArgumentException("Device id must not be null or empty.");
+        if (device == null) {
+            throw new IllegalArgumentException("Device must not be null.");
         }
 
-        //Check if such a session is not part of the map
-        if(!sessionsMap.containsKey(deviceId)){
-            return;
+        //Check if a session is registered for this device
+        if(sessionsMap.containsKey(device.getId())){
+            //Unregister session from map
+            sessionsMap.remove(device.getId());
         }
 
-        //Get SSH session object
-        SSHSession session = sessionsMap.get(deviceId);
-
-        //Remove entry from sessions map
-        sessionsMap.remove(deviceId);
-
-        //Close session
-        session.close();
+        //Create a new SSH session
+        return getSSHSession(device);
     }
 
     /*

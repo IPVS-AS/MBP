@@ -77,7 +77,7 @@ public class SSHSession {
      *
      * @return True, if commands can be executed successfully; false otherwise
      */
-    public boolean isCommandExecutable() {
+    public synchronized boolean isCommandExecutable() {
         checkConnectionState();
 
         //Reset output stream of session
@@ -102,7 +102,7 @@ public class SSHSession {
      * @param parameters Command line parameters to pass
      * @throws IOException In case of an I/O issue
      */
-    public void executeShellScript(String filePath, String... parameters) throws IOException {
+    public synchronized void executeShellScript(String filePath, String... parameters) throws IOException {
         checkConnectionState();
 
         //Build string that contains all parameters separated by whitespaces
@@ -127,7 +127,7 @@ public class SSHSession {
      * @param permissions The permissions to set (e.g. +x)
      * @throws IOException In case of an I/O issue
      */
-    public void changeFilePermissions(String filePath, String permissions) throws IOException {
+    public synchronized void changeFilePermissions(String filePath, String permissions) throws IOException {
         checkConnectionState();
 
         //Build corresponding command
@@ -145,7 +145,7 @@ public class SSHSession {
      * @param fileContent The file content as base64 encoded string
      * @throws IOException In case of an I/O issue
      */
-    public void createFileFromBase64(String dirPath, String fileName, String fileContent) throws IOException {
+    public synchronized void createFileFromBase64(String dirPath, String fileName, String fileContent) throws IOException {
         checkConnectionState();
 
         //Build corresponding command
@@ -163,7 +163,7 @@ public class SSHSession {
      * @param fileContent The file content as plain string
      * @throws IOException In case of an I/O issue
      */
-    public void createFile(String dirPath, String fileName, String fileContent) throws IOException {
+    public synchronized void createFile(String dirPath, String fileName, String fileContent) throws IOException {
         checkConnectionState();
 
         //Build corresponding command
@@ -179,7 +179,7 @@ public class SSHSession {
      * @param path The path to the directory to remove
      * @throws IOException In case of an I/O issue
      */
-    public void removeDir(String path) throws IOException {
+    public synchronized void removeDir(String path) throws IOException {
         checkConnectionState();
 
         //Build corresponding command
@@ -195,7 +195,7 @@ public class SSHSession {
      * @param path The path to the directory in which the directory is supposed to be created
      * @throws IOException In case of an I/O issue
      */
-    public void createDir(String path) throws IOException {
+    public synchronized void createDir(String path) throws IOException {
         checkConnectionState();
 
         //Build corresponding command
@@ -212,7 +212,7 @@ public class SSHSession {
      * @return True, if the directory exists; false otherwise
      * @throws IOException In case of an I/O issue
      */
-    public boolean dirExists(String path) throws IOException {
+    public synchronized boolean dirExists(String path) throws IOException {
         checkConnectionState();
 
         //Remove trailing slashes from path
@@ -235,14 +235,14 @@ public class SSHSession {
     /**
      * Rests the stdout stream of this SSH session.
      */
-    public void resetStdOutStream() {
+    public synchronized void resetStdOutStream() {
         this.stdOutStream.reset();
     }
 
     /**
      * Rests the stderr stream of this SSH session.
      */
-    public void resetStdErrStream() {
+    public synchronized void resetStdErrStream() {
         this.stdErrStream.reset();
     }
 
@@ -251,7 +251,7 @@ public class SSHSession {
      *
      * @throws IOException In case of an I/O issue
      */
-    protected void connect() throws IOException {
+    protected synchronized void connect() throws IOException {
         //Create new safe shell instance
         shell = new Shell.Safe(new SSH(url, port, username, key));
 
@@ -264,18 +264,6 @@ public class SSHSession {
     }
 
     /**
-     * Closes the SSH connection.
-     *
-     * @throws IOException In case of an I/O issue
-     */
-    protected void close() throws IOException {
-        checkConnectionState();
-        stdOutStream.close();
-        stdErrStream.close();
-        shell = null;
-    }
-
-    /**
      * Executes a shell command with sudo permissions via the currently active SSH session. The password that
      * was provided to this session will be used in order to execute sudo. However, if no password is available,
      * it will try to execute sudo without password.
@@ -284,7 +272,7 @@ public class SSHSession {
      * @return The integer return value of the
      * @throws IOException In case of an I/O issue
      */
-    private int executeShellCommand(String command) throws IOException {
+    private synchronized int executeShellCommand(String command) throws IOException {
         //Wrap and delegate
         return executeShellCommand(command, null);
     }
@@ -300,7 +288,7 @@ public class SSHSession {
      * @return The integer return value of the
      * @throws IOException In case of an I/O issue
      */
-    private int executeShellCommand(String command, String inputStreamString) throws IOException {
+    private synchronized int executeShellCommand(String command, String inputStreamString) throws IOException {
         checkConnectionState();
 
         //Ensure valid input stream string
@@ -331,7 +319,7 @@ public class SSHSession {
      * @return True, if a sudo password is required; false otherwise
      * @throws IOException In case of an I/O issue
      */
-    private boolean isSudoPasswordRequired() throws IOException {
+    private synchronized boolean isSudoPasswordRequired() throws IOException {
         checkConnectionState();
 
         //Try to execute the corresponding test command without password and check if it fails

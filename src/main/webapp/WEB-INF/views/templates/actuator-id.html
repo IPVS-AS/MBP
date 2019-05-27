@@ -128,15 +128,32 @@
                     <span class="help-block focused error">{{ctrl.deployer.status.fieldErrors.parameters}}</span>
                 </div>
                 <br/>
-                <div ng-show="componentDetailsCtrl.deploymentState=='READY'">
-                    <button class="btn btn-primary waves-effect" ng-click="componentDetailsCtrl.deploy()">
-                        Deploy actuator
-                    </button>
-                </div>
-                <div ng-show="['DEPLOYED', 'RUNNING'].includes(componentDetailsCtrl.deploymentState)">
-                    <button class="btn btn-warning waves-effect" ng-click="componentDetailsCtrl.undeploy()">
-                        Undeploy actuator
-                    </button>
+
+                <div>
+                    <span ng-show="componentDetailsCtrl.deploymentState=='READY'">
+                        <button class="btn btn-primary waves-effect" ng-click="componentDetailsCtrl.deploy()">
+                            <i class="material-icons">file_download</i>
+                            <span>Deploy actuator</span>
+                        </button>
+                    </span>
+                    <span ng-show="['DEPLOYED', 'RUNNING'].includes(componentDetailsCtrl.deploymentState)">
+                        <button class="btn bg-deep-orange waves-effect" ng-click="componentDetailsCtrl.undeploy()">
+                            <i class="material-icons">file_upload</i>
+                            <span>Undeploy actuator</span>
+                        </button>
+                    </span>
+                    <span ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
+                        <button class="btn bg-cyan waves-effect" ng-click="componentDetailsCtrl.startComponent()">
+                            <i class="material-icons">play_arrow</i>
+                            <span>Start actuator</span>
+                        </button>
+                    </span>
+                    <span ng-show="componentDetailsCtrl.deploymentState=='RUNNING'">
+                        <button class="btn bg-orange waves-effect" ng-click="componentDetailsCtrl.stopComponent()">
+                            <i class="material-icons">pause</i>
+                            <span>Pause actuator</span>
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>
@@ -236,6 +253,3 @@
         </div>
     </div>
 </div>
-                
-                
-                

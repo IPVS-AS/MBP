@@ -142,8 +142,7 @@ public class SSHDeployer {
         SSHSession sshSession;
         try {
             //Get new SSH session from pool
-            sshSessionPool.unregisterSSHSession(device.getId());
-            sshSession = sshSessionPool.getSSHSession(device);
+            sshSession = sshSessionPool.getNewSSHSession(device);
         } catch (IOException e) {
             return DeviceState.ONLINE;
         }
@@ -374,7 +373,7 @@ public class SSHDeployer {
      * @return True, if the component is deployed; false otherwise
      * @throws IOException In case of an I/O issue
      */
-    private boolean isComponentDeployed(Component component) throws IOException {
+    public boolean isComponentDeployed(Component component) throws IOException {
         //Validity check
         if (component == null) {
             throw new IllegalArgumentException("Component must not be null.");
@@ -414,8 +413,12 @@ public class SSHDeployer {
         //Resolve deployment path
         String deploymentPath = getDeploymentPath(component);
 
-        //Execute stop script in order to termintate the execution of the component
-        sshSession.executeShellScript(deploymentPath + "/" + STOP_SCRIPT_NAME);
+        //Try to execute stop script in order to terminate the execution of the component
+        try {
+            sshSession.executeShellScript(deploymentPath + "/" + STOP_SCRIPT_NAME);
+        } catch (Exception ignored) {
+            //Just catch. Undeployment should be possible even if the stop script is missing
+        }
 
         //Remove deployment directory from remote machine
         sshSession.removeDir(deploymentPath);
