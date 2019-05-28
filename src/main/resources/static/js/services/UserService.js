@@ -48,8 +48,6 @@
       return $http.delete(ENDPOINT_URI + '/users/' + username).then(handleSuccess, handleError);
     }
 
-    // private functions
-
     function handleSuccess(res) {
       return {
         success: true,

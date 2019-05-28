@@ -62,6 +62,20 @@
 
     <!-- Size fix for SweetAlert2 -->
     <link th:href="@{/plugins/sweetalert2/sweetalert2_fix.css}" rel="stylesheet"/>
+    <!-- Font Awesome -->
+    <link href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" rel="stylesheet">
+
+    <!-- JQuery UI -->
+    <link th:href="@{/plugins/jquery-ui/jquery-ui.css}" rel="stylesheet"/>
+
+    <!-- JsPlumb Defaults -->
+    <link th:href="@{/plugins/jsplumb/css/jsPlumb-defaults.css}" rel="stylesheet"/>
+
+    <!-- JsPlumb Demo -->
+    <!-- <link th:href="@{/plugins/jsplumb/css/jsPlumb-demo.css}" rel="stylesheet"/> -->
+
+    <!-- Modeling Tool Css -->
+    <link th:href="@{/css/modeling-tool.css}" rel="stylesheet"/>
 
     <!-- Angular loading bar -->
     <link th:href="@{/plugins/angular-loading-bar/loading-bar.min.css}" rel="stylesheet"/>
@@ -212,7 +226,8 @@
       <!-- Footer -->
       <div class="legal">
         <div class="copyright">
-          &copy; {{ctrl.getDate()| date:'yyyy'}}
+          &copy;
+          {{ctrl.getDate()| date:'yyyy'}}
           <a href="javascript:void(0);">MBP</a>.
         </div>
         <!--<div class="version"> <b>Version: </b> 0.2.0 </div>-->
@@ -290,6 +305,12 @@
     <!--<script src="https://code.highcharts.com/highcharts.js"></script> -->
     <script src="http://code.highcharts.com/stock/highstock.js"></script>
 
+    <!-- JQuery UI -->
+    <script th:src="@{/plugins/jquery-ui/jquery-ui.js}"></script>
+
+    <!-- JsPlumb -->
+    <script th:src="@{/plugins/jsplumb/jsplumb.js}"></script>
+
     <!-- Angular -->
     <script th:src="@{/js/app.js}"></script>
     <script th:src="@{/js/services/SessionService.js}"></script>
@@ -303,6 +324,7 @@
     <script th:src="@{/js/services/FlashService.js}"></script>
     <script th:src="@{/js/services/UserService.js}"></script>
     <script th:src="@{/js/services/ComponentTypeService.js}"></script>
+    <script th:src="@{/js/services/ModelService.js}"></script>
     <script th:src="@{/js/services/ParameterTypeService.js}"></script>
     <script th:src="@{/js/services/UnitService.js}"></script>
     <script th:src="@{/js/services/NotificationService.js}"></script>
@@ -342,5 +364,6 @@
     <script th:src="@{/js/controllers/user/LoginController.js}"></script>
     <script th:src="@{/js/controllers/user/RegisterController.js}"></script>
     <script th:src="@{/js/controllers/user/UsersController.js}"></script>
+    <script th:src="@{/js/controllers/model/ModelController.js}"></script>
   </body>
 </html>

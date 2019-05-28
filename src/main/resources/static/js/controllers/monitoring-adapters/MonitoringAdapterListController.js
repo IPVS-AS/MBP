@@ -4,8 +4,8 @@
  * Controller for the monitoring adapter list page which extends the AdapterListController.
  */
 app.controller('MonitoringAdapterListController',
-    ['$scope', '$controller', 'deviceTypesList', 'monitoringAdapterList', 'addMonitoringAdapter', 'deleteMonitoringAdapter', 'parameterTypesList', 'NotificationService',
-        function ($scope, $controller, deviceTypesList, monitoringAdapterList, addMonitoringAdapter, deleteMonitoringAdapter, parameterTypesList, NotificationService) {
+    ['$scope', '$controller', '$timeout', 'deviceTypesList', 'monitoringAdapterList', 'addMonitoringAdapter', 'deleteMonitoringAdapter', 'parameterTypesList', 'NotificationService',
+        function ($scope, $controller, $timeout, deviceTypesList, monitoringAdapterList, addMonitoringAdapter, deleteMonitoringAdapter, parameterTypesList, NotificationService) {
             //Array of colors to be used for the different device types
             var DEVICE_TYPES_COLORS = ['bg-pink', 'bg-purple', 'bg-deep-purple', 'bg-indigo', 'bg-blue',
                 'bg-light-blue', 'bg-cyan', 'bg-teal', 'bg-green', 'bg-light-green', 'bg-lime', 'bg-yellow',
@@ -25,13 +25,18 @@ app.controller('MonitoringAdapterListController',
                 }
 
                 //Extend device types list for color
-                for(var i = 0; i < deviceTypesList.length; i++){
+                for (var i = 0; i < deviceTypesList.length; i++) {
                     var colorIndex = i % DEVICE_TYPES_COLORS.length;
                     deviceTypesList[i].color = DEVICE_TYPES_COLORS[colorIndex];
                 }
 
                 //Store list of available device types
                 vm.deviceTypesList = deviceTypesList;
+
+                //Refresh device type select picker when the modal is opened
+                $('.modal').on('shown.bs.modal', function (e) {
+                    $('.selectpicker').selectpicker('refresh');
+                });
             })();
 
             /**
@@ -56,8 +61,8 @@ app.controller('MonitoringAdapterListController',
 
                     //Find and add matching color for this device type
                     adapter.deviceTypes[i].color = 'label-default';
-                    for(var j = 0; j < deviceTypesList.length; j++){
-                        if(deviceTypesList[j].id == adapter.deviceTypes[i].id){
+                    for (var j = 0; j < deviceTypesList.length; j++) {
+                        if (deviceTypesList[j].id == adapter.deviceTypes[i].id) {
                             adapter.deviceTypes[i].color = deviceTypesList[j].color;
                             break;
                         }

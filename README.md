@@ -61,6 +61,12 @@ In order to decrease the time that is required by Tomcat to make the MBP web app
 ## 2 MBP REST API
 A REST API for the management of devices, adapters, sensors and actuators is provided. Furthermore, an interface to trigger the binding of sensors and actuator is as well provided. Finally, sensor and actuator values sent to the MBP can be retrieved.
 
+Basic Authentication is needed to use the REST API and to access the resources. For this reason, an authorization header is added in every client request except for the POST requests "/api/authenticate" and "/api/users", which are used to authenticate and create a new user. The authorization header looks like this:
+``
+Authorization: Basic YWRtaW46YWRtaW4=
+``
+The value "YWRtaW46YWRtaW4=" is a Base64 encoding of "admin:admin" (username:password).
+
 Make sure that CORS (Cross-Origin Resource Sharing) is allowed for all origins. To do that, add the following filter to Tomcat's 'web.xml':
 
 ```xml

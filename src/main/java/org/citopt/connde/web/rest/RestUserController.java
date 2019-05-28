@@ -162,7 +162,7 @@ public class RestUserController {
 	}
 
 	/**
-	 * DELETE /users/:username : delete the "username" User.
+	 * DELETE /users/:username : delete the "username" user.
 	 *
 	 * @param username
 	 *            The username of the user to delete

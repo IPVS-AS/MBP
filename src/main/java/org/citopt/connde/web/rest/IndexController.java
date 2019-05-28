@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  *
- * @author rafaelkperes
+ * @author rafaelkperes, Imeri Amil
  */
 @Controller
 public class IndexController {
