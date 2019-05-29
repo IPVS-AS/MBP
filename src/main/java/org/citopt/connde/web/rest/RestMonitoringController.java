@@ -93,8 +93,16 @@ public class RestMonitoringController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        //Deploy
-        return deploymentWrapper.deployComponent(monitoringComponent, parameters);
+        //Deploy monitoring component
+        ResponseEntity<ActionResponse> response = deploymentWrapper.deployComponent(monitoringComponent);
+
+        //Check if deployment was not successful
+        if (!response.getBody().isSuccess()) {
+            return response;
+        }
+
+        //Start monitoring component
+        return deploymentWrapper.startComponent(monitoringComponent, parameters);
     }
 
     /**

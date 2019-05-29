@@ -10,7 +10,6 @@ import org.citopt.connde.repository.ValueLogRepository;
 import org.citopt.connde.repository.projection.ComponentProjection;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.core.annotation.HandleAfterDelete;
 import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;

@@ -51,7 +51,10 @@
                                     <span class="label label-success">Ready</span>
                                 </div>
                                 <div ng-switch-when="DEPLOYED">
-                                    <span class="label label-info">Deployed</span>
+                                    <span class="label bg-teal">Deployed</span>
+                                </div>
+                                <div ng-switch-when="RUNNING">
+                                    <span class="label label-info">Running</span>
                                 </div>
                                 <div ng-switch-default>
                                     <span class="label label-default">Unknown</span>

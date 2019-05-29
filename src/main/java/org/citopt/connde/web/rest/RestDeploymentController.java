@@ -27,8 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * REST Controller for deployment related REST requests.
- *
- * @author rafaelkperes, Jan
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
@@ -43,6 +41,27 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
     @Autowired
     private ActuatorRepository actuatorRepository;
 
+    @RequestMapping(value = "/start/actuator/{id}", method = RequestMethod.POST)
+    public ResponseEntity<ActionResponse> startActuator(@PathVariable(value = "id") String id,
+                                                         @RequestBody List<ParameterInstance> parameters) {
+        return startComponent(id, actuatorRepository, parameters);
+    }
+
+    @RequestMapping(value = "/start/sensor/{id}", method = RequestMethod.POST)
+    public ResponseEntity<ActionResponse> startSensor(@PathVariable(value = "id") String id,
+                                                        @RequestBody List<ParameterInstance> parameters) {
+        return startComponent(id, sensorRepository, parameters);
+    }
+
+    @RequestMapping(value = "/stop/actuator/{id}", method = RequestMethod.POST)
+    public ResponseEntity<ActionResponse> stopActuator(@PathVariable(value = "id") String id) {
+        return stopComponent(id, actuatorRepository);
+    }
+
+    @RequestMapping(value = "/stop/sensor/{id}", method = RequestMethod.POST)
+    public ResponseEntity<ActionResponse> stopSensor(@PathVariable(value = "id") String id) {
+        return stopComponent(id, sensorRepository);
+    }
 
     @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.GET)
     public ResponseEntity<Boolean> isRunningActuator(@PathVariable(value = "id") String id) {
@@ -55,15 +74,13 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
     }
 
     @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.POST)
-    public ResponseEntity<ActionResponse> deployActuator(@PathVariable(value = "id") String id,
-                                                         @RequestBody List<ParameterInstance> parameters) {
-        return deployComponent(id, actuatorRepository, parameters);
+    public ResponseEntity<ActionResponse> deployActuator(@PathVariable(value = "id") String id) {
+        return deployComponent(id, actuatorRepository);
     }
 
     @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.POST)
-    public ResponseEntity<ActionResponse> deploySensor(@PathVariable(value = "id") String id,
-                                                       @RequestBody List<ParameterInstance> parameters) {
-        return deployComponent(id, sensorRepository, parameters);
+    public ResponseEntity<ActionResponse> deploySensor(@PathVariable(value = "id") String id) {
+        return deployComponent(id, sensorRepository);
     }
 
     @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.DELETE)
@@ -84,12 +101,28 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
         return deploymentWrapper.isRunningComponent(component);
     }
 
-    private ResponseEntity<ActionResponse> deployComponent(String id, ComponentRepository repository, List<ParameterInstance> parameterInstances) {
+    private ResponseEntity<ActionResponse> startComponent(String id, ComponentRepository repository, List<ParameterInstance> parameterInstances) {
+        //Retrieve component from repository
+        Component component = (Component) repository.findOne(id);
+
+        //Start component
+        return deploymentWrapper.startComponent(component, parameterInstances);
+    }
+
+    private ResponseEntity<ActionResponse> stopComponent(String id, ComponentRepository repository) {
+        //Retrieve component from repository
+        Component component = (Component) repository.findOne(id);
+
+        //Stop component
+        return deploymentWrapper.stopComponent(component);
+    }
+
+    private ResponseEntity<ActionResponse> deployComponent(String id, ComponentRepository repository) {
         //Retrieve component from repository
         Component component = (Component) repository.findOne(id);
 
         //Do deployment
-        return deploymentWrapper.deployComponent(component, parameterInstances);
+        return deploymentWrapper.deployComponent(component);
     }
 
     private ResponseEntity<ActionResponse> undeployComponent(String id, ComponentRepository repository) {
