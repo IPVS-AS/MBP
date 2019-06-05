@@ -16,9 +16,9 @@ import java.util.List;
 public interface ValueLogRepository
         extends MongoRepository<ValueLog, String> {
 
-    public List<ValueLog> findListByIdref(@Param("idref") String idref);
+    List<ValueLog> findListByIdref(@Param("idref") String idref);
 
-    public Page<ValueLog> findAllByIdref(@Param("idref") String idref, Pageable pageable);
+    Page<ValueLog> findAllByIdref(@Param("idref") String idref, Pageable pageable);
 
-    public Page<ValueLog> findAllByComponent(@Param("component") String component, Pageable pageable);
+    Page<ValueLog> findAllByComponent(@Param("component") String component, Pageable pageable);
 }
