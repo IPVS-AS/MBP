@@ -2,7 +2,7 @@
 
   <div class="tool-header">
     <div class="row" style="width: 100%; margin-left: 0px; margin-right: 0px">
-      <span class="navbar-brand" style="color: black">IoT Models</span>
+      <span class="navbar-brand" style="color: black">IoT Environment Modeling Tool</span>
       <div class="navbar-brand tool-header-right" ng-show="vm.processing.status">
         <div class="col-xs-12 align-center">
           <div class="preloader pl-size-xs">
@@ -36,11 +36,11 @@
       <div class="tool-header-left" style="width: 50%">
         <select class="form-control show-tick" id="select-models" ng-change="vm.drawModel(model)" ng-model="model" style="display: inline-block; width: 50%">
           <option disabled="disabled" value="">
-            -- Select model --
+            -- Select IoT model --
           </option>
           <option ng-repeat="model in vm.loadedModels" value="{{model}}" ng-selected="model.name === vm.selectedOptionName">{{model.name}}</option>
         </select>
-        <input id="modelNameInput" type="text" name="name" ng-model="vm.currentModel.name" autocomplete="off" placeholder="Name required" style="display: inline-block; width: 50%"/>
+        <input id="modelNameInput" type="text" name="name" ng-model="vm.currentModel.name" autocomplete="off" placeholder="Enter IoT model name" style="display: inline-block; width: 50%"/>
       </div>
       <div class="tool-header-right">
         <button id="newModelBtn" class="tool-button" title="New model" ng-click="vm.newModel()">
@@ -175,7 +175,7 @@
           <h4 class="panel-title">
             <a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseDevices">
               <i class="material-icons" style="font-size: 20px;">devices</i>
-              <span class="glyphicon glyphicon-chevron-down pull-right"></span>Devices</a>
+              <span class="glyphicon glyphicon-chevron-down pull-right"></span>Device types</a>
           </h4>
         </div>
         <div id="collapseDevices" class="panel-collapse collapse">
@@ -257,7 +257,7 @@
           <h4 class="panel-title">
             <a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseActuators">
               <i class="material-icons" style="font-size: 20px;">wb_incandescent</i>
-              <span class="glyphicon glyphicon-chevron-down pull-right"></span>Actuators</a>
+              <span class="glyphicon glyphicon-chevron-down pull-right"></span>Actuator types</a>
           </h4>
         </div>
         <div id="collapseActuators" class="panel-collapse collapse">
@@ -339,7 +339,7 @@
           <h4 class="panel-title">
             <a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseSensors">
               <i class="material-icons" style="font-size: 20px;">settings_remote</i>
-              <span class="glyphicon glyphicon-chevron-down pull-right"></span>Sensors</a>
+              <span class="glyphicon glyphicon-chevron-down pull-right"></span>Sensor types</a>
           </h4>
         </div>
         <div id="collapseSensors" class="panel-collapse collapse">
