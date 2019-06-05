@@ -71,6 +71,11 @@ public class RuleTriggerValidator implements Validator {
                 errors, "query", "ruleTrigger.query.empty",
                 "The query string must not be empty.");
 
+        //Stop in case there are already problems with the query
+        if (errors.hasFieldErrors("query")) {
+            return;
+        }
+
         //Validate trigger query
         CEPQueryValidation queryValidation = triggerService.isValidTriggerQuery(ruleTrigger);
 
