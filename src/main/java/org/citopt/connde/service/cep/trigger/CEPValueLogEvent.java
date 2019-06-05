@@ -3,6 +3,10 @@ package org.citopt.connde.service.cep.trigger;
 import org.citopt.connde.domain.valueLog.ValueLog;
 import org.citopt.connde.service.cep.engine.core.events.CEPEvent;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * CEP event wrapping a value log that was received for a certain component. This event may be used in order to be
  * further processed by the CEP engine.
@@ -29,8 +33,18 @@ public class CEPValueLogEvent extends CEPEvent {
         //Convert value string of value log to double
         double value = Double.parseDouble(valueLog.getValue());
 
+        //Try to get date object from value log and use "now" if not possible
+        Date date = new Date();
+        try {
+            date = valueLog.getDateObject();
+        } catch (ParseException ignored) {}
+
+        //Get UNIX time from date object
+        long unixSeconds = date.getTime();
+
         //Set event fields
         this.addValue("value", value);
+        this.addValue("time", unixSeconds);
     }
 
     /**

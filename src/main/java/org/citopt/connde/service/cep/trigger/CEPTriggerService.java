@@ -157,6 +157,7 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
 
         //Add fields to this event type that all derived events need to implement
         eventType.addField("value", CEPPrimitiveDataTypes.DOUBLE);
+        eventType.addField("time", CEPPrimitiveDataTypes.LONG);
 
         //Register event type
         engine.registerEventType(eventType);

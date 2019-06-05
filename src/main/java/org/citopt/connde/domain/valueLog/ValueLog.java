@@ -1,17 +1,18 @@
 package org.citopt.connde.domain.valueLog;
 
-import org.citopt.connde.domain.component.Actuator;
-import org.citopt.connde.domain.component.Sensor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Reference;
 
 import javax.persistence.GeneratedValue;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * @author rafaelkperes
  */
 public class ValueLog {
+    //Format that is used for the date
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Id
     @GeneratedValue
@@ -66,6 +67,10 @@ public class ValueLog {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public Date getDateObject() throws ParseException {
+        return DATE_FORMAT.parse(date);
     }
 
     public String getIdref() {
