@@ -101,4 +101,40 @@
             </div>
         </div>
     </div>
+
+    <!-- Add trigger card -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>Add trigger</h2>
+                </div>
+            </div>
+            <div class="body">
+                <div id="add-trigger-wizard">
+                    <h1>Trigger name</h1>
+                    <section>
+                        <p>Please provide a name for the rule trigger.</p>
+                        <form>
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : addRuleTriggerCtrl.item.errors.name }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addRuleTriggerCtrl.item.errors.name }">
+                                    <input class="form-control" type="text" placeholder="Name"
+                                           ng-model="addRuleTriggerCtrl.item.name"/>
+                                </div>
+                                <span class="help-block" ng-show="addRuleTriggerCtrl.item.errors.name">{{addRuleTriggerCtrl.item.errors.name.message}}</span>
+                            </div>
+                        </form>
+                    </section>
+                    <h1>Event pattern</h1>
+                    <section>Second Content</section>
+                    <h1>Conditions</h1>
+                    <section>Second Content</section>
+                    <h1>Refinement</h1>
+                    <section>Second Content</section>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

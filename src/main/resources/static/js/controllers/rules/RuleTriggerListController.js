@@ -6,13 +6,20 @@
 app.controller('RuleTriggerListController',
     ['$scope', '$controller', '$interval', 'ruleTriggerList', 'addRuleTrigger', 'deleteRuleTrigger',
         function ($scope, $controller, $interval, ruleTriggerList, addRuleTrigger, deleteRuleTrigger) {
+            //ID of the add trigger wizard container
+            const WIZARD_CONTAINER_ID = "add-trigger-wizard";
+
             var vm = this;
+
+            //Holds the wizard object for adding triggers
+            var wizard = null;
 
             /**
              * Initializing function, sets up basic things.
              */
             (function initController() {
-
+                //Initialize wizard
+                $(document).ready(initWizard);
             })();
 
             /**
@@ -44,6 +51,18 @@ app.controller('RuleTriggerListController',
                     confirmButtonClass: 'bg-red',
                     focusConfirm: false,
                     cancelButtonText: 'Cancel'
+                });
+            }
+
+            /**
+             * [Private]
+             * Initializes the wizard that allows to add new triggers.
+             */
+            function initWizard() {
+                wizard = $('#' + WIZARD_CONTAINER_ID).steps({
+                    bodyTag: "section",
+                    transitionEffect: "slideLeft",
+                    autoFocus: true
                 });
             }
 
