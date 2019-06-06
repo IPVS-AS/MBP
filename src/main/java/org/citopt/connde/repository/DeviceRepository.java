@@ -16,5 +16,5 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 public interface DeviceRepository
         extends MongoRepository<Device, String> {
 
-    public Device findByName(@Param("name") String name);
+    Device findByName(@Param("name") String name);
 }

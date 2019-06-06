@@ -16,8 +16,8 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 public interface AdapterRepository
         extends MongoRepository<Adapter, String> {
 
-    public Adapter findByName(@Param("name") String name);
+    Adapter findByName(@Param("name") String name);
 
-    public List<Adapter> findAllByNameContainingIgnoreCase(@Param("name") String name);
+    List<Adapter> findAllByNameContainingIgnoreCase(@Param("name") String name);
 
 }

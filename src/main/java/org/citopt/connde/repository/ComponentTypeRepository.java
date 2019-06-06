@@ -17,8 +17,8 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 @RepositoryRestResource(excerptProjection = ComponentTypeProjection.class)
 public interface ComponentTypeRepository extends MongoRepository<ComponentType, String> {
 
-    public ComponentType findByName(@Param("name") String name);
+    ComponentType findByName(@Param("name") String name);
 
-    public List<ComponentType> findAllByComponent(@Param("component") String component, Pageable pageable);
+    List<ComponentType> findAllByComponent(@Param("component") String component, Pageable pageable);
 
 }
