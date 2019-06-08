@@ -1,0 +1,72 @@
+.pattern-creator {
+    margin: 5px;
+}
+
+.pattern-creator .pattern-container {
+    width: 100%;
+    background: #9E9E9E;
+    border-radius: 2px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    padding: 5px;
+    text-align: center;
+}
+
+.pattern-creator .pattern-container .event {
+    width: 80px;
+    height: 80px;
+    background: #eee;
+    border: 1px dashed #333;
+    border-radius: 5px;
+    margin: 5px;
+    display: inline-block;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    padding-top: 4px;
+    vertical-align: top;
+    font-size: 50px;
+    text-align: center;
+    color: grey;
+}
+
+.pattern-creator .components-container {
+    width: 100%;
+    background: white;
+    border: 1px solid black;
+    border-radius: 2px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    padding: 5px;
+    margin-top: 20px;
+}
+
+.pattern-creator .components-container .title {
+    width: 100%;
+    display: block;
+    font-size: 16px;
+    font-style: italic;
+    border-bottom: 1px solid rgba(204, 204, 204, 0.35);
+    padding: 2px;
+}
+
+.pattern-creator .components-container .content {
+    width: 100%;
+    display: block;
+    margin-top: 10px;
+}
+
+.pattern-creator .component {
+    width: 80px;
+    height: 80px;
+    background: #eee;
+    border-radius: 5px;
+    margin: 5px;
+    display: inline-block;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    padding-top: 10px;
+    vertical-align: top;
+    font-size: 12px;
+    text-align: center;
+    color: black;
+}
+
+.pattern-creator .component .material-icons{
+    font-size: 34px;
+}

@@ -4,8 +4,8 @@
  * Controller for the rule triggers list page.
  */
 app.controller('RuleTriggerListController',
-    ['$scope', '$controller', '$interval', 'ruleTriggerList', 'addRuleTrigger', 'deleteRuleTrigger',
-        function ($scope, $controller, $interval, ruleTriggerList, addRuleTrigger, deleteRuleTrigger) {
+    ['$scope', '$controller', '$interval', 'ruleTriggerList', 'addRuleTrigger', 'deleteRuleTrigger', 'sensorList',
+        function ($scope, $controller, $interval, ruleTriggerList, addRuleTrigger, deleteRuleTrigger, sensorList) {
             //ID of the add trigger wizard container
             const WIZARD_CONTAINER_ID = "add-trigger-wizard";
 
@@ -60,9 +60,7 @@ app.controller('RuleTriggerListController',
              */
             function initWizard() {
                 wizard = $('#' + WIZARD_CONTAINER_ID).steps({
-                    bodyTag: "section",
-                    transitionEffect: "slideLeft",
-                    autoFocus: true
+                    bodyTag: "section"
                 });
             }
 
@@ -80,7 +78,8 @@ app.controller('RuleTriggerListController',
                     $scope: $scope,
                     deleteItem: deleteRuleTrigger,
                     confirmDeletion: confirmDelete
-                })
+                }),
+                componentList: sensorList
             });
 
             //Watch addition of rule triggers and add them to the list
