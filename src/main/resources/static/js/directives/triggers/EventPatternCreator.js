@@ -8,12 +8,78 @@
 app.directive('eventPatternCreator', ['$interval', function ($interval) {
 
     function init(scope, element, attrs) {
-        function handleCardDrop(event, ui) {
-            console.log(ui);
-            //var slotNumber = $(this).data( 'number' );
-            //var cardNumber = ui.draggable.data( 'number' );
+        function dragStart() {
+            $('.pattern-container').addClass("dragging");
+        }
 
-            //$(this).before(ui.draggable.clone())
+        function dragStop() {
+            $('.pattern-container').removeClass("dragging");
+        }
+
+        function sortReceive(event, ui) {
+            ui.helper.hide().fadeIn();
+
+            if (ui.helper.is(':only-child')) {
+                return;
+            }
+
+            var operator = $('<div class="operator"/>').addClass('and').data('type', 0).click(function () {
+                var classes = ['and', 'or', 'after'];
+                var _this = $(this);
+                var newIndex = (_this.data('type') + 1) % classes.length;
+                _this.removeClass("and or after");
+                _this.addClass(classes[newIndex]);
+                _this.data('type', newIndex);
+            });
+
+            var previousSibling = ui.helper.prev();
+            var nextSibling = ui.helper.next();
+
+            if ((previousSibling.length > 0) && (!previousSibling.hasClass('operator'))) {
+                ui.helper.before(operator);
+            } else if ((nextSibling.length > 0) && (!nextSibling.hasClass('operator'))) {
+                ui.helper.after(operator);
+            }
+        }
+
+        function sortUpdate(event, ui) {
+
+            console.log("change");
+
+            var patternContainer = $('.pattern-creator .pattern-container');
+            var children = patternContainer.children();
+
+            var wasOperator = true;
+            var moveLeft = false;
+            var currentElement = null;
+
+            children.each(function (index) {
+                currentElement = $(this);
+
+                if((!wasOperator) && (!currentElement.hasClass("operator"))){
+                    moveLeft = true;
+                }
+
+                if(wasOperator && currentElement.hasClass("operator")){
+                    if(moveLeft){
+                        var firstOperator = currentElement.prev();
+                        firstOperator.insertBefore(firstOperator.prev());
+                    }else{
+                        currentElement.insertAfter(currentElement.next());
+                    }
+
+                    sortUpdate(event, ui);
+                    return false;
+                }
+
+                if((index === (children.length - 1)) && currentElement.hasClass("operator")){
+                    currentElement.insertBefore(currentElement.prev());
+                    sortUpdate(event, ui);
+                    return false;
+                }
+
+                wasOperator = currentElement.hasClass("operator");
+            });
         }
 
         //Add components to component container
@@ -27,17 +93,20 @@ app.directive('eventPatternCreator', ['$interval', function ($interval) {
                     connectToSortable: ".pattern-creator .pattern-container",
                     stack: '.pattern-creator .components-container .component',
                     cursor: 'move',
-                    helper: "clone",
-                    revert: true,
-                    snap: "invalid",
-                    snapMode: "inner"
+                    helper: 'clone',
+                    revert: 'invalid',
+                    snap: '.component-placeholder',
+                    snapMode: 'inner',
+                    start: dragStart,
+                    stop: dragStop
                 });
         }
 
         $(".pattern-creator .pattern-container").sortable({
-            //forcePlaceholderSize: false,
             items: '> .component',
-            placeholder: 'component-placeholder'
+            placeholder: 'component-placeholder',
+            update: sortUpdate,
+            receive: sortReceive
         });
     }
 
