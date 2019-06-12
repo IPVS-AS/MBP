@@ -1,9 +1,10 @@
-.pattern-creator {
+.cep-query-editor {
     margin: 5px;
+    width: 100%;
     user-select: none;
 }
 
-.pattern-creator .pattern-container {
+.cep-query-editor .pattern-container {
     width: 100%;
     min-height: 90px;
     background: #9E9E9E;
@@ -13,21 +14,21 @@
     text-align: center;
 }
 
-.pattern-creator .pattern-container.dragging {
+.cep-query-editor .pattern-container.dragging {
     border: 2px dashed black;
 }
 
-.pattern-creator .pattern-container:empty {
+.cep-query-editor .pattern-container:empty {
     font-size: 30px;
     color: white;
     padding-top: 20px;
 }
 
-.pattern-creator .pattern-container:empty:before {
+.cep-query-editor .pattern-container:empty:before {
     content: "Please drop events here.";
 }
 
-.pattern-creator .components-container {
+.cep-query-editor .component-container {
     width: 100%;
     background: white;
     border: 1px solid black;
@@ -37,7 +38,7 @@
     margin-top: 20px;
 }
 
-.pattern-creator .components-container .title {
+.cep-query-editor .component-container .title {
     width: 100%;
     display: block;
     font-size: 16px;
@@ -46,13 +47,13 @@
     padding: 2px;
 }
 
-.pattern-creator .components-container .content {
+.cep-query-editor .component-container .content {
     width: 100%;
     display: block;
     margin-top: 10px;
 }
 
-.pattern-creator .component, .pattern-creator .component-placeholder, .pattern-creator .operator{
+.cep-query-editor .component, .cep-query-editor .component-placeholder, .cep-query-editor .operator{
     display: inline-block;
     text-align: center;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
@@ -60,24 +61,24 @@
     vertical-align: top;
 }
 
-.pattern-creator .component, .pattern-creator .component-placeholder {
+.cep-query-editor .component, .cep-query-editor .component-placeholder {
     width: 80px;
     height: 80px;
     margin: 5px;
 }
 
-.pattern-creator .component {
+.cep-query-editor .component {
     padding-top: 12px;
     font-size: 12px;
     color: black;
     background-color: #eee;
 }
 
-.pattern-creator .component .material-icons {
+.cep-query-editor .component .material-icons {
     font-size: 34px;
 }
 
-.pattern-creator .component-placeholder {
+.cep-query-editor .component-placeholder {
     padding-top: 4px;
     font-size: 50px;
     color: grey;
@@ -85,11 +86,11 @@
     background-color: white;
 }
 
-.pattern-creator .component-placeholder:before {
+.cep-query-editor .component-placeholder:before {
     content: "+";
 }
 
-.pattern-creator .operator{
+.cep-query-editor .operator{
     margin-top: 30px;
     padding: 5px;
     font-weight: bold;
@@ -97,29 +98,33 @@
     cursor: pointer;
 }
 
-.pattern-creator .operator.and{
+.cep-query-editor .operator.and{
     color: white;
     background-color: #3F51B5;
 }
 
-.pattern-creator .operator.and:before{
+.cep-query-editor .operator.and:before{
     content: "And";
 }
 
-.pattern-creator .operator.or{
+.cep-query-editor .operator.or{
     color: white;
     background-color: #009688;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
-.pattern-creator .operator.or:before{
+.cep-query-editor .operator.or:before{
     content: "Or";
 }
 
-.pattern-creator .operator.after{
+.cep-query-editor .operator.before{
     color: white;
     background-color: #9C27B0;
+    margin-left: 20px;
+    margin-right: 20px;
 }
 
-.pattern-creator .operator.after:after{
-    content: "After";
+.cep-query-editor .operator.before:after{
+    content: "Before";
 }
