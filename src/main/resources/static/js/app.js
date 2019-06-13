@@ -177,8 +177,20 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     deleteRuleTrigger: ['CrudService', function (CrudService) {
                         return angular.bind(this, CrudService.deleteItem, 'rule-triggers');
                     }],
+                    actuatorList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('actuators');
+                    }],
                     sensorList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('sensors');
+                    }],
+                    monitoringComponentList: ['MonitoringService', function (MonitoringService) {
+                        return MonitoringService.getMonitoringComponents().then(function (response) {
+                            if(response.data){
+                                return response.data;
+                            }else{
+                                return [];
+                            }
+                        });
                     }]
                 }
             })

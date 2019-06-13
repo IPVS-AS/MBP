@@ -174,6 +174,17 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
             });
         }
 
+        /**
+         * [Public]
+         * Performs a server request in order to retrieve all available monitoring components. Each monitoring
+         * component consists out of a device and a compatible monitoring adapter.
+         *
+         * @returns {*}
+         */
+        function getMonitoringComponents() {
+            return $http.get(URL_MONITORING_PREFIX);
+        }
+
 
         /**
          * [Private]
@@ -196,7 +207,8 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
             disableMonitoring: disableMonitoring,
             getMonitoringValueLogStats: getMonitoringValueLogStats,
             getMonitoringValueLogs: getMonitoringValueLogs,
-            deleteMonitoringValueLogs: deleteMonitoringValueLogs
+            deleteMonitoringValueLogs: deleteMonitoringValueLogs,
+            getMonitoringComponents: getMonitoringComponents
         }
     }
 ]);

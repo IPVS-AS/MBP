@@ -6,6 +6,7 @@ import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
+import org.citopt.connde.domain.monitoring.MonitoringComponentDTO;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.projection.MonitoringAdapterListProjection;
 import org.citopt.connde.service.deploy.ComponentState;
@@ -213,5 +214,37 @@ public class RestMonitoringController {
                 monitoringHelper.convertToListProjections(compatibleAdapters);
 
         return new ResponseEntity<>(adapterProjectionList, HttpStatus.OK);
+    }
+
+    /**
+     * Returns a list of all monitoring components that are available. Each monitoring component consists out of
+     * a device and a compatible monitoring adapter and is returned as a DTO.
+     *
+     * @return A list of all available monitoring components
+     */
+    @GetMapping("/monitoring")
+    public ResponseEntity<List<MonitoringComponentDTO>> getAllMonitoringComponents() {
+        //Create result list for all found monitoring components
+        List<MonitoringComponentDTO> monitoringComponents = new ArrayList<>();
+
+        //Get all devices
+        List<Device> devices = deviceRepository.findAll();
+
+        //Iterate over all devices
+        for (Device device : devices) {
+            //Get all compatible adapters for this device
+            List<MonitoringAdapter> compatibleAdapters = monitoringHelper.getCompatibleAdapters(device);
+
+            //Iterate over these adapters
+            for (MonitoringAdapter monitoringAdapter : compatibleAdapters) {
+                //Create corresponding monitoring component for device and adapter
+                MonitoringComponent monitoringComponent = new MonitoringComponent(monitoringAdapter, device);
+
+                //Add component as DTO to result list
+                monitoringComponents.add(new MonitoringComponentDTO(monitoringComponent));
+            }
+        }
+
+        return new ResponseEntity<>(monitoringComponents, HttpStatus.OK);
     }
 }

@@ -6,6 +6,7 @@ li > a.collapsed > i.material-icons {
 /* Animation for icon style changes */
 li > a > i.material-icons {
     transition: .3s transform ease-in-out;
+    color: #999;
 }
 
 /* Scrollable drop down */
@@ -37,6 +38,7 @@ table.parameter-table td {
     box-shadow: none !important;
 }
 
+/* Clickable elements */
 .clickable {
     cursor: pointer;
 }

@@ -22,6 +22,9 @@ public class MonitoringComponent extends Component {
         String deviceId = device.getId();
         setId(adapterId + "@" + deviceId);
 
+        //Set name
+        setName(monitoringAdapter.getName() + " (" + device.getName() + ")");
+
         //Use given adapter and device
         setAdapter(monitoringAdapter);
         setDevice(device);

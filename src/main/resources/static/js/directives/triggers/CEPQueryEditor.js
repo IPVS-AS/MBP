@@ -7,8 +7,14 @@
  */
 app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
+    const CLASS_MAIN_CONTAINER = 'cep-query-editor';
+    const CLASS_PATTERN_CONTAINER = 'pattern-container';
     const CLASS_COMPONENT = 'component';
     const CLASS_COMPONENT_PLACEHOLDER = 'component-placeholder';
+    const CLASS_COMPONENT_CATEGORY = 'component-category';
+    const CLASS_COMPONENT_CATEGORY_OPTIONS = 'options';
+    const CLASS_COMPONENT_CATEGORY_TITLE = 'title';
+    const CLASS_COMPONENT_CATEGORY_LIST = 'component-list';
     const CLASS_OPERATOR = 'operator';
     const CLASS_OPERATOR_TYPES = ['before', 'or', 'and'];
     const CLASS_OPERATOR_INTERMEDIATE = 'intermediate';
@@ -17,14 +23,43 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
     function init(scope, element, attrs) {
 
-        const mainContainer = $(element[0]);
-        const patternContainer = $('.pattern-container');
+        const mainContainer = $('.' + CLASS_MAIN_CONTAINER);
+        const patternContainer = $('.' + CLASS_PATTERN_CONTAINER);
 
-        function createOperator(intermediate){
+        function createComponent(component, icon) {
+            var nameSpan = $('<span href="#">' + component.name + '</span>')
+                .attr('title', component.name);
+            var component = $('<div><i class="material-icons">' + icon + '</i></div>');
+            component.append(nameSpan).addClass(CLASS_COMPONENT);
+            component.draggable({
+                containment: 'document',
+                connectToSortable: patternContainer,
+                stack: '.' + CLASS_COMPONENT,
+                cursor: 'move',
+                helper: 'clone',
+                revert: 'invalid',
+                snap: '.' + CLASS_COMPONENT_PLACEHOLDER,
+                snapMode: 'inner',
+                start: dragStart,
+                stop: dragStop,
+                drag: updatePattern
+            });
+
+            //Enable tooltip
+            nameSpan.tooltip({
+                container: 'body',
+                delay: {"show": 500, "hide": 100},
+                placement: 'bottom'
+            });
+
+            return component;
+        }
+
+        function createOperator(intermediate) {
             intermediate = intermediate || false;
             var operator = $('<div>').addClass(CLASS_OPERATOR);
 
-            if(intermediate){
+            if (intermediate) {
                 operator.addClass(CLASS_OPERATOR_INTERMEDIATE);
             }
 
@@ -41,6 +76,42 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             return operator;
         }
 
+        function createComponentCategory(name) {
+            var collapse = $('<a class="clickable" data-toggle="collapse" data-target="#category-' + name + '-list">' +
+                '<i class="material-icons">keyboard_arrow_down</i></a>');
+            var options = $('<ul></ul>').addClass(CLASS_COMPONENT_CATEGORY_OPTIONS);
+            options.append($('<li>').append(collapse));
+
+            var title = $('<div><span>' + name + '</span></div>').addClass(CLASS_COMPONENT_CATEGORY_TITLE);
+            var list = $('<div>').attr('id', 'category-' + name + '-list').addClass(CLASS_COMPONENT_CATEGORY_LIST)
+                .addClass('collapse in');
+
+            var category = $('<div>').addClass(CLASS_COMPONENT_CATEGORY);
+
+            category.append(options);
+            category.append(title);
+            category.append(list);
+
+            //Enable collapse functionality
+            collapse.collapse();
+            list.on('hidden.bs.collapse', function () {
+                $(this).hide()
+            }).on('show.bs.collapse', function () {
+                $(this).show();
+            });
+
+            return category;
+        }
+
+        function prepareAddedComponent(component){
+            //Enable tooltip
+            component.children('span').tooltip({
+                container: 'body',
+                delay: {"show": 500, "hide": 100},
+                placement: 'bottom'
+            });
+        }
+
         function dragStart() {
             patternContainer.addClass("dragging");
         }
@@ -49,19 +120,23 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             patternContainer.removeClass("dragging");
         }
 
-        function updatePattern(event, ui){
+        function componentAdd(event, ui) {
+            prepareAddedComponent(ui.helper);
+            patternContainer.children().removeClass(CLASS_OPERATOR_INTERMEDIATE);
+        }
+
+        function updatePattern(event, ui) {
             var children = patternContainer.children().not('.ui-sortable-helper');
 
             var placeholder = children.filter('.' + CLASS_COMPONENT_PLACEHOLDER);
             var intermediate = children.filter('.' + CLASS_OPERATOR + '.' + CLASS_OPERATOR_INTERMEDIATE);
 
-            if(placeholder.length && intermediate.length === 1){
+            if (placeholder.length && intermediate.length === 1) {
                 intermediate.detach();
 
-                if(placeholder.index() === (children.length - 1)){
+                if (placeholder.index() === (children.length - 1)) {
                     placeholder.before(intermediate);
-                }
-                else{
+                } else {
                     placeholder.after(intermediate);
                 }
             }
@@ -77,23 +152,23 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             var numberComponents = 0;
             var numberOperators = 0;
 
-            for(var i = 0; i < children.length; i++){
+            for (var i = 0; i < children.length; i++) {
                 var currentElement = $(children[i]);
                 if (ui.helper.is(currentElement)) {
                     console.log("out");
                     continue;
                 }
 
-                if(currentElement.hasClass(CLASS_COMPONENT) || currentElement.hasClass(CLASS_COMPONENT_PLACEHOLDER)){
+                if (currentElement.hasClass(CLASS_COMPONENT) || currentElement.hasClass(CLASS_COMPONENT_PLACEHOLDER)) {
                     numberComponents++;
-                }else if(currentElement.hasClass(CLASS_OPERATOR)){
+                } else if (currentElement.hasClass(CLASS_OPERATOR)) {
                     numberOperators++;
                 }
             }
 
             var balance = (numberComponents - 1) - numberOperators;
 
-            if((balance < 0) && intermediate.length){
+            if ((balance < 0) && intermediate.length) {
                 intermediate.remove();
                 renderPattern(event, ui);
             }
@@ -104,26 +179,26 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             children.each(function (index) {
                 var currentElement = $(this);
 
-                if((!wasOperator) && (!currentElement.hasClass(CLASS_OPERATOR))){
-                    if(balance > 0){
+                if ((!wasOperator) && (!currentElement.hasClass(CLASS_OPERATOR))) {
+                    if (balance > 0) {
                         var operator = createOperator(true);
                         currentElement.before(operator);
                         renderPattern(event, ui);
                         return false;
-                    }else if(balance === 0){
+                    } else if (balance === 0) {
                         moveLeft = true;
                     }
                 }
 
-                if(wasOperator && currentElement.hasClass(CLASS_OPERATOR)){
-                    if(balance < 0){
+                if (wasOperator && currentElement.hasClass(CLASS_OPERATOR)) {
+                    if (balance < 0) {
                         currentElement.remove();
                         renderPattern(event, ui);
                         return false;
-                    }else if(moveLeft){
+                    } else if (moveLeft) {
                         var firstOperator = $(children[index - 1]);
                         firstOperator.insertBefore(firstOperator.prev());
-                    }else{
+                    } else {
                         currentElement.insertAfter(currentElement.next());
                     }
 
@@ -131,7 +206,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                     return false;
                 }
 
-                if((index === (children.length - 1)) && currentElement.hasClass(CLASS_OPERATOR)){
+                if ((index === (children.length - 1)) && currentElement.hasClass(CLASS_OPERATOR)) {
                     currentElement.insertBefore(currentElement.prev());
                     renderPattern(event, ui);
                     return false;
@@ -141,36 +216,31 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             });
         }
 
-        //Add components to component container
-        for (var i = 0; i < scope.componentList.length; i++) {
-            var component = scope.componentList[i];
+        function initComponents(componentList) {
+            //Iterate over all component categories
+            for (var i = 0; i < componentList.length; i++) {
 
-            $('<div><i class="material-icons">settings_remote</i><span>' + component.name + '</span></div>')
-                .addClass(CLASS_COMPONENT)
-                .appendTo('#sensor-container .content')
-                .draggable({
-                    containment: 'document',
-                    connectToSortable: patternContainer,
-                    stack: '.' + CLASS_COMPONENT,
-                    cursor: 'move',
-                    helper: 'clone',
-                    revert: 'invalid',
-                    snap: '.' + CLASS_COMPONENT_PLACEHOLDER,
-                    snapMode: 'inner',
-                    start: dragStart,
-                    stop: dragStop,
-                    drag: updatePattern
-                });
+                var componentCategory = componentList[i];
+
+                var categoryElem = createComponentCategory(componentCategory.name);
+                var categoryContent = categoryElem.children('.' + CLASS_COMPONENT_CATEGORY_LIST);
+
+                for (var j = 0; j < componentCategory.list.length; j++) {
+                    var componentElem = createComponent(componentCategory.list[j], componentCategory.icon);
+                    categoryContent.append(componentElem);
+                }
+
+                mainContainer.append(categoryElem);
+            }
         }
 
+        initComponents(scope.componentList);
+
         patternContainer.sortable({
-            items: '> .component',
+            items: '> .' + CLASS_COMPONENT,
             placeholder: CLASS_COMPONENT_PLACEHOLDER,
             change: updatePattern,
-            receive: function () {
-                //TODO
-                patternContainer.children().removeClass(CLASS_OPERATOR_INTERMEDIATE);
-            }
+            receive: componentAdd
         });
     }
 
@@ -191,13 +261,8 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
     return {
         restrict: 'E', //Elements only
         template:
-            '<div class="cep-query-editor">' +
-            '<div class="pattern-container">' +
-            '</div>' +
-            '<div id="sensor-container" class="component-container">' +
-            '<div class="title"><span>Sensors</span></div>' +
-            '<div class="content">' +
-            '</div>' +
+            '<div class="' + CLASS_MAIN_CONTAINER + '">' +
+            '<div class="' + CLASS_PATTERN_CONTAINER + '">' +
             '</div>' +
             '</div>'
         ,

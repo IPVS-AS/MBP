@@ -247,6 +247,15 @@
     <!-- JQuery -->
     <script th:src="@{/plugins/jquery/jquery-3.1.1.min.js}"></script>
 
+    <!-- JQuery UI -->
+    <script th:src="@{/plugins/jquery-ui/jquery-ui.js}"></script>
+
+    <!-- Handle naming conflict between jQuery UI and Bootstrap -->
+    <script>
+      $.widget.bridge('uibutton', $.ui.button);
+      $.widget.bridge('uitooltip', $.ui.tooltip);
+    </script>
+
     <!-- Bootstrap JS -->
     <script th:src="@{/plugins/bootstrap/js/bootstrap.min.js}"></script>
 
@@ -300,9 +309,6 @@
 
     <!-- Highchart -->
     <script th:src="@{/plugins/highcharts/highstock.js}"></script>
-
-    <!-- JQuery UI -->
-    <script th:src="@{/plugins/jquery-ui/jquery-ui.js}"></script>
 
     <!-- JsPlumb -->
     <script th:src="@{/plugins/jsplumb/jsplumb.js}"></script>

@@ -4,8 +4,8 @@
  * Controller for the rule triggers list page.
  */
 app.controller('RuleTriggerListController',
-    ['$scope', '$controller', '$interval', 'ruleTriggerList', 'addRuleTrigger', 'deleteRuleTrigger', 'sensorList',
-        function ($scope, $controller, $interval, ruleTriggerList, addRuleTrigger, deleteRuleTrigger, sensorList) {
+    ['$scope', '$controller', '$interval', 'ruleTriggerList', 'addRuleTrigger', 'deleteRuleTrigger', 'actuatorList', 'sensorList', 'monitoringComponentList',
+        function ($scope, $controller, $interval, ruleTriggerList, addRuleTrigger, deleteRuleTrigger, actuatorList, sensorList, monitoringComponentList) {
             //ID of the add trigger wizard container
             const WIZARD_CONTAINER_ID = "add-trigger-wizard";
 
@@ -13,6 +13,21 @@ app.controller('RuleTriggerListController',
 
             //Holds the wizard object for adding triggers
             var wizard = null;
+
+            //Create array of component categories for query editor
+            var componentList = [{
+                name: 'Sensors',
+                icon: 'settings_remote',
+                list: sensorList,
+            }, {
+                name: 'Actuators',
+                icon: 'wb_incandescent',
+                list: actuatorList
+            }, {
+                name: 'Monitoring',
+                icon: 'timeline',
+                list: monitoringComponentList
+            }];
 
             /**
              * Initializing function, sets up basic things.
@@ -79,7 +94,7 @@ app.controller('RuleTriggerListController',
                     deleteItem: deleteRuleTrigger,
                     confirmDeletion: confirmDelete
                 }),
-                componentList: sensorList
+                componentList: componentList
             });
 
             //Watch addition of rule triggers and add them to the list
