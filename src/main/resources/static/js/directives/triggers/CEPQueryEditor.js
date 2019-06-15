@@ -13,12 +13,11 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
     const CLASS_COMPONENT_PLACEHOLDER = 'component-placeholder';
     const CLASS_COMPONENT_CATEGORY_CONTAINER = 'component-category-container';
     const CLASS_COMPONENT_CATEGORY = 'component-category';
-    const CLASS_COMPONENT_CATEGORY_OPTIONS = 'options';
-    const CLASS_COMPONENT_CATEGORY_TITLE = 'title';
     const CLASS_COMPONENT_CATEGORY_LIST = 'component-list';
     const CLASS_OPERATOR = 'operator';
     const CLASS_OPERATOR_TYPES = ['before', 'or', 'and'];
     const CLASS_OPERATOR_INTERMEDIATE = 'intermediate';
+    const CLASS_DETAILS_CONTAINER = 'details-container';
 
     const DATA_KEY_OPERATOR_TYPE = 'op_type';
 
@@ -98,27 +97,6 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             category.append(body);
 
             return category;
-
-            /*
-            var title = $('<div><span>' + name + '</span></div>').addClass(CLASS_COMPONENT_CATEGORY_TITLE);
-            var list = $('<div>').attr('id', 'category-' + name + '-list').addClass(CLASS_COMPONENT_CATEGORY_LIST)
-                .addClass('collapse in');
-
-            var category = $('<div>').addClass(CLASS_COMPONENT_CATEGORY);
-
-            category.append(options);
-            category.append(title);
-            category.append(list);
-
-            //Enable collapse functionality
-            collapse.collapse();
-            list.on('hidden.bs.collapse', function () {
-                $(this).hide()
-            }).on('show.bs.collapse', function () {
-                $(this).show();
-            });
-
-            return category;*/
         }
 
         function prepareAddedComponent(component){
@@ -280,9 +258,15 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         restrict: 'E', //Elements only
         template:
             '<div class="' + CLASS_MAIN_CONTAINER + '">' +
+            '<div class="col-lg-9">' +
             '<div class="' + CLASS_PATTERN_CONTAINER + '">' +
             '</div>' +
+            '<div class="' + CLASS_DETAILS_CONTAINER + '">' +
+            '</div>' +
+            '</div>' +
+            '<div class="col-lg-3">' +
             '<div class="panel-group ' + CLASS_COMPONENT_CATEGORY_CONTAINER + '">' +
+            '</div>' +
             '</div>' +
         '</div>'
         ,
