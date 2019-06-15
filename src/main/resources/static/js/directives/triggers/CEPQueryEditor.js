@@ -11,6 +11,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
     const CLASS_PATTERN_CONTAINER = 'pattern-container';
     const CLASS_COMPONENT = 'component';
     const CLASS_COMPONENT_PLACEHOLDER = 'component-placeholder';
+    const CLASS_COMPONENT_CATEGORY_CONTAINER = 'component-category-container';
     const CLASS_COMPONENT_CATEGORY = 'component-category';
     const CLASS_COMPONENT_CATEGORY_OPTIONS = 'options';
     const CLASS_COMPONENT_CATEGORY_TITLE = 'title';
@@ -25,6 +26,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
         const mainContainer = $('.' + CLASS_MAIN_CONTAINER);
         const patternContainer = $('.' + CLASS_PATTERN_CONTAINER);
+        const componentsCategoryContainer = $('.' + CLASS_COMPONENT_CATEGORY_CONTAINER);
 
         function createComponent(component, icon) {
             var nameSpan = $('<span href="#">' + component.name + '</span>')
@@ -48,7 +50,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             //Enable tooltip
             nameSpan.tooltip({
                 container: 'body',
-                delay: {"show": 500, "hide": 100},
+                delay: {"show": 1000, "hide": 100},
                 placement: 'bottom'
             });
 
@@ -77,11 +79,27 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         }
 
         function createComponentCategory(name) {
-            var collapse = $('<a class="clickable" data-toggle="collapse" data-target="#category-' + name + '-list">' +
-                '<i class="material-icons">keyboard_arrow_down</i></a>');
-            var options = $('<ul></ul>').addClass(CLASS_COMPONENT_CATEGORY_OPTIONS);
-            options.append($('<li>').append(collapse));
 
+            var category = $('<div class="panel panel-default">').addClass(CLASS_COMPONENT_CATEGORY);
+            var heading = $('<div class="panel-heading">');
+            var title = $('<h4 class="panel-title">');
+
+            var title_content = $('<a class="clickable" data-toggle="collapse" ' +
+                'data-target="#category-' + name + '-list" aria-expanded="true">' + name +
+                '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>');
+
+            title.append(title_content);
+            heading.append(title);
+
+            var body = $('<div class="panel-collapse collapse in">').attr('id', 'category-' + name + '-list')
+                .append($('<div class="panel-body">').addClass(CLASS_COMPONENT_CATEGORY_LIST));
+
+            category.append(heading);
+            category.append(body);
+
+            return category;
+
+            /*
             var title = $('<div><span>' + name + '</span></div>').addClass(CLASS_COMPONENT_CATEGORY_TITLE);
             var list = $('<div>').attr('id', 'category-' + name + '-list').addClass(CLASS_COMPONENT_CATEGORY_LIST)
                 .addClass('collapse in');
@@ -100,7 +118,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 $(this).show();
             });
 
-            return category;
+            return category;*/
         }
 
         function prepareAddedComponent(component){
@@ -223,14 +241,14 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 var componentCategory = componentList[i];
 
                 var categoryElem = createComponentCategory(componentCategory.name);
-                var categoryContent = categoryElem.children('.' + CLASS_COMPONENT_CATEGORY_LIST);
+                var categoryContent = categoryElem.find('.' + CLASS_COMPONENT_CATEGORY_LIST);
 
                 for (var j = 0; j < componentCategory.list.length; j++) {
                     var componentElem = createComponent(componentCategory.list[j], componentCategory.icon);
                     categoryContent.append(componentElem);
                 }
 
-                mainContainer.append(categoryElem);
+                componentsCategoryContainer.append(categoryElem);
             }
         }
 
@@ -264,7 +282,9 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             '<div class="' + CLASS_MAIN_CONTAINER + '">' +
             '<div class="' + CLASS_PATTERN_CONTAINER + '">' +
             '</div>' +
-            '</div>'
+            '<div class="panel-group ' + CLASS_COMPONENT_CATEGORY_CONTAINER + '">' +
+            '</div>' +
+        '</div>'
         ,
         link: link,
         scope: {

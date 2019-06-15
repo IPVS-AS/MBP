@@ -1,12 +1,11 @@
 ﻿/* Rotate collapse icons */
-li > a.collapsed > i.material-icons {
+li a.collapsed i.material-icons, .panel .panel-heading .panel-title a.collapsed i.material-icons {
     transform: rotate(90deg);
 }
 
-/* Animation for icon style changes */
-li > a > i.material-icons {
+/* Enable rotation animation */
+li a i.material-icons, .panel .panel-heading .panel-title a i.material-icons {
     transition: .3s transform ease-in-out;
-    color: #999;
 }
 
 /* Scrollable drop down */
