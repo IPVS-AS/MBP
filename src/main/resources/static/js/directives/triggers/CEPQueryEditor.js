@@ -20,19 +20,21 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
     const CLASS_DETAILS_CONTAINER = 'details-container';
 
     const DATA_KEY_OPERATOR_TYPE = 'op_type';
+    const DATA_KEY_COMPONENT_DATA = 'component_data';
 
     function init(scope, element, attrs) {
 
         const mainContainer = $('.' + CLASS_MAIN_CONTAINER);
         const patternContainer = $('.' + CLASS_PATTERN_CONTAINER);
         const componentsCategoryContainer = $('.' + CLASS_COMPONENT_CATEGORY_CONTAINER);
+        const detailsContainer = $('.' + CLASS_DETAILS_CONTAINER);
 
         function createComponent(component, icon) {
             var nameSpan = $('<span href="#">' + component.name + '</span>')
                 .attr('title', component.name);
-            var component = $('<div><i class="material-icons">' + icon + '</i></div>');
-            component.append(nameSpan).addClass(CLASS_COMPONENT);
-            component.draggable({
+            var element = $('<div><i class="material-icons">' + icon + '</i></div>');
+            element.append(nameSpan).addClass(CLASS_COMPONENT);
+            element.draggable({
                 containment: 'document',
                 connectToSortable: patternContainer,
                 stack: '.' + CLASS_COMPONENT,
@@ -53,7 +55,10 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 placement: 'bottom'
             });
 
-            return component;
+            //Provide component data
+            element.data(DATA_KEY_COMPONENT_DATA, component);
+
+            return element;
         }
 
         function createOperator(intermediate) {
@@ -83,11 +88,11 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             var heading = $('<div class="panel-heading">');
             var title = $('<h4 class="panel-title">');
 
-            var title_content = $('<a class="clickable" data-toggle="collapse" ' +
+            var titleContent = $('<a class="clickable" data-toggle="collapse" ' +
                 'data-target="#category-' + name + '-list" aria-expanded="true">' + name +
                 '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>');
 
-            title.append(title_content);
+            title.append(titleContent);
             heading.append(title);
 
             var body = $('<div class="panel-collapse collapse in">').attr('id', 'category-' + name + '-list')
@@ -99,12 +104,59 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             return category;
         }
 
-        function prepareAddedComponent(component){
+        function createComponentDetails(component) {
+
+            var container = $('<div class="panel panel-default">');
+            var heading = $('<div class="panel-heading">');
+            var title = $('<h4 class="panel-title">');
+
+            var titleContent = $('<a class="clickable">Details: Event <i>xyz</i> from ' + component.name +
+                '<i class="material-icons" style="float: right;">close</i></a>');
+            titleContent.on('click', function () {
+                container.slideUp();
+            });
+
+            title.append(titleContent);
+            heading.append(title);
+
+            var body = $('<div class="panel-body">');
+
+            //TODO content
+            body.append("<p>asdfasdfasdf</p>");
+
+            container.append(heading);
+            container.append($('<div>').append(body));
+
+            return container;
+        }
+
+        function showComponentDetails(detailsPanel) {
+            //Hide all other details panels
+            detailsContainer.children().not(detailsPanel).slideUp();
+
+            //Show details panel for this component
+            detailsPanel.slideDown();
+        }
+
+        function prepareAddedComponent(element, prototype) {
             //Enable tooltip
-            component.children('span').tooltip({
+            element.children('span').tooltip({
                 container: 'body',
                 delay: {"show": 500, "hide": 100},
                 placement: 'bottom'
+            });
+
+            //Copy component data
+            var component = prototype.data(DATA_KEY_COMPONENT_DATA);
+            element.data(DATA_KEY_COMPONENT_DATA, component);
+
+            //Create and append details panel
+            var details = createComponentDetails(component);
+            detailsContainer.append(details);
+            showComponentDetails(details);
+
+            element.on('click', function () {
+                showComponentDetails(details);
             });
         }
 
@@ -117,7 +169,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         }
 
         function componentAdd(event, ui) {
-            prepareAddedComponent(ui.helper);
+            prepareAddedComponent(ui.helper, ui.item);
             patternContainer.children().removeClass(CLASS_OPERATOR_INTERMEDIATE);
         }
 
@@ -151,7 +203,6 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             for (var i = 0; i < children.length; i++) {
                 var currentElement = $(children[i]);
                 if (ui.helper.is(currentElement)) {
-                    console.log("out");
                     continue;
                 }
 
@@ -233,6 +284,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         initComponents(scope.componentList);
 
         patternContainer.sortable({
+            cursor: 'move',
             items: '> .' + CLASS_COMPONENT,
             placeholder: CLASS_COMPONENT_PLACEHOLDER,
             change: updatePattern,
@@ -261,14 +313,14 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             '<div class="col-lg-9">' +
             '<div class="' + CLASS_PATTERN_CONTAINER + '">' +
             '</div>' +
-            '<div class="' + CLASS_DETAILS_CONTAINER + '">' +
+            '<div class="panel-group ' + CLASS_DETAILS_CONTAINER + '">' +
             '</div>' +
             '</div>' +
             '<div class="col-lg-3">' +
             '<div class="panel-group ' + CLASS_COMPONENT_CATEGORY_CONTAINER + '">' +
             '</div>' +
             '</div>' +
-        '</div>'
+            '</div>'
         ,
         link: link,
         scope: {

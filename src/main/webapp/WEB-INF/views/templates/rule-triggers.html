@@ -114,7 +114,7 @@
                 <div id="add-trigger-wizard">
                     <h1>Trigger data</h1>
                     <section>
-                        <p>Please provide a name for the rule trigger.</p><br/>
+                        <p>Please provide a name and a description for the new rule trigger.</p><br/>
                         <form>
                             <!-- item.name group -->
                             <div class="form-group" ng-class="{'has-error' : addRuleTriggerCtrl.item.errors.name }">
@@ -124,6 +124,16 @@
                                            ng-model="addRuleTriggerCtrl.item.name"/>
                                 </div>
                                 <span class="help-block" ng-show="addRuleTriggerCtrl.item.errors.name">{{addRuleTriggerCtrl.item.errors.name.message}}</span>
+                            </div>
+                            <!-- item.description group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addRuleTriggerCtrl.item.errors.description }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addRuleTriggerCtrl.item.errors.description }">
+                                    <textarea class="form-control" type="text" placeholder="Describe this trigger..."
+                                              ng-model="addRuleTriggerCtrl.item.description" rows="4"></textarea>
+                                </div>
+                                <span class="help-block" ng-show="addRuleTriggerCtrl.item.errors.description">{{addRuleTriggerCtrl.item.errors.description.message}}</span>
                             </div>
                         </form>
                     </section>

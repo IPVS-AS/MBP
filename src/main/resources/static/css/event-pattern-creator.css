@@ -28,10 +28,6 @@
     content: "Please drop events here.";
 }
 
-.cep-query-editor .component-category {
-    border-radius: 2px;
-}
-
 .cep-query-editor .component-category ul.options {
     float: right;
 }
@@ -72,6 +68,11 @@
     background-color: white;
     padding-left: 2px;
     padding-right: 2px;
+    cursor: pointer;
+}
+
+.cep-query-editor .pattern-container .component:hover {
+
 }
 
 .cep-query-editor .component .material-icons {
@@ -136,4 +137,8 @@
 
 .cep-query-editor .operator.before:after{
     content: "Before";
+}
+
+.cep-query-editor .details-container{
+    margin-top: 20px;
 }
