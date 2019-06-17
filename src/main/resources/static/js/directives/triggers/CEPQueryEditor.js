@@ -7,101 +7,130 @@
  */
 app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
+    const OPERATOR_LIST = [{
+        name: 'Before',
+        cssClass: 'before'
+    }, {
+        name: 'Or',
+        cssClass: 'or'
+    }, {
+        name: 'And',
+        cssClass: 'and'
+    }];
+
     const CLASS_MAIN_CONTAINER = 'cep-query-editor';
     const CLASS_PATTERN_CONTAINER = 'pattern-container';
+    const CLASS_PATTERN_MEMBER = 'pattern-member';
+    const CLASS_CATEGORY_CONTAINER = 'category-container';
+    const CLASS_CATEGORY = 'category';
+    const CLASS_CATEGORY_LIST = 'category-list';
     const CLASS_COMPONENT = 'component';
-    const CLASS_COMPONENT_PLACEHOLDER = 'component-placeholder';
-    const CLASS_COMPONENT_CATEGORY_CONTAINER = 'component-category-container';
-    const CLASS_COMPONENT_CATEGORY = 'component-category';
-    const CLASS_COMPONENT_CATEGORY_LIST = 'component-list';
     const CLASS_OPERATOR = 'operator';
-    const CLASS_OPERATOR_TYPES = ['before', 'or', 'and'];
-    const CLASS_OPERATOR_INTERMEDIATE = 'intermediate';
+    const CLASS_PLACEHOLDER = 'placeholder';
+    const CLASS_STUB = 'stub';
+    const CLASS_INTERMEDIATE = 'intermediate';
     const CLASS_DETAILS_CONTAINER = 'details-container';
 
-    const DATA_KEY_OPERATOR_TYPE = 'op_type';
     const DATA_KEY_COMPONENT_DATA = 'component_data';
 
     function init(scope, element, attrs) {
 
         const mainContainer = $('.' + CLASS_MAIN_CONTAINER);
         const patternContainer = $('.' + CLASS_PATTERN_CONTAINER);
-        const componentsCategoryContainer = $('.' + CLASS_COMPONENT_CATEGORY_CONTAINER);
+        const componentsCategoryContainer = $('.' + CLASS_CATEGORY_CONTAINER);
         const detailsContainer = $('.' + CLASS_DETAILS_CONTAINER);
 
-        function createComponent(component, icon) {
+        function createComponent(component, icon, intermediate) {
             var nameSpan = $('<span href="#">' + component.name + '</span>')
-                .attr('title', component.name);
-            var element = $('<div><i class="material-icons">' + icon + '</i></div>');
-            element.append(nameSpan).addClass(CLASS_COMPONENT);
+                .attr('title', component.name)
+                .tooltip({
+                    container: 'body',
+                    delay: {"show": 1000, "hide": 100},
+                    placement: 'bottom'
+                });
+
+            var element = $('<div><i class="material-icons">' + icon + '</i></div>')
+                .addClass(CLASS_COMPONENT)
+                .append(nameSpan);
+
+            //Provide component data
+            element.data(DATA_KEY_COMPONENT_DATA, component);
+
+            makePatternMember(element, intermediate);
+
+            return element;
+        }
+
+        function createComponentStub() {
+            var element = $('<div>')
+                .addClass(CLASS_PATTERN_MEMBER)
+                .addClass(CLASS_COMPONENT)
+                .addClass(CLASS_STUB);
+
+            return element;
+        }
+
+        function createOperator(operator, intermediate) {
+            var element = $('<div>').addClass(CLASS_OPERATOR);
+
+            element.html(operator.name).addClass(operator.cssClass);
+
+            makePatternMember(element, intermediate);
+
+            return element;
+        }
+
+        function createOperatorStub() {
+            var element = $('<div>')
+                .addClass(CLASS_PATTERN_MEMBER)
+                .addClass(CLASS_OPERATOR)
+                .addClass(CLASS_STUB);
+
+            return element;
+        }
+
+        function makePatternMember(element, intermediate) {
+
+            intermediate = intermediate || false;
+
+            element.addClass(CLASS_PATTERN_MEMBER);
             element.draggable({
                 containment: 'document',
                 connectToSortable: patternContainer,
-                stack: '.' + CLASS_COMPONENT,
+                stack: '.' + CLASS_PATTERN_MEMBER,
                 cursor: 'move',
                 helper: 'clone',
                 revert: 'invalid',
-                snap: '.' + CLASS_COMPONENT_PLACEHOLDER,
-                snapMode: 'inner',
                 start: dragStart,
                 stop: dragStop,
                 drag: updatePattern
             });
 
-            //Enable tooltip
-            nameSpan.tooltip({
-                container: 'body',
-                delay: {"show": 1000, "hide": 100},
-                placement: 'bottom'
-            });
-
-            //Provide component data
-            element.data(DATA_KEY_COMPONENT_DATA, component);
-
-            return element;
-        }
-
-        function createOperator(intermediate) {
-            intermediate = intermediate || false;
-            var operator = $('<div>').addClass(CLASS_OPERATOR);
-
             if (intermediate) {
-                operator.addClass(CLASS_OPERATOR_INTERMEDIATE);
+                element.addClass(CLASS_INTERMEDIATE);
             }
-
-            operator.addClass(CLASS_OPERATOR_TYPES[0]).data(DATA_KEY_OPERATOR_TYPE, 0);
-            operator.click(function () {
-                var thisElem = $(this);
-                var oldIndex = thisElem.data(DATA_KEY_OPERATOR_TYPE);
-                var newIndex = (oldIndex + 1) % CLASS_OPERATOR_TYPES.length;
-                thisElem.data(DATA_KEY_OPERATOR_TYPE, newIndex);
-                thisElem.removeClass(CLASS_OPERATOR_TYPES.join(" "));
-                thisElem.addClass(CLASS_OPERATOR_TYPES[newIndex]);
-            });
-
-            return operator;
         }
 
-        function createComponentCategory(name) {
+        function createCategory(categoryName) {
 
-            var category = $('<div class="panel panel-default">').addClass(CLASS_COMPONENT_CATEGORY);
+            var element = $('<div class="panel panel-default">').addClass(CLASS_CATEGORY);
             var heading = $('<div class="panel-heading">');
             var title = $('<h4 class="panel-title">');
 
             var titleContent = $('<a class="clickable" data-toggle="collapse" ' +
-                'data-target="#category-' + name + '-list" aria-expanded="true">' + name +
+                'data-target="#category-' + categoryName + '-list" aria-expanded="true">' + categoryName +
                 '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>');
 
             title.append(titleContent);
             heading.append(title);
 
-            var body = $('<div class="panel-collapse collapse in">').attr('id', 'category-' + name + '-list')
-                .append($('<div class="panel-body">').addClass(CLASS_COMPONENT_CATEGORY_LIST));
+            var body = $('<div class="panel-collapse collapse in">').attr('id', 'category-' + categoryName + '-list')
+                .append($('<div class="panel-body">').addClass(CLASS_CATEGORY_LIST));
 
-            category.append(heading);
-            category.append(body);
+            element.append(heading);
+            element.append(body);
 
-            return category;
+            return element;
         }
 
         function createComponentDetails(component) {
@@ -150,6 +179,8 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             var component = prototype.data(DATA_KEY_COMPONENT_DATA);
             element.data(DATA_KEY_COMPONENT_DATA, component);
 
+
+            /*
             //Create and append details panel
             var details = createComponentDetails(component);
             details.css('height', '0px');
@@ -158,7 +189,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
             element.on('click', function () {
                 showComponentDetails(details);
-            });
+            });*/
         }
 
         function dragStart() {
@@ -169,45 +200,37 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             patternContainer.removeClass("dragging");
         }
 
-        function componentAdd(event, ui) {
-            prepareAddedComponent(ui.helper, ui.item);
-            patternContainer.children().removeClass(CLASS_OPERATOR_INTERMEDIATE);
+        function patternMemberAdded(event, ui) {
+            patternContainer.children().removeClass(CLASS_INTERMEDIATE);
+            //prepareAddedComponent(ui.helper, ui.item);
+        }
+
+        function startSorting(event, ui) {
+            ui.placeholder.removeClass([CLASS_COMPONENT, CLASS_OPERATOR].join(" "));
+
+            if (ui.helper.hasClass(CLASS_COMPONENT)) {
+                ui.placeholder.addClass(CLASS_COMPONENT);
+            } else if (ui.helper.hasClass(CLASS_OPERATOR)) {
+                ui.placeholder.addClass(CLASS_OPERATOR);
+            }
         }
 
         function updatePattern(event, ui) {
-            var children = patternContainer.children().not('.ui-sortable-helper');
-
-            var placeholder = children.filter('.' + CLASS_COMPONENT_PLACEHOLDER);
-            var intermediate = children.filter('.' + CLASS_OPERATOR + '.' + CLASS_OPERATOR_INTERMEDIATE);
-
-            if (placeholder.length && intermediate.length === 1) {
-                intermediate.detach();
-
-                if (placeholder.index() === (children.length - 1)) {
-                    placeholder.before(intermediate);
-                } else {
-                    placeholder.after(intermediate);
-                }
-            }
-
             renderPattern(event, ui);
         }
 
         function renderPattern(event, ui) {
             var children = patternContainer.children().not('.ui-sortable-helper');
 
-            var intermediate = children.filter('.' + CLASS_OPERATOR + '.' + CLASS_OPERATOR_INTERMEDIATE);
-
             var numberComponents = 0;
             var numberOperators = 0;
 
             for (var i = 0; i < children.length; i++) {
                 var currentElement = $(children[i]);
+
                 if (ui.helper.is(currentElement)) {
                     continue;
-                }
-
-                if (currentElement.hasClass(CLASS_COMPONENT) || currentElement.hasClass(CLASS_COMPONENT_PLACEHOLDER)) {
+                } else if (currentElement.hasClass(CLASS_COMPONENT)) {
                     numberComponents++;
                 } else if (currentElement.hasClass(CLASS_OPERATOR)) {
                     numberOperators++;
@@ -216,21 +239,26 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
             var balance = (numberComponents - 1) - numberOperators;
 
-            if ((balance < 0) && intermediate.length) {
-                intermediate.remove();
-                renderPattern(event, ui);
-            }
-
             var wasOperator = true;
             var moveLeft = false;
 
             children.each(function (index) {
                 var currentElement = $(this);
+                var previousElement = null;
+                if (index > 0) {
+                    previousElement = $(children[index - 1]);
+                }
 
                 if ((!wasOperator) && (!currentElement.hasClass(CLASS_OPERATOR))) {
                     if (balance > 0) {
-                        var operator = createOperator(true);
-                        currentElement.before(operator);
+                        if (currentElement.hasClass(CLASS_STUB)) {
+                            currentElement.remove();
+                        } else if (previousElement && previousElement.hasClass(CLASS_STUB)) {
+                            previousElement.remove();
+                        } else {
+                            var operator = createOperatorStub();
+                            currentElement.before(operator);
+                        }
                         renderPattern(event, ui);
                         return false;
                     } else if (balance === 0) {
@@ -239,13 +267,20 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 }
 
                 if (wasOperator && currentElement.hasClass(CLASS_OPERATOR)) {
-                    if (balance < 0) {
-                        currentElement.remove();
-                        renderPattern(event, ui);
-                        return false;
-                    } else if (moveLeft) {
-                        var firstOperator = $(children[index - 1]);
-                        firstOperator.insertBefore(firstOperator.prev());
+                    if (balance < -1) {
+                        currentElement.before(createComponentStub());
+                        currentElement.after(createComponentStub());
+                    } else if (balance < 0) {
+                        if (currentElement.hasClass(CLASS_STUB)) {
+                            currentElement.remove();
+                        } else if ((previousElement) && previousElement.hasClass(CLASS_STUB)) {
+                            previousElement.remove();
+                        } else {
+                            var intermediateComponent = createComponentStub();
+                            currentElement.before(intermediateComponent);
+                        }
+                    } else if (moveLeft && previousElement) {
+                        previousElement.insertBefore(previousElement.prev());
                     } else {
                         currentElement.insertAfter(currentElement.next());
                     }
@@ -254,8 +289,22 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                     return false;
                 }
 
+                if (previousElement && previousElement.hasClass(CLASS_STUB)
+                    && previousElement.hasClass(CLASS_OPERATOR)
+                    && currentElement.hasClass(CLASS_STUB)
+                    && currentElement.hasClass(CLASS_COMPONENT)) {
+                    previousElement.remove();
+                    currentElement.remove();
+
+                    renderPattern(event, ui);
+                }
+
                 if ((index === (children.length - 1)) && currentElement.hasClass(CLASS_OPERATOR)) {
-                    currentElement.insertBefore(currentElement.prev());
+                    if (previousElement && currentElement.hasClass(CLASS_PLACEHOLDER) && (!previousElement.hasClass(CLASS_STUB))) {
+                        currentElement.after(createComponentStub());
+                    } else {
+                        currentElement.insertBefore(previousElement);
+                    }
                     renderPattern(event, ui);
                     return false;
                 }
@@ -264,33 +313,56 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             });
         }
 
+        function initOperators(operatorList) {
+            //Create category for operators
+            var categoryElement = createCategory("Operators");
+            var categoryContent = categoryElement.find('.' + CLASS_CATEGORY_LIST);
+
+            //Iterate over operators and add them to the category
+            for (var i = 0; i < operatorList.length; i++) {
+                var operator = operatorList[i];
+
+                var element = createOperator(operator);
+                categoryContent.append(element);
+            }
+
+            //Append category
+            componentsCategoryContainer.append(categoryElement);
+        }
+
         function initComponents(componentList) {
             //Iterate over all component categories
             for (var i = 0; i < componentList.length; i++) {
 
-                var componentCategory = componentList[i];
+                var category = componentList[i];
 
-                var categoryElem = createComponentCategory(componentCategory.name);
-                var categoryContent = categoryElem.find('.' + CLASS_COMPONENT_CATEGORY_LIST);
+                var categoryElement = createCategory(category.name);
+                var categoryContent = categoryElement.find('.' + CLASS_CATEGORY_LIST);
 
-                for (var j = 0; j < componentCategory.list.length; j++) {
-                    var componentElem = createComponent(componentCategory.list[j], componentCategory.icon);
+                for (var j = 0; j < category.list.length; j++) {
+                    var componentElem = createComponent(category.list[j], category.icon);
                     categoryContent.append(componentElem);
                 }
 
-                componentsCategoryContainer.append(categoryElem);
+                componentsCategoryContainer.append(categoryElement);
             }
         }
 
-        initComponents(scope.componentList);
+        (function () {
+            initOperators(OPERATOR_LIST);
+            initComponents(scope.componentList);
 
-        patternContainer.sortable({
-            cursor: 'move',
-            items: '> .' + CLASS_COMPONENT,
-            placeholder: CLASS_COMPONENT_PLACEHOLDER,
-            change: updatePattern,
-            receive: componentAdd
-        });
+            patternContainer.sortable({
+                cancel: '.' + CLASS_STUB,
+                cursor: 'move',
+                items: '> .' + CLASS_PATTERN_MEMBER,
+                placeholder: [CLASS_PATTERN_MEMBER, CLASS_PLACEHOLDER].join(" "),
+                tolerance: 'pointer',
+                start: startSorting,
+                change: updatePattern,
+                receive: patternMemberAdded
+            });
+        })();
     }
 
     /**
@@ -318,7 +390,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             '</div>' +
             '</div>' +
             '<div class="col-lg-3">' +
-            '<div class="panel-group ' + CLASS_COMPONENT_CATEGORY_CONTAINER + '">' +
+            '<div class="panel-group ' + CLASS_CATEGORY_CONTAINER + '">' +
             '</div>' +
             '</div>' +
             '</div>'
