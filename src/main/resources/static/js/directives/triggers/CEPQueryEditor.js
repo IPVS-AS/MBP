@@ -152,6 +152,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
             //Create and append details panel
             var details = createComponentDetails(component);
+            details.css('height', '0px');
             detailsContainer.append(details);
             showComponentDetails(details);
 
