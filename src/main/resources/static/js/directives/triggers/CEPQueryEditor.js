@@ -20,6 +20,8 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
     const CLASS_MAIN_CONTAINER = 'cep-query-editor';
     const CLASS_PATTERN_CONTAINER = 'pattern-container';
+    const CLASS_DELETION_AREA = 'deletion-area';
+    const CLASS_DELETION_AREA_ACCEPTING = 'accepting';
     const CLASS_PATTERN_MEMBER = 'pattern-member';
     const CLASS_CATEGORY_CONTAINER = 'category-container';
     const CLASS_CATEGORY = 'category';
@@ -36,6 +38,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
         const mainContainer = $('.' + CLASS_MAIN_CONTAINER);
         const patternContainer = $('.' + CLASS_PATTERN_CONTAINER);
+        const deletionArea = $('.' + CLASS_DELETION_AREA);
         const componentsCategoryContainer = $('.' + CLASS_CATEGORY_CONTAINER);
         const detailsContainer = $('.' + CLASS_DETAILS_CONTAINER);
 
@@ -62,12 +65,10 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
         function createComponentStub() {
 
-            var element = $('<div>')
+            return $('<div>')
                 .addClass(CLASS_PATTERN_MEMBER)
                 .addClass(CLASS_COMPONENT)
                 .addClass(CLASS_STUB);
-
-            return element;
         }
 
         function createOperator(operator) {
@@ -198,7 +199,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             //prepareAddedComponent(ui.helper, ui.item);
         }
 
-        function startSorting(event, ui) {
+        function sortingStart(event, ui) {
             ui.placeholder.removeClass([CLASS_COMPONENT, CLASS_OPERATOR].join(" "));
 
             if (ui.helper.hasClass(CLASS_COMPONENT)) {
@@ -206,6 +207,14 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             } else if (ui.helper.hasClass(CLASS_OPERATOR)) {
                 ui.placeholder.addClass(CLASS_OPERATOR);
             }
+
+            if (!ui.helper.hasClass('ui-draggable-dragging')) {
+                deletionArea.show();
+            }
+        }
+
+        function sortingStop(event, ui) {
+            deletionArea.hide();
         }
 
         function updatePattern(event, ui) {
@@ -265,14 +274,14 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         }
 
         function sortPattern(event, ui) {
-            if (ui.helper.hasClass("ui-draggable-dragging")) {
+            if (ui.helper.hasClass('ui-draggable-dragging')) {
                 return;
             }
 
             var children = patternContainer.children().not('.ui-sortable-helper');
             var wasOperator = true;
 
-            children.each(function (index) {
+            children.each(function () {
                     var currentElement = $(this);
 
                     if ((!wasOperator && !currentElement.hasClass(CLASS_OPERATOR))
@@ -287,6 +296,44 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             );
 
             patternContainer.sortable("refresh");
+        }
+
+        function removeElement(event, ui) {
+
+            function getPatternMembers() {
+                return patternContainer.children().not('.' + CLASS_PLACEHOLDER).not('.ui-sortable-helper');
+            }
+
+            var element = ui.draggable;
+
+            if (element.hasClass(CLASS_COMPONENT)) {
+                element.replaceWith(createComponentStub());
+            } else if (element.hasClass(CLASS_OPERATOR)) {
+                element.replaceWith(createOperatorStub());
+            }
+
+            var children = getPatternMembers();
+
+            children.each(function (index) {
+                var currentElement = $(this);
+                var previousElement = null;
+                if (index > 0) {
+                    previousElement = $(children[index - 1]);
+                }
+
+                if (previousElement && previousElement.hasClass(CLASS_STUB)
+                    && currentElement.hasClass(CLASS_STUB)) {
+
+                    previousElement.remove();
+                    currentElement.remove();
+                }
+            });
+
+            children = getPatternMembers();
+
+            if ((children.length === 1) && children.hasClass(CLASS_STUB)) {
+                children.remove();
+            }
         }
 
         function initOperators(operatorList) {
@@ -334,9 +381,16 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 items: '> .' + CLASS_PATTERN_MEMBER,
                 placeholder: [CLASS_PATTERN_MEMBER, CLASS_PLACEHOLDER].join(" "),
                 tolerance: 'pointer',
-                start: startSorting,
+                start: sortingStart,
+                stop: sortingStop,
                 change: sortPattern,
                 receive: patternMemberAdded
+            });
+
+            deletionArea.hide().droppable({
+                accept: '.' + CLASS_PATTERN_CONTAINER + ' > .' + CLASS_PATTERN_MEMBER,
+                hoverClass: CLASS_DELETION_AREA_ACCEPTING,
+                drop: removeElement
             });
         })();
     }
@@ -360,14 +414,12 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         template:
             '<div class="' + CLASS_MAIN_CONTAINER + '">' +
             '<div class="col-lg-9">' +
-            '<div class="' + CLASS_PATTERN_CONTAINER + '">' +
-            '</div>' +
-            '<div class="panel-group ' + CLASS_DETAILS_CONTAINER + '">' +
-            '</div>' +
+            '<div class="' + CLASS_PATTERN_CONTAINER + '"></div>' +
+            '<div class="' + CLASS_DELETION_AREA + '"></div>' +
+            '<div class="panel-group ' + CLASS_DETAILS_CONTAINER + '"></div>' +
             '</div>' +
             '<div class="col-lg-3">' +
-            '<div class="panel-group ' + CLASS_CATEGORY_CONTAINER + '">' +
-            '</div>' +
+            '<div class="panel-group ' + CLASS_CATEGORY_CONTAINER + '"></div>' +
             '</div>' +
             '</div>'
         ,
