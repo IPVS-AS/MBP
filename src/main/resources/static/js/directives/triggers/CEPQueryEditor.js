@@ -28,7 +28,6 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
     const CLASS_OPERATOR = 'operator';
     const CLASS_PLACEHOLDER = 'placeholder';
     const CLASS_STUB = 'stub';
-    const CLASS_INTERMEDIATE = 'intermediate';
     const CLASS_DETAILS_CONTAINER = 'details-container';
 
     const DATA_KEY_COMPONENT_DATA = 'component_data';
@@ -61,43 +60,31 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             return element;
         }
 
-        function createComponentStub(intermediate) {
-
-            intermediate = intermediate || false;
+        function createComponentStub() {
 
             var element = $('<div>')
                 .addClass(CLASS_PATTERN_MEMBER)
                 .addClass(CLASS_COMPONENT)
                 .addClass(CLASS_STUB);
 
-            if(intermediate){
-                element.addClass(CLASS_INTERMEDIATE)
-            }
-
             return element;
         }
 
-        function createOperator(operator, intermediate) {
+        function createOperator(operator) {
             var element = $('<div>').addClass(CLASS_OPERATOR);
 
             element.html(operator.name).addClass(operator.cssClass);
 
-            makePatternMember(element, intermediate);
+            makePatternMember(element);
 
             return element;
         }
 
-        function createOperatorStub(intermediate) {
-            intermediate = intermediate || false;
-
+        function createOperatorStub() {
             var element = $('<div>')
                 .addClass(CLASS_PATTERN_MEMBER)
                 .addClass(CLASS_OPERATOR)
                 .addClass(CLASS_STUB);
-
-            if(intermediate){
-                element.addClass(CLASS_INTERMEDIATE);
-            }
 
             return element;
         }
@@ -208,7 +195,6 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         }
 
         function patternMemberAdded(event, ui) {
-            patternContainer.children().removeClass(CLASS_INTERMEDIATE);
             //prepareAddedComponent(ui.helper, ui.item);
         }
 
@@ -225,109 +211,82 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         function updatePattern(event, ui) {
             var children = patternContainer.children().not('.ui-sortable-helper');
 
-            var placeholder = children.filter('.' + CLASS_PLACEHOLDER);
-            var intermediate = children.filter('.' + CLASS_INTERMEDIATE);
-
-            intermediate.each(function () {
-               if(Math.abs(intermediate.index() - placeholder.index()) > 1){
-                   intermediate.remove();
-               }
-            });
-
-            renderPattern(event, ui);
-        }
-
-        function renderPattern(event, ui) {
-            //TODO allow additions on left side as well
-            var children = patternContainer.children().not('.ui-sortable-helper');
-
-            var numberComponents = 0;
-            var numberOperators = 0;
-
-            for (var i = 0; i < children.length; i++) {
-                var currentElement = $(children[i]);
-
-                if (ui.helper.is(currentElement)) {
-                    continue;
-                } else if (currentElement.hasClass(CLASS_COMPONENT)) {
-                    numberComponents++;
-                } else if (currentElement.hasClass(CLASS_OPERATOR)) {
-                    numberOperators++;
-                }
-            }
-
-            var balance = (numberComponents - 1) - numberOperators;
-
             var wasOperator = true;
-            var moveLeft = false;
 
             children.each(function (index) {
-                var currentElement = $(this);
-                var previousElement = null;
-                if (index > 0) {
-                    previousElement = $(children[index - 1]);
-                }
+                    var currentElement = $(this);
+                    var previousElement = null;
+                    if (index > 0) {
+                        previousElement = $(children[index - 1]);
+                    }
 
-                if ((!wasOperator) && (!currentElement.hasClass(CLASS_OPERATOR))) {
-                    if (balance > 0) {
+                    if ((!wasOperator) && (!currentElement.hasClass(CLASS_OPERATOR))) {
                         if (currentElement.hasClass(CLASS_STUB)) {
                             currentElement.remove();
                         } else if (previousElement && previousElement.hasClass(CLASS_STUB)) {
                             previousElement.remove();
                         } else {
-                            var operator = createOperatorStub(true);
-                            currentElement.before(operator);
+                            currentElement.before(createOperatorStub());
                         }
-                        renderPattern(event, ui);
-                        return false;
-                    } else if (balance === 0) {
-                        moveLeft = true;
-                    }
-                }
 
-                if (wasOperator && currentElement.hasClass(CLASS_OPERATOR)) {
-                    if (balance < -1) {
-                        currentElement.before(createComponentStub(true));
-                        currentElement.after(createComponentStub(true));
-                    } else if (balance < 0) {
+                        updatePattern(event, ui);
+                        return false;
+                    }
+
+                    if (wasOperator && currentElement.hasClass(CLASS_OPERATOR)) {
                         if (currentElement.hasClass(CLASS_STUB)) {
                             currentElement.remove();
-                        } else if ((previousElement) && previousElement.hasClass(CLASS_STUB)) {
+                        } else if (previousElement && previousElement.hasClass(CLASS_STUB)) {
                             previousElement.remove();
                         } else {
-                            currentElement.before(createComponentStub(true));
+                            currentElement.before(createComponentStub());
                         }
-                    } else if (moveLeft && previousElement) {
-                        var prevprev = $(children[index - 2]);
-                        previousElement.insertBefore(prevprev);
-                    } else {
+
+                        updatePattern(event, ui);
+                        return false;
+                    }
+
+                    if ((index === (children.length - 1)) && currentElement.hasClass(CLASS_OPERATOR)) {
+                        if (currentElement.hasClass(CLASS_STUB)) {
+                            currentElement.remove();
+                        } else {
+                            currentElement.after(createComponentStub());
+                        }
+
+                        updatePattern(event, ui);
+                        return false;
+                    }
+
+                    wasOperator = currentElement.hasClass(CLASS_OPERATOR);
+                }
+            );
+
+            patternContainer.sortable("refresh");
+        }
+
+        function sortPattern(event, ui) {
+            if (ui.helper.hasClass("ui-draggable-dragging")) {
+                return;
+            }
+
+            var children = patternContainer.children().not('.ui-sortable-helper');
+            var wasOperator = true;
+
+            children.each(function (index) {
+                    var currentElement = $(this);
+
+                    if ((!wasOperator && !currentElement.hasClass(CLASS_OPERATOR))
+                        || (wasOperator && currentElement.hasClass(CLASS_OPERATOR))) {
                         currentElement.insertAfter(currentElement.next());
+                        sortPattern(event, ui);
+                        return false;
                     }
 
-                    renderPattern(event, ui);
-                    return false;
+                    wasOperator = currentElement.hasClass(CLASS_OPERATOR);
                 }
+            );
 
-                if (previousElement && previousElement.hasClass(CLASS_STUB)
-                    && currentElement.hasClass(CLASS_STUB)) {
-                    previousElement.remove();
-                    currentElement.remove();
-
-                    renderPattern(event, ui);
-                }
-
-                if ((index === (children.length - 1)) && currentElement.hasClass(CLASS_OPERATOR)) {
-                    if (previousElement && currentElement.hasClass(CLASS_PLACEHOLDER) && (!previousElement.hasClass(CLASS_STUB))) {
-                        currentElement.after(createComponentStub(true));
-                    } else {
-                        currentElement.insertBefore(previousElement);
-                    }
-                    renderPattern(event, ui);
-                    return false;
-                }
-
-                wasOperator = currentElement.hasClass(CLASS_OPERATOR);
-            });
+            patternContainer.sortable("refresh");
         }
 
         function initOperators(operatorList) {
@@ -376,7 +335,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 placeholder: [CLASS_PATTERN_MEMBER, CLASS_PLACEHOLDER].join(" "),
                 tolerance: 'pointer',
                 start: startSorting,
-                change: updatePattern,
+                change: sortPattern,
                 receive: patternMemberAdded
             });
         })();
@@ -395,7 +354,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         });
     };
 
-    //Configure and expose the directive
+//Configure and expose the directive
     return {
         restrict: 'E', //Elements only
         template:
@@ -417,4 +376,5 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             componentList: '=componentList'
         }
     };
-}]);
+}])
+;
