@@ -298,7 +298,8 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                             currentElement.before(createComponentStub(true));
                         }
                     } else if (moveLeft && previousElement) {
-                        previousElement.insertBefore(previousElement.prev());
+                        var prevprev = $(children[index - 2]);
+                        previousElement.insertBefore(prevprev);
                     } else {
                         currentElement.insertAfter(currentElement.next());
                     }
