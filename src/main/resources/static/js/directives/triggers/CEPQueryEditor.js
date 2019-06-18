@@ -40,7 +40,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         const componentsCategoryContainer = $('.' + CLASS_CATEGORY_CONTAINER);
         const detailsContainer = $('.' + CLASS_DETAILS_CONTAINER);
 
-        function createComponent(component, icon, intermediate) {
+        function createComponent(component, icon) {
             var nameSpan = $('<span href="#">' + component.name + '</span>')
                 .attr('title', component.name)
                 .tooltip({
@@ -56,16 +56,23 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             //Provide component data
             element.data(DATA_KEY_COMPONENT_DATA, component);
 
-            makePatternMember(element, intermediate);
+            makePatternMember(element);
 
             return element;
         }
 
-        function createComponentStub() {
+        function createComponentStub(intermediate) {
+
+            intermediate = intermediate || false;
+
             var element = $('<div>')
                 .addClass(CLASS_PATTERN_MEMBER)
                 .addClass(CLASS_COMPONENT)
                 .addClass(CLASS_STUB);
+
+            if(intermediate){
+                element.addClass(CLASS_INTERMEDIATE)
+            }
 
             return element;
         }
@@ -80,18 +87,22 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             return element;
         }
 
-        function createOperatorStub() {
+        function createOperatorStub(intermediate) {
+            intermediate = intermediate || false;
+
             var element = $('<div>')
                 .addClass(CLASS_PATTERN_MEMBER)
                 .addClass(CLASS_OPERATOR)
                 .addClass(CLASS_STUB);
 
+            if(intermediate){
+                element.addClass(CLASS_INTERMEDIATE);
+            }
+
             return element;
         }
 
-        function makePatternMember(element, intermediate) {
-
-            intermediate = intermediate || false;
+        function makePatternMember(element) {
 
             element.addClass(CLASS_PATTERN_MEMBER);
             element.draggable({
@@ -105,10 +116,6 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 stop: dragStop,
                 drag: updatePattern
             });
-
-            if (intermediate) {
-                element.addClass(CLASS_INTERMEDIATE);
-            }
         }
 
         function createCategory(categoryName) {
@@ -216,10 +223,22 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         }
 
         function updatePattern(event, ui) {
+            var children = patternContainer.children().not('.ui-sortable-helper');
+
+            var placeholder = children.filter('.' + CLASS_PLACEHOLDER);
+            var intermediate = children.filter('.' + CLASS_INTERMEDIATE);
+
+            intermediate.each(function () {
+               if(Math.abs(intermediate.index() - placeholder.index()) > 1){
+                   intermediate.remove();
+               }
+            });
+
             renderPattern(event, ui);
         }
 
         function renderPattern(event, ui) {
+            //TODO allow additions on left side as well
             var children = patternContainer.children().not('.ui-sortable-helper');
 
             var numberComponents = 0;
@@ -256,7 +275,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                         } else if (previousElement && previousElement.hasClass(CLASS_STUB)) {
                             previousElement.remove();
                         } else {
-                            var operator = createOperatorStub();
+                            var operator = createOperatorStub(true);
                             currentElement.before(operator);
                         }
                         renderPattern(event, ui);
@@ -268,16 +287,15 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
                 if (wasOperator && currentElement.hasClass(CLASS_OPERATOR)) {
                     if (balance < -1) {
-                        currentElement.before(createComponentStub());
-                        currentElement.after(createComponentStub());
+                        currentElement.before(createComponentStub(true));
+                        currentElement.after(createComponentStub(true));
                     } else if (balance < 0) {
                         if (currentElement.hasClass(CLASS_STUB)) {
                             currentElement.remove();
                         } else if ((previousElement) && previousElement.hasClass(CLASS_STUB)) {
                             previousElement.remove();
                         } else {
-                            var intermediateComponent = createComponentStub();
-                            currentElement.before(intermediateComponent);
+                            currentElement.before(createComponentStub(true));
                         }
                     } else if (moveLeft && previousElement) {
                         previousElement.insertBefore(previousElement.prev());
@@ -290,9 +308,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 }
 
                 if (previousElement && previousElement.hasClass(CLASS_STUB)
-                    && previousElement.hasClass(CLASS_OPERATOR)
-                    && currentElement.hasClass(CLASS_STUB)
-                    && currentElement.hasClass(CLASS_COMPONENT)) {
+                    && currentElement.hasClass(CLASS_STUB)) {
                     previousElement.remove();
                     currentElement.remove();
 
@@ -301,7 +317,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
                 if ((index === (children.length - 1)) && currentElement.hasClass(CLASS_OPERATOR)) {
                     if (previousElement && currentElement.hasClass(CLASS_PLACEHOLDER) && (!previousElement.hasClass(CLASS_STUB))) {
-                        currentElement.after(createComponentStub());
+                        currentElement.after(createComponentStub(true));
                     } else {
                         currentElement.insertBefore(previousElement);
                     }
