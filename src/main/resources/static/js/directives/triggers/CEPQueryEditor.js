@@ -7,7 +7,7 @@
  */
 app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
-    const OPERATOR_LIST = [{
+    const OPERATORS_LIST = [{
         name: 'Before',
         cssClass: 'before',
         precedence: 1
@@ -19,6 +19,14 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         name: 'And',
         cssClass: 'and',
         precedence: 3
+    }];
+
+    const ADDITIONAL_COMPONENTS_LIST = [{
+        name: 'Wait',
+        icon: 'hourglass_empty'
+    }, {
+        name: 'Timestamp',
+        icon: 'date_range'
     }];
 
     const CLASS_MAIN_CONTAINER = 'cep-query-editor';
@@ -49,7 +57,8 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         const componentsCategoryContainer = $('.' + CLASS_CATEGORY_CONTAINER);
         const detailsContainer = $('.' + CLASS_DETAILS_CONTAINER);
 
-        var idCounter = 0;
+        var categoryIdCounter = 0;
+        var elementIdCounter = 0;
         var isDragging = false;
 
         function createComponent(component, icon) {
@@ -103,8 +112,12 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             return element;
         }
 
-        function generateId() {
-            return idCounter++;
+        function generateCategoryId(){
+            return categoryIdCounter++;
+        }
+
+        function generateElementId() {
+            return elementIdCounter++;
         }
 
         function makePatternElement(element) {
@@ -124,18 +137,20 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
         function createCategory(categoryName) {
 
+            var categoryId = generateCategoryId();
+
             var element = $('<div class="panel panel-default">').addClass(CLASS_CATEGORY);
             var heading = $('<div class="panel-heading">');
             var title = $('<h4 class="panel-title">');
 
             var titleContent = $('<a class="clickable" data-toggle="collapse" ' +
-                'data-target="#category-' + categoryName + '-list" aria-expanded="true">' + categoryName +
+                'data-target="#category-' + categoryId + '-list" aria-expanded="true">' + categoryName +
                 '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>');
 
             title.append(titleContent);
             heading.append(title);
 
-            var body = $('<div class="panel-collapse collapse in">').attr('id', 'category-' + categoryName + '-list')
+            var body = $('<div class="panel-collapse collapse in">').attr('id', 'category-' + categoryId + '-list')
                 .append($('<div class="panel-body">').addClass(CLASS_CATEGORY_LIST));
 
             body.collapse('hide');
@@ -249,7 +264,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
         function prepareAddedPatternElement(element, prototype) {
             //Give element an id
-            var elementId = generateId();
+            var elementId = generateElementId();
             element.data(DATA_KEY_ID, elementId);
 
             //Copy element data
@@ -401,7 +416,6 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         }
 
         function removeElement(event, ui) {
-
             function getPatternElements() {
                 return patternContainer.children().not('.' + CLASS_PLACEHOLDER).not('.ui-sortable-helper');
             }
@@ -431,7 +445,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                     }
                 });
             }
-
+            
             var element = ui.draggable;
 
             if (element.hasClass(CLASS_COMPONENT)) {
@@ -443,14 +457,14 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             simplify();
         }
 
-        function initOperators(operatorList) {
+        function initOperators() {
             //Create category for operators
             var categoryElement = createCategory("Operators");
             var categoryContent = categoryElement.find('.' + CLASS_CATEGORY_LIST);
 
             //Iterate over operators and add them to the category
-            for (var i = 0; i < operatorList.length; i++) {
-                var operator = operatorList[i];
+            for (var i = 0; i < OPERATORS_LIST.length; i++) {
+                var operator = OPERATORS_LIST[i];
 
                 var element = createOperator(operator);
                 categoryContent.append(element);
@@ -478,9 +492,27 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             }
         }
 
+        function initAdditionalComponents() {
+            //Create category for additional components
+            var categoryElement = createCategory("Additional Components");
+            var categoryContent = categoryElement.find('.' + CLASS_CATEGORY_LIST);
+
+            //Iterate over all additional components and add them to the category
+            for (var i = 0; i < ADDITIONAL_COMPONENTS_LIST.length; i++) {
+                var component = ADDITIONAL_COMPONENTS_LIST[i];
+
+                var element = createComponent(component, component.icon);
+                categoryContent.append(element);
+            }
+
+            //Append category
+            componentsCategoryContainer.append(categoryElement);
+        }
+
         (function () {
-            initOperators(OPERATOR_LIST);
+            initOperators();
             initComponents(scope.componentList);
+            initAdditionalComponents();
 
             patternContainer.sortable({
                 cancel: '.' + CLASS_STUB,

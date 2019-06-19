@@ -80,6 +80,7 @@
 
 .cep-query-editor .component .material-icons {
     font-size: 34px;
+    display: blocK;
 }
 
 .cep-query-editor .component span {
@@ -89,6 +90,7 @@
     display: inline-block;
     max-height: 29px;
     line-height: 15px;
+    margin-top: 4px;
 }
 
 .cep-query-editor .placeholder, .cep-query-editor .stub {
