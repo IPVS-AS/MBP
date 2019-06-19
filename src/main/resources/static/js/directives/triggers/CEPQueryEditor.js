@@ -176,7 +176,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             detailsContainer.append(container);
         }
 
-        function showElementDetailsPanel(elementId) {
+        function toggleElementDetailsPanel(elementId) {
             //Get all detail panels
             var panels = detailsContainer.children();
 
@@ -185,7 +185,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 var panel = $(this);
 
                 if (panel.data(DATA_KEY_DETAILS_REF) === elementId) {
-                    panel.slideDown();
+                    panel.slideToggle();
                 } else {
                     panel.slideUp();
                 }
@@ -199,7 +199,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 var element = $(this);
 
                 if(element.data(DATA_KEY_ID) === elementId){
-                    element.addClass(CLASS_ELEMENT_SELECTED);
+                    element.toggleClass(CLASS_ELEMENT_SELECTED);
                 }else{
                     element.removeClass(CLASS_ELEMENT_SELECTED);
                 }
@@ -279,7 +279,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             createPatternElementDetails(element);
 
             element.on('click', function () {
-                showElementDetailsPanel(elementId);
+                toggleElementDetailsPanel(elementId);
             });
         }
 

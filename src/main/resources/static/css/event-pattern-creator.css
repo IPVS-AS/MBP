@@ -168,6 +168,10 @@
     padding-top: 8px;
 }
 
+.cep-query-editor .pattern-container .component.stub.highlight-precedence {
+    padding-top: 1px;
+}
+
 .cep-query-editor .pattern-container .component.element-selected {
     border-bottom: 4px solid black;
 }
