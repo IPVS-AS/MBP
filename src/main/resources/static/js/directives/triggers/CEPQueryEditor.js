@@ -31,6 +31,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
     const CLASS_CATEGORY_LIST = 'category-list';
     const CLASS_COMPONENT = 'component';
     const CLASS_OPERATOR = 'operator';
+    const CLASS_ELEMENT_SELECTED = 'element-selected';
     const CLASS_PLACEHOLDER = 'placeholder';
     const CLASS_STUB = 'stub';
     const CLASS_HIGHLIGHT_PRECEDENCE = 'highlight-precedence';
@@ -145,16 +146,20 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             return element;
         }
 
-        function createPatternElementDetails(element, id) {
+        function createPatternElementDetails(element) {
+
+            var elementId = element.data(DATA_KEY_ID);
+            var elementData = element.data(DATA_KEY_ELEMENT_DATA);
 
             var container = $('<div class="panel panel-default">');
+
             var heading = $('<div class="panel-heading">');
             var title = $('<h4 class="panel-title">');
 
             var titleContent = $('<a class="clickable">Details' +
                 '<i class="material-icons" style="float: right;">close</i></a>');
             titleContent.on('click', function () {
-                container.slideUp();
+                hideElementDetailsPanels();
             });
 
             title.append(titleContent);
@@ -165,12 +170,8 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             //TODO content
             body.append("<p>asdfasdfasdf</p>");
 
-            container.append(heading);
-            container.append($('<div>').append(body));
-
-            container.slideUp(0);
-
-            container.data(DATA_KEY_DETAILS_REF, id);
+            container.append(heading).append($('<div>').append(body)).slideUp(0);
+            container.data(DATA_KEY_DETAILS_REF, elementId);
 
             detailsContainer.append(container);
         }
@@ -189,6 +190,25 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                     panel.slideUp();
                 }
             });
+
+            //Get all pattern elements
+            var elements = patternContainer.children();
+
+            //Iterate over all pattern elements
+            elements.each(function () {
+                var element = $(this);
+
+                if(element.data(DATA_KEY_ID) === elementId){
+                    element.addClass(CLASS_ELEMENT_SELECTED);
+                }else{
+                    element.removeClass(CLASS_ELEMENT_SELECTED);
+                }
+            });
+        }
+
+        function hideElementDetailsPanels(){
+            detailsContainer.children().slideUp();
+            patternContainer.children().removeClass(CLASS_ELEMENT_SELECTED);
         }
 
         function highlightPrecedence(operator) {
@@ -209,7 +229,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
             var operatorPrecedence = operator.data(DATA_KEY_ELEMENT_DATA).precedence;
             var operatorStyle = {
-                'border-color': operator.css('background-color')
+                'border-top-color': operator.css('background-color')
             };
 
             //Consider pattern elements left from the operator
@@ -230,7 +250,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         function prepareAddedPatternElement(element, prototype) {
             //Give element an id
             var elementId = generateId();
-            element.data(DATA_KEY_DETAILS_REF, elementId);
+            element.data(DATA_KEY_ID, elementId);
 
             //Copy element data
             var elementData = prototype.data(DATA_KEY_ELEMENT_DATA);
@@ -256,8 +276,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             }
 
             //Create details panel and show it
-            createPatternElementDetails(elementData, elementId);
-            showElementDetailsPanel(elementId);
+            createPatternElementDetails(element);
 
             element.on('click', function () {
                 showElementDetailsPanel(elementId);

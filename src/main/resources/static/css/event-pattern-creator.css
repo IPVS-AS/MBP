@@ -163,8 +163,17 @@
 }
 
 .cep-query-editor .pattern-container .component.highlight-precedence {
-    border-width: 4px;
-    border-style: solid;
+    border-top-width: 4px;
+    border-top-style: solid;
+    padding-top: 8px;
+}
+
+.cep-query-editor .pattern-container .component.element-selected {
+    border-bottom: 4px solid black;
+}
+
+.cep-query-editor .pattern-container .operator.element-selected {
+    border-bottom: 2px solid black;
 }
 
 .cep-query-editor .deletion-area {
