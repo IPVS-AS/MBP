@@ -9,20 +9,23 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
     const OPERATOR_LIST = [{
         name: 'Before',
-        cssClass: 'before'
+        cssClass: 'before',
+        precedence: 1
     }, {
         name: 'Or',
-        cssClass: 'or'
+        cssClass: 'or',
+        precedence: 2
     }, {
         name: 'And',
-        cssClass: 'and'
+        cssClass: 'and',
+        precedence: 3
     }];
 
     const CLASS_MAIN_CONTAINER = 'cep-query-editor';
     const CLASS_PATTERN_CONTAINER = 'pattern-container';
     const CLASS_DELETION_AREA = 'deletion-area';
     const CLASS_DELETION_AREA_ACCEPTING = 'accepting';
-    const CLASS_PATTERN_MEMBER = 'pattern-member';
+    const CLASS_PATTERN_ELEMENT = 'pattern-element';
     const CLASS_CATEGORY_CONTAINER = 'category-container';
     const CLASS_CATEGORY = 'category';
     const CLASS_CATEGORY_LIST = 'category-list';
@@ -30,9 +33,12 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
     const CLASS_OPERATOR = 'operator';
     const CLASS_PLACEHOLDER = 'placeholder';
     const CLASS_STUB = 'stub';
+    const CLASS_HIGHLIGHT_PRECEDENCE = 'highlight-precedence';
     const CLASS_DETAILS_CONTAINER = 'details-container';
 
-    const DATA_KEY_COMPONENT_DATA = 'component_data';
+    const DATA_KEY_ID = 'id';
+    const DATA_KEY_DETAILS_REF = 'details_ref';
+    const DATA_KEY_ELEMENT_DATA = 'element_data';
 
     function init(scope, element, attrs) {
 
@@ -41,6 +47,9 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         const deletionArea = $('.' + CLASS_DELETION_AREA);
         const componentsCategoryContainer = $('.' + CLASS_CATEGORY_CONTAINER);
         const detailsContainer = $('.' + CLASS_DETAILS_CONTAINER);
+
+        var idCounter = 0;
+        var isDragging = false;
 
         function createComponent(component, icon) {
             var nameSpan = $('<span href="#">' + component.name + '</span>')
@@ -56,9 +65,9 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 .append(nameSpan);
 
             //Provide component data
-            element.data(DATA_KEY_COMPONENT_DATA, component);
+            element.data(DATA_KEY_ELEMENT_DATA, component);
 
-            makePatternMember(element);
+            makePatternElement(element);
 
             return element;
         }
@@ -66,7 +75,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         function createComponentStub() {
 
             return $('<div>')
-                .addClass(CLASS_PATTERN_MEMBER)
+                .addClass(CLASS_PATTERN_ELEMENT)
                 .addClass(CLASS_COMPONENT)
                 .addClass(CLASS_STUB);
         }
@@ -76,27 +85,33 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
             element.html(operator.name).addClass(operator.cssClass);
 
-            makePatternMember(element);
+            makePatternElement(element);
+
+            //Add operator data
+            element.data(DATA_KEY_ELEMENT_DATA, operator);
 
             return element;
         }
 
         function createOperatorStub() {
             var element = $('<div>')
-                .addClass(CLASS_PATTERN_MEMBER)
+                .addClass(CLASS_PATTERN_ELEMENT)
                 .addClass(CLASS_OPERATOR)
                 .addClass(CLASS_STUB);
 
             return element;
         }
 
-        function makePatternMember(element) {
+        function generateId() {
+            return idCounter++;
+        }
 
-            element.addClass(CLASS_PATTERN_MEMBER);
+        function makePatternElement(element) {
+            element.addClass(CLASS_PATTERN_ELEMENT);
             element.draggable({
                 containment: 'document',
                 connectToSortable: patternContainer,
-                stack: '.' + CLASS_PATTERN_MEMBER,
+                stack: '.' + CLASS_PATTERN_ELEMENT,
                 cursor: 'move',
                 helper: 'clone',
                 revert: 'invalid',
@@ -128,13 +143,13 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             return element;
         }
 
-        function createComponentDetails(component) {
+        function createPatternElementDetails(element, id) {
 
             var container = $('<div class="panel panel-default">');
             var heading = $('<div class="panel-heading">');
             var title = $('<h4 class="panel-title">');
 
-            var titleContent = $('<a class="clickable">Details: Event <i>xyz</i> from ' + component.name +
+            var titleContent = $('<a class="clickable">Details' +
                 '<i class="material-icons" style="float: right;">close</i></a>');
             titleContent.on('click', function () {
                 container.slideUp();
@@ -151,55 +166,120 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             container.append(heading);
             container.append($('<div>').append(body));
 
-            return container;
+            container.slideUp(0);
+
+            container.data(DATA_KEY_DETAILS_REF, id);
+
+            detailsContainer.append(container);
         }
 
-        function showComponentDetails(detailsPanel) {
-            //Hide all other details panels
-            detailsContainer.children().not(detailsPanel).slideUp();
+        function showElementDetailsPanel(elementId) {
+            //Get all detail panels
+            var panels = detailsContainer.children();
 
-            //Show details panel for this component
-            detailsPanel.slideDown();
-        }
+            //Iterate over all panels
+            panels.each(function () {
+                var panel = $(this);
 
-        function prepareAddedComponent(element, prototype) {
-            //Enable tooltip
-            element.children('span').tooltip({
-                container: 'body',
-                delay: {"show": 500, "hide": 100},
-                placement: 'bottom'
+                if (panel.data(DATA_KEY_DETAILS_REF) === elementId) {
+                    panel.slideDown();
+                } else {
+                    panel.slideUp();
+                }
             });
+        }
 
-            //Copy component data
-            var component = prototype.data(DATA_KEY_COMPONENT_DATA);
-            element.data(DATA_KEY_COMPONENT_DATA, component);
+        function highlightPrecedence(operator) {
+            function parseElementList(list, minPrecedence, style) {
+                list.each(function () {
+                    var currentElement = $(this);
+                    var elementData = currentElement.data(DATA_KEY_ELEMENT_DATA);
 
+                    if (currentElement.hasClass(CLASS_OPERATOR)
+                        && (currentElement.hasClass(CLASS_STUB) || (elementData.precedence <= minPrecedence))) {
+                        return false;
+                    }
 
-            /*
-            //Create and append details panel
-            var details = createComponentDetails(component);
-            details.css('height', '0px');
-            detailsContainer.append(details);
-            showComponentDetails(details);
+                    currentElement.addClass(CLASS_HIGHLIGHT_PRECEDENCE);
+                    currentElement.css(style);
+                });
+            }
+
+            var operatorPrecedence = operator.data(DATA_KEY_ELEMENT_DATA).precedence;
+            var operatorStyle = {
+                'border-color': operator.css('background-color')
+            };
+
+            //Consider pattern elements left from the operator
+            var previous = operator.prevAll();
+            parseElementList(previous, operatorPrecedence, operatorStyle);
+
+            //Consider pattern elements left from the operator
+            var next = operator.nextAll();
+            parseElementList(next, operatorPrecedence, operatorStyle);
+        }
+
+        function unhighlightPrecedence() {
+            patternContainer.children().each(function () {
+                $(this).removeClass(CLASS_HIGHLIGHT_PRECEDENCE).css('border-color', '');
+            });
+        }
+
+        function prepareAddedPatternElement(element, prototype) {
+            //Give element an id
+            var elementId = generateId();
+            element.data(DATA_KEY_DETAILS_REF, elementId);
+
+            //Copy element data
+            var elementData = prototype.data(DATA_KEY_ELEMENT_DATA);
+            element.data(DATA_KEY_ELEMENT_DATA, elementData);
+
+            //Type-specific preparations
+            if (element.hasClass(CLASS_COMPONENT)) {
+                //Enable tooltip
+                element.children('span').tooltip({
+                    container: 'body',
+                    delay: {"show": 500, "hide": 100},
+                    placement: 'bottom'
+                });
+            } else if (element.hasClass(CLASS_OPERATOR)) {
+                element.on({
+                    mouseenter: function () {
+                        if (!isDragging) {
+                            highlightPrecedence($(this));
+                        }
+                    },
+                    mouseleave: unhighlightPrecedence
+                });
+            }
+
+            //Create details panel and show it
+            createPatternElementDetails(elementData, elementId);
+            showElementDetailsPanel(elementId);
 
             element.on('click', function () {
-                showComponentDetails(details);
-            });*/
+                showElementDetailsPanel(elementId);
+            });
         }
 
         function dragStart() {
+            isDragging = true;
+            unhighlightPrecedence();
             patternContainer.addClass("dragging");
         }
 
         function dragStop() {
+            isDragging = false;
             patternContainer.removeClass("dragging");
         }
 
-        function patternMemberAdded(event, ui) {
-            //prepareAddedComponent(ui.helper, ui.item);
+        function patternElementAdded(event, ui) {
+            prepareAddedPatternElement(ui.helper, ui.item);
         }
 
         function sortingStart(event, ui) {
+            isDragging = true;
+            unhighlightPrecedence();
             ui.placeholder.removeClass([CLASS_COMPONENT, CLASS_OPERATOR].join(" "));
 
             if (ui.helper.hasClass(CLASS_COMPONENT)) {
@@ -214,6 +294,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         }
 
         function sortingStop(event, ui) {
+            isDragging = false;
             deletionArea.hide();
         }
 
@@ -300,12 +381,12 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
         function removeElement(event, ui) {
 
-            function getPatternMembers() {
+            function getPatternElements() {
                 return patternContainer.children().not('.' + CLASS_PLACEHOLDER).not('.ui-sortable-helper');
             }
 
             function simplify() {
-                var children = getPatternMembers();
+                var children = getPatternElements();
 
                 children.each(function (index) {
                     var currentElement = $(this);
@@ -383,17 +464,17 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             patternContainer.sortable({
                 cancel: '.' + CLASS_STUB,
                 cursor: 'move',
-                items: '> .' + CLASS_PATTERN_MEMBER,
-                placeholder: [CLASS_PATTERN_MEMBER, CLASS_PLACEHOLDER].join(" "),
+                items: '> .' + CLASS_PATTERN_ELEMENT,
+                placeholder: [CLASS_PATTERN_ELEMENT, CLASS_PLACEHOLDER].join(" "),
                 tolerance: 'pointer',
                 start: sortingStart,
                 stop: sortingStop,
                 change: sortPattern,
-                receive: patternMemberAdded
+                receive: patternElementAdded
             });
 
             deletionArea.hide().droppable({
-                accept: '.' + CLASS_PATTERN_CONTAINER + ' > .' + CLASS_PATTERN_MEMBER,
+                accept: '.' + CLASS_PATTERN_CONTAINER + ' > .' + CLASS_PATTERN_ELEMENT,
                 hoverClass: CLASS_DELETION_AREA_ACCEPTING,
                 drop: removeElement
             });
