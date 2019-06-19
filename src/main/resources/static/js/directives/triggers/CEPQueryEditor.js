@@ -304,6 +304,32 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 return patternContainer.children().not('.' + CLASS_PLACEHOLDER).not('.ui-sortable-helper');
             }
 
+            function simplify() {
+                var children = getPatternMembers();
+
+                children.each(function (index) {
+                    var currentElement = $(this);
+                    var previousElement = null;
+                    if (index > 0) {
+                        previousElement = $(children[index - 1]);
+                    }
+
+                    if (previousElement && previousElement.hasClass(CLASS_STUB)
+                        && currentElement.hasClass(CLASS_STUB)) {
+
+                        previousElement.remove();
+                        currentElement.remove();
+
+                        simplify();
+                        return false;
+                    }
+
+                    if ((children.length === 1) && children.hasClass(CLASS_STUB)) {
+                        children.remove();
+                    }
+                });
+            }
+
             var element = ui.draggable;
 
             if (element.hasClass(CLASS_COMPONENT)) {
@@ -312,28 +338,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 element.replaceWith(createOperatorStub());
             }
 
-            var children = getPatternMembers();
-
-            children.each(function (index) {
-                var currentElement = $(this);
-                var previousElement = null;
-                if (index > 0) {
-                    previousElement = $(children[index - 1]);
-                }
-
-                if (previousElement && previousElement.hasClass(CLASS_STUB)
-                    && currentElement.hasClass(CLASS_STUB)) {
-
-                    previousElement.remove();
-                    currentElement.remove();
-                }
-            });
-
-            children = getPatternMembers();
-
-            if ((children.length === 1) && children.hasClass(CLASS_STUB)) {
-                children.remove();
-            }
+            simplify();
         }
 
         function initOperators(operatorList) {
