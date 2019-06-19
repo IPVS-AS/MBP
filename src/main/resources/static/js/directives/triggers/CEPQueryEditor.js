@@ -137,6 +137,8 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             var body = $('<div class="panel-collapse collapse in">').attr('id', 'category-' + categoryName + '-list')
                 .append($('<div class="panel-body">').addClass(CLASS_CATEGORY_LIST));
 
+            body.collapse('hide');
+
             element.append(heading);
             element.append(body);
 
