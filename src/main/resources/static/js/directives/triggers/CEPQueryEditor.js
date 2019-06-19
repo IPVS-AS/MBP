@@ -445,15 +445,17 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                     }
                 });
             }
-            
+
+            var placeholder = patternContainer.children('.' + CLASS_PLACEHOLDER);
             var element = ui.draggable;
 
             if (element.hasClass(CLASS_COMPONENT)) {
-                element.replaceWith(createComponentStub());
+                placeholder.after(createComponentStub());
             } else if (element.hasClass(CLASS_OPERATOR)) {
-                element.replaceWith(createOperatorStub());
+                placeholder.after(createOperatorStub());
             }
 
+            element.remove();
             simplify();
         }
 
