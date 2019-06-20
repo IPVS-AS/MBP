@@ -5,29 +5,7 @@
 /**
  * Directive which allows the user to define event patterns based on components.
  */
-app.directive('cepQueryEditor', ['$interval', function ($interval) {
-
-    const OPERATORS_LIST = [{
-        name: 'Before',
-        cssClass: 'before',
-        precedence: 1
-    }, {
-        name: 'Or',
-        cssClass: 'or',
-        precedence: 2
-    }, {
-        name: 'And',
-        cssClass: 'and',
-        precedence: 3
-    }];
-
-    const ADDITIONAL_COMPONENTS_LIST = [{
-        name: 'Wait',
-        icon: 'hourglass_empty'
-    }, {
-        name: 'Timestamp',
-        icon: 'date_range'
-    }];
+app.directive('cepQueryEditor', [function () {
 
     const CLASS_MAIN_CONTAINER = 'cep-query-editor';
     const CLASS_PATTERN_CONTAINER = 'pattern-container';
@@ -45,9 +23,61 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
     const CLASS_HIGHLIGHT_PRECEDENCE = 'highlight-precedence';
     const CLASS_DETAILS_CONTAINER = 'details-container';
 
-    const DATA_KEY_ID = 'id';
-    const DATA_KEY_DETAILS_REF = 'details_ref';
-    const DATA_KEY_ELEMENT_DATA = 'element_data';
+    const KEY_ID = 'id';
+    const KEY_DETAILS_REF = 'details_ref';
+    const KEY_OPERATOR_PRECEDENCE = 'operator_precedence';
+    const KEY_SOURCE_COMPONENT_DATA = 'source_data';
+    const KEY_ELEMENT_KEY = 'element_key';
+
+    const OPERATOR_TYPES_LIST = [{
+        name: 'Before',
+        cssClass: 'before',
+        precedence: 1,
+        key: 'before',
+        hasDetails: true,
+        createForm: function(){},
+        querify: function(){}
+    }, {
+        name: 'Or',
+        cssClass: 'or',
+        precedence: 2,
+        key: 'or',
+        hasDetails: false,
+        createForm: function(){},
+        querify: function(){}
+    }, {
+        name: 'And',
+        cssClass: 'and',
+        precedence: 3,
+        key: 'and',
+        hasDetails: false,
+        createForm: function(){},
+        querify: function(){}
+    }];
+
+    const COMPONENT_TYPES_LIST = [{
+        name: 'Wait',
+        icon: 'hourglass_empty',
+        key: 'wait',
+        hasDetails: true,
+        createForm: function(){},
+        querify: function(){}
+    }, {
+        name: 'Timestamp',
+        icon: 'date_range',
+        key: 'timestamp',
+        hasDetails: true,
+        createForm: function(){},
+        querify: function(){}
+    }];
+
+    const SOURCE_COMPONENT_TYPE_PROTOTYPE = {
+        //name and icon: Dynamically assigned
+        key: 'source',
+        hasDetails: true,
+        createForm: function(){},
+        querify: function(){}
+    };
 
     function init(scope, element, attrs) {
 
@@ -57,62 +87,64 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         const componentsCategoryContainer = $('.' + CLASS_CATEGORY_CONTAINER);
         const detailsContainer = $('.' + CLASS_DETAILS_CONTAINER);
 
-        var categoryIdCounter = 0;
-        var elementIdCounter = 0;
-        var isDragging = false;
+        let categoryIdCounter = 0;
+        let elementIdCounter = 0;
+        let isDragging = false;
 
-        function createComponent(component, icon) {
-            var nameSpan = $('<span href="#">' + component.name + '</span>')
-                .attr('title', component.name)
+        function createComponentType(componentType) {
+            let nameSpan = $('<span href="#">' + componentType.name + '</span>')
+                .attr('title', componentType.name)
                 .tooltip({
                     container: 'body',
                     delay: {"show": 1000, "hide": 100},
                     placement: 'bottom'
                 });
 
-            var element = $('<div><i class="material-icons">' + icon + '</i></div>')
+            let element = $('<div><i class="material-icons">' + componentType.icon + '</i></div>')
                 .addClass(CLASS_COMPONENT)
                 .append(nameSpan);
 
-            //Provide component data
-            element.data(DATA_KEY_ELEMENT_DATA, component);
-
-            makePatternElement(element);
+            makePatternElement(element, componentType.key);
 
             return element;
         }
 
         function createComponentStub() {
-
             return $('<div>')
                 .addClass(CLASS_PATTERN_ELEMENT)
                 .addClass(CLASS_COMPONENT)
                 .addClass(CLASS_STUB);
         }
 
-        function createOperator(operator) {
-            var element = $('<div>').addClass(CLASS_OPERATOR);
+        function createOperatorType(operatorType) {
+            let element = $('<div>').addClass(CLASS_OPERATOR).addClass(operatorType.cssClass).html(operatorType.name);
 
-            element.html(operator.name).addClass(operator.cssClass);
+            element.data(KEY_OPERATOR_PRECEDENCE, operatorType.precedence);
 
-            makePatternElement(element);
-
-            //Add operator data
-            element.data(DATA_KEY_ELEMENT_DATA, operator);
+            makePatternElement(element, operatorType.key);
 
             return element;
         }
 
         function createOperatorStub() {
-            var element = $('<div>')
+            return $('<div>')
                 .addClass(CLASS_PATTERN_ELEMENT)
                 .addClass(CLASS_OPERATOR)
                 .addClass(CLASS_STUB);
+        }
+
+        function createSourceComponentType(component, icon){
+            var newType = Object.assign({}, SOURCE_COMPONENT_TYPE_PROTOTYPE);
+            newType.icon = icon;
+            newType.name = component.name;
+
+            var element = createComponentType(newType);
+            element.data(KEY_SOURCE_COMPONENT_DATA, component);
 
             return element;
         }
 
-        function generateCategoryId(){
+        function generateCategoryId() {
             return categoryIdCounter++;
         }
 
@@ -120,7 +152,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             return elementIdCounter++;
         }
 
-        function makePatternElement(element) {
+        function makePatternElement(element, key) {
             element.addClass(CLASS_PATTERN_ELEMENT);
             element.draggable({
                 containment: 'document',
@@ -133,24 +165,27 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 stop: dragStop,
                 drag: updatePattern
             });
+
+            //Set element key
+            element.data(KEY_ELEMENT_KEY, key);
         }
 
         function createCategory(categoryName) {
 
-            var categoryId = generateCategoryId();
+            let categoryId = generateCategoryId();
 
-            var element = $('<div class="panel panel-default">').addClass(CLASS_CATEGORY);
-            var heading = $('<div class="panel-heading">');
-            var title = $('<h4 class="panel-title">');
+            let element = $('<div class="panel panel-default">').addClass(CLASS_CATEGORY);
+            let heading = $('<div class="panel-heading">');
+            let title = $('<h4 class="panel-title">');
 
-            var titleContent = $('<a class="clickable" data-toggle="collapse" ' +
+            let titleContent = $('<a class="clickable" data-toggle="collapse" ' +
                 'data-target="#category-' + categoryId + '-list" aria-expanded="true">' + categoryName +
                 '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>');
 
             title.append(titleContent);
             heading.append(title);
 
-            var body = $('<div class="panel-collapse collapse in">').attr('id', 'category-' + categoryId + '-list')
+            let body = $('<div class="panel-collapse collapse in">').attr('id', 'category-' + categoryId + '-list')
                 .append($('<div class="panel-body">').addClass(CLASS_CATEGORY_LIST));
 
             body.collapse('hide');
@@ -163,15 +198,13 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
         function createPatternElementDetails(element) {
 
-            var elementId = element.data(DATA_KEY_ID);
-            var elementData = element.data(DATA_KEY_ELEMENT_DATA);
+            let elementId = element.data(KEY_ID);
 
-            var container = $('<div class="panel panel-default">');
+            let container = $('<div class="panel panel-default">');
+            let heading = $('<div class="panel-heading">');
+            let title = $('<h4 class="panel-title">');
 
-            var heading = $('<div class="panel-heading">');
-            var title = $('<h4 class="panel-title">');
-
-            var titleContent = $('<a class="clickable">Details' +
+            let titleContent = $('<a class="clickable">Details' +
                 '<i class="material-icons" style="float: right;">close</i></a>');
             titleContent.on('click', function () {
                 hideElementDetailsPanels();
@@ -180,26 +213,26 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             title.append(titleContent);
             heading.append(title);
 
-            var body = $('<div class="panel-body">');
+            let body = $('<div class="panel-body">');
 
             //TODO content
             body.append("<p>asdfasdfasdf</p>");
 
             container.append(heading).append($('<div>').append(body)).slideUp(0);
-            container.data(DATA_KEY_DETAILS_REF, elementId);
+            container.data(KEY_DETAILS_REF, elementId);
 
             detailsContainer.append(container);
         }
 
-        function toggleElementDetailsPanel(elementId) {
+        function toggleElementDetails(elementId) {
             //Get all detail panels
-            var panels = detailsContainer.children();
+            let panels = detailsContainer.children();
 
             //Iterate over all panels
             panels.each(function () {
-                var panel = $(this);
+                let panel = $(this);
 
-                if (panel.data(DATA_KEY_DETAILS_REF) === elementId) {
+                if (panel.data(KEY_DETAILS_REF) === elementId) {
                     panel.slideToggle();
                 } else {
                     panel.slideUp();
@@ -207,21 +240,21 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             });
 
             //Get all pattern elements
-            var elements = patternContainer.children();
+            let elements = patternContainer.children();
 
             //Iterate over all pattern elements
             elements.each(function () {
-                var element = $(this);
+                let element = $(this);
 
-                if(element.data(DATA_KEY_ID) === elementId){
+                if (element.data(KEY_ID) === elementId) {
                     element.toggleClass(CLASS_ELEMENT_SELECTED);
-                }else{
+                } else {
                     element.removeClass(CLASS_ELEMENT_SELECTED);
                 }
             });
         }
 
-        function hideElementDetailsPanels(){
+        function hideElementDetailsPanels() {
             detailsContainer.children().slideUp();
             patternContainer.children().removeClass(CLASS_ELEMENT_SELECTED);
         }
@@ -229,8 +262,8 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         function highlightPrecedence(operator) {
             function parseElementList(list, minPrecedence, style) {
                 list.each(function () {
-                    var currentElement = $(this);
-                    var elementData = currentElement.data(DATA_KEY_ELEMENT_DATA);
+                    let currentElement = $(this);
+                    let elementData = currentElement.data(KEY_OPERATOR_PRECEDENCE);
 
                     if (currentElement.hasClass(CLASS_OPERATOR)
                         && (currentElement.hasClass(CLASS_STUB) || (elementData.precedence <= minPrecedence))) {
@@ -242,17 +275,17 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 });
             }
 
-            var operatorPrecedence = operator.data(DATA_KEY_ELEMENT_DATA).precedence;
-            var operatorStyle = {
+            let operatorPrecedence = operator.data(KEY_OPERATOR_PRECEDENCE).precedence;
+            let operatorStyle = {
                 'border-top-color': operator.css('background-color')
             };
 
             //Consider pattern elements left from the operator
-            var previous = operator.prevAll();
+            let previous = operator.prevAll();
             parseElementList(previous, operatorPrecedence, operatorStyle);
 
             //Consider pattern elements left from the operator
-            var next = operator.nextAll();
+            let next = operator.nextAll();
             parseElementList(next, operatorPrecedence, operatorStyle);
         }
 
@@ -263,13 +296,13 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         }
 
         function prepareAddedPatternElement(element, prototype) {
-            //Give element an id
-            var elementId = generateElementId();
-            element.data(DATA_KEY_ID, elementId);
+            //Copy all data from prototype to new pattern element
+            let elementData = prototype.data();
+            element.data(elementData);
 
-            //Copy element data
-            var elementData = prototype.data(DATA_KEY_ELEMENT_DATA);
-            element.data(DATA_KEY_ELEMENT_DATA, elementData);
+            //Give element an id
+            let elementId = generateElementId();
+            element.data(KEY_ID, elementId);
 
             //Type-specific preparations
             if (element.hasClass(CLASS_COMPONENT)) {
@@ -294,7 +327,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             createPatternElementDetails(element);
 
             element.on('click', function () {
-                toggleElementDetailsPanel(elementId);
+                toggleElementDetails(elementId);
             });
         }
 
@@ -335,13 +368,13 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
         }
 
         function updatePattern(event, ui) {
-            var children = patternContainer.children().not('.ui-sortable-helper');
+            let children = patternContainer.children().not('.ui-sortable-helper');
 
-            var wasOperator = true;
+            let wasOperator = true;
 
             children.each(function (index) {
-                    var currentElement = $(this);
-                    var previousElement = null;
+                    let currentElement = $(this);
+                    let previousElement = null;
                     if (index > 0) {
                         previousElement = $(children[index - 1]);
                     }
@@ -395,11 +428,11 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 return;
             }
 
-            var children = patternContainer.children().not('.ui-sortable-helper');
-            var wasOperator = true;
+            let children = patternContainer.children().not('.ui-sortable-helper');
+            let wasOperator = true;
 
             children.each(function () {
-                    var currentElement = $(this);
+                    let currentElement = $(this);
 
                     if ((!wasOperator && !currentElement.hasClass(CLASS_OPERATOR))
                         || (wasOperator && currentElement.hasClass(CLASS_OPERATOR))) {
@@ -421,11 +454,11 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             }
 
             function simplify() {
-                var children = getPatternElements();
+                let children = getPatternElements();
 
                 children.each(function (index) {
-                    var currentElement = $(this);
-                    var previousElement = null;
+                    let currentElement = $(this);
+                    let previousElement = null;
                     if (index > 0) {
                         previousElement = $(children[index - 1]);
                     }
@@ -446,8 +479,8 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
                 });
             }
 
-            var placeholder = patternContainer.children('.' + CLASS_PLACEHOLDER);
-            var element = ui.draggable;
+            let placeholder = patternContainer.children('.' + CLASS_PLACEHOLDER);
+            let element = ui.draggable;
 
             if (element.hasClass(CLASS_COMPONENT)) {
                 placeholder.after(createComponentStub());
@@ -461,14 +494,14 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
         function initOperators() {
             //Create category for operators
-            var categoryElement = createCategory("Operators");
-            var categoryContent = categoryElement.find('.' + CLASS_CATEGORY_LIST);
+            let categoryElement = createCategory("Operators");
+            let categoryContent = categoryElement.find('.' + CLASS_CATEGORY_LIST);
 
             //Iterate over operators and add them to the category
-            for (var i = 0; i < OPERATORS_LIST.length; i++) {
-                var operator = OPERATORS_LIST[i];
+            for (let i = 0; i < OPERATOR_TYPES_LIST.length; i++) {
+                let operator = OPERATOR_TYPES_LIST[i];
 
-                var element = createOperator(operator);
+                let element = createOperatorType(operator);
                 categoryContent.append(element);
             }
 
@@ -476,18 +509,18 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
             componentsCategoryContainer.append(categoryElement);
         }
 
-        function initComponents(componentList) {
+        function initSourceComponents(componentList) {
             //Iterate over all component categories
-            for (var i = 0; i < componentList.length; i++) {
+            for (let i = 0; i < componentList.length; i++) {
 
-                var category = componentList[i];
+                let category = componentList[i];
 
-                var categoryElement = createCategory(category.name);
-                var categoryContent = categoryElement.find('.' + CLASS_CATEGORY_LIST);
+                let categoryElement = createCategory(category.name);
+                let categoryContent = categoryElement.find('.' + CLASS_CATEGORY_LIST);
 
-                for (var j = 0; j < category.list.length; j++) {
-                    var componentElem = createComponent(category.list[j], category.icon);
-                    categoryContent.append(componentElem);
+                for (let j = 0; j < category.list.length; j++) {
+                    let componentElement = createSourceComponentType(category.list[j], category.icon);
+                    categoryContent.append(componentElement);
                 }
 
                 componentsCategoryContainer.append(categoryElement);
@@ -496,14 +529,14 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
         function initAdditionalComponents() {
             //Create category for additional components
-            var categoryElement = createCategory("Additional Components");
-            var categoryContent = categoryElement.find('.' + CLASS_CATEGORY_LIST);
+            let categoryElement = createCategory("Additional Components");
+            let categoryContent = categoryElement.find('.' + CLASS_CATEGORY_LIST);
 
             //Iterate over all additional components and add them to the category
-            for (var i = 0; i < ADDITIONAL_COMPONENTS_LIST.length; i++) {
-                var component = ADDITIONAL_COMPONENTS_LIST[i];
+            for (let i = 0; i < COMPONENT_TYPES_LIST.length; i++) {
+                let componentType = COMPONENT_TYPES_LIST[i];
 
-                var element = createComponent(component, component.icon);
+                let element = createComponentType(componentType);
                 categoryContent.append(element);
             }
 
@@ -513,7 +546,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
 
         (function () {
             initOperators();
-            initComponents(scope.componentList);
+            initSourceComponents(scope.componentList);
             initAdditionalComponents();
 
             patternContainer.sortable({
@@ -543,7 +576,7 @@ app.directive('cepQueryEditor', ['$interval', function ($interval) {
      * @param element Elements of the directive
      * @param attrs Attributes of the directive
      */
-    var link = function (scope, element, attrs) {
+    let link = function (scope, element, attrs) {
         $(document).ready(function () {
             init(scope, element, attrs);
         });
