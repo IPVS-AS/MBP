@@ -206,6 +206,16 @@
     margin-top: 30px;
 }
 
-.cep-query-editor .details-container form{
-    margin-top: 15px;
+.cep-query-editor .details-container .details-header i.material-icons {
+    display: blocK;
+}
+
+.cep-query-editor .details-container .details-header span {
+    display: block;
+    margin-left: 40px;
+    margin-top: -24px;
+}
+
+.cep-query-editor .details-container form {
+    margin-top: 30px;
 }

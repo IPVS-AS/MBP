@@ -32,12 +32,27 @@ app.directive('cepQueryEditor', [function () {
     const OPERATOR_TYPES_LIST = [{
         name: 'Before',
         description: 'Specifies that first the expression on the left hand must turn true and only then ' +
-            'the right hand expression is evaluated for matching events.',
+            'the right hand expression is evaluated for matching events. Optionally, a time interval may be' +
+            'specified during which the second expression must turn true after the first one.',
         cssClass: 'before',
         precedence: 1,
         key: 'before',
         createForm: (form) => {
-            form.append("lalalala");
+            let withinTimeSwitchWrapper
+                = $('<div class="switch"><label>Off<input type="checkbox"><span class="lever"></span>On</label></div>');
+            let withinTimeSwitch = withinTimeSwitchWrapper.find('input');
+            let withinTimeInput = $('<input class="form-control" type="number" placeholder="Time in seconds" min="0">');
+            form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
+                .append('<label>Within time interval:</label>').append('<br/>')
+                .append(withinTimeSwitchWrapper)
+                .append(withinTimeInput));
+
+            withinTimeInput.prop('disabled', true);
+
+            withinTimeSwitch.on('change', function () {
+                let switchValue = withinTimeSwitch.prop('checked');
+                withinTimeInput.prop('disabled', !switchValue);
+            });
         },
         querify: function () {
         }
@@ -110,7 +125,7 @@ app.directive('cepQueryEditor', [function () {
         let isDragging = false;
 
         function getElementType(element) {
-            var key = element.data(KEY_ELEMENT_KEY);
+            let key = element.data(KEY_ELEMENT_KEY);
 
             for (let i = 0; i < ALL_ELEMENT_TYPES.length; i++) {
                 let type = ALL_ELEMENT_TYPES[i];
@@ -166,11 +181,11 @@ app.directive('cepQueryEditor', [function () {
         }
 
         function createSourceComponentType(component, icon) {
-            var newType = Object.assign({}, SOURCE_COMPONENT_TYPE_PROTOTYPE);
+            let newType = Object.assign({}, SOURCE_COMPONENT_TYPE_PROTOTYPE);
             newType.icon = icon;
             newType.name = component.name;
 
-            var element = createComponentType(newType);
+            let element = createComponentType(newType);
             element.data(KEY_SOURCE_COMPONENT_DATA, component);
 
             return element;
@@ -237,12 +252,12 @@ app.directive('cepQueryEditor', [function () {
             let title = "Details: ";
 
             if (elementType.key === SOURCE_COMPONENT_TYPE_PROTOTYPE.key) {
-                var sourceData = element.data(KEY_SOURCE_COMPONENT_DATA);
+                let sourceData = element.data(KEY_SOURCE_COMPONENT_DATA);
                 title += "Event of " + sourceData.name;
             } else if (element.hasClass(CLASS_OPERATOR)) {
-                title += elementType.name + " Operator";
+                title += "<i>" + elementType.name + "</i> Operator";
             } else {
-                title += elementType.name + " Component";
+                title += "<i>" + elementType.name + "</i> Component";
             }
 
             let container = $('<div class="panel panel-default">');
@@ -253,23 +268,26 @@ app.directive('cepQueryEditor', [function () {
                 .on('click', function () {
                     hideElementDetails();
                 });
-            let body = $('<div class="panel-body">');
-            let description = $('<span></span>').html(elementType.description);
-            let form = $('<form></form>');
 
             heading.append(titleBar);
             titleBar.append(titleContent);
 
-            container.append(heading).append($('<div>').append(body));
-            container.data(KEY_DETAILS_REF, elementId);
-            container.slideUp(0);
+            let body = $('<div class="panel-body">');
+            let bodyHeader = $('<div>').addClass('details-header');
+            let description = $('<span></span>').html(elementType.description);
+            let form = $('<form>');
 
-            body.append(description).append(form);
+            bodyHeader.append('<i class="material-icons">info_outline</i>').append(description);
+            body.append(bodyHeader);
 
             if (typeof elementType.createForm === "function") {
                 elementType.createForm(form);
+                body.append(form);
             }
 
+            container.append(heading).append($('<div>').append(body));
+            container.data(KEY_DETAILS_REF, elementId);
+            container.slideUp(0);
             detailsContainer.append(container);
 
             element.on('click', function () {
@@ -316,7 +334,7 @@ app.directive('cepQueryEditor', [function () {
             function parseElementList(list, minPrecedence, style) {
                 list.each(function () {
                     let currentElement = $(this);
-                    let operatorPrecedence = currentElement.data(KEY_OPERATOR_PRECEDENCE) || Number.MAX_SAFE_INTEGER
+                    let operatorPrecedence = currentElement.data(KEY_OPERATOR_PRECEDENCE) || Number.MAX_SAFE_INTEGER;
 
                     if (currentElement.hasClass(CLASS_OPERATOR)
                         && (currentElement.hasClass(CLASS_STUB) || (operatorPrecedence <= minPrecedence))) {
@@ -539,6 +557,8 @@ app.directive('cepQueryEditor', [function () {
 
             element.remove();
             simplify();
+
+            hideElementDetails();
         }
 
         function initOperators() {
