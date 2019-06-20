@@ -31,50 +31,52 @@ app.directive('cepQueryEditor', [function () {
 
     const OPERATOR_TYPES_LIST = [{
         name: 'Before',
+        description: 'Specifies that first the expression on the left hand must turn true and only then ' +
+            'the right hand expression is evaluated for matching events.',
         cssClass: 'before',
         precedence: 1,
         key: 'before',
-        hasDetails: true,
-        createForm: function () {
+        createForm: (form) => {
+            form.append("lalalala");
         },
         querify: function () {
         }
     }, {
         name: 'Or',
+        description: 'Requires either one of the expressions on the left hand and on the right hand to be true ' +
+            'in order to turn true itself.',
         cssClass: 'or',
         precedence: 2,
         key: 'or',
-        hasDetails: false,
-        createForm: function () {
-        },
+        createForm: null,
         querify: function () {
         }
     }, {
         name: 'And',
+        description: 'Requires the expressions on the left hand and on the right hand to be true in order to' +
+            ' turn true itself.',
         cssClass: 'and',
         precedence: 3,
         key: 'and',
-        hasDetails: false,
-        createForm: function () {
-        },
+        createForm: null,
         querify: function () {
         }
     }];
 
     const COMPONENT_TYPES_LIST = [{
         name: 'Wait',
+        description: 'Waits for the defined time until its truth value turns into true.',
         icon: 'hourglass_empty',
         key: 'wait',
-        hasDetails: true,
         createForm: function () {
         },
         querify: function () {
         }
     }, {
         name: 'Timestamp',
+        description: 'Turns true at specified points in time.',
         icon: 'date_range',
         key: 'timestamp',
-        hasDetails: true,
         createForm: function () {
         },
         querify: function () {
@@ -83,13 +85,17 @@ app.directive('cepQueryEditor', [function () {
 
     const SOURCE_COMPONENT_TYPE_PROTOTYPE = {
         //name and icon: Dynamically assigned
+        description: 'Turns true if an event (i.e. a value) of this component was received.',
         key: 'source',
-        hasDetails: true,
-        createForm: function () {
+        createForm: (form) => {
+
         },
         querify: function () {
         }
     };
+
+    //List of all available types (shortcut)
+    const ALL_ELEMENT_TYPES = OPERATOR_TYPES_LIST.concat(COMPONENT_TYPES_LIST, [SOURCE_COMPONENT_TYPE_PROTOTYPE]);
 
     function init(scope, element, attrs) {
 
@@ -102,6 +108,20 @@ app.directive('cepQueryEditor', [function () {
         let categoryIdCounter = 0;
         let elementIdCounter = 0;
         let isDragging = false;
+
+        function getElementType(element) {
+            var key = element.data(KEY_ELEMENT_KEY);
+
+            for (let i = 0; i < ALL_ELEMENT_TYPES.length; i++) {
+                let type = ALL_ELEMENT_TYPES[i];
+
+                if (key === type.key) {
+                    return type;
+                }
+            }
+
+            return null;
+        }
 
         function createComponentType(componentType) {
             let nameSpan = $('<span href="#">' + componentType.name + '</span>')
@@ -209,31 +229,52 @@ app.directive('cepQueryEditor', [function () {
         }
 
         function createPatternElementDetails(element) {
+            let elementType = getElementType(element);
 
             let elementId = element.data(KEY_ID);
 
+            //Build title string to display, depending on the element type
+            let title = "Details: ";
+
+            if (elementType.key === SOURCE_COMPONENT_TYPE_PROTOTYPE.key) {
+                var sourceData = element.data(KEY_SOURCE_COMPONENT_DATA);
+                title += "Event of " + sourceData.name;
+            } else if (element.hasClass(CLASS_OPERATOR)) {
+                title += elementType.name + " Operator";
+            } else {
+                title += elementType.name + " Component";
+            }
+
             let container = $('<div class="panel panel-default">');
             let heading = $('<div class="panel-heading">');
-            let title = $('<h4 class="panel-title">');
-
-            let titleContent = $('<a class="clickable">Details' +
-                '<i class="material-icons" style="float: right;">close</i></a>');
-            titleContent.on('click', function () {
-                hideElementDetailsPanels();
-            });
-
-            title.append(titleContent);
-            heading.append(title);
-
+            let titleBar = $('<h4 class="panel-title">');
+            let titleContent = $('<a class="clickable">' + title +
+                '<i class="material-icons" style="float: right;">close</i></a>')
+                .on('click', function () {
+                    hideElementDetails();
+                });
             let body = $('<div class="panel-body">');
+            let description = $('<span></span>').html(elementType.description);
+            let form = $('<form></form>');
 
-            //TODO content
-            body.append("<p>asdfasdfasdf</p>");
+            heading.append(titleBar);
+            titleBar.append(titleContent);
 
-            container.append(heading).append($('<div>').append(body)).slideUp(0);
+            container.append(heading).append($('<div>').append(body));
             container.data(KEY_DETAILS_REF, elementId);
+            container.slideUp(0);
+
+            body.append(description).append(form);
+
+            if (typeof elementType.createForm === "function") {
+                elementType.createForm(form);
+            }
 
             detailsContainer.append(container);
+
+            element.on('click', function () {
+                toggleElementDetails(elementId);
+            });
         }
 
         function toggleElementDetails(elementId) {
@@ -266,9 +307,9 @@ app.directive('cepQueryEditor', [function () {
             });
         }
 
-        function hideElementDetailsPanels() {
-            detailsContainer.children().slideUp();
+        function hideElementDetails() {
             patternContainer.children().removeClass(CLASS_ELEMENT_SELECTED);
+            return detailsContainer.children().slideUp();
         }
 
         function highlightPrecedence(operator) {
@@ -335,12 +376,8 @@ app.directive('cepQueryEditor', [function () {
                 });
             }
 
-            //Create details panel and show it
+            //Create details panel
             createPatternElementDetails(element);
-
-            element.on('click', function () {
-                toggleElementDetails(elementId);
-            });
         }
 
         function dragStart() {
@@ -614,5 +651,4 @@ app.directive('cepQueryEditor', [function () {
             componentList: '=componentList'
         }
     };
-}])
-;
+}]);
