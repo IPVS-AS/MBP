@@ -35,24 +35,30 @@ app.directive('cepQueryEditor', [function () {
         precedence: 1,
         key: 'before',
         hasDetails: true,
-        createForm: function(){},
-        querify: function(){}
+        createForm: function () {
+        },
+        querify: function () {
+        }
     }, {
         name: 'Or',
         cssClass: 'or',
         precedence: 2,
         key: 'or',
         hasDetails: false,
-        createForm: function(){},
-        querify: function(){}
+        createForm: function () {
+        },
+        querify: function () {
+        }
     }, {
         name: 'And',
         cssClass: 'and',
         precedence: 3,
         key: 'and',
         hasDetails: false,
-        createForm: function(){},
-        querify: function(){}
+        createForm: function () {
+        },
+        querify: function () {
+        }
     }];
 
     const COMPONENT_TYPES_LIST = [{
@@ -60,23 +66,29 @@ app.directive('cepQueryEditor', [function () {
         icon: 'hourglass_empty',
         key: 'wait',
         hasDetails: true,
-        createForm: function(){},
-        querify: function(){}
+        createForm: function () {
+        },
+        querify: function () {
+        }
     }, {
         name: 'Timestamp',
         icon: 'date_range',
         key: 'timestamp',
         hasDetails: true,
-        createForm: function(){},
-        querify: function(){}
+        createForm: function () {
+        },
+        querify: function () {
+        }
     }];
 
     const SOURCE_COMPONENT_TYPE_PROTOTYPE = {
         //name and icon: Dynamically assigned
         key: 'source',
         hasDetails: true,
-        createForm: function(){},
-        querify: function(){}
+        createForm: function () {
+        },
+        querify: function () {
+        }
     };
 
     function init(scope, element, attrs) {
@@ -133,7 +145,7 @@ app.directive('cepQueryEditor', [function () {
                 .addClass(CLASS_STUB);
         }
 
-        function createSourceComponentType(component, icon){
+        function createSourceComponentType(component, icon) {
             var newType = Object.assign({}, SOURCE_COMPONENT_TYPE_PROTOTYPE);
             newType.icon = icon;
             newType.name = component.name;
@@ -263,10 +275,10 @@ app.directive('cepQueryEditor', [function () {
             function parseElementList(list, minPrecedence, style) {
                 list.each(function () {
                     let currentElement = $(this);
-                    let elementData = currentElement.data(KEY_OPERATOR_PRECEDENCE);
+                    let operatorPrecedence = currentElement.data(KEY_OPERATOR_PRECEDENCE) || Number.MAX_SAFE_INTEGER
 
                     if (currentElement.hasClass(CLASS_OPERATOR)
-                        && (currentElement.hasClass(CLASS_STUB) || (elementData.precedence <= minPrecedence))) {
+                        && (currentElement.hasClass(CLASS_STUB) || (operatorPrecedence <= minPrecedence))) {
                         return false;
                     }
 
@@ -275,7 +287,7 @@ app.directive('cepQueryEditor', [function () {
                 });
             }
 
-            let operatorPrecedence = operator.data(KEY_OPERATOR_PRECEDENCE).precedence;
+            let operatorPrecedence = operator.data(KEY_OPERATOR_PRECEDENCE);
             let operatorStyle = {
                 'border-top-color': operator.css('background-color')
             };
