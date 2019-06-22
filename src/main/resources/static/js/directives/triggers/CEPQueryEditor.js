@@ -83,16 +83,69 @@ app.directive('cepQueryEditor', [function () {
         description: 'Waits for the defined time until its truth value turns into true.',
         icon: 'hourglass_empty',
         key: 'wait',
-        createForm: function () {
+        createForm: (form) => {
+            let withinTimeInput = $('<input class="form-control" type="number" placeholder="Time in seconds" min="0">');
+            form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
+                .append('<label>Wait time:</label>').append('<br/>').append(withinTimeInput));
         },
         querify: function () {
         }
     }, {
-        name: 'Timestamp',
+        name: 'Points in time',
         description: 'Turns true at specified points in time.',
         icon: 'date_range',
         key: 'timestamp',
-        createForm: function () {
+        createForm: (form) => {
+
+            const inputs = ['Minutes', 'Hours', 'Days of month', 'Months', 'Days of week'];
+            const explaination = $('<p>').html('The time points during which this pattern element is supposed to turn true' +
+                ' are specified using a syntax that is similar to the one of the Unix command' +
+                ' <a target="_blank" href="https://en.wikipedia.org/wiki/Cron#CRON_expression">&ldquo;crontab&rdquo;</a>.' +
+                ' The following syntactical elements are available:');
+
+            const cheatsheet = $('<ul>');
+            cheatsheet.append($('<li>').html('<code>*</code>: Wildcard, selects all possible values'));
+            cheatsheet.append($('<li>').html('<code>x:y</code>: Specifies a range with <i>x</i> as upper' +
+                ' and <i>y</i> as lower bound'));
+            cheatsheet.append($('<li>').html('<code>*/x</code>: Selects every <i>x</i>-th value'));
+            cheatsheet.append($('<li>').html('<code>[x, y]</code>: Combination of the expressions <i>x</i> and <i>y</i>'));
+
+            const example = $('<code>*/15  8:17  [*/2,1]  *  *</code>');
+            const exampleDescription = $('<p>').html('This specification matches every 15 minutes from 8am to 5pm' +
+                ' on even numbered days of each month, as well as on the first day of the month.');
+
+            let inputTable = $('<table>');
+            let tableHeadRow = $('<tr>');
+            let tableInputRow = $('<tr>');
+
+            for (let i = 0; i < inputs.length; i++) {
+                let input = $('<input class="form-control" type="text" placeholder="' + inputs[i] + '" maxlength="10">');
+                input.val('*').css({
+                    'width': '95px',
+                    'margin-left': '5px',
+                    'margin-right': '5px',
+                    'text-align': 'center'
+                });
+                tableHeadRow.append($('<th>').addClass('align-center').append(inputs[i]));
+                tableInputRow.append($('<td>').append(input))
+            }
+
+            inputTable.append($('<thead>').append(tableHeadRow));
+            inputTable.append($('<tbody>').append(tableInputRow));
+
+
+            form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
+                .append('<label>Explaination:</label>')
+                .append(explaination)
+                .append(cheatsheet)
+                .append('<br/>')
+                .append('<label>Example:</label>')
+                .append('<br/>')
+                .append(example)
+                .append(exampleDescription)
+                .append('<label>Time points specification:</label>')
+                .append($('<p>').html('Please specify the desired points in time below.'))
+                .append(inputTable));
         },
         querify: function () {
         }
