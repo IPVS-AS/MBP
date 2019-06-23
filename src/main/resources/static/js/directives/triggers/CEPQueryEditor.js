@@ -22,6 +22,7 @@ app.directive('cepQueryEditor', [function () {
     const CLASS_STUB = 'stub';
     const CLASS_HIGHLIGHT_PRECEDENCE = 'highlight-precedence';
     const CLASS_DETAILS_CONTAINER = 'details-container';
+    const CLASS_OPTIONS_CONTAINER = 'options-container';
 
     const KEY_ID = 'id';
     const KEY_DETAILS_REF = 'details_ref';
@@ -37,7 +38,7 @@ app.directive('cepQueryEditor', [function () {
         cssClass: 'before',
         precedence: 1,
         key: 'before',
-        createForm: (form) => {
+        createForm: (form, element) => {
             let withinTimeSwitchWrapper
                 = $('<div class="switch"><label>Off<input type="checkbox"><span class="lever"></span>On</label></div>');
             let withinTimeSwitch = withinTimeSwitchWrapper.find('input');
@@ -83,7 +84,7 @@ app.directive('cepQueryEditor', [function () {
         description: 'Waits for the defined time until its truth value turns into true.',
         icon: 'hourglass_empty',
         key: 'wait',
-        createForm: (form) => {
+        createForm: (form, element) => {
             let withinTimeInput = $('<input class="form-control" type="number" placeholder="Time in seconds" min="0">');
             form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
                 .append('<label>Wait time:</label>').append('<br/>').append(withinTimeInput));
@@ -95,8 +96,7 @@ app.directive('cepQueryEditor', [function () {
         description: 'Turns true at specified points in time.',
         icon: 'date_range',
         key: 'timestamp',
-        createForm: (form) => {
-
+        createForm: (form, element) => {
             const inputs = ['Minutes', 'Hours', 'Days of month', 'Months', 'Days of week'];
             const explaination = $('<p>').html('The time points during which this pattern element is supposed to turn true' +
                 ' are specified using a syntax that is similar to the one of the Unix command' +
@@ -155,8 +155,15 @@ app.directive('cepQueryEditor', [function () {
         //name and icon: Dynamically assigned
         description: 'Turns true if an event (i.e. a value) of this component was received.',
         key: 'source',
-        createForm: (form) => {
+        createForm: (form, element) => {
+            const defaultAlias = 'event' + element.data(KEY_ID);
+            let aliasInput = $('<input class="form-control" type="text" placeholder="Alias" maxlength="50">');
+            aliasInput.val(defaultAlias);
 
+            form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
+                .append('<label>Alias:</label>')
+                .append('<br/>')
+                .append(aliasInput));
         },
         querify: function () {
         }
@@ -172,6 +179,8 @@ app.directive('cepQueryEditor', [function () {
         const deletionArea = $('.' + CLASS_DELETION_AREA);
         const componentsCategoryContainer = $('.' + CLASS_CATEGORY_CONTAINER);
         const detailsContainer = $('.' + CLASS_DETAILS_CONTAINER);
+        const optionsContainer = $('.' + CLASS_OPTIONS_CONTAINER);
+        const conditionsPicker = $('<div>');
 
         let categoryIdCounter = 0;
         let elementIdCounter = 0;
@@ -271,24 +280,21 @@ app.directive('cepQueryEditor', [function () {
         }
 
         function createCategory(categoryName) {
-
             let categoryId = generateCategoryId();
 
             let element = $('<div class="panel panel-default">').addClass(CLASS_CATEGORY);
             let heading = $('<div class="panel-heading">');
             let title = $('<h4 class="panel-title">');
 
-            let titleContent = $('<a class="clickable" data-toggle="collapse" ' +
-                'data-target="#category-' + categoryId + '-list" aria-expanded="true">' + categoryName +
+            let titleContent = $('<a class="clickable collapsed" data-toggle="collapse" ' +
+                'data-target="#category-' + categoryId + '-list">' + categoryName +
                 '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>');
 
             title.append(titleContent);
             heading.append(title);
 
-            let body = $('<div class="panel-collapse collapse in">').attr('id', 'category-' + categoryId + '-list')
+            let body = $('<div class="panel-collapse collapse">').attr('id', 'category-' + categoryId + '-list')
                 .append($('<div class="panel-body">').addClass(CLASS_CATEGORY_LIST));
-
-            body.collapse('hide');
 
             element.append(heading);
             element.append(body);
@@ -334,7 +340,7 @@ app.directive('cepQueryEditor', [function () {
             body.append(bodyHeader);
 
             if (typeof elementType.createForm === "function") {
-                elementType.createForm(form);
+                elementType.createForm(form, element);
                 body.append(form);
             }
 
@@ -666,11 +672,7 @@ app.directive('cepQueryEditor', [function () {
             componentsCategoryContainer.append(categoryElement);
         }
 
-        (function () {
-            initOperators();
-            initSourceComponents(scope.componentList);
-            initAdditionalComponents();
-
+        function initPattern() {
             patternContainer.sortable({
                 cancel: '.' + CLASS_STUB,
                 cursor: 'move',
@@ -682,12 +684,66 @@ app.directive('cepQueryEditor', [function () {
                 change: sortPattern,
                 receive: patternElementAdded
             });
+        }
 
+        function initDeletionArea() {
             deletionArea.hide().droppable({
                 accept: '.' + CLASS_PATTERN_CONTAINER + ' > .' + CLASS_PATTERN_ELEMENT,
                 hoverClass: CLASS_DELETION_AREA_ACCEPTING,
                 drop: removeElement
             });
+        }
+
+        function initOptions() {
+            let conditionsPanel = $('<div class="panel panel-default">')
+                .append($('<div class="panel-heading">')
+                    .append($('<h4 class="panel-title">')
+                        .append($('<a class="clickable" data-toggle="collapse" ' +
+                            'data-target="#options-conditions-body">Conditions' +
+                            '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>'))));
+
+            let conditionsPanelBody = $('<div id="options-conditions-body" class="panel-collapse collapse in">')
+                .append($('<div class="panel-body">').append(conditionsPicker));
+
+            conditionsPanel.append(conditionsPanelBody);
+            optionsContainer.append(conditionsPanel);
+
+            let filterArray = [{
+                id: 'event1',
+                label: 'event1',
+                type: 'double',
+                operators: ['equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal',
+                    'between', 'not_between']
+            }];
+
+            conditionsPicker.queryBuilder({
+                filters: filterArray
+            });
+
+            /*
+            window.setInterval(function () {
+                let random = Math.floor(Math.random() * 10000) + 1;
+                filterArray.push({
+                    id: 'event' + random,
+                    label: 'event' + random,
+                    type: 'double',
+                    operators: ['equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal',
+                        'between', 'not_between']
+                });
+
+                conditionsPicker.queryBuilder('setFilters', true, filterArray);
+            }, 10000);*/
+        }
+
+        (function () {
+            initOperators();
+            initSourceComponents(scope.componentList);
+            initAdditionalComponents();
+
+            initPattern();
+            initDeletionArea();
+
+            initOptions();
         })();
     }
 
@@ -713,6 +769,7 @@ app.directive('cepQueryEditor', [function () {
             '<div class="' + CLASS_PATTERN_CONTAINER + '"></div>' +
             '<div class="' + CLASS_DELETION_AREA + '"></div>' +
             '<div class="panel-group ' + CLASS_DETAILS_CONTAINER + '"></div>' +
+            '<div class="panel-group ' + CLASS_OPTIONS_CONTAINER + '"></div>' +
             '</div>' +
             '<div class="col-lg-3">' +
             '<div class="panel-group ' + CLASS_CATEGORY_CONTAINER + '"></div>' +
