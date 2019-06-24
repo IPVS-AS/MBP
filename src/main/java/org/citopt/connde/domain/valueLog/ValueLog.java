@@ -1,5 +1,6 @@
 package org.citopt.connde.domain.valueLog;
 
+import org.influxdb.annotation.Measurement;
 import org.springframework.data.annotation.Id;
 
 import javax.persistence.GeneratedValue;

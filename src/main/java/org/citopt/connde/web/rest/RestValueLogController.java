@@ -10,6 +10,7 @@ import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.domain.valueLog.ValueLog;
 import org.citopt.connde.repository.*;
 import org.citopt.connde.service.UnitConverterService;
+import org.influxdb.InfluxDB;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,10 +34,10 @@ import java.util.List;
 public class RestValueLogController {
 
     @Autowired
-    UnitConverterService unitConverterService;
+    private UnitConverterService unitConverterService;
 
     @Autowired
-    ValueLogRepository valueLogRepository;
+    private InfluxDB influxDB;
 
     @Autowired
     private ActuatorRepository actuatorRepository;
