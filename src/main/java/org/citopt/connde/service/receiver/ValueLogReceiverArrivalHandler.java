@@ -8,7 +8,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 /**
@@ -58,9 +59,11 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
      */
     @Override
     public void messageArrived(String topic, MqttMessage mqttMessage) throws JSONException {
-        //Get QoS and date in the appropriate format
+        //Record current time
+        Instant time = ZonedDateTime.now().toInstant();
+
+        //Extract QoS
         int qos = mqttMessage.getQos();
-        String date = DATE_FORMAT.format(new Date());
 
         //Extract message string from the message object
         String message = new String(mqttMessage.getPayload());
@@ -78,7 +81,7 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
         valueLog.setTopic(topic);
         valueLog.setMessage(message);
         valueLog.setQos(qos);
-        valueLog.setDate(date);
+        valueLog.setTime(time);
         valueLog.setIdref(componentID);
         valueLog.setValue(json.getString(JSON_KEY_VALUE));
         valueLog.setComponent(componentType);

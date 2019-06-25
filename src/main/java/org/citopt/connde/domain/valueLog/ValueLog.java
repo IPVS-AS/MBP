@@ -1,34 +1,47 @@
 package org.citopt.connde.domain.valueLog;
 
+import org.citopt.connde.InfluxDBConfiguration;
+import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
-import org.springframework.data.annotation.Id;
 
-import javax.persistence.GeneratedValue;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 
-/**
- * @author rafaelkperes
- */
+
+@Measurement(name = InfluxDBConfiguration.MEASUREMENT_NAME,
+        database = InfluxDBConfiguration.DATABASE_NAME,
+        timeUnit = TimeUnit.SECONDS)
 public class ValueLog {
-    //Format that is used for the date
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    @Column(name = "time")
+    private Instant time;
 
-    @Id
-    @GeneratedValue
+    @Column(name = "id")
     private String id;
 
     // mqtt default fields
+    @Column(name = "qos")
     private Integer qos;
+    @Column(name = "topic")
     private String topic;
+    @Column(name = "message")
     private String message;
-    private String date;
 
     // parsed fields
+    @Column(name = "idref")
     private String idref;
+    @Column(name = "component")
     private String component; // sensor or actuator
+    @Column(name = "value")
     private String value;
+
+    public Instant getTime() {
+        return time;
+    }
+
+    public void setTime(Instant time) {
+        this.time = time;
+    }
 
     public String getId() {
         return id;
@@ -60,18 +73,6 @@ public class ValueLog {
 
     public void setMessage(String message) {
         this.message = message;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-    public Date getDateObject() throws ParseException {
-        return DATE_FORMAT.parse(date);
     }
 
     public String getIdref() {

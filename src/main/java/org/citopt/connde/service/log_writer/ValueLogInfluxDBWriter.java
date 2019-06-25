@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 /**
  * Service that registers itself as observer at the ValueLogReceiver and writes all arrived value logs
  * into the InfluxDB time series database.
+ *
+ * //TODO Rename to "ValueLogWriter"
  */
 @Service
 public class ValueLogInfluxDBWriter implements ValueLogReceiverObserver {

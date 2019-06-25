@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 public class InfluxDBConfiguration {
     //General internal settings
     private static final String URL = "http://localhost:8086";
-    private static final String DATABASE_NAME = "mbp";
+    public static final String DATABASE_NAME = "mbp";
 
     //Measurements name for value logs
     public static final String MEASUREMENT_NAME = "value_log";
@@ -23,6 +23,11 @@ public class InfluxDBConfiguration {
     //Duration time
     private static final String DURATION_TIME = "365d";
 
+    /**
+     * Creates the InfluxDB bean.
+     *
+     * @return The bean
+     */
     @Bean
     public InfluxDB influxDB() {
         //Connect to the InfluxDB
@@ -41,5 +46,14 @@ public class InfluxDBConfiguration {
         influxDB.enableBatch(BatchOptions.DEFAULTS);
 
         return influxDB;
+    }
+
+    /**
+     * Returns a string that might be used within queries to the InfluxDB in order to reference the measurements.
+     *
+     * @return A string containing the measurement reference
+     */
+    public static String getQueryMeasurementReference() {
+        return "\"" + DATABASE_NAME + "\".autogen.\"" + MEASUREMENT_NAME + "\"";
     }
 }
