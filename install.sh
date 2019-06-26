@@ -21,7 +21,7 @@ echo "\nInstalling Java...\n"
 sudo apt-get install -qy openjdk-8-jdk;
 sudo apt-get install -qy maven;
 
-echo "\nInstalling Mosquitto Broker, MongoDB, Tomcat8, git and maven...\n"
+echo "\nInstalling Mosquitto Broker, MongoDB, InfluxDB, Tomcat8, git and maven...\n"
 # Install Mosquitto Broker
 sudo apt-get install -qy mosquitto;
 sudo systemctl start mosquitto;
@@ -29,6 +29,14 @@ sudo systemctl start mosquitto;
 # Install and start MongoDB 
 sudo apt-get -qy install mongodb-server;
 sudo systemctl start mongodb;
+
+# Install and start InfluxDB
+curl -sL https://repos.influxdata.com/influxdb.key | sudo apt-key add -;
+source /etc/lsb-release;
+echo "deb https://repos.influxdata.com/${DISTRIB_ID,,} ${DISTRIB_CODENAME} stable" | sudo tee /etc/apt/sources.list.d/influxdb.list;
+sudo apt-get update && sudo apt-get install influxdb;
+sudo systemctl unmask influxdb.service;
+sudo systemctl start influxdb;
 
 # Install Tomcat 8
 sudo apt-get install -qy tomcat8;
