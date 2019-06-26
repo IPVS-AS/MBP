@@ -46,10 +46,6 @@ public class SensorEventHandler {
      */
     @HandleAfterDelete
     public void afterSensorDelete(Sensor sensor) {
-        //Get affected value logs
-        List<ValueLog> valueLogs = valueLogRepository.findListByIdref(sensor.getId());
-
-        //Delete the logs from repository
-        valueLogRepository.delete(valueLogs);
+        //TODO Delete value logs with idref sensor.getId()
     }
 }

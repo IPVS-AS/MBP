@@ -60,9 +60,7 @@ public class DeviceEventHandler {
             //Undeploy actuator if running
             sshDeployer.undeployIfRunning(actuator);
 
-            //Get affected value logs and delete them
-            List<ValueLog> valueLogs = valueLogRepository.findListByIdref(actuator.getId());
-            valueLogRepository.delete(valueLogs);
+            //TODO Delete value logs with idref monitoringComponent.getId()
 
             //Delete actuator
             actuatorRepository.delete(projection.getId());
@@ -76,9 +74,7 @@ public class DeviceEventHandler {
             //Undeploy sensor if running
             sshDeployer.undeployIfRunning(sensor);
 
-            //Get affected value logs and delete them
-            List<ValueLog> valueLogs = valueLogRepository.findListByIdref(sensor.getId());
-            valueLogRepository.delete(valueLogs);
+            //TODO Delete value logs with idref sensor.getId()
 
             //Delete sensor
             sensorRepository.delete(projection.getId());
@@ -95,9 +91,7 @@ public class DeviceEventHandler {
             //Undeploy monitoring component if necessary
             sshDeployer.undeployIfRunning(monitoringComponent);
 
-            //Get affected value logs and delete them
-            List<ValueLog> valueLogs = valueLogRepository.findListByIdref(monitoringComponent.getId());
-            valueLogRepository.delete(valueLogs);
+            //TODO Delete value logs with idref monitoringComponent.getId()
         }
     }
 }

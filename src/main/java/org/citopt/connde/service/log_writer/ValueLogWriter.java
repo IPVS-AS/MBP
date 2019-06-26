@@ -9,19 +9,20 @@ import org.springframework.stereotype.Service;
 
 /**
  * Service that registers itself as observer at the ValueLogReceiver and writes all arrived value logs
- * into the dedicated value log repository.
+ * into the InfluxDB time series database.
  */
 @Service
 public class ValueLogWriter implements ValueLogReceiverObserver {
-    //Repository for value logs (auto-wired)
+
+    //Repository component to use for storing value logs
     private ValueLogRepository valueLogRepository;
 
     /**
-     * Creates and starts the ValueLogWriter service by passing a value log receiver service instance
-     * and the value log repository in which the value logs are supposed to be stored (auto-wired).
+     * Creates and starts the service by passing references to a value log receiver service
+     * and the repository component that is supposed to be used for storing the received value logs in (auto-wired).
      *
      * @param valueLogReceiver   The instance of the value log receiver service
-     * @param valueLogRepository The value log repository
+     * @param valueLogRepository The repository component to use
      */
     @Autowired
     public ValueLogWriter(ValueLogReceiver valueLogReceiver, ValueLogRepository valueLogRepository) {
@@ -44,7 +45,7 @@ public class ValueLogWriter implements ValueLogReceiverObserver {
             throw new IllegalArgumentException("Value log must not be null.");
         }
 
-        //Insert value log into repository
-        valueLogRepository.insert(valueLog);
+        //Write value log into repository
+        valueLogRepository.write(valueLog);
     }
 }

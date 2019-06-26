@@ -34,7 +34,7 @@ public class RestValueLogController {
     private UnitConverterService unitConverterService;
 
     @Autowired
-    private ValueLogInfluxDBRepository valueLogRepository;
+    private ValueLogRepository valueLogRepository;
 
     @Autowired
     private ActuatorRepository actuatorRepository;
