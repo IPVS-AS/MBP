@@ -708,31 +708,93 @@ app.directive('cepQueryEditor', [function () {
             conditionsPanel.append(conditionsPanelBody);
             optionsContainer.append(conditionsPanel);
 
-            let filterArray = [{
-                id: 'event1',
-                label: 'event1',
-                type: 'double',
-                operators: ['equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal',
-                    'between', 'not_between']
-            }];
 
-            conditionsPicker.queryBuilder({
-                filters: filterArray
-            });
+            $.fn.queryBuilder.define('cep-query-extension', function (options) {
+                this.on('afterUpdateGroupCondition.queryBuilder', function (event, rule) {
+                    $('div.group-conditions > label').each(function () {
+                        var _this = $(this);
+                        if (_this.hasClass('active')) {
+                            _this.css('opacity', '1');
+                        } else {
+                            _this.css('opacity', '0.7');
+                        }
+                    });
+                });
 
-            /*
-            window.setInterval(function () {
-                let random = Math.floor(Math.random() * 10000) + 1;
-                filterArray.push({
-                    id: 'event' + random,
-                    label: 'event' + random,
+                this.on('afterCreateRuleFilters.queryBuilder', function (event, rule) {
+                    console.log(rule);
+
+                    (function applyStyling() {
+                        $('button[data-add="rule"]').html('<i class="material-icons">add</i> Add rule');
+                        $('button[data-add="group"]').html('<i class="material-icons">add_circle_outline</i> Add group');
+                        $('button[data-delete="rule"]').html('<i class="material-icons">delete</i>');
+                        $('button[data-delete="group"]').html('<i class="material-icons">delete_forever</i>');
+                    })();
+
+                    function onTypeChoose() {
+                        filterSelect.show();
+                        if (lastTypeChoice !== filterSelect.val()) {
+                            filterSelect.val('-1');
+                            filterSelect.trigger('change');
+                        }
+                        lastTypeChoice = filterSelect.val();
+                    }
+
+                    let ruleElement = rule.$el;
+                    let filterContainer = $(ruleElement.find('div.rule-filter-container'));
+                    let filterSelect = $(filterContainer.find('select'));
+
+                    let lastTypeChoice = null;
+
+                    let dropdownButton = $('<button type="button" class="btn bg-primary dropdown-toggle" ' +
+                        'data-toggle="dropdown">Select type <span class="caret"/></button>');
+                    let dropdown = $('<ul class="dropdown-menu">');
+                    let buttonSingleEvent = $('<li>').append($('<a class="waves-effect waves-block">Single event</a>')
+                        .on('click', () => {
+                            dropdownButton.html('Event <span class="caret"/>');
+                            onTypeChoose();
+                        }));
+                    let buttonAggregation = $('<li>').append($('<a class="waves-effect waves-block">Aggregation</a>')
+                        .on('click', () => {
+                            dropdownButton.html('Aggreg. <span class="caret"/>');
+                            onTypeChoose(this);
+                        }));
+                    dropdown.append(buttonSingleEvent).append(buttonAggregation);
+
+                    let dropdownContainer = $('<div class="btn-group">').append(dropdownButton).append(dropdown)
+                        .css({
+                            'box-shadow': 'none',
+                            'margin-right': '5px'
+                        });
+
+                    filterContainer.prepend(dropdownContainer);
+                    filterSelect.hide();
+                });
+
+                this.on('afterUpdateRuleValue.queryBuilder', function (e, rule) {
+                    console.log("ho");
+                });
+            }, {});
+
+            let filterArray = [
+                {
+                    id: 'event1',
+                    label: 'event1',
                     type: 'double',
                     operators: ['equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal',
                         'between', 'not_between']
-                });
+                }
+            ];
 
-                conditionsPicker.queryBuilder('setFilters', true, filterArray);
-            }, 10000);*/
+            conditionsPicker.queryBuilder({
+                filters: filterArray,
+                plugins: {
+                    'cep-query-extension': {}
+                }
+            });
+
+
+            //conditionsPicker.queryBuilder('setFilters', true, filterArray);
         }
 
         (function () {
