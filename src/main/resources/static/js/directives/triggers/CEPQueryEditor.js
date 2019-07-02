@@ -24,6 +24,8 @@ app.directive('cepQueryEditor', [function () {
     const CLASS_DETAILS_CONTAINER = 'details-container';
     const CLASS_OPTIONS_CONTAINER = 'options-container';
 
+    const CONDITION_PICKER_EXTENSION_NAME = 'cep-query-extension';
+
     const KEY_ID = 'id';
     const KEY_DETAILS_REF = 'details_ref';
     const KEY_OPERATOR_PRECEDENCE = 'operator_precedence';
@@ -694,6 +696,7 @@ app.directive('cepQueryEditor', [function () {
             });
         }
 
+
         function initOptions() {
             let conditionsPanel = $('<div class="panel panel-default">')
                 .append($('<div class="panel-heading">')
@@ -708,8 +711,68 @@ app.directive('cepQueryEditor', [function () {
             conditionsPanel.append(conditionsPanelBody);
             optionsContainer.append(conditionsPanel);
 
+            initConditionsPicker();
+        }
 
-            $.fn.queryBuilder.define('cep-query-extension', function (options) {
+        function initConditionsPicker() {
+            //List of all available operators
+            const OPERATORS_LIST = [{
+                'id': 'equal',
+                'sign': '='
+            }, {
+                'id': 'not_equal',
+                'sign': '&ne;'
+            }, {
+                'id': 'less',
+                'sign': '&lt;'
+            }, {
+                'id': 'less_or_equal',
+                'sign': '&le;'
+            }, {
+                'id': 'greater',
+                'sign': '&gt;'
+            }, {
+                'id': 'greater_or_equal',
+                'sign': '&ge;'
+            }, {
+                'id': 'between',
+                'sign': '&hArr;'
+            }, {
+                'id': 'not_between',
+                'sign': '&nhArr;'
+            }];
+
+            $.fn.queryBuilder.define(CONDITION_PICKER_EXTENSION_NAME, function (options) {
+
+                this.on('afterCreateRuleOperators.queryBuilder', function (event, rule) {
+                    const KEY_OPERATOR_INDEX = 'current_index';
+
+                    //Apply styling
+                    $('.query-builder .rule-value-container').css({'border-left': 'none', 'padding-left': '0px'});
+
+                    let ruleElement = rule.$el;
+                    let operatorContainer = $(ruleElement.find('div.rule-operator-container'));
+                    let operatorSelect = $(operatorContainer.find('select'));
+
+                    let operatorStartIndex = 0;
+                    let alternativeOperatorChooser = $('<span>').addClass('clickable').css({
+                        'font-size': '30px',
+                        'font-weight': 'bold',
+                        'vertical-align': 'middle',
+                    }).html(OPERATORS_LIST[operatorStartIndex].sign).data(KEY_OPERATOR_INDEX, operatorStartIndex)
+                        .on('click', function () {
+                            let element = $(this);
+                            let currentIndex = element.data(KEY_OPERATOR_INDEX) || 0;
+                            let nextIndex = (currentIndex + 1) % OPERATORS_LIST.length;
+                            element.data(KEY_OPERATOR_INDEX, nextIndex);
+                            element.html(OPERATORS_LIST[nextIndex].sign);
+                            operatorSelect.val(OPERATORS_LIST[nextIndex].id).trigger('change');
+                        });
+
+                    //Place alternative operator chooser before select and hide select
+                    operatorSelect.before(alternativeOperatorChooser).hide();
+                });
+
                 this.on('afterUpdateGroupCondition.queryBuilder', function (event, rule) {
                     $('div.group-conditions > label').each(function () {
                         var _this = $(this);
@@ -722,15 +785,6 @@ app.directive('cepQueryEditor', [function () {
                 });
 
                 this.on('afterCreateRuleFilters.queryBuilder', function (event, rule) {
-                    console.log(rule);
-
-                    (function applyStyling() {
-                        $('button[data-add="rule"]').html('<i class="material-icons">add</i> Add rule');
-                        $('button[data-add="group"]').html('<i class="material-icons">add_circle_outline</i> Add group');
-                        $('button[data-delete="rule"]').html('<i class="material-icons">delete</i>');
-                        $('button[data-delete="group"]').html('<i class="material-icons">delete_forever</i>');
-                    })();
-
                     function onTypeChoose() {
                         filterSelect.show();
                         if (lastTypeChoice !== filterSelect.val()) {
@@ -739,6 +793,12 @@ app.directive('cepQueryEditor', [function () {
                         }
                         lastTypeChoice = filterSelect.val();
                     }
+
+                    //Apply styling
+                    $('button[data-add="rule"]').html('<i class="material-icons">add</i> Add rule');
+                    $('button[data-add="group"]').html('<i class="material-icons">add_circle_outline</i> Add group');
+                    $('button[data-delete="rule"]').html('<i class="material-icons">delete</i>');
+                    $('button[data-delete="group"]').html('<i class="material-icons">delete_forever</i> Delete group');
 
                     let ruleElement = rule.$el;
                     let filterContainer = $(ruleElement.find('div.rule-filter-container'));
@@ -770,27 +830,23 @@ app.directive('cepQueryEditor', [function () {
                     filterContainer.prepend(dropdownContainer);
                     filterSelect.hide();
                 });
-
-                this.on('afterUpdateRuleValue.queryBuilder', function (e, rule) {
-                    console.log("ho");
-                });
             }, {});
 
-            let filterArray = [
+            let predefinedConditionsFilter = [
                 {
                     id: 'event1',
                     label: 'event1',
                     type: 'double',
-                    operators: ['equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal',
-                        'between', 'not_between']
+                    operators: OPERATORS_LIST.map(x => x.id)
                 }
             ];
 
+            let pluginsObject = {};
+            pluginsObject[CONDITION_PICKER_EXTENSION_NAME] = {};
+
             conditionsPicker.queryBuilder({
-                filters: filterArray,
-                plugins: {
-                    'cep-query-extension': {}
-                }
+                filters: predefinedConditionsFilter,
+                plugins: pluginsObject
             });
 
 
