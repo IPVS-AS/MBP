@@ -33,158 +33,6 @@ app.directive('cepQueryEditor', [function () {
     const KEY_SOURCE_COMPONENT_DATA = 'source_data';
     const KEY_ELEMENT_KEY = 'element_key';
 
-    const OPERATOR_TYPES_LIST = [{
-        name: 'Before',
-        description: 'Specifies that first the expression on the left hand must turn true and only then ' +
-            'the right hand expression is evaluated for matching events. Optionally, a time interval may be' +
-            'specified during which the second expression must turn true after the first one.',
-        cssClass: 'before',
-        precedence: 1,
-        key: 'before',
-        init: null,
-        createForm: (form, element) => {
-            let withinTimeSwitchWrapper
-                = $('<div class="switch"><label>Off<input type="checkbox"><span class="lever"></span>On</label></div>');
-            let withinTimeSwitch = withinTimeSwitchWrapper.find('input');
-            let withinTimeInput = $('<input class="form-control" type="number" placeholder="Time in seconds" min="0">');
-            form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
-                .append('<label>Within time interval:</label>').append('<br/>')
-                .append(withinTimeSwitchWrapper)
-                .append(withinTimeInput));
-
-            withinTimeInput.prop('disabled', true);
-
-            withinTimeSwitch.on('change', function () {
-                let switchValue = withinTimeSwitch.prop('checked');
-                withinTimeInput.prop('disabled', !switchValue);
-            });
-        },
-        querify: function () {
-        }
-    }, {
-        name: 'Or',
-        description: 'Requires either one of the expressions on the left hand and on the right hand to be true ' +
-            'in order to turn true itself.',
-        cssClass: 'or',
-        precedence: 2,
-        key: 'or',
-        init: null,
-        createForm: null,
-        querify: function () {
-        }
-    }, {
-        name: 'And',
-        description: 'Requires the expressions on the left hand and on the right hand to be true in order to' +
-            ' turn true itself.',
-        cssClass: 'and',
-        precedence: 3,
-        key: 'and',
-        init: null,
-        createForm: null,
-        querify: function () {
-        }
-    }];
-
-    const COMPONENT_TYPES_LIST = [{
-        name: 'Wait',
-        description: 'Waits for the defined time until its truth value turns into true.',
-        icon: 'hourglass_empty',
-        key: 'wait',
-        init: null,
-        createForm: (form, element) => {
-            let withinTimeInput = $('<input class="form-control" type="number" placeholder="Time in seconds" min="0">');
-            form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
-                .append('<label>Wait time:</label>').append('<br/>').append(withinTimeInput));
-        },
-        querify: function () {
-        }
-    }, {
-        name: 'Points in time',
-        description: 'Turns true at specified points in time.',
-        icon: 'date_range',
-        key: 'timestamp',
-        init: null,
-        createForm: (form, element) => {
-            const inputs = ['Minutes', 'Hours', 'Days of month', 'Months', 'Days of week'];
-            const explanation = $('<p>').html('The time points during which this pattern element is supposed to turn true' +
-                ' are specified using a syntax that is similar to the one of the Unix command' +
-                ' <a target="_blank" href="https://en.wikipedia.org/wiki/Cron#CRON_expression">&ldquo;crontab&rdquo;</a>.' +
-                ' The following syntactical elements are available:');
-
-            const cheatsheet = $('<ul>');
-            cheatsheet.append($('<li>').html('<code>*</code>: Wildcard, selects all possible values'));
-            cheatsheet.append($('<li>').html('<code>x:y</code>: Specifies a range with <i>x</i> as upper' +
-                ' and <i>y</i> as lower bound'));
-            cheatsheet.append($('<li>').html('<code>*/x</code>: Selects every <i>x</i>-th value'));
-            cheatsheet.append($('<li>').html('<code>[x, y]</code>: Combination of the expressions <i>x</i> and <i>y</i>'));
-
-            const example = $('<code>*/15  8:17  [*/2,1]  *  *</code>');
-            const exampleDescription = $('<p>').html('This specification matches every 15 minutes from 8am to 5pm' +
-                ' on even numbered days of each month, as well as on the first day of the month.');
-
-            let inputTable = $('<table>');
-            let tableHeadRow = $('<tr>');
-            let tableInputRow = $('<tr>');
-
-            for (let i = 0; i < inputs.length; i++) {
-                let input = $('<input class="form-control" type="text" placeholder="' + inputs[i] + '" maxlength="10">');
-                input.val('*').css({
-                    'width': '95px',
-                    'margin-left': '5px',
-                    'margin-right': '5px',
-                    'text-align': 'center'
-                });
-                tableHeadRow.append($('<th>').addClass('align-center').append(inputs[i]));
-                tableInputRow.append($('<td>').append(input))
-            }
-
-            inputTable.append($('<thead>').append(tableHeadRow));
-            inputTable.append($('<tbody>').append(tableInputRow));
-
-
-            form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
-                .append('<label>Explaination:</label>')
-                .append(explanation)
-                .append(cheatsheet)
-                .append('<br/>')
-                .append('<label>Example:</label>')
-                .append('<br/>')
-                .append(example)
-                .append(exampleDescription)
-                .append('<label>Time points specification:</label>')
-                .append($('<p>').html('Please specify the desired points in time below.'))
-                .append(inputTable));
-        },
-        querify: function () {
-        }
-    }];
-    const SOURCE_ALIAS_PREFIX = 'event_';
-    const SOURCE_COMPONENT_TYPE_PROTOTYPE = {
-        //name and icon: Dynamically assigned
-        description: 'Turns true if an event (i.e. a value) of this component was received.',
-        key: 'source',
-        init: (element) => {
-            //Generate first alias for this source event
-            let defaultAlias = SOURCE_ALIAS_PREFIX + element.data(KEY_ID);
-            element.data(KEY_SOURCE_ALIAS, defaultAlias);
-        },
-        createForm: (form, element) => {
-            let alias = element.data(KEY_SOURCE_ALIAS);
-            let aliasInput = $('<input class="form-control" type="text" placeholder="Alias" maxlength="50">');
-            aliasInput.val(alias);
-
-            form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
-                .append('<label>Alias:</label>')
-                .append('<br/>')
-                .append(aliasInput));
-        },
-        querify: function () {
-        }
-    };
-
-    //List of all available types (shortcut)
-    const ALL_ELEMENT_TYPES = OPERATOR_TYPES_LIST.concat(COMPONENT_TYPES_LIST, [SOURCE_COMPONENT_TYPE_PROTOTYPE]);
-
     //List of all available operators for the condition picker
     const CONDITION_PICKER_OPERATORS = [{
         'id': 'equal',
@@ -215,7 +63,7 @@ app.directive('cepQueryEditor', [function () {
     const CONDITIONS_PICKER_SOURCE_FILTER = {
         'name': 'Single event',
         'short': 'Event',
-        'prefix': SOURCE_ALIAS_PREFIX
+        'prefix': 'event_'
     };
     const CONDITIONS_PICKER_AGGREGATION_FILTERS = [{
         'name': 'Average',
@@ -234,6 +82,184 @@ app.directive('cepQueryEditor', [function () {
     const CONDITIONS_PICKER_ALL_FILTER_TYPES = CONDITIONS_PICKER_AGGREGATION_FILTERS.concat([CONDITIONS_PICKER_SOURCE_FILTER]);
 
     function init(scope, element, attrs) {
+
+        const OPERATOR_TYPES_LIST = [{
+            name: 'Before',
+            description: 'Specifies that first the expression on the left hand must turn true and only then ' +
+                'the right hand expression is evaluated for matching events. Optionally, a time interval may be' +
+                'specified during which the second expression must turn true after the first one.',
+            cssClass: 'before',
+            precedence: 1,
+            key: 'before',
+            init: null,
+            createForm: (form, element) => {
+                let withinTimeSwitchWrapper
+                    = $('<div class="switch"><label>Off<input type="checkbox"><span class="lever"></span>On</label></div>');
+                let withinTimeSwitch = withinTimeSwitchWrapper.find('input');
+                let withinTimeInput = $('<input class="form-control" type="number" placeholder="Time in seconds" min="0">');
+                form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
+                    .append('<label>Within time interval:</label>').append('<br/>')
+                    .append(withinTimeSwitchWrapper)
+                    .append(withinTimeInput));
+
+                withinTimeInput.prop('disabled', true);
+
+                withinTimeSwitch.on('change', function () {
+                    let switchValue = withinTimeSwitch.prop('checked');
+                    withinTimeInput.prop('disabled', !switchValue);
+                });
+            },
+            querify: function () {
+            }
+        }, {
+            name: 'Or',
+            description: 'Requires either one of the expressions on the left hand and on the right hand to be true ' +
+                'in order to turn true itself.',
+            cssClass: 'or',
+            precedence: 2,
+            key: 'or',
+            init: null,
+            createForm: null,
+            querify: function () {
+            }
+        }, {
+            name: 'And',
+            description: 'Requires the expressions on the left hand and on the right hand to be true in order to' +
+                ' turn true itself.',
+            cssClass: 'and',
+            precedence: 3,
+            key: 'and',
+            init: null,
+            createForm: null,
+            querify: function () {
+            }
+        }];
+
+        const COMPONENT_TYPES_LIST = [{
+            name: 'Wait',
+            description: 'Waits for the defined time until its truth value turns into true.',
+            icon: 'hourglass_empty',
+            key: 'wait',
+            init: null,
+            createForm: (form, element) => {
+                let withinTimeInput = $('<input class="form-control" type="number" placeholder="Time in seconds" min="0">');
+                form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
+                    .append('<label>Wait time:</label>').append('<br/>').append(withinTimeInput));
+            },
+            querify: function () {
+            }
+        }, {
+            name: 'Points in time',
+            description: 'Turns true at specified points in time.',
+            icon: 'date_range',
+            key: 'timestamp',
+            init: null,
+            createForm: (form, element) => {
+                const inputs = ['Minutes', 'Hours', 'Days of month', 'Months', 'Days of week'];
+                const explanation = $('<p>').html('The time points during which this pattern element is supposed to turn true' +
+                    ' are specified using a syntax that is similar to the one of the Unix command' +
+                    ' <a target="_blank" href="https://en.wikipedia.org/wiki/Cron#CRON_expression">&ldquo;crontab&rdquo;</a>.' +
+                    ' The following syntactical elements are available:');
+
+                const cheatsheet = $('<ul>');
+                cheatsheet.append($('<li>').html('<code>*</code>: Wildcard, selects all possible values'));
+                cheatsheet.append($('<li>').html('<code>x:y</code>: Specifies a range with <i>x</i> as upper' +
+                    ' and <i>y</i> as lower bound'));
+                cheatsheet.append($('<li>').html('<code>*/x</code>: Selects every <i>x</i>-th value'));
+                cheatsheet.append($('<li>').html('<code>[x, y]</code>: Combination of the expressions <i>x</i> and <i>y</i>'));
+
+                const example = $('<code>*/15  8:17  [*/2,1]  *  *</code>');
+                const exampleDescription = $('<p>').html('This specification matches every 15 minutes from 8am to 5pm' +
+                    ' on even numbered days of each month, as well as on the first day of the month.');
+
+                let inputTable = $('<table>');
+                let tableHeadRow = $('<tr>');
+                let tableInputRow = $('<tr>');
+
+                for (let i = 0; i < inputs.length; i++) {
+                    let input = $('<input class="form-control" type="text" placeholder="' + inputs[i] + '" maxlength="10">');
+                    input.val('*').css({
+                        'width': '95px',
+                        'margin-left': '5px',
+                        'margin-right': '5px',
+                        'text-align': 'center'
+                    });
+                    tableHeadRow.append($('<th>').addClass('align-center').append(inputs[i]));
+                    tableInputRow.append($('<td>').append(input))
+                }
+
+                inputTable.append($('<thead>').append(tableHeadRow));
+                inputTable.append($('<tbody>').append(tableInputRow));
+
+
+                form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
+                    .append('<label>Explaination:</label>')
+                    .append(explanation)
+                    .append(cheatsheet)
+                    .append('<br/>')
+                    .append('<label>Example:</label>')
+                    .append('<br/>')
+                    .append(example)
+                    .append(exampleDescription)
+                    .append('<label>Time points specification:</label>')
+                    .append($('<p>').html('Please specify the desired points in time below.'))
+                    .append(inputTable));
+            },
+            querify: function () {
+            }
+        }];
+        const SOURCE_ALIAS_PREFIX = 'event_';
+        const SOURCE_COMPONENT_TYPE_PROTOTYPE = {
+            //name and icon: Dynamically assigned
+            description: 'Turns true if an event (i.e. a value) of this component was received.',
+            key: 'source',
+            init: (element) => {
+                //Generate first alias for this source event
+                let defaultAlias = SOURCE_ALIAS_PREFIX + element.data(KEY_ID);
+                element.data(KEY_SOURCE_ALIAS, defaultAlias);
+            },
+            createForm: (form, element) => {
+                let eventId = element.data(KEY_ID);
+                let alias = element.data(KEY_SOURCE_ALIAS);
+                let aliasInput = $('<input class="form-control" type="text" placeholder="Alias" maxlength="50">');
+                aliasInput.val(alias);
+                aliasInput.on('change', function () {
+                    let newAliasValue = aliasInput.val();
+                    if (newAliasValue.length < 3) {
+                        newAliasValue = alias;
+                    }
+
+                    //Write new value
+                    element.data(KEY_SOURCE_ALIAS, newAliasValue);
+
+                    //Find the corresponding filter
+                    for (let i = 0; i < conditionsPickerFilters.length; i++) {
+                        let currentFilter = conditionsPickerFilters[i];
+
+                        //Check if current filter is the wanted one
+                        if (currentFilter.id === (CONDITIONS_PICKER_SOURCE_FILTER.prefix + eventId)) {
+                            //Update filter label to new alias
+                            currentFilter.label = newAliasValue;
+
+                            //Update conditions picker accordingly
+                            conditionsPicker.queryBuilder('setFilters', conditionsPickerFilters);
+
+                            break;
+                        }
+                    }
+                });
+
+                form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
+                    .append('<label>Alias:</label>')
+                    .append('<br/>')
+                    .append(aliasInput));
+            },
+            querify: function () {
+            }
+        };
+
+        //List of all available types (shortcut)
+        const ALL_ELEMENT_TYPES = OPERATOR_TYPES_LIST.concat(COMPONENT_TYPES_LIST, [SOURCE_COMPONENT_TYPE_PROTOTYPE]);
 
         const mainContainer = $('.' + CLASS_MAIN_CONTAINER);
         const patternContainer = $('.' + CLASS_PATTERN_CONTAINER);
@@ -539,25 +565,71 @@ app.directive('cepQueryEditor', [function () {
         }
 
         function addSourceToConditionsPicker(element) {
-            console.log("Add event");
-            console.log(element.data());
-
             let eventId = element.data(KEY_ID);
             let eventAlias = element.data(KEY_SOURCE_ALIAS);
 
-            let newEventFilterObject = {
-                id: 'event_' + eventId,
-                label: eventAlias,
-                type: 'double',
-                operators: CONDITION_PICKER_OPERATORS.map(x => x.id)
-            };
+            //List of filters to add
+            let addFiltersList = [];
+
+            //Iterate over all available filter types and create corresponding filter objects
+            for (let i = 0; i < CONDITIONS_PICKER_ALL_FILTER_TYPES.length; i++) {
+                let filterType = CONDITIONS_PICKER_ALL_FILTER_TYPES[i];
+
+                //Determine id and name to use for this filter
+                let filterId = filterType.prefix + eventId;
+                let filterLabel = eventAlias;
+                if (filterType !== CONDITIONS_PICKER_SOURCE_FILTER) {
+                    let sourceComponentData = element.data(KEY_SOURCE_COMPONENT_DATA);
+                    filterId = filterType.prefix + sourceComponentData.id;
+                    filterLabel = sourceComponentData.name;
+                }
+
+                //Do not add the new filter if already one with this id exists
+                if (conditionsPickerFilters.map(filter => filter.id).indexOf(filterId) !== -1) {
+                    continue;
+                }
+
+                //Create filter object for this filter type
+                let filterObject = {
+                    'id': filterId,
+                    'label': filterLabel,
+                    'type': 'double',
+                    'operators': CONDITIONS_PICKER_OPERATORS_PLAIN
+                };
+
+                //Add object to list of filters that are supposed to be added
+                addFiltersList.push(filterObject);
+
+                //Add filter to global filters list
+                conditionsPickerFilters.push(filterObject);
+            }
 
             //Update conditions picker
-            conditionsPicker.queryBuilder('addFilter', newEventFilterObject, conditionsPickerFilters.length);
+            conditionsPicker.queryBuilder('addFilter', addFiltersList, conditionsPickerFilters.length);
+        }
 
+        function removeSourceFromConditionsPicker(element) {
+            let eventId = element.data(KEY_ID);
 
-            //Add filter to global filters list
-            conditionsPickerFilters.push(newEventFilterObject);
+            //Stores the ids of filters that are supposed to be deleted
+            let deleteFiltersList = [];
+
+            //Iterate over all available filter types and remove the corresponding filters
+            for (let i = 0; i < CONDITIONS_PICKER_ALL_FILTER_TYPES.length; i++) {
+                let filterType = CONDITIONS_PICKER_ALL_FILTER_TYPES[i];
+
+                //Concat id of the filter to remove for the current filter type
+                let filterId = filterType.prefix + eventId;
+                if(filterType !== CONDITIONS_PICKER_SOURCE_FILTER){
+                    filterId = filterType.prefix + element.data(KEY_SOURCE_COMPONENT_DATA).id;
+                }
+
+                //Add id to list of filters that are supposed to be deleted
+                deleteFiltersList.push(filterId);
+            }
+
+            //Update conditions picker
+            conditionsPicker.queryBuilder('removeFilter', deleteFiltersList, true);
         }
 
         function dragStart() {
@@ -713,6 +785,10 @@ app.directive('cepQueryEditor', [function () {
                 placeholder.after(createOperatorStub());
             }
 
+            if (element.data(KEY_ELEMENT_KEY) === SOURCE_COMPONENT_TYPE_PROTOTYPE.key) {
+                removeSourceFromConditionsPicker(element);
+            }
+
             element.remove();
             simplify();
 
@@ -857,9 +933,21 @@ app.directive('cepQueryEditor', [function () {
                 });
 
                 this.on('afterCreateRuleFilters.queryBuilder', function (event, rule) {
-
                     function setFilterDropDownText(filterType) {
                         dropdownButton.html(filterType.short + ' <span class="caret"/>');
+                    }
+
+                    function updateAvailableFilters(filterType) {
+                        filterSelect.children('option').each(function () {
+                            let option = $(this);
+                            let value = option.val();
+                            //Hide select options that do not match the filter prefix
+                            if ((value.startsWith(filterType.prefix)) || (value === '-1')) {
+                                option.show();
+                            } else {
+                                option.hide();
+                            }
+                        });
                     }
 
                     function onTypeChoose(filterType) {
@@ -870,25 +958,16 @@ app.directive('cepQueryEditor', [function () {
                             filterSelect.trigger('change');
                         }
 
-                        //Hide select options that do not match the filter prefix
-                        filterSelect.children('option').each(function () {
-                            let option = $(this);
-                            let value = option.val();
-                            if ((value.startsWith(filterType.prefix)) || (value === '-1')) {
-                                option.show();
-                            } else {
-                                option.hide();
-                            }
-                        });
-
                         //Update last filter type choice for this rule
                         filterTypeChoices[rule.id] = filterType;
+
+                        setFilterDropDownText(filterType);
+                        updateAvailableFilters(filterType);
                     }
 
                     function createFilterDropDownItem(filterType) {
                         return $('<li>').append($('<a class="waves-effect waves-block"></a>').html(filterType.name)
                             .on('click', () => {
-                                setFilterDropDownText(filterType);
                                 onTypeChoose(filterType);
                             }));
                     }
@@ -926,10 +1005,8 @@ app.directive('cepQueryEditor', [function () {
                         filterSelect.hide();
                     } else {
                         setFilterDropDownText(filterTypeChoices[rule.id]);
+                        updateAvailableFilters(filterTypeChoices[rule.id]);
                     }
-
-                    //Hide useless null options (ony needed to make the builder work)
-                    filterSelect.find('option[value="null"]').hide();
                 });
             }, {});
 
