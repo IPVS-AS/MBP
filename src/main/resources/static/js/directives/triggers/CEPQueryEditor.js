@@ -29,6 +29,7 @@ app.directive('cepQueryEditor', [function () {
     const KEY_ID = 'id';
     const KEY_DETAILS_REF = 'details_ref';
     const KEY_OPERATOR_PRECEDENCE = 'operator_precedence';
+    const KEY_SOURCE_ALIAS = 'source_alias';
     const KEY_SOURCE_COMPONENT_DATA = 'source_data';
     const KEY_ELEMENT_KEY = 'element_key';
 
@@ -40,6 +41,7 @@ app.directive('cepQueryEditor', [function () {
         cssClass: 'before',
         precedence: 1,
         key: 'before',
+        init: null,
         createForm: (form, element) => {
             let withinTimeSwitchWrapper
                 = $('<div class="switch"><label>Off<input type="checkbox"><span class="lever"></span>On</label></div>');
@@ -66,6 +68,7 @@ app.directive('cepQueryEditor', [function () {
         cssClass: 'or',
         precedence: 2,
         key: 'or',
+        init: null,
         createForm: null,
         querify: function () {
         }
@@ -76,6 +79,7 @@ app.directive('cepQueryEditor', [function () {
         cssClass: 'and',
         precedence: 3,
         key: 'and',
+        init: null,
         createForm: null,
         querify: function () {
         }
@@ -86,6 +90,7 @@ app.directive('cepQueryEditor', [function () {
         description: 'Waits for the defined time until its truth value turns into true.',
         icon: 'hourglass_empty',
         key: 'wait',
+        init: null,
         createForm: (form, element) => {
             let withinTimeInput = $('<input class="form-control" type="number" placeholder="Time in seconds" min="0">');
             form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
@@ -98,9 +103,10 @@ app.directive('cepQueryEditor', [function () {
         description: 'Turns true at specified points in time.',
         icon: 'date_range',
         key: 'timestamp',
+        init: null,
         createForm: (form, element) => {
             const inputs = ['Minutes', 'Hours', 'Days of month', 'Months', 'Days of week'];
-            const explaination = $('<p>').html('The time points during which this pattern element is supposed to turn true' +
+            const explanation = $('<p>').html('The time points during which this pattern element is supposed to turn true' +
                 ' are specified using a syntax that is similar to the one of the Unix command' +
                 ' <a target="_blank" href="https://en.wikipedia.org/wiki/Cron#CRON_expression">&ldquo;crontab&rdquo;</a>.' +
                 ' The following syntactical elements are available:');
@@ -138,7 +144,7 @@ app.directive('cepQueryEditor', [function () {
 
             form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
                 .append('<label>Explaination:</label>')
-                .append(explaination)
+                .append(explanation)
                 .append(cheatsheet)
                 .append('<br/>')
                 .append('<label>Example:</label>')
@@ -152,15 +158,20 @@ app.directive('cepQueryEditor', [function () {
         querify: function () {
         }
     }];
-
+    const SOURCE_ALIAS_PREFIX = 'event_';
     const SOURCE_COMPONENT_TYPE_PROTOTYPE = {
         //name and icon: Dynamically assigned
         description: 'Turns true if an event (i.e. a value) of this component was received.',
         key: 'source',
+        init: (element) => {
+            //Generate first alias for this source event
+            let defaultAlias = SOURCE_ALIAS_PREFIX + element.data(KEY_ID);
+            element.data(KEY_SOURCE_ALIAS, defaultAlias);
+        },
         createForm: (form, element) => {
-            const defaultAlias = 'event' + element.data(KEY_ID);
+            let alias = element.data(KEY_SOURCE_ALIAS);
             let aliasInput = $('<input class="form-control" type="text" placeholder="Alias" maxlength="50">');
-            aliasInput.val(defaultAlias);
+            aliasInput.val(alias);
 
             form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
                 .append('<label>Alias:</label>')
@@ -173,6 +184,54 @@ app.directive('cepQueryEditor', [function () {
 
     //List of all available types (shortcut)
     const ALL_ELEMENT_TYPES = OPERATOR_TYPES_LIST.concat(COMPONENT_TYPES_LIST, [SOURCE_COMPONENT_TYPE_PROTOTYPE]);
+
+    //List of all available operators for the condition picker
+    const CONDITION_PICKER_OPERATORS = [{
+        'id': 'equal',
+        'sign': '='
+    }, {
+        'id': 'not_equal',
+        'sign': '&ne;'
+    }, {
+        'id': 'less',
+        'sign': '&lt;'
+    }, {
+        'id': 'less_or_equal',
+        'sign': '&le;'
+    }, {
+        'id': 'greater',
+        'sign': '&gt;'
+    }, {
+        'id': 'greater_or_equal',
+        'sign': '&ge;'
+    }, {
+        'id': 'between',
+        'sign': '&hArr;'
+    }, {
+        'id': 'not_between',
+        'sign': '&nhArr;'
+    }];
+    const CONDITIONS_PICKER_OPERATORS_PLAIN = CONDITION_PICKER_OPERATORS.map(operator => operator.id);
+    const CONDITIONS_PICKER_SOURCE_FILTER = {
+        'name': 'Single event',
+        'short': 'Event',
+        'prefix': SOURCE_ALIAS_PREFIX
+    };
+    const CONDITIONS_PICKER_AGGREGATION_FILTERS = [{
+        'name': 'Average',
+        'short': 'Average',
+        'prefix': 'avg_'
+    }, {
+        'name': 'Minimum',
+        'short': 'Minimum',
+        'prefix': 'min_'
+    }, {
+        'name': 'Maximum',
+        'short': 'Maximum',
+        'prefix': 'max_'
+    }];
+
+    const CONDITIONS_PICKER_ALL_FILTER_TYPES = CONDITIONS_PICKER_AGGREGATION_FILTERS.concat([CONDITIONS_PICKER_SOURCE_FILTER]);
 
     function init(scope, element, attrs) {
 
@@ -187,6 +246,14 @@ app.directive('cepQueryEditor', [function () {
         let categoryIdCounter = 0;
         let elementIdCounter = 0;
         let isDragging = false;
+
+        let conditionsPickerFilters = [{
+            //Null object filter that will be hidden, only needed to make the builder work at the beginning
+            id: 'null',
+            label: 'None',
+            type: 'double',
+            operators: CONDITIONS_PICKER_OPERATORS_PLAIN
+        }];
 
         function getElementType(element) {
             let key = element.data(KEY_ELEMENT_KEY);
@@ -427,14 +494,14 @@ app.directive('cepQueryEditor', [function () {
             });
         }
 
-        function prepareAddedPatternElement(element, prototype) {
-            //Copy all data from prototype to new pattern element
-            let elementData = prototype.data();
-            element.data(elementData);
+        function patternElementAdded(event, ui) {
+            let element = ui.helper;
+            let prototype = ui.item;
 
-            //Give element an id
-            let elementId = generateElementId();
-            element.data(KEY_ID, elementId);
+            //Copy data from prototype to new pattern element and give new element id
+            let elementData = prototype.data();
+            elementData[KEY_ID] = generateElementId();
+            element.data(elementData);
 
             //Type-specific preparations
             if (element.hasClass(CLASS_COMPONENT)) {
@@ -455,8 +522,42 @@ app.directive('cepQueryEditor', [function () {
                 });
             }
 
+            //Determine element type
+            let elementType = getElementType(element);
+            //Call init function (if available) as defined by the type of this event
+            if (typeof elementType.init === "function") {
+                elementType.init(element);
+            }
+
+            //Check if element is a source component, update the conditions picker accordingly
+            if (elementData[KEY_ELEMENT_KEY] === SOURCE_COMPONENT_TYPE_PROTOTYPE.key) {
+                addSourceToConditionsPicker(element);
+            }
+
             //Create details panel
             createPatternElementDetails(element);
+        }
+
+        function addSourceToConditionsPicker(element) {
+            console.log("Add event");
+            console.log(element.data());
+
+            let eventId = element.data(KEY_ID);
+            let eventAlias = element.data(KEY_SOURCE_ALIAS);
+
+            let newEventFilterObject = {
+                id: 'event_' + eventId,
+                label: eventAlias,
+                type: 'double',
+                operators: CONDITION_PICKER_OPERATORS.map(x => x.id)
+            };
+
+            //Update conditions picker
+            conditionsPicker.queryBuilder('addFilter', newEventFilterObject, conditionsPickerFilters.length);
+
+
+            //Add filter to global filters list
+            conditionsPickerFilters.push(newEventFilterObject);
         }
 
         function dragStart() {
@@ -468,10 +569,6 @@ app.directive('cepQueryEditor', [function () {
         function dragStop() {
             isDragging = false;
             patternContainer.removeClass("dragging");
-        }
-
-        function patternElementAdded(event, ui) {
-            prepareAddedPatternElement(ui.helper, ui.item);
         }
 
         function sortingStart(event, ui) {
@@ -696,7 +793,6 @@ app.directive('cepQueryEditor', [function () {
             });
         }
 
-
         function initOptions() {
             let conditionsPanel = $('<div class="panel panel-default">')
                 .append($('<div class="panel-heading">')
@@ -715,32 +811,8 @@ app.directive('cepQueryEditor', [function () {
         }
 
         function initConditionsPicker() {
-            //List of all available operators
-            const OPERATORS_LIST = [{
-                'id': 'equal',
-                'sign': '='
-            }, {
-                'id': 'not_equal',
-                'sign': '&ne;'
-            }, {
-                'id': 'less',
-                'sign': '&lt;'
-            }, {
-                'id': 'less_or_equal',
-                'sign': '&le;'
-            }, {
-                'id': 'greater',
-                'sign': '&gt;'
-            }, {
-                'id': 'greater_or_equal',
-                'sign': '&ge;'
-            }, {
-                'id': 'between',
-                'sign': '&hArr;'
-            }, {
-                'id': 'not_between',
-                'sign': '&nhArr;'
-            }];
+            //Remembers the filter type choices for each rule
+            let filterTypeChoices = {};
 
             $.fn.queryBuilder.define(CONDITION_PICKER_EXTENSION_NAME, function (options) {
 
@@ -759,14 +831,14 @@ app.directive('cepQueryEditor', [function () {
                         'font-size': '30px',
                         'font-weight': 'bold',
                         'vertical-align': 'middle',
-                    }).html(OPERATORS_LIST[operatorStartIndex].sign).data(KEY_OPERATOR_INDEX, operatorStartIndex)
+                    }).html(CONDITION_PICKER_OPERATORS[operatorStartIndex].sign).data(KEY_OPERATOR_INDEX, operatorStartIndex)
                         .on('click', function () {
                             let element = $(this);
                             let currentIndex = element.data(KEY_OPERATOR_INDEX) || 0;
-                            let nextIndex = (currentIndex + 1) % OPERATORS_LIST.length;
+                            let nextIndex = (currentIndex + 1) % CONDITION_PICKER_OPERATORS.length;
                             element.data(KEY_OPERATOR_INDEX, nextIndex);
-                            element.html(OPERATORS_LIST[nextIndex].sign);
-                            operatorSelect.val(OPERATORS_LIST[nextIndex].id).trigger('change');
+                            element.html(CONDITION_PICKER_OPERATORS[nextIndex].sign);
+                            operatorSelect.val(CONDITION_PICKER_OPERATORS[nextIndex].id).trigger('change');
                         });
 
                     //Place alternative operator chooser before select and hide select
@@ -785,17 +857,44 @@ app.directive('cepQueryEditor', [function () {
                 });
 
                 this.on('afterCreateRuleFilters.queryBuilder', function (event, rule) {
-                    function onTypeChoose() {
+
+                    function setFilterDropDownText(filterType) {
+                        dropdownButton.html(filterType.short + ' <span class="caret"/>');
+                    }
+
+                    function onTypeChoose(filterType) {
                         filterSelect.show();
-                        if (lastTypeChoice !== filterSelect.val()) {
+
+                        if (filterTypeChoices[rule.id] !== filterType) {
                             filterSelect.val('-1');
                             filterSelect.trigger('change');
                         }
-                        lastTypeChoice = filterSelect.val();
+
+                        //Hide select options that do not match the filter prefix
+                        filterSelect.children('option').each(function () {
+                            let option = $(this);
+                            let value = option.val();
+                            if ((value.startsWith(filterType.prefix)) || (value === '-1')) {
+                                option.show();
+                            } else {
+                                option.hide();
+                            }
+                        });
+
+                        //Update last filter type choice for this rule
+                        filterTypeChoices[rule.id] = filterType;
+                    }
+
+                    function createFilterDropDownItem(filterType) {
+                        return $('<li>').append($('<a class="waves-effect waves-block"></a>').html(filterType.name)
+                            .on('click', () => {
+                                setFilterDropDownText(filterType);
+                                onTypeChoose(filterType);
+                            }));
                     }
 
                     //Apply styling
-                    $('button[data-add="rule"]').html('<i class="material-icons">add</i> Add rule');
+                    $('button[data-add="rule"]').html('<i class="material-icons">add</i> Add condition');
                     $('button[data-add="group"]').html('<i class="material-icons">add_circle_outline</i> Add group');
                     $('button[data-delete="rule"]').html('<i class="material-icons">delete</i>');
                     $('button[data-delete="group"]').html('<i class="material-icons">delete_forever</i> Delete group');
@@ -804,22 +903,16 @@ app.directive('cepQueryEditor', [function () {
                     let filterContainer = $(ruleElement.find('div.rule-filter-container'));
                     let filterSelect = $(filterContainer.find('select'));
 
-                    let lastTypeChoice = null;
-
                     let dropdownButton = $('<button type="button" class="btn bg-primary dropdown-toggle" ' +
                         'data-toggle="dropdown">Select type <span class="caret"/></button>');
                     let dropdown = $('<ul class="dropdown-menu">');
-                    let buttonSingleEvent = $('<li>').append($('<a class="waves-effect waves-block">Single event</a>')
-                        .on('click', () => {
-                            dropdownButton.html('Event <span class="caret"/>');
-                            onTypeChoose();
-                        }));
-                    let buttonAggregation = $('<li>').append($('<a class="waves-effect waves-block">Aggregation</a>')
-                        .on('click', () => {
-                            dropdownButton.html('Aggreg. <span class="caret"/>');
-                            onTypeChoose(this);
-                        }));
-                    dropdown.append(buttonSingleEvent).append(buttonAggregation);
+                    dropdown.append(createFilterDropDownItem(CONDITIONS_PICKER_SOURCE_FILTER));
+                    dropdown.append($('<div class="divider">'));
+
+                    //Add all aggregation filters
+                    for (let i = 0; i < CONDITIONS_PICKER_AGGREGATION_FILTERS.length; i++) {
+                        dropdown.append(createFilterDropDownItem(CONDITIONS_PICKER_AGGREGATION_FILTERS[i]))
+                    }
 
                     let dropdownContainer = $('<div class="btn-group">').append(dropdownButton).append(dropdown)
                         .css({
@@ -828,29 +921,25 @@ app.directive('cepQueryEditor', [function () {
                         });
 
                     filterContainer.prepend(dropdownContainer);
-                    filterSelect.hide();
+
+                    if (typeof (filterTypeChoices[rule.id]) === 'undefined') {
+                        filterSelect.hide();
+                    } else {
+                        setFilterDropDownText(filterTypeChoices[rule.id]);
+                    }
+
+                    //Hide useless null options (ony needed to make the builder work)
+                    filterSelect.find('option[value="null"]').hide();
                 });
             }, {});
-
-            let predefinedConditionsFilter = [
-                {
-                    id: 'event1',
-                    label: 'event1',
-                    type: 'double',
-                    operators: OPERATORS_LIST.map(x => x.id)
-                }
-            ];
 
             let pluginsObject = {};
             pluginsObject[CONDITION_PICKER_EXTENSION_NAME] = {};
 
             conditionsPicker.queryBuilder({
-                filters: predefinedConditionsFilter,
+                filters: conditionsPickerFilters,
                 plugins: pluginsObject
             });
-
-
-            //conditionsPicker.queryBuilder('setFilters', true, filterArray);
         }
 
         (function () {
