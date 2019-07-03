@@ -225,8 +225,11 @@ app.directive('cepQueryEditor', [function () {
                 aliasInput.val(alias);
                 aliasInput.on('change', function () {
                     let newAliasValue = aliasInput.val();
-                    if (newAliasValue.length < 3) {
-                        newAliasValue = alias;
+
+                    //Do not allow alias with less than 3 chars or other alias that start with the alias prefix
+                    if ((newAliasValue.length < 3) || (newAliasValue.startsWith(SOURCE_ALIAS_PREFIX))) {
+                        newAliasValue = SOURCE_ALIAS_PREFIX + eventId;
+                        aliasInput.val(newAliasValue);
                     }
 
                     //Write new value
@@ -620,7 +623,7 @@ app.directive('cepQueryEditor', [function () {
 
                 //Concat id of the filter to remove for the current filter type
                 let filterId = filterType.prefix + eventId;
-                if(filterType !== CONDITIONS_PICKER_SOURCE_FILTER){
+                if (filterType !== CONDITIONS_PICKER_SOURCE_FILTER) {
                     filterId = filterType.prefix + element.data(KEY_SOURCE_COMPONENT_DATA).id;
                 }
 
@@ -889,6 +892,8 @@ app.directive('cepQueryEditor', [function () {
         function initConditionsPicker() {
             //Remembers the filter type choices for each rule
             let filterTypeChoices = {};
+            //Remembers user options regarding aggregation windows
+            let aggregationWindowOptions = {};
 
             $.fn.queryBuilder.define(CONDITION_PICKER_EXTENSION_NAME, function (options) {
 
@@ -1007,6 +1012,92 @@ app.directive('cepQueryEditor', [function () {
                         setFilterDropDownText(filterTypeChoices[rule.id]);
                         updateAvailableFilters(filterTypeChoices[rule.id]);
                     }
+                });
+
+                //TODO
+                this.on('afterUpdateRuleFilter.queryBuilder', function (event, rule) {
+                    function setWindowTypeDropdownText(text) {
+                        windowTypeDropdownButton.html(text + ' <span class="caret"/>');
+                    }
+
+                    //Apply styling
+                    $('.rule-value-container input:first').css({
+                        'width': '70px',
+                        'text-align': 'center'
+                    });
+
+                    if (typeof (filterTypeChoices[rule.id]) === 'undefined') {
+                        return;
+                    }
+
+                    //Get filter type
+                    let filterType = filterTypeChoices[rule.id];
+                    if (filterType === CONDITIONS_PICKER_SOURCE_FILTER) {
+                        return;
+                    }
+
+                    let ruleElement = rule.$el;
+                    let filterContainer = $(ruleElement.find('div.rule-filter-container'));
+                    let filterSelect = $(filterContainer.find('select'));
+                    let valueContainer = $(ruleElement.find('div.rule-value-container'));
+
+                    if ((filterSelect.val() === '-1')) {
+                        delete aggregationWindowOptions[rule.id];
+                        return;
+                    }
+
+                    if (typeof (aggregationWindowOptions[rule.id]) !== 'undefined' &&
+                        valueContainer.find('button.dropdown-toggle').length) {
+                        return;
+                    }
+
+                    aggregationWindowOptions[rule.id] = {
+                        'type': null,
+                        'size': 1
+                    };
+
+                    let windowTypeDropdownButton = $('<button type="button" class="btn btn-warning dropdown-toggle" ' +
+                        'data-toggle="dropdown">Select window <span class="caret"/></button>');
+                    let windowTypeDropdown = $('<ul class="dropdown-menu">');
+                    let dropdownLengthWindowItem = $('<li>').append($('<a class="waves-effect waves-block"></a>')
+                        .html('Length window').on('click', () => {
+                            aggregationWindowOptions[rule.id].type = 'length';
+                            setWindowTypeDropdownText('Length');
+                            windowSizeUnitDisplay.hide();
+                        }));
+                    let dropdownTimeWindowItem = $('<li>').append($('<a class="waves-effect waves-block"></a>')
+                        .html('Time window').on('click', () => {
+                            aggregationWindowOptions[rule.id].type = 'time';
+                            setWindowTypeDropdownText('Time');
+                            windowSizeUnitDisplay.show();
+                        }));
+
+                    windowTypeDropdown.append(dropdownLengthWindowItem).append(dropdownTimeWindowItem);
+
+                    let windowTypeDropdownContainer = $('<div class="btn-group">')
+                        .append(windowTypeDropdownButton).append(windowTypeDropdown)
+                        .css({
+                            'box-shadow': 'none',
+                            'margin-left': '10px',
+                            'margin-right': '2px'
+                        });
+
+                    let windowSizeInput = $('<input type="number" placeholder="Size" min="1" class="form-control">').css({
+                        'width': '60px',
+                        'text-align': 'center'
+                    }).on('change', function () {
+                        aggregationWindowOptions[rule.id].size = parseInt(windowSizeInput.val());
+                    });
+
+                    let windowSizeUnitDisplay = $('<span>').html('sec').css({
+                        'font-size': '14px',
+                        'font-weight': 'bold',
+                        'margin-left': '5px'
+                    }).hide();
+
+                    valueContainer.append(windowTypeDropdownContainer)
+                        .append(windowSizeInput)
+                        .append(windowSizeUnitDisplay);
                 });
             }, {});
 
