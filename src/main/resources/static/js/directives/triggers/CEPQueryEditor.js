@@ -52,13 +52,8 @@ app.directive('cepQueryEditor', [function () {
     }, {
         'id': 'greater_or_equal',
         'sign': '&ge;'
-    }, {
-        'id': 'between',
-        'sign': '&hArr;'
-    }, {
-        'id': 'not_between',
-        'sign': '&nhArr;'
     }];
+
     const CONDITIONS_PICKER_OPERATORS_PLAIN = CONDITION_PICKER_OPERATORS.map(operator => operator.id);
     const CONDITIONS_PICKER_SOURCE_FILTER = {
         'name': 'Single event',
@@ -80,6 +75,10 @@ app.directive('cepQueryEditor', [function () {
     }];
 
     const CONDITIONS_PICKER_ALL_FILTER_TYPES = CONDITIONS_PICKER_AGGREGATION_FILTERS.concat([CONDITIONS_PICKER_SOURCE_FILTER]);
+
+    const CONDITIONS_PICKER_WINDOW_UNITS = [{short: 'seconds', querySymbol: 's'},
+        {short: 'minutes', querySymbol: 'm'}, {short: 'hours', querySymbol: 'h'}, {short: 'days', querySymbol: 'd'}];
+
 
     function init(scope, element, attrs) {
 
@@ -897,6 +896,18 @@ app.directive('cepQueryEditor', [function () {
 
             $.fn.queryBuilder.define(CONDITION_PICKER_EXTENSION_NAME, function (options) {
 
+                this.on('afterAddGroup.queryBuilder', function (event, group) {
+                    console.log("hier!!");
+                    console.log(group);
+                    let element = group.$el;
+
+                    //Apply styling
+                    element.css({
+                        'background': 'none',
+                        'border': '1px solid grey'
+                    });
+                });
+
                 this.on('afterCreateRuleOperators.queryBuilder', function (event, rule) {
                     const KEY_OPERATOR_INDEX = 'current_index';
 
@@ -1014,7 +1025,6 @@ app.directive('cepQueryEditor', [function () {
                     }
                 });
 
-                //TODO
                 this.on('afterUpdateRuleFilter.queryBuilder', function (event, rule) {
                     function setWindowTypeDropdownText(text) {
                         windowTypeDropdownButton.html(text + ' <span class="caret"/>');
@@ -1053,7 +1063,8 @@ app.directive('cepQueryEditor', [function () {
 
                     aggregationWindowOptions[rule.id] = {
                         'type': null,
-                        'size': 1
+                        'size': 1,
+                        'unit': 0
                     };
 
                     let windowTypeDropdownButton = $('<button type="button" class="btn btn-warning dropdown-toggle" ' +
@@ -1063,13 +1074,17 @@ app.directive('cepQueryEditor', [function () {
                         .html('Length window').on('click', () => {
                             aggregationWindowOptions[rule.id].type = 'length';
                             setWindowTypeDropdownText('Length');
-                            windowSizeUnitDisplay.hide();
+                            windowSizeInput.show();
+                            lengthWindowSizeUnitDisplay.show();
+                            timeWindowSizeUnitDisplay.hide();
                         }));
                     let dropdownTimeWindowItem = $('<li>').append($('<a class="waves-effect waves-block"></a>')
                         .html('Time window').on('click', () => {
                             aggregationWindowOptions[rule.id].type = 'time';
                             setWindowTypeDropdownText('Time');
-                            windowSizeUnitDisplay.show();
+                            windowSizeInput.show();
+                            lengthWindowSizeUnitDisplay.hide();
+                            timeWindowSizeUnitDisplay.show();
                         }));
 
                     windowTypeDropdown.append(dropdownLengthWindowItem).append(dropdownTimeWindowItem);
@@ -1085,11 +1100,23 @@ app.directive('cepQueryEditor', [function () {
                     let windowSizeInput = $('<input type="number" placeholder="Size" min="1" class="form-control">').css({
                         'width': '60px',
                         'text-align': 'center'
-                    }).on('change', function () {
+                    }).hide().on('change', function () {
                         aggregationWindowOptions[rule.id].size = parseInt(windowSizeInput.val());
                     });
 
-                    let windowSizeUnitDisplay = $('<span>').html('sec').css({
+                    let defaultUnit = CONDITIONS_PICKER_WINDOW_UNITS[aggregationWindowOptions[rule.id].unit].short;
+                    let timeWindowSizeUnitDisplay = $('<span>').addClass('clickable').html(defaultUnit).css({
+                        'font-size': '14px',
+                        'font-weight': 'bold',
+                        'margin-left': '5px'
+                    }).hide().on('click', function () {
+                        let currentIndex = aggregationWindowOptions[rule.id].unit;
+                        let newIndex = (currentIndex + 1) % CONDITIONS_PICKER_WINDOW_UNITS.length;
+                        $(this).html(CONDITIONS_PICKER_WINDOW_UNITS[newIndex].short);
+                        aggregationWindowOptions[rule.id].unit = newIndex;
+                    });
+
+                    let lengthWindowSizeUnitDisplay = $('<span>').addClass('clickable').html('events').css({
                         'font-size': '14px',
                         'font-weight': 'bold',
                         'margin-left': '5px'
@@ -1097,7 +1124,8 @@ app.directive('cepQueryEditor', [function () {
 
                     valueContainer.append(windowTypeDropdownContainer)
                         .append(windowSizeInput)
-                        .append(windowSizeUnitDisplay);
+                        .append(timeWindowSizeUnitDisplay)
+                        .append(lengthWindowSizeUnitDisplay);
                 });
             }, {});
 
