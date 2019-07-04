@@ -12,10 +12,10 @@ app.controller('RuleTriggerListController',
             var vm = this;
 
             //Holds the wizard object for adding triggers
-            var wizard = null;
+            let wizard = null;
 
             //Create array of component categories for query editor
-            var componentList = [{
+            let componentList = [{
                 name: 'Sensors',
                 icon: 'settings_remote',
                 list: sensorList,
@@ -45,12 +45,12 @@ app.controller('RuleTriggerListController',
              * @returns A promise of the user's decision
              */
             function confirmDelete(data) {
-                var ruleTriggerId = data.id;
-                var ruleTriggerName = "";
+                let ruleTriggerId = data.id;
+                let ruleTriggerName = "";
 
                 //Determines the rule trigger's name by checking the list
-                for (var i = 0; i < ruleTriggerList.length; i++) {
-                    if (ruleTriggerId == ruleTriggerList[i].id) {
+                for (let i = 0; i < ruleTriggerList.length; i++) {
+                    if (ruleTriggerId === ruleTriggerList[i].id) {
                         ruleTriggerName = ruleTriggerList[i].name;
                         break;
                     }
@@ -70,12 +70,28 @@ app.controller('RuleTriggerListController',
             }
 
             /**
+             * [Public]
+             * Requests the CEP query builder directive to generate a query string for the current query as
+             * defined by the user.
+             */
+            function requestQueryString() {
+                vm.queryEditorApi.requestQueryString();
+            }
+
+            /**
              * [Private]
              * Initializes the wizard that allows to add new triggers.
              */
             function initWizard() {
                 wizard = $('#' + WIZARD_CONTAINER_ID).steps({
-                    bodyTag: "section"
+                    bodyTag: "section",
+                    onStepChanging: function (event, currentIndex, newIndex) {
+                        if ((currentIndex === 1) && (newIndex > 1)) {
+                            requestQueryString();
+                            return false;
+                        }
+                        return true;
+                    }
                 });
             }
 
@@ -105,7 +121,7 @@ app.controller('RuleTriggerListController',
                 },
                 function () {
                     //Callback
-                    var ruleTrigger = vm.addRuleTriggerCtrl.result;
+                    let ruleTrigger = vm.addRuleTriggerCtrl.result;
 
                     //Make sure the result is valid
                     if (ruleTrigger) {
@@ -126,7 +142,7 @@ app.controller('RuleTriggerListController',
                 },
                 function () {
                     //Callback
-                    var id = vm.deleteRuleTriggerCtrl.result;
+                    let id = vm.deleteRuleTriggerCtrl.result;
                     vm.ruleTriggerListCtrl.removeItem(id);
                 }
             );

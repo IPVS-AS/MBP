@@ -897,8 +897,6 @@ app.directive('cepQueryEditor', [function () {
             $.fn.queryBuilder.define(CONDITION_PICKER_EXTENSION_NAME, function (options) {
 
                 this.on('afterAddGroup.queryBuilder', function (event, group) {
-                    console.log("hier!!");
-                    console.log(group);
                     let element = group.$el;
 
                     //Apply styling
@@ -1116,7 +1114,7 @@ app.directive('cepQueryEditor', [function () {
                         aggregationWindowOptions[rule.id].unit = newIndex;
                     });
 
-                    let lengthWindowSizeUnitDisplay = $('<span>').addClass('clickable').html('events').css({
+                    let lengthWindowSizeUnitDisplay = $('<span>').html('events').css({
                         'font-size': '14px',
                         'font-weight': 'bold',
                         'margin-left': '5px'
@@ -1138,6 +1136,11 @@ app.directive('cepQueryEditor', [function () {
             });
         }
 
+        function buildQueryString() {
+            alert("get query string");
+        }
+
+
         (function () {
             initOperators();
             initSourceComponents(scope.componentList);
@@ -1148,6 +1151,13 @@ app.directive('cepQueryEditor', [function () {
 
             initOptions();
         })();
+
+        /*
+        Defines the exposed API.
+         */
+        scope.api = {
+            'requestQueryString': buildQueryString
+        };
     }
 
     /**
@@ -1181,7 +1191,9 @@ app.directive('cepQueryEditor', [function () {
         ,
         link: link,
         scope: {
+            api: '=api',
             componentList: '=componentList'
         }
     };
-}]);
+}
+]);
