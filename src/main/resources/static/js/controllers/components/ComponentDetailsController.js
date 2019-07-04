@@ -205,21 +205,21 @@ app.controller('ComponentDetailsController',
                 //Execute start request
                 ComponentService.startComponent(COMPONENT_ID, COMPONENT_TYPE, vm.parameterValues)
                     .then(function (response) {
-                        //Success, check if everything worked well
-                        if (!response.data.success) {
+                            //Success, check if everything worked well
+                            if (!response.data.success) {
+                                vm.deploymentState = 'UNKNOWN';
+                                NotificationService.notify('Error during starting: ' + response.data.globalMessage, 'error');
+                                return;
+                            }
+                            //Notify user
+                            vm.deploymentState = 'RUNNING';
+                            NotificationService.notify('Component started successfully.', 'success');
+                        },
+                        function (response) {
+                            //Failure
                             vm.deploymentState = 'UNKNOWN';
-                            NotificationService.notify('Error during starting: ' + response.data.globalMessage, 'error');
-                            return;
-                        }
-                        //Notify user
-                        vm.deploymentState = 'RUNNING';
-                        NotificationService.notify('Component started successfully.', 'success');
-                    },
-                    function (response) {
-                        //Failure
-                        vm.deploymentState = 'UNKNOWN';
-                        NotificationService.notify('Starting failed.', 'error');
-                    }).then(function () {
+                            NotificationService.notify('Starting failed.', 'error');
+                        }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
                 });
@@ -269,15 +269,16 @@ app.controller('ComponentDetailsController',
              */
             function retrieveComponentData(numberLogs, descending, unit) {
                 //Set default order
+                var order = 'asc';
+
+                //Check for user option
                 if (descending) {
-                    descending = 'desc';
-                } else {
-                    descending = 'asc'
+                    order = 'desc';
                 }
 
                 //Initialize parameters for the server request
                 var pageDetails = {
-                    sort: 'date,' + descending,
+                    sort: 'time,' + order,
                     size: numberLogs
                 };
 

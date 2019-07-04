@@ -38,6 +38,6 @@ public class UnitConverterService {
         convertedValue = Math.round(convertedValue * roundingConst) / roundingConst;
 
         //Write value to log
-        valueLog.setValue(Double.toString(convertedValue));
+        valueLog.setValue(convertedValue);
     }
 }

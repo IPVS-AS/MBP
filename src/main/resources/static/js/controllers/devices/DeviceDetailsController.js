@@ -443,15 +443,16 @@ app.controller('DeviceDetailsController',
              */
             function retrieveMonitoringData(monitoringAdapterId, numberLogs, descending, unit) {
                 //Set default order
+                var order = 'asc';
+
+                //Check for user option
                 if (descending) {
-                    descending = 'desc';
-                } else {
-                    descending = 'asc'
+                    order = 'desc';
                 }
 
                 //Initialize parameters for the server request
                 var pageDetails = {
-                    sort: 'date,' + descending,
+                    sort: 'time,' + order,
                     size: numberLogs
                 };
 

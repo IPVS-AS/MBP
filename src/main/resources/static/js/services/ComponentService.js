@@ -152,14 +152,13 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
 
             //Iterate over all received value logs
             for (var i = 0; i < receivedLogs.length; i++) {
-                //Extract value and date for the current log and format them
+                //Extract value and time for the current log and format them
                 var value = receivedLogs[i].value * 1;
-                var date = receivedLogs[i].date;
-                date = date.replace(/\s/g, "T");
-                date = dateToString(new Date(date));
+                var time = receivedLogs[i].time.epochSecond * 1000;
+                time = dateToString(new Date(time));
 
-                //Create a (date, value) tuple and add it to the array
-                var tuple = [date, value];
+                //Create a (time, value) tuple and add it to the array
+                var tuple = [time, value];
                 finalValues.push(tuple);
             }
 

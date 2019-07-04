@@ -3,7 +3,6 @@ package org.citopt.connde.web.rest.event_handler;
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
-import org.citopt.connde.domain.valueLog.ValueLog;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.ValueLogRepository;
@@ -53,9 +52,7 @@ public class AdapterEventHandler {
             //Undeploy actuator if running
             sshDeployer.undeployIfRunning(actuator);
 
-            //Get affected value logs and delete them
-            List<ValueLog> valueLogs = valueLogRepository.findListByIdref(actuator.getId());
-            valueLogRepository.delete(valueLogs);
+            //TODO Delete value logs with idref actuator.getId()
 
             //Delete actuator
             actuatorRepository.delete(projection.getId());
@@ -69,9 +66,7 @@ public class AdapterEventHandler {
             //Undeploy sensor if running
             sshDeployer.undeployIfRunning(sensor);
 
-            //Get affected value logs and delete them
-            List<ValueLog> valueLogs = valueLogRepository.findListByIdref(sensor.getId());
-            valueLogRepository.delete(valueLogs);
+            //TODO Delete value logs with idref sensor.getId()
 
             //Delete sensor
             sensorRepository.delete(projection.getId());

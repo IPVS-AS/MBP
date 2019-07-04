@@ -13,6 +13,7 @@ How to install the MBP and use its API is explained in detail in the following:
 The following sofware components are used in order to set up the MBP:  
 - [Mosquitto MQTT Broker](https://mosquitto.org/download/)
 - [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community)
+- [InfluxDB](https://portal.influxdata.com/downloads/)
 - Java8
 - [Tomcat8](https://tomcat.apache.org/download-80.cgi)
 - Maven
@@ -26,7 +27,7 @@ Please run the [installation script](install.sh), which automatically install th
 
 ### 1.3 Installation on Windows
 Please execute the following steps:  
-- Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), and [Tomcat8](https://tomcat.apache.org/download-80.cgi)   
+- Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), [InfluxDB](https://portal.influxdata.com/downloads/) and [Tomcat8](https://tomcat.apache.org/download-80.cgi)   
 - Create the *MBP.war* file by building the provided maven project
     
     `$ mvn clean install`  

@@ -47,10 +47,6 @@ public class ActuatorEventHandler {
      */
     @HandleAfterDelete
     public void afterActuatorDelete(Actuator actuator) {
-        //Get affected value logs
-        List<ValueLog> valueLogs = valueLogRepository.findListByIdref(actuator.getId());
-
-        //Delete the logs from repository
-        valueLogRepository.delete(valueLogs);
+        //TODO Delete value logs with idref actuator.getId()
     }
 }

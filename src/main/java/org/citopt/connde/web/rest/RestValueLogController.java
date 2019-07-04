@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.measure.converter.UnitConverter;
 import javax.measure.unit.Unit;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * REST Controller for retrieving value logs for certain components. Furthermore, it provides
@@ -33,10 +31,10 @@ import java.util.List;
 public class RestValueLogController {
 
     @Autowired
-    UnitConverterService unitConverterService;
+    private UnitConverterService unitConverterService;
 
     @Autowired
-    ValueLogRepository valueLogRepository;
+    private ValueLogRepository valueLogRepository;
 
     @Autowired
     private ActuatorRepository actuatorRepository;
@@ -165,7 +163,7 @@ public class RestValueLogController {
         }
 
         //Get value logs for this component
-        Page<ValueLog> page = valueLogRepository.findAllByIdref(component.getId(), pageable);
+        Page<ValueLog> page = valueLogRepository.findAllByIdRef(component.getId(), pageable);
 
         //Check if a valid unit was provided, otherwise return the result already
         if ((unit == null) || unit.isEmpty()) {
@@ -208,13 +206,7 @@ public class RestValueLogController {
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
 
-        //Get list of all value logs for this component
-        List<ValueLog> valueLogs = valueLogRepository.findListByIdref(component.getId());
-
-        //Iterate over all value logs and delete them one by one
-        for (ValueLog valueLog : valueLogs) {
-            valueLogRepository.delete(valueLog);
-        }
+        valueLogRepository.deleteByIdRef(component.getId());
 
         //Return success response
         return new ResponseEntity(HttpStatus.OK);
