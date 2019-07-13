@@ -17,14 +17,17 @@ app.controller('RuleTriggerListController',
             //Create array of component categories for query editor
             let componentList = [{
                 name: 'Sensors',
+                resourceName: 'sensor',
                 icon: 'settings_remote',
                 list: sensorList,
             }, {
                 name: 'Actuators',
+                resourceName: 'actuator',
                 icon: 'wb_incandescent',
                 list: actuatorList
             }, {
                 name: 'Monitoring',
+                resourceName: 'monitoring',
                 icon: 'timeline',
                 list: monitoringComponentList
             }];

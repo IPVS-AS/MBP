@@ -31,6 +31,7 @@ app.directive('cepQueryEditor', [function () {
     const KEY_OPERATOR_PRECEDENCE = 'operator_precedence';
     const KEY_SOURCE_ALIAS = 'source_alias';
     const KEY_SOURCE_COMPONENT_DATA = 'source_data';
+    const KEY_SOURCE_RESOURCE_NAME = "source_resource";
     const KEY_ELEMENT_KEY = 'element_key';
 
     //List of all available operators for the condition picker
@@ -92,9 +93,9 @@ app.directive('cepQueryEditor', [function () {
             init: null,
             createForm: (form, element) => {
                 let withinTimeSwitchWrapper
-                    = $('<div class="switch"><label>Off<input type="checkbox"><span class="lever"></span>On</label></div>');
+                    = $('<div class="switch"><label>Off<input type="checkbox" name="withinSwitch"><span class="lever"></span>On</label></div>');
                 let withinTimeSwitch = withinTimeSwitchWrapper.find('input');
-                let withinTimeInput = $('<input class="form-control" type="number" placeholder="Time in seconds" min="0">');
+                let withinTimeInput = $('<input class="form-control" type="number" name="withinInput" placeholder="Time in seconds" min="0">');
                 form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
                     .append('<label>Within time interval:</label>').append('<br/>')
                     .append(withinTimeSwitchWrapper)
@@ -108,7 +109,16 @@ app.directive('cepQueryEditor', [function () {
                 });
             },
             querify: (element, detailsPage, leftSide, rightSide) => {
-                return "before(" + leftSide + ", " + rightSide + ")";
+                let withinSwitch = detailsPage.find('input[name="withinSwitch"]');
+
+                if (withinSwitch.prop('checked')) {
+                    let withinInput = detailsPage.find('input[name="withinInput"]');
+                    let withinTimeMS = withinInput.val() * 1000;
+
+                    return "every (" + leftSide + " -> " + rightSide + " WHERE timer:within(" + withinTimeMS + "))";
+                }
+
+                return leftSide + " -> " + rightSide;
             }
         }, {
             name: 'Or',
@@ -120,7 +130,7 @@ app.directive('cepQueryEditor', [function () {
             init: null,
             createForm: null,
             querify: (element, detailsPage, leftSide, rightSide) => {
-                return "or(" + leftSide + ", " + rightSide + ")";
+                return leftSide + " or " + rightSide;
             }
         }, {
             name: 'And',
@@ -132,7 +142,7 @@ app.directive('cepQueryEditor', [function () {
             init: null,
             createForm: null,
             querify: (element, detailsPage, leftSide, rightSide) => {
-                return "and(" + leftSide + ", " + rightSide + ")";
+                return leftSide + " and " + rightSide;
             }
         }];
 
@@ -207,6 +217,9 @@ app.directive('cepQueryEditor', [function () {
                     .append(inputTable));
             },
             querify: (element, detailsPage) => {
+                console.log(element.data());
+                console.log("Details:");
+                console.log(detailsPage);
             }
         }];
         const SOURCE_ALIAS_PREFIX = 'event_';
@@ -259,8 +272,11 @@ app.directive('cepQueryEditor', [function () {
                     .append(aliasInput));
             },
             querify: (element, detailsPage) => {
-                let elementId = element.data(KEY_ID);
-                return "event_" + elementId;
+                let resourceName = element.data(KEY_SOURCE_RESOURCE_NAME);
+                let componentData = element.data(KEY_SOURCE_COMPONENT_DATA);
+                let alias = element.data(KEY_SOURCE_ALIAS);
+
+                return alias + "=" + resourceName + "_" + componentData.id;
             }
         };
 
@@ -343,13 +359,14 @@ app.directive('cepQueryEditor', [function () {
                 .addClass(CLASS_STUB);
         }
 
-        function createSourceComponentType(component, icon) {
+        function createSourceComponentType(component, resourceName, icon) {
             let newType = Object.assign({}, SOURCE_COMPONENT_TYPE_PROTOTYPE);
             newType.icon = icon;
             newType.name = component.name;
 
             let element = createComponentType(newType);
             element.data(KEY_SOURCE_COMPONENT_DATA, component);
+            element.data(KEY_SOURCE_RESOURCE_NAME, resourceName);
 
             return element;
         }
@@ -494,16 +511,20 @@ app.directive('cepQueryEditor', [function () {
             //Get all detail panels
             let panels = detailsContainer.children();
 
+            //References found panels
+            let foundPanel = null;
+
             //Iterate over all panels
             panels.each(function () {
                 let panel = $(this);
 
                 if (panel.data(KEY_DETAILS_REF) === elementId) {
-                    return panel.find('.panel-body');
+                    foundPanel = panel.find('.panel-body');
+                    return false;
                 }
             });
 
-            return null;
+            return foundPanel;
         }
 
         function highlightPrecedence(operator) {
@@ -590,9 +611,6 @@ app.directive('cepQueryEditor', [function () {
             let eventId = element.data(KEY_ID);
             let eventAlias = element.data(KEY_SOURCE_ALIAS);
 
-            //List of filters to add
-            let addFiltersList = [];
-
             //Iterate over all available filter types and create corresponding filter objects
             for (let i = 0; i < CONDITIONS_PICKER_ALL_FILTER_TYPES.length; i++) {
                 let filterType = CONDITIONS_PICKER_ALL_FILTER_TYPES[i];
@@ -619,15 +637,12 @@ app.directive('cepQueryEditor', [function () {
                     'operators': CONDITIONS_PICKER_OPERATORS_PLAIN
                 };
 
-                //Add object to list of filters that are supposed to be added
-                addFiltersList.push(filterObject);
-
                 //Add filter to global filters list
                 conditionsPickerFilters.push(filterObject);
             }
 
             //Update conditions picker
-            conditionsPicker.queryBuilder('addFilter', addFiltersList, conditionsPickerFilters.length);
+            conditionsPicker.queryBuilder('setFilters', conditionsPickerFilters);
         }
 
         function removeSourceFromConditionsPicker(element) {
@@ -844,7 +859,7 @@ app.directive('cepQueryEditor', [function () {
                 let categoryContent = categoryElement.find('.' + CLASS_CATEGORY_LIST);
 
                 for (let j = 0; j < category.list.length; j++) {
-                    let componentElement = createSourceComponentType(category.list[j], category.icon);
+                    let componentElement = createSourceComponentType(category.list[j], category.resourceName, category.icon);
                     categoryContent.append(componentElement);
                 }
 
@@ -1189,13 +1204,17 @@ app.directive('cepQueryEditor', [function () {
                 let incrementalPattern = "";
 
                 elementList.each(function (index) {
-                    let element = $(this);
-                    if (element.hasClass(CLASS_COMPONENT)) {
-                        currentSplit.push(this);
-                    }
+                        let element = $(this);
+                        if (element.hasClass(CLASS_COMPONENT)) {
+                            currentSplit.push(this);
 
-                    if (element.hasClass(CLASS_OPERATOR) || (index === (elementList.length - 1))) {
+                            //Return if this component is not the last pattern element
+                            if (index < (elementList.length - 1)) {
+                                return;
+                            }
+                        }
 
+                        //Current element is either an operator or the last pattern element
                         let precedence = $(this).data(KEY_OPERATOR_PRECEDENCE);
 
                         if (element.hasClass(CLASS_OPERATOR) && (precedence > lowestPrecedence)) {
@@ -1204,24 +1223,21 @@ app.directive('cepQueryEditor', [function () {
                         }
 
                         if (previousOperator == null) {
-                            previousOperator = element;
                             incrementalPattern = parsePattern($(currentSplit));
-                            currentSplit = [];
-                            return;
+                        } else {
+                            let operatorId = previousOperator.data(KEY_ID);
+                            let operatorType = getElementType(previousOperator);
+                            let detailsPage = findElementDetails(operatorId);
+
+                            let rightSubPattern = parsePattern($(currentSplit));
+
+                            incrementalPattern = operatorType.querify(previousOperator, detailsPage, incrementalPattern, rightSubPattern);
                         }
-
-                        let operatorId = previousOperator.data(KEY_ID);
-                        let operatorType = getElementType(previousOperator);
-                        let detailsPage = findElementDetails(operatorId);
-
-                        let rightSubPattern = parsePattern($(currentSplit));
-
-                        incrementalPattern = operatorType.querify(previousOperator, detailsPage, incrementalPattern, rightSubPattern);
 
                         previousOperator = element;
                         currentSplit = [];
                     }
-                });
+                );
 
                 return incrementalPattern;
             }
