@@ -81,7 +81,6 @@ app.directive('cepQueryEditor', [function () {
 
 
     function init(scope, element, attrs) {
-
         const OPERATOR_TYPES_LIST = [{
             name: 'Before',
             description: 'Specifies that first the expression on the left hand must turn true and only then ' +
@@ -108,7 +107,8 @@ app.directive('cepQueryEditor', [function () {
                     withinTimeInput.prop('disabled', !switchValue);
                 });
             },
-            querify: function () {
+            querify: (element, detailsPage, leftSide, rightSide) => {
+                return "before(" + leftSide + ", " + rightSide + ")";
             }
         }, {
             name: 'Or',
@@ -119,7 +119,8 @@ app.directive('cepQueryEditor', [function () {
             key: 'or',
             init: null,
             createForm: null,
-            querify: function () {
+            querify: (element, detailsPage, leftSide, rightSide) => {
+                return "or(" + leftSide + ", " + rightSide + ")";
             }
         }, {
             name: 'And',
@@ -130,7 +131,8 @@ app.directive('cepQueryEditor', [function () {
             key: 'and',
             init: null,
             createForm: null,
-            querify: function () {
+            querify: (element, detailsPage, leftSide, rightSide) => {
+                return "and(" + leftSide + ", " + rightSide + ")";
             }
         }];
 
@@ -145,7 +147,7 @@ app.directive('cepQueryEditor', [function () {
                 form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
                     .append('<label>Wait time:</label>').append('<br/>').append(withinTimeInput));
             },
-            querify: function () {
+            querify: (element, detailsPage) => {
             }
         }, {
             name: 'Points in time',
@@ -204,7 +206,7 @@ app.directive('cepQueryEditor', [function () {
                     .append($('<p>').html('Please specify the desired points in time below.'))
                     .append(inputTable));
             },
-            querify: function () {
+            querify: (element, detailsPage) => {
             }
         }];
         const SOURCE_ALIAS_PREFIX = 'event_';
@@ -256,7 +258,9 @@ app.directive('cepQueryEditor', [function () {
                     .append('<br/>')
                     .append(aliasInput));
             },
-            querify: function () {
+            querify: (element, detailsPage) => {
+                let elementId = element.data(KEY_ID);
+                return "event_" + elementId;
             }
         };
 
@@ -484,6 +488,22 @@ app.directive('cepQueryEditor', [function () {
         function hideElementDetails() {
             patternContainer.children().removeClass(CLASS_ELEMENT_SELECTED);
             return detailsContainer.children().slideUp();
+        }
+
+        function findElementDetails(elementId) {
+            //Get all detail panels
+            let panels = detailsContainer.children();
+
+            //Iterate over all panels
+            panels.each(function () {
+                let panel = $(this);
+
+                if (panel.data(KEY_DETAILS_REF) === elementId) {
+                    return panel.find('.panel-body');
+                }
+            });
+
+            return null;
         }
 
         function highlightPrecedence(operator) {
@@ -1136,8 +1156,83 @@ app.directive('cepQueryEditor', [function () {
             });
         }
 
-        function buildQueryString() {
-            alert("get query string");
+        function requestQueryString() {
+
+            function parsePattern(elementList) {
+
+                if (elementList.length < 1) {
+                    return "";
+                } else if (elementList.length === 1) {
+                    let element = $(elementList[0]);
+                    let elementId = element.data(KEY_ID);
+                    let detailsPage = findElementDetails(elementId);
+                    let elementType = getElementType(element);
+
+                    return elementType.querify(element, detailsPage);
+                }
+
+                let lowestPrecedence = Number.MAX_SAFE_INTEGER;
+
+                elementList.filter('.' + CLASS_OPERATOR).each(function () {
+                    let precedence = $(this).data(KEY_OPERATOR_PRECEDENCE);
+
+                    if (precedence < lowestPrecedence) {
+                        lowestPrecedence = precedence;
+                    }
+                });
+
+                //Now split the pattern at the operators with lowest precedence
+                let previousOperator = null;
+                let currentSplit = [];
+
+                //Stores the result of the pattern that has already been processed
+                let incrementalPattern = "";
+
+                elementList.each(function (index) {
+                    let element = $(this);
+                    if (element.hasClass(CLASS_COMPONENT)) {
+                        currentSplit.push(this);
+                    }
+
+                    if (element.hasClass(CLASS_OPERATOR) || (index === (elementList.length - 1))) {
+
+                        let precedence = $(this).data(KEY_OPERATOR_PRECEDENCE);
+
+                        if (element.hasClass(CLASS_OPERATOR) && (precedence > lowestPrecedence)) {
+                            currentSplit.push(this);
+                            return;
+                        }
+
+                        if (previousOperator == null) {
+                            previousOperator = element;
+                            incrementalPattern = parsePattern($(currentSplit));
+                            currentSplit = [];
+                            return;
+                        }
+
+                        let operatorId = previousOperator.data(KEY_ID);
+                        let operatorType = getElementType(previousOperator);
+                        let detailsPage = findElementDetails(operatorId);
+
+                        let rightSubPattern = parsePattern($(currentSplit));
+
+                        incrementalPattern = operatorType.querify(previousOperator, detailsPage, incrementalPattern, rightSubPattern);
+
+                        previousOperator = element;
+                        currentSplit = [];
+                    }
+                });
+
+                return incrementalPattern;
+            }
+
+            let queryString = "SELECT * FROM ";
+
+            let patternElements = patternContainer.children();
+
+            let patternString = parsePattern(patternElements);
+
+            alert(patternString);
         }
 
 
@@ -1156,7 +1251,7 @@ app.directive('cepQueryEditor', [function () {
         Defines the exposed API.
          */
         scope.api = {
-            'requestQueryString': buildQueryString
+            'requestQueryString': requestQueryString
         };
     }
 
