@@ -37,52 +37,60 @@ app.directive('cepQueryEditor', [function () {
     //List of all available operators for the condition picker
     const CONDITION_PICKER_OPERATORS = [{
         'id': 'equal',
+        'operator': '=',
         'sign': '='
     }, {
         'id': 'not_equal',
+        'operator': '!=',
         'sign': '&ne;'
     }, {
         'id': 'less',
+        'operator': '<',
         'sign': '&lt;'
     }, {
         'id': 'less_or_equal',
+        'operator': '<=',
         'sign': '&le;'
     }, {
         'id': 'greater',
+        'operator': '>',
         'sign': '&gt;'
     }, {
         'id': 'greater_or_equal',
+        'operator': '>=',
         'sign': '&ge;'
     }];
 
     const CONDITIONS_PICKER_OPERATORS_PLAIN = CONDITION_PICKER_OPERATORS.map(operator => operator.id);
     const CONDITIONS_PICKER_SOURCE_FILTER = {
-        id: 'event',
         'name': 'Single event',
         'short': 'Event',
         'prefix': 'event_'
     };
     const CONDITIONS_PICKER_AGGREGATION_FILTERS = [{
-        'id': 'avg',
         'name': 'Average',
         'short': 'Average',
+        'func': 'avg',
         'prefix': 'avg_'
     }, {
-        'id': 'min',
         'name': 'Minimum',
         'short': 'Minimum',
+        'func': 'min',
         'prefix': 'min_'
     }, {
-        'id': 'max',
         'name': 'Maximum',
         'short': 'Maximum',
+        'func': 'max',
         'prefix': 'max_'
     }];
 
     const CONDITIONS_PICKER_ALL_FILTER_TYPES = CONDITIONS_PICKER_AGGREGATION_FILTERS.concat([CONDITIONS_PICKER_SOURCE_FILTER]);
 
-    const CONDITIONS_PICKER_WINDOW_UNITS = [{short: 'seconds', querySymbol: 's'},
-        {short: 'minutes', querySymbol: 'm'}, {short: 'hours', querySymbol: 'h'}, {short: 'days', querySymbol: 'd'}];
+    const CONDITIONS_PICKER_WINDOW_UNITS = [{short: 'seconds', querySymbol: 'sec'},
+        {short: 'minutes', querySymbol: 'min'}, {short: 'hours', querySymbol: 'hour'}, {
+            short: 'days',
+            querySymbol: 'day'
+        }];
 
     function init(scope, element, attrs) {
         const OPERATOR_TYPES_LIST = [{
@@ -258,6 +266,7 @@ app.directive('cepQueryEditor', [function () {
             },
             createForm: (form, element) => {
                 let eventId = element.data(KEY_ID);
+                let eventResourceName = element.data(KEY_SOURCE_RESOURCE_NAME);
                 let alias = element.data(KEY_SOURCE_ALIAS);
                 let aliasInput = $('<input class="form-control" type="text" placeholder="Alias" maxlength="50">');
                 aliasInput.val(alias);
@@ -277,7 +286,7 @@ app.directive('cepQueryEditor', [function () {
                     for (let i = 0; i < conditionsPickerFilters.length; i++) {
                         let currentFilter = conditionsPickerFilters[i];
 
-                        //Check if current filter is the wanted one
+                        //Check if current filter is the desired one
                         if (currentFilter.id === (CONDITIONS_PICKER_SOURCE_FILTER.prefix + eventId)) {
                             //Update filter label to new alias
                             currentFilter.label = newAliasValue;
@@ -633,6 +642,7 @@ app.directive('cepQueryEditor', [function () {
 
         function addSourceToConditionsPicker(element) {
             let eventId = element.data(KEY_ID);
+            let eventResourceName = element.data(KEY_SOURCE_RESOURCE_NAME);
             let eventAlias = element.data(KEY_SOURCE_ALIAS);
 
             //Iterate over all available filter types and create corresponding filter objects
@@ -644,7 +654,7 @@ app.directive('cepQueryEditor', [function () {
                 let filterLabel = eventAlias;
                 if (filterType !== CONDITIONS_PICKER_SOURCE_FILTER) {
                     let sourceComponentData = element.data(KEY_SOURCE_COMPONENT_DATA);
-                    filterId = filterType.prefix + sourceComponentData.id;
+                    filterId = filterType.prefix + eventResourceName + "_" + sourceComponentData.id;
                     filterLabel = sourceComponentData.name;
                 }
 
@@ -671,6 +681,7 @@ app.directive('cepQueryEditor', [function () {
 
         function removeSourceFromConditionsPicker(element) {
             let eventId = element.data(KEY_ID);
+            let eventResourceName = element.data(KEY_SOURCE_RESOURCE_NAME);
 
             //Stores the ids of filters that are supposed to be deleted
             let deleteFiltersList = [];
@@ -682,11 +693,15 @@ app.directive('cepQueryEditor', [function () {
                 //Concat id of the filter to remove for the current filter type
                 let filterId = filterType.prefix + eventId;
                 if (filterType !== CONDITIONS_PICKER_SOURCE_FILTER) {
-                    filterId = filterType.prefix + element.data(KEY_SOURCE_COMPONENT_DATA).id;
+                    filterId = filterType.prefix + eventResourceName + "_" + element.data(KEY_SOURCE_COMPONENT_DATA).id;
                 }
 
                 //Add id to list of filters that are supposed to be deleted
                 deleteFiltersList.push(filterId);
+
+                //Delete from internal filter list
+                let filterIndex = conditionsPickerFilters.map(filter => filter.id).indexOf(filterId);
+                conditionsPickerFilters.splice(filterIndex, 1);
             }
 
             //Update conditions picker
@@ -1004,10 +1019,14 @@ app.directive('cepQueryEditor', [function () {
                         }
                     }
 
+                    //Abort if rule is not an aggregation condition
+                    if (typeof (aggregationWindowOptions[rule.id]) === 'undefined') {
+                        return;
+                    }
+
                     let validationResult = event.value;
 
-                    if ((typeof (aggregationWindowOptions[rule.id]) === 'undefined') ||
-                        (aggregationWindowOptions[rule.id].type == null)) {
+                    if (aggregationWindowOptions[rule.id].type == null) {
                         addValidationError('No aggregation window selected');
                     } else if (aggregationWindowOptions[rule.id].size < 1) {
                         addValidationError('No aggregation window size provided');
@@ -1239,7 +1258,6 @@ app.directive('cepQueryEditor', [function () {
         function requestQueryString() {
 
             function parsePattern(elementList) {
-
                 if (elementList.length < 1) {
                     return "";
                 } else if (elementList.length === 1) {
@@ -1307,14 +1325,70 @@ app.directive('cepQueryEditor', [function () {
                 return incrementalPattern;
             }
 
+            function parseConditions(conditionsObject) {
+                if (conditionsObject == null) {
+                    return null;
+                }
+
+                if (typeof (conditionsObject['rules']) !== 'undefined') {
+                    //Object is a conditions group
+                    let conditionsArray = conditionsObject.rules;
+
+                    if (conditionsArray.length < 1) {
+                        return null;
+                    }
+
+                    let parsedConditions = [];
+
+                    for (let i = 0; i < conditionsArray.length; i++) {
+                        let parsed = parseConditions(conditionsArray[i]);
+                        parsedConditions.push(parsed)
+                    }
+
+                    return "(" + parsedConditions.join(" " + conditionsObject.condition + " ") + ")";
+                }
+
+                //Object is a single condition
+                let conditionType = conditionsObject.conditionType;
+
+                let operatorIndex = CONDITIONS_PICKER_OPERATORS_PLAIN.indexOf(conditionsObject.operator);
+                let operator = CONDITION_PICKER_OPERATORS[operatorIndex].operator;
+
+                if (conditionType === CONDITIONS_PICKER_SOURCE_FILTER) {
+                    //Condition is a single event
+
+                    return "(" + conditionsObject.id + ".value " + operator + " " + conditionsObject.value + ")";
+                }
+
+                //Condition is an aggregation
+                let sourceReference = conditionsObject.id.replace(conditionType.prefix, "");
+                let aggregationFunction = conditionType.func;
+                let windowOptions = conditionsObject.aggregationWindow;
+
+                let windowUnit = "";
+
+                if (windowOptions.type === 'time') {
+                    windowUnit = " " + CONDITIONS_PICKER_WINDOW_UNITS[windowOptions.unit].querySymbol;
+                }
+
+                return "((SELECT " + aggregationFunction + "(value) FROM " + sourceReference +
+                    ".win:" + windowOptions.type + "(" + windowOptions.size + windowUnit + ")) " +
+                    operator + " " + conditionsObject.value + ")";
+            }
+
             let patternElements = patternContainer.children();
             let patternString = parsePattern(patternElements);
 
-            let rulesObject = conditionsPicker.queryBuilder('getRules');
-            console.log(rulesObject);
+            let conditionsObject = conditionsPicker.queryBuilder('getRules', {
+                'skip_empty': true
+            });
+            let conditionsString = parseConditions(conditionsObject);
 
             let queryString = "SELECT * FROM [" + patternString + "]";
 
+            if (conditionsString != null) {
+                queryString += " WHERE " + conditionsString;
+            }
 
             //TODO
             alert(queryString);
