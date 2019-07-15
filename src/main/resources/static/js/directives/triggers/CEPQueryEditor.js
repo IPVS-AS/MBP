@@ -57,19 +57,23 @@ app.directive('cepQueryEditor', [function () {
 
     const CONDITIONS_PICKER_OPERATORS_PLAIN = CONDITION_PICKER_OPERATORS.map(operator => operator.id);
     const CONDITIONS_PICKER_SOURCE_FILTER = {
+        id: 'event',
         'name': 'Single event',
         'short': 'Event',
         'prefix': 'event_'
     };
     const CONDITIONS_PICKER_AGGREGATION_FILTERS = [{
+        'id': 'avg',
         'name': 'Average',
         'short': 'Average',
         'prefix': 'avg_'
     }, {
+        'id': 'min',
         'name': 'Minimum',
         'short': 'Minimum',
         'prefix': 'min_'
     }, {
+        'id': 'max',
         'name': 'Maximum',
         'short': 'Maximum',
         'prefix': 'max_'
@@ -79,7 +83,6 @@ app.directive('cepQueryEditor', [function () {
 
     const CONDITIONS_PICKER_WINDOW_UNITS = [{short: 'seconds', querySymbol: 's'},
         {short: 'minutes', querySymbol: 'm'}, {short: 'hours', querySymbol: 'h'}, {short: 'days', querySymbol: 'd'}];
-
 
     function init(scope, element, attrs) {
         const OPERATOR_TYPES_LIST = [{
@@ -113,9 +116,15 @@ app.directive('cepQueryEditor', [function () {
 
                 if (withinSwitch.prop('checked')) {
                     let withinInput = detailsPage.find('input[name="withinInput"]');
-                    let withinTimeMS = withinInput.val() * 1000;
+                    let withinTime = withinInput.val();
 
-                    return "every (" + leftSide + " -> " + rightSide + " WHERE timer:within(" + withinTimeMS + "))";
+                    if (withinTime === "") {
+                        withinTime = 0;
+                    } else {
+                        withinTime = parseInt(withinTime) * 1000;
+                    }
+
+                    return "every (" + leftSide + " -> " + rightSide + " WHERE timer:within(" + withinTime + "))";
                 }
 
                 return leftSide + " -> " + rightSide;
@@ -153,11 +162,21 @@ app.directive('cepQueryEditor', [function () {
             key: 'wait',
             init: null,
             createForm: (form, element) => {
-                let withinTimeInput = $('<input class="form-control" type="number" placeholder="Time in seconds" min="0">');
+                let waitTimeInput = $('<input class="form-control" type="number" name="waitTime" placeholder="Time in seconds" min="0">');
                 form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
-                    .append('<label>Wait time:</label>').append('<br/>').append(withinTimeInput));
+                    .append('<label>Wait time:</label>').append('<br/>').append(waitTimeInput));
             },
             querify: (element, detailsPage) => {
+                let waitTimeInput = detailsPage.find('input[name="waitTime"]');
+                let waitTime = waitTimeInput.val();
+
+                if (waitTime === "") {
+                    waitTime = 0;
+                } else {
+                    waitTime = parseInt(waitTime) * 1000;
+                }
+
+                return "timer:interval(" + waitTime + ")";
             }
         }, {
             name: 'Points in time',
@@ -188,7 +207,7 @@ app.directive('cepQueryEditor', [function () {
                 let tableInputRow = $('<tr>');
 
                 for (let i = 0; i < inputs.length; i++) {
-                    let input = $('<input class="form-control" type="text" placeholder="' + inputs[i] + '" maxlength="10">');
+                    let input = $('<input class="form-control" type="text" name="timestamp[' + i + ']" placeholder="' + inputs[i] + '" maxlength="10">');
                     input.val('*').css({
                         'width': '95px',
                         'margin-left': '5px',
@@ -217,9 +236,14 @@ app.directive('cepQueryEditor', [function () {
                     .append(inputTable));
             },
             querify: (element, detailsPage) => {
-                console.log(element.data());
-                console.log("Details:");
-                console.log(detailsPage);
+                let timeParameters = [];
+
+                detailsPage.find('[name^=timestamp]').each(function (index) {
+                    let value = $(this).val();
+                    timeParameters.push(value);
+                });
+
+                return "timer:at(" + timeParameters.join(", ") + ")";
             }
         }];
         const SOURCE_ALIAS_PREFIX = 'event_';
@@ -970,6 +994,47 @@ app.directive('cepQueryEditor', [function () {
                     operatorSelect.before(alternativeOperatorChooser).hide();
                 });
 
+                this.on('validateValue.queryBuilder.filter', function (event, value, rule) {
+
+                    function addValidationError(messageId) {
+                        if (Array.isArray(validationResult)) {
+                            validationResult.push(messageId);
+                        } else {
+                            validationResult = [messageId];
+                        }
+                    }
+
+                    let validationResult = event.value;
+
+                    if ((typeof (aggregationWindowOptions[rule.id]) === 'undefined') ||
+                        (aggregationWindowOptions[rule.id].type == null)) {
+                        addValidationError('No aggregation window selected');
+                    } else if (aggregationWindowOptions[rule.id].size < 1) {
+                        addValidationError('No aggregation window size provided');
+                    }
+
+                    event.value = validationResult;
+                });
+
+                this.on('ruleToJson.queryBuilder.filter', function (event, rule) {
+
+                    let jsonObject = event.value;
+
+                    //Add condition type description to the json object
+                    jsonObject.conditionType = filterTypeChoices[rule.id];
+
+                    //Check if the rule applies to a single event
+                    if (typeof (aggregationWindowOptions[rule.id]) === "undefined") {
+                        //No need to change something
+                        return jsonObject;
+                    }
+
+                    //Add aggregation window options to the json object
+                    jsonObject.aggregationWindow = aggregationWindowOptions[rule.id];
+
+                    return jsonObject;
+                });
+
                 this.on('afterUpdateGroupCondition.queryBuilder', function (event, rule) {
                     $('div.group-conditions > label').each(function () {
                         var _this = $(this);
@@ -1096,7 +1161,7 @@ app.directive('cepQueryEditor', [function () {
 
                     aggregationWindowOptions[rule.id] = {
                         'type': null,
-                        'size': 1,
+                        'size': -1,
                         'unit': 0
                     };
 
@@ -1130,7 +1195,7 @@ app.directive('cepQueryEditor', [function () {
                             'margin-right': '2px'
                         });
 
-                    let windowSizeInput = $('<input type="number" placeholder="Size" min="1" class="form-control">').css({
+                    let windowSizeInput = $('<input type="number" placeholder="Size" min="0" class="form-control">').css({
                         'width': '60px',
                         'text-align': 'center'
                     }).hide().on('change', function () {
@@ -1242,13 +1307,19 @@ app.directive('cepQueryEditor', [function () {
                 return incrementalPattern;
             }
 
-            let queryString = "SELECT * FROM ";
-
             let patternElements = patternContainer.children();
-
             let patternString = parsePattern(patternElements);
 
-            alert(patternString);
+            let rulesObject = conditionsPicker.queryBuilder('getRules');
+            console.log(rulesObject);
+
+            let queryString = "SELECT * FROM [" + patternString + "]";
+
+
+            //TODO
+            alert(queryString);
+
+            return queryString;
         }
 
 
