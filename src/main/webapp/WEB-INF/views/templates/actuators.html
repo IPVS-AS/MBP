@@ -21,7 +21,7 @@
 						<th>Name</th>
 						<th class="align-center">State</th>
 						<th>Actuator type</th>
-						<th>Adapter</th>
+						<th>Control operator</th>
 						<th>Device</th>
 					</tr>
 					</thead>
@@ -141,7 +141,7 @@
 									<select class="form-control show-tick" id="actuator-form-select-adapter"
 											ng-model="addActuatorCtrl.item.adapter"
 											ng-options="t._links.self.href as (t.name) for t in ctrl.adapterList">
-										<option value="">Select adapter
+										<option value="">Select control operator
 										<option/>
 									</select>
 								</div>
