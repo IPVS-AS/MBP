@@ -17,3 +17,6 @@ For example,
       -m '{"component": "SENSOR", 
            "id": "596cafaa6c0ccd5d29da0e90", 
 	        "value": 20}'
+	
+
+Furthermore, each set of operator scripts shall be composed of at least the files *install.sh* and *start.sh*. By including  additionally the files *running.sh* and *stop.sh* in the operator, it enables the MBP to call these scripts to check if the operator is currently running and to stop it.
