@@ -1250,8 +1250,9 @@ app.directive('cepQueryEditor', [function () {
             pluginsObject[CONDITION_PICKER_EXTENSION_NAME] = {};
 
             conditionsPicker.queryBuilder({
-                filters: conditionsPickerFilters,
-                plugins: pluginsObject
+                'allow_empty': true,
+                'filters': conditionsPickerFilters,
+                'plugins': pluginsObject
             });
         }
 
@@ -1382,9 +1383,15 @@ app.directive('cepQueryEditor', [function () {
             let conditionsObject = conditionsPicker.queryBuilder('getRules', {
                 'skip_empty': true
             });
+
+            if(conditionsObject == null){
+                //Validation error in conditions picker
+                //TODO
+            }
+
             let conditionsString = parseConditions(conditionsObject);
 
-            let queryString = "SELECT * FROM [" + patternString + "]";
+            let queryString = "SELECT * FROM [every(" + patternString + ")]";
 
             if (conditionsString != null) {
                 queryString += " WHERE " + conditionsString;
