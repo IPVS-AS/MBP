@@ -4,6 +4,23 @@
     user-select: none;
 }
 
+.cep-query-editor .error-area{
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.cep-query-editor .error-area p{
+    font-weight: bold;
+}
+
+.cep-query-editor .error-area ul{
+    padding-left: 5px;
+}
+
+.cep-query-editor .error-area ul li:before{
+    content: "- ";
+}
+
 .cep-query-editor .pattern-container {
     width: 100%;
     min-height: 90px;

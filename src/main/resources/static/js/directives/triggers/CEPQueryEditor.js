@@ -11,6 +11,7 @@ app.directive('cepQueryEditor', [function () {
     const CLASS_PATTERN_CONTAINER = 'pattern-container';
     const CLASS_DELETION_AREA = 'deletion-area';
     const CLASS_DELETION_AREA_ACCEPTING = 'accepting';
+    const CLASS_ERROR_AREA = 'error-area';
     const CLASS_PATTERN_ELEMENT = 'pattern-element';
     const CLASS_CATEGORY_CONTAINER = 'category-container';
     const CLASS_CATEGORY = 'category';
@@ -319,6 +320,7 @@ app.directive('cepQueryEditor', [function () {
         const mainContainer = $('.' + CLASS_MAIN_CONTAINER);
         const patternContainer = $('.' + CLASS_PATTERN_CONTAINER);
         const deletionArea = $('.' + CLASS_DELETION_AREA);
+        const errorArea = $('.' + CLASS_ERROR_AREA);
         const componentsCategoryContainer = $('.' + CLASS_CATEGORY_CONTAINER);
         const detailsContainer = $('.' + CLASS_DETAILS_CONTAINER);
         const optionsContainer = $('.' + CLASS_OPTIONS_CONTAINER);
@@ -1377,18 +1379,40 @@ app.directive('cepQueryEditor', [function () {
                     operator + " " + conditionsObject.value + ")";
             }
 
+            //Reset error area
+            clearErrorArea();
+
+            //Remembers if at least one error occurred
+            let hasError = false;
+
+            //Get current pattern elements
             let patternElements = patternContainer.children();
-            let patternString = parsePattern(patternElements);
+
+            //Validate pattern elements
+            if (patternElements.length < 1) {
+                pushToErrorArea("The pattern must not be empty.");
+                hasError = true;
+            } else if (patternElements.hasClass(CLASS_STUB)) {
+                pushToErrorArea("All stubs within the pattern need to be replaced");
+                hasError = true;
+            }
 
             let conditionsObject = conditionsPicker.queryBuilder('getRules', {
                 'skip_empty': true
             });
 
-            if(conditionsObject == null){
+            if (conditionsObject == null) {
                 //Validation error in conditions picker
-                //TODO
+                pushToErrorArea("There are invalid conditions specified");
+                hasError = true;
             }
 
+            //Check if an error occurred and abort in this case
+            if (hasError) {
+                return null;
+            }
+
+            let patternString = parsePattern(patternElements);
             let conditionsString = parseConditions(conditionsObject);
 
             let queryString = "SELECT * FROM [every(" + patternString + ")]";
@@ -1397,10 +1421,33 @@ app.directive('cepQueryEditor', [function () {
                 queryString += " WHERE " + conditionsString;
             }
 
-            //TODO
-            alert(queryString);
-
             return queryString;
+        }
+
+        function initErrorArea() {
+            errorArea.children("button").on('click', function () {
+                errorArea.hide();
+            });
+
+            clearErrorArea();
+        }
+
+        function pushToErrorArea(errorMessage) {
+            //Push error
+            errorArea.children('ul').append($('<li>').html(errorMessage));
+
+            //Show area if hidden
+            if (!errorArea.is(':visible')) {
+                errorArea.slideDown();
+            }
+        }
+
+        function clearErrorArea() {
+            //Hide area
+            errorArea.hide();
+
+            //Remove all error items
+            errorArea.children('ul').children().remove();
         }
 
 
@@ -1411,6 +1458,7 @@ app.directive('cepQueryEditor', [function () {
 
             initPattern();
             initDeletionArea();
+            initErrorArea();
 
             initOptions();
         })();
@@ -1442,6 +1490,7 @@ app.directive('cepQueryEditor', [function () {
         template:
             '<div class="' + CLASS_MAIN_CONTAINER + '">' +
             '<div class="col-lg-9">' +
+            '<div class="' + CLASS_ERROR_AREA + ' alert alert-danger alert-dismissible"><button type="button" class="close"><span aria-hidden="true">&times;</span></button><p>Errors occurred:</p><ul></ul></div>' +
             '<div class="' + CLASS_PATTERN_CONTAINER + '"></div>' +
             '<div class="' + CLASS_DELETION_AREA + '"></div>' +
             '<div class="panel-group ' + CLASS_DETAILS_CONTAINER + '"></div>' +

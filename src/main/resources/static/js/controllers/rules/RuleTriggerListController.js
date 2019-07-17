@@ -78,7 +78,7 @@ app.controller('RuleTriggerListController',
              * defined by the user.
              */
             function requestQueryString() {
-                vm.queryEditorApi.requestQueryString();
+                return vm.queryEditorApi.requestQueryString();
             }
 
             /**
@@ -90,8 +90,15 @@ app.controller('RuleTriggerListController',
                     bodyTag: "section",
                     onStepChanging: function (event, currentIndex, newIndex) {
                         if ((currentIndex === 1) && (newIndex > 1)) {
-                            requestQueryString();
-                            return false;
+                            //Request query string from CEP query editor
+                            let queryString = requestQueryString();
+
+                            //Check if a query string could be generated
+                            if(queryString == null){
+                                return false;
+                            }
+
+                            vm.addRuleTriggerCtrl.item.query = queryString;
                         }
                         return true;
                     }

@@ -8,8 +8,7 @@
                 </div>
                 <div class="align-right">
                     <button id="add-button" type="button"
-                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float" data-toggle="modal"
-                            data-target="#addRuleTriggerModal" data-backdrop="static" data-keyboard="false">
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float">
                         <i class="material-icons">add</i>
                     </button>
                 </div>
@@ -49,59 +48,6 @@
         </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="addRuleTriggerModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Register a new rule trigger
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </h5>
-                </div>
-                <form id="addRuleTriggerForm" ng-submit="addRuleTriggerCtrl.addItem()">
-                    <fieldset>
-                        <div class="modal-body">
-                            <!-- "global" error for addItem -->
-                            <div class="form-group" ng-class="{'has-error' : addRuleTriggerCtrl.item.errors.global}">
-			                    <span class="alert alert-danger" ng-show="addRuleTriggerCtrl.item.errors.global">
-			                      {{addRuleTriggerCtrl.item.errors.global}}
-			                    </span>
-                            </div>
-                            <!-- item.name group -->
-                            <div class="form-group" ng-class="{'has-error' : addRuleTriggerCtrl.item.errors.name }">
-                                <div class="form-line"
-                                     ng-class="{'focused error' : addRuleTriggerCtrl.item.errors.name }">
-                                    <input class="form-control" type="text" placeholder="Name"
-                                           ng-model="addRuleTriggerCtrl.item.name"/>
-                                </div>
-                                <span class="help-block" ng-show="addRuleTriggerCtrl.item.errors.name">{{addRuleTriggerCtrl.item.errors.name.message}}</span>
-                            </div>
-                            <!-- item.query group -->
-                            <div class="form-group" ng-class="{'has-error' : addRuleTriggerCtrl.item.errors.query }">
-                                <div class="form-line"
-                                     ng-class="{'focused error' : addRuleTriggerCtrl.item.errors.query }">
-                                   <textarea class="form-control" type="text" placeholder="CEP query"
-                                             ng-model="addRuleTriggerCtrl.item.query" rows="4"></textarea>
-                                </div>
-                                <span class="help-block" ng-show="addRuleTriggerCtrl.item.errors.query">{{addRuleTriggerCtrl.item.errors.query.message}}</span>
-                            </div>
-                            <span><strong>Tip:</strong> Try something like
-                            <code>select * from sensor_5c97dc2583aeb6078c5ab672(value > 30)</code></span>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
-                                Close
-                            </button>
-                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
-                        </div>
-                    </fieldset>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <!-- Add trigger card -->
     <div class="col-lg-12">
         <div class="card">
@@ -111,11 +57,11 @@
                 </div>
             </div>
             <div class="body">
-                <div id="add-trigger-wizard">
-                    <h1>Trigger data</h1>
-                    <section>
-                        <p>Please provide a name and a description for the new rule trigger.</p><br/>
-                        <form>
+                <form id="addRuleTriggerForm" ng-submit="addRuleTriggerCtrl.addItem()">
+                    <div id="add-trigger-wizard">
+                        <h1>Trigger data</h1>
+                        <section>
+                            <p>Please provide a name and a description for the new rule trigger.</p><br/>
                             <!-- item.name group -->
                             <div class="form-group" ng-class="{'has-error' : addRuleTriggerCtrl.item.errors.name }">
                                 <div class="form-line"
@@ -135,18 +81,21 @@
                                 </div>
                                 <span class="help-block" ng-show="addRuleTriggerCtrl.item.errors.description">{{addRuleTriggerCtrl.item.errors.description.message}}</span>
                             </div>
-                        </form>
-                    </section>
-                    <h1>Trigger pattern</h1>
-                    <section>
-                        <cep-query-editor api="ctrl.queryEditorApi" component-list="ctrl.componentList"></cep-query-editor>
-                    </section>
-                    <h1>Refinement</h1>
-                    <section>Second Content</section>
-                    <!-- <h1>Testing</h1> -->
-                    <h1>To DO</h1>
-                    <section>Second Content</section>
-                </div>
+                        </section>
+                        <h1>Trigger pattern</h1>
+                        <section>
+                            <cep-query-editor api="ctrl.queryEditorApi"
+                                              component-list="ctrl.componentList"></cep-query-editor>
+                        </section>
+                        <h1>Refinement</h1>
+                        <section>
+                            <div class="form-line">
+                            <textarea class="form-control" type="text" ng-model="addRuleTriggerCtrl.item.query"
+                                      rows="4"></textarea>
+                            </div>
+                        </section>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
