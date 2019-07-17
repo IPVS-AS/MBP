@@ -21,6 +21,8 @@ public class RuleTrigger {
     @Indexed(unique = true)
     private String name;
 
+    private String description;
+
     private String query;
 
     /**
@@ -57,6 +59,24 @@ public class RuleTrigger {
      */
     public void setName(String name) {
         this.name = name;
+    }
+
+    /**
+     * Returns the description of the rule trigger.
+     *
+     * @return The description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Sets the description of the rule trigger.
+     *
+     * @param description The description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**

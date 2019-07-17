@@ -6,10 +6,13 @@
 app.controller('RuleTriggerListController',
     ['$scope', '$controller', '$interval', 'ruleTriggerList', 'addRuleTrigger', 'deleteRuleTrigger', 'actuatorList', 'sensorList', 'monitoringComponentList',
         function ($scope, $controller, $interval, ruleTriggerList, addRuleTrigger, deleteRuleTrigger, actuatorList, sensorList, monitoringComponentList) {
-            //ID of the add trigger wizard container
-            const WIZARD_CONTAINER_ID = "add-trigger-wizard";
+            //Selectors for certain DOM elements
+            const SELECTOR_WIZARD_CONTAINER = "#add-trigger-wizard";
+            const SELECTOR_TRIGGER_NAME = "#trigger-name";
+            const SELECTOR_TRIGGER_DESCRIPTION = "#trigger-description";
+            const SELECTOR_TRIGGER_QUERY = "#trigger-query";
 
-            var vm = this;
+            let vm = this;
 
             //Holds the wizard object for adding triggers
             let wizard = null;
@@ -83,10 +86,10 @@ app.controller('RuleTriggerListController',
 
             /**
              * [Private]
-             * Initializes the wizard that allows to add new triggers.
+             * Initializes the wizard that allows to add new triggers and its subcomponents.
              */
             function initWizard() {
-                wizard = $('#' + WIZARD_CONTAINER_ID).steps({
+                wizard = $(SELECTOR_WIZARD_CONTAINER).steps({
                     bodyTag: "section",
                     onStepChanging: function (event, currentIndex, newIndex) {
                         if ((currentIndex === 1) && (newIndex > 1)) {
@@ -94,12 +97,24 @@ app.controller('RuleTriggerListController',
                             let queryString = requestQueryString();
 
                             //Check if a query string could be generated
-                            if(queryString == null){
+                            if (queryString == null) {
                                 return false;
                             }
 
-                            vm.addRuleTriggerCtrl.item.query = queryString;
+                            $(SELECTOR_TRIGGER_QUERY).val(queryString);
                         }
+                        return true;
+                    },
+                    onFinishing: function (event, currentIndex) {
+
+                        vm.addRuleTriggerCtrl.item.name = $(SELECTOR_TRIGGER_NAME).val();
+                        vm.addRuleTriggerCtrl.item.description = $(SELECTOR_TRIGGER_DESCRIPTION).val();
+                        vm.addRuleTriggerCtrl.item.query = $(SELECTOR_TRIGGER_QUERY).val();
+
+                        vm.addRuleTriggerCtrl.addItem().then(function (data) {
+                            console.log("Data:");
+                            console.log(data);
+                        });
                         return true;
                     }
                 });
@@ -135,9 +150,6 @@ app.controller('RuleTriggerListController',
 
                     //Make sure the result is valid
                     if (ruleTrigger) {
-                        //Close modal on success
-                        $("#addRuleTriggerModal").modal('toggle');
-
                         //Add rule trigger to list
                         vm.ruleTriggerListCtrl.pushItem(ruleTrigger);
                     }

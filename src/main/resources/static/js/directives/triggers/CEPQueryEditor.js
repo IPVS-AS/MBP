@@ -1415,7 +1415,7 @@ app.directive('cepQueryEditor', [function () {
             let patternString = parsePattern(patternElements);
             let conditionsString = parseConditions(conditionsObject);
 
-            let queryString = "SELECT * FROM [every(" + patternString + ")]";
+            let queryString = "SELECT * FROM pattern [every(" + patternString + ")]";
 
             if (conditionsString != null) {
                 queryString += " WHERE " + conditionsString;
