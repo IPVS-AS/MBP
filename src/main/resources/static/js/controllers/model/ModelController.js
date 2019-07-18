@@ -461,6 +461,7 @@
             element.data("mac", node.mac);
             element.data("ip", node.ip);
             element.data("username", node.username);
+            element.data("password", node.password);
             element.data("rsaKey", node.rsaKey);
             element.data("regError", node.regError);
           } else if (node.nodeType == "actuator" || node.nodeType == "sensor") {
@@ -843,6 +844,7 @@
             vm.clickedComponent.mac = element.data("mac");
             vm.clickedComponent.ip = element.data("ip");
             vm.clickedComponent.username = element.data("username");
+            vm.clickedComponent.password = element.data("password");
             vm.clickedComponent.rsaKey = element.data("rsaKey");
             vm.clickedComponent.regError = element.data("regError");
             vm.clickedComponent.element = element;
@@ -913,6 +915,7 @@
             element.data("mac", vm.clickedComponent.mac);
             element.data("ip", vm.clickedComponent.ip);
             element.data("username", vm.clickedComponent.username);
+            element.data("password", vm.clickedComponent.password);
             element.data("rsaKey", vm.clickedComponent.rsaKey);
             updateDeviceSA(element);
           } else if (element.attr("class").indexOf("actuator") > -1) {
@@ -1029,6 +1032,7 @@
               mac: $element.data("mac"),
               ip: $element.data("ip"),
               username: $element.data("username"),
+              password: $element.data("password"),
               rsaKey: $element.data("rsaKey"),
               regError: $element.data("regError")
             });
@@ -1249,6 +1253,7 @@
             item.macAddress = DeviceService.normalizeMacAddress($element.data("mac"));
             item.ipAddress = $element.data("ip");
             item.username = $element.data("username");
+            item.password = $element.data("password");
             item.rsaKey = $element.data("rsaKey");
             var promise = register(type, item, $element);
             devicePromises.push(promise);
