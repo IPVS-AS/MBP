@@ -33,6 +33,9 @@ Please execute the following steps:
 - Deploy the MBP application on Tomcat by moving the `MBP.war` to the Tomcat `webapps` folder  
 
 Once the installation is completed, the MBP will be available on the URL *http://[MBP-Host]:8080/MBP*.
+
+### Installation using Docker
+There is a [docker container](https://github.com/IPVS-AS/MBP-Docker) available which includes a ready-to-use setup of the MBP application and its dependencies.
     
 ### Tip: Cross-Origin Resource Sharing (CORS)
 
