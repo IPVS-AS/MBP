@@ -5,7 +5,6 @@ import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
-import org.citopt.connde.domain.valueLog.ValueLog;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.ValueLogRepository;

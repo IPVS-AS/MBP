@@ -2,6 +2,7 @@ package org.citopt.connde.web.rest;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -140,7 +141,7 @@ public class RestUserController {
 	@Secured(Constants.ADMIN)
 	public ResponseEntity<List<User>> getAllUsers(Pageable pageable) throws URISyntaxException {
 		Page<User> page = userRepository.findAll(pageable);
-		List<User> users = page.getContent().stream().collect(Collectors.toList());
+		List<User> users = new ArrayList<>(page.getContent());
 		HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/users");
 		return new ResponseEntity<>(users, headers, HttpStatus.OK);
 	}

@@ -1,32 +1,35 @@
 package org.citopt.connde.domain.user;
 
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
-
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.citopt.connde.constants.Constants;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import javax.persistence.Access;
+import javax.persistence.GeneratedValue;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+
+import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 
 /**
-* User entity.
-* @author Imeri Amil
-*/
+ * User entity.
+ *
+ * @author Imeri Amil
+ */
 @Document
-public class User implements Serializable{
-	
-	private static final long serialVersionUID = 1L;
+public class User implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
+    @GeneratedValue
     private String id;
 
     @NotNull
@@ -34,7 +37,7 @@ public class User implements Serializable{
     @Size(min = 1, max = 100)
     private String username;
 
-    @JsonProperty(access = Access.WRITE_ONLY)
+    @JsonProperty(access = WRITE_ONLY)
     @NotNull
     @Size(min = 1, max = 60)
     private String password;
@@ -98,6 +101,14 @@ public class User implements Serializable{
         this.authorities = authorities;
     }
 
+    public boolean isAdmin() {
+        //Create admin authority
+        Authority adminAuthority = new Authority(Constants.ADMIN);
+
+        //Check if authority available
+        return authorities.contains(adminAuthority);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -109,20 +120,20 @@ public class User implements Serializable{
 
         User user = (User) o;
 
-        return username.equals(user.username);
+        return id.equals(user.id);
     }
 
     @Override
     public int hashCode() {
-        return username.hashCode();
+        return id.hashCode();
     }
 
     @Override
     public String toString() {
         return "User{" +
-            "username='" + username + '\'' +
-            ", firstName='" + firstName + '\'' +
-            ", lastName='" + lastName + '\'' +
-            "}";
+                "username='" + username + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                "}";
     }
 }

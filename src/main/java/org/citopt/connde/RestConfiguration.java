@@ -2,7 +2,6 @@ package org.citopt.connde;
 
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.AdapterValidator;
-import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.ActuatorValidator;
 import org.citopt.connde.domain.component.Sensor;
@@ -17,6 +16,7 @@ import org.citopt.connde.domain.user.User;
 import org.citopt.connde.web.rest.RestDeploymentController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
@@ -24,8 +24,6 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
-
-import java.util.ArrayList;
 
 /**
  * Contains crucial rest configurations for the application.
@@ -36,6 +34,16 @@ import java.util.ArrayList;
 public class RestConfiguration extends RepositoryRestConfigurerAdapter {
     //Base path for REST calls (URL prefix)
     public static final String BASE_PATH = "/api";
+
+    /**
+     * Creates a projection factory bean for applying projections on entities.
+     *
+     * @return The created bean
+     */
+    @Bean
+    public SpelAwareProxyProjectionFactory projectionFactory() {
+        return new SpelAwareProxyProjectionFactory();
+    }
 
     /**
      * REST configuration for the repositories that are used within this application.

@@ -1,15 +1,13 @@
 package org.citopt.connde.domain.device;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.citopt.connde.domain.UserEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 
 import javax.persistence.GeneratedValue;
 
-/**
- * @author rafaelkperes
- */
-public class Device {
+public class Device extends UserEntity {
 
     @Id
     @GeneratedValue
@@ -55,7 +53,7 @@ public class Device {
     }
 
     public String getId() {
-        return id;
+        return this.id;
     }
 
     public void setId(String id) {
