@@ -436,8 +436,11 @@ public class SSHDeployer {
             throw new IllegalArgumentException("Component must not be null.");
         }
 
+        //Determine component state
+        ComponentState componentState = determineComponentState(component);
+
         //Undeploy component if running
-        if (isComponentRunning(component)) {
+        if (ComponentState.RUNNING.equals(componentState)) {
             this.undeployComponent(component);
         }
     }
