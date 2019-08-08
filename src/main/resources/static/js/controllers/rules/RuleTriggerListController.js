@@ -124,6 +124,7 @@ app.controller('RuleTriggerListController',
 
                 let generatedQuery = "";
                 let autoStep = false;
+                let failFinish = false;
 
                 //Create wizard
                 wizard = $(SELECTOR_WIZARD_CONTAINER).steps({
@@ -214,6 +215,11 @@ app.controller('RuleTriggerListController',
                         return true;
                     },
                     onFinishing: function (event, currentIndex) {
+                        if (failFinish) {
+                            failFinish = false;
+                            return false;
+                        }
+
                         vm.addRuleTriggerCtrl.item.name = nameInput.val().trim();
                         vm.addRuleTriggerCtrl.item.description = descriptionInput.val().trim();
                         vm.addRuleTriggerCtrl.item.query = queryInput.val();
@@ -230,6 +236,7 @@ app.controller('RuleTriggerListController',
                                 return;
                             }
 
+                            //Iterate over all errors
                             for (let key in errors) {
                                 if (!errors.hasOwnProperty(key) || (typeof (errors[key].message) === "undefined")) {
                                     continue;
@@ -238,6 +245,9 @@ app.controller('RuleTriggerListController',
                                 let errorItem = $('<li>').html(errors[key].message);
                                 errorsContainerList.append(errorItem);
                             }
+
+                            failFinish = true;
+                            wizard.steps("finish");
 
                             //Show errors container
                             errorsContainer.slideDown();
