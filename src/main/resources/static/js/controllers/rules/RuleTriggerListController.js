@@ -155,7 +155,7 @@ app.controller('RuleTriggerListController',
                                 //No validation issues
                                 nameInputParent.removeClass("focused error");
                                 nameInputGroup.removeClass("has-error");
-                                nameInputHelpBlock.html("");
+                                nameInputHelpBlock.empty();
                             }
                         }
                         //Forward jump from second tab
@@ -223,7 +223,7 @@ app.controller('RuleTriggerListController',
 
                             //Hide and clear the container
                             errorsContainer.hide();
-                            errorsContainerList.html('');
+                            errorsContainerList.empty();
 
                             if (typeof (errors) === "undefined") {
                                 resetWizard();
@@ -242,6 +242,8 @@ app.controller('RuleTriggerListController',
                             //Show errors container
                             errorsContainer.slideDown();
                         });
+
+                        return true;
                     }
                 });
 

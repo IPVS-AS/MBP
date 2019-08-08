@@ -1478,6 +1478,9 @@ app.directive('cepQueryEditor', [function () {
             //Hide element details if displayed
             hideElementDetails();
 
+            //Empty details container
+            detailsContainer.empty();
+
             //Reset conditions picker
             conditionsPicker.queryBuilder('reset');
         }
