@@ -91,10 +91,16 @@ app.controller('RuleTriggerListController',
              */
             function initWizard() {
 
+                let autoStep = false;
+
                 //Create wizard
                 wizard = $(SELECTOR_WIZARD_CONTAINER).steps({
                     bodyTag: "section",
                     onStepChanging: function (event, currentIndex, newIndex) {
+                        if (autoStep) {
+                            return true;
+                        }
+
                         //Forward jump from first tab
                         if ((currentIndex === 0) && (newIndex > 0)) {
                             let nameInput = $(SELECTOR_TRIGGER_NAME);
@@ -140,6 +146,40 @@ app.controller('RuleTriggerListController',
 
                             //Insert generated query string
                             $(SELECTOR_TRIGGER_QUERY).val(queryString);
+                        }
+                        //Backward jump from third tab
+                        else if ((currentIndex === 2) && (newIndex < 2)) {
+                            Swal.fire({
+                                title: 'Step back',
+                                type: 'warning',
+                                html: "Are you sure you want to step back? All changes done to the query will be lost!",
+                                showCancelButton: true,
+                                confirmButtonText: 'Step back',
+                                confirmButtonClass: 'bg-red',
+                                focusConfirm: false,
+                                cancelButtonText: 'Cancel'
+                            }).then(function (result) {
+                                autoStep = true;
+
+                                if (result.value) {
+                                    for (let i = 0; i < (currentIndex - newIndex); i++) {
+                                        wizard.steps("previous");
+                                    }
+                                } else {
+                                    wizard.steps("add", {
+                                        title: "temp",
+                                        content: ""
+                                    });
+
+                                    wizard.steps("next");
+                                    wizard.steps("previous");
+                                    wizard.steps("remove", (currentIndex + 1));
+                                }
+
+                                autoStep = false;
+                            });
+
+                            return false;
                         }
 
                         return true;
