@@ -90,7 +90,7 @@ app.controller('RuleTriggerListController',
              * Initializes the wizard that allows to add new triggers and its subcomponents.
              */
             function initWizard() {
-
+                let generatedQuery = "";
                 let autoStep = false;
 
                 //Create wizard
@@ -103,11 +103,6 @@ app.controller('RuleTriggerListController',
 
                         //Forward jump from first tab
                         if ((currentIndex === 0) && (newIndex > 0)) {
-                            let nameInput = $(SELECTOR_TRIGGER_NAME);
-                            let nameInputParent = nameInput.parent();
-                            let nameInputGroup = nameInputParent.parent();
-                            let nameInputHelpBlock = nameInputParent.next('span.help-block');
-
                             //Get name as provided by the user
                             let name = nameInput.val().trim();
 
@@ -134,10 +129,10 @@ app.controller('RuleTriggerListController',
                         //Forward jump from second tab
                         else if ((currentIndex === 1) && (newIndex > 1)) {
                             //Request query string from CEP query editor
-                            let queryString = requestQueryString();
+                            generatedQuery = requestQueryString();
 
                             //Check if a query string could be generated
-                            if (queryString == null) {
+                            if (generatedQuery == null) {
                                 return false;
                             }
 
@@ -145,10 +140,15 @@ app.controller('RuleTriggerListController',
                             errorsContainer.hide();
 
                             //Insert generated query string
-                            $(SELECTOR_TRIGGER_QUERY).val(queryString);
+                            queryInput.val(generatedQuery);
                         }
                         //Backward jump from third tab
                         else if ((currentIndex === 2) && (newIndex < 2)) {
+
+                            if (generatedQuery === queryInput.val()) {
+                                return true;
+                            }
+
                             Swal.fire({
                                 title: 'Step back',
                                 type: 'warning',
@@ -170,7 +170,6 @@ app.controller('RuleTriggerListController',
                                         title: "temp",
                                         content: ""
                                     });
-
                                     wizard.steps("next");
                                     wizard.steps("previous");
                                     wizard.steps("remove", (currentIndex + 1));
@@ -185,9 +184,9 @@ app.controller('RuleTriggerListController',
                         return true;
                     },
                     onFinishing: async function (event, currentIndex) {
-                        vm.addRuleTriggerCtrl.item.name = $(SELECTOR_TRIGGER_NAME).val().trim();
-                        vm.addRuleTriggerCtrl.item.description = $(SELECTOR_TRIGGER_DESCRIPTION).val().trim();
-                        vm.addRuleTriggerCtrl.item.query = $(SELECTOR_TRIGGER_QUERY).val();
+                        vm.addRuleTriggerCtrl.item.name = nameInput.val().trim();
+                        vm.addRuleTriggerCtrl.item.description = descriptionInput.val().trim();
+                        vm.addRuleTriggerCtrl.item.query = queryInput.val();
 
                         return await vm.addRuleTriggerCtrl.addItem().then(function (data) {
                             let errors = vm.addRuleTriggerCtrl.item.errors;
@@ -217,9 +216,16 @@ app.controller('RuleTriggerListController',
                     }
                 });
 
-                let errorsContainer = $(SELECTOR_CREATE_ERRORS);
-                let errorsContainerList = errorsContainer.find('ul');
-                let errorsContainerButton = errorsContainer.children('button');
+                const nameInput = $(SELECTOR_TRIGGER_NAME);
+                const nameInputParent = nameInput.parent();
+                const nameInputGroup = nameInputParent.parent();
+                const nameInputHelpBlock = nameInputParent.next('span.help-block');
+                const descriptionInput = $(SELECTOR_TRIGGER_DESCRIPTION);
+                const queryInput = $(SELECTOR_TRIGGER_QUERY);
+
+                const errorsContainer = $(SELECTOR_CREATE_ERRORS);
+                const errorsContainerList = errorsContainer.find('ul');
+                const errorsContainerButton = errorsContainer.children('button');
 
                 //Allow hiding the errors container on button click
                 errorsContainerButton.on('click', function () {
