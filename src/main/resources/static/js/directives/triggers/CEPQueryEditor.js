@@ -1258,7 +1258,84 @@ app.directive('cepQueryEditor', [function () {
             });
         }
 
-        function requestQueryString() {
+        function parseConditions(conditionsObject) {
+            if (conditionsObject == null) {
+                return null;
+            }
+
+            if (typeof (conditionsObject['rules']) !== 'undefined') {
+                //Object is a conditions group
+                let conditionsArray = conditionsObject.rules;
+
+                if (conditionsArray.length < 1) {
+                    return null;
+                }
+
+                let parsedConditions = [];
+
+                for (let i = 0; i < conditionsArray.length; i++) {
+                    let parsed = parseConditions(conditionsArray[i]);
+                    parsedConditions.push(parsed)
+                }
+
+                return "(" + parsedConditions.join(" " + conditionsObject.condition + " ") + ")";
+            }
+
+            //Object is a single condition
+            let conditionType = conditionsObject.conditionType;
+
+            let operatorIndex = CONDITIONS_PICKER_OPERATORS_PLAIN.indexOf(conditionsObject.operator);
+            let operator = CONDITION_PICKER_OPERATORS[operatorIndex].operator;
+
+            if (conditionType === CONDITIONS_PICKER_SOURCE_FILTER) {
+                //Condition is a single event
+
+                return "(" + conditionsObject.id + ".value " + operator + " " + conditionsObject.value + ")";
+            }
+
+            //Condition is an aggregation
+            let sourceReference = conditionsObject.id.replace(conditionType.prefix, "");
+            let aggregationFunction = conditionType.func;
+            let windowOptions = conditionsObject.aggregationWindow;
+
+            let windowUnit = "";
+
+            if (windowOptions.type === 'time') {
+                windowUnit = " " + CONDITIONS_PICKER_WINDOW_UNITS[windowOptions.unit].querySymbol;
+            }
+
+            return "((SELECT " + aggregationFunction + "(value) FROM " + sourceReference +
+                ".win:" + windowOptions.type + "(" + windowOptions.size + windowUnit + ")) " +
+                operator + " " + conditionsObject.value + ")";
+        }
+
+        function initErrorArea() {
+            errorArea.children("button").on('click', function () {
+                errorArea.hide();
+            });
+
+            clearErrorArea();
+        }
+
+        function pushToErrorArea(errorMessage) {
+            //Push error
+            errorArea.children('ul').append($('<li>').html(errorMessage));
+
+            //Show area if hidden
+            if (!errorArea.is(':visible')) {
+                errorArea.slideDown();
+            }
+        }
+
+        function clearErrorArea() {
+            //Hide area
+            errorArea.hide();
+
+            //Remove all error items
+            errorArea.children('ul').children().remove();
+        }
+
+        function getQueryString() {
 
             function parsePattern(elementList) {
                 if (elementList.length < 1) {
@@ -1328,57 +1405,6 @@ app.directive('cepQueryEditor', [function () {
                 return incrementalPattern;
             }
 
-            function parseConditions(conditionsObject) {
-                if (conditionsObject == null) {
-                    return null;
-                }
-
-                if (typeof (conditionsObject['rules']) !== 'undefined') {
-                    //Object is a conditions group
-                    let conditionsArray = conditionsObject.rules;
-
-                    if (conditionsArray.length < 1) {
-                        return null;
-                    }
-
-                    let parsedConditions = [];
-
-                    for (let i = 0; i < conditionsArray.length; i++) {
-                        let parsed = parseConditions(conditionsArray[i]);
-                        parsedConditions.push(parsed)
-                    }
-
-                    return "(" + parsedConditions.join(" " + conditionsObject.condition + " ") + ")";
-                }
-
-                //Object is a single condition
-                let conditionType = conditionsObject.conditionType;
-
-                let operatorIndex = CONDITIONS_PICKER_OPERATORS_PLAIN.indexOf(conditionsObject.operator);
-                let operator = CONDITION_PICKER_OPERATORS[operatorIndex].operator;
-
-                if (conditionType === CONDITIONS_PICKER_SOURCE_FILTER) {
-                    //Condition is a single event
-
-                    return "(" + conditionsObject.id + ".value " + operator + " " + conditionsObject.value + ")";
-                }
-
-                //Condition is an aggregation
-                let sourceReference = conditionsObject.id.replace(conditionType.prefix, "");
-                let aggregationFunction = conditionType.func;
-                let windowOptions = conditionsObject.aggregationWindow;
-
-                let windowUnit = "";
-
-                if (windowOptions.type === 'time') {
-                    windowUnit = " " + CONDITIONS_PICKER_WINDOW_UNITS[windowOptions.unit].querySymbol;
-                }
-
-                return "((SELECT " + aggregationFunction + "(value) FROM " + sourceReference +
-                    ".win:" + windowOptions.type + "(" + windowOptions.size + windowUnit + ")) " +
-                    operator + " " + conditionsObject.value + ")";
-            }
-
             //Reset error area
             clearErrorArea();
 
@@ -1424,30 +1450,36 @@ app.directive('cepQueryEditor', [function () {
             return queryString;
         }
 
-        function initErrorArea() {
-            errorArea.children("button").on('click', function () {
-                errorArea.hide();
+        /**
+         * Resets the whole CEP query editor to its initial state.
+         */
+        function reset() {
+            //Get all pattern elements
+            let patternElements = patternContainer.children();
+
+            //Iterate over all pattern elements
+            patternElements.each(function () {
+                //Get current element
+                let element = $(this);
+
+                //Update conditions picker if element is a source component
+                if (element.data(KEY_ELEMENT_KEY) === SOURCE_COMPONENT_TYPE_PROTOTYPE.key) {
+                    removeSourceFromConditionsPicker(element);
+                }
+
+                //Remove element
+                element.remove();
             });
 
-            clearErrorArea();
-        }
+            //Reset id counters
+            categoryIdCounter = 0;
+            elementIdCounter = 0;
 
-        function pushToErrorArea(errorMessage) {
-            //Push error
-            errorArea.children('ul').append($('<li>').html(errorMessage));
+            //Hide element details if displayed
+            hideElementDetails();
 
-            //Show area if hidden
-            if (!errorArea.is(':visible')) {
-                errorArea.slideDown();
-            }
-        }
-
-        function clearErrorArea() {
-            //Hide area
-            errorArea.hide();
-
-            //Remove all error items
-            errorArea.children('ul').children().remove();
+            //Reset conditions picker
+            conditionsPicker.queryBuilder('reset');
         }
 
 
@@ -1467,7 +1499,8 @@ app.directive('cepQueryEditor', [function () {
         Defines the exposed API.
          */
         scope.api = {
-            'requestQueryString': requestQueryString
+            'getQueryString': getQueryString,
+            'reset': reset
         };
     }
 

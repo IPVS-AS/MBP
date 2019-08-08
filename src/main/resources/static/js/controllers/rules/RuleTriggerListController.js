@@ -81,8 +81,8 @@ app.controller('RuleTriggerListController',
              * Requests the CEP query builder directive to generate a query string for the current query as
              * defined by the user.
              */
-            function requestQueryString() {
-                return vm.queryEditorApi.requestQueryString();
+            function getQueryString() {
+                return vm.queryEditorApi.getQueryString();
             }
 
             /**
@@ -90,6 +90,38 @@ app.controller('RuleTriggerListController',
              * Initializes the wizard that allows to add new triggers and its subcomponents.
              */
             function initWizard() {
+                /**
+                 * Lets the wizard step back to a step at a certain index.
+                 * @param targetIndex The index to step back to
+                 */
+                function stepBack(targetIndex) {
+                    let currentIndex = wizard.steps("getCurrentIndex");
+
+                    if (currentIndex <= targetIndex) {
+                        return;
+                    }
+
+                    autoStep = true;
+                    for (let i = 0; i < (currentIndex - targetIndex); i++) {
+                        wizard.steps("previous");
+                    }
+                    autoStep = false;
+                }
+
+                /**
+                 * Resets the wizard and all its input elements
+                 */
+                function resetWizard() {
+                    nameInput.val('');
+                    descriptionInput.val('');
+                    vm.queryEditorApi.reset();
+                    queryInput.val('');
+
+                    //Go back to first wizard step
+                    stepBack(0);
+                }
+
+
                 let generatedQuery = "";
                 let autoStep = false;
 
@@ -129,7 +161,7 @@ app.controller('RuleTriggerListController',
                         //Forward jump from second tab
                         else if ((currentIndex === 1) && (newIndex > 1)) {
                             //Request query string from CEP query editor
-                            generatedQuery = requestQueryString();
+                            generatedQuery = getQueryString();
 
                             //Check if a query string could be generated
                             if (generatedQuery == null) {
@@ -159,23 +191,21 @@ app.controller('RuleTriggerListController',
                                 focusConfirm: false,
                                 cancelButtonText: 'Cancel'
                             }).then(function (result) {
-                                autoStep = true;
 
                                 if (result.value) {
-                                    for (let i = 0; i < (currentIndex - newIndex); i++) {
-                                        wizard.steps("previous");
-                                    }
+                                    stepBack(newIndex);
                                 } else {
                                     wizard.steps("add", {
                                         title: "temp",
                                         content: ""
                                     });
+                                    autoStep = true;
                                     wizard.steps("next");
                                     wizard.steps("previous");
+                                    autoStep = false;
                                     wizard.steps("remove", (currentIndex + 1));
                                 }
 
-                                autoStep = false;
                             });
 
                             return false;
@@ -183,12 +213,12 @@ app.controller('RuleTriggerListController',
 
                         return true;
                     },
-                    onFinishing: async function (event, currentIndex) {
+                    onFinishing: function (event, currentIndex) {
                         vm.addRuleTriggerCtrl.item.name = nameInput.val().trim();
                         vm.addRuleTriggerCtrl.item.description = descriptionInput.val().trim();
                         vm.addRuleTriggerCtrl.item.query = queryInput.val();
 
-                        return await vm.addRuleTriggerCtrl.addItem().then(function (data) {
+                        vm.addRuleTriggerCtrl.addItem().then(function (data) {
                             let errors = vm.addRuleTriggerCtrl.item.errors;
 
                             //Hide and clear the container
@@ -196,7 +226,8 @@ app.controller('RuleTriggerListController',
                             errorsContainerList.html('');
 
                             if (typeof (errors) === "undefined") {
-                                return true;
+                                resetWizard();
+                                return;
                             }
 
                             for (let key in errors) {
@@ -210,8 +241,6 @@ app.controller('RuleTriggerListController',
 
                             //Show errors container
                             errorsContainer.slideDown();
-
-                            return false;
                         });
                     }
                 });
