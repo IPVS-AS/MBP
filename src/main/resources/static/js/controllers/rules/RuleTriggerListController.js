@@ -11,6 +11,7 @@ app.controller('RuleTriggerListController',
             const SELECTOR_TRIGGER_NAME = "#trigger-name";
             const SELECTOR_TRIGGER_DESCRIPTION = "#trigger-description";
             const SELECTOR_TRIGGER_QUERY = "#trigger-query";
+            const SELECTOR_CREATE_ERRORS = "#create-errors";
 
             let vm = this;
 
@@ -89,10 +90,35 @@ app.controller('RuleTriggerListController',
              * Initializes the wizard that allows to add new triggers and its subcomponents.
              */
             function initWizard() {
+
+                //Create wizard
                 wizard = $(SELECTOR_WIZARD_CONTAINER).steps({
                     bodyTag: "section",
                     onStepChanging: function (event, currentIndex, newIndex) {
-                        if ((currentIndex === 1) && (newIndex > 1)) {
+                        //Forward jump from first tab
+                        if ((currentIndex === 0) && (newIndex > 0)) {
+                            let nameInput = $(SELECTOR_TRIGGER_NAME);
+                            let nameInputParent = nameInput.parent();
+                            let nameInputGroup = nameInputParent.parent();
+                            let nameInputHelpBlock = nameInputParent.next('span.help-block');
+
+                            //Get name as provided by the user
+                            let name = nameInput.val().trim();
+
+                            //Validate name
+                            if ((!name) || (name.length < 1)) {
+                                nameInputParent.addClass("focused error");
+                                nameInputGroup.addClass("has-error");
+                                nameInputHelpBlock.html("The name must not be empty.");
+                                return false;
+                            } else {
+                                nameInputParent.removeClass("focused error");
+                                nameInputGroup.removeClass("has-error");
+                                nameInputHelpBlock.html("");
+                            }
+                        }
+                        //Forward jump from second tab
+                        else if ((currentIndex === 1) && (newIndex > 1)) {
                             //Request query string from CEP query editor
                             let queryString = requestQueryString();
 
@@ -101,23 +127,57 @@ app.controller('RuleTriggerListController',
                                 return false;
                             }
 
+                            //Hide error container initially
+                            errorsContainer.hide();
+
+                            //Insert generated query string
                             $(SELECTOR_TRIGGER_QUERY).val(queryString);
                         }
+
                         return true;
                     },
-                    onFinishing: function (event, currentIndex) {
-
+                    onFinishing: async function (event, currentIndex) {
                         vm.addRuleTriggerCtrl.item.name = $(SELECTOR_TRIGGER_NAME).val();
                         vm.addRuleTriggerCtrl.item.description = $(SELECTOR_TRIGGER_DESCRIPTION).val();
                         vm.addRuleTriggerCtrl.item.query = $(SELECTOR_TRIGGER_QUERY).val();
 
-                        vm.addRuleTriggerCtrl.addItem().then(function (data) {
-                            console.log("Data:");
-                            console.log(data);
+                        return await vm.addRuleTriggerCtrl.addItem().then(function (data) {
+                            let errors = vm.addRuleTriggerCtrl.item.errors;
+
+                            //Hide and clear the container
+                            errorsContainer.hide();
+                            errorsContainerList.html('');
+
+                            if (typeof (errors) === "undefined") {
+                                return true;
+                            }
+
+                            for (let key in errors) {
+                                if (!errors.hasOwnProperty(key) || (typeof (errors[key].message) === "undefined")) {
+                                    continue;
+                                }
+
+                                let errorItem = $('<li>').html(errors[key].message);
+                                errorsContainerList.append(errorItem);
+                            }
+
+                            //Show errors container
+                            errorsContainer.slideDown();
+
+                            return false;
                         });
-                        return true;
                     }
                 });
+
+                let errorsContainer = $(SELECTOR_CREATE_ERRORS);
+                let errorsContainerList = errorsContainer.find('ul');
+                let errorsContainerButton = errorsContainer.children('button');
+
+                //Allow hiding the errors container on button click
+                errorsContainerButton.on('click', function () {
+                    errorsContainer.hide();
+                });
+
             }
 
             //Expose controllers

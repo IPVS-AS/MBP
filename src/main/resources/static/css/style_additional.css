@@ -41,3 +41,12 @@ table.parameter-table td {
 .clickable {
     cursor: pointer;
 }
+
+/* Bullet point lists with a trailing minus  */
+ul.minus-list {
+    padding-left: 5px;
+}
+
+ul.minus-list li:before {
+    content: "- ";
+}
