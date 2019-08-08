@@ -111,7 +111,15 @@ app.controller('RuleTriggerListController',
                                 nameInputGroup.addClass("has-error");
                                 nameInputHelpBlock.html("The name must not be empty.");
                                 return false;
+                            }
+                            //Check for name duplicates
+                            else if (ruleTriggerList.map(trigger => trigger.name).indexOf(name) !== -1) {
+                                nameInputParent.addClass("focused error");
+                                nameInputGroup.addClass("has-error");
+                                nameInputHelpBlock.html("The name is already registered.");
+                                return false;
                             } else {
+                                //No validation issues
                                 nameInputParent.removeClass("focused error");
                                 nameInputGroup.removeClass("has-error");
                                 nameInputHelpBlock.html("");
@@ -137,8 +145,8 @@ app.controller('RuleTriggerListController',
                         return true;
                     },
                     onFinishing: async function (event, currentIndex) {
-                        vm.addRuleTriggerCtrl.item.name = $(SELECTOR_TRIGGER_NAME).val();
-                        vm.addRuleTriggerCtrl.item.description = $(SELECTOR_TRIGGER_DESCRIPTION).val();
+                        vm.addRuleTriggerCtrl.item.name = $(SELECTOR_TRIGGER_NAME).val().trim();
+                        vm.addRuleTriggerCtrl.item.description = $(SELECTOR_TRIGGER_DESCRIPTION).val().trim();
                         vm.addRuleTriggerCtrl.item.query = $(SELECTOR_TRIGGER_QUERY).val();
 
                         return await vm.addRuleTriggerCtrl.addItem().then(function (data) {
