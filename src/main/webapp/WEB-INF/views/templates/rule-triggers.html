@@ -18,12 +18,34 @@
                     <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Description</th>
+                        <th>Query</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
                         <td>
                             {{item.name}}
+                        </td>
+                        <td>
+                            <div ng-if="item.description">
+                                <a class="clickable" data-toggle="collapse" data-target="#description-{{item.id}}">
+                                    Toggle
+                                </a>
+                                <div id="description-{{item.id}}" class="collapse">
+                                    <span>{{item.description}}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <a class="clickable" data-toggle="collapse" data-target="#query-{{item.id}}">
+                                    Toggle
+                                </a>
+                                <div id="query-{{item.id}}" class="collapse">
+                                    <code>{{item.query}}</code>
+                                </div>
+                            </div>
                         </td>
                         <td>
                             <form ng-submit="deleteRuleTriggerCtrl.deleteItem()">
