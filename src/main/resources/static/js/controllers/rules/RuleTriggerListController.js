@@ -6,7 +6,8 @@
 app.controller('RuleTriggerListController',
     ['$scope', '$controller', '$interval', 'ruleTriggerList', 'addRuleTrigger', 'deleteRuleTrigger', 'actuatorList', 'sensorList', 'monitoringComponentList',
         function ($scope, $controller, $interval, ruleTriggerList, addRuleTrigger, deleteRuleTrigger, actuatorList, sensorList, monitoringComponentList) {
-            //Selectors for certain DOM elements
+            //Selectors for various DOM elements
+            const SELECTOR_ADD_TRIGGER_CARD = "#add-trigger-card";
             const SELECTOR_WIZARD_CONTAINER = "#add-trigger-wizard";
             const SELECTOR_TRIGGER_NAME = "#trigger-name";
             const SELECTOR_TRIGGER_DESCRIPTION = "#trigger-description";
@@ -119,6 +120,9 @@ app.controller('RuleTriggerListController',
 
                     //Go back to first wizard step
                     stepBack(0);
+
+                    //Hide trigger addition card
+                    addTriggerCard.collapse("hide");
                 }
 
 
@@ -256,6 +260,8 @@ app.controller('RuleTriggerListController',
                         return true;
                     }
                 });
+
+                const addTriggerCard = $(SELECTOR_ADD_TRIGGER_CARD);
 
                 const nameInput = $(SELECTOR_TRIGGER_NAME);
                 const nameInputParent = nameInput.parent();
