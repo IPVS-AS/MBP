@@ -34,6 +34,7 @@ app.directive('cepQueryEditor', [function () {
     const KEY_SOURCE_COMPONENT_DATA = 'source_data';
     const KEY_SOURCE_RESOURCE_NAME = "source_resource";
     const KEY_ELEMENT_KEY = 'element_key';
+    const KEY_OPERATOR_INDEX = 'op_index';
 
     //List of all available operators for the condition picker
     const CONDITION_PICKER_OPERATORS = [{
@@ -133,7 +134,7 @@ app.directive('cepQueryEditor', [function () {
                         withinTime = parseInt(withinTime) * 1000;
                     }
 
-                    return "every (" + leftSide + " -> " + rightSide + " WHERE timer:within(" + withinTime + "))";
+                    return "(" + leftSide + " -> " + rightSide + " WHERE timer:within(" + withinTime + "))";
                 }
 
                 return leftSide + " -> " + rightSide;
@@ -179,13 +180,13 @@ app.directive('cepQueryEditor', [function () {
                 let waitTimeInput = detailsPage.find('input[name="waitTime"]');
                 let waitTime = waitTimeInput.val();
 
-                if (waitTime === "") {
+                if (!waitTime) {
                     waitTime = 0;
                 } else {
-                    waitTime = parseInt(waitTime) * 1000;
+                    waitTime = parseInt(waitTime);
                 }
 
-                return "timer:interval(" + waitTime + ")";
+                return "timer:interval(" + waitTime + " sec)";
             }
         }, {
             name: 'Points in time',
@@ -267,7 +268,6 @@ app.directive('cepQueryEditor', [function () {
             },
             createForm: (form, element) => {
                 let eventId = element.data(KEY_ID);
-                let eventResourceName = element.data(KEY_SOURCE_RESOURCE_NAME);
                 let alias = element.data(KEY_SOURCE_ALIAS);
                 let aliasInput = $('<input class="form-control" type="text" placeholder="Alias" maxlength="50">');
                 aliasInput.val(alias);
@@ -300,17 +300,73 @@ app.directive('cepQueryEditor', [function () {
                     }
                 });
 
+                let operatorStartIndex = 0;
+                let conditionOperatorSelect = $('<span class="clickable" name="conditionOperator">').css({
+                    'font-size': '30px',
+                    'font-weight': 'bold',
+                    'vertical-align': 'middle',
+                    'margin-left': '10px',
+                    'margin-right': '10px'
+                }).html(CONDITION_PICKER_OPERATORS[operatorStartIndex].sign).data(KEY_OPERATOR_INDEX, operatorStartIndex)
+                    .on('click', function () {
+                        let element = $(this);
+                        let currentIndex = element.data(KEY_OPERATOR_INDEX) || 0;
+                        let nextIndex = (currentIndex + 1) % CONDITION_PICKER_OPERATORS.length;
+                        element.data(KEY_OPERATOR_INDEX, nextIndex);
+                        element.html(CONDITION_PICKER_OPERATORS[nextIndex].sign);
+                    });
+
+                let conditionValueInput = $('<input type="number" class="form-control" name="conditionValue">').css({
+                    'display': 'inline-block',
+                    'width': '100px',
+                    'text-align': 'center'
+                });
+
+                let conditionContainer = $('<div>')
+                    .append($('<span>').html('Value').css({'font-size': '16px', 'vertical-align': 'middle'}))
+                    .append(conditionOperatorSelect)
+                    .append(conditionValueInput)
+                    .hide();
+
+                let conditionSwitch = $('<div class="switch"><label>Off<input type="checkbox" name="conditionSwitch"><span class="lever"></span>On</label></div>');
+                conditionSwitch.find('input').on('change', function () {
+                    if ($(this).prop('checked')) {
+                        conditionContainer.slideDown();
+                    } else {
+                        conditionContainer.slideUp();
+                    }
+                });
+
                 form.append($('<div class="form-group"><div class="form-line"></div></div>').children()
                     .append('<label>Alias:</label>')
                     .append('<br/>')
-                    .append(aliasInput));
+                    .append(aliasInput)
+                    .append('<br/>')
+                    .append('<label>Filter condition:</label>')
+                    .append('<br/>')
+                    .append(conditionSwitch)
+                    .append(conditionContainer));
             },
             querify: (element, detailsPage) => {
                 let resourceName = element.data(KEY_SOURCE_RESOURCE_NAME);
                 let componentData = element.data(KEY_SOURCE_COMPONENT_DATA);
                 let alias = element.data(KEY_SOURCE_ALIAS);
 
-                return alias + "=" + resourceName + "_" + componentData.id;
+                let conditionSwitch = detailsPage.find('input[name="conditionSwitch"]');
+
+                let conditionString = "";
+
+                if (conditionSwitch.prop('checked')) {
+                    let conditionOperatorIndex = detailsPage.find('span[name="conditionOperator"]').data(KEY_OPERATOR_INDEX);
+                    let conditionOperator = CONDITION_PICKER_OPERATORS[conditionOperatorIndex];
+                    let conditionValue = detailsPage.find('input[name="conditionValue"]').val();
+
+                    conditionString += "(";
+                    conditionString += "value " + conditionOperator.operator + " " + conditionValue;
+                    conditionString += ")";
+                }
+
+                return alias + "=" + resourceName + "_" + componentData.id + conditionString;
             }
         };
 
@@ -983,8 +1039,6 @@ app.directive('cepQueryEditor', [function () {
                 });
 
                 this.on('afterCreateRuleOperators.queryBuilder', function (event, rule) {
-                    const KEY_OPERATOR_INDEX = 'current_index';
-
                     //Apply styling
                     $('.query-builder .rule-value-container').css({'border-left': 'none', 'padding-left': '0px'});
 
