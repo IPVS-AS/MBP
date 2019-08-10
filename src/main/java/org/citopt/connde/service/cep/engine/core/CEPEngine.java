@@ -43,7 +43,7 @@ public interface CEPEngine {
      * Sends a given event to the CEP engine so that it can be processed. The type of the event
      * that is supposed to be sent to the engine needs to be registered before.
      *
-     * @param event The event to send
+     * @param event The event to publish
      */
     void sendEvent(CEPEvent event) throws EventNotRegisteredException;
 

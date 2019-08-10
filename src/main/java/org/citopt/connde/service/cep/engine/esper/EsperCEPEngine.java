@@ -153,7 +153,7 @@ public class EsperCEPEngine implements CEPEngine {
      * Sends a given event to the CEP engine so that it can be processed. The type of the event
      * that is supposed to be sent to the engine needs to be registered before.
      *
-     * @param event The event to send
+     * @param event The event to publish
      */
     public void sendEvent(CEPEvent event) throws EventNotRegisteredException {
         //Iterate over all registered event types and Try to find matching event type
