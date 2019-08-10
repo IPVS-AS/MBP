@@ -3,13 +3,12 @@ package org.citopt.connde.service.rules.execution.executors;
 import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.service.cep.engine.core.output.CEPOutput;
+import org.citopt.connde.service.mqtt.MQTTService;
 import org.citopt.connde.service.rules.execution.RuleActionExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.ValidationUtils;
 
-import javax.validation.constraints.Null;
 import java.util.Map;
 
 /**
@@ -26,9 +25,19 @@ public class DeviceNotificationExecutor implements RuleActionExecutor {
     //Autowired
     private DeviceRepository deviceRepository;
 
+    //Autowired
+    private MQTTService mqttService;
+
+    /**
+     * Initializes the device notification executor component.
+     *
+     * @param deviceRepository The device repository (autowired)
+     * @param mqttService      The MQTT service (autowired)
+     */
     @Autowired
-    public DeviceNotificationExecutor(DeviceRepository deviceRepository) {
+    public DeviceNotificationExecutor(DeviceRepository deviceRepository, MQTTService mqttService) {
         this.deviceRepository = deviceRepository;
+        this.mqttService = mqttService;
     }
 
     /**
@@ -56,18 +65,18 @@ public class DeviceNotificationExecutor implements RuleActionExecutor {
             //No device parameter available
             errors.rejectValue("parameters", "ruleAction.parameters.missing",
                     "A device needs to be selected.");
-            }
+        }
 
         if (parameters.containsKey(PARAM_KEY_SUBJECT)) {
             //Get subject
             String subject = parameters.get(PARAM_KEY_SUBJECT);
 
             //Validate subject
-            if((subject == null) || subject.isEmpty()){
+            if ((subject == null) || subject.isEmpty()) {
                 errors.rejectValue("parameters", "ruleAction.parameters.empty",
                         "The subject must not be empty..");
             }
-        }else {
+        } else {
             //No subject parameter available
             errors.rejectValue("parameters", "ruleAction.parameters.missing",
                     "A subject needs to be provided.");
@@ -86,6 +95,7 @@ public class DeviceNotificationExecutor implements RuleActionExecutor {
      */
     @Override
     public boolean execute(RuleAction action, CEPOutput output) {
+        System.out.println("asdfasdf lalala");
         return false;
     }
 }
