@@ -2,16 +2,14 @@ package org.citopt.connde.web.rest;
 
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.rules.Rule;
+import org.citopt.connde.domain.rules.RuleActionType;
 import org.citopt.connde.repository.RuleRepository;
 import org.citopt.connde.service.rules.RuleEngine;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * REST Controller that exposes methods for the purpose of managing rules.
@@ -25,6 +23,13 @@ public class RestRuleController {
 
     @Autowired
     private RuleEngine ruleEngine;
+
+    @GetMapping(value = "/rules/action-types")
+    public ResponseEntity<RuleActionType[]> getRuleActionTypes() {
+        //Get all available action types
+        RuleActionType[] actionTypes = RuleActionType.values();
+        return new ResponseEntity<>(actionTypes, HttpStatus.OK);
+    }
 
     @PostMapping(value = "/rules/enable/{id}")
     public ResponseEntity<ActionResponse> enableRule(@PathVariable(value = "id") String ruleId) {

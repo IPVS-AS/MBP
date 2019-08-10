@@ -3,12 +3,17 @@ package org.citopt.connde.service.rules;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.repository.RuleRepository;
+import org.citopt.connde.service.cep.engine.core.output.CEPOutput;
 import org.citopt.connde.service.cep.trigger.CEPTriggerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+/**
+ * The rule engine component manages all rules and provides means for enabling and disabling them. In addition,
+ * it takes care about inducing the execution of a rule in case it was triggering.
+ */
 @Component
 public class RuleEngine {
 
@@ -20,6 +25,13 @@ public class RuleEngine {
 
     private Map<RuleTrigger, Set<Rule>> triggerMap;
 
+    /**
+     * Initializes the rule engine component and activates all already enabled rules.
+     *
+     * @param ruleRepository The repository in which the rules are stored (autowired)
+     * @param triggerService The CEP trigger service to use (autowired)
+     * @param ruleExecutor   The rule executor to use (autowired)
+     */
     @Autowired
     private RuleEngine(RuleRepository ruleRepository, CEPTriggerService triggerService, RuleExecutor ruleExecutor) {
         this.ruleRepository = ruleRepository;
@@ -33,6 +45,11 @@ public class RuleEngine {
         loadRulesOnStartup();
     }
 
+    /**
+     * Enables a certain rule so that it will be possible to trigger and execute it.
+     *
+     * @param rule The rule to enable
+     */
     public void enableRule(Rule rule) {
         //Sanity check
         if (rule == null) {
@@ -50,7 +67,7 @@ public class RuleEngine {
             //Register trigger at the trigger service
             triggerService.registerTrigger(trigger, (ruleTrigger, output) -> {
                 //Induce the executions of rules that use this trigger on callback
-                induceRuleExecution(ruleTrigger);
+                induceRuleExecution(ruleTrigger, output);
             });
 
             Set<Rule> rulesOfTrigger = new HashSet<>();
@@ -62,6 +79,11 @@ public class RuleEngine {
         ruleRepository.save(rule);
     }
 
+    /**
+     * Disables a certain rule so that it will not be triggered and executed anymore.
+     *
+     * @param rule The rule to disable
+     */
     public void disableRule(Rule rule) {
         //Sanity check
         if (rule == null) {
@@ -94,7 +116,14 @@ public class RuleEngine {
         ruleRepository.save(rule);
     }
 
-    private void induceRuleExecution(RuleTrigger ruleTrigger) {
+    /**
+     * Induces the execution of rules that have a certain rule trigger. In addition,
+     * output of a CEP engine that triggered the trigger is passed.
+     *
+     * @param ruleTrigger The rule trigger
+     * @param output      The CEP output to pass
+     */
+    private void induceRuleExecution(RuleTrigger ruleTrigger, CEPOutput output) {
         //Sanity check
         if (ruleTrigger == null) {
             throw new IllegalArgumentException("Rule object most not be null.");
@@ -105,14 +134,20 @@ public class RuleEngine {
 
         //Iterate over all rules and execute them
         for (Rule rule : ruleSet) {
-            ruleExecutor.executeRule(rule);
+            ruleExecutor.executeRule(rule, output);
         }
     }
 
+    /**
+     * Ensures that enabled rules will be active and working after the startup of the application.
+     */
     private void loadRulesOnStartup() {
+        //Get all rules
         List<Rule> rules = ruleRepository.findAll();
 
+        //Iterate over all rules
         for (Rule rule : rules) {
+            //Enable rule if it is enabled
             if (rule.isEnabled()) {
                 enableRule(rule);
             }

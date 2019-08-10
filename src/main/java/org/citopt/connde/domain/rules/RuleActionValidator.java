@@ -1,10 +1,13 @@
 package org.citopt.connde.domain.rules;
 
 import org.citopt.connde.repository.RuleActionRepository;
+import org.citopt.connde.service.rules.execution.RuleActionExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
+
+import java.util.HashMap;
 
 
 /**
@@ -60,5 +63,24 @@ public class RuleActionValidator implements Validator {
             errors.rejectValue("name", "ruleAction.name.duplicate",
                     "The name is already registered.");
         }
+
+        //Check if type was provided
+        RuleActionType actionType = ruleAction.getType();
+        if (actionType == null) {
+            errors.rejectValue("type", "ruleAction.type.empty",
+                    "A rule action type needs to be selected.");
+            return;
+        }
+
+        //If null is provided instead of a map, replace it with an empty map
+        if (ruleAction.getParameters() == null) {
+            ruleAction.setParameters(new HashMap<>());
+        }
+
+        //Get executor for this action type
+        RuleActionExecutor executor = actionType.getExecutor();
+
+        //Use executor to validate the provided parameters
+        executor.validateParameters(errors, ruleAction.getParameters());
     }
 }

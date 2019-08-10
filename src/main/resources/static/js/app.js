@@ -153,6 +153,14 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     ruleActionList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('rule-actions');
                     }],
+                    ruleActionTypesList: ['RuleService', function (RuleService) {
+                        return RuleService.getRuleActionTypes().then(function (response) {
+                            return response.data || [];
+                        });
+                    }],
+                    deviceList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('devices');
+                    }],
                     addRuleAction: ['CrudService', function (CrudService) {
                         return angular.bind(this, CrudService.addItem, 'rule-actions');
                     }],

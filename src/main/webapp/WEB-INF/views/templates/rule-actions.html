@@ -71,10 +71,82 @@
                             </div>
                             <!-- item.name group -->
                             <div class="form-group" ng-class="{'has-error' : addRuleActionCtrl.item.errors.name }">
-                                <div class="form-line" ng-class="{'focused error' : addRuleActionCtrl.item.errors.name }">
-                                    <input class="form-control" type="text" placeholder="Name" ng-model="addRuleActionCtrl.item.name"/>
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addRuleActionCtrl.item.errors.name }">
+                                    <input class="form-control" type="text" placeholder="Action name"
+                                           ng-model="addRuleActionCtrl.item.name"/>
                                 </div>
                                 <span class="help-block" ng-show="addRuleActionCtrl.item.errors.name">{{addRuleActionCtrl.item.errors.name.message}}</span>
+                            </div>
+                            <!-- item.type group -->
+                            <div class="form-group" ng-class="{'has-error' : addRuleActionCtrl.item.errors.type }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addRuleActionCtrl.item.errors.type }">
+                                    <select class="form-control show-tick" ng-model="addRuleActionCtrl.item.type"
+                                            ng-options="type.id as (type.name) for type in ctrl.ruleActionTypesList">
+                                        <option disabled selected value>Select action type</option>
+                                    </select>
+                                </div>
+                                <span class="help-block" ng-show="addRuleActionCtrl.item.errors.type">{{addRuleActionCtrl.item.errors.type.message}}</span>
+                            </div>
+                            <br/>
+                            <!-- Switch for parameters of different action types -->
+                            <div ng-switch="addRuleActionCtrl.item.type">
+                                <div ng-switch-when="DEVICE_NOTIFICATION">
+                                    <p>This action type allows you to notify a device that is part of
+                                        your IoT environment.</p>
+                                    <!-- item.parameters[device] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <select class="form-control show-tick"
+                                                    ng-model="addRuleActionCtrl.item.parameters['device']"
+                                                    ng-options="device.id as (device.name) for device in ctrl.deviceList">
+                                                <option disabled selected value>Select device</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- item.parameters[subject] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input class="form-control" type="text" placeholder="Subject"
+                                                   ng-model="addRuleActionCtrl.item.parameters['subject']"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-switch-when="IFTTT_WEBHOOK">
+                                    <p>This action type allows you to trigger an
+                                        <a href="https://ifttt.com/maker_webhooks" target="_blank">IFTTT webhook</a>
+                                        that has been previously configured as part of an applet.</p>
+                                    <!-- item.parameters[ifttt_key] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input class="form-control" type="text" placeholder="Personal IFTTT key"
+                                                   ng-model="addRuleActionCtrl.item.parameters['ifttt_key']"/>
+                                        </div>
+                                    </div>
+                                    <!-- item.parameters[ifttt_name} group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input class="form-control" type="text" placeholder="Event name"
+                                                   ng-model="addRuleActionCtrl.item.parameters['ifttt_name']"/>
+                                        </div>
+                                    </div>
+                                    <!-- item.parameters[ifttt_json] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <textarea class="form-control" type="text" rows="4"
+                                                      placeholder="Parameters as JSON (optional)"
+                                                      ng-model="addRuleActionCtrl.item.parameters['ifttt_json']">
+                                            </textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-switch-default>&nbsp;</div>
+                            </div>
+                            <div class="form-group has-error" ng-show="addRuleActionCtrl.item.errors.parameters">
+                                <span class="help-block">
+                                    {{addRuleActionCtrl.item.errors.parameters.message}}
+                                </span>
                             </div>
                         </div>
                         <div class="modal-footer">

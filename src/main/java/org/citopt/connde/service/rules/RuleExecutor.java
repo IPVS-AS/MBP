@@ -1,7 +1,10 @@
 package org.citopt.connde.service.rules;
 
 import org.citopt.connde.domain.rules.Rule;
+import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.repository.RuleRepository;
+import org.citopt.connde.service.cep.engine.core.output.CEPOutput;
+import org.citopt.connde.service.rules.execution.RuleActionExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -10,15 +13,17 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class RuleExecutor {
+
     @Autowired
     private RuleRepository ruleRepository;
 
     /**
-     * Executes the action of a given rule.
+     * Executes the action of a given rule. In addition, output of a CEP engine that triggered the rule execution is passed.
      *
-     * @param rule The rule to execute
+     * @param rule   The rule to execute
+     * @param output The output to pass
      */
-    public void executeRule(Rule rule) {
+    public void executeRule(Rule rule, CEPOutput output) {
         //Sanity check
         if (rule == null) {
             throw new IllegalArgumentException("Rule object most not be null.");
@@ -27,8 +32,14 @@ public class RuleExecutor {
         //Update meta data
         updateRuleMetaData(rule);
 
-        //Execute rule
-        //TODO
+        //Get rule action
+        RuleAction ruleAction = rule.getAction();
+
+        //Get responsible rule action executor
+        RuleActionExecutor executor = ruleAction.getType().getExecutor();
+
+        //Execute rule using the executor
+        executor.execute(ruleAction, output);
     }
 
     /**

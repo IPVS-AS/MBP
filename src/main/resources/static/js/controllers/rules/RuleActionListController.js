@@ -4,15 +4,26 @@
  * Controller for the rule actions list page.
  */
 app.controller('RuleActionListController',
-    ['$scope', '$controller', '$interval', 'ruleActionList', 'addRuleAction', 'deleteRuleAction',
-        function ($scope, $controller, $interval, ruleActionList, addRuleAction, deleteRuleAction) {
+    ['$scope', '$controller', '$interval', 'ruleActionList', 'ruleActionTypesList', 'deviceList', 'addRuleAction', 'deleteRuleAction',
+        function ($scope, $controller, $interval, ruleActionList, ruleActionTypesList, deviceList, addRuleAction, deleteRuleAction) {
             var vm = this;
+
+            vm.ruleActionTypesList = ruleActionTypesList;
+            vm.deviceList = deviceList;
 
             /**
              * Initializing function, sets up basic things.
              */
             (function initController() {
+                //Validity check for rule action types list
+                if (ruleActionTypesList.length < 1) {
+                    NotificationService.notify("Could not load rule action types.", "error");
+                }
 
+                console.log("Types:");
+                console.log(ruleActionTypesList);
+                console.log("Devices:");
+                console.log(deviceList);
             })();
 
             /**
@@ -28,7 +39,7 @@ app.controller('RuleActionListController',
 
                 //Determines the rule action's name by checking the list
                 for (var i = 0; i < ruleActionList.length; i++) {
-                    if (ruleActionId == ruleActionList[i].id) {
+                    if (ruleActionId === ruleActionList[i].id) {
                         ruleActionName = ruleActionList[i].name;
                         break;
                     }
@@ -55,7 +66,10 @@ app.controller('RuleActionListController',
                 }),
                 addRuleActionCtrl: $controller('AddItemController as addRuleActionCtrl', {
                     $scope: $scope,
-                    addItem: addRuleAction
+                    //TODO
+                    addItem: function (data) {
+                        return addRuleAction(data);
+                    }
                 }),
                 deleteRuleActionCtrl: $controller('DeleteItemController as deleteRuleActionCtrl', {
                     $scope: $scope,

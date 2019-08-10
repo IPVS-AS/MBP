@@ -6,8 +6,19 @@
 app.factory('RuleService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
     function ($http, $resource, $q, ENDPOINT_URI) {
         //URLs for server requests
+        const URL_GEt_RULE_ACTION_TYPES = ENDPOINT_URI + '/rules/action-types/';
         const URL_ENABLE_RULE = ENDPOINT_URI + '/rules/enable/';
         const URL_DISABLE_RULE = ENDPOINT_URI + '/rules/disable/';
+
+        /**
+         * [Public]
+         * Performs a server request in order to retrieve all rule action types.
+         *
+         * @returns {*}
+         */
+        function getRuleActionTypes() {
+            return $http.get(URL_GEt_RULE_ACTION_TYPES);
+        }
 
         /**
          * [Public]
@@ -35,6 +46,7 @@ app.factory('RuleService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
 
         //Expose public methods
         return {
+            getRuleActionTypes: getRuleActionTypes,
             enableRule: enableRule,
             disableRule: disableRule
         }
