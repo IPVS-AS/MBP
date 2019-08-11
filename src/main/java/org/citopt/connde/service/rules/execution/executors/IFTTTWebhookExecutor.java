@@ -4,17 +4,13 @@ import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.service.cep.engine.core.output.CEPOutput;
 import org.citopt.connde.service.rules.execution.RuleActionExecutor;
-import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -34,8 +30,9 @@ public class IFTTTWebhookExecutor implements RuleActionExecutor {
     private static final String REGEX_IFTTT_KEY = "[A-z0-9_\\-]{10,}";
     //Regular expression describing permissible event names
     private static final String REGEX_EVENT_NAME = "[A-z0-9_\\-]+";
-    //Regular expression describing permissible keys in the JSON data
-    private static final String REGEX_JSON_KEYS = "value[1-9][0-9]*";
+
+    //Name of the key under which the CEP output is stored in the JSON data object
+    private static final String JSON_DATA_OUTPUT_KEY = "value1";
 
     /**
      * Validates a parameters map for the corresponding rule action type and updates
@@ -77,45 +74,12 @@ public class IFTTTWebhookExecutor implements RuleActionExecutor {
             errors.rejectValue("parameters", "ruleAction.parameters.missing",
                     "A IFTTT event name needs to be provided.");
         }
-
-        //Check JSON data parameter (optional)
-        if (parameters.containsKey(PARAM_KEY_EVENT_NAME)) {
-            //Get JSON data
-            String jsonData = parameters.get(PARAM_KEY_JSON_DATA);
-
-            //Check if JSON data was provided by user
-            if ((jsonData == null) || jsonData.isEmpty()) {
-                return;
-            }
-
-            //Check if JSON data is valid
-            try {
-                //Try to create a JSON object from the data string
-                JSONObject jsonObject = new JSONObject(jsonData);
-
-                //Check keys of the JSON object on highest level
-                Iterator keyIterator = jsonObject.keys();
-                while (keyIterator.hasNext()) {
-                    //Get current key
-                    String currentKey = (String) keyIterator.next();
-
-                    //Check against regular expression
-                    if (!currentKey.matches(REGEX_JSON_KEYS)) {
-                        throw new IllegalArgumentException();
-                    }
-                }
-
-            } catch (Exception e) {
-                errors.rejectValue("parameters", "ruleAction.parameters.invalid",
-                        "The provided JSON data seems to be invalid.");
-            }
-        }
     }
 
     /**
      * Executes the action of a given rule of the corresponding rule action type. In addition, the output
-     * of a CEP engine that triggered the execution of this rule action may be passed. The return value of this method indicates whether
-     * the execution of the rule action was successful.
+     * of a CEP engine that triggered the execution of this rule action may be passed.
+     * The return value of this method indicates whether the execution of the rule action was successful.
      *
      * @param rule   The rule that holds the action that is supposed to be executed
      * @param output The output of a CEP engine that triggered the execution of this rule action (may be null)
@@ -130,43 +94,33 @@ public class IFTTTWebhookExecutor implements RuleActionExecutor {
         Map<String, String> parameters = action.getParameters();
         String key = parameters.get(PARAM_KEY_IFTTT_KEY);
         String eventName = parameters.get(PARAM_KEY_EVENT_NAME);
-        String jsonData = parameters.get(PARAM_KEY_JSON_DATA);
-
-        //Sanitize JSON data
-        if (jsonData == null) {
-            jsonData = "";
-        }
 
         //Generate webhook URL
         String webhookURL = generateWebhookURL(key, eventName);
 
         try {
+            //Open connection and send request
             URL url = new URL(webhookURL);
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("POST");
-            con.setRequestProperty("Content-Type", "application/json; utf-8");
-            con.setRequestProperty("Accept", "application/json");
-            con.setDoOutput(true);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setDoOutput(true);
 
-            OutputStream os = con.getOutputStream();
-            byte[] input = jsonData.getBytes(StandardCharsets.UTF_8);
-            os.write(input, 0, input.length);
-            os.close();
+            //Establish reader for the result of the request
+            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 
-            BufferedReader br = new BufferedReader(
-                    new InputStreamReader(con.getInputStream(), StandardCharsets.UTF_8));
-            StringBuilder response = new StringBuilder();
-            String responseLine = null;
-            while ((responseLine = br.readLine()) != null) {
-                response.append(responseLine.trim());
+            //Read response line by line
+            StringBuilder result = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                result.append(line);
             }
-            br.close();
+            reader.close();
 
-            System.out.println(response.toString());
+            //Check if request was successful
+            return result.toString().startsWith("Congratulations!");
         } catch (Exception e) {
             return false;
         }
-        return true;
     }
 
     /**
