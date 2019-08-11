@@ -63,9 +63,7 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
      */
     @Override
     public void validateParameters(Errors errors, Map<String, String> parameters) {
-        //Get parameters from map
-
-        //Make sure all required parameters are provided
+        //Check actuator parameter
         if (parameters.containsKey(PARAM_KEY_ACTUATOR)) {
             //Get actuator id
             String actuatorId = parameters.get(PARAM_KEY_ACTUATOR);
@@ -81,6 +79,7 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
                     "An actuator needs to be selected.");
         }
 
+        //Check action name parameter
         if (parameters.containsKey(PARAM_KEY_ACTION_NAME)) {
             //Get action name
             String actionName = parameters.get(PARAM_KEY_ACTION_NAME);
