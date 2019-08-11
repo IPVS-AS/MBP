@@ -39,7 +39,7 @@ public class RuleExecutor {
         RuleActionExecutor executor = ruleAction.getType().getExecutor();
 
         //Execute rule using the executor
-        executor.execute(ruleAction, output);
+        executor.execute(rule, output);
     }
 
     /**

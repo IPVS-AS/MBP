@@ -61,6 +61,8 @@ public class RestSettingsController {
         } catch (MqttException e) {
             System.err.print("MqttException: " + e.getMessage());
         }
+
+        //Everything fine
         return new ResponseEntity(HttpStatus.OK);
     }
 }

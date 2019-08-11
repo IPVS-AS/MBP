@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.citopt.connde.service.rules.execution.ExecutorProvider;
 import org.citopt.connde.service.rules.execution.RuleActionExecutor;
-import org.citopt.connde.service.rules.execution.executors.DeviceNotificationExecutor;
+import org.citopt.connde.service.rules.execution.executors.ActuatorActionExecutor;
 import org.citopt.connde.service.rules.execution.executors.IFTTTWebhookExecutor;
 
 /**
@@ -14,9 +14,8 @@ import org.citopt.connde.service.rules.execution.executors.IFTTTWebhookExecutor;
  */
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum RuleActionType {
-
-    DEVICE_NOTIFICATION("Notify device", ExecutorProvider.get(DeviceNotificationExecutor.class)),
-    IFTTT_WEBHOOK("Trigger IFTTT webhook", ExecutorProvider.get(IFTTTWebhookExecutor.class));
+    ACTUATOR_ACTION("Actuator action", ExecutorProvider.get(ActuatorActionExecutor.class)),
+    IFTTT_WEBHOOK("IFTTT webhook", ExecutorProvider.get(IFTTTWebhookExecutor.class));
 
     private String id;
     private String name;

@@ -4,12 +4,12 @@
  * Controller for the rule actions list page.
  */
 app.controller('RuleActionListController',
-    ['$scope', '$controller', '$interval', 'ruleActionList', 'ruleActionTypesList', 'deviceList', 'addRuleAction', 'deleteRuleAction',
-        function ($scope, $controller, $interval, ruleActionList, ruleActionTypesList, deviceList, addRuleAction, deleteRuleAction) {
+    ['$scope', '$controller', '$interval', 'ruleActionList', 'ruleActionTypesList', 'actuatorList', 'addRuleAction', 'deleteRuleAction',
+        function ($scope, $controller, $interval, ruleActionList, ruleActionTypesList, actuatorList, addRuleAction, deleteRuleAction) {
             var vm = this;
 
             vm.ruleActionTypesList = ruleActionTypesList;
-            vm.deviceList = deviceList;
+            vm.actuatorList = actuatorList;
 
             /**
              * Initializing function, sets up basic things.
@@ -19,11 +19,6 @@ app.controller('RuleActionListController',
                 if (ruleActionTypesList.length < 1) {
                     NotificationService.notify("Could not load rule action types.", "error");
                 }
-
-                console.log("Types:");
-                console.log(ruleActionTypesList);
-                console.log("Devices:");
-                console.log(deviceList);
             })();
 
             /**

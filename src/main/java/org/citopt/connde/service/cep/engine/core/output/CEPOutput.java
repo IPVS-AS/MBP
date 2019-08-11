@@ -22,7 +22,7 @@ public class CEPOutput {
     /**
      * Returns the result of the CEP query as output map.
      *
-     * @return
+     * @return The output map
      */
     public Map getOutputMap() {
         return outputMap;

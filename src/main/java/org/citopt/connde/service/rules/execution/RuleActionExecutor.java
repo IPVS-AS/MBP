@@ -1,5 +1,6 @@
 package org.citopt.connde.service.rules.execution;
 
+import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.service.cep.engine.core.output.CEPOutput;
 import org.springframework.validation.Errors;
@@ -22,13 +23,13 @@ public interface RuleActionExecutor {
     void validateParameters(Errors errors, Map<String, String> parameters);
 
     /**
-     * Executes a given rule action of the corresponding rule action type. In addition, the output of a CEP engine that
-     * triggered the execution of this rule action may be passed. The return value of this method indicates whether
+     * Executes the action of a given rule of the corresponding rule action type. In addition, the output
+     * of a CEP engine that triggered the execution of this rule action may be passed. The return value of this method indicates whether
      * the execution of the rule action was successful.
      *
-     * @param action The rule action to execute
+     * @param rule The rule that holds the action that is supposed to be executed
      * @param output The output of a CEP engine that triggered the execution of this rule action (may be null)
      * @return True, if the execution of the rule action was successful; false otherwise
      */
-    boolean execute(RuleAction action, CEPOutput output);
+    boolean execute(Rule rule, CEPOutput output);
 }

@@ -158,8 +158,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                             return response.data || [];
                         });
                     }],
-                    deviceList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('devices');
+                    actuatorList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('actuators');
                     }],
                     addRuleAction: ['CrudService', function (CrudService) {
                         return angular.bind(this, CrudService.addItem, 'rule-actions');

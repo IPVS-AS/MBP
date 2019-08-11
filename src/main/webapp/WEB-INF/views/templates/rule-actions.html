@@ -92,29 +92,29 @@
                             <br/>
                             <!-- Switch for parameters of different action types -->
                             <div ng-switch="addRuleActionCtrl.item.type">
-                                <div ng-switch-when="DEVICE_NOTIFICATION">
-                                    <p>This action type allows you to notify a device that is part of
-                                        your IoT environment.</p>
-                                    <!-- item.parameters[device] group -->
+                                <div ng-switch-when="ACTUATOR_ACTION">
+                                    <p>Allows to execute an action on an actuator that is part of the
+                                        IoT environment.</p>
+                                    <!-- item.parameters[actuator] group -->
                                     <div class="form-group">
                                         <div class="form-line">
                                             <select class="form-control show-tick"
-                                                    ng-model="addRuleActionCtrl.item.parameters['device']"
-                                                    ng-options="device.id as (device.name) for device in ctrl.deviceList">
-                                                <option disabled selected value>Select device</option>
+                                                    ng-model="addRuleActionCtrl.item.parameters['actuator']"
+                                                    ng-options="actuator.id as (actuator.name) for actuator in ctrl.actuatorList">
+                                                <option disabled selected value>Select actuator</option>
                                             </select>
                                         </div>
                                     </div>
-                                    <!-- item.parameters[subject] group -->
+                                    <!-- item.parameters[action] group -->
                                     <div class="form-group">
                                         <div class="form-line">
-                                            <input class="form-control" type="text" placeholder="Subject"
-                                                   ng-model="addRuleActionCtrl.item.parameters['subject']"/>
+                                            <input class="form-control" type="text" placeholder="Action name"
+                                                   ng-model="addRuleActionCtrl.item.parameters['action']"/>
                                         </div>
                                     </div>
                                 </div>
                                 <div ng-switch-when="IFTTT_WEBHOOK">
-                                    <p>This action type allows you to trigger an
+                                    <p>Allows to trigger an
                                         <a href="https://ifttt.com/maker_webhooks" target="_blank">IFTTT webhook</a>
                                         that has been previously configured as part of an applet.</p>
                                     <!-- item.parameters[ifttt_key] group -->
