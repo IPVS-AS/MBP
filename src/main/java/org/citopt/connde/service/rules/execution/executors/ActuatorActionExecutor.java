@@ -31,6 +31,10 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
     //Parameter keys
     private static final String PARAM_KEY_ACTUATOR = "actuator";
     private static final String PARAM_KEY_ACTION_NAME = "action";
+    private static final String PARAM_KEY_DATA = "data";
+
+    //Regular expression describing permissible action names
+    private static final String REGEX_ACTION_NAME = "[A-z0-9_\\- ]+";
 
     //Autowired
     private ActuatorRepository actuatorRepository;
@@ -78,19 +82,23 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
         }
 
         if (parameters.containsKey(PARAM_KEY_ACTION_NAME)) {
-            //Get subject
-            String subject = parameters.get(PARAM_KEY_ACTION_NAME);
+            //Get action name
+            String actionName = parameters.get(PARAM_KEY_ACTION_NAME);
 
-            //Validate subject
-            if ((subject == null) || subject.isEmpty()) {
+            //Validate action name
+            if ((actionName == null) || actionName.isEmpty()) {
                 errors.rejectValue("parameters", "ruleAction.parameters.empty",
-                        "The subject must not be empty..");
+                        "The action name must not be empty..");
+            } else if (!actionName.matches(REGEX_ACTION_NAME)) {
+                errors.rejectValue("parameters", "ruleAction.parameters.invalid",
+                        "The action name contains invalid characters.");
             }
         } else {
             //No subject parameter available
             errors.rejectValue("parameters", "ruleAction.parameters.missing",
                     "A subject needs to be provided.");
         }
+
     }
 
 
@@ -112,6 +120,7 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
         Map<String, String> parameters = action.getParameters();
         String actuatorId = parameters.get(PARAM_KEY_ACTUATOR);
         String actionName = parameters.get(PARAM_KEY_ACTION_NAME);
+        String data = parameters.get(PARAM_KEY_DATA);
 
         //Get actuator from repository
         Actuator actuator = actuatorRepository.findOne(actuatorId);
@@ -121,6 +130,11 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
             return false;
         }
 
+        //Sanitize data
+        if (data == null) {
+            data = "";
+        }
+
         //Build JSON object that carries all information
         JSONObject messageObject = new JSONObject();
         try {
@@ -128,6 +142,7 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
             messageObject.put("rule_name", rule.getName());
             messageObject.put("actuator", actuatorId);
             messageObject.put("action", actionName);
+            messageObject.put("data", data);
             messageObject.put("cep_output", output.getOutputMap());
         } catch (JSONException e) {
             return false;
@@ -162,7 +177,7 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
         if (actuator == null) {
             throw new IllegalArgumentException("Actuator must not be null.");
         } else if ((actionName == null) || actionName.isEmpty()) {
-            throw new IllegalArgumentException("AAction name must not be null or empty.");
+            throw new IllegalArgumentException("Action name must not be null or empty.");
         }
 
         //Format topic and return it

@@ -1,5 +1,8 @@
 package org.citopt.connde.service.cep.engine.core.output;
 
+import com.espertech.esper.event.map.MapEventBean;
+
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -8,15 +11,15 @@ import java.util.Map;
  */
 public class CEPOutput {
 
-    private Map outputMap;
+    private Map<Object, Object> outputMap;
 
     /**
      * Creates a new CEP result object by passing a map which is the result of a CEP query.
      *
      * @param outputMap The CEP query output map
      */
-    public CEPOutput(Map outputMap) {
-        this.outputMap = outputMap;
+    public CEPOutput(Map<Object, Object> outputMap) {
+        setOutputMap(outputMap);
     }
 
     /**
@@ -24,7 +27,35 @@ public class CEPOutput {
      *
      * @return The output map
      */
-    public Map getOutputMap() {
+    public Map<Object, Object> getOutputMap() {
         return outputMap;
+    }
+
+    /**
+     * Sets the result of the CEP query as output map.
+     *
+     * @param outputMap The output map to set
+     */
+    public void setOutputMap(Map<Object, Object> outputMap) {
+        //Sanity check
+        if (outputMap == null) {
+            this.outputMap = new HashMap<>();
+            return;
+        }
+
+        //Iterate over output map and get rid of irrelevant objects
+        for (Object key : outputMap.keySet()) {
+            Object value = outputMap.get(key);
+
+            //Check if MapEventBean object
+            if (value instanceof MapEventBean) {
+                //Replace MapEventBean object with its properties map
+                MapEventBean mapEventBean = (MapEventBean) value;
+                Map propertiesMap = mapEventBean.getProperties();
+                outputMap.put(key, propertiesMap);
+            }
+        }
+
+        this.outputMap = outputMap;
     }
 }

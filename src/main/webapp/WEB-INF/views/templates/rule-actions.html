@@ -89,12 +89,12 @@
                                 </div>
                                 <span class="help-block" ng-show="addRuleActionCtrl.item.errors.type">{{addRuleActionCtrl.item.errors.type.message}}</span>
                             </div>
-                            <br/>
                             <!-- Switch for parameters of different action types -->
                             <div ng-switch="addRuleActionCtrl.item.type">
                                 <div ng-switch-when="ACTUATOR_ACTION">
                                     <p>Allows to execute an action on an actuator that is part of the
                                         IoT environment.</p>
+                                    <br/>
                                     <!-- item.parameters[actuator] group -->
                                     <div class="form-group">
                                         <div class="form-line">
@@ -112,11 +112,21 @@
                                                    ng-model="addRuleActionCtrl.item.parameters['action']"/>
                                         </div>
                                     </div>
+                                    <!-- item.parameters[data] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <textarea class="form-control" type="text" rows="4"
+                                                      placeholder="Additional data (optional)"
+                                                      ng-model="addRuleActionCtrl.item.parameters['data']">
+                                            </textarea>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div ng-switch-when="IFTTT_WEBHOOK">
                                     <p>Allows to trigger an
                                         <a href="https://ifttt.com/maker_webhooks" target="_blank">IFTTT webhook</a>
                                         that has been previously configured as part of an applet.</p>
+                                    <br/>
                                     <!-- item.parameters[ifttt_key] group -->
                                     <div class="form-group">
                                         <div class="form-line">

@@ -173,11 +173,16 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
     public CEPQueryValidation isValidTriggerQuery(RuleTrigger ruleTrigger) {
         //Sanity check
         if (ruleTrigger == null) {
-            System.out.println("Rule trigger must not be null.");
+            throw new IllegalArgumentException("Rule trigger must not be null.");
         }
 
         //Extract query
         String query = ruleTrigger.getQuery();
+
+        //Check if query starts with a select clause
+        if (!query.trim().startsWith("SELECT")) {
+            return new CEPQueryValidation(query, false, "Query must start with a \"SELECT\" clause.");
+        }
 
         //Validity check
         return engine.validateQuery(query);
