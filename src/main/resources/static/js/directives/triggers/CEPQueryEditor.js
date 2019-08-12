@@ -426,6 +426,30 @@ app.directive('cepQueryEditor', [function () {
             return element;
         }
 
+        function getAliasForPatternEvent(eventId) {
+            let component = null;
+
+            //Iterate over all pattern elements
+            patternContainer.children('.' + CLASS_COMPONENT).each(function () {
+                let element = $(this);
+                let fullId = CONDITIONS_PICKER_SOURCE_FILTER.prefix + element.data(KEY_ID);
+
+                //Check if pattern element id matches event id
+                if (fullId === eventId) {
+                    component = element;
+                    return false;
+                }
+            });
+
+            //Sanity check
+            if (component == null) {
+                return null;
+            }
+
+            //Return alias
+            return component.data(KEY_SOURCE_ALIAS);
+        }
+
         function createComponentStub() {
             return $('<div>')
                 .addClass(CLASS_PATTERN_ELEMENT)
@@ -1008,7 +1032,7 @@ app.directive('cepQueryEditor', [function () {
                 .append($('<div class="panel-heading">')
                     .append($('<h4 class="panel-title">')
                         .append($('<a class="clickable" data-toggle="collapse" ' +
-                            'data-target="#options-conditions-body">Conditions' +
+                            'data-target="#options-conditions-body">Conditions & Aggregations' +
                             '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>'))));
 
             let conditionsPanelBody = $('<div id="options-conditions-body" class="panel-collapse collapse in">')
@@ -1342,9 +1366,10 @@ app.directive('cepQueryEditor', [function () {
             let operator = CONDITION_PICKER_OPERATORS[operatorIndex].operator;
 
             if (conditionType === CONDITIONS_PICKER_SOURCE_FILTER) {
-                //Condition is a single event
+                //Condition is a single event, get event alias
+                let eventAlias = getAliasForPatternEvent(conditionsObject.id);
 
-                return "(" + conditionsObject.id + ".value " + operator + " " + conditionsObject.value + ")";
+                return "(" + eventAlias + ".value " + operator + " " + conditionsObject.value + ")";
             }
 
             //Condition is an aggregation

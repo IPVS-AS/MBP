@@ -23,14 +23,6 @@ public interface RuleRepository extends MongoRepository<Rule, String> {
     Rule findByName(@Param("name") String name);
 
     /**
-     * Returns a list of all rules which use a rule action of a certain id.
-     *
-     * @param actionId The id of the rule action
-     * @return The list of rules
-     */
-    List<Rule> findAllByActionId(@Param("action.id") String actionId);
-
-    /**
      * Returns a list of all rules which use a rule trigger of a certain id.
      *
      * @param triggerId The id of the rule trigger

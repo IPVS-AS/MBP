@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Objects of this class represent actions of rules that are executed after at least one of the containing rules
@@ -94,5 +95,29 @@ public class RuleAction {
      */
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
+    }
+
+    /**
+     * Overrides the equals method by only considering the ids of rule actions.
+     *
+     * @param o The object to compare
+     * @return True, if both objects are identical (i.e. have the same id); false otherwise
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RuleAction that = (RuleAction) o;
+        return id.equals(that.id);
+    }
+
+    /**
+     * Overrides the hash code method by using the ids of rule actions.
+     *
+     * @return The hash code of the object
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

@@ -77,19 +77,17 @@ public class IFTTTWebhookExecutor implements RuleActionExecutor {
     }
 
     /**
-     * Executes the action of a given rule of the corresponding rule action type. In addition, the output
-     * of a CEP engine that triggered the execution of this rule action may be passed.
-     * The return value of this method indicates whether the execution of the rule action was successful.
+     * Executes an given action of a given rule that is of the corresponding rule action type. In addition, the output
+     * of a CEP engine that triggered the execution may be passed. The return value of this method indicates whether
+     * the execution of the rule action was successful.
      *
+     * @param action The rule action to execute
      * @param rule   The rule that holds the action that is supposed to be executed
      * @param output The output of a CEP engine that triggered the execution of this rule action (may be null)
      * @return True, if the execution of the rule action was successful; false otherwise
      */
     @Override
-    public boolean execute(Rule rule, CEPOutput output) {
-        //Get rule action
-        RuleAction action = rule.getAction();
-
+    public boolean execute(RuleAction action, Rule rule, CEPOutput output) {
         //Get action parameters
         Map<String, String> parameters = action.getParameters();
         String key = parameters.get(PARAM_KEY_IFTTT_KEY);

@@ -5,9 +5,10 @@
  */
 app.controller('RuleListController',
     ['$scope', '$controller', '$interval', 'ruleList', 'addRule', 'deleteRule', 'ruleActionList', 'ruleTriggerList',
-        'RuleService', 'NotificationService',
+        'CrudService', 'RuleService', 'NotificationService',
         function ($scope, $controller, $interval, ruleList, addRule, deleteRule, ruleActionList, ruleTriggerList,
-                  RuleService, NotificationService) {
+                  CrudService, RuleService, NotificationService) {
+
             var vm = this;
 
             //Expose rule action and trigger lists
@@ -23,14 +24,30 @@ app.controller('RuleListController',
                     NotificationService.notify("Could not retrieve rule list.", "error");
                 }
 
+                //Prepare and extend rule list
+                prepareRuleList();
+
+                //Refresh rule action select picker when the modal is opened
+                $('.modal').on('shown.bs.modal', function () {
+                    $('.selectpicker').selectpicker('refresh');
+                });
+            })();
+
+            /**
+             * [Private]
+             * Prepares and extends each rule in the rule list by data and functions.
+             */
+            function prepareRuleList() {
                 //Extend rule list with further functions
                 for (var i = 0; i < ruleList.length; i++) {
                     //Get current rule
                     var rule = ruleList[i];
 
+                    //Extend rule for toggle function
                     rule.onToggle = createOnToggleFunction(rule.id);
                 }
-            })();
+            }
+
 
             /**
              * [Public]
@@ -45,7 +62,7 @@ app.controller('RuleListController',
 
                 //Determines the rule's name by checking the list
                 for (var i = 0; i < ruleList.length; i++) {
-                    if (ruleId == ruleList[i].id) {
+                    if (ruleId === ruleList[i].id) {
                         ruleName = ruleList[i].name;
                         break;
                     }

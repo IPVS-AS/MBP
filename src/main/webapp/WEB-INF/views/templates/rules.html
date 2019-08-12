@@ -20,9 +20,10 @@
                     <tr>
                         <th>Name</th>
                         <th class="align-center">Trigger</th>
-                        <th class="align-center">Action</th>
+                        <th class="align-center">Actions</th>
                         <th class="align-center">Executions</th>
-                        <th class="align-center">Last</th>
+                        <th class="align-center">Last Execution</th>
+                        <th class="align-center">Last Result</th>
                         <th class="align-center">Active</th>
                     </tr>
                     </thead>
@@ -35,13 +36,26 @@
                             {{rule.triggerName}}
                         </td>
                         <td class="align-center">
-                            {{rule.actionName}}
+                            {{rule.actionNames.join(", ")}}
                         </td>
                         <td class="align-center">
                             {{rule.executions}}
                         </td>
                         <td class="align-center">
                             {{rule.lastExecution ? rule.lastExecution : "Never"}}
+                        </td>
+                        <td class="align-center">
+                            <div ng-switch="rule.lastExecutionResult">
+                                <div ng-switch-when="SUCCESS">
+                                    <span class="label label-success">Success</span>
+                                </div>
+                                <div ng-switch-when="FAILURE">
+                                    <span class="label label-danger">Failure</span>
+                                </div>
+                                <div ng-switch-default>
+                                    <span class="label label-default">None</span>
+                                </div>
+                            </div>
                         </td>
                         <td class="align-center">
                             <div class="switch">
@@ -108,23 +122,22 @@
                                      ng-class="{'focused error' : addRuleCtrl.item.errors.trigger }">
                                     <select class="form-control show-tick" ng-model="addRuleCtrl.item.trigger"
                                             ng-options="t._links.self.href as (t.name) for t in ctrl.ruleTriggerList">
-                                        <option value="">Select trigger
-                                        <option/>
+                                        <option disabled selected value>Select trigger</option>
                                     </select>
                                 </div>
                                 <span class="help-block" ng-show="addRuleCtrl.item.errors.trigger">{{addRuleCtrl.item.errors.trigger.message}}</span>
                             </div>
-                            <!-- item.action group -->
-                            <div class="form-group" ng-class="{'has-error' : addRuleCtrl.item.errors.action }">
+                            <!-- item.actions group -->
+                            <div class="form-group" ng-class="{'has-error' : addRuleCtrl.item.errors.actions }">
                                 <div class="form-line"
-                                     ng-class="{'focused error' : addRuleCtrl.item.errors.action }">
-                                    <select class="form-control show-tick" ng-model="addRuleCtrl.item.action"
-                                            ng-options="t._links.self.href as (t.name) for t in ctrl.ruleActionList">
-                                        <option value="">Select action
-                                        <option/>
+                                     ng-class="{'focused error' : addRuleCtrl.item.errors.actions }">
+                                    <select class="form-control selectpicker" title="Rule actions"
+                                            data-header="Rule actions"
+                                            ng-options="action._links.self.href as (action.name) for action in ctrl.ruleActionList"
+                                            ng-model="addRuleCtrl.item.actions" multiple>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addRuleCtrl.item.errors.action">{{addRuleCtrl.item.errors.action.message}}</span>
+                                <span class="help-block" ng-show="addRuleCtrl.item.errors.actions">{{addRuleCtrl.item.errors.actions.message}}</span>
                             </div>
                         </div>
                         <div class="modal-footer">

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.citopt.connde.service.rules.execution.ExecutorProvider;
 import org.citopt.connde.service.rules.execution.RuleActionExecutor;
 import org.citopt.connde.service.rules.execution.executors.ActuatorActionExecutor;
+import org.citopt.connde.service.rules.execution.executors.ComponentDeploymentExecutor;
 import org.citopt.connde.service.rules.execution.executors.IFTTTWebhookExecutor;
 
 /**
@@ -15,7 +16,8 @@ import org.citopt.connde.service.rules.execution.executors.IFTTTWebhookExecutor;
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum RuleActionType {
     ACTUATOR_ACTION("Actuator action", ExecutorProvider.get(ActuatorActionExecutor.class)),
-    IFTTT_WEBHOOK("IFTTT webhook", ExecutorProvider.get(IFTTTWebhookExecutor.class));
+    IFTTT_WEBHOOK("IFTTT webhook", ExecutorProvider.get(IFTTTWebhookExecutor.class)),
+    COMPONENT_DEPLOYMENT("Component deployment", ExecutorProvider.get(ComponentDeploymentExecutor.class));
 
     private String id;
     private String name;

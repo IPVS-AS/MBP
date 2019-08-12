@@ -19,12 +19,24 @@
                     <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Type</th>
+                        <th>Testing</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
                         <td>
                             {{item.name}}
+                        </td>
+                        <td>
+                            <span class="label label-success" ng-class="ctrl.getActionTypeColor(item.type.id)">{{item.type.name}}</span>
+                        </td>
+                        <td>
+                            <form ng-submit="ctrl.testRuleAction(item.id)">
+                                <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect">
+                                    Test action
+                                </button>
+                            </form>
                         </td>
                         <td>
                             <form ng-submit="deleteRuleActionCtrl.deleteItem()">
@@ -142,7 +154,35 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div ng-switch-default>&nbsp;</div>
+                                <div ng-switch-when="COMPONENT_DEPLOYMENT">
+                                    <p>Deploys or undeploys a component that is part of the IoT environment.</p>
+                                    <br/>
+                                    <!-- item.parameters[component] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <select class="form-control show-tick"
+                                                    ng-options="(c.componentTypeName + '/' + c.id) as (c.name) group by c.type for c in ctrl.componentList"
+                                                    ng-model="addRuleActionCtrl.item.parameters['component']">
+                                                <option disabled selected value>Select component</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- item.parameters[deploy} group -->
+                                    <div class="form-group">
+                                        <div ng-init="addRuleActionCtrl.item.parameters['deploy']='DEPLOY'">
+                                            <input type="radio" id="deploy_deploy" class="with-gap"
+                                                   ng-model="addRuleActionCtrl.item.parameters['deploy']"
+                                                   value="DEPLOY">
+                                            <label for="deploy_deploy">Deploy</label>
+                                            <br/>
+                                            <input type="radio" id="deploy_undeploy" class="with-gap"
+                                                   ng-model="addRuleActionCtrl.item.parameters['deploy']"
+                                                   value="UNDEPLOY">
+                                            <label for="deploy_undeploy">Undeploy</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-switch-default></div>
                             </div>
                             <div class="form-group has-error" ng-show="addRuleActionCtrl.item.errors.parameters">
                                 <span class="help-block">

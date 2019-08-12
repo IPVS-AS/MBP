@@ -6,7 +6,8 @@
 app.factory('RuleService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
     function ($http, $resource, $q, ENDPOINT_URI) {
         //URLs for server requests
-        const URL_GEt_RULE_ACTION_TYPES = ENDPOINT_URI + '/rules/action-types/';
+        const URL_GEt_RULE_ACTION_TYPES = ENDPOINT_URI + '/rule-actions/types';
+        const URL_TEST_RULE_ACTION = ENDPOINT_URI + '/rule-actions/test/';
         const URL_ENABLE_RULE = ENDPOINT_URI + '/rules/enable/';
         const URL_DISABLE_RULE = ENDPOINT_URI + '/rules/disable/';
 
@@ -18,6 +19,16 @@ app.factory('RuleService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          */
         function getRuleActionTypes() {
             return $http.get(URL_GEt_RULE_ACTION_TYPES);
+        }
+
+        /**
+         * [Public]
+         * Performs a server request in order to test a rule action given by its id.
+         * @param actionId The id of the rule action to test
+         * @returns {*}
+         */
+        function testRuleAction(actionId) {
+            return $http.post(URL_TEST_RULE_ACTION + actionId);
         }
 
         /**
@@ -47,6 +58,7 @@ app.factory('RuleService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
         //Expose public methods
         return {
             getRuleActionTypes: getRuleActionTypes,
+            testRuleAction: testRuleAction,
             enableRule: enableRule,
             disableRule: disableRule
         }

@@ -1,6 +1,7 @@
 package org.citopt.connde.service.rules;
 
 import org.citopt.connde.domain.rules.Rule;
+import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.repository.RuleRepository;
 import org.citopt.connde.service.cep.engine.core.output.CEPOutput;

@@ -109,16 +109,16 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 controller: 'UsersController as vm'
             })
 
-      // Model
-      .when(viewPrefix + '/model', {
-        templateUrl: 'templates/model',
-        controller: 'ModelController as vm',
-        resolve: {
-          adapterList: ['CrudService', function(CrudService) {
-            return CrudService.fetchAllItems('adapters');
-          }]
-        }
-      })
+            // Model
+            .when(viewPrefix + '/model', {
+                templateUrl: 'templates/model',
+                controller: 'ModelController as vm',
+                resolve: {
+                    adapterList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('adapters');
+                    }]
+                }
+            })
 
             //Rules list
             .when(viewPrefix + '/rules', {
@@ -161,6 +161,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     actuatorList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('actuators');
                     }],
+                    sensorList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('sensors');
+                    }],
                     addRuleAction: ['CrudService', function (CrudService) {
                         return angular.bind(this, CrudService.addItem, 'rule-actions');
                     }],
@@ -193,9 +196,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }],
                     monitoringComponentList: ['MonitoringService', function (MonitoringService) {
                         return MonitoringService.getMonitoringComponents().then(function (response) {
-                            if(response.data){
+                            if (response.data) {
                                 return response.data;
-                            }else{
+                            } else {
                                 return [];
                             }
                         });

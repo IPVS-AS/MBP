@@ -1,7 +1,6 @@
 package org.citopt.connde.domain.rules;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -10,11 +9,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
- * Objects of this class represent rules that consist out of a trigger and an action. These rules are then managed
- * by a dedicated service which controls the execution: If the trigger of a rule is fired, its action will be
+ * Objects of this class represent rules that consist out of a trigger and a list of actions. These rules are then
+ * managed by a dedicated service which controls the execution: If the trigger of a rule is fired, its action will be
  * executed subsequently by this service. In addition, the rule objects hold the date of the last execution and the
  * total number of executions that were performed.
  */
@@ -31,9 +32,9 @@ public class Rule {
     private RuleTrigger trigger;
 
     @DBRef
-    private RuleAction action;
+    private List<RuleAction> actions;
 
-    @JsonFormat(pattern="dd.MM.yyyy HH:mm:ss")
+    @JsonFormat(pattern = "dd.MM.yyyy HH:mm:ss")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Date lastExecution = null;
 
@@ -42,6 +43,9 @@ public class Rule {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private boolean enabled = false;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private RuleExecutionResult lastExecutionResult = RuleExecutionResult.NONE;
 
     /**
      * Returns the id of the rule.
@@ -98,21 +102,21 @@ public class Rule {
     }
 
     /**
-     * Returns the action of the rule.
+     * Returns the list of actions of the rule.
      *
-     * @return The action
+     * @return The actions
      */
-    public RuleAction getAction() {
-        return action;
+    public List<RuleAction> getActions() {
+        return actions;
     }
 
     /**
-     * Sets the action of the rule.
+     * Sets the list of actions of the rule.
      *
-     * @param action The action to set
+     * @param actions The actions to set
      */
-    public void setAction(RuleAction action) {
-        this.action = action;
+    public void setActions(List<RuleAction> actions) {
+        this.actions = actions;
     }
 
     /**
@@ -184,6 +188,24 @@ public class Rule {
     }
 
     /**
+     * Returns the result of the last rule execution.
+     *
+     * @return The execution result
+     */
+    public RuleExecutionResult getLastExecutionResult() {
+        return lastExecutionResult;
+    }
+
+    /**
+     * Sets the result of the last rule execution.
+     *
+     * @param lastExecutionResult The execution result to set
+     */
+    public void setLastExecutionResult(RuleExecutionResult lastExecutionResult) {
+        this.lastExecutionResult = lastExecutionResult;
+    }
+
+    /**
      * Returns the name of the trigger of the rule.
      *
      * @return The name of the trigger
@@ -194,13 +216,13 @@ public class Rule {
     }
 
     /**
-     * Returns the name of the action of the rule.
+     * Returns the List of action names of the rule.
      *
-     * @return The name of the action
+     * @return The list of action names
      */
-    @JsonProperty("actionName")
-    public String getActionName() {
-        return this.action.getName();
+    @JsonProperty("actionNames")
+    public List<String> getActionNames() {
+        return this.actions.stream().map(RuleAction::getName).collect(Collectors.toList());
     }
 
     /**
@@ -218,7 +240,7 @@ public class Rule {
     }
 
     /**
-     * Overrides the hash code method by using the id of rules.
+     * Overrides the hash code method by using the ids of rules.
      *
      * @return The hash code of the object
      */

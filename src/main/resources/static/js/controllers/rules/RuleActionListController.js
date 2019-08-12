@@ -4,12 +4,25 @@
  * Controller for the rule actions list page.
  */
 app.controller('RuleActionListController',
-    ['$scope', '$controller', '$interval', 'ruleActionList', 'ruleActionTypesList', 'actuatorList', 'addRuleAction', 'deleteRuleAction',
-        function ($scope, $controller, $interval, ruleActionList, ruleActionTypesList, actuatorList, addRuleAction, deleteRuleAction) {
+    ['$scope', '$controller', '$interval', 'ruleActionList', 'ruleActionTypesList', 'actuatorList', 'sensorList',
+        'addRuleAction', 'deleteRuleAction', 'RuleService', 'NotificationService',
+        function ($scope, $controller, $interval, ruleActionList, ruleActionTypesList, actuatorList, sensorList,
+                  addRuleAction, deleteRuleAction, RuleService, NotificationService) {
+            //Array of colors to be used for the different rule action types
+            const ACTION_TYPES_COLORS = ['bg-pink', 'bg-purple', 'bg-deep-purple', 'bg-indigo', 'bg-blue',
+                'bg-light-blue', 'bg-cyan', 'bg-teal', 'bg-green', 'bg-light-green', 'bg-lime', 'bg-yellow',
+                'bg-amber', 'bg-orange', 'bg-deep-orange'];
+
             var vm = this;
 
             vm.ruleActionTypesList = ruleActionTypesList;
             vm.actuatorList = actuatorList;
+            vm.sensorList = sensorList;
+            vm.componentList = actuatorList.concat(sensorList);
+
+            //Extend actuator and sensor objects for type field
+            vm.actuatorList.forEach(actuator => actuator.type = 'Actuators');
+            vm.sensorList.forEach(sensor => sensor.type = 'Sensors');
 
             /**
              * Initializing function, sets up basic things.
@@ -19,7 +32,54 @@ app.controller('RuleActionListController',
                 if (ruleActionTypesList.length < 1) {
                     NotificationService.notify("Could not load rule action types.", "error");
                 }
+
+                //Extend rule action types for color
+                for (var i = 0; i < ruleActionTypesList.length; i++) {
+                    var colorIndex = i % ACTION_TYPES_COLORS.length;
+                    ruleActionTypesList[i].color = ACTION_TYPES_COLORS[colorIndex];
+                }
             })();
+
+            /**
+             * [Public]
+             * Performs a server request in order to test a rule action given by its id. The result is displayed
+             * in an user notification subsequently.
+             *
+             * @param actionId The id of the rule action to test
+             */
+            function testRuleAction(actionId) {
+                //Execute request
+                RuleService.testRuleAction(actionId).then(function (response) {
+                    if (response.data && response.data.success) {
+                        //Test succeeded
+                        NotificationService.notify("Action test succeeded.", "success")
+                    } else {
+                        //Test failed
+                        NotificationService.notify("Action test failed.", "warning")
+                    }
+                }, function (response) {
+                    //Server request failed
+                    NotificationService.notify("Unable to perform action test.", "error")
+                });
+            }
+
+            /**
+             * [Public]
+             * Returns the color class for a certain rule action type given by its ID.
+             *
+             * @param actionTypeId The id of the action type
+             */
+            function getActionTypeColor(actionTypeId) {
+                let actionType = ruleActionTypesList.find(function (type) {
+                    return type.id === actionTypeId;
+                });
+
+                if (actionType) {
+                    return actionType.color;
+                }
+
+                return "bg-grey";
+            }
 
             /**
              * [Public]
@@ -61,16 +121,15 @@ app.controller('RuleActionListController',
                 }),
                 addRuleActionCtrl: $controller('AddItemController as addRuleActionCtrl', {
                     $scope: $scope,
-                    //TODO
-                    addItem: function (data) {
-                        return addRuleAction(data);
-                    }
+                    addItem: addRuleAction
                 }),
                 deleteRuleActionCtrl: $controller('DeleteItemController as deleteRuleActionCtrl', {
                     $scope: $scope,
                     deleteItem: deleteRuleAction,
                     confirmDeletion: confirmDelete
-                })
+                }),
+                testRuleAction: testRuleAction,
+                getActionTypeColor: getActionTypeColor
             });
 
             //Watch addition of rule actions and add them to the list

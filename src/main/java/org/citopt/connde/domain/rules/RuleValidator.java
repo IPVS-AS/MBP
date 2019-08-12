@@ -1,11 +1,12 @@
 package org.citopt.connde.domain.rules;
 
-import org.citopt.connde.repository.RuleActionRepository;
 import org.citopt.connde.repository.RuleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
+
+import java.util.List;
 
 
 /**
@@ -65,11 +66,14 @@ public class RuleValidator implements Validator {
         //Check if a rule trigger was provided
         ValidationUtils.rejectIfEmptyOrWhitespace(
                 errors, "trigger", "rule.trigger.empty",
-                "A rule trigger needs to be provided.");
+                "A rule trigger needs to be selected.");
 
-        //Check if a rule action was provided
-        ValidationUtils.rejectIfEmptyOrWhitespace(
-                errors, "action", "rule.action.empty",
-                "A rule action needs to be provided.");
+
+        //Check if at least one rule action was provided
+        List<RuleAction> ruleActions = rule.getActions();
+        if ((ruleActions == null) || ruleActions.isEmpty()) {
+            errors.rejectValue("actions", "rule.actions.empty",
+                    "At least one rule action needs to be selected.");
+        }
     }
 }

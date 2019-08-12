@@ -102,19 +102,17 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
 
 
     /**
-     * Executes the action of a given rule of the corresponding rule action type. In addition, the output
-     * of a CEP engine that triggered the execution of this rule action may be passed. The return value of this method indicates whether
+     * Executes an given action of a given rule that is of the corresponding rule action type. In addition, the output
+     * of a CEP engine that triggered the execution may be passed. The return value of this method indicates whether
      * the execution of the rule action was successful.
      *
+     * @param action The rule action to execute
      * @param rule   The rule that holds the action that is supposed to be executed
      * @param output The output of a CEP engine that triggered the execution of this rule action (may be null)
      * @return True, if the execution of the rule action was successful; false otherwise
      */
     @Override
-    public boolean execute(Rule rule, CEPOutput output) {
-        //Get rule action
-        RuleAction action = rule.getAction();
-
+    public boolean execute(RuleAction action, Rule rule, CEPOutput output) {
         //Get action parameters
         Map<String, String> parameters = action.getParameters();
         String actuatorId = parameters.get(PARAM_KEY_ACTUATOR);
@@ -139,7 +137,9 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
         try {
             messageObject.put("rule_id", rule.getId());
             messageObject.put("rule_name", rule.getName());
-            messageObject.put("actuator", actuatorId);
+            messageObject.put("rule_action_id", action.getId());
+            messageObject.put("rule_action_name", action.getName());
+            messageObject.put("actuator_id", actuatorId);
             messageObject.put("action", actionName);
             messageObject.put("data", data);
             messageObject.put("cep_output", output.getOutputMap());
