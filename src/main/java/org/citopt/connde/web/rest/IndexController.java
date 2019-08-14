@@ -3,6 +3,8 @@ package org.citopt.connde.web.rest;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  *
@@ -46,5 +48,11 @@ public class IndexController {
     @RequestMapping("/view/**")
     public String views() {
         return "index";
+    }
+
+    @RequestMapping(value = "/addNewDevice", method = RequestMethod.GET)
+    public String getDeviceCode(@RequestParam("code") String code) {
+        System.out.println("Device Code is " + code);
+        return code;
     }
 }

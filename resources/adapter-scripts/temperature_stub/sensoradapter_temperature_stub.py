@@ -8,6 +8,7 @@ import json
 import os, fnmatch
 from os.path import expanduser
 import random
+import oauth2
 
 ############################
 # MQTT Client

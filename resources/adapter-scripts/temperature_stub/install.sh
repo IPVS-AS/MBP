@@ -5,5 +5,6 @@ if [ -z $paho_exist ]; then
  sudo apt-get install -y python3;
  sudo apt-get install -y python3-pip;
  pip3 install paho-mqtt;
+ pip3 install oauth2;
 fi
 echo "$1 = $2" > $3/connections.txt;

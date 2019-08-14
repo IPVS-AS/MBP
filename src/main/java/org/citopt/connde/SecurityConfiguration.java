@@ -1,5 +1,7 @@
 package org.citopt.connde;
 
+import javax.xml.ws.http.HTTPBinding;
+
 import org.citopt.connde.constants.Constants;
 import org.citopt.connde.security.RestAuthenticationEntryPoint;
 import org.citopt.connde.service.UserDetailsServiceImpl;
@@ -7,6 +9,7 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -45,11 +48,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	
 	@Override
     public void configure(AuthenticationManagerBuilder auth) {
+		try {
+			auth.inMemoryAuthentication().withUser("admin").password("admin").authorities("ROLE_ADMIN");
+		/*
         try {
         	UserDetailsService userDetailsService = mongoUserDetails();
-            auth
-                .userDetailsService(userDetailsService)
-                    .passwordEncoder(passwordEncoder());
+            auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+         */
         } catch (Exception e) {
             throw new BeanInitializationException("Security configuration failed", e);
         }
@@ -68,16 +73,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http
         	.csrf().disable()
         	.authorizeRequests()
-        	.antMatchers("/api/authenticate").permitAll()
-        	.antMatchers(HttpMethod.POST, "/api/users").permitAll()
-        	.antMatchers(HttpMethod.PUT, "/api/users").hasAuthority(Constants.ADMIN)
-        	.antMatchers(HttpMethod.GET, "/api/users").hasAuthority(Constants.ADMIN)
-        	.antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)
-        	.antMatchers(HttpMethod.DELETE, "/api/users/:username").hasAuthority(Constants.ADMIN)
-        	.antMatchers("/api/**").authenticated()
+				.antMatchers("/api/authenticate").permitAll()
+				.antMatchers(HttpMethod.POST, "/api/users").permitAll()
+				.antMatchers(HttpMethod.PUT, "/api/users").hasAuthority(Constants.ADMIN)
+				.antMatchers(HttpMethod.GET, "/api/users").hasAuthority(Constants.ADMIN)
+				.antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)
+				.antMatchers(HttpMethod.DELETE, "/api/users/:username").hasAuthority(Constants.ADMIN)
+				.antMatchers("/api/**").authenticated()
+				.antMatchers(HttpMethod.GET, "/addNewDevice").authenticated()
 		.and()
 			.httpBasic()
-        	.authenticationEntryPoint(restAuthenticationEntryPoint())
+        		.authenticationEntryPoint(restAuthenticationEntryPoint())
         .and()
         	.logout()
         	.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
@@ -85,4 +91,5 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         	.invalidateHttpSession(true)
         	.deleteCookies("JSESSIONID");
     }
+
 }

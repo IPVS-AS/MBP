@@ -167,6 +167,10 @@
                                 </div>
                                 <span class="help-block" ng-show="addDeviceCtrl.item.errors.password">{{addDeviceCtrl.item.errors.password.message}}</span>
                             </div>
+                           <!-- item.deviceKey group -->
+                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.deviceKey }">
+                                <button type="submit" class="btn btn-primary m-t-0 waves-effect">Receive Device Key</button>
+                            </div>
                            <!-- item.rsaKey group -->
                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.rsaKey }">
                                <div class="form-line"
