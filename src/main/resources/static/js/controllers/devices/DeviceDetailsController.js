@@ -98,7 +98,7 @@ app.controller('DeviceDetailsController',
                         return;
                     }
 
-                    return adapter.state == 'DEPLOYED';
+                    return adapter.state == 'RUNNING';
                 }
             }
 
@@ -219,7 +219,7 @@ app.controller('DeviceDetailsController',
                     //Perform server request and set state of the adapter object accordingly
                     MonitoringService.getMonitoringState(DEVICE_ID, adapter.id).then(function (response) {
                         adapter.state = response.data;
-                        adapter.enable = (adapter.state === "DEPLOYED");
+                        adapter.enable = (adapter.state === "RUNNING");
                     }, function (response) {
                         adapter.state = 'UNKNOWN';
                         NotificationService.notify("Could not retrieve monitoring state.", "error");
@@ -351,7 +351,7 @@ app.controller('DeviceDetailsController',
                     for (var i in compatibleAdapters) {
                         var componentId = compatibleAdapters[i].id + "@" + DEVICE_ID;
                         compatibleAdapters[i].state = statesMap[componentId];
-                        compatibleAdapters[i].enable = (compatibleAdapters[i].state == "DEPLOYED");
+                        compatibleAdapters[i].enable = (compatibleAdapters[i].state == "RUNNING");
                     }
                 }, function (response) {
                     for (var i in compatibleAdapters) {
@@ -381,7 +381,7 @@ app.controller('DeviceDetailsController',
                             return;
                         }
                         //Notify user
-                        adapter.state = 'DEPLOYED';
+                        adapter.state = 'RUNNING';
                         adapter.enable = true;
                         NotificationService.notify('Monitoring enabled successfully.', 'success');
                     },
@@ -443,15 +443,16 @@ app.controller('DeviceDetailsController',
              */
             function retrieveMonitoringData(monitoringAdapterId, numberLogs, descending, unit) {
                 //Set default order
+                var order = 'asc';
+
+                //Check for user option
                 if (descending) {
-                    descending = 'desc';
-                } else {
-                    descending = 'asc'
+                    order = 'desc';
                 }
 
                 //Initialize parameters for the server request
                 var pageDetails = {
-                    sort: 'date,' + descending,
+                    sort: 'time,' + order,
                     size: numberLogs
                 };
 

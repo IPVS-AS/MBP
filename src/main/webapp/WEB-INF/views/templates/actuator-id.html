@@ -3,14 +3,15 @@
     <div class="col-lg-6">
         <div class="card deployment-card">
             <div class="header"
-                 ng-class="{'bg-red': componentDetailsCtrl.deploymentState=='NOT_READY', 'bg-green': componentDetailsCtrl.deploymentState=='READY', 'bg-cyan': componentDetailsCtrl.deploymentState=='DEPLOYED', 'bg-grey': componentDetailsCtrl.deploymentState=='UNKNOWN'}">
+                 ng-class="{'bg-red': componentDetailsCtrl.deploymentState=='NOT_READY', 'bg-green': componentDetailsCtrl.deploymentState=='READY', 'bg-teal': componentDetailsCtrl.deploymentState=='DEPLOYED', 'bg-cyan': componentDetailsCtrl.deploymentState=='RUNNING', 'bg-grey': componentDetailsCtrl.deploymentState=='UNKNOWN'}">
                 <i class="material-icons" style="position: absolute; margin-top: 4px">wb_incandescent</i>
                 <h2 style="margin-left: 35px;">
                     {{componentDetailsCtrl.component.name}}
                     <small>{{componentDetailsCtrl.deploymentState=='NOT_READY' ? 'Deployment impossible' :
                         (componentDetailsCtrl.deploymentState=='READY' ? 'Ready for deployment':
                         (componentDetailsCtrl.deploymentState=='DEPLOYED' ? 'Deployed' :
-                        (componentDetailsCtrl.deploymentState=='UNKNOWN' ? 'Unknown state' : 'Loading...')))}}
+                        (componentDetailsCtrl.deploymentState=='RUNNING' ? 'Running' :
+                        (componentDetailsCtrl.deploymentState=='UNKNOWN' ? 'Unknown state' : 'Loading...'))))}}
                     </small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
@@ -127,15 +128,32 @@
                     <span class="help-block focused error">{{ctrl.deployer.status.fieldErrors.parameters}}</span>
                 </div>
                 <br/>
-                <div ng-show="componentDetailsCtrl.deploymentState=='READY'">
-                    <button class="btn btn-primary waves-effect" ng-click="componentDetailsCtrl.deploy()">
-                        Deploy actuator
-                    </button>
-                </div>
-                <div ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
-                    <button class="btn btn-warning waves-effect" ng-click="componentDetailsCtrl.undeploy()">
-                        Undeploy actuator
-                    </button>
+
+                <div>
+                    <span ng-show="componentDetailsCtrl.deploymentState=='READY'">
+                        <button class="btn btn-primary waves-effect" ng-click="componentDetailsCtrl.deploy()">
+                            <i class="material-icons">file_download</i>
+                            <span>Deploy actuator</span>
+                        </button>
+                    </span>
+                    <span ng-show="['DEPLOYED', 'RUNNING'].includes(componentDetailsCtrl.deploymentState)">
+                        <button class="btn bg-deep-orange waves-effect" ng-click="componentDetailsCtrl.undeploy()">
+                            <i class="material-icons">file_upload</i>
+                            <span>Undeploy actuator</span>
+                        </button>
+                    </span>
+                    <span ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
+                        <button class="btn bg-cyan waves-effect" ng-click="componentDetailsCtrl.startComponent()">
+                            <i class="material-icons">play_arrow</i>
+                            <span>Start actuator</span>
+                        </button>
+                    </span>
+                    <span ng-show="componentDetailsCtrl.deploymentState=='RUNNING'">
+                        <button class="btn bg-orange waves-effect" ng-click="componentDetailsCtrl.stopComponent()">
+                            <i class="material-icons">pause</i>
+                            <span>Pause actuator</span>
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>
@@ -178,10 +196,11 @@
                                  unit="{{componentDetailsCtrl.displayUnit}}">
                 </value-log-stats>
                 <div style="height: 20px"></div>
+                <!--
                 <h4>Delete data</h4>
                 <button class="btn btn-danger waves-effect" ng-click="componentDetailsCtrl.deleteValueLogs()">
                     Delete all actuator data
-                </button>
+                </button>-->
             </div>
         </div>
     </div>
@@ -190,7 +209,7 @@
 <!-- Live Values Card -->
 <div class="row clearfix">
     <div class="col-lg-12">
-        <div class="card live-chart-card animate-show-hide" ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
+        <div class="card live-chart-card animate-show-hide" ng-show="componentDetailsCtrl.deploymentState=='RUNNING'">
             <div class="header">
                 <h2>
                     Live actuator values&nbsp;<i class="material-icons" style="color: red;">live_tv</i>
@@ -235,6 +254,3 @@
         </div>
     </div>
 </div>
-                
-                
-                

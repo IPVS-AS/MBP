@@ -1,6 +1,5 @@
-package org.citopt.connde.service.rules.execution.executors;
+package org.citopt.connde.service.rules.execution.component_deployment;
 
-import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.rules.Rule;
@@ -25,13 +24,6 @@ import java.util.Map;
 @Component
 public class ComponentDeploymentExecutor implements RuleActionExecutor {
 
-    /**
-     * Enumeration of the available deployment actions within this executor.
-     */
-    private enum DeployAction {
-        DEPLOY, UNDEPLOY;
-    }
-
     //Parameter keys
     private static final String PARAM_KEY_COMPONENT = "component";
     private static final String PARAM_KEY_DEPLOY_ACTION = "deploy";
@@ -41,6 +33,7 @@ public class ComponentDeploymentExecutor implements RuleActionExecutor {
 
     //Autowired
     private ActuatorRepository actuatorRepository;
+
     //Autowired
     private SensorRepository sensorRepository;
 
@@ -102,7 +95,7 @@ public class ComponentDeploymentExecutor implements RuleActionExecutor {
 
             //Try to get corresponding enum object
             try {
-                DeployAction deployAction = DeployAction.valueOf(deployActionString);
+                DeploymentAction.valueOf(deployActionString);
             } catch (Exception e) {
                 errors.rejectValue("parameters", "ruleAction.parameters.invalid",
                         "Invalid deploy action provided.");
@@ -140,7 +133,7 @@ public class ComponentDeploymentExecutor implements RuleActionExecutor {
         }
 
         //Get deploy action from string
-        DeployAction deployAction = DeployAction.valueOf(deployActionString);
+        DeploymentAction deploymentAction = DeploymentAction.valueOf(deployActionString);
 
         //Get current component state
         ComponentState componentState = sshDeployer.determineComponentState(component);
@@ -153,32 +146,51 @@ public class ComponentDeploymentExecutor implements RuleActionExecutor {
         //Execute action
         try {
             //Case differentiation for deployment actions
-            switch (deployAction) {
+            switch (deploymentAction) {
                 case DEPLOY:
-                    //Do not do anything if component is already deployed
-                    if (ComponentState.DEPLOYED.equals(componentState)) {
-                        return true;
-                    }
-
-                    //Deploy component
-                    sshDeployer.deployComponent(component, new ArrayList<ParameterInstance>());
-
-                    //Check if component is now deployed
-                    return ComponentState.DEPLOYED.equals(sshDeployer.determineComponentState(component));
-                case UNDEPLOY:
-                    //Do not do anything if component is already undeployed
+                    //Deploy component if ready
                     if (ComponentState.READY.equals(componentState)) {
-                        return true;
+                        sshDeployer.deployComponent(component);
                     }
 
-                    //Undeploy component
-                    sshDeployer.undeployComponent(component);
+                    break;
+                case START:
+                    //Check component state
+                    if (ComponentState.READY.equals(componentState)) {
+                        //Component is ready, so deploy and start it
+                        sshDeployer.deployComponent(component);
+                        sshDeployer.startComponent(component, new ArrayList<>());
+                    } else if (ComponentState.DEPLOYED.equals(componentState)) {
+                        //Component is deployed, so just start it
+                        sshDeployer.startComponent(component, new ArrayList<>());
+                    }
 
-                    //Check if component is now undeployed
-                    return ComponentState.READY.equals(sshDeployer.determineComponentState(component));
+                    break;
+                case STOP:
+                    //Stop component if running
+                    if (ComponentState.RUNNING.equals(componentState)) {
+                        sshDeployer.stopComponent(component);
+                    }
+
+                    break;
+                case UNDEPLOY:
+                    //Check component state
+                    if (ComponentState.RUNNING.equals(componentState)) {
+                        //Component is running, so stop and undeploy it
+                        sshDeployer.stopComponent(component);
+                        sshDeployer.undeployComponent(component);
+                    } else if (ComponentState.DEPLOYED.equals(componentState)) {
+                        //Component is deployed, so just undeploy it
+                        sshDeployer.undeployComponent(component);
+                    }
                 default:
                     return false;
             }
+
+            //Check if component is now in target state
+            ComponentState finalState = sshDeployer.determineComponentState(component);
+            return deploymentAction.getTargetState().equals(finalState);
+
         } catch (IOException e) {
             return false;
         }

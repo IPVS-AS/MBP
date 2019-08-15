@@ -55,7 +55,7 @@ app.controller('AdapterListController',
             })();
 
             //public
-            function addDeploymentParameter() {
+            function addParameter() {
                 var parameter = {
                     name: "",
                     type: "",
@@ -66,7 +66,7 @@ app.controller('AdapterListController',
             }
 
             //public
-            function deleteDeploymentParameter(index) {
+            function deleteParameter(index) {
                 vm.parameters.splice(index, 1);
             }
 
@@ -137,8 +137,8 @@ app.controller('AdapterListController',
 
             // expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {
-                addDeploymentParameter: addDeploymentParameter,
-                deleteDeploymentParameter: deleteDeploymentParameter,
+                addParameter: addParameter,
+                deleteParameter: deleteParameter,
                 adapterListCtrl: $controller('ItemListController as adapterListCtrl',
                     {
                         $scope: $scope,
@@ -148,7 +148,7 @@ app.controller('AdapterListController',
                     {
                         $scope: $scope,
                         addItem: function (data) {
-                            //Extend request parameters for routines and deployment parameters
+                            //Extend request parameters for routines and parameters
                             return readRoutines(data.routineFiles)
                                 .then(function (response) {
                                     data.routines = response;

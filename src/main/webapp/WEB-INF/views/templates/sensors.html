@@ -21,7 +21,7 @@
                         <th>Name</th>
                         <th class="align-center">State</th>
                         <th>Sensor type</th>
-                        <th>Adapter</th>
+                        <th>Extraction operator</th>
                         <th>Device</th>
                     </tr>
                     </thead>
@@ -51,7 +51,10 @@
                                     <span class="label label-success">Ready</span>
                                 </div>
                                 <div ng-switch-when="DEPLOYED">
-                                    <span class="label label-info">Deployed</span>
+                                    <span class="label bg-teal">Deployed</span>
+                                </div>
+                                <div ng-switch-when="RUNNING">
+                                    <span class="label label-info">Running</span>
                                 </div>
                                 <div ng-switch-default>
                                     <span class="label label-default">Unknown</span>
@@ -138,7 +141,7 @@
                                     <select class="form-control show-tick" id="sensor-form-select-adapter"
                                             ng-model="addSensorCtrl.item.adapter"
                                             ng-options="t._links.self.href as (t.name) for t in ctrl.adapterList">
-                                        <option value="">Select adapter
+                                        <option value="">Select extraction adapter
                                         <option/>
                                     </select>
                                 </div>

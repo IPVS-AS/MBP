@@ -1,4 +1,4 @@
-package org.citopt.connde.service.rules.execution.executors;
+package org.citopt.connde.service.rules.execution.actuator_action;
 
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.rules.Rule;

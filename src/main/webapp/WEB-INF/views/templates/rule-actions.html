@@ -175,10 +175,20 @@
                                                    value="DEPLOY">
                                             <label for="deploy_deploy">Deploy</label>
                                             <br/>
+                                            <input type="radio" id="deploy_start" class="with-gap"
+                                                   ng-model="addRuleActionCtrl.item.parameters['deploy']"
+                                                   value="START">
+                                            <label for="deploy_start">Deploy and start</label>
+                                            <br/>
+                                            <input type="radio" id="deploy_stop" class="with-gap"
+                                                   ng-model="addRuleActionCtrl.item.parameters['deploy']"
+                                                   value="STOP">
+                                            <label for="deploy_stop">Stop</label>
+                                            <br/>
                                             <input type="radio" id="deploy_undeploy" class="with-gap"
                                                    ng-model="addRuleActionCtrl.item.parameters['deploy']"
                                                    value="UNDEPLOY">
-                                            <label for="deploy_undeploy">Undeploy</label>
+                                            <label for="deploy_undeploy">Stop and undeploy</label>
                                         </div>
                                     </div>
                                 </div>

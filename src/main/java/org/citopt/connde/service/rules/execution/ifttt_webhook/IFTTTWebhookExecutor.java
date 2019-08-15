@@ -1,4 +1,4 @@
-package org.citopt.connde.service.rules.execution.executors;
+package org.citopt.connde.service.rules.execution.ifttt_webhook;
 
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;

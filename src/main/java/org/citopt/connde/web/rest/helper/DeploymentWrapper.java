@@ -1,34 +1,20 @@
 package org.citopt.connde.web.rest.helper;
 
 import org.citopt.connde.domain.adapter.Adapter;
-import org.citopt.connde.domain.adapter.Code;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Component;
-import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.repository.ComponentRepository;
-import org.citopt.connde.service.NetworkService;
 import org.citopt.connde.service.deploy.ComponentState;
 import org.citopt.connde.service.deploy.SSHDeployer;
-import org.citopt.connde.service.settings.SettingsService;
-import org.citopt.connde.service.settings.model.BrokerLocation;
-import org.citopt.connde.service.settings.model.Settings;
 import org.citopt.connde.web.rest.response.ActionResponse;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Component that wraps the methods provided by the SSHDeployer in order to offer consistent deployment features
@@ -59,19 +45,19 @@ public class DeploymentWrapper {
         try {
             result = sshDeployer.isComponentRunning(component);
         } catch (IOException e) {
-            return new ResponseEntity<Boolean>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<Boolean>(result, HttpStatus.OK);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     /**
-     * Deploys a component by using a list of parameter instances that contain a corresponding value.
+     * Starts a component by using a list of parameter instances that contain a corresponding value.
      *
-     * @param component          The component to deploy
-     * @param parameterInstances A list of parameter instances to use for the deployment
-     * @return A ResponseEntity object that contains an ActionResponse which describes the result of the deployment
+     * @param component          The component to start
+     * @param parameterInstances A list of parameter instances to use for the start request
+     * @return A ResponseEntity object that contains an ActionResponse which describes the result of the start request
      */
-    public ResponseEntity<ActionResponse> deployComponent(Component component, List<ParameterInstance> parameterInstances) {
+    public ResponseEntity<ActionResponse> startComponent(Component component, List<ParameterInstance> parameterInstances) {
         //Validity check
         if (component == null) {
             ActionResponse response = new ActionResponse(false, "The component does not exist.");
@@ -105,9 +91,9 @@ public class DeploymentWrapper {
             }
         }
 
-        //Deploy component
+        //Start component
         try {
-            sshDeployer.deployComponent(component, parameterInstances);
+            sshDeployer.startComponent(component, parameterInstances);
         } catch (IOException e) {
             ActionResponse response = new ActionResponse(false, "An unknown error occurred");
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -119,7 +105,57 @@ public class DeploymentWrapper {
     }
 
     /**
-     * Deploys a component by using a list of parameter instances that contain a corresponding value.
+     * Stops a component on its remote device.
+     *
+     * @param component The component to stop
+     * @return A ResponseEntity object that contains an ActionResponse which describes the result of the stop request
+     */
+    public ResponseEntity<ActionResponse> stopComponent(Component component) {
+        //Validity check
+        if (component == null) {
+            ActionResponse response = new ActionResponse(false, "The component does not exist.");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        //Undeploy component
+        try {
+            sshDeployer.stopComponent(component);
+        } catch (IOException e) {
+            ActionResponse response = new ActionResponse(false, "An unknown error occurred");
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        ActionResponse response = new ActionResponse(true, "Success");
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * Deploys a component onto its device.
+     *
+     * @param component          The component to deploy
+     * @return A ResponseEntity object that contains an ActionResponse which describes the result of the deployment
+     */
+    public ResponseEntity<ActionResponse> deployComponent(Component component) {
+        //Validity check
+        if (component == null) {
+            ActionResponse response = new ActionResponse(false, "The component does not exist.");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        //Deploy component
+        try {
+            sshDeployer.deployComponent(component);
+        } catch (IOException e) {
+            ActionResponse response = new ActionResponse(false, "An unknown error occurred");
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        //Success
+        ActionResponse response = new ActionResponse(true, "Success");
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    /**
+     * Deploys a component onto its remote device.
      *
      * @param component The component to undeploy
      * @return A ResponseEntity object that contains an ActionResponse which describes the result of the undeployment

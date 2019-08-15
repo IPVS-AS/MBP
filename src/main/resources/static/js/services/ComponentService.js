@@ -8,6 +8,10 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
 
         //URL prefix for requests
         const URL_PREFIX = ENDPOINT_URI + '/';
+        //URL suffix for starting components
+        const URL_START_COMPONENT = URL_PREFIX + 'start/';
+        //URL suffix for stopping components
+        const URL_STOP_COMPONENT = URL_PREFIX + 'stop/';
         //URL suffix under which the deployment state of all components can be retrieved
         const URL_GET_ALL_COMPONENT_STATES_SUFFIX = '/state';
         //URL suffix under which the deployment state of a certain component can be retrieved
@@ -16,6 +20,34 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
         const URL_GET_VALUE_LOG_STATS_SUFFIX = '/stats/';
         //URL suffix under which the value logs of a certain component can be retrieved
         const URL_VALUE_LOGS_SUFFIX = '/valueLogs';
+
+
+        /**
+         * [Public]
+         * Performs a server request in order to start a certain component (in case it has been stopped before)m
+         * optionally with given list of parameters.
+         *
+         * @param componentId The id of the component to start
+         * @param componentType The type of the component to start
+         * @param parameterList A list of parameters to use
+         * @returns {*}
+         */
+        function startComponent(componentId, componentType, parameterList) {
+            return $http.post(URL_START_COMPONENT + componentType + '/' + componentId, parameterList);
+        }
+
+
+        /**
+         * [Public]
+         * Performs a server request in order to stop a certain component.
+         *
+         * @param componentId The id of the component to stop
+         * @param componentType The type of the component to stop
+         * @returns {*}
+         */
+        function stopComponent(componentId, componentType) {
+            return $http.post(URL_STOP_COMPONENT + componentType + '/' + componentId);
+        }
 
 
         /**
@@ -120,14 +152,13 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
 
             //Iterate over all received value logs
             for (var i = 0; i < receivedLogs.length; i++) {
-                //Extract value and date for the current log and format them
+                //Extract value and time for the current log and format them
                 var value = receivedLogs[i].value * 1;
-                var date = receivedLogs[i].date;
-                date = date.replace(/\s/g, "T");
-                date = dateToString(new Date(date));
+                var time = receivedLogs[i].time.epochSecond * 1000;
+                time = dateToString(new Date(time));
 
-                //Create a (date, value) tuple and add it to the array
-                var tuple = [date, value];
+                //Create a (time, value) tuple and add it to the array
+                var tuple = [time, value];
                 finalValues.push(tuple);
             }
 
@@ -176,6 +207,8 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
             getValueLogStats: getValueLogStats,
             getValueLogs: getValueLogs,
             deleteValueLogs: deleteValueLogs,
+            startComponent: startComponent,
+            stopComponent: stopComponent,
             isDeployed: function (url) {
                 return $http({
                     method: 'GET',
@@ -199,11 +232,10 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
                     });
             },
 
-            deploy: function (parameterList, url) {
+            deploy: function (url) {
                 return $http({
                     method: 'POST',
                     url: url,
-                    data: parameterList,
                     headers: {'Content-Type': 'application/json'}
                 });
             },

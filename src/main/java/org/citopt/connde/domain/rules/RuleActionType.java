@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.citopt.connde.service.rules.execution.ExecutorProvider;
 import org.citopt.connde.service.rules.execution.RuleActionExecutor;
-import org.citopt.connde.service.rules.execution.executors.ActuatorActionExecutor;
-import org.citopt.connde.service.rules.execution.executors.ComponentDeploymentExecutor;
-import org.citopt.connde.service.rules.execution.executors.IFTTTWebhookExecutor;
+import org.citopt.connde.service.rules.execution.actuator_action.ActuatorActionExecutor;
+import org.citopt.connde.service.rules.execution.component_deployment.ComponentDeploymentExecutor;
+import org.citopt.connde.service.rules.execution.ifttt_webhook.IFTTTWebhookExecutor;
 
 /**
  * Enumeration of available rule action types. Each rule action type maps to a rule executor object which then takes

@@ -140,9 +140,9 @@ app.controller('ComponentDetailsController',
                 showDeploymentWaitingScreen("Deploying...");
 
                 //Execute deployment request
-                ComponentService.deploy(vm.parameterValues, componentDetails._links.deploy.href).then(
+                ComponentService.deploy(componentDetails._links.deploy.href).then(
                     function (response) {
-                        //Success, check if every thing worked well
+                        //Success, check if everything worked well
                         if (!response.data.success) {
                             vm.deploymentState = 'UNKNOWN';
                             NotificationService.notify('Error during deployment: ' + response.data.globalMessage, 'error');
@@ -173,7 +173,7 @@ app.controller('ComponentDetailsController',
                 //Execute undeployment request
                 ComponentService.undeploy(componentDetails._links.deploy.href).then(
                     function (response) {
-                        //Success, check if every thing worked well
+                        //Success, check if everything worked well
                         if (!response.data.success) {
                             vm.deploymentState = 'UNKNOWN';
                             NotificationService.notify('Error during undeployment: ' + response.data.globalMessage, 'error');
@@ -195,6 +195,68 @@ app.controller('ComponentDetailsController',
 
             /**
              * [Public]
+             * Starts the current component (in case it has been stopped before) and shows a waiting screen during
+             * the start progress.
+             */
+            function startComponent() {
+                //Show waiting screen
+                showDeploymentWaitingScreen("Starting...");
+
+                //Execute start request
+                ComponentService.startComponent(COMPONENT_ID, COMPONENT_TYPE, vm.parameterValues)
+                    .then(function (response) {
+                            //Success, check if everything worked well
+                            if (!response.data.success) {
+                                vm.deploymentState = 'UNKNOWN';
+                                NotificationService.notify('Error during starting: ' + response.data.globalMessage, 'error');
+                                return;
+                            }
+                            //Notify user
+                            vm.deploymentState = 'RUNNING';
+                            NotificationService.notify('Component started successfully.', 'success');
+                        },
+                        function (response) {
+                            //Failure
+                            vm.deploymentState = 'UNKNOWN';
+                            NotificationService.notify('Starting failed.', 'error');
+                        }).then(function () {
+                    //Finally hide the waiting screen
+                    hideDeploymentWaitingScreen();
+                });
+            }
+
+            /**
+             * [Public]
+             * Stops the current component and shows a waiting screen during the stop progress.
+             */
+            function stopComponent() {
+                //Show waiting screen
+                showDeploymentWaitingScreen("Stopping...");
+
+                //Execute stop request
+                ComponentService.stopComponent(COMPONENT_ID, COMPONENT_TYPE).then(function (response) {
+                        //Success, check if everything worked well
+                        if (!response.data.success) {
+                            vm.deploymentState = 'UNKNOWN';
+                            NotificationService.notify('Error during stopping: ' + response.data.globalMessage, 'error');
+                            return;
+                        }
+                        //Notify user
+                        vm.deploymentState = 'DEPLOYED';
+                        NotificationService.notify('Component stopped successfully.', 'success');
+                    },
+                    function (response) {
+                        //Failure
+                        vm.deploymentState = 'UNKNOWN';
+                        NotificationService.notify('Stopping failed.', 'error');
+                    }).then(function () {
+                    //Finally hide the waiting screen
+                    hideDeploymentWaitingScreen();
+                });
+            }
+
+            /**
+             * [Public]
              * Retrieves a certain number of value log data (in a specific order) for the current component
              * as a promise.
              *
@@ -207,22 +269,22 @@ app.controller('ComponentDetailsController',
              */
             function retrieveComponentData(numberLogs, descending, unit) {
                 //Set default order
+                var order = 'asc';
+
+                //Check for user option
                 if (descending) {
-                    descending = 'desc';
-                } else {
-                    descending = 'asc'
+                    order = 'desc';
                 }
 
                 //Initialize parameters for the server request
                 var pageDetails = {
-                    sort: 'date,' + descending,
+                    sort: 'time,' + order,
                     size: numberLogs
                 };
 
                 //Perform the server request in order to retrieve the data
                 return ComponentService.getValueLogs(COMPONENT_ID, COMPONENT_TYPE, pageDetails, unit);
             }
-
 
             /**
              * [Public]
@@ -342,7 +404,7 @@ app.controller('ComponentDetailsController',
                  * @returns {boolean} True, if the chart may update; false otherwise
                  */
                 function isUpdateable() {
-                    return vm.deploymentState == 'DEPLOYED';
+                    return vm.deploymentState === 'RUNNING';
                 }
 
                 //Expose
@@ -444,10 +506,11 @@ app.controller('ComponentDetailsController',
                 updateDeploymentState: updateDeploymentState,
                 updateDeviceState: updateDeviceState,
                 onDisplayUnitChange: onDisplayUnitChange,
+                startComponent: startComponent,
+                stopComponent: stopComponent,
                 deploy: deploy,
                 undeploy: undeploy,
                 deleteValueLogs: deleteValueLogs
             });
-
         }]
 );

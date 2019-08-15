@@ -3,7 +3,6 @@ package org.citopt.connde.web.rest.event_handler;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
-import org.citopt.connde.domain.valueLog.ValueLog;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.ValueLogRepository;
 import org.citopt.connde.service.cep.trigger.CEPTriggerService;
@@ -77,9 +76,7 @@ public class MonitoringAdapterEventHandler {
             //Undeploy monitoring component if necessary
             sshDeployer.undeployIfRunning(monitoringComponent);
 
-            //Get affected value logs and delete them
-            List<ValueLog> valueLogs = valueLogRepository.findListByIdref(monitoringComponent.getId());
-            valueLogRepository.delete(valueLogs);
+            //TODO Delete value logs by idref monitoringComponent.getId()
         }
     }
 }

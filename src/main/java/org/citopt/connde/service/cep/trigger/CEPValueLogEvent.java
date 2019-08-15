@@ -3,9 +3,7 @@ package org.citopt.connde.service.cep.trigger;
 import org.citopt.connde.domain.valueLog.ValueLog;
 import org.citopt.connde.service.cep.engine.core.events.CEPEvent;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
 
 /**
  * CEP event wrapping a value log that was received for a certain component. This event may be used in order to be
@@ -21,7 +19,7 @@ public class CEPValueLogEvent extends CEPEvent {
      *
      * @param valueLog The value log to use
      */
-    public CEPValueLogEvent(ValueLog valueLog) {
+    CEPValueLogEvent(ValueLog valueLog) {
         super();
 
         //Sanity check
@@ -31,16 +29,13 @@ public class CEPValueLogEvent extends CEPEvent {
         this.valueLog = valueLog;
 
         //Convert value string of value log to double
-        double value = Double.parseDouble(valueLog.getValue());
+        double value = valueLog.getValue();
 
-        //Try to get date object from value log and use "now" if not possible
-        Date date = new Date();
-        try {
-            date = valueLog.getDateObject();
-        } catch (ParseException ignored) {}
+        //Get Instant object from value log
+        Instant time = valueLog.getTime();
 
-        //Get UNIX time from date object
-        long unixSeconds = date.getTime();
+        //Get epoch seconds
+        long unixSeconds = time.getEpochSecond();
 
         //Set event fields
         this.addValue("value", value);
@@ -75,7 +70,7 @@ public class CEPValueLogEvent extends CEPEvent {
      * @param componentTypeName The type name of the component to which the event belongs to
      * @return The generated event name
      */
-    public static String generateEventTypeName(String componentId, String componentTypeName) {
+    static String generateEventTypeName(String componentId, String componentTypeName) {
         //Normalize component id and type name
         String normalizedTypeName = componentTypeName.toLowerCase();
         String normalizedId = componentId.replace("@", "_").toLowerCase();

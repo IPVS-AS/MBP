@@ -44,7 +44,7 @@ public class ValueLogStatsService {
 
         //Retrieve a list of value logs from the repository
         String componentId = component.getId();
-        List<ValueLog> valueLogList = valueLogRepository.findListByIdref(componentId);
+        List<ValueLog> valueLogList = valueLogRepository.findAllByIdRef(componentId);
 
         //Return object with default values if no logs are available
         if (valueLogList.isEmpty()) {
@@ -90,16 +90,16 @@ public class ValueLogStatsService {
 
         //Iterate over all value logs in the list
         for (ValueLog log : valueLogList) {
-            //Get numeric value for the current log
-            double logValue = Double.parseDouble(log.getValue());
+            //Get value of the current log
+            double logValue = log.getValue();
 
             //Update min log if necessary
-            if (logValue < Double.parseDouble(minLog.getValue())) {
+            if (logValue < minLog.getValue()) {
                 minLog = log;
             }
 
             //Update max log if necessary
-            if (logValue > Double.parseDouble(maxLog.getValue())) {
+            if (logValue > maxLog.getValue()) {
                 maxLog = log;
             }
 
@@ -124,7 +124,8 @@ public class ValueLogStatsService {
 
         //Iterate over all value logs in the list
         for (ValueLog log : valueLogList) {
-            double logValue = Double.parseDouble(log.getValue());
+            //Get current value
+            double logValue = log.getValue();
 
             //Increase accumulator with respect to the value
             varianceAccumulator += Math.pow(logValue - average, 2);

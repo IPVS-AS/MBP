@@ -120,14 +120,20 @@
             <version>4.3.1</version>
         </dependency>
 
+		<!-- https://github.com/influxdata/influxdb-java -->
+		<dependency>
+			<groupId>org.influxdb</groupId>
+			<artifactId>influxdb-java</artifactId>
+			<version>2.15</version>
+		</dependency>
+
         <!-- Esper CEP engine-->
         <!-- https://mvnrepository.com/artifact/com.espertech/esper -->
         <dependency>
             <groupId>com.espertech</groupId>
             <artifactId>esper</artifactId>
             <version>7.1.0</version>
-        </dependency>
-    </dependencies>
+        </dependency>    </dependencies>
 
 	<build>
 		<resources>

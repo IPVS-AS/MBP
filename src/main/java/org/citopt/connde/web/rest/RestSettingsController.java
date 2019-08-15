@@ -1,8 +1,7 @@
 package org.citopt.connde.web.rest;
 
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.service.mqtt.MQTTService;
-import org.citopt.connde.service.settings.SettingsService;
+import org.citopt.connde.service.mqtt.MQTTService;import org.citopt.connde.service.settings.SettingsService;
 import org.citopt.connde.service.settings.model.Settings;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +51,7 @@ public class RestSettingsController {
      */
     @PostMapping("/settings")
     public ResponseEntity saveSettings(@RequestBody Settings settings) {
-        //Save settings and re-initialize MQTT service, since it needs to use a different ip address now
+        //Save settings and re-initialize MQTT service, since it needs to use a different IP address now
         try {
             settingsService.saveSettings(settings);
             mqttService.initialize();
