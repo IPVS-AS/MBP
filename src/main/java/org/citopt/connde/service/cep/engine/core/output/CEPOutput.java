@@ -14,6 +14,13 @@ public class CEPOutput {
     private Map<Object, Object> outputMap;
 
     /**
+     * Creates a new CEP result object that holds an empty CEP query result.
+     */
+    public CEPOutput() {
+        setOutputMap(new HashMap<>());
+    }
+
+    /**
      * Creates a new CEP result object by passing a map which is the result of a CEP query.
      *
      * @param outputMap The CEP query output map

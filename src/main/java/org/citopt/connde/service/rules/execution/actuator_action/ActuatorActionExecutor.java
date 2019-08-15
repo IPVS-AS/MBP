@@ -106,13 +106,13 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
      * of a CEP engine that triggered the execution may be passed. The return value of this method indicates whether
      * the execution of the rule action was successful.
      *
-     * @param action The rule action to execute
-     * @param rule   The rule that holds the action that is supposed to be executed
-     * @param output The output of a CEP engine that triggered the execution of this rule action (may be null)
+     * @param action    The rule action to execute
+     * @param rule      The rule that holds the action that is supposed to be executed
+     * @param cepOutput The output of a CEP engine that triggered the execution of this rule action (may be null)
      * @return True, if the execution of the rule action was successful; false otherwise
      */
     @Override
-    public boolean execute(RuleAction action, Rule rule, CEPOutput output) {
+    public boolean execute(RuleAction action, Rule rule, CEPOutput cepOutput) {
         //Get action parameters
         Map<String, String> parameters = action.getParameters();
         String actuatorId = parameters.get(PARAM_KEY_ACTUATOR);
@@ -132,6 +132,11 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
             data = "";
         }
 
+        //Sanitize CEP output
+        if (cepOutput == null) {
+            cepOutput = new CEPOutput();
+        }
+
         //Build JSON object that carries all information
         JSONObject messageObject = new JSONObject();
         try {
@@ -142,7 +147,7 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
             messageObject.put("actuator_id", actuatorId);
             messageObject.put("action", actionName);
             messageObject.put("data", data);
-            messageObject.put("cep_output", output.getOutputMap());
+            messageObject.put("cep_output", cepOutput.getOutputMap());
         } catch (JSONException e) {
             return false;
         }
