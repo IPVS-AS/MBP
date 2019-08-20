@@ -79,6 +79,6 @@ public class RestDeviceStateController {
         //Determine device state
         DeviceState deviceState = sshDeployer.determineDeviceState(device);
 
-        return new ResponseEntity<DeviceState>(deviceState, HttpStatus.OK);
+        return new ResponseEntity<>(deviceState, HttpStatus.OK);
     }
 }
