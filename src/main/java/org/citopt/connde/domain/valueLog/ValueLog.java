@@ -1,11 +1,10 @@
 package org.citopt.connde.domain.valueLog;
 
-import org.citopt.connde.InfluxDBConfiguration;
-import org.influxdb.annotation.Column;
-import org.influxdb.annotation.Measurement;
-
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import org.citopt.connde.InfluxDBConfiguration;
+import org.influxdb.annotation.Column;
+import org.influxdb.annotation.Measurement;import java.text.SimpleDateFormat;import java.util.Date;
 
 /**
  * Objects of this class represent value logs that were received by the MQTT broker and
@@ -16,6 +15,8 @@ import java.util.concurrent.TimeUnit;
         retentionPolicy = InfluxDBConfiguration.RETENTION_POLICY_NAME,
         timeUnit = TimeUnit.SECONDS)
 public class ValueLog {
+    //Format that is used for the date
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Column(name = "time")
     private Instant time;
@@ -108,11 +109,6 @@ public class ValueLog {
         this.message = message;
     }
 
-    /**
-     * Returns the id of the component to which this value log belongs.
-     *
-     * @return The component id
-     */
     public String getIdref() {
         return idref;
     }

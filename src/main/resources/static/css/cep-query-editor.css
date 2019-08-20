@@ -1,0 +1,238 @@
+.cep-query-editor {
+    margin: 5px;
+    width: 100%;
+    user-select: none;
+}
+
+.cep-query-editor .error-area{
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.cep-query-editor .error-area p{
+    font-weight: bold;
+}
+
+.cep-query-editor .error-area ul{
+    padding-left: 5px;
+}
+
+.cep-query-editor .error-area ul li:before{
+    content: "- ";
+}
+
+.cep-query-editor .pattern-container {
+    width: 100%;
+    min-height: 90px;
+    background: #788992;
+    border-radius: 2px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    padding: 5px;
+    text-align: center;
+}
+
+.cep-query-editor .pattern-container.dragging {
+    border: 2px dashed black;
+}
+
+.cep-query-editor .pattern-container:empty {
+    font-size: 30px;
+    color: white;
+    padding-top: 20px;
+}
+
+.cep-query-editor .pattern-container:empty:before {
+    content: "Please drop events here.";
+}
+
+.cep-query-editor .category ul.options {
+    float: right;
+}
+
+.cep-query-editor .category .title {
+    width: 100%;
+    display: block;
+    font-size: 16px;
+    font-style: italic;
+    border-bottom: 1px solid rgba(204, 204, 204, 0.35);
+    padding: 2px;
+}
+
+.cep-query-editor .category .category-list {
+    clear: right;
+    width: 100%;
+    display: block;
+}
+
+.cep-query-editor .pattern-element {
+    display: inline-block;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    vertical-align: top;
+    margin: 5px;
+}
+
+.cep-query-editor .pattern-container .pattern-element:not(.stub) {
+    cursor: pointer;
+}
+
+.cep-query-editor .component {
+    width: 80px;
+    height: 80px;
+}
+
+.cep-query-editor .component {
+    padding-top: 12px;
+    font-size: 12px;
+    color: black;
+    background-color: white;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+.cep-query-editor .pattern-container .component:hover {
+
+}
+
+.cep-query-editor .component .material-icons {
+    font-size: 34px;
+    display: blocK;
+}
+
+.cep-query-editor .component span {
+    text-overflow: ellipsis;
+    max-width: 100%;
+    overflow: hidden;
+    display: inline-block;
+    max-height: 29px;
+    line-height: 15px;
+    margin-top: 4px;
+}
+
+.cep-query-editor .placeholder, .cep-query-editor .stub {
+    padding-top: 4px;
+    font-size: 50px;
+    color: white;
+    border: 1px dashed #333;
+}
+
+.cep-query-editor .placeholder {
+    background-color: #FF9800;
+}
+
+.cep-query-editor .placeholder:before {
+    content: "+";
+}
+
+.cep-query-editor .stub {
+    background-color: #9E9E9E;
+}
+
+.cep-query-editor .stub:before {
+    content: "?";
+}
+
+.cep-query-editor .placeholder.operator, .cep-query-editor .stub.operator {
+    font-size: 20px;
+    line-height: 16px;
+}
+
+.cep-query-editor .operator {
+    padding: 5px;
+    font-weight: bold;
+    min-width: 45px;
+    height: 30px;
+}
+
+.cep-query-editor .category .operator {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-right: 5px;
+}
+
+.cep-query-editor .pattern-container .operator {
+    margin-top: 30px;
+}
+
+.cep-query-editor .operator.and {
+    color: white;
+    background-color: #3F51B5;
+}
+
+.cep-query-editor .operator.or {
+    color: white;
+    background-color: #009688;
+}
+
+.cep-query-editor .pattern-container .operator.or {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.cep-query-editor .operator.before {
+    color: white;
+    background-color: #9C27B0;
+}
+
+
+.cep-query-editor .pattern-container .operator.before {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.cep-query-editor .pattern-container .component.highlight-precedence {
+    border-top-width: 4px;
+    border-top-style: solid;
+    padding-top: 8px;
+}
+
+.cep-query-editor .pattern-container .component.stub.highlight-precedence {
+    padding-top: 1px;
+}
+
+.cep-query-editor .pattern-container .component.element-selected {
+    border-bottom: 4px solid black;
+}
+
+.cep-query-editor .pattern-container .operator.element-selected {
+    border-bottom: 2px solid black;
+}
+
+.cep-query-editor .deletion-area {
+    margin-top: 10px;
+    height: 60px;
+    border-radius: 5px;
+    background-color: #F44336;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    color: white;
+    font-size: 30px;
+    text-align: center;
+    padding-top: 6px;
+}
+
+.cep-query-editor .deletion-area.accepting {
+    border: 2px dashed black;
+}
+
+.cep-query-editor .deletion-area:before {
+    content: 'Drop here to delete'
+}
+
+.cep-query-editor .details-container {
+    margin-top: 30px;
+}
+
+.cep-query-editor .details-container .details-header i.material-icons {
+    display: blocK;
+}
+
+.cep-query-editor .details-container .details-header span {
+    display: block;
+    margin-left: 40px;
+    margin-top: -24px;
+}
+
+.cep-query-editor .details-container form {
+    margin-top: 30px;
+}

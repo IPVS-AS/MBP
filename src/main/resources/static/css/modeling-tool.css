@@ -4,12 +4,12 @@
 #modelingToolView {
   width: 100%;
   white-space: nowrap;
-  box-shadow: 1px 1px 1px 1px grey;
+  /* box-shadow: 1px 1px 1px 1px grey; */
   height: 100%;
   background-size: 100% 100%;
   background-repeat: no-repeat;
   background-position: center center;
-  background-image: url('../images/model/grey-white-background.jpg');
+  /* background-image: url('../images/model/grey-white-background.jpg'); */
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
@@ -18,11 +18,11 @@
 /* Style the tool-header with a grey background and some padding */
 .tool-header {
   overflow: hidden;
-  box-shadow: 1px 1px 1px 1px grey;
+/*   box-shadow: 1px 1px 1px 1px #e9e8e4; */
   background-size: 100% 100%;
   background-repeat: no-repeat;
   background-position: center center;
-  background-image: url('../images/model/white-background.jpg');
+/*   background-image: url('../images/model/white-background.jpg'); */
   margin-bottom: 15px;
   padding: 2px;
 }
@@ -54,6 +54,12 @@
   }
 }
 
+.tool-header-navbar-brand {
+    height: 50px;
+    padding: 15px 15px;
+    font-size: 18px;
+    line-height: 50px;
+}
 /* ---------------------------------------------------------------------------------------------------- */
 /* --- jsPlumb demo ----------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------- */
@@ -678,15 +684,15 @@ li {
 /* ---------------------------------------------------------------------------------------------------- */
 /* --- Rest ------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------- */
-.panel-body {
+#toolPalette .panel-body {
   height: 270px;
 }
 
-.panel-footer {
+#toolPalette .panel-footer {
   height: 50px;
 }
 
-.panel-group {
+#toolPalette .panel-group {
   margin: 5px;
 }
 

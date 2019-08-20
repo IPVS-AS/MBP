@@ -47,7 +47,7 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
     
 	private void addValuesInDatabase(MongoClient mongoClient) {
 		DB database = mongoClient.getDB(DB_NAME);
-		
+
 		// Add component types
 		if (!database.collectionExists("componentType")){
 			DBCollection collection = database.createCollection("componentType", null);
