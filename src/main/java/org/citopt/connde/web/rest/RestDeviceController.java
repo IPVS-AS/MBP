@@ -47,7 +47,7 @@ public class RestDeviceController {
         //Get device from repository by id
         UserEntity entity = userService.getUserEntityFromRepository(deviceRepository, deviceId);
 
-        //Check if entity oould be found
+        //Check if entity could be found
         if (entity == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }

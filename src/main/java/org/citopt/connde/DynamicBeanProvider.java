@@ -1,26 +1,27 @@
-package org.citopt.connde.service.rules.execution;
+package org.citopt.connde;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
+
 /**
- * Allows to look up Spring managed rule action executor beans by class and to provide them to non-bean classes.
+ * Allows to look up Spring managed beans by their class and to provide them to non-bean classes.
  */
 @Component
-public class ExecutorProvider implements ApplicationContextAware {
+public class DynamicBeanProvider implements ApplicationContextAware {
     private static ApplicationContext context;
 
     /**
-     * Returns the Spring managed rule action executor bean of a given rule action executor class type.
-     * Returns null otherwise.
+     * Returns a certain Spring managed bean, given by its class.
+     * Returns null if bean could not be found.
      *
-     * @param executorClass The class of the rule action executor
-     * @return The corresponding rule action executor bean
+     * @param beanClass The class of the bean
+     * @return The corresponding bean
      */
-    public static <T extends RuleActionExecutor> T get(Class<T> executorClass) {
-        return context.getBean(executorClass);
+    public static <T> T get(Class<T> beanClass) {
+        return context.getBean(beanClass);
     }
 
     /**

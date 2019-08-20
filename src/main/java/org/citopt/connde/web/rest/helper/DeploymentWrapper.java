@@ -8,6 +8,7 @@ import org.citopt.connde.service.deploy.ComponentState;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -131,7 +132,7 @@ public class DeploymentWrapper {
     /**
      * Deploys a component onto its device.
      *
-     * @param component          The component to deploy
+     * @param component The component to deploy
      * @return A ResponseEntity object that contains an ActionResponse which describes the result of the deployment
      */
     public ResponseEntity<ActionResponse> deployComponent(Component component) {
@@ -204,7 +205,7 @@ public class DeploymentWrapper {
      * @param component The component for which the state is supposed to be determined
      * @return A ResponseEntity object that holds the component state of the component
      */
-    public ResponseEntity<ComponentState> getComponentState(Component component) {
+    public ResponseEntity<Resource<ComponentState>> getComponentState(Component component) {
         //Validity check
         if (component == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -213,6 +214,9 @@ public class DeploymentWrapper {
         //Determine component state
         ComponentState componentState = sshDeployer.determineComponentState(component);
 
-        return new ResponseEntity<>(componentState, HttpStatus.OK);
+        //Wrap component state into resource
+        Resource<ComponentState> stateResource = new Resource<>(componentState);
+
+        return new ResponseEntity<>(stateResource, HttpStatus.OK);
     }
 }

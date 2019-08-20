@@ -8,6 +8,7 @@ import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.deploy.ComponentState;
 import org.citopt.connde.web.rest.helper.DeploymentWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -61,7 +62,7 @@ public class RestComponentStateController {
      * @return The deployment state of the actuator as plain string
      */
     @GetMapping("/actuators/state/{id}")
-    public ResponseEntity<ComponentState> getActuatorState(@PathVariable(value = "id") String actuatorId) {
+    public ResponseEntity<Resource<ComponentState>> getActuatorState(@PathVariable(value = "id") String actuatorId) {
         return getComponentState(actuatorId, actuatorRepository);
     }
 
@@ -72,7 +73,7 @@ public class RestComponentStateController {
      * @return The deployment state of the sensor as plain string
      */
     @GetMapping("/sensors/state/{id}")
-    public ResponseEntity<ComponentState> getSensorState(@PathVariable(value = "id") String sensorId) {
+    public ResponseEntity<Resource<ComponentState>> getSensorState(@PathVariable(value = "id") String sensorId) {
         return getComponentState(sensorId, sensorRepository);
     }
 
@@ -84,7 +85,7 @@ public class RestComponentStateController {
         return deploymentWrapper.getStatesAllComponents(componentList);
     }
 
-    private ResponseEntity<ComponentState> getComponentState(String componentId, ComponentRepository repository) {
+    private ResponseEntity<Resource<ComponentState>> getComponentState(String componentId, ComponentRepository repository) {
         //Retrieve component from repository
         Component component = (Component) repository.findOne(componentId);
 

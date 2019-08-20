@@ -122,7 +122,7 @@ app.controller('SensorListController',
 
                 //Perform server request and set state of the sensor object accordingly
                 ComponentService.getComponentState(sensor.id, 'sensors').then(function (response) {
-                    sensor.state = response.data;
+                    sensor.state = response.data.content;
                 }, function (response) {
                     sensor.state = 'UNKNOWN';
                     NotificationService.notify("Could not retrieve the sensor state.", "error");

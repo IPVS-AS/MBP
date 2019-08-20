@@ -7,6 +7,7 @@ import org.citopt.connde.service.UserService;
 import org.citopt.connde.service.deploy.DeviceState;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,8 +22,6 @@ import java.util.stream.Collectors;
 
 /**
  * REST Controller for requests related to the availability of devices.
- *
- * @author Jan
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
@@ -51,7 +50,7 @@ public class RestDeviceStateController {
         List<Device> deviceList = userService.getUserEntitiesFromRepository(deviceRepository)
                 .stream().map(entity -> (Device) entity).collect(Collectors.toList());
 
-        //Iterate over all devices and determine the devie state
+        //Iterate over all devices and determine the device state
         for (Device device : deviceList) {
             DeviceState state = sshDeployer.determineDeviceState(device);
             resultMap.put(device.getId(), state);
@@ -66,8 +65,8 @@ public class RestDeviceStateController {
      * @param deviceId The id of the device which state is supposed to be retrieved
      * @return The availability state of the device as plain string
      */
-    @GetMapping("/devices/state/{id}")
-    public ResponseEntity<DeviceState> getDeviceStatus(@PathVariable(value = "id") String deviceId) {
+    @GetMapping(value = "/devices/state/{id}")
+    public ResponseEntity<Resource<DeviceState>> getDeviceStatus(@PathVariable(value = "id") String deviceId) {
         //Retrieve device from repository
         Device device = (Device) userService.getUserEntityFromRepository(deviceRepository, deviceId);
 
@@ -79,6 +78,9 @@ public class RestDeviceStateController {
         //Determine device state
         DeviceState deviceState = sshDeployer.determineDeviceState(device);
 
-        return new ResponseEntity<>(deviceState, HttpStatus.OK);
+        //Wrap device state into resource
+        Resource<DeviceState> stateResource = new Resource<>(deviceState);
+
+        return new ResponseEntity<>(stateResource, HttpStatus.OK);
     }
 }

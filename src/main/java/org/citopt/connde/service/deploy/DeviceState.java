@@ -1,8 +1,10 @@
 package org.citopt.connde.service.deploy;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 /**
  * Enumerates all possible availability states of devices.
- *
+ * <p>
  * Semantics:
  * - Unknown: State of the device is not known
  * - Offline: The device is offline, no connection possible

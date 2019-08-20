@@ -10,7 +10,7 @@ import org.springframework.data.rest.core.config.Projection;
  * @author rafaelkperes
  */
 @Projection(name = "list", types = Device.class)
-public interface DeviceListProjection {
+public interface DeviceListProjection extends UserEntityListProjection {
 
     String getId();
 
@@ -25,6 +25,4 @@ public interface DeviceListProjection {
     String getDate();
     
     String getUsername();
-
-    User getOwner();
 }

@@ -14,6 +14,7 @@ import org.citopt.connde.web.rest.helper.DeploymentWrapper;
 import org.citopt.connde.web.rest.helper.MonitoringHelper;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -180,8 +181,8 @@ public class RestMonitoringController {
      * @return A response containing the monitoring state
      */
     @RequestMapping(value = "/monitoring/state/{deviceId}", params = {"adapter"}, method = RequestMethod.GET)
-    public ResponseEntity<ComponentState> getMonitoringState(@PathVariable(value = "deviceId") String deviceId,
-                                                             @RequestParam("adapter") String monitoringAdapterId) {
+    public ResponseEntity<Resource<ComponentState>> getMonitoringState(@PathVariable(value = "deviceId") String deviceId,
+                                                                       @RequestParam("adapter") String monitoringAdapterId) {
         //Create new monitoring component
         MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
 
