@@ -168,8 +168,11 @@
                                 <span class="help-block" ng-show="addDeviceCtrl.item.errors.password">{{addDeviceCtrl.item.errors.password.message}}</span>
                             </div>
                            <!-- item.deviceKey group -->
-                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.deviceKey }">
-                                <button type="submit" class="btn btn-primary m-t-0 waves-effect">Receive Device Key</button>
+                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.deviceKey }" ng-click="addDeviceCtrl.getDeviceKey()">
+                                <button type="button" class="btn btn-primary m-t-0 waves-effect">Get Device Key</button>
+                                <textarea class="form-control" id="device-key-view" type="text"
+                                          placeholder="Device Key is displayed here..." ng-model="addDeviceCtrl.item.deviceKey"
+                                          rows="1"></textarea>
                             </div>
                            <!-- item.rsaKey group -->
                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.rsaKey }">

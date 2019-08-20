@@ -113,6 +113,11 @@ app.factory('CrudService', ['$resource', '$q', 'ENDPOINT_URI', function ($resour
                         }
                 );
             },
+
+            getDeviceKey: function(category, data) {
+                // TODO implement
+              return "123456789"
+            },
             
             deleteItem: function (category, data) {
               return Item.delete({category: category, id: data.id}).$promise.then(
