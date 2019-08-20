@@ -49,10 +49,4 @@ public class IndexController {
     public String views() {
         return "index";
     }
-
-    @RequestMapping(value = "/addNewDevice", method = RequestMethod.GET)
-    public String getDeviceCode(@RequestParam("code") String code) {
-        System.out.println("Device Code is " + code);
-        return code;
-    }
 }

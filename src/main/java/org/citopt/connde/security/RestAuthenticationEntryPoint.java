@@ -34,4 +34,7 @@ public class RestAuthenticationEntryPoint extends BasicAuthenticationEntryPoint 
         setRealmName("MBP");
         super.afterPropertiesSet();
     }
+
+
+
 }

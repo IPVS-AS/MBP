@@ -6,6 +6,8 @@ import org.citopt.connde.constants.Constants;
 import org.citopt.connde.security.RestAuthenticationEntryPoint;
 import org.citopt.connde.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -30,13 +32,13 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-    
+
 	@Bean
 	public RestAuthenticationEntryPoint restAuthenticationEntryPoint() {
 		return new RestAuthenticationEntryPoint();
 	}
-	
-    @Bean
+
+	@Bean
     public UserDetailsService mongoUserDetails() {
         return new UserDetailsServiceImpl();
     }
@@ -45,7 +47,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-	
+
+	@Override
+	@Bean
+	public AuthenticationManager authenticationManagerBean() throws Exception {
+		return super.authenticationManagerBean();
+	}
+
 	@Override
     public void configure(AuthenticationManagerBuilder auth) {
 		try {
@@ -80,7 +88,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)
 				.antMatchers(HttpMethod.DELETE, "/api/users/:username").hasAuthority(Constants.ADMIN)
 				.antMatchers("/api/**").authenticated()
-				.antMatchers(HttpMethod.GET, "/addNewDevice").authenticated()
 		.and()
 			.httpBasic()
         		.authenticationEntryPoint(restAuthenticationEntryPoint())
