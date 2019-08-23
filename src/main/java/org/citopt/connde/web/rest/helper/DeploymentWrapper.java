@@ -35,7 +35,7 @@ public class DeploymentWrapper {
      * @param component The component to check
      * @return A ResponseEntity object that contains the result
      */
-    public ResponseEntity<Boolean> isRunningComponent(Component component) {
+    public ResponseEntity<Boolean> isComponentRunning(Component component) {
         //Validity check
         if (component == null) {
             return new ResponseEntity<Boolean>(HttpStatus.NOT_FOUND);

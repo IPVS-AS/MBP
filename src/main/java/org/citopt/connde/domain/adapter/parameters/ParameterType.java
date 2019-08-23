@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 /**
  * Enumeration of types for deployment parameters that are offered to the user.
  */
-public enum ParameterTypes {
+public enum ParameterType {
     TEXT("Text"), NUMBER("Number"), BOOLEAN("Switch");
 
     //Name of the parameter type that is displayed to the user
@@ -17,7 +17,7 @@ public enum ParameterTypes {
      *
      * @param name The name of the parameter type
      */
-    ParameterTypes(String name) {
+    ParameterType(String name) {
         this.name = name;
     }
 
@@ -40,14 +40,14 @@ public enum ParameterTypes {
      * @return The corresponding parameter type
      */
     @JsonCreator
-    public static ParameterTypes create(String name) {
+    public static ParameterType create(String name) {
         //Check for invalid name
         if (name == null) {
             return null;
         }
 
         //Compare every available parameter type to the provided name
-        for (ParameterTypes type : values()) {
+        for (ParameterType type : values()) {
             if (name.equals(type.toString())) {
                 //Parameter found
                 return type;

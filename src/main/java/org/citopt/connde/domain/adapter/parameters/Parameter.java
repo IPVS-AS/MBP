@@ -7,7 +7,7 @@ package org.citopt.connde.domain.adapter.parameters;
  */
 public class Parameter {
     private String name;
-    private ParameterTypes type;
+    private ParameterType type;
     private String unit;
     private boolean mandatory;
 
@@ -27,7 +27,7 @@ public class Parameter {
      * @param unit      The unit of the parameter
      * @param mandatory True, if the parameter is mandatory; false otherwise
      */
-    public Parameter(String name, ParameterTypes type, String unit, boolean mandatory) {
+    public Parameter(String name, ParameterType type, String unit, boolean mandatory) {
         this.name = name;
         this.type = type;
         this.unit = unit;
@@ -57,7 +57,7 @@ public class Parameter {
      *
      * @return The type
      */
-    public ParameterTypes getType() {
+    public ParameterType getType() {
         return type;
     }
 
@@ -66,7 +66,7 @@ public class Parameter {
      *
      * @param type The type to set
      */
-    public void setType(ParameterTypes type) {
+    public void setType(ParameterType type) {
         this.type = type;
     }
 

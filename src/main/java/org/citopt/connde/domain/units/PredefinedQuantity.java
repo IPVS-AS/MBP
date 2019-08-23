@@ -1,6 +1,8 @@
 package org.citopt.connde.domain.units;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.measure.quantity.*;
 import javax.measure.unit.*;
@@ -17,7 +19,8 @@ import static javax.measure.unit.SI.*;
  * @author Jan
  */
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-public enum PredefinedQuantities {
+@ApiModel(description = "A physical quantity predefined by the application")
+public enum PredefinedQuantity {
 
     //No dimension
     DIMENSIONLESS("Dimensionless", new PredefinedUnit[]{
@@ -214,9 +217,11 @@ public enum PredefinedQuantities {
     });
 
     //Quantity name
+    @ApiModelProperty(notes = "The name of the quantity", example = "Acceleration")
     private String name;
 
     //List of units for the quantity
+    @ApiModelProperty(notes = "List of units that are available for the quantity")
     private PredefinedUnit[] units;
 
     /**
@@ -225,7 +230,7 @@ public enum PredefinedQuantities {
      * @param name  The name of the quantity
      * @param units Array of predefined units that are related to the quantity
      */
-    PredefinedQuantities(String name, PredefinedUnit[] units) {
+    PredefinedQuantity(String name, PredefinedUnit[] units) {
         this.name = name;
         this.units = units;
     }
@@ -236,15 +241,15 @@ public enum PredefinedQuantities {
      * @param compatibleUnit A string specifying the unit for which compatible units are supposed to be retrieved
      * @return A list of predefined quantities holding predefined units
      */
-    public static List<PredefinedQuantities> getCompatibleQuantities(String compatibleUnit) {
+    public static List<PredefinedQuantity> getCompatibleQuantities(String compatibleUnit) {
         //Create new empty list for quantities
-        List<PredefinedQuantities> quantitiesList = new ArrayList<>();
+        List<PredefinedQuantity> quantitiesList = new ArrayList<>();
 
         //Try to get unit object from given unit string
         Unit givenUnit = Unit.valueOf(compatibleUnit);
 
         //Iterate over all quantities and filter the ones that are compatible
-        for (PredefinedQuantities quantity : PredefinedQuantities.values()) {
+        for (PredefinedQuantity quantity : PredefinedQuantity.values()) {
             //Skip quantity if it has no units
             if ((quantity.units == null) || (quantity.units.length < 1)) {
                 continue;

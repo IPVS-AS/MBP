@@ -65,7 +65,7 @@ public class RestMonitoringController {
         }
 
         //Do check
-        return deploymentWrapper.isRunningComponent(monitoringComponent);
+        return deploymentWrapper.isComponentRunning(monitoringComponent);
     }
 
     /**

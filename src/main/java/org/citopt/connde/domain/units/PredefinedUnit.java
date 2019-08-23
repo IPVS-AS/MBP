@@ -2,6 +2,8 @@ package org.citopt.connde.domain.units;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.measure.quantity.Quantity;
 import javax.measure.unit.Unit;
@@ -12,9 +14,11 @@ import javax.measure.unit.Unit;
  * @param <Q> The quantity type of the unit object
  * @author Jan
  */
+@ApiModel(description = "A unit of a certain quantity defined by the application")
 public class PredefinedUnit<Q extends Quantity> {
 
     //Name of the unit
+    @ApiModelProperty(notes = "The name of the unit", example = "Meters per square second")
     private String name;
 
     //JScience unit that corresponds to this unit object
@@ -74,6 +78,7 @@ public class PredefinedUnit<Q extends Quantity> {
      * @return The symbol string
      */
     @JsonProperty("format")
+    @ApiModelProperty("Symbol string describing the unit mathematically")
     public String getSymbolString() {
         return this.unit.toString();
     }
@@ -84,6 +89,7 @@ public class PredefinedUnit<Q extends Quantity> {
      * @return True, if the unit is a standard unit; false otherwise
      */
     @JsonProperty("standardUnit")
+    @ApiModelProperty("Whether the unit is a standard unit for its quantity")
     public boolean isStandardUnit() {
         return this.unit.isStandardUnit();
     }

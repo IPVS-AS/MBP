@@ -5,8 +5,12 @@
  */
 app.factory('UnitService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT_URI) {
 
-    //URL under which the unit operations are available
+    //URL at which predefined quantities and their units may be requested
     const URL_UNITS = ENDPOINT_URI + '/units';
+    //URL under which units may be requested that are compatible to a given unit
+    const URL_UNITS_COMPATIBLE = ENDPOINT_URI + '/units/compatible';
+    //URL under which two units may be checked for compatibility
+    const URL_UNITS_COMPATIBLE_CHECK = ENDPOINT_URI + '/units/check';
 
     /**
      * Performs a server request in order to retrieve a list of all predefined units. If a unit string is passed as
@@ -18,12 +22,16 @@ app.factory('UnitService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT_U
     function getPredefinedUnits(compatibleUnit) {
         var parameters = {};
 
-        //Check if a compatible unit was provided
+        //URL to use
+        let url = URL_UNITS;
+
+        //Check if a unit parameter was provided
         if (compatibleUnit) {
             parameters.compatible = compatibleUnit;
+            url = URL_UNITS_COMPATIBLE;
         }
 
-        return $http.get(URL_UNITS, {params: parameters});
+        return $http.get(url, {params: parameters});
     }
 
     /**
@@ -41,7 +49,7 @@ app.factory('UnitService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT_U
             second: secondUnit
         };
 
-        return $http.get(URL_UNITS, {params: parameters});
+        return $http.get(URL_UNITS_COMPATIBLE_CHECK, {params: parameters});
     }
 
 
