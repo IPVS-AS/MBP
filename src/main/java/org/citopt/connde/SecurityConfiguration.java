@@ -1,13 +1,10 @@
 package org.citopt.connde;
 
-import javax.xml.ws.http.HTTPBinding;
-
 import org.citopt.connde.constants.Constants;
+import org.citopt.connde.security.CustomFilter;
 import org.citopt.connde.security.RestAuthenticationEntryPoint;
 import org.citopt.connde.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,6 +18,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
@@ -30,7 +28,14 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+	@Bean
+	@Override
+	public AuthenticationManager authenticationManagerBean() throws Exception {
+		return super.authenticationManagerBean();
+	}
 
 	@Bean
 	public RestAuthenticationEntryPoint restAuthenticationEntryPoint() {
@@ -51,7 +56,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     public void configure(AuthenticationManagerBuilder auth) {
 		try {
 			auth.inMemoryAuthentication().withUser("admin").password("admin").authorities("ROLE_ADMIN");
-		/*
+			auth.inMemoryAuthentication().withUser("test-client").password("test").authorities("CLIENT");
+
+			/*
         try {
         	UserDetailsService userDetailsService = mongoUserDetails();
             auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
@@ -81,15 +88,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 				.antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)
 				.antMatchers(HttpMethod.DELETE, "/api/users/:username").hasAuthority(Constants.ADMIN)
 				.antMatchers("/api/**").authenticated()
-		.and()
-			.httpBasic()
-        		.authenticationEntryPoint(restAuthenticationEntryPoint())
+		        .antMatchers("/oauth/*").authenticated()
+		.and().httpBasic().authenticationEntryPoint(restAuthenticationEntryPoint())
         .and()
         	.logout()
         	.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
         	.logoutSuccessUrl("/login")
         	.invalidateHttpSession(true)
         	.deleteCookies("JSESSIONID");
+
+        http.addFilterAfter(new CustomFilter(), BasicAuthenticationFilter.class);
     }
 
 }

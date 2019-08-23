@@ -7,25 +7,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
-import org.springframework.security.oauth2.provider.token.store.jwk.JwkTokenStore;
 import org.springframework.stereotype.Component;
 
 @Configuration
@@ -33,15 +27,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
-    /*
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
-    @Autowired
-    @Qualifier("restAuthenticationEntryPoint")
-    private RestAuthenticationEntryPoint restAuthenticationEntryPoint;
-
-    public OAuth2AuthorizationServerConfiguration(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        this.authenticationManager = authenticationConfiguration.getAuthenticationManager();
+    public OAuth2AuthorizationServerConfiguration(@Qualifier("authenticationManagerBean") AuthenticationManager authenticationManager, @Qualifier("restAuthenticationEntryPoint") RestAuthenticationEntryPoint restAuthenticationEntryPoint) {
+        this.authenticationManager = authenticationManager;
+        this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
     }
 
     @Override
@@ -52,10 +43,16 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .secret("test")
                 .authorizedGrantTypes("authorization_code", "refresh_token")
                 .scopes("read")
+                .authorities("CLIENT")
                 .autoApprove(true)
                 .accessTokenValiditySeconds(600)
                 .refreshTokenValiditySeconds(3600)
                 .redirectUris("http://localhost:8080/MBP/api/addNewDevice");
+    }
+
+    @Override
+    public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+        security.tokenKeyAccess("permitAll()").checkTokenAccess("isAuthenticated()");
     }
 
     @Override
@@ -92,5 +89,5 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
     @Bean
     public TokenEnhancer tokenEnhancer() {
         return new CustomTokenEnhancer();
-    }*/
+    }
 }
