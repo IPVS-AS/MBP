@@ -8,7 +8,7 @@ import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.domain.monitoring.MonitoringComponentDTO;
 import org.citopt.connde.repository.DeviceRepository;
-import org.citopt.connde.repository.projection.MonitoringAdapterListProjection;
+import org.citopt.connde.repository.projection.MonitoringAdapterExcerpt;
 import org.citopt.connde.service.deploy.ComponentState;
 import org.citopt.connde.web.rest.helper.DeploymentWrapper;
 import org.citopt.connde.web.rest.helper.MonitoringHelper;
@@ -201,7 +201,7 @@ public class RestMonitoringController {
      * @return A list of all monitoring adapters that are compatible with the device
      */
     @GetMapping("/monitoring-adapters/by-device/{id}")
-    public ResponseEntity<List<MonitoringAdapterListProjection>> getCompatibleMonitoringAdaptersForDevice(@PathVariable(value = "id") String deviceId) {
+    public ResponseEntity<List<MonitoringAdapterExcerpt>> getCompatibleMonitoringAdaptersForDevice(@PathVariable(value = "id") String deviceId) {
         //Validity check
         if ((deviceId == null) || deviceId.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -219,7 +219,7 @@ public class RestMonitoringController {
         List<MonitoringAdapter> compatibleAdapters = monitoringHelper.getCompatibleAdapters(device);
 
         //Convert list of monitoring adapters into list of monitoring adapter list projections
-        List<MonitoringAdapterListProjection> adapterProjectionList =
+        List<MonitoringAdapterExcerpt> adapterProjectionList =
                 monitoringHelper.convertToListProjections(compatibleAdapters);
 
         return new ResponseEntity<>(adapterProjectionList, HttpStatus.OK);

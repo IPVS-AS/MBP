@@ -1,12 +1,12 @@
 package org.citopt.connde.web.rest;
 
-import okhttp3.Response;
+import io.swagger.annotations.*;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.UserEntity;
 import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.repository.DeviceRepository;
-import org.citopt.connde.repository.projection.DeviceListProjection;
 import org.citopt.connde.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.projection.ProjectionFactory;
@@ -15,6 +15,7 @@ import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -31,6 +32,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @RestController
 @ExposesResourceFor(Device.class)
 @RequestMapping(RestConfiguration.BASE_PATH)
+@Api(tags = {"Device entities"}, description = "CRUD for device entities")
 public class RestDeviceController {
 
     @Autowired
@@ -42,8 +44,13 @@ public class RestDeviceController {
     @Autowired
     private DeviceRepository deviceRepository;
 
+    @Autowired
+    private DeviceValidator deviceValidator;
+
     @GetMapping("/devices/{deviceId}")
-    public ResponseEntity<Resource<Device>> one(@PathVariable String deviceId) {
+    @ApiOperation(value = "Returns a device entity", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Device not found or not authorized")})
+    public ResponseEntity<Resource<Device>> one(@PathVariable @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672") String deviceId) {
         //Get device from repository by id
         UserEntity entity = userService.getUserEntityFromRepository(deviceRepository, deviceId);
 
@@ -61,12 +68,14 @@ public class RestDeviceController {
     }
 
     @GetMapping("/devices")
-    public ResponseEntity<PagedResources<Resource<DeviceListProjection>>> all() {
+    @ApiOperation(value = "Returns all available device entities", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success")})
+    public ResponseEntity<PagedResources<Resource<Device>>> all() {
         //Get all device user entities the current user has access to
         List<UserEntity> userEntities = userService.getUserEntitiesFromRepository(deviceRepository);
 
-        List<Resource<DeviceListProjection>> deviceList = userEntities.stream()
-                .map(userEntity -> projectionFactory.createProjection(DeviceListProjection.class, userEntity))
+        List<Resource<Device>> deviceList = userEntities.stream()
+                .map(userEntity -> (Device) userEntity)
                 .map(device -> new Resource<>(device,
                         linkTo(methodOn(RestDeviceController.class).one(device.getId())).withSelfRel(),
                         linkTo(methodOn(RestDeviceController.class).all()).withRel("devices")))
@@ -74,14 +83,25 @@ public class RestDeviceController {
 
         PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(deviceList.size(), 0, deviceList.size());
 
-        PagedResources<Resource<DeviceListProjection>> resources = new PagedResources<>(deviceList, metadata,
+        PagedResources<Resource<Device>> resources = new PagedResources<>(deviceList, metadata,
                 linkTo(methodOn(RestDeviceController.class).all()).withSelfRel());
 
         return ResponseEntity.ok(resources);
     }
 
     @PostMapping("/devices")
-    public ResponseEntity<Resource<Device>> create(@RequestBody Device device) throws URISyntaxException {
+    @ApiOperation(value = "Creates a new device entity", notes = "An Errors object is returned in case of a failure.", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "Invalid device properties")})
+    public ResponseEntity create(@RequestBody Device device, BindingResult bindingResult) throws URISyntaxException {
+
+        ///Validate device object
+        deviceValidator.validate(device, bindingResult);
+
+        //Check if validation errors occurred
+        if (bindingResult.hasErrors()) {
+            return new ResponseEntity<>(bindingResult.getFieldError(), HttpStatus.BAD_REQUEST);
+        }
+
         //Get current user
         User currentUser = userService.getUserWithAuthorities();
 
@@ -102,7 +122,7 @@ public class RestDeviceController {
     }
 
     @DeleteMapping("/devices")
-    public ResponseEntity<Void> delete(@PathVariable String deviceId){
+    public ResponseEntity<Void> delete(@PathVariable String deviceId) {
         //Get device from repository by id
         UserEntity entity = userService.getUserEntityFromRepository(deviceRepository, deviceId);
 

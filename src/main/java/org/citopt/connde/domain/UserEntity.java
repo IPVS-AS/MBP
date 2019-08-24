@@ -2,9 +2,10 @@ package org.citopt.connde.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import org.citopt.connde.DynamicBeanProvider;
 import org.citopt.connde.domain.user.User;
-import org.citopt.connde.repository.projection.UserProjection;
+import org.citopt.connde.repository.projection.UserExcerpt;
 import org.citopt.connde.service.UserService;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.projection.ProjectionFactory;
@@ -138,6 +139,7 @@ public abstract class UserEntity {
      * @return The name of the entity owner
      */
     @JsonProperty("ownerName")
+    @ApiModelProperty(notes = "Name of the entity owner", example = "JohnDoe", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     public String getOwnerName() {
         //Sanity check
         if (owner == null) {
@@ -147,6 +149,7 @@ public abstract class UserEntity {
     }
 
     @JsonProperty("isApprovable")
+    @ApiModelProperty(notes = "Whether the current user is approvable (i.e. entity owner or admin)", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     public boolean isApprovable() {
         //Resolve user service bean
         UserService userService = DynamicBeanProvider.get(UserService.class);
@@ -159,9 +162,10 @@ public abstract class UserEntity {
     }
 
     @JsonProperty("approvedUsers")
-    public Set<UserProjection> getApprovedUsersProjection() {
-        //Do not expose list of approved users if user is not approvable
-        if (!isApprovable() || (approvedUsers == null)) {
+    @ApiModelProperty(notes = "List of users that are approved to work with this entity, only visible for the entity owner and admins", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    public Set<UserExcerpt> getApprovedUsersProjection() {
+        //Do not expose list if user is not owner or admin
+        if (!isApprovable()) {
             return null;
         }
 
@@ -169,7 +173,7 @@ public abstract class UserEntity {
         ProjectionFactory projectionFactory = DynamicBeanProvider.get(ProjectionFactory.class);
 
         //List of approved users as projections
-        Set<UserProjection> users = new HashSet<>();
+        Set<UserExcerpt> users = new HashSet<>();
 
         //TODO REMOVE!!!!!
         User testUser = new User();
@@ -182,7 +186,7 @@ public abstract class UserEntity {
 
         //Iterate over all approved users and create projections from them
         for (User user : approvedUsers) {
-            UserProjection projection = projectionFactory.createProjection(UserProjection.class, user);
+            UserExcerpt projection = projectionFactory.createProjection(UserExcerpt.class, user);
             users.add(projection);
         }
 

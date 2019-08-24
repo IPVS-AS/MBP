@@ -1,12 +1,10 @@
 package org.citopt.connde.repository;
 
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
-import org.citopt.connde.repository.projection.MonitoringAdapterListProjection;
+import org.citopt.connde.repository.projection.MonitoringAdapterExcerpt;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-
-import java.util.List;
 
 /**
  * Repository definition interface for monitoring adapters.
@@ -14,9 +12,9 @@ import java.util.List;
  * @author Jan
  */
 @RepositoryRestResource(collectionResourceRel = "monitoring-adapters", path = "monitoring-adapters",
-        excerptProjection = MonitoringAdapterListProjection.class)
+        excerptProjection = MonitoringAdapterExcerpt.class)
 public interface MonitoringAdapterRepository extends MongoRepository<MonitoringAdapter, String> {
     MonitoringAdapter findByName(@Param("name") String name);
 
-    MonitoringAdapterListProjection findById(@Param("id") String id);
+    MonitoringAdapterExcerpt findById(@Param("id") String id);
 }

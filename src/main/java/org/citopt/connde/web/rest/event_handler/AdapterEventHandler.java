@@ -6,7 +6,7 @@ import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.ValueLogRepository;
-import org.citopt.connde.repository.projection.ComponentProjection;
+import org.citopt.connde.repository.projection.ComponentExcerpt;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
@@ -45,8 +45,8 @@ public class AdapterEventHandler {
         String adapterId = adapter.getId();
 
         //Find actuators that use this adapter and iterate over them
-        List<ComponentProjection> affectedActuators = actuatorRepository.findAllByAdapterId(adapterId);
-        for (ComponentProjection projection : affectedActuators) {
+        List<ComponentExcerpt> affectedActuators = actuatorRepository.findAllByAdapterId(adapterId);
+        for (ComponentExcerpt projection : affectedActuators) {
             Actuator actuator = actuatorRepository.findOne(projection.getId());
 
             //Undeploy actuator if running
@@ -59,8 +59,8 @@ public class AdapterEventHandler {
         }
 
         //Find sensors that use this adapter and iterate over them
-        List<ComponentProjection> affectedSensors = sensorRepository.findAllByAdapterId(adapterId);
-        for (ComponentProjection projection : affectedSensors) {
+        List<ComponentExcerpt> affectedSensors = sensorRepository.findAllByAdapterId(adapterId);
+        for (ComponentExcerpt projection : affectedSensors) {
             Sensor sensor = sensorRepository.findOne(projection.getId());
 
             //Undeploy sensor if running

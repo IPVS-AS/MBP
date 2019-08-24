@@ -10,7 +10,7 @@ import java.util.List;
  * @author rafaelkperes
  */
 @Projection(name = "list", types = Adapter.class)
-public interface AdapterListProjection {
+public interface AdapterExcerpt {
 
     String getId();
 

@@ -6,7 +6,7 @@ import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.MonitoringAdapterRepository;
-import org.citopt.connde.repository.projection.MonitoringAdapterListProjection;
+import org.citopt.connde.repository.projection.MonitoringAdapterExcerpt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -124,7 +124,7 @@ public class MonitoringHelper {
      * @param monitoringAdapters The Iterable of monitoring adapters to convert
      * @return The converted list of monitoring adapter projections
      */
-    public List<MonitoringAdapterListProjection> convertToListProjections(
+    public List<MonitoringAdapterExcerpt> convertToListProjections(
             Iterable<MonitoringAdapter> monitoringAdapters) {
         //Sanity check
         if (monitoringAdapters == null) {
@@ -132,11 +132,11 @@ public class MonitoringHelper {
         }
 
         //Create a list for the resulting adapter projections
-        List<MonitoringAdapterListProjection> adapterProjectionList = new ArrayList<>();
+        List<MonitoringAdapterExcerpt> adapterProjectionList = new ArrayList<>();
 
         //Get projection for each monitoring adapter of the iterable
         for (MonitoringAdapter adapter : monitoringAdapters) {
-            MonitoringAdapterListProjection projection = monitoringAdapterRepository.findById(adapter.getId());
+            MonitoringAdapterExcerpt projection = monitoringAdapterRepository.findById(adapter.getId());
             adapterProjectionList.add(projection);
         }
 

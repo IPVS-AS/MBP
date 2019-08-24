@@ -3,7 +3,7 @@ package org.citopt.connde.web.rest;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
-import org.citopt.connde.repository.projection.ComponentProjection;
+import org.citopt.connde.repository.projection.ComponentExcerpt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,9 +36,9 @@ public class RestComponentFilterController {
      * @return A list of all components that make use of the adapter
      */
     @GetMapping("/components/by-adapter/{id}")
-    public ResponseEntity<List<ComponentProjection>> getComponentsByAdapterID(@PathVariable(value = "id") String adapterId) {
+    public ResponseEntity<List<ComponentExcerpt>> getComponentsByAdapterID(@PathVariable(value = "id") String adapterId) {
         //Create empty component list
-        List<ComponentProjection> componentList = new ArrayList<>();
+        List<ComponentExcerpt> componentList = new ArrayList<>();
 
         //Add using actuators and sensors
         componentList.addAll(actuatorRepository.findAllByAdapterId(adapterId));
@@ -54,9 +54,9 @@ public class RestComponentFilterController {
      * @return A list of all components that make use of the device
      */
     @GetMapping("/components/by-device/{id}")
-    public ResponseEntity<List<ComponentProjection>> getComponentsByDeviceID(@PathVariable(value = "id") String deviceId) {
+    public ResponseEntity<List<ComponentExcerpt>> getComponentsByDeviceID(@PathVariable(value = "id") String deviceId) {
         //Create empty component list
-        List<ComponentProjection> componentList = new ArrayList<>();
+        List<ComponentExcerpt> componentList = new ArrayList<>();
 
         //Add using actuators and sensors
         componentList.addAll(actuatorRepository.findAllByDeviceId(deviceId));

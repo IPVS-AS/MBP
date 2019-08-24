@@ -1,15 +1,15 @@
 package org.citopt.connde.repository.projection;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.util.List;
 import java.util.Set;
 
 /**
  * Basic list projection for user entities. To be extended by more concrete projections for the individual
  * user entity types.
  */
-public interface UserEntityListProjection {
+public interface UserEntityExcerpt {
     @Value("#{target.getOwnerName()}")
     String getOwnerName();
 
@@ -17,5 +17,5 @@ public interface UserEntityListProjection {
     boolean getIsApprovable();
 
     @Value("#{target.getApprovedUsersProjection()}")
-    Set<UserProjection> getApprovedUsers();
+    Set<UserExcerpt> getApprovedUsers();
 }
