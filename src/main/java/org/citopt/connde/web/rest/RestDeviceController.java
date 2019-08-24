@@ -8,6 +8,7 @@ import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.service.UserService;
+import org.citopt.connde.util.ValidationErrorCollection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.hateoas.ExposesResourceFor;
@@ -90,7 +91,7 @@ public class RestDeviceController {
     }
 
     @PostMapping("/devices")
-    @ApiOperation(value = "Creates a new device entity", notes = "An Errors object is returned in case of a failure.", produces = "application/hal+json")
+    @ApiOperation(value = "Creates a new device entity", notes = "A ValidationErrorCollection object is returned in case of a failure.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "Invalid device properties")})
     public ResponseEntity create(@RequestBody Device device, BindingResult bindingResult) throws URISyntaxException {
 
@@ -99,7 +100,7 @@ public class RestDeviceController {
 
         //Check if validation errors occurred
         if (bindingResult.hasErrors()) {
-            return new ResponseEntity<>(bindingResult.getFieldError(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ValidationErrorCollection(bindingResult), HttpStatus.BAD_REQUEST);
         }
 
         //Get current user
@@ -122,6 +123,8 @@ public class RestDeviceController {
     }
 
     @DeleteMapping("/devices")
+    @ApiOperation(value = "Deletes a device entity", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Device not found or not authorized")})
     public ResponseEntity<Void> delete(@PathVariable String deviceId) {
         //Get device from repository by id
         UserEntity entity = userService.getUserEntityFromRepository(deviceRepository, deviceId);

@@ -31,7 +31,7 @@ public class Device extends UserEntity {
     @ApiModelProperty(notes = "Network IP address", example = "192.168.209.174", required = true)
     private String ipAddress;
 
-    @ApiModelProperty(notes = "Creation date", example = "yyyy-MM-dd HH:mm:ss", accessMode = ApiModelProperty.AccessMode.READ_ONLY)
+    @ApiModelProperty(notes = "Creation date", example = "yyyy-MM-dd HH:mm:ss", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String date;
 
     @ApiModelProperty(notes = "OS username to use on the device", example = "ubuntu", required = true)

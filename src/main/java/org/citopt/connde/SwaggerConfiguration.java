@@ -4,14 +4,12 @@ import com.fasterxml.classmate.TypeResolver;
 import com.google.common.base.Predicates;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
+import org.citopt.connde.util.ValidationErrorCollection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.hateoas.Resource;
-import org.springframework.validation.Errors;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.schema.AlternateTypeRule;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
@@ -20,10 +18,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger.web.*;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import java.lang.reflect.WildcardType;
 import java.util.Collections;
-
-import static springfox.documentation.schema.AlternateTypeRules.newRule;
 
 @Import({SpringDataRestConfiguration.class})
 @Configuration
@@ -32,13 +27,10 @@ public class SwaggerConfiguration {
     @Bean
     public Docket docket() {
         TypeResolver typeResolver = new TypeResolver();
-        AlternateTypeRule resourceRule = newRule(typeResolver.resolve(Resource.class, WildcardType.class),
-                typeResolver.resolve(WildcardType.class));
 
         return new Docket(DocumentationType.SWAGGER_2)
                 .useDefaultResponseMessages(false)
-                .alternateTypeRules(resourceRule)
-                .additionalModels(typeResolver.resolve(Errors.class))
+                .additionalModels(typeResolver.resolve(ValidationErrorCollection.class))
                 .select()
                 .apis(Predicates.or(RequestHandlerSelectors.withClassAnnotation(Api.class),
                         RequestHandlerSelectors.withClassAnnotation(ApiModel.class)))
