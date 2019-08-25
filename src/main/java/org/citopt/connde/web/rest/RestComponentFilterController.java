@@ -17,8 +17,6 @@ import java.util.List;
 
 /**
  * REST Controller that exposes methods that allow the filtering for certain components, e.g. by adapter/device id.
- *
- * @author Jan
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)

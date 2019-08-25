@@ -51,7 +51,7 @@ public class RestDeviceController {
     @GetMapping("/devices/{deviceId}")
     @ApiOperation(value = "Returns a device entity", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Device not found or not authorized")})
-    public ResponseEntity<Resource<Device>> one(@PathVariable @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672") String deviceId) {
+    public ResponseEntity<Resource<Device>> one(@PathVariable @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId) {
         //Get device from repository by id
         UserEntity entity = userService.getUserEntityFromRepository(deviceRepository, deviceId);
 
@@ -93,7 +93,7 @@ public class RestDeviceController {
     @PostMapping("/devices")
     @ApiOperation(value = "Creates a new device entity", notes = "A ValidationErrorCollection object is returned in case of a failure.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "Invalid device properties")})
-    public ResponseEntity create(@RequestBody Device device, BindingResult bindingResult) throws URISyntaxException {
+    public ResponseEntity create(@RequestBody @ApiParam(value = "The device to create", required = true) Device device, BindingResult bindingResult) throws URISyntaxException {
 
         ///Validate device object
         deviceValidator.validate(device, bindingResult);
@@ -122,10 +122,10 @@ public class RestDeviceController {
                 .body(deviceResource);
     }
 
-    @DeleteMapping("/devices")
+    @DeleteMapping("/devices/{deviceId}")
     @ApiOperation(value = "Deletes a device entity", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Device not found or not authorized")})
-    public ResponseEntity<Void> delete(@PathVariable String deviceId) {
+    public ResponseEntity<Void> delete(@PathVariable @ApiParam(value = "ID of the device to delete", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId) {
         //Get device from repository by id
         UserEntity entity = userService.getUserEntityFromRepository(deviceRepository, deviceId);
 

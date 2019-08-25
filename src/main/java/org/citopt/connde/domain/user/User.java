@@ -1,12 +1,14 @@
 package org.citopt.connde.domain.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.citopt.connde.constants.Constants;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import javax.persistence.Access;
 import javax.persistence.GeneratedValue;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -20,36 +22,41 @@ import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 
 /**
  * User entity.
- *
- * @author Imeri Amil
  */
 @Document
+@ApiModel(description = "Model for user entities")
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue
+    @ApiModelProperty(notes = "User ID", example = "5c8f7ad66f9e3c1bacb0fa99", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String id;
 
     @NotNull
     @Pattern(regexp = Constants.USERNAME_REGEX)
     @Size(min = 1, max = 100)
+    @ApiModelProperty(notes = "User name", example = "MyUser", required = true)
     private String username;
 
     @JsonProperty(access = WRITE_ONLY)
     @NotNull
     @Size(min = 1, max = 60)
+    @ApiModelProperty(notes = "User password", example = "secret", required = true)
     private String password;
 
     @Size(max = 50)
     @Field("first_name")
+    @ApiModelProperty(notes = "First name of the user", example = "John")
     private String firstName;
 
     @Size(max = 50)
     @Field("last_name")
+    @ApiModelProperty(notes = "Last name of the user", example = "Doe")
     private String lastName;
 
+    @JsonIgnore
     private Set<Authority> authorities = new HashSet<>();
 
     public String getId() {
@@ -101,6 +108,8 @@ public class User implements Serializable {
         this.authorities = authorities;
     }
 
+    @JsonProperty("isAdmin")
+    @ApiModelProperty(notes = "Whether the user is an admin", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     public boolean isAdmin() {
         //Create admin authority
         Authority adminAuthority = new Authority(Constants.ADMIN);

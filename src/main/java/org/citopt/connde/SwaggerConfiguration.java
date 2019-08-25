@@ -20,14 +20,24 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.util.Collections;
 
+/**
+ * Configuration for the swagger documentation generator.
+ */
 @Import({SpringDataRestConfiguration.class})
 @Configuration
 @EnableSwagger2
 public class SwaggerConfiguration {
+    /**
+     * Creates a docket bean that holds the swagger configuration.
+     *
+     * @return The docket bean
+     */
     @Bean
     public Docket docket() {
+        //Type resolver for working with types
         TypeResolver typeResolver = new TypeResolver();
 
+        //Create bean
         return new Docket(DocumentationType.SWAGGER_2)
                 .useDefaultResponseMessages(false)
                 .additionalModels(typeResolver.resolve(ValidationErrorCollection.class))
@@ -39,8 +49,14 @@ public class SwaggerConfiguration {
                 .apiInfo(apiInfo());
     }
 
+    /**
+     * Creates an UiConfiguration bean that holds ui-related settings.
+     *
+     * @return The UiConfiguration bean
+     */
     @Bean
     UiConfiguration uiConfig() {
+        //Create bean
         return UiConfigurationBuilder.builder()
                 .deepLinking(true)
                 .displayOperationId(false)
@@ -59,6 +75,12 @@ public class SwaggerConfiguration {
                 .build();
     }
 
+    /**
+     * Creates an APiInfo object holding additional contact information that is supposed
+     * to be displayed on the documentation ui.
+     *
+     * @return The APIInfo
+     */
     private ApiInfo apiInfo() {
         return new ApiInfo(
                 "Multi-purpose Binding and Provisioning Platform - REST API",

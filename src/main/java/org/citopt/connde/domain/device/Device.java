@@ -14,7 +14,7 @@ public class Device extends UserEntity {
 
     @Id
     @GeneratedValue
-    @ApiModelProperty(notes = "Device ID", example = "5c8f7ad66f9e3c1bacb0fa99", required = true)
+    @ApiModelProperty(notes = "Device ID", example = "5c8f7ad66f9e3c1bacb0fa99", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String id;
 
     @Indexed(unique = true)

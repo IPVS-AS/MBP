@@ -51,7 +51,7 @@ public class RestUnitController {
     @ApiOperation(value = "Returns all predefined units that are compatible with a given unit", notes = "The returned compatible units are wrapped into objects of the quantities to which they belong.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "Provided unit could not be parsed")})
     public ResponseEntity<List<PredefinedQuantity>> getSupportedCompatibleQuantities(
-            @RequestParam("compatible") @ApiParam(value = "Specifies the unit to search compatible units for") String compatibleUnit) {
+            @RequestParam("compatible") @ApiParam(value = "Specifies the unit to search compatible units for", example = "m/s^2", required = true) String compatibleUnit) {
         try {
             //Try to get compatible quantities
             List<PredefinedQuantity> quantitiesList = PredefinedQuantity.getCompatibleQuantities(compatibleUnit);
@@ -75,8 +75,8 @@ public class RestUnitController {
     @GetMapping(value = "/units/check", params = {"first", "second"})
     @ApiOperation(value = "Checks if two given units are compatible to each other", notes = "If both units are compatible, conversion between these is possible.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "The provided units could not be parsed")})
-    public ResponseEntity<Boolean> checkUnitsForCompatibility(@RequestParam("first") @ApiParam(value = "Specifies the first unit to compare") String firstUnitString,
-                                                              @RequestParam("second") @ApiParam(value = "Specifies the second unit to compare") String secondUnitString) {
+    public ResponseEntity<Boolean> checkUnitsForCompatibility(@RequestParam("first") @ApiParam(value = "Specifies the first unit to compare", example = "m", required = true) String firstUnitString,
+                                                              @RequestParam("second") @ApiParam(value = "Specifies the second unit to compare", example = "mm", required = true) String secondUnitString) {
         //Objects to hold the parsed units
         Unit firstUnit, secondUnit;
 
