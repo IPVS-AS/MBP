@@ -32,7 +32,7 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
     }
 
     @Override
-    public MongoClient mongo() throws Exception {
+    public MongoClient mongo() {
         if(mongoClient == null) {
             mongoClient = new MongoClient();
         }

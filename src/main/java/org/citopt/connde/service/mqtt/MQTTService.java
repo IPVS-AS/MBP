@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * This services provides means and support for MQTT-related tasks. It allows to publish and receive MQTT messages at
@@ -24,8 +25,8 @@ import java.util.Set;
 public class MQTTService {
     //URL frame of the broker to use (protocol and port, address will be filled in)
     private static final String BROKER_URL = "tcp://%s:1883";
-    //Client id that is supposed to be assigned to the client instance
-    private static final String CLIENT_ID = "root-server";
+    //Client id that is assigned to the client instance with an unique suffix to avoid name collisions
+    private static final String CLIENT_ID = "mbp-client-" + getUniqueClientSuffix();
 
     //Autowired components
     private SettingsService settingsService;
@@ -181,5 +182,14 @@ public class MQTTService {
 
         //Publish message
         mqttClient.publish(topic, message);
+    }
+
+    /**
+     * Creates an unique suffix that might be appended to a MQTT client ID in order to avoid name collisions.
+     *
+     * @return The unique suffix
+     */
+    private static String getUniqueClientSuffix() {
+        return UUID.randomUUID().toString().replace("-", "");
     }
 }
