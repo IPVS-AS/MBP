@@ -124,7 +124,9 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
 
         //Sanity check
         if (actuator == null) {
-            return false;
+            //TODO
+            throw new RuntimeException("Actuator is null");
+            //return false;
         }
 
         //Sanitize data
@@ -149,7 +151,9 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
             messageObject.put("data", data);
             messageObject.put("cep_output", cepOutput.getOutputMap());
         } catch (JSONException e) {
-            return false;
+            //TODO
+            throw new RuntimeException("JSONException: " + e.getMessage());
+            //return false;
         }
 
         //Generate MQTT topic for this actuator and action name
@@ -162,7 +166,9 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
         try {
             mqttService.publish(topic, message);
         } catch (MqttException e) {
-            return false;
+            //TODO
+            throw new RuntimeException("MqttException: " + e.getMessage());
+            //return false;
         }
 
         return true;
