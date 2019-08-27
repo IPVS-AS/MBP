@@ -15,33 +15,33 @@ import org.citopt.connde.service.rules.execution.ifttt_webhook.IFTTTWebhookExecu
  */
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum RuleActionType {
-    ACTUATOR_ACTION("Actuator action", ExecutorProvider.get(ActuatorActionExecutor.class)),
-    IFTTT_WEBHOOK("IFTTT webhook", ExecutorProvider.get(IFTTTWebhookExecutor.class)),
-    COMPONENT_DEPLOYMENT("Component deployment", ExecutorProvider.get(ComponentDeploymentExecutor.class));
+    ACTUATOR_ACTION("Actuator action", ActuatorActionExecutor.class),
+    IFTTT_WEBHOOK("IFTTT webhook", IFTTTWebhookExecutor.class),
+    COMPONENT_DEPLOYMENT("Component deployment", ComponentDeploymentExecutor.class);
 
     private String id;
     private String name;
 
     @JsonIgnore
-    private RuleActionExecutor executor;
+    private Class<? extends RuleActionExecutor> executorClass;
 
     /**
-     * Creates a new rule action type, mapping to a certain rule action executor which takes care of executing
-     * actions of this type.
+     * Creates a new rule action type, mapping to a certain rule action executor class whose bean
+     * takes care of executing actions of this type.
      *
-     * @param name     The name of the rule action type
-     * @param executor The rule action executor to use
+     * @param name          The name of the rule action type
+     * @param executorClass The rule action executor class to use
      */
-    RuleActionType(String name, RuleActionExecutor executor) {
+    RuleActionType(String name, Class<? extends RuleActionExecutor> executorClass) {
         //Sanity checks
         if ((name == null) || name.isEmpty()) {
             throw new IllegalArgumentException("Name must not be null or empty.");
-        } else if (executor == null) {
-            throw new IllegalArgumentException("Executor must not be null.");
+        } else if (executorClass == null) {
+            throw new IllegalArgumentException("Executor class must not be null.");
         }
         this.id = toString();
         this.name = name;
-        this.executor = executor;
+        this.executorClass = executorClass;
     }
 
     /**
@@ -63,14 +63,22 @@ public enum RuleActionType {
     }
 
     /**
+     * Returns the rule action executor class of the rule action type.
+     *
+     * @return The executor class
+     */
+    public Class<? extends RuleActionExecutor> getExecutorClass() {
+        return executorClass;
+    }
+
+    /**
      * Returns the rule action executor of the rule action type.
      *
      * @return The rule action executor
      */
     public RuleActionExecutor getExecutor() {
-        return executor;
+        return ExecutorProvider.get(executorClass);
     }
-
 
     /**
      * Returns the rule action type that corresponds to a certain type enum name. This method is called when
