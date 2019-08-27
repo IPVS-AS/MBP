@@ -14,9 +14,16 @@
                             data-keyboard="false">
                         <i class="material-icons">add</i>
                     </button>
+                    <button id="device-code-button" type="button"
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                            ng-click="ctrl.getDeviceKey()">
+                        <i class="material-icons">vpn_key</i>
+                    </button>
+                    <textarea cols="8" name="device-code-field" ng-model="deviceCode"></textarea>
                 </div>
             </div>
             <div class="body">
+                <table class="table table-hover" st-table="displayedCollection" st-safe-src="adapterListCtrl.items">
                 <table class="table table-hover" st-table="displayedCollection" st-safe-src="adapterListCtrl.items">
                     <thead>
                     <tr>

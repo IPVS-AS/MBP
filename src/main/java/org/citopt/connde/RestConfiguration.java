@@ -2,7 +2,6 @@ package org.citopt.connde;
 
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.AdapterValidator;
-import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.ActuatorValidator;
 import org.citopt.connde.domain.component.Sensor;
@@ -25,8 +24,6 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 
-import java.util.ArrayList;
-
 /**
  * Contains crucial rest configurations for the application.
  *
@@ -34,108 +31,108 @@ import java.util.ArrayList;
  */
 @Configuration
 public class RestConfiguration extends RepositoryRestConfigurerAdapter {
-    //Base path for REST calls (URL prefix)
-    public static final String BASE_PATH = "/api";
+	//Base path for REST calls (URL prefix)
+	public static final String BASE_PATH = "/api";
 
-    /**
-     * REST configuration for the repositories that are used within this application.
-     *
-     * @param config Repository REST configuration to extend
-     */
-    @Override
-    public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-        super.configureRepositoryRestConfiguration(config);
+	/**
+	 * REST configuration for the repositories that are used within this application.
+	 *
+	 * @param config Repository REST configuration to extend
+	 */
+	@Override
+	public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+		super.configureRepositoryRestConfiguration(config);
 
-        System.out.println("load RepositoryRestMvcConfiguration");
+		System.out.println("load RepositoryRestMvcConfiguration");
 
-        config.setBasePath(BASE_PATH);
-        config.exposeIdsFor(Device.class, Adapter.class, MonitoringAdapter.class, Actuator.class, Sensor.class, User.class, Authority.class, ComponentType.class);
-    }
+		config.setBasePath(BASE_PATH);
+		config.exposeIdsFor(Device.class, Adapter.class, MonitoringAdapter.class, Actuator.class, Sensor.class, User.class, Authority.class, ComponentType.class);
+	}
 
-    /**
-     * Creates and adds validators for the REST documents.
-     *
-     * @param v Validating repository event listener to extend
-     */
-    @Override
-    public void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener v) {
+	/**
+	 * Creates and adds validators for the REST documents.
+	 *
+	 * @param v Validating repository event listener to extend
+	 */
+	@Override
+	public void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener v) {
 
-        //Adapters
-        v.addValidator("beforeSave", new AdapterValidator());
-        v.addValidator("beforeCreate", new AdapterValidator());
+		//Adapters
+		v.addValidator("beforeSave", new AdapterValidator());
+		v.addValidator("beforeCreate", new AdapterValidator());
 
-        //Monitoring adapters
-        v.addValidator("beforeSave", new MonitoringAdapterValidator());
-        v.addValidator("beforeCreate", new MonitoringAdapterValidator());
+		//Monitoring adapters
+		v.addValidator("beforeSave", new MonitoringAdapterValidator());
+		v.addValidator("beforeCreate", new MonitoringAdapterValidator());
 
-        //Sensors
-        v.addValidator("beforeSave", new SensorValidator());
-        v.addValidator("beforeCreate", new SensorValidator());
+		//Sensors
+		v.addValidator("beforeSave", new SensorValidator());
+		v.addValidator("beforeCreate", new SensorValidator());
 
-        //Actuators
-        v.addValidator("beforeSave", new ActuatorValidator());
-        v.addValidator("beforeCreate", new ActuatorValidator());
+		//Actuators
+		v.addValidator("beforeSave", new ActuatorValidator());
+		v.addValidator("beforeCreate", new ActuatorValidator());
 
-        //Devices
-        v.addValidator("beforeSave", new DeviceValidator());
-        v.addValidator("beforeCreate", new DeviceValidator());
-    }
+		//Devices
+		v.addValidator("beforeSave", new DeviceValidator());
+		v.addValidator("beforeCreate", new DeviceValidator());
+	}
 
-    /**
-     * Resource processor for sensors.
-     *
-     * @return The resource processor
-     */
-    @Bean
-    public ResourceProcessor<Resource<Sensor>> sensorProcessor() {
+	/**
+	 * Resource processor for sensors.
+	 *
+	 * @return The resource processor
+	 */
+	@Bean
+	public ResourceProcessor<Resource<Sensor>> sensorProcessor() {
 
-        return new ResourceProcessor<Resource<Sensor>>() {
+		return new ResourceProcessor<Resource<Sensor>>() {
 
-            /**
-             * Processing method for sensor resources.
-             * @param resource The sensor resource to process
-             * @return The processed sensor resource
-             */
-            @Override
-            public Resource<Sensor> process(Resource<Sensor> resource) {
-                //Get sensor id
-                String id = resource.getContent().getId();
-                //Link sensor with deployment
-                Link link = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.
-                        methodOn(RestDeploymentController.class).deploySensor(id))
-                        .withRel("deploy");
-                resource.add(link);
-                return resource;
-            }
-        };
-    }
+			/**
+			 * Processing method for sensor resources.
+			 * @param resource The sensor resource to process
+			 * @return The processed sensor resource
+			 */
+			@Override
+			public Resource<Sensor> process(Resource<Sensor> resource) {
+				//Get sensor id
+				String id = resource.getContent().getId();
+				//Link sensor with deployment
+				Link link = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.
+						methodOn(RestDeploymentController.class).deploySensor(id))
+						.withRel("deploy");
+				resource.add(link);
+				return resource;
+			}
+		};
+	}
 
-    /**
-     * Resource processor for actuators.
-     *
-     * @return The resource processor
-     */
-    @Bean
-    public ResourceProcessor<Resource<Actuator>> actuatorProcessor() {
+	/**
+	 * Resource processor for actuators.
+	 *
+	 * @return The resource processor
+	 */
+	@Bean
+	public ResourceProcessor<Resource<Actuator>> actuatorProcessor() {
 
-        return new ResourceProcessor<Resource<Actuator>>() {
+		return new ResourceProcessor<Resource<Actuator>>() {
 
-            /**
-             * Processing method for actuator resources.
-             * @param resource The actuator resource to process
-             * @return The processed actuator resource
-             */
-            @Override
-            public Resource<Actuator> process(Resource<Actuator> resource) {
-                //Get actuator id
-                String id = resource.getContent().getId();
-                //Link actuator with deployment
-                Link link = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.
-                        methodOn(RestDeploymentController.class).deployActuator(id))
-                        .withRel("deploy");
-                resource.add(link);
-                return resource;
-            }
-        };
-    }
+			/**
+			 * Processing method for actuator resources.
+			 * @param resource The actuator resource to process
+			 * @return The processed actuator resource
+			 */
+			@Override
+			public Resource<Actuator> process(Resource<Actuator> resource) {
+				//Get actuator id
+				String id = resource.getContent().getId();
+				//Link actuator with deployment
+				Link link = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.
+						methodOn(RestDeploymentController.class).deployActuator(id))
+						.withRel("deploy");
+				resource.add(link);
+				return resource;
+			}
+		};
+	}
 }

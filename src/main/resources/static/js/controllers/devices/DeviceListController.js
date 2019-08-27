@@ -4,9 +4,9 @@
  * Controller for the device list page.
  */
 app.controller('DeviceListController',
-    ['$scope', '$controller', '$interval', 'DeviceService', 'deviceList', 'addDevice', 'getDeviceKey', 'deleteDevice',
+    ['$scope', '$controller', '$interval', 'DeviceService', 'deviceList', 'addDevice', 'deleteDevice',
         'ComponentTypeService', 'NotificationService',
-        function ($scope, $controller, $interval, DeviceService, deviceList, addDevice, getDeviceKey, deleteDevice,
+        function ($scope, $controller, $interval, DeviceService, deviceList, addDevice, deleteDevice,
                   ComponentTypeService, NotificationService) {
             var vm = this;
 
@@ -186,11 +186,6 @@ app.controller('DeviceListController',
                         deviceObject.macAddress = DeviceService.normalizeMacAddress(data.formattedMacAddress);
 
                         return addDevice(deviceObject);
-                    },
-                    getDeviceKey: function (data) {
-                        console.log("#### Received Key ####");
-                        var deviceKey = 1;
-                        return getDeviceKey(deviceKey);
                     }
                 }),
                 deleteDeviceCtrl: $controller('DeleteItemController as deleteDeviceCtrl', {

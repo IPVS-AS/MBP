@@ -223,10 +223,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         // bind category parameter
                         return angular.bind(this, CrudService.addItem, 'devices');
                     }],
-                    getDeviceKey: ['CrudService', function (CrudService) {
-                        // bind category parameter
-                        return angular.bind(this, CrudService.getDeviceKey, 'devices')
-                    }],
                     deleteDevice: ['CrudService', function (CrudService) {
                         // bind category parameter
                         return angular.bind(this, CrudService.deleteItem, 'devices');

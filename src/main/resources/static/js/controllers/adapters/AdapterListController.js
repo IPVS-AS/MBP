@@ -4,6 +4,7 @@ app.controller('AdapterListController',
     ['$scope', '$controller', '$q', 'adapterList', 'adapterPreprocessing', 'addAdapter', 'deleteAdapter', 'FileReader', 'parameterTypesList', 'AdapterService', 'NotificationService',
         function ($scope, $controller, $q, adapterList, adapterPreprocessing, addAdapter, deleteAdapter, FileReader, parameterTypesList, AdapterService, NotificationService) {
             var vm = this;
+            $scope.deviceCode = '';
 
             vm.dzServiceOptions = {
                 paramName: 'serviceFile',
@@ -53,6 +54,19 @@ app.controller('AdapterListController',
                     }
                 }
             })();
+
+            function getDeviceKey() {
+                fetch('http://localhost:8080/MBP/oauth/authorize?client_id=test-client&response_type=code&scope=read', {
+                    headers: {
+                        //TODO basic authentication with username/password
+                        'Authorization': 'Basic YWRtaW46YWRtaW4='
+                    }
+                }).then(function (response) {
+                    console.log("CODE!!!!!");
+                    console.log(response);
+                    $scope.deviceCode = response;
+                });
+            }
 
             //public
             function addParameter() {
@@ -139,6 +153,7 @@ app.controller('AdapterListController',
             angular.extend(vm, {
                 addParameter: addParameter,
                 deleteParameter: deleteParameter,
+                getDeviceKey: getDeviceKey,
                 adapterListCtrl: $controller('ItemListController as adapterListCtrl',
                     {
                         $scope: $scope,

@@ -23,12 +23,12 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * Security configuration
+ *
  * @author Imeri Amil
  */
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 	@Bean
@@ -43,17 +43,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	}
 
 	@Bean
-    public UserDetailsService mongoUserDetails() {
-        return new UserDetailsServiceImpl();
-    }
-	
+	public UserDetailsService mongoUserDetails() {
+		return new UserDetailsServiceImpl();
+	}
+
 	@Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 
 	@Override
-    public void configure(AuthenticationManagerBuilder auth) {
+	public void configure(AuthenticationManagerBuilder auth) {
 		try {
 			auth.inMemoryAuthentication().withUser("admin").password("admin").authorities("ROLE_ADMIN");
 			auth.inMemoryAuthentication().withUser("test-client").password("test").authorities("CLIENT");
@@ -63,41 +63,40 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         	UserDetailsService userDetailsService = mongoUserDetails();
             auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
          */
-        } catch (Exception e) {
-            throw new BeanInitializationException("Security configuration failed", e);
-        }
-    }
-	
+		} catch (Exception e) {
+			throw new BeanInitializationException("Security configuration failed", e);
+		}
+	}
+
 	@Override
 	public void configure(WebSecurity web) throws Exception {
-	    web.ignoring()
-	    .antMatchers(HttpMethod.OPTIONS, "/**")
-	    .antMatchers("/resources/**")
-	    .antMatchers("/webapp/**");
+		web.ignoring()
+				.antMatchers(HttpMethod.OPTIONS, "/**")
+				.antMatchers("/resources/**")
+				.antMatchers("/webapp/**");
 	}
-	
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http
-        	.csrf().disable()
-        	.authorizeRequests()
+
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		http
+				.csrf().disable()
+				.authorizeRequests()
 				.antMatchers("/api/authenticate").permitAll()
 				.antMatchers(HttpMethod.POST, "/api/users").permitAll()
 				.antMatchers(HttpMethod.PUT, "/api/users").hasAuthority(Constants.ADMIN)
 				.antMatchers(HttpMethod.GET, "/api/users").hasAuthority(Constants.ADMIN)
 				.antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)
 				.antMatchers(HttpMethod.DELETE, "/api/users/:username").hasAuthority(Constants.ADMIN)
-				.antMatchers("/api/**").authenticated()
-		        .antMatchers("/oauth/*").authenticated()
-		.and().httpBasic().authenticationEntryPoint(restAuthenticationEntryPoint())
-        .and()
-        	.logout()
-        	.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-        	.logoutSuccessUrl("/login")
-        	.invalidateHttpSession(true)
-        	.deleteCookies("JSESSIONID");
+				.antMatchers("/oauth/*").authenticated()
+				.antMatchers("/api/testOauth").authenticated()
+				.and().httpBasic().authenticationEntryPoint(restAuthenticationEntryPoint())
+				.and()
+				.logout()
+				.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+				.logoutSuccessUrl("/login")
+				.invalidateHttpSession(true)
+				.deleteCookies("JSESSIONID");
 
-        http.addFilterAfter(new CustomFilter(), BasicAuthenticationFilter.class);
-    }
-
+		http.addFilterAfter(new CustomFilter(), BasicAuthenticationFilter.class);
+	}
 }

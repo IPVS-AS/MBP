@@ -12,7 +12,6 @@
                             data-toggle="modal" data-target="#addDeviceModal" data-backdrop="static"
                             data-keyboard="false">
 		      				<i class="material-icons">add</i>
-		      		</button>
 		     	</div>
             </div>
             <div class="body">
@@ -166,13 +165,6 @@
                                            placeholder="Password" ng-model="addDeviceCtrl.item.password"/>
                                 </div>
                                 <span class="help-block" ng-show="addDeviceCtrl.item.errors.password">{{addDeviceCtrl.item.errors.password.message}}</span>
-                            </div>
-                           <!-- item.deviceKey group -->
-                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.deviceKey }" ng-click="addDeviceCtrl.getDeviceKey()">
-                                <button type="button" class="btn btn-primary m-t-0 waves-effect">Get Device Key</button>
-                                <textarea class="form-control" id="device-key-view" type="text"
-                                          placeholder="Device Key is displayed here..." ng-model="addDeviceCtrl.item.deviceKey"
-                                          rows="1"></textarea>
                             </div>
                            <!-- item.rsaKey group -->
                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.rsaKey }">
