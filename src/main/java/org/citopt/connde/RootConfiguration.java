@@ -9,8 +9,6 @@ import java.net.UnknownHostException;
 
 /**
  * Configuration of the MongoDB and the associated beans.
- *
- * @author rafaelkperes, Jan
  */
 @Configuration
 @Import({MongoConfiguration.class})

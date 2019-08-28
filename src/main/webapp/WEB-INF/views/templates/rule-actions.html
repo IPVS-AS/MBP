@@ -1,0 +1,214 @@
+<div>
+    <!-- List Card -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>Rule Actions</h2>
+                </div>
+                <div class="align-right">
+                    <button id="add-button" type="button"
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float" data-toggle="modal"
+                            data-target="#addRuleActionModal" data-backdrop="static" data-keyboard="false">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
+            </div>
+            <div class="body">
+                <table class="table table-hover" st-table="displayedCollection" st-safe-src="ruleActionListCtrl.items">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Testing</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                        <td>
+                            {{item.name}}
+                        </td>
+                        <td>
+                            <span class="label label-success" ng-class="ctrl.getActionTypeColor(item.type.id)">{{item.type.name}}</span>
+                        </td>
+                        <td>
+                            <form ng-submit="ctrl.testRuleAction(item.id)">
+                                <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect">
+                                    Test action
+                                </button>
+                            </form>
+                        </td>
+                        <td>
+                            <form ng-submit="deleteRuleActionCtrl.deleteItem()">
+                                <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                        ng-click="deleteRuleActionCtrl.item.id = item.id">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr ng-show="ruleActionListCtrl.items.length === 0">
+                        <td>No rule actions registered.</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="addRuleActionModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register a new rule action
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form id="addRuleActionForm" ng-submit="addRuleActionCtrl.addItem()">
+                    <fieldset>
+                        <div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <div class="form-group" ng-class="{'has-error' : addRuleActionCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addRuleActionCtrl.item.errors.global">
+			                      {{addRuleActionCtrl.item.errors.global}}
+			                    </span>
+                            </div>
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : addRuleActionCtrl.item.errors.name }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addRuleActionCtrl.item.errors.name }">
+                                    <input class="form-control" type="text" placeholder="Action name"
+                                           ng-model="addRuleActionCtrl.item.name"/>
+                                </div>
+                                <span class="help-block" ng-show="addRuleActionCtrl.item.errors.name">{{addRuleActionCtrl.item.errors.name.message}}</span>
+                            </div>
+                            <!-- item.type group -->
+                            <div class="form-group" ng-class="{'has-error' : addRuleActionCtrl.item.errors.type }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addRuleActionCtrl.item.errors.type }">
+                                    <select class="form-control show-tick" ng-model="addRuleActionCtrl.item.type"
+                                            ng-options="type.id as (type.name) for type in ctrl.ruleActionTypesList">
+                                        <option disabled selected value>Select action type</option>
+                                    </select>
+                                </div>
+                                <span class="help-block" ng-show="addRuleActionCtrl.item.errors.type">{{addRuleActionCtrl.item.errors.type.message}}</span>
+                            </div>
+                            <!-- Switch for parameters of different action types -->
+                            <div ng-switch="addRuleActionCtrl.item.type">
+                                <div ng-switch-when="ACTUATOR_ACTION">
+                                    <p>Executes an action on an actuator that is part of the
+                                        IoT environment.</p>
+                                    <br/>
+                                    <!-- item.parameters[actuator] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <select class="form-control show-tick"
+                                                    ng-model="addRuleActionCtrl.item.parameters['actuator']"
+                                                    ng-options="actuator.id as (actuator.name) for actuator in ctrl.actuatorList">
+                                                <option disabled selected value>Select actuator</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- item.parameters[action] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input class="form-control" type="text" placeholder="Action name"
+                                                   ng-model="addRuleActionCtrl.item.parameters['action']"/>
+                                        </div>
+                                    </div>
+                                    <!-- item.parameters[data] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <textarea class="form-control" type="text" rows="4"
+                                                      placeholder="Additional data (optional)"
+                                                      ng-model="addRuleActionCtrl.item.parameters['data']">
+                                            </textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-switch-when="IFTTT_WEBHOOK">
+                                    <p>Triggers an
+                                        <a href="https://ifttt.com/maker_webhooks" target="_blank">IFTTT webhook</a>
+                                        that has been previously configured as part of an applet.</p>
+                                    <br/>
+                                    <!-- item.parameters[ifttt_key] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input class="form-control" type="text" placeholder="Personal IFTTT key"
+                                                   ng-model="addRuleActionCtrl.item.parameters['ifttt_key']"/>
+                                        </div>
+                                    </div>
+                                    <!-- item.parameters[ifttt_name} group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input class="form-control" type="text" placeholder="Event name"
+                                                   ng-model="addRuleActionCtrl.item.parameters['ifttt_name']"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-switch-when="COMPONENT_DEPLOYMENT">
+                                    <p>Deploys or undeploys a component that is part of the IoT environment.</p>
+                                    <br/>
+                                    <!-- item.parameters[component] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <select class="form-control show-tick"
+                                                    ng-options="(c.componentTypeName + '/' + c.id) as (c.name) group by c.type for c in ctrl.componentList"
+                                                    ng-model="addRuleActionCtrl.item.parameters['component']">
+                                                <option disabled selected value>Select component</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- item.parameters[deploy} group -->
+                                    <div class="form-group">
+                                        <div ng-init="addRuleActionCtrl.item.parameters['deploy']='DEPLOY'">
+                                            <input type="radio" id="deploy_deploy" class="with-gap"
+                                                   ng-model="addRuleActionCtrl.item.parameters['deploy']"
+                                                   value="DEPLOY">
+                                            <label for="deploy_deploy">Deploy</label>
+                                            <br/>
+                                            <input type="radio" id="deploy_start" class="with-gap"
+                                                   ng-model="addRuleActionCtrl.item.parameters['deploy']"
+                                                   value="START">
+                                            <label for="deploy_start">Deploy and start</label>
+                                            <br/>
+                                            <input type="radio" id="deploy_stop" class="with-gap"
+                                                   ng-model="addRuleActionCtrl.item.parameters['deploy']"
+                                                   value="STOP">
+                                            <label for="deploy_stop">Stop</label>
+                                            <br/>
+                                            <input type="radio" id="deploy_undeploy" class="with-gap"
+                                                   ng-model="addRuleActionCtrl.item.parameters['deploy']"
+                                                   value="UNDEPLOY">
+                                            <label for="deploy_undeploy">Stop and undeploy</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-switch-default></div>
+                            </div>
+                            <div class="form-group has-error" ng-show="addRuleActionCtrl.item.errors.parameters">
+                                <span class="help-block">
+                                    {{addRuleActionCtrl.item.errors.parameters.message}}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

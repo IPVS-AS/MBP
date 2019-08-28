@@ -65,14 +65,6 @@ $.AdminBSB.leftSideBar = {
             $(val).next().slideToggle(0);
         });
 
-        //When page load
-//        $.each($('.menu .list li.active'), function (i, val) {;
-//            var $activeAnchors = $(val).find('a:eq(0)');
-//
-//            $activeAnchors.addClass('toggled');
-//            $activeAnchors.next().show();
-//        });
-
         //Collapse or Expand Menu
         $('.menu-toggle').on('click', function (e) {
             var $this = $(this);
@@ -270,18 +262,18 @@ $.AdminBSB.input = {
                 $this.parents('.form-line').removeClass('focused');
             }
         });
-            
+
         //On label click
         $('body').on('click', '.form-float .form-line .form-label', function () {
             $(this).parent().find('input').focus();
         });
-        
+
         // MAC Address input mask
         $(".mac-address").inputmask('##-##-##-##-##-##', {placeholder: '__-__-__-__-__-__'});
-        
+
         // PIN Mask input mask
         $(".pinset").inputmask({mask: '9{1,2}(,9{1,2}){*}', greedy: false});
-        
+
         // Dropzone
         if (Dropzone) {
             Dropzone.autoDiscover = false;
@@ -457,4 +449,7 @@ var loadAdminBSB = function () {
 
     setTimeout(function () { $('.page-loader-wrapper').fadeOut(); }, 50);
 };
-$(loadAdminBSB);
+
+$(document).ready(function() {
+    $(loadAdminBSB);
+});
