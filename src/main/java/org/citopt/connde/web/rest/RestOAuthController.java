@@ -15,14 +15,22 @@ public class RestOAuthController {
 
 	@RequestMapping(value = "/addNewDevice", method = RequestMethod.GET)
 	public String getDeviceCode(@RequestParam("code") String code) {
+		/*
 		System.out.println("Device Code is " + code);
+		JSONObject jsonObject;
+		try {
+			jsonObject = new JSONObject().put("code", code);
+			return new ResponseEntity<>(jsonObject, HttpStatus.OK);
+		} catch (JSONException e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(new JSONObject(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}*/
 		return code;
 	}
 
 	@RequestMapping(value = "/testOauth", method = RequestMethod.GET)
 	public String testOAuth() {
-		String secret = randomNumeric(4);
-		return secret;
+		return randomNumeric(4);
 	}
 
 	@RequestMapping(value = "/verifyPermission", method = RequestMethod.GET)

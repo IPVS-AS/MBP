@@ -1,24 +1,19 @@
 package org.citopt.connde;
 
 import org.citopt.connde.constants.Constants;
-import org.citopt.connde.security.CustomFilter;
 import org.citopt.connde.security.RestAuthenticationEntryPoint;
 import org.citopt.connde.service.UserDetailsServiceImpl;
-import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
@@ -31,72 +26,64 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-	@Bean
-	@Override
-	public AuthenticationManager authenticationManagerBean() throws Exception {
-		return super.authenticationManagerBean();
-	}
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
 
-	@Bean
-	public RestAuthenticationEntryPoint restAuthenticationEntryPoint() {
-		return new RestAuthenticationEntryPoint();
-	}
+        return super.authenticationManagerBean();
+    }
 
-	@Bean
-	public UserDetailsService mongoUserDetails() {
-		return new UserDetailsServiceImpl();
-	}
+    @Bean
+    public RestAuthenticationEntryPoint restAuthenticationEntryPoint() {
+        return new RestAuthenticationEntryPoint();
+    }
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+    @Bean
+    public UserDetailsServiceImpl mongoUserDetails() {
+        return new UserDetailsServiceImpl();
+    }
 
-	@Override
-	public void configure(AuthenticationManagerBuilder auth) {
-		try {
-			auth.inMemoryAuthentication().withUser("admin").password("admin").authorities("ROLE_ADMIN");
-			auth.inMemoryAuthentication().withUser("test-client").password("test").authorities("CLIENT");
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-			/*
-        try {
-        	UserDetailsService userDetailsService = mongoUserDetails();
-            auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-         */
-		} catch (Exception e) {
-			throw new BeanInitializationException("Security configuration failed", e);
-		}
-	}
+    @Override
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+        //auth.userDetailsService(mongoUserDetails()).passwordEncoder(passwordEncoder());
+        auth.inMemoryAuthentication().withUser("admin").password("admin").authorities("ROLE_ADMIN");
+        auth.inMemoryAuthentication().withUser("test-client").password("test").authorities("CLIENT");
+    }
 
-	@Override
-	public void configure(WebSecurity web) throws Exception {
-		web.ignoring()
-				.antMatchers(HttpMethod.OPTIONS, "/**")
-				.antMatchers("/resources/**")
-				.antMatchers("/webapp/**");
-	}
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring()
+                .antMatchers(HttpMethod.OPTIONS, "/**")
+                .antMatchers("/resources/**")
+                .antMatchers("/webapp/**");
+    }
 
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
-		http
-				.csrf().disable()
-				.authorizeRequests()
-				.antMatchers("/api/authenticate").permitAll()
-				.antMatchers(HttpMethod.POST, "/api/users").permitAll()
-				.antMatchers(HttpMethod.PUT, "/api/users").hasAuthority(Constants.ADMIN)
-				.antMatchers(HttpMethod.GET, "/api/users").hasAuthority(Constants.ADMIN)
-				.antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)
-				.antMatchers(HttpMethod.DELETE, "/api/users/:username").hasAuthority(Constants.ADMIN)
-				.antMatchers("/oauth/*").authenticated()
-				.antMatchers("/api/testOauth").authenticated()
-				.and().httpBasic().authenticationEntryPoint(restAuthenticationEntryPoint())
-				.and()
-				.logout()
-				.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-				.logoutSuccessUrl("/login")
-				.invalidateHttpSession(true)
-				.deleteCookies("JSESSIONID");
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/api/authenticate").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/users").permitAll()
+                .antMatchers(HttpMethod.PUT, "/api/users").hasAuthority(Constants.ADMIN)
+                .antMatchers(HttpMethod.GET, "/api/users").hasAuthority(Constants.ADMIN)
+                .antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)
+                .antMatchers(HttpMethod.DELETE, "/api/users/:username").hasAuthority(Constants.ADMIN)
+                .antMatchers("/oauth/*").authenticated()
+                .antMatchers("/api/testOauth").authenticated()
+                .and().httpBasic().authenticationEntryPoint(restAuthenticationEntryPoint())
+                .and()
+                .logout()
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+                .logoutSuccessUrl("/login")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID");
 
-		http.addFilterAfter(new CustomFilter(), BasicAuthenticationFilter.class);
-	}
+        //http.addFilterAfter(new CustomFilter(), BasicAuthenticationFilter.class);
+    }
 }

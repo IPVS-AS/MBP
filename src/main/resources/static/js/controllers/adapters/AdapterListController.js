@@ -4,7 +4,6 @@ app.controller('AdapterListController',
     ['$scope', '$controller', '$q', 'adapterList', 'adapterPreprocessing', 'addAdapter', 'deleteAdapter', 'FileReader', 'parameterTypesList', 'AdapterService', 'NotificationService',
         function ($scope, $controller, $q, adapterList, adapterPreprocessing, addAdapter, deleteAdapter, FileReader, parameterTypesList, AdapterService, NotificationService) {
             var vm = this;
-            $scope.deviceCode = '';
 
             vm.dzServiceOptions = {
                 paramName: 'serviceFile',
@@ -62,9 +61,9 @@ app.controller('AdapterListController',
                         'Authorization': 'Basic YWRtaW46YWRtaW4='
                     }
                 }).then(function (response) {
-                    console.log("CODE!!!!!");
+                    console.log("Original response: ");
                     console.log(response);
-                    $scope.deviceCode = response;
+                    $scope.deviceCode = response.body.json();
                 });
             }
 
@@ -222,7 +221,7 @@ app.controller('AdapterListController',
             );
 
             //Enable popovers
-            $(document).ready(function(){
+            $(document).ready(function () {
                 $('[data-toggle="popover"]').popover();
             });
         }

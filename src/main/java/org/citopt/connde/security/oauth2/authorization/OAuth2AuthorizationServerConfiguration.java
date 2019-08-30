@@ -1,14 +1,11 @@
 package org.citopt.connde.security.oauth2.authorization;
 
-import java.util.Arrays;
-
 import org.citopt.connde.security.RestAuthenticationEntryPoint;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.citopt.connde.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -22,17 +19,23 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+
 @Configuration
 @EnableAuthorizationServer
 @Component
 public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
+    private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationManager authenticationManager;
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
-    public OAuth2AuthorizationServerConfiguration(@Qualifier("authenticationManagerBean") AuthenticationManager authenticationManager, @Qualifier("restAuthenticationEntryPoint") RestAuthenticationEntryPoint restAuthenticationEntryPoint) {
+    public OAuth2AuthorizationServerConfiguration(@Qualifier("authenticationManagerBean") AuthenticationManager authenticationManager,
+                                                  @Qualifier("restAuthenticationEntryPoint") RestAuthenticationEntryPoint restAuthenticationEntryPoint,
+                                                  @Qualifier("mongoUserDetails") UserDetailsServiceImpl userDetailsService) {
         this.authenticationManager = authenticationManager;
         this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
