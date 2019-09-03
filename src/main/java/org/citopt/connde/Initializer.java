@@ -1,6 +1,9 @@
 package org.citopt.connde;
 
 import javax.servlet.Filter;
+
+import org.citopt.connde.security.oauth2.authorization.OAuth2AuthorizationServerConfiguration;
+import org.citopt.connde.security.oauth2.authorization.OAuth2ResourceServerConfiguration;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.filter.HttpPutFormContentFilter;
@@ -16,7 +19,7 @@ public class Initializer
     @Override
     protected Class<?>[] getRootConfigClasses() {
         System.out.println("load RootConfiguration");
-        return new Class[]{RootConfiguration.class, SecurityConfiguration.class};
+        return new Class[]{RootConfiguration.class, SecurityConfiguration.class, OAuth2AuthorizationServerConfiguration.class, OAuth2ResourceServerConfiguration.class};
     }
 
     @Override

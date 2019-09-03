@@ -25,7 +25,7 @@ class mqttClient(object):
 
       # create MQTT client and set user name and password 
       self.client = mqtt.Client(client_id=self.clientid, clean_session=True, userdata=None, protocol=mqtt.MQTTv31)
-      #client.username_pw_set(username="use-token-auth", password=mq_authtoken)
+      client.username_pw_set(username="use-token-auth", password="any"")
 
       # set mqtt client callbacks
       self.client.on_connect = self.on_connect

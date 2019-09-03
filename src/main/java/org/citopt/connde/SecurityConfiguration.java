@@ -5,6 +5,8 @@ import org.citopt.connde.security.RestAuthenticationEntryPoint;
 import org.citopt.connde.service.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -12,6 +14,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -29,7 +32,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
-
         return super.authenticationManagerBean();
     }
 
@@ -51,9 +53,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         //auth.userDetailsService(mongoUserDetails()).passwordEncoder(passwordEncoder());
-        auth.inMemoryAuthentication().withUser("admin").password("admin").authorities("ROLE_ADMIN");
-        auth.inMemoryAuthentication().withUser("test-client").password("test").authorities("CLIENT");
-
+        auth.inMemoryAuthentication()
+                .withUser("admin").password("admin").authorities("ROLE_ADMIN").roles("CLIENT");
     }
 
     @Override
@@ -65,8 +66,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Override
+    @Order(Ordered.HIGHEST_PRECEDENCE)
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/api/authenticate").permitAll()
@@ -75,8 +78,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/api/users").hasAuthority(Constants.ADMIN)
                 .antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)
                 .antMatchers(HttpMethod.DELETE, "/api/users/:username").hasAuthority(Constants.ADMIN)
-                .antMatchers("/oauth/*").authenticated()
-                .antMatchers("/api/testOauth").authenticated()
                 .and().httpBasic().authenticationEntryPoint(restAuthenticationEntryPoint())
                 .and()
                 .logout()

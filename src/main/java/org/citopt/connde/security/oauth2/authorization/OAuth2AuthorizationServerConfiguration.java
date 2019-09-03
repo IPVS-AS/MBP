@@ -1,5 +1,7 @@
 package org.citopt.connde.security.oauth2.authorization;
 
+import java.util.Arrays;
+
 import org.citopt.connde.security.RestAuthenticationEntryPoint;
 import org.citopt.connde.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,13 +19,9 @@ import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
-import org.springframework.stereotype.Component;
-
-import java.util.Arrays;
 
 @Configuration
 @EnableAuthorizationServer
-@Component
 public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
     private final UserDetailsServiceImpl userDetailsService;
@@ -70,6 +68,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
 
     @Bean
     public TokenStore tokenStore() {
+        System.out.println("Called !!!!!!!!!!!!!!");
         return new JwtTokenStore(accessTokenConverter());
     }
 
