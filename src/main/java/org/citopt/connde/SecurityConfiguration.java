@@ -53,6 +53,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         //auth.userDetailsService(mongoUserDetails()).passwordEncoder(passwordEncoder());
         auth.inMemoryAuthentication().withUser("admin").password("admin").authorities("ROLE_ADMIN");
         auth.inMemoryAuthentication().withUser("test-client").password("test").authorities("CLIENT");
+
     }
 
     @Override

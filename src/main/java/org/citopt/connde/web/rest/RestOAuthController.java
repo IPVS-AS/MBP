@@ -13,7 +13,7 @@ import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 @RequestMapping(RestConfiguration.BASE_PATH)
 public class RestOAuthController {
 
-	@RequestMapping(value = "/addNewDevice", method = RequestMethod.GET)
+	@RequestMapping(value = "/getAccessCode", method = RequestMethod.GET)
 	public String getDeviceCode(@RequestParam("code") String code) {
 		/*
 		System.out.println("Device Code is " + code);
@@ -33,7 +33,7 @@ public class RestOAuthController {
 		return randomNumeric(4);
 	}
 
-	@RequestMapping(value = "/verifyPermission", method = RequestMethod.GET)
+	@RequestMapping(value = "/verifyPermission", method = RequestMethod.POST)
 	public HttpStatus verifyPermission() {
 		return HttpStatus.OK;
 	}

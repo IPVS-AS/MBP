@@ -61,9 +61,10 @@ app.controller('AdapterListController',
                         'Authorization': 'Basic YWRtaW46YWRtaW4='
                     }
                 }).then(function (response) {
-                    console.log("Original response: ");
+                    console.log("Response from OAuth Authorization Server: ");
                     console.log(response);
-                    $scope.deviceCode = response.body.json();
+                    var chars = response.url.split('?');
+                    $scope.deviceCode = chars[1];
                 });
             }
 

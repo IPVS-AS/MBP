@@ -50,7 +50,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .autoApprove(true)
                 .accessTokenValiditySeconds(600)
                 .refreshTokenValiditySeconds(3600)
-                .redirectUris("http://localhost:8080/MBP/api/addNewDevice");
+                .redirectUris("http://localhost:8080/MBP/api/getAccessCode");
     }
 
     @Override
