@@ -28,8 +28,8 @@ public class OAuth2ResourceServerConfiguration extends ResourceServerConfigurerA
 				.requestMatchers().antMatchers("/api/testOauth").antMatchers("/api/verifyPermission")
 				.and()
 				.authorizeRequests()
-				.antMatchers("/api/testOauth").access("hasRole('CLIENT')")
-				.antMatchers("/api/verifyPermission").access("hasRole('CLIENT')");
+				.antMatchers("/api/testOauth").access("hasRole('CLIENT')");
+				//.antMatchers("/api/verifyPermission").access("hasRole('CLIENT')");
 	}
 
 	@Bean

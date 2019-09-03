@@ -8,7 +8,7 @@ import json
 import os, fnmatch
 from os.path import expanduser
 import random
-import oauth2
+import oauth2_token_manager
 
 ############################
 # MQTT Client
@@ -16,7 +16,14 @@ import oauth2
 class mqttClient(object):
    hostname = 'localhost'
    port = 1883
-   clientid = ''
+   
+   # Enter client id here:
+   client_id = ''
+   # Enter client secret here:
+   client_secret = ''
+   # Enter authorization code here:
+   authorization_code = ''
+
 
    def __init__(self, hostname, port, clientid):
       self.hostname = hostname
@@ -25,8 +32,8 @@ class mqttClient(object):
 
       # create MQTT client and set user name and password 
       self.client = mqtt.Client(client_id=self.clientid, clean_session=True, userdata=None, protocol=mqtt.MQTTv31)
-      client.username_pw_set(username="use-token-auth", password="any"")
-
+      client.username_pw_set(username=oauth2_token_manager.get_access_token(client_id=self.client_id, client_secret=self.client_secret, authorization_code=self.authorization_code), password="any")
+      
       # set mqtt client callbacks
       self.client.on_connect = self.on_connect
 
