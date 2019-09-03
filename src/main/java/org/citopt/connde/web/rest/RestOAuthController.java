@@ -1,6 +1,8 @@
 package org.citopt.connde.web.rest;
 
 import org.citopt.connde.RestConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -12,6 +14,8 @@ import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
 public class RestOAuthController {
+
+	private final Logger log = LoggerFactory.getLogger(RestOAuthController.class);
 
 	@RequestMapping(value = "/getAccessCode", method = RequestMethod.GET)
 	public String getDeviceCode(@RequestParam("code") String code) {
@@ -35,6 +39,7 @@ public class RestOAuthController {
 
 	@RequestMapping(value = "/verifyPermission", method = RequestMethod.POST)
 	public HttpStatus verifyPermission() {
+		log.debug("VERIFY PERMISSION WAS OK ################");
 		return HttpStatus.OK;
 	}
 }
