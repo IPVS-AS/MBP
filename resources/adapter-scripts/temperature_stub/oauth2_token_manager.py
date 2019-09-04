@@ -12,4 +12,4 @@ def get_access_token(client_id, client_secret, authorization_code):
     oauth = OAuth2Session(client_id)
     token = oauth.fetch_token(token_url, code=authorization_code, client_secret=client_secret, method='POST')
     print(token["access_token"])
-    return token
+    return token["access_token"]

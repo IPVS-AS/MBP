@@ -18,11 +18,11 @@ class mqttClient(object):
    port = 1883
    
    # Enter client id here:
-   client_id = ''
+   client_id = 'test-client'
    # Enter client secret here:
-   client_secret = ''
+   client_secret = 'test'
    # Enter authorization code here:
-   authorization_code = ''
+   authorization_code = 'xFdMOT'
 
 
    def __init__(self, hostname, port, clientid):
@@ -32,8 +32,10 @@ class mqttClient(object):
 
       # create MQTT client and set user name and password 
       self.client = mqtt.Client(client_id=self.clientid, clean_session=True, userdata=None, protocol=mqtt.MQTTv31)
-      client.username_pw_set(username=oauth2_token_manager.get_access_token(client_id=self.client_id, client_secret=self.client_secret, authorization_code=self.authorization_code), password="any")
-      
+      self.username = oauth2_token_manager.get_access_token(self.client_id, self.client_secret, self.authorization_code)
+      #print(self.username)
+      self.client.username_pw_set(username=self.username, password="any")
+
       # set mqtt client callbacks
       self.client.on_connect = self.on_connect
 
@@ -70,31 +72,31 @@ def main(argv):
    hostname = 'localhost'
    topic_pub = 'test'
    
-   configFile = os.path.join(os.getcwd(), configFileName)
+#   configFile = os.path.join(os.getcwd(), configFileName)
    
-   while (not configExists):
-       configExists = os.path.exists(configFile)
-       time.sleep(1)
+#   while (not configExists):
+#       configExists = os.path.exists(configFile)
+#       time.sleep(1)
 
    # BEGIN parsing file
-   fileObject = open (configFile)
-   fileLines = fileObject.readlines()
-   fileObject.close()
+#   fileObject = open (configFile)
+#   fileLines = fileObject.readlines()
+#   fileObject.close()
 
-   for line in fileLines:
-       pars = line.split('=')
-       topic = pars[0].strip('\n').strip()
-       ip = pars[1].strip('\n').strip()
-       topics.append(topic)
-       brokerIps.append(ip)
+#   for line in fileLines:
+#       pars = line.split('=')
+#       topic = pars[0].strip('\n').strip()
+#       ip = pars[1].strip('\n').strip()
+#       topics.append(topic)
+#       brokerIps.append(ip)
 
    # END parsing file
        
-   hostname = brokerIps [0]
-   topic_pub = topics [0]
-   topic_splitted = topic_pub.split('/')
-   component = topic_splitted [0]
-   component_id = topic_splitted [1]
+#   hostname = brokerIps [0]
+#   topic_pub = topics [0]
+#   topic_splitted = topic_pub.split('/')
+#   component = topic_splitted [0]
+#   component_id = topic_splitted [1]
    
    print("Connecting to: " + hostname + " pub on topic: " + topic_pub)
    
@@ -109,7 +111,7 @@ def main(argv):
          # send message, topic: temperature
          t = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
          outputValue = random.choice([20.0, 20.5, 21.0, 22.0, 22.5, 25.5, 30.0, 30.1, 31.5, 29.9, 35.0])
-         msg_pub = {"component": component.upper(), "id": component_id, "value": "%f" % (outputValue) }
+         msg_pub = {"component": "tempSensor", "id": "112244", "value": "%f" % (outputValue) }
          publisher.sendMessage (topic_pub, json.dumps(msg_pub))
          #publisher.sendMessage (topic_pub, "42")
 
