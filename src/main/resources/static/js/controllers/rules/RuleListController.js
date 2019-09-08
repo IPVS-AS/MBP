@@ -119,7 +119,7 @@ app.controller('RuleListController',
                         }, function () {
                             //Failure
                             rule.enabled = false;
-                            NotificationService.notify('Failed to enable rule.', 'error');
+                            NotificationService.notify('Failed to enable rule. Do all components still exist?', 'error');
                         });
                     } else {
                         //Disable rule
