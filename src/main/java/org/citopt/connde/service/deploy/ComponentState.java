@@ -7,8 +7,9 @@ package org.citopt.connde.service.deploy;
  * - Unknown: State of the component is not known
  * - Not Ready: The component cannot be deployed (device unavailable, wrong configuration, ...)
  * - Ready: The component is ready for deployment, device is available and correctly configured
- * - Deployed: Component is already deployed
+ * - Deployed: Component is already deployed, but not running (e.g. paused)
+ * - Running: Component is deployed and running
  */
 public enum ComponentState {
-    UNKNOWN, NOT_READY, READY, DEPLOYED;
+    UNKNOWN, NOT_READY, READY, DEPLOYED, RUNNING;
 }

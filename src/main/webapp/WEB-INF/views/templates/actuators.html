@@ -9,7 +9,7 @@
 				<div class="align-right">
 					<button id="add-button" type="button"
 							class="btn bg-blue btn-circle waves-effect waves-circle waves-float" data-toggle="modal"
-							data-target="#addActuatorModal">
+							data-target="#addActuatorModal" data-backdrop="static" data-keyboard="false">
 						<i class="material-icons">add</i>
 					</button>
 				</div>
@@ -21,7 +21,7 @@
 						<th>Name</th>
 						<th class="align-center">State</th>
 						<th>Actuator type</th>
-						<th>Adapter</th>
+						<th>Control operator</th>
 						<th>Device</th>
 					</tr>
 					</thead>
@@ -51,7 +51,10 @@
 									<span class="label label-success">Ready</span>
 								</div>
 								<div ng-switch-when="DEPLOYED">
-									<span class="label label-info">Deployed</span>
+									<span class="label bg-teal">Deployed</span>
+								</div>
+								<div ng-switch-when="RUNNING">
+									<span class="label label-info">Running</span>
 								</div>
 								<div ng-switch-default>
 									<span class="label label-default">Unknown</span>
@@ -138,7 +141,7 @@
 									<select class="form-control show-tick" id="actuator-form-select-adapter"
 											ng-model="addActuatorCtrl.item.adapter"
 											ng-options="t._links.self.href as (t.name) for t in ctrl.adapterList">
-										<option value="">Select adapter
+										<option value="">Select control operator
 										<option/>
 									</select>
 								</div>

@@ -1,17 +1,13 @@
 package org.citopt.connde.web.rest;
 
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.service.mqtt.ValueLogger;
-import org.citopt.connde.service.settings.SettingsService;
+import org.citopt.connde.service.mqtt.MQTTService;import org.citopt.connde.service.settings.SettingsService;
 import org.citopt.connde.service.settings.model.Settings;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -26,8 +22,9 @@ public class RestSettingsController {
 
     @Autowired
     private SettingsService settingsService;
+
     @Autowired
-    private ValueLogger valueLogger;
+    private MQTTService mqttService;
 
     /**
      * Called when the client wants to retrieve the settings.
@@ -48,20 +45,23 @@ public class RestSettingsController {
 
     /**
      * Called when the client wants to change the settings.
-     * @param settings
-     * @return
+     *
+     * @param settings The settings to update
+     * @return OK (200) in case everything was successful
      */
-    @RequestMapping(value = "/settings", method = RequestMethod.POST)
+    @PostMapping("/settings")
     public ResponseEntity saveSettings(@RequestBody Settings settings) {
-        //Save settings and restart value logger, since it needs to use a different ip address now
+        //Save settings and re-initialize MQTT service, since it needs to use a different IP address now
         try {
             settingsService.saveSettings(settings);
-            valueLogger.setupAndStart();
+            mqttService.initialize();
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (MqttException e) {
             System.err.print("MqttException: " + e.getMessage());
         }
+
+        //Everything fine
         return new ResponseEntity(HttpStatus.OK);
     }
 }

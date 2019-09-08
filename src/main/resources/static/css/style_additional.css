@@ -1,10 +1,10 @@
 ﻿/* Rotate collapse icons */
-li > a.collapsed > i.material-icons {
+li a.collapsed i.material-icons, .panel .panel-heading .panel-title a.collapsed i.material-icons {
     transform: rotate(90deg);
 }
 
-/* Animation for icon style changes */
-li > a > i.material-icons {
+/* Enable rotation animation */
+li a i.material-icons, .panel .panel-heading .panel-title a i.material-icons {
     transition: .3s transform ease-in-out;
 }
 
@@ -37,6 +37,16 @@ table.parameter-table td {
     box-shadow: none !important;
 }
 
+/* Clickable elements */
 .clickable {
     cursor: pointer;
+}
+
+/* Bullet point lists with a trailing minus  */
+ul.minus-list {
+    padding-left: 5px;
+}
+
+ul.minus-list li:before {
+    content: "- ";
 }

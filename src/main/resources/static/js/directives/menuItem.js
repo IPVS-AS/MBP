@@ -7,6 +7,12 @@ app.directive('menuItem', ['$location', function (location) {
             restrict: 'A',
             link: function (scope, element, attrs, controller) {
                 var path = attrs.href;
+
+                //Sanity check
+                if(!path){
+                    return;
+                }
+
                 if (path.startsWith('#')) {
                     path = path.substring(1); // skip '#'
                 }

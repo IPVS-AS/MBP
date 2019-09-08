@@ -183,6 +183,9 @@ app.controller('ActuatorListController',
               var actuator = vm.addActuatorCtrl.result;
 
               if (actuator) {
+                //Close modal on success
+                $("#addActuatorModal").modal('toggle');
+
                 //Add state and reload function to the new object
                 actuator.state = 'LOADING';
                 actuator.reloadState = createReloadStateFunction(actuator.id);

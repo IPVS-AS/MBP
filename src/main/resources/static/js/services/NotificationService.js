@@ -11,6 +11,10 @@ app.factory('NotificationService', function () {
             icon: 'check',
             btType: 'success'
         },
+        warning: {
+            icon: 'warning',
+            btType: 'warning'
+        },
         error:{
             icon: 'close',
             btType: 'danger'

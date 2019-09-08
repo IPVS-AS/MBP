@@ -6,10 +6,12 @@ import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
+import org.citopt.connde.domain.monitoring.MonitoringComponentDTO;
 import org.citopt.connde.repository.DeviceRepository;
-import org.citopt.connde.repository.MonitoringAdapterRepository;
 import org.citopt.connde.repository.projection.MonitoringAdapterListProjection;
 import org.citopt.connde.service.deploy.ComponentState;
+import org.citopt.connde.web.rest.helper.DeploymentWrapper;
+import org.citopt.connde.web.rest.helper.MonitoringHelper;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,22 +24,28 @@ import java.util.Map;
 
 /**
  * REST Controller that exposes methods for the purpose of device monitoring.
- *
- * @author Jan
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
 public class RestMonitoringController {
 
     @Autowired
-    ComponentDeploymentWrapper deploymentWrapper;
-
-    @Autowired
     private DeviceRepository deviceRepository;
 
     @Autowired
-    private MonitoringAdapterRepository monitoringAdapterRepository;
+    DeploymentWrapper deploymentWrapper;
 
+    @Autowired
+    private MonitoringHelper monitoringHelper;
+
+    /**
+     * Replies to the requesting client whether the monitoring is currently active for a certain device
+     * and monitoring adapter.
+     *
+     * @param deviceId            The id of the device
+     * @param monitoringAdapterId The id of the monitoring adapter
+     * @return A response with true, if the monitoring is currently active and false otherwise
+     */
     @GetMapping(value = "/monitoring/{deviceId}")
     public ResponseEntity<Boolean> isMonitoringActive(@PathVariable(value = "deviceId") String deviceId,
                                                       @RequestParam("adapter") String monitoringAdapterId) {
@@ -46,8 +54,9 @@ public class RestMonitoringController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        //Create new monitoring component
-        MonitoringComponent monitoringComponent = createComponent(deviceId, monitoringAdapterId);
+        //Create new monitoring component from parameters
+        MonitoringComponent monitoringComponent =
+                monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
 
         //Validity check
         if (monitoringComponent == null) {
@@ -58,6 +67,15 @@ public class RestMonitoringController {
         return deploymentWrapper.isRunningComponent(monitoringComponent);
     }
 
+    /**
+     * Tries to enable monitoring for a certain device and monitoring adapter with optional parameters
+     * and replies to the requesting client whether this action was successful.
+     *
+     * @param deviceId            The id of the device to monitor
+     * @param monitoringAdapterId The id of the monitoring adapter
+     * @param parameters          Optional deployment parameters to use
+     * @return A response containing the result of the monitoring enabling attempt
+     */
     @PostMapping(value = "/monitoring/{deviceId}")
     public ResponseEntity<ActionResponse> enableMonitoring(@PathVariable(value = "deviceId") String deviceId,
                                                            @RequestParam("adapter") String monitoringAdapterId,
@@ -68,17 +86,34 @@ public class RestMonitoringController {
         }
 
         //Create new monitoring component
-        MonitoringComponent monitoringComponent = createComponent(deviceId, monitoringAdapterId);
+        MonitoringComponent monitoringComponent =
+                monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
 
         //Validity check
         if (monitoringComponent == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        //Deploy
-        return deploymentWrapper.deployComponent(monitoringComponent, parameters);
+        //Deploy monitoring component
+        ResponseEntity<ActionResponse> response = deploymentWrapper.deployComponent(monitoringComponent);
+
+        //Check if deployment was not successful
+        if (!response.getBody().isSuccess()) {
+            return response;
+        }
+
+        //Start monitoring component
+        return deploymentWrapper.startComponent(monitoringComponent, parameters);
     }
 
+    /**
+     * Tries to disable monitoring for a certain device and monitoring adapter and replies to the requesting client
+     * whether this action was successful.
+     *
+     * @param deviceId            The id of the device
+     * @param monitoringAdapterId The id of the monitoring adapter
+     * @return A response containing the result of the monitoring disabling attempt
+     */
     @DeleteMapping(value = "/monitoring/{deviceId}")
     public ResponseEntity<ActionResponse> disableMonitoring(@PathVariable(value = "deviceId") String deviceId,
                                                             @RequestParam("adapter") String monitoringAdapterId) {
@@ -88,7 +123,8 @@ public class RestMonitoringController {
         }
 
         //Create new monitoring component
-        MonitoringComponent monitoringComponent = createComponent(deviceId, monitoringAdapterId);
+        MonitoringComponent monitoringComponent =
+                monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
 
         //Validity check
         if (monitoringComponent == null) {
@@ -99,8 +135,16 @@ public class RestMonitoringController {
         return deploymentWrapper.undeployComponent(monitoringComponent);
     }
 
-    @RequestMapping(value = "/monitoring/state/{deviceId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, ComponentState>> getDeviceMonitoringState(@PathVariable(value = "deviceId") String deviceId) {
+    /**
+     * Replies to the requesting client with a map (monitoring adapter id -> monitoring state) of monitoring states
+     * for each combination of a certain device and monitoring adapters that are compatible to this device.
+     *
+     * @param deviceId The id of the device for which the monitoring states are supposed to be retrieved
+     * @return A response containing the map (monitoring adapter id -> monitoring state) of monitoring states
+     */
+    @GetMapping(value = "/monitoring/state/{deviceId}")
+    public ResponseEntity<Map<String, ComponentState>> getDeviceMonitoringState(
+            @PathVariable(value = "deviceId") String deviceId) {
         //Validity check
         if ((deviceId == null) || deviceId.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -115,7 +159,7 @@ public class RestMonitoringController {
         }
 
         //Retrieve compatible adapters
-        List<MonitoringAdapter> compatibleAdapterList = getCompatibleAdapters(device);
+        List<MonitoringAdapter> compatibleAdapterList = monitoringHelper.getCompatibleAdapters(device);
 
         //For each adapter create a new monitoring component and store it in a list
         List<Component> monitoringComponentList = new ArrayList<>();
@@ -128,12 +172,18 @@ public class RestMonitoringController {
         return deploymentWrapper.getStatesAllComponents(monitoringComponentList);
     }
 
-
+    /**
+     * Replies to the requesting client with the monitoring state of a certain device and monitoring adapter.
+     *
+     * @param deviceId            The id of the device
+     * @param monitoringAdapterId The id of the monitoring adapter
+     * @return A response containing the monitoring state
+     */
     @RequestMapping(value = "/monitoring/state/{deviceId}", params = {"adapter"}, method = RequestMethod.GET)
     public ResponseEntity<ComponentState> getMonitoringState(@PathVariable(value = "deviceId") String deviceId,
                                                              @RequestParam("adapter") String monitoringAdapterId) {
         //Create new monitoring component
-        MonitoringComponent monitoringComponent = createComponent(deviceId, monitoringAdapterId);
+        MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
 
         //Validity check
         if (monitoringComponent == null) {
@@ -141,30 +191,6 @@ public class RestMonitoringController {
         }
 
         return deploymentWrapper.getComponentState(monitoringComponent);
-    }
-
-    /**
-     * Creates a deployable component object which wraps a device and a monitoring adapter. For this purpose,
-     * the objects for the provided ids are looked up in the dedicated repository.
-     *
-     * @param deviceId            The id of the device to wrap
-     * @param monitoringAdapterId The id of the monitoring adapter to wrap
-     * @return The deployable component object
-     */
-    private MonitoringComponent createComponent(String deviceId, String monitoringAdapterId) {
-        //Retrieve corresponding device and adapter from their repositories
-        Device device = deviceRepository.findOne(deviceId);
-        MonitoringAdapter monitoringAdapter = monitoringAdapterRepository.findOne(monitoringAdapterId);
-
-        //Check if both objects were found
-        if ((device == null) || (monitoringAdapter == null)) {
-            return null;
-        }
-
-        //Create new monitoring component (wrapper)
-        MonitoringComponent monitoringComponent = new MonitoringComponent(monitoringAdapter, device);
-
-        return monitoringComponent;
     }
 
     /**
@@ -189,50 +215,44 @@ public class RestMonitoringController {
         }
 
         //Get list of compatible adapters for this device
-        List<MonitoringAdapter> compatibleAdapters = getCompatibleAdapters(device);
+        List<MonitoringAdapter> compatibleAdapters = monitoringHelper.getCompatibleAdapters(device);
 
-        //Create a list for the corresponding adapter projections
-        List<MonitoringAdapterListProjection> adapterProjectionList = new ArrayList<>();
-
-        //Get projection for each compatible adapter and add it to the list
-        for (MonitoringAdapter adapter : compatibleAdapters) {
-            MonitoringAdapterListProjection projection = monitoringAdapterRepository.findById(adapter.getId());
-            adapterProjectionList.add(projection);
-        }
+        //Convert list of monitoring adapters into list of monitoring adapter list projections
+        List<MonitoringAdapterListProjection> adapterProjectionList =
+                monitoringHelper.convertToListProjections(compatibleAdapters);
 
         return new ResponseEntity<>(adapterProjectionList, HttpStatus.OK);
     }
 
     /**
-     * Retrieves a list of all monitoring adapters in the corresponding repository
-     * that are compatible with a certain device.
+     * Returns a list of all monitoring components that are available. Each monitoring component consists out of
+     * a device and a compatible monitoring adapter and is returned as a DTO.
      *
-     * @param device The device for which the compatible monitoring adapters should be determined
-     * @return A list of monitoring adapters that are compatible with the device
+     * @return A list of all available monitoring components
      */
-    private List<MonitoringAdapter> getCompatibleAdapters(Device device) {
-        //Validity check
-        if (device == null) {
-            throw new IllegalArgumentException("Device must not be null.");
-        }
+    @GetMapping("/monitoring")
+    public ResponseEntity<List<MonitoringComponentDTO>> getAllMonitoringComponents() {
+        //Create result list for all found monitoring components
+        List<MonitoringComponentDTO> monitoringComponents = new ArrayList<>();
 
-        //Get device type
-        String deviceTyp = device.getComponentType();
+        //Get all devices
+        List<Device> devices = deviceRepository.findAll();
 
-        //Get all monitoring adapters
-        List<MonitoringAdapter> allAdapters = monitoringAdapterRepository.findAll();
+        //Iterate over all devices
+        for (Device device : devices) {
+            //Get all compatible adapters for this device
+            List<MonitoringAdapter> compatibleAdapters = monitoringHelper.getCompatibleAdapters(device);
 
-        //Create a list for all compatible adapters
-        List<MonitoringAdapter> compatibleAdapterList = new ArrayList<>();
+            //Iterate over these adapters
+            for (MonitoringAdapter monitoringAdapter : compatibleAdapters) {
+                //Create corresponding monitoring component for device and adapter
+                MonitoringComponent monitoringComponent = new MonitoringComponent(monitoringAdapter, device);
 
-        //Iterate over all adapters and check for compatibility
-        for (MonitoringAdapter adapter : allAdapters) {
-            if (adapter.isCompatibleWith(deviceTyp)) {
-                //Add compatible adapter
-                compatibleAdapterList.add(adapter);
+                //Add component as DTO to result list
+                monitoringComponents.add(new MonitoringComponentDTO(monitoringComponent));
             }
         }
 
-        return compatibleAdapterList;
+        return new ResponseEntity<>(monitoringComponents, HttpStatus.OK);
     }
 }

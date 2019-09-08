@@ -67,8 +67,8 @@ app.controller('DeviceListController',
                 return DeviceService.getUsingComponents(data.id).then(function (result) {
                     var affectedWarning = "";
 
-                    //If the list is not empty, create a message that contains the names of all affected components
-                    if (result.success && (result.data.length > 0)) {
+                    //If list is not empty, create a message that contains the names of all affected components
+                    if (result.data.length > 0) {
                         affectedWarning = "<br/><br/><strong>The following components are currently " +
                             "using this device and will be deleted as well:</strong><br/>";
 
@@ -206,6 +206,9 @@ app.controller('DeviceListController',
                     var device = vm.addDeviceCtrl.result;
 
                     if (device) {
+                        //Close modal on success
+                        $("#addDeviceModal").modal('toggle');
+
                         //Add state and reload function to the new object
                         device.state = 'LOADING';
                         device.reloadState = createReloadStateFunction(device.id);

@@ -12,6 +12,7 @@ import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringAdapterValidator;
+import org.citopt.connde.domain.rules.*;
 import org.citopt.connde.domain.user.Authority;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.web.rest.RestDeploymentController;
@@ -49,7 +50,8 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
         System.out.println("load RepositoryRestMvcConfiguration");
 
         config.setBasePath(BASE_PATH);
-        config.exposeIdsFor(Device.class, Adapter.class, MonitoringAdapter.class, Actuator.class, Sensor.class, User.class, Authority.class, ComponentType.class);
+        config.exposeIdsFor(Device.class, Adapter.class, MonitoringAdapter.class, Actuator.class, Sensor.class,
+                User.class, Authority.class, ComponentType.class, Rule.class, RuleTrigger.class, RuleAction.class);
     }
 
     /**
@@ -79,6 +81,18 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
         //Devices
         v.addValidator("beforeSave", new DeviceValidator());
         v.addValidator("beforeCreate", new DeviceValidator());
+
+        //Rules
+        v.addValidator("beforeSave", new RuleValidator());
+        v.addValidator("beforeCreate", new RuleValidator());
+
+        //Rule actions
+        v.addValidator("beforeSave", new RuleActionValidator());
+        v.addValidator("beforeCreate", new RuleActionValidator());
+
+        //Rule triggers
+        v.addValidator("beforeSave", new RuleTriggerValidator());
+        v.addValidator("beforeCreate", new RuleTriggerValidator());
     }
 
     /**
@@ -102,8 +116,7 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
                 String id = resource.getContent().getId();
                 //Link sensor with deployment
                 Link link = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.
-                        methodOn(RestDeploymentController.class).deploySensor(id, new ArrayList<ParameterInstance>() {
-                }))
+                        methodOn(RestDeploymentController.class).deploySensor(id))
                         .withRel("deploy");
                 resource.add(link);
                 return resource;
@@ -132,7 +145,7 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
                 String id = resource.getContent().getId();
                 //Link actuator with deployment
                 Link link = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.
-                        methodOn(RestDeploymentController.class).deployActuator(id, new ArrayList<ParameterInstance>()))
+                        methodOn(RestDeploymentController.class).deployActuator(id))
                         .withRel("deploy");
                 resource.add(link);
                 return resource;

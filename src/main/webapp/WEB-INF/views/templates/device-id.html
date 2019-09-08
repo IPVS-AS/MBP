@@ -64,7 +64,7 @@
         <div class="card control-card">
             <div class="header">
                 <h2>
-                    Available monitoring adapters
+                    Available monitoring operators
                     <small>Options to enable and disable monitoring for this device.</small>
                 </h2>
             </div>
@@ -95,20 +95,20 @@
                                         <div ng-switch="parameter.type">
                                             <div ng-switch-when="Text">
                                                 <input class="form-control" type="text"
-                                                       ng-disabled="(adapter.state == 'DEPLOYED') || (adapter.state == 'LOADING')"
+                                                       ng-disabled="(adapter.state == 'RUNNING') || (adapter.state == 'LOADING')"
                                                        ng-required="parameter.mandatory"
                                                        ng-model="ctrl.parameterValues[$parent.$parent.$index][$index].value"/>
                                             </div>
                                             <div ng-switch-when="Number">
                                                 <input class="form-control" type="number"
-                                                       ng-disabled="(adapter.state == 'DEPLOYED') || (adapter.state == 'LOADING')"
+                                                       ng-disabled="(adapter.state == 'RUNNING') || (adapter.state == 'LOADING')"
                                                        ng-required="parameter.mandatory"
                                                        ng-model="ctrl.parameterValues[$parent.$parent.$index][$index].value"/>
                                             </div>
                                             <div class="switch" ng-switch-when="Switch">
                                                 <label>No
                                                     <input type="checkbox"
-                                                           ng-disabled="(adapter.state == 'DEPLOYED') || (adapter.state == 'LOADING')"
+                                                           ng-disabled="(adapter.state == 'RUNNING') || (adapter.state == 'LOADING')"
                                                            ng-model="ctrl.parameterValues[$parent.$parent.$index][$index].value">
                                                     <span class="lever"></span>Yes</label>
                                             </div>
@@ -142,8 +142,8 @@
                                 <div ng-switch-when="READY">
                                     <span class="label label-success">Ready</span>
                                 </div>
-                                <div ng-switch-when="DEPLOYED">
-                                    <span class="label label-info">Active</span>
+                                <div ng-switch-when="RUNNING">
+                                    <span class="label label-info">Running</span>
                                 </div>
                                 <div ng-switch-default>
                                     <span class="label label-default">Unknown</span>
@@ -155,7 +155,7 @@
                                 <label>
                                     <input type="checkbox" ng-model="adapter.enable"
                                            ng-change="adapter.onMonitoringToggle()"
-                                           ng-disabled="(adapter.state!='READY') && (adapter.state!='DEPLOYED')">
+                                           ng-disabled="(adapter.state!='READY') && (adapter.state!='RUNNING')">
                                     <span class="lever"></span>
                                 </label>
                             </div>
@@ -179,11 +179,17 @@
                     </h2>
                     <ul class="header-dropdown m-r--5">
                         <li>
-                            <a ng-click="adapter.historicalChartApi.updateChart(); adapter.valueLogStatsApi.updateStats();"
-                               class="clickable">
+                            <a class="clickable"
+                               ng-click="adapter.historicalChartApi.updateChart(); adapter.valueLogStatsApi.updateStats();">
                                 <i class="material-icons">refresh</i>
                             </a>
                         </li>
+                        <!--
+                        <li>
+                            <a class="clickable" ng-click="adapter.deleteValueLogs()">
+                                <i class="material-icons">delete</i>
+                            </a>
+                        </li>-->
                         <li>
                             <a class="clickable" data-toggle="collapse" data-target="#card-body-{{adapter.id}}">
                                 <i class="material-icons">keyboard_arrow_down</i>
@@ -204,18 +210,18 @@
                         </button>
                     </div>
                     <ul class="nav nav-tabs tab-nav-right" role="tablist">
-                        <li role="presentation" ng-show="adapter.state == 'DEPLOYED'">
+                        <li role="presentation" ng-show="adapter.state == 'RUNNING'">
                             <a data-target="#live-chart-{{adapter.id}}"
-                               ng-attr-data-toggle="{{adapter.state == 'DEPLOYED' ? 'tab' : '' }}">
+                               ng-attr-data-toggle="{{adapter.state == 'RUNNING' ? 'tab' : '' }}">
                                 <i class="material-icons" style="color: red;">live_tv</i>&nbsp;Live Chart
                             </a>
                         </li>
-                        <li role="presentation" class="active">
+                        <li role="presentation" class="active" ng-click="adapter.historicalChartApi.updateChart()">
                             <a data-target="#historical-chart-{{adapter.id}}" data-toggle="tab">
                                 <i class="material-icons">access_time</i>&nbsp;Historical Chart
                             </a>
                         </li>
-                        <li role="presentation">
+                        <li role="presentation" ng-click="adapter.valueLogStatsApi.updateStats()">
                             <a data-target="#value-stats-{{adapter.id}}" data-toggle="tab">
                                 <i class="material-icons">equalizer</i>&nbsp;Value Statistics
                             </a>

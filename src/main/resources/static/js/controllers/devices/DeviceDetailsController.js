@@ -57,6 +57,7 @@ app.controller('DeviceDetailsController',
                     adapter.loadingStats = createLoadingFunctions(compatibleAdapters[i].id, STATS_SELECTOR_PREFIX,
                         "Loading value statistics...");
                     adapter.onDisplayUnitChange = createOnDisplayUnitChangeFunction(compatibleAdapters[i].id);
+                    adapter.deleteValueLogs = createValueLogDeletionFunction(compatibleAdapters[i].id);
                 }
 
                 //Stores the parameters and their values as assigned by the user
@@ -97,7 +98,7 @@ app.controller('DeviceDetailsController',
                         return;
                     }
 
-                    return adapter.state == 'DEPLOYED';
+                    return adapter.state == 'RUNNING';
                 }
             }
 
@@ -218,7 +219,7 @@ app.controller('DeviceDetailsController',
                     //Perform server request and set state of the adapter object accordingly
                     MonitoringService.getMonitoringState(DEVICE_ID, adapter.id).then(function (response) {
                         adapter.state = response.data;
-                        adapter.enable = (adapter.state === "DEPLOYED");
+                        adapter.enable = (adapter.state === "RUNNING");
                     }, function (response) {
                         adapter.state = 'UNKNOWN';
                         NotificationService.notify("Could not retrieve monitoring state.", "error");
@@ -260,6 +261,62 @@ app.controller('DeviceDetailsController',
             }
 
             /**
+             * [Private]
+             * Returns a function that allows the deletion of all recorded value logs of the corresponding
+             * monitoring component after the user confirmed the decision.
+             *
+             * @param monitoringAdapterId The id of the affected monitoring adapter
+             * @returns {Function}
+             */
+            function createValueLogDeletionFunction(monitoringAdapterId) {
+                //Create function and return it
+                return function () {
+                    /**
+                     * Executes the deletion of the value logs by performing the server request.
+                     */
+                    function executeDeletion(adapter) {
+                        MonitoringService.deleteMonitoringValueLogs(DEVICE_ID, monitoringAdapterId)
+                            .then(function (response) {
+                                //Update historical chart and stats
+                                adapter.historicalChartApi.updateChart();
+                                adapter.valueLogStatsApi.updateStats();
+
+                                NotificationService.notify("Monitoring data was deleted successfully.", "success");
+                            }, function (response) {
+                                NotificationService.notify("Could not delete monitoring data.", "error");
+                            });
+                    }
+
+                    //Try to find an monitoring adapter with this id
+                    var adapter = getMonitoringAdapterById(monitoringAdapterId);
+                    if (adapter == null) {
+                        return;
+                    }
+
+                    //Ask the user to confirm the deletion
+                    return Swal.fire({
+                        title: 'Delete value data',
+                        type: 'warning',
+                        html: "Are you sure you want to delete all monitoring data that has been recorded so far " +
+                            "for this monitoring component? This action cannot be undone.",
+                        showCancelButton: true,
+                        confirmButtonText: 'Delete',
+                        confirmButtonClass: 'bg-red',
+                        focusConfirm: false,
+                        cancelButtonText: 'Cancel'
+                    }).then(function (result) {
+                        //Check if the user confirmed the deletion
+                        if (result.value) {
+                            executeDeletion(adapter);
+                        }
+                    });
+
+
+                };
+            }
+
+
+            /**
              * Returns the monitoring adapter object that corresponds to a certain adapter id, as
              * it is contained in the list of compatible adapters.
              *
@@ -294,7 +351,7 @@ app.controller('DeviceDetailsController',
                     for (var i in compatibleAdapters) {
                         var componentId = compatibleAdapters[i].id + "@" + DEVICE_ID;
                         compatibleAdapters[i].state = statesMap[componentId];
-                        compatibleAdapters[i].enable = (compatibleAdapters[i].state == "DEPLOYED");
+                        compatibleAdapters[i].enable = (compatibleAdapters[i].state == "RUNNING");
                     }
                 }, function (response) {
                     for (var i in compatibleAdapters) {
@@ -324,7 +381,7 @@ app.controller('DeviceDetailsController',
                             return;
                         }
                         //Notify user
-                        adapter.state = 'DEPLOYED';
+                        adapter.state = 'RUNNING';
                         adapter.enable = true;
                         NotificationService.notify('Monitoring enabled successfully.', 'success');
                     },
@@ -386,15 +443,16 @@ app.controller('DeviceDetailsController',
              */
             function retrieveMonitoringData(monitoringAdapterId, numberLogs, descending, unit) {
                 //Set default order
+                var order = 'asc';
+
+                //Check for user option
                 if (descending) {
-                    descending = 'desc';
-                } else {
-                    descending = 'asc'
+                    order = 'desc';
                 }
 
                 //Initialize parameters for the server request
                 var pageDetails = {
-                    sort: 'date,' + descending,
+                    sort: 'time,' + order,
                     size: numberLogs
                 };
 

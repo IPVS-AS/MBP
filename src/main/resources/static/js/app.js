@@ -111,8 +111,99 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
 
             // Model
             .when(viewPrefix + '/model', {
-                templateUrl: 'templates/model'
-                // controller: 'ModelController as vm',
+                templateUrl: 'templates/model',
+                controller: 'ModelController as vm',
+                resolve: {
+                    adapterList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('adapters');
+                    }]
+                }
+            })
+
+            //Rules list
+            .when(viewPrefix + '/rules', {
+                category: 'rules',
+                templateUrl: 'templates/rules',
+                controller: 'RuleListController as ctrl',
+                resolve: {
+                    ruleList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rules');
+                    }],
+                    addRule: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'rules');
+                    }],
+                    deleteRule: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'rules');
+                    }],
+                    ruleActionList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rule-actions');
+                    }],
+                    ruleTriggerList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rule-triggers');
+                    }]
+                }
+            })
+
+            //Rule actions list
+            .when(viewPrefix + '/rule-actions', {
+                category: 'rule-actions',
+                templateUrl: 'templates/rule-actions',
+                controller: 'RuleActionListController as ctrl',
+                resolve: {
+                    ruleActionList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rule-actions');
+                    }],
+                    ruleActionTypesList: ['RuleService', function (RuleService) {
+                        return RuleService.getRuleActionTypes().then(function (response) {
+                            return response.data || [];
+                        });
+                    }],
+                    actuatorList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('actuators');
+                    }],
+                    sensorList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('sensors');
+                    }],
+                    addRuleAction: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'rule-actions');
+                    }],
+                    deleteRuleAction: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'rule-actions');
+                    }]
+                }
+            })
+
+            //Rule triggers list
+            .when(viewPrefix + '/rule-triggers', {
+                category: 'rule-triggers',
+                templateUrl: 'templates/rule-triggers',
+                controller: 'RuleTriggerListController as ctrl',
+                resolve: {
+                    ruleTriggerList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rule-triggers');
+                    }],
+                    addRuleTrigger: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'rule-triggers');
+                    }],
+                    deleteRuleTrigger: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'rule-triggers');
+                    }],
+                    actuatorList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('actuators');
+                    }],
+                    sensorList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('sensors');
+                    }],
+                    monitoringComponentList: ['MonitoringService', function (MonitoringService) {
+                        return MonitoringService.getMonitoringComponents().then(function (response) {
+                            if (response.data) {
+                                return response.data;
+                            } else {
+                                return [];
+                            }
+                        });
+                    }]
+                }
             })
 
             // Actuator List and Register (includes Device List and Register)
@@ -389,22 +480,6 @@ app.run(['$rootScope', '$timeout', 'SessionService', '$location', '$cookieStore'
 
                 // set expert
                 $rootScope.expert = SessionService.isExpert();
-
-                // copied from admin.js
-                var loadAdminBSB = function () {
-                    $.AdminBSB.browser.activate();
-                    $.AdminBSB.leftSideBar.activate();
-                    //$.AdminBSB.navbar.activate();
-                    $.AdminBSB.dropdownMenu.activate();
-                    $.AdminBSB.input.activate();
-                    $.AdminBSB.select.activate();
-                    $.AdminBSB.search.activate();
-
-                    setTimeout(function () {
-                        $('.page-loader-wrapper').fadeOut();
-                    }, 50);
-                };
-                loadAdminBSB();
             });
         });
     }

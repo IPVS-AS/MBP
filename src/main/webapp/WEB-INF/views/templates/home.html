@@ -3,7 +3,7 @@
 		<div class="row clearfix">
 
 			<!-- MODELS COUNT -->
-			<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+			<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
 				<div class="info-box">
 					<div class="icon bg-blue">
 						<i class="material-icons">view_quilt</i>
@@ -17,7 +17,7 @@
 			</div>
 
 			<!-- DEVICES COUNT -->
-			<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+			<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
 				<div class="info-box">
 					<div class="icon bg-amber">
 						<i class="material-icons">devices</i>
@@ -31,7 +31,7 @@
 			</div>
 
 			<!-- ACTUATORS COUNT -->
-			<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+			<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
 				<div class="info-box">
 					<div class="icon bg-lime">
 						<i class="material-icons">wb_incandescent</i>
@@ -45,7 +45,7 @@
 			</div>
 
 			<!-- SENSORS COUNT -->
-			<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+			<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
 				<div class="info-box">
 					<div class="icon bg-yellow">
 						<i class="material-icons">settings_remote</i>
@@ -59,13 +59,13 @@
 			</div>
 
 			<!-- ADAPTERS COUNT -->
-			<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" ng-show="expert">
+			<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" ng-show="expert">
 				<div class="info-box">
 					<div class="icon bg-orange">
 						<i class="material-icons">description</i>
 					</div>
 					<div class="content">
-						<div class="text">Adapters</div>
+						<div class="text">Extraction/Control Operators</div>
 						<div class="number count-to" data-from="0" data-to="125"
 							data-speed="1000" data-fresh-interval="20">{{ctrl.countAdapters}}</div>
 					</div>
@@ -73,13 +73,13 @@
 			</div>
 
 			<!-- MONITORING ADAPTERS COUNT -->
-			<div class="col-lg-3 col-md-3 col-sm-6 col-xs-12" ng-show="expert">
+			<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12" ng-show="expert">
 				<div class="info-box">
 					<div class="icon bg-pink">
 						<i class="material-icons">timeline</i>
 					</div>
 					<div class="content">
-						<div class="text">Monitoring Adapters</div>
+						<div class="text">Monitoring Operators</div>
 						<div class="number count-to" data-from="0" data-to="125"
 							 data-speed="1000" data-fresh-interval="20">{{ctrl.countMonitoringAdapters}}</div>
 					</div>
@@ -89,16 +89,18 @@
 
 
 		<div class="jumbotron" style="background-color:white">
-			<h1>Welcome!</h1>
-			<p>The MPB is here to help you manage your IoT environments, you have:
-				<ul>
-					<li>{{ctrl.countDevices}} registered device(s)</li>
-					<li>{{ctrl.countSensors}} registered sensor(s)</li>
-					<li>{{ctrl.countActuators}} registered actuator(s)</li>
-				</ul>
-			</p>
+			<h2>Welcome!</h2>
+			<p>The MPB is here to help you manage your IoT environments!<br/></p>
+			<p>You can set up your IoT environment in five steps: </p>
+			<p> &ensp;Step 1 - <a href="view/expert"><span>Enter</span></a> the expert mode.</p>
+			<p> &ensp;Step 2 - <a href="view/adapters" target="_blank"><span>Create extraction/control operators</span></a> for your sensors and actuators.</p>
+			<p> &ensp;Step 3 - <a href="view/model" target="_blank"><span>Start modeling</span></a> your IoT environment with the MBP modeling tool.</p>
+			<p> &ensp;Step 4 - Register <i class="fas fa-share-square"></i> your modeled IoT environment.</p>
+			<p> &ensp;Step 5 - Deploy <i class="fas fa-cogs"></i> your modeled IoT environment.</p>
+			<p> Now you can access your <a href="view/devices" target="_blank"><span>devices</span></a>, <a href="view/sensors" target="_blank"><span>sensors</span></a> and <a href="view/actuators" target="_blank"><span>actuators!</span></a></p>
+								
 			<br/>
-				<p><a class="btn btn-primary btn-lg" href="https://github.com/IPVS-AS/MBP/wiki" role="button">Learn more about the MBP</a></p>
+			<p><a class="btn btn-primary btn-lg" href="https://github.com/IPVS-AS/MBP/wiki" target="_blank" role="button">Learn more about the MBP</a></p>
 		</div>
 		
 	</div>
