@@ -34,7 +34,17 @@ app.controller('AdapterListController',
 
             vm.dzMethods = {};
 
-            vm.parameters = [];
+            /**
+             * The device code parameter is necessary for every adapter.
+             * @type {{unit: string, name: string, type: string, mandatory: boolean}}
+             */
+            var deviceCodeParameter = {
+                name: "device_code",
+                type: "Text",
+                unit: "",
+                mandatory: true
+            };
+            vm.parameters = [deviceCodeParameter];
             vm.parameterTypes = parameterTypesList;
 
             /**
@@ -53,20 +63,6 @@ app.controller('AdapterListController',
                     }
                 }
             })();
-
-            function getDeviceKey() {
-                fetch('http://localhost:8080/MBP/oauth/authorize?client_id=test-client&response_type=code&scope=read', {
-                    headers: {
-                        //TODO basic authentication with username/password
-                        'Authorization': 'Basic YWRtaW46YWRtaW4='
-                    }
-                }).then(function (response) {
-                    console.log("Response from OAuth Authorization Server: ");
-                    console.log(response);
-                    var chars = response.url.split('?');
-                    $scope.deviceCode = chars[1];
-                });
-            }
 
             //public
             function addParameter() {
@@ -153,7 +149,6 @@ app.controller('AdapterListController',
             angular.extend(vm, {
                 addParameter: addParameter,
                 deleteParameter: deleteParameter,
-                getDeviceKey: getDeviceKey,
                 adapterListCtrl: $controller('ItemListController as adapterListCtrl',
                     {
                         $scope: $scope,

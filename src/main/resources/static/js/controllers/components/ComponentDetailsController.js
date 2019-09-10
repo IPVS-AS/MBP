@@ -465,6 +465,11 @@ app.controller('ComponentDetailsController',
                     if (requiredParams[i].type == "Switch") {
                         value = false;
                     }
+                    if (requiredParams[i].name == "device_code") {
+                        console.log("Requesting code for required parameter device_code.");
+                        value = getDeviceCode();
+                        continue;
+                    }
 
                     //For each parameter, add a tuple (name, value) to the globally accessible parameter array
                     vm.parameterValues.push({
@@ -472,6 +477,25 @@ app.controller('ComponentDetailsController',
                         "value": value
                     });
                 }
+            }
+
+            /**
+             * Retrieve authorization code for the device from the OAuth Authorization server.
+             */
+            function getDeviceCode() {
+                fetch('http://localhost:8080/MBP/oauth/authorize?client_id=test-client&response_type=code&scope=read', {
+                    headers: {
+                        //TODO basic authentication with username/password
+                        'Authorization': 'Basic YWRtaW46YWRtaW4='
+                    }
+                }).then(function (response) {
+                    let chars = response.url.split('?');
+                    let code = chars[1].split('=');
+                    vm.parameterValues.push({
+                        "name": "device_code",
+                        "value": code[1]
+                    });
+                });
             }
 
             /**
