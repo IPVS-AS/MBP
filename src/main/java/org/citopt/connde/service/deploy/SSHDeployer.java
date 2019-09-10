@@ -1,5 +1,12 @@
 package org.citopt.connde.service.deploy;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.Code;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
@@ -16,13 +23,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This component provides features for deploying components onto a remote device. Furthermore it is possible
@@ -199,6 +199,7 @@ public class SSHDeployer {
 
         //Execute start script with parameters
         sshSession.executeShellScript(deploymentPath + "/" + START_SCRIPT_NAME, deploymentPath, jsonString);
+        LOGGER.log(Level.FINE, "JsonString: " + jsonString);
 
         LOGGER.log(Level.FINE, "Start was successful");
     }
