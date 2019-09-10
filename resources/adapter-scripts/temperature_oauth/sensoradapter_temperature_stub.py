@@ -14,7 +14,7 @@ import oauth2_token_manager
 # MQTT Client
 ############################
 class mqttClient(object):
-   hostname = 'localhost'
+   hostname = '192.168.209.207'
    port = 1883
    
    # Enter client id here:
@@ -65,7 +65,7 @@ class mqttClient(object):
 ############################
 def main(argv):
 
-   hostname = 'localhost'
+   hostname = '192.168.209.207'
    topic_pub = 'test'
    paramArray = json.loads(argv[0])
    
