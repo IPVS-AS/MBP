@@ -37,14 +37,15 @@ public class RestOAuthController {
 	}
 
 	@RequestMapping(value = "/checkOauthTokenUser", method = RequestMethod.POST)
-	public HttpStatus checkOauthTokenUser(@RequestHeader("Authorization") String authorizationHeader) {
-			RestTemplate restTemplate = new RestTemplate();
-			ResponseEntity<Json> response = restTemplate.getForEntity("http://192.168.209.207:8080/MBP/oauth/check_token?token="+getBearerTokenFromAuthHeader(authorizationHeader), Json.class);
-			if (response.getStatusCode().equals(HttpStatus.OK)) {
-				LOGGER.log(Level.INFO, "CHECK OAUTH TOKEN FOR USER RETURNED OK ################");
-				return HttpStatus.OK;
-			}
-			return HttpStatus.FORBIDDEN;
+	public HttpStatus checkOauthTokenUser(@RequestHeader("authorization") String authorizationHeader) {
+		LOGGER.log(Level.INFO, "############################### Authorization header looks like: " + authorizationHeader);
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<Json> response = restTemplate.getForEntity("http://192.168.209.207:8080/MBP/oauth/check_token?token=" + getBearerTokenFromAuthHeader(authorizationHeader), Json.class);
+		if (response.getStatusCode().equals(HttpStatus.OK)) {
+			LOGGER.log(Level.INFO, "CHECK OAUTH TOKEN FOR USER RETURNED OK ################");
+			return HttpStatus.OK;
+		}
+		return HttpStatus.FORBIDDEN;
 	}
 
 	@RequestMapping(value = "/checkOauthTokenSuperuser", method = RequestMethod.POST)
