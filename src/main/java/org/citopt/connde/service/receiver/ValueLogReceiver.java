@@ -1,5 +1,9 @@
 package org.citopt.connde.service.receiver;
 
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.citopt.connde.service.settings.SettingsService;
 import org.citopt.connde.service.settings.model.BrokerLocation;
 import org.citopt.connde.service.settings.model.Settings;
@@ -9,10 +13,6 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Background service that receives incoming MQTT value log messages of that comply to certain topics. The service
@@ -126,6 +126,8 @@ public class ValueLogReceiver {
 
         //Create new mqtt client with the full broker URL
         mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
+
+        //TODO Oauth Token for MBP
 
         //Connect and subscribe to the topics
         mqttClient.connect();
