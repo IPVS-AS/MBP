@@ -25,7 +25,7 @@ public class OAuth2ResourceServerConfiguration extends ResourceServerConfigurerA
 	public void configure(HttpSecurity http) throws Exception {
 		http
 				.anonymous().disable()
-				.requestMatchers().antMatchers("/api/testOauth").antMatchers("/api/verifyPermission")
+				.requestMatchers().antMatchers("/api/testOauth")
 				.and()
 				.authorizeRequests()
 				.antMatchers("/api/testOauth").access("hasRole('CLIENT')");

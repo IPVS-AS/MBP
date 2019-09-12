@@ -38,7 +38,6 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        // TODO add support JWT
         clients.inMemory()
                 .withClient("test-client")
                 .secret("test")
@@ -53,7 +52,8 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-        security.tokenKeyAccess("permitAll()").checkTokenAccess("isAuthenticated()");
+    	//TODO basic http auth for checkTokenAccess (-> also in RestOauthController)
+        security.tokenKeyAccess("permitAll()").checkTokenAccess("permitAll()");
     }
 
     @Override
@@ -68,7 +68,6 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
 
     @Bean
     public TokenStore tokenStore() {
-        System.out.println("Called !!!!!!!!!!!!!!");
         return new JwtTokenStore(accessTokenConverter());
     }
 

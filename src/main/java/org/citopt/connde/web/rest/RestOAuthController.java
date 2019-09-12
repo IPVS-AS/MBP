@@ -1,14 +1,22 @@
 package org.citopt.connde.web.rest;
 
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.json.Json;
+
+import org.apache.commons.codec.binary.Base64;
 import org.citopt.connde.RestConfiguration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 
@@ -20,16 +28,6 @@ public class RestOAuthController {
 
 	@RequestMapping(value = "/getAccessCode", method = RequestMethod.GET)
 	public String getDeviceCode(@RequestParam("code") String code) {
-		/*
-		System.out.println("Device Code is " + code);
-		JSONObject jsonObject;
-		try {
-			jsonObject = new JSONObject().put("code", code);
-			return new ResponseEntity<>(jsonObject, HttpStatus.OK);
-		} catch (JSONException e) {
-			e.printStackTrace();
-			return new ResponseEntity<>(new JSONObject(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}*/
 		return code;
 	}
 
@@ -38,9 +36,44 @@ public class RestOAuthController {
 		return randomNumeric(4);
 	}
 
-	@RequestMapping(value = "/verifyPermission", method = RequestMethod.POST)
-	public HttpStatus verifyPermission() {
-		LOGGER.log(Level.INFO, "VERIFY PERMISSION WAS OK ################");
-		return HttpStatus.OK;
+	@RequestMapping(value = "/checkOauthTokenUser", method = RequestMethod.POST)
+	public HttpStatus checkOauthTokenUser(@RequestHeader("Authorization") String authorizationHeader) {
+			RestTemplate restTemplate = new RestTemplate();
+			ResponseEntity<Json> response = restTemplate.getForEntity("http://localhost:8080/MBP/oauth/check_token?token="+getBearerTokenFromAuthHeader(authorizationHeader), Json.class);
+			if (response.getStatusCode().equals(HttpStatus.OK)) {
+				LOGGER.log(Level.INFO, "CHECK OAUTH TOKEN FOR USER RETURNED OK ################");
+				return HttpStatus.OK;
+			}
+			return HttpStatus.FORBIDDEN;
+	}
+
+	@RequestMapping(value = "/checkOauthTokenSuperuser", method = RequestMethod.POST)
+	public HttpStatus checkOauthTokenSuperuser(@RequestHeader("Authorization") String authorizationHeader) {
+		LOGGER.log(Level.INFO, "CHECK OAUTH TOKEN FOR SUPERUSER RETURNED 403 ################");
+		return HttpStatus.FORBIDDEN;
+	}
+
+	@RequestMapping(value = "/checkOauthTokenAcl", method = RequestMethod.POST)
+	public HttpStatus checkOauthTokenAcl(@RequestHeader("Authorization") String authorizationHeader) {
+		LOGGER.log(Level.INFO, "CHECK OAUTH TOKEN FOR ACL RETURNED 403 ################");
+		return HttpStatus.FORBIDDEN;
+	}
+
+	private String getBearerTokenFromAuthHeader(String authorizationHeader) {
+		if (!authorizationHeader.isEmpty() && authorizationHeader.startsWith("Bearer")) {
+			String[] authorizationHeaderSplit = authorizationHeader.split(" ");
+			return authorizationHeaderSplit[1];
+		}
+		return null;
+	}
+
+	private HttpHeaders createHeaders(String username, String password) {
+		return new HttpHeaders() {{
+			String auth = username + ":" + password;
+			byte[] encodedAuth = Base64.encodeBase64(
+					auth.getBytes(StandardCharsets.US_ASCII));
+			String authHeader = "Basic " + new String(encodedAuth);
+			set("Authorization", authHeader);
+		}};
 	}
 }
