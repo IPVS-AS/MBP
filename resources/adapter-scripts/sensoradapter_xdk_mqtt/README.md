@@ -9,7 +9,7 @@ The following parameters need to be provided on deployment:
 
 The following files are provided in this folder:
  
- - `XDK_MQTT.zip`: This file contains the Http Protocol Project which should be import to XDK.
+ - `XDK_MQTT.zip`: This file contains the MQTT Protocol Project which should be import to XDK.
  
  - `sensoradapter_xdk_mqtt.py`: This file contains a MQTT client, which publishes XDK sensor values to a configured topic on MBP Broker received through a topic which the script subscribes on the localhost to receive the json containing all the sensors enabled and its values on the XDK device
 
