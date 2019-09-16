@@ -17,7 +17,7 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
         //URL suffix under which the deployment state of a certain component can be retrieved
         const URL_GET_COMPONENT_STATE_SUFFIX = '/state/';
         //URL suffix under which the deployment state of a certain component can be retrieved
-        const URL_GET_VALUE_LOG_STATS_SUFFIX = '/stats/';
+        const URL_GET_VALUE_LOG_STATS_SUFFIX = '/stats';
         //URL suffix under which the value logs of a certain component can be retrieved
         const URL_VALUE_LOGS_SUFFIX = '/valueLogs';
 
@@ -92,7 +92,7 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
             }
 
             //Execute request
-            return $http.get(URL_PREFIX + component + URL_GET_VALUE_LOG_STATS_SUFFIX + componentId, {
+            return $http.get(URL_PREFIX + component + '/' + componentId + URL_GET_VALUE_LOG_STATS_SUFFIX, {
                 params: parameters
             });
         }
