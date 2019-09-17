@@ -142,7 +142,7 @@ public class ValueLogReceiver {
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders httpHeaders = createHeaders("mbp", "mbp-platform");
 		HttpEntity<String> request = new HttpEntity<>(httpHeaders);
-		String url = "http://localhost:8080/MBP/oauth/token?grant_type=client_credentials";
+		String url = "http://192.168.209.207:8080/MBP/oauth/token?grant_type=client_credentials";
 		ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
 		String accessToken = null;
 		System.out.println("###### response " + response.getBody());
