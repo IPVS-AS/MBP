@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -50,7 +51,7 @@ public class RestDeviceController {
 
     @GetMapping("/devices/{deviceId}")
     @ApiOperation(value = "Returns a device entity", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Device not found or not authorized")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Device not found or not authorized to access this device")})
     public ResponseEntity<Resource<Device>> one(@PathVariable @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId) {
         //Get device from repository by id
         UserEntity entity = userService.getUserEntityFromRepository(deviceRepository, deviceId);
@@ -124,19 +125,66 @@ public class RestDeviceController {
 
     @DeleteMapping("/devices/{deviceId}")
     @ApiOperation(value = "Deletes a device entity", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Device not found or not authorized")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to delete this device"), @ApiResponse(code = 404, message = "Device not found or not authorized to access this device")})
     public ResponseEntity<Void> delete(@PathVariable @ApiParam(value = "ID of the device to delete", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId) {
         //Get device from repository by id
         UserEntity entity = userService.getUserEntityFromRepository(deviceRepository, deviceId);
 
-        //Check if entity oould be found
+        //Check if entity could be found
         if (entity == null) {
             return ResponseEntity.notFound().build();
+        }
+
+        //Check if current user is allowed to delete the device
+        User user = userService.getUserWithAuthorities();
+        if (!(user.isAdmin() || entity.isUserOwner(user))) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
         //Delete device
         deviceRepository.delete(deviceId);
 
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/devices/{deviceId}/approve")
+    @ApiOperation(value = "Approves an user for a device entity", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User is already approved for this device"), @ApiResponse(code = 403, message = "Not authorized to approve an user for this device"), @ApiResponse(code = 404, message = "Device not found or not authorized to access this device")})
+    public ResponseEntity<Void> approveUser(@PathVariable @ApiParam(value = "ID of the device to approve a user for", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId, @RequestBody @ApiParam(value = "Name of the user to approve", example = "johndoe", required = true) String username) {
+        //Get device from repository by id
+        Device entity = (Device) userService.getUserEntityFromRepository(deviceRepository, deviceId);
+
+        //Check if entity could be found
+        if (entity == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Check if current user is allowed to approve an user for this device
+        User user = userService.getUserWithAuthorities();
+        if (!(user.isAdmin() || entity.isUserOwner(user))) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        //Get user by username
+        Optional<User> userOptional = userService.getUserWithAuthoritiesByUsername(username);
+
+        //Check if user could be found
+        if (!userOptional.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Get user from optional
+        User candidateUser = userOptional.get();
+
+        //Check if user is already approved
+        if (entity.isUserApproved(candidateUser)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        //Approve user
+        entity.approveUser(candidateUser);
+        deviceRepository.save(entity);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
