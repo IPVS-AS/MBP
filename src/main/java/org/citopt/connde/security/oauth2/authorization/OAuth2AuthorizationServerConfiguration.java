@@ -38,6 +38,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+        //TODO real client ids
         clients.inMemory()
                 .withClient("test-client")
                 .secret("test")
@@ -45,9 +46,18 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .scopes("read")
                 .authorities("CLIENT")
                 .autoApprove(true)
-                .accessTokenValiditySeconds(600)
-                .refreshTokenValiditySeconds(3600)
-                .redirectUris("http://localhost:8080/MBP/api/getAccessCode");
+                .accessTokenValiditySeconds(3600)
+                .refreshTokenValiditySeconds(2592000)
+                .redirectUris("http://192.168.209.207:8080/MBP/api/getAccessCode")
+                .and()
+                .withClient("mbp")
+                .secret("mbp-platform")
+                .authorizedGrantTypes("client_credentials", "refresh_token")
+                .scopes("read")
+                .authorities("CLIENT")
+                .autoApprove(true)
+                .accessTokenValiditySeconds(3600)       // 1 hour
+                .refreshTokenValiditySeconds(2592000);
     }
 
     @Override
