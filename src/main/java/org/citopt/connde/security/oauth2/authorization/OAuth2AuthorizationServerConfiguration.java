@@ -2,8 +2,10 @@ package org.citopt.connde.security.oauth2.authorization;
 
 import java.util.Arrays;
 
+import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.security.RestAuthenticationEntryPoint;
 import org.citopt.connde.service.UserDetailsServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,16 +26,22 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @EnableAuthorizationServer
 public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
+    @Autowired
+    SensorRepository sensorRepository;
+
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationManager authenticationManager;
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    private final ClientUserDetailsServiceImpl clientUserDetailsService;
 
     public OAuth2AuthorizationServerConfiguration(@Qualifier("authenticationManagerBean") AuthenticationManager authenticationManager,
                                                   @Qualifier("restAuthenticationEntryPoint") RestAuthenticationEntryPoint restAuthenticationEntryPoint,
-                                                  @Qualifier("mongoUserDetails") UserDetailsServiceImpl userDetailsService) {
+                                                  @Qualifier("mongoUserDetails") UserDetailsServiceImpl userDetailsService,
+                                                  @Qualifier("clientUserDetailsService") ClientUserDetailsServiceImpl clientUserDetailsService) {
         this.authenticationManager = authenticationManager;
         this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
         this.userDetailsService = userDetailsService;
+        this.clientUserDetailsService = clientUserDetailsService;
     }
 
     @Override
@@ -43,12 +51,12 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .withClient("test-client")
                 .secret("test")
                 .authorizedGrantTypes("authorization_code", "refresh_token")
-                .scopes("read")
+                .scopes("write")
                 .authorities("CLIENT")
                 .autoApprove(true)
-                .accessTokenValiditySeconds(3600)
-                .refreshTokenValiditySeconds(2592000)
-                .redirectUris("http://192.168.209.207:8080/MBP/api/getAccessCode")
+                .accessTokenValiditySeconds(3600) // 1 hour
+                .refreshTokenValiditySeconds(2592000) // 30 days
+                .redirectUris("http://localhost:8080/MBP/api/getAccessCode")
                 .and()
                 .withClient("mbp")
                 .secret("mbp-platform")
@@ -57,7 +65,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .authorities("CLIENT")
                 .autoApprove(true)
                 .accessTokenValiditySeconds(3600)       // 1 hour
-                .refreshTokenValiditySeconds(2592000);
+                .refreshTokenValiditySeconds(2592000); // 30 days
     }
 
     @Override
@@ -73,7 +81,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
         endpoints
                 .tokenStore(tokenStore())
                 .accessTokenConverter(accessTokenConverter())
-                .authenticationManager(authenticationManager);
+                .authenticationManager(authenticationManager).userDetailsService(clientUserDetailsService);
     }
 
     @Bean

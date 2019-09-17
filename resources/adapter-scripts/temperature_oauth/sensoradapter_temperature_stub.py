@@ -33,7 +33,8 @@ class mqttClient(object):
 
       # create MQTT client and set user name and password 
       self.client = mqtt.Client(client_id=self.clientid, clean_session=True, userdata=None, protocol=mqtt.MQTTv31)
-      self.username = oauth2_token_manager.get_access_token(self.client_id, self.client_secret, self.authorization_code)
+      access_token, refresh_token = oauth2_token_manager.get_access_token(self.client_id, self.client_secret, self.authorization_code)
+      self.username = access_token
       #print(self.username)
       self.client.username_pw_set(username=self.username, password="any")
 
@@ -66,7 +67,7 @@ class mqttClient(object):
 def main(argv):
 
    hostname = '192.168.209.207'
-   topic_pub = 'test'
+   topic_pub = 'sensor/test'
    paramArray = json.loads(argv[0])
    
    # Read device_code from parameters
@@ -76,6 +77,37 @@ def main(argv):
       elif param["name"] == "device_code":
          device_code = param["value"]
          print (device_code)
+
+   configFileName = "connections.txt"
+   topics = []
+   brokerIps = []
+   configExists = False
+
+   configFile = os.path.join(os.getcwd(), configFileName)
+
+   while (not configExists):
+       configExists = os.path.exists(configFile)
+       time.sleep(1)
+
+   # BEGIN parsing file
+   fileObject = open (configFile)
+   fileLines = fileObject.readlines()
+   fileObject.close()
+
+   for line in fileLines:
+       pars = line.split('=')
+       topic = pars[0].strip('\n').strip()
+       ip = pars[1].strip('\n').strip()
+       topics.append(topic)
+       brokerIps.append(ip)
+
+   # END parsing file
+
+   hostname = brokerIps [0]
+   topic_pub = topics [0]
+   topic_splitted = topic_pub.split('/')
+   component = topic_splitted [0]
+   component_id = topic_splitted [1]
    
    print("Connecting to: " + hostname + " pub on topic: " + topic_pub)
    
@@ -90,7 +122,7 @@ def main(argv):
          # send message, topic: temperature
          t = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
          outputValue = random.choice([20.0, 20.5, 21.0, 22.0, 22.5, 25.5, 30.0, 30.1, 31.5, 29.9, 35.0])
-         msg_pub = {"component": "tempSensor", "id": "112244", "value": "%f" % (outputValue) }
+         msg_pub = {"component": component.upper(), "id": component_id, "value": "%f" % (outputValue) }
          publisher.sendMessage (topic_pub, json.dumps(msg_pub))
          #publisher.sendMessage (topic_pub, "42")
 

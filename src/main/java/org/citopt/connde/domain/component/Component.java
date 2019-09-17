@@ -1,85 +1,95 @@
 package org.citopt.connde.domain.component;
 
 import javax.persistence.GeneratedValue;
-import org.citopt.connde.domain.device.Device;
+
 import org.citopt.connde.domain.adapter.Adapter;
+import org.citopt.connde.domain.device.Device;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Reference;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- *
  * @author rafaelkperes
  */
 @Document
 public abstract class Component {
-    
-    @Id
-    @GeneratedValue
-    private String id;
 
-    @Indexed(unique = true)
-    private String name;
-    
-    @Indexed
-    private String componentType;
+	@Id
+	@GeneratedValue
+	private String id;
 
-    @DBRef
-    private Adapter adapter;
+	@Indexed(unique = true)
+	private String name;
 
-    @DBRef
-    private Device device;
+	@Indexed
+	private String secret;
 
-    public String getId() {
-        return id;
-    }
+	@Indexed
+	private String componentType;
 
-    public void setId(String id) {
-        this.id = id;
-    }
+	@DBRef
+	private Adapter adapter;
 
-    public String getName() {
-        return name;
-    }
+	@DBRef
+	private Device device;
 
-    public void setName(String name) {
-        this.name = name;
-    }
-    
-    public String getComponentType() {
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getComponentType() {
 		return componentType;
 	}
 
 	public void setComponentType(String componentType) {
 		this.componentType = componentType;
 	}
-    
-    public Adapter getAdapter() {
-        return adapter;
-    }
 
-    public void setAdapter(Adapter adapter) {
-        this.adapter = adapter;
-    }
+	public Adapter getAdapter() {
+		return adapter;
+	}
 
-    public Device getDevice() {
-        return device;
-    }
+	public void setAdapter(Adapter adapter) {
+		this.adapter = adapter;
+	}
 
-    public void setDevice(Device address) {
-        this.device = address;
-    }
+	public Device getDevice() {
+		return device;
+	}
 
-    public String getTopicName(){
-        return getComponentTypeName() + "/" + id;
-    }
+	public void setDevice(Device address) {
+		this.device = address;
+	}
 
-    public abstract String getComponentTypeName();
+	public String getTopicName() {
+		return getComponentTypeName() + "/" + id;
+	}
 
-    @Override
-    public String toString() {
-        return "Component{" + "id=" + id + ", name=" + name + ", type=" + adapter + '}';
-    }
+	public abstract String getComponentTypeName();
+
+	@Override
+	public String toString() {
+		return "Component{" + "id=" + id + ", name=" + name + ", type=" + adapter + '}';
+	}
+
+	public String getSecret() {
+		return secret;
+	}
+
+	public void setSecret(String secret) {
+		this.secret = secret;
+	}
 }

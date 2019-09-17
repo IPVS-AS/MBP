@@ -2,7 +2,7 @@
 
 'use strict';
 
-app.controller('AddItemController', ['addItem', 'NotificationService', function (addItem, getDeviceKey, NotificationService) {
+app.controller('AddItemController', ['addItem', 'NotificationService', function (addItem, NotificationService) {
         var vm = this;
 
         // public

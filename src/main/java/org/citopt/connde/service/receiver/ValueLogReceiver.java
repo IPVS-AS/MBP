@@ -64,7 +64,6 @@ public class ValueLogReceiver {
 
 	@EventListener({ContextStartedEvent.class, ApplicationReadyEvent.class})
 	public void initMqtt() {
-		System.out.println("Application is ready !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		//Setup the mqtt client
 		try {
 			setupAndStart();
@@ -142,14 +141,13 @@ public class ValueLogReceiver {
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders httpHeaders = createHeaders("mbp", "mbp-platform");
 		HttpEntity<String> request = new HttpEntity<>(httpHeaders);
+		// TODO adjust address
 		String url = "http://192.168.209.207:8080/MBP/oauth/token?grant_type=client_credentials";
 		ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
 		String accessToken = null;
-		System.out.println("###### response " + response.getBody());
 		try {
 			JSONObject body = new JSONObject(response.getBody().toString());
 			accessToken = body.getString("access_token");
-			System.out.println("############## Token: " + accessToken);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -158,7 +156,7 @@ public class ValueLogReceiver {
 		mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
 		MqttConnectOptions connectOptions = new MqttConnectOptions();
 		connectOptions.setCleanSession(true);
-        connectOptions.setUserName(accessToken);
+		connectOptions.setUserName(accessToken);
 		connectOptions.setPassword("any".toCharArray());
 
 		//Connect and subscribe to the topics
@@ -170,6 +168,13 @@ public class ValueLogReceiver {
 		mqttClient.setCallback(callback);
 	}
 
+	/**
+	 * Create a header for basic http authentication (base64 encoded).
+	 *
+	 * @param username is the name of the OAuth client
+	 * @param password is the secrect of the OAuth client
+	 * @return an instance of {@link HttpHeaders}
+	 */
 	private HttpHeaders createHeaders(String username, String password) {
 		return new HttpHeaders() {{
 			String auth = username + ":" + password;

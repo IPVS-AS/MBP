@@ -2,6 +2,7 @@ package org.citopt.connde;
 
 import org.citopt.connde.constants.Constants;
 import org.citopt.connde.security.RestAuthenticationEntryPoint;
+import org.citopt.connde.security.oauth2.authorization.ClientUserDetailsServiceImpl;
 import org.citopt.connde.service.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,6 +47,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
+    public ClientUserDetailsServiceImpl clientUserDetailsService() {
+        return new ClientUserDetailsServiceImpl();
+    }
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -54,6 +60,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         //auth.userDetailsService(mongoUserDetails()).passwordEncoder(passwordEncoder());
         auth.inMemoryAuthentication()
+                .withUser("test-client").password("test").roles("CLIENT")
+                .and()
                 .withUser("admin").password("admin").authorities("ROLE_ADMIN").roles("CLIENT");
     }
 

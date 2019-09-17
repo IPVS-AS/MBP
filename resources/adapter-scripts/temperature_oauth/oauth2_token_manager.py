@@ -11,5 +11,10 @@ token_url = 'http://localhost:8080/MBP/oauth/token'
 def get_access_token(client_id, client_secret, authorization_code):
     oauth = OAuth2Session(client_id)
     token = oauth.fetch_token(token_url, code=authorization_code, client_secret=client_secret, method='POST')
+    print(token["refresh_token"])
     print(token["access_token"])
-    return token["access_token"]
+    return token["access_token"], token["refresh_token"]
+
+def get_access_token_with_refresh_token(client_id, client_secret, refresh_token):
+    oauth = OAuth2Session(client_id)
+    token = oauth.fetch_token
