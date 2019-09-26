@@ -77,9 +77,18 @@ class Bluepy(DefaultDelegate):
       self._ch_read = None
       self._ch_write = None
 
+      self.selectedSensor = None
+      self.deviceId = None
+
       self.lastValue = {}
       self.lastValue['value'] = 0
-      self.lastValue['datetime'] = "placeholder"
+      self.lastValue['datetime'] = "oi"
+
+   def setSensor(self, sensor):
+      self.selectedSensor = sensor
+   
+   def setDeviceId(self, id):
+      self.deviceId = id
 
    def reset(self):
       self._peripheral = None
@@ -104,13 +113,10 @@ class Bluepy(DefaultDelegate):
 
    def findXDKAddress(self):
       for dev in self._devicesScanned:
-         if dev['name'].startswith( 'XDK' ):
+         if (dev['name'].startswith(self.deviceId) or dev['id'].startswith(self.deviceId)):
             self._peripheral_address = dev['id']
 
       return self._peripheral_address
-
-   def setXDKAddress(self, xdk_mac):
-      self._peripheral_address = xdk_mac
 
    def handleNotification(self, cHandle, data):
 
@@ -167,12 +173,30 @@ class Bluepy(DefaultDelegate):
 
    def enableSensor(self):
       print ("Turning sensor on...\n")
-      self._ch_write.write(b'\x31')
+      self._ch_write.write(b'\x73\x74\x61\x72\x74')
+      time.sleep(1.0)
+
+      if(self.selectedSensor == "temperature"):
+         self._ch_write.write(b'\x74\x65\x6d\x70\x65\x72\x61\x74\x75\x72\x65')
+
+      elif(self.selectedSensor == "light"):
+         self._ch_write.write(b'\x6c\x69\x67\x68\x74')
+
+      elif(self.selectedSensor == "humidity"):
+         self._ch_write.write(b'\x68\x75\x6d\x69\x64\x69\x74\x79')
+
+      elif(self.selectedSensor == "pressure"):
+         self._ch_write.write(b'\x70\x72\x65\x73\x73\x75\x72\x65')
+
+      elif(self.selectedSensor == "noise"):
+         self._ch_write.write(b'\x6e\x6f\x69\x73\x65')
+
+
       time.sleep(1.0)
 
    def disableSensor(self):
       print ("Turning sensor off...\n")
-      self._ch_write.write(b'\x30')
+      self._ch_write.write(b'\x73\x74\x6f\x70')
       time.sleep(1.0)
 
    def disconnect(self):
@@ -195,9 +219,9 @@ class Bluepy(DefaultDelegate):
    def BluetoothFlow(self):
 
       self.scan(3)
-      #time.sleep(3.0)
 
       xdk_address = self.findXDKAddress()
+
       print ("\nXDK MAC: "+ xdk_address)
 
       disconnectCounter = 0
@@ -236,24 +260,26 @@ class Bluepy(DefaultDelegate):
 
    def getLastValue(self):
       return (self.lastValue)
-      
+        
 ############################
 # MAIN
 ############################
 def main(argv):
 
    xdk = Bluepy()
-   
-   paramArray = json.loads(argv[0])
-   for param in paramArray:
-      if not ('name' in param and 'value' in param):
-         continue
-      elif param["name"] == "mac":
-         setXDKAddress(param["value"])
 
    bluepy_thread = Thread(target=xdk.BluetoothFlow)
    bluepy_thread.name = "BluetoothFlow"
    bluepy_thread.daemon = True
+
+   paramArray = json.loads(argv[0])
+   for param in paramArray:
+      if not ('name' in param and 'value' in param):
+            continue
+      elif param["name"] == "sensor":
+         xdk.setSensor(param["value"])
+      elif param["name"] == "id":
+         xdk.setDeviceId(param["value"])
 
    bluepy_thread.start()
 
@@ -262,7 +288,7 @@ def main(argv):
 
    lastValueSent = {}
    lastValueSent['value'] = 0
-   lastValueSent['datetime'] = "placeholder"
+   lastValueSent['datetime'] = "ioi"
 
    configFileName = "connections.txt"
    topics = []
