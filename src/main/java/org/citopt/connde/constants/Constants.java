@@ -18,7 +18,7 @@ public final class Constants {
     public static final String[][] componentTypes = { 
 									{ "Raspberry Pi", "DEVICE" },
 									{ "Arduino", "DEVICE" },
-	    							{ "Computer", "DEVICE" },
+	    								{ "Computer", "DEVICE" },
 									{ "Audio System", "DEVICE" },
 									{ "Camera", "DEVICE" },
 									{ "Gateway", "DEVICE" },
@@ -38,6 +38,7 @@ public final class Constants {
 									{ "Humidity", "SENSOR" },
 									{ "Vibration", "SENSOR" },
 									{ "Gyroscope", "SENSOR" },
+	    								{ "Pressure", "SENSOR" },
 									{ "Proximity", "SENSOR" },
 									{ "Light", "SENSOR" },
 									{ "Buzzer", "ACTUATOR" },
