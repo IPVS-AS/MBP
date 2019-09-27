@@ -24,6 +24,7 @@ class mqttClient(object):
 
    lastValue = 0
    sensor = ""
+   topic = ""
 
    def __init__(self, hostname, port, clientid):
       self.hostname = hostname
@@ -40,6 +41,9 @@ class mqttClient(object):
 
    def setSensor(self, sensor):
       self.sensor = sensor
+
+   def setTopic(self, id):
+      self.topic = "XDK/" + id
 
    def getSensor(self):
       return self.sensor
@@ -75,10 +79,10 @@ class mqttClient(object):
       #Call loop_stop() to stop the background thread.
       self.client.loop_start()
 
-   def startSubscriber(self, topic):
+   def startSubscriber(self):
       #self.client.connect(self.hostname, self.port, 60)
       self.client.connect(self.hostname, self.port, 60)
-      self.client.subscribe(topic)
+      self.client.subscribe(self.topic)
 
       #runs a thread in the background to call loop() automatically.
       #This frees up the main thread for other work that may be blocking.
@@ -105,6 +109,8 @@ def main(argv):
           continue
       elif param["name"] == "sensor":
          subscriber.setSensor(param["value"]) 
+      elif param["name"] == "id":
+         subscriber.setTopic(param["value"]) 
 
    configFileName = "connections.txt"
    topics = []
@@ -137,7 +143,7 @@ def main(argv):
    component = topic_splitted [0]
    component_id = topic_splitted [1]
 
-   subscriber.startSubscriber("XDK/SENSOR")
+   subscriber.startSubscriber()
 
    time.sleep(5.0)
 
