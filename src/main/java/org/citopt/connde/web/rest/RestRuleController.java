@@ -52,9 +52,20 @@ public class RestRuleController {
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
+        //Remembers whether enabling was successful
+        boolean success = true;
+
         //Enable rule if necessary
         if (!rule.isEnabled()) {
-            ruleEngine.enableRule(rule);
+            success = ruleEngine.enableRule(rule);
+        }
+
+        //Check for failure
+        if (!success) {
+            //Return error message
+            ActionResponse response = new ActionResponse(false,
+                    "Do all required components still exist?");
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         //Return success message
