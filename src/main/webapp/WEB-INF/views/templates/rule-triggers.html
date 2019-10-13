@@ -4,7 +4,7 @@
         <div class="card">
             <div class="header">
                 <div class="col-lg-6">
-                    <h2>Rule Triggers</h2>
+                    <h2>Rule Conditions</h2>
                 </div>
                 <div class="align-right">
                     <button id="add-button" type="button" data-toggle="collapse" data-target="#add-trigger-card"
@@ -60,7 +60,7 @@
                         </td>
                     </tr>
                     <tr ng-show="ruleTriggerListCtrl.items.length === 0">
-                        <td>No rule triggers registered.</td>
+                        <td>No rule conditions registered.</td>
                     </tr>
                     </tbody>
                     <tfoot>
@@ -78,14 +78,14 @@
         <div id="add-trigger-card" class="card collapse">
             <div class="header">
                 <div class="col-lg-6">
-                    <h2>Add trigger</h2>
+                    <h2>Add condition</h2>
                 </div>
             </div>
             <div class="body">
                 <div id="add-trigger-wizard">
-                    <h1>Trigger data</h1>
+                    <h1>Condition data</h1>
                     <section>
-                        <p>Please provide a name and an optional description for the new rule trigger.</p><br/>
+                        <p>Please provide a name and an optional description for the new rule condition.</p><br/>
                         <!-- item.name group -->
                         <div class="form-group">
                             <div class="form-line">
@@ -97,12 +97,12 @@
                         <div class="form-group">
                             <div class="form-line">
                                     <textarea id="trigger-description" class="form-control" type="text"
-                                              placeholder="Describe this trigger if you like..." rows="4"></textarea>
+                                              placeholder="Describe this condition if you like..." rows="4"></textarea>
                             </div>
                             <span class="help-block"></span>
                         </div>
                     </section>
-                    <h1>Trigger pattern</h1>
+                    <h1>Condition pattern</h1>
                     <section>
                         <cep-query-editor api="ctrl.queryEditorApi"
                                           component-list="ctrl.componentList"></cep-query-editor>
