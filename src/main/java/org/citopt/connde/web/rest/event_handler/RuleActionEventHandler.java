@@ -9,6 +9,8 @@ import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * Event handler for operations that are performed on rule actions.
  */
@@ -32,18 +34,16 @@ public class RuleActionEventHandler {
     public void beforeRuleActionDelete(RuleAction ruleAction) {
         //Get rules that are affected by this action
         for (Rule rule : ruleRepository.findAll()) {
-            //Iterate over all actions of this rule
-            for (RuleAction ruleActionCheck : rule.getActions()) {
-                //Compare current rule action with the affected one
-                if (ruleActionCheck.equals(ruleAction)) {
-                    //Disable rule
-                    ruleEngine.disableRule(rule);
+            //Get rule actions of the current rule
+            List<RuleAction> ruleActions = rule.getActions();
 
-                    //Delete rule
-                    ruleRepository.delete(rule);
+            //Check if the affected action is among these rule actions
+            if(ruleActions.contains(ruleAction)){
+                //Disable rule
+                ruleEngine.disableRule(rule);
 
-                    break;
-                }
+                //Delete rule
+                ruleRepository.delete(rule);
             }
         }
     }
