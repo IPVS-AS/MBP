@@ -1,2 +1,5 @@
 #!/bin/bash
-sudo kill -6 $(ps -ef | grep sensoradapter_xdk_mqtt.py | grep -v grep | awk '{print $2}')
+DIR=`dirname $0`
+PID=`cat $DIR/pid.txt`
+sudo kill -9 $PID
+sudo rm $DIR/pid.txt
