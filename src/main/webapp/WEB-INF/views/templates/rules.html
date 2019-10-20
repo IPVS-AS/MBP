@@ -19,7 +19,7 @@
                     <thead>
                     <tr>
                         <th>Name</th>
-                        <th class="align-center">Trigger</th>
+                        <th class="align-center">Condition</th>
                         <th class="align-center">Actions</th>
                         <th class="align-center">Executions</th>
                         <th class="align-center">Last Execution</th>
@@ -122,7 +122,7 @@
                                      ng-class="{'focused error' : addRuleCtrl.item.errors.trigger }">
                                     <select class="form-control show-tick" ng-model="addRuleCtrl.item.trigger"
                                             ng-options="t._links.self.href as (t.name) for t in ctrl.ruleTriggerList">
-                                        <option disabled selected value>Select trigger</option>
+                                        <option disabled selected value>Select condition</option>
                                     </select>
                                 </div>
                                 <span class="help-block" ng-show="addRuleCtrl.item.errors.trigger">{{addRuleCtrl.item.errors.trigger.message}}</span>

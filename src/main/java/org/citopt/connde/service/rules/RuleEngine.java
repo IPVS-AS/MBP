@@ -1,10 +1,10 @@
 package org.citopt.connde.service.rules;
 
 import org.citopt.connde.domain.rules.Rule;
-import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.repository.RuleRepository;
 import org.citopt.connde.service.cep.engine.core.output.CEPOutput;
+import org.citopt.connde.service.cep.engine.core.queries.CEPQueryValidation;
 import org.citopt.connde.service.cep.trigger.CEPTriggerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -47,11 +47,13 @@ public class RuleEngine {
     }
 
     /**
-     * Enables a certain rule so that it will be possible to trigger and execute it.
+     * Enables a certain rule so that it will be possible to trigger and execute it. The return value indicates
+     * whether enabling the rule was successful or not.
      *
      * @param rule The rule to enable
+     * @return True, if the rule was enabled successfully; false otherwise
      */
-    public void enableRule(Rule rule) {
+    public boolean enableRule(Rule rule) {
         //Sanity check
         if (rule == null) {
             throw new IllegalArgumentException("Rule must not be null.");
@@ -59,6 +61,17 @@ public class RuleEngine {
 
         //Get rule trigger
         RuleTrigger trigger = rule.getTrigger();
+
+        //Check if trigger is still valid (all components exist)
+        CEPQueryValidation validationResult = triggerService.isValidTriggerQuery(trigger);
+
+        if (!validationResult.isValid()) {
+            //Trigger is not valid, mark it as disabled
+            rule.setEnabled(false);
+            ruleRepository.save(rule);
+
+            return false;
+        }
 
         //Add the rule to the trigger map, if trigger is already registered
         if (triggerMap.containsKey(trigger)) {
@@ -78,6 +91,9 @@ public class RuleEngine {
 
         rule.setEnabled(true);
         ruleRepository.save(rule);
+
+        //Everything successful
+        return true;
     }
 
     /**

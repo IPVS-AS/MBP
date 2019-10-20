@@ -29,7 +29,7 @@
 
 .theme-red .sidebar .menu .list li.active {
   background-color: transparent; }
-  .theme-red .sidebar .menu .list li.active > :first-child i, .theme-red .sidebar .menu .list li.active > :first-child span {
+  .theme-red .sidebar .menu .list li.active > :first-child i, .theme-red .sidebar .menu .list li.active > :first-child span, .theme-red .sidebar .menu .list .ml-menu li a.active {
     color: #F44336; }
 
 .theme-red .sidebar .menu .list .toggled {

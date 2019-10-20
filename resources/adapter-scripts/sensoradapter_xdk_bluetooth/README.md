@@ -7,8 +7,6 @@ The following parameters need to be provided on deployment:
 
  - `"sensor" (text)`: name of sensor which want to read the values. E.g.:  "humidity"/"temperature"/"light"
 
- - `"id" (text)`: XDK's MQTT Client ID (E.g. XDK1, XDK2, XDK3...)
-
 The following files are provided in this folder:
  
  - `XDK_MQTT.zip`: This file contains the MQTT Protocol Project which should be import to XDK.
