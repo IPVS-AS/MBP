@@ -89,6 +89,9 @@
 
     <!-- jQuery-QueryBuilder -->
     <link th:href="@{/plugins/jquery-querybuilder/css/query-builder.default.css}" rel="stylesheet"/>
+
+    <!-- Easy Autocomplete -->
+    <link th:href="@{/plugins/easy-autocomplete/autocomplete.min.css}" rel="stylesheet"/>
 </head>
 
 <body ng-class="expert ? 'theme-red' : 'theme-blue'" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
@@ -238,9 +241,8 @@
         <div class="copyright">
             &copy;
             {{ctrl.getDate()| date:'yyyy'}}
-            <a href="javascript:void(0);">MBP</a>.
+            <a href="swagger-ui.html" target="_blank">MBP</a>.
         </div>
-        <!--<div class="version"> <b>Version: </b> 0.2.0 </div>-->
     </div>
     <!-- #Footer -->
 </aside>
@@ -330,6 +332,9 @@
 
 <!-- jQuery-QueryBuilder -->
 <script th:src="@{/plugins/jquery-querybuilder/js/query-builder.standalone.min.js}"></script>
+
+<!-- Easy Autocomplete -->
+<script th:src="@{/plugins/easy-autocomplete/autocomplete.min.js}"></script>
 
 <!-- Angular -->
 <script th:src="@{/js/app.js}"></script>

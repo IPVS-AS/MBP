@@ -6,6 +6,7 @@ import org.citopt.connde.constants.Constants;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user.UserAuthData;
 import org.citopt.connde.repository.UserRepository;
+import org.citopt.connde.repository.projection.UserExcerpt;
 import org.citopt.connde.service.UserService;
 import org.citopt.connde.web.rest.util.HeaderUtil;
 import org.citopt.connde.web.rest.util.PaginationUtil;
@@ -171,5 +172,31 @@ public class RestUserController {
     public ResponseEntity<Void> deleteUser(@PathVariable @ApiParam(value = "Username of the user to delete", example = "MyUser", required = true) String username) {
         userService.deleteUser(username);
         return ResponseEntity.ok().headers(HeaderUtil.createAlert("User deleted successfully", username)).build();
+    }
+
+    /**
+     * Searches and returns a list of user excerpts for all users whose usernames contain a given query string. If the
+     * provided query string is too short, an empty list is returned.
+     * @param queryString The query string for searching users
+     * @return The list of user excerpts for all matching users
+     */
+    @GetMapping("/users/contain")
+    @ApiOperation(value = "Searches and returns all users whose usernames contain a given query string ", notes = "Returns an empty list in case the query string is too short", produces = "application/json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Query result")})
+    public ResponseEntity<List<UserExcerpt>> searchUser(@RequestParam("query") @ApiParam(value = "Query string for searching users", example = "admin", required = true) String queryString) {
+        //Trim query
+        queryString = queryString.trim();
+
+        //Check if valid query string was provided
+        if (queryString.isEmpty()) {
+            //Return empty list
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+
+        //Retrieve all users whose names contain the query string
+        List<UserExcerpt> users = userRepository.findByUsernameContains(queryString);
+
+        //Reply
+        return ResponseEntity.ok(users);
     }
 }

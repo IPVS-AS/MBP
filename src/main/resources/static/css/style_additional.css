@@ -50,3 +50,12 @@ ul.minus-list {
 ul.minus-list li:before {
     content: "- ";
 }
+
+/* Override input resizing of the Easy Autocomplete plugin */
+.easy-autocomplete {
+    width: 100% !important
+}
+
+.easy-autocomplete input {
+    width: 100%;
+}

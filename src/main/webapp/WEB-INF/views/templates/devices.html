@@ -24,7 +24,7 @@
                         <th>Device type</th>
                         <th>IP address</th>
                         <th>Owner</th>
-                        <th>Shared</th>
+                        <th>Shared Users</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -65,25 +65,7 @@
                         <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
                             <div ng-if="item.isApprovable">
-                                <div class="card"
-                                     style="min-height: 0; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.16), 0 2px 10px rgba(0, 0, 0, 0.12);">
-                                    <div class="header bg-blue-grey clickable collapsed" style="padding: 5px 5px 5px 8px;"
-                                         data-toggle="collapse"
-                                         data-target="#approved-{{item.id}}">
-                                        <span style="font-size: 13px;">Manage users</span>
-                                        <ul class="header-dropdown m-r--5" style="top: 5px;">
-                                            <li>
-                                                <a class="clickable collapsed" data-toggle="collapse"
-                                                   data-target="#approved-{{item.id}}">
-                                                    <i class="material-icons">keyboard_arrow_down</i>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <div class="body collapse" id="approved-{{item.id}}">
-                                        <user-approval></user-approval>
-                                    </div>
-                                </div>
+                                <user-approval entity-id="{{item.id}}" category-name="device"></user-approval>
                             </div>
                         </td>
                         <td>

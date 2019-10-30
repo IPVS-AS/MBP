@@ -177,7 +177,7 @@ public class RestDeviceController {
         User candidateUser = userOptional.get();
 
         //Check if user is already approved
-        if (entity.isUserApproved(candidateUser)) {
+        if (candidateUser.isAdmin() || entity.isUserApproved(candidateUser)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
