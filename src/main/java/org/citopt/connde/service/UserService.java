@@ -104,8 +104,7 @@ public class UserService {
     }
 
     public User getUserWithAuthorities(String id) {
-        User user = userRepository.findOne(id);
-        return user;
+        return userRepository.findOne(id);
     }
 
     public User getUserWithAuthorities() {

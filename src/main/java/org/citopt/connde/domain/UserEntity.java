@@ -148,8 +148,21 @@ public abstract class UserEntity {
         return owner.getUsername();
     }
 
+    @JsonProperty("isDeletable")
+    @ApiModelProperty(notes = "Whether the current user is allowed to delete the entity", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    public boolean isDeletable() {
+        //Resolve user service bean
+        UserService userService = DynamicBeanProvider.get(UserService.class);
+
+        //Get current user
+        User currentUser = userService.getUserWithAuthorities();
+
+        //Return whether current user is owner of this entity
+        return isUserOwner(currentUser) || currentUser.isAdmin();
+    }
+
     @JsonProperty("isApprovable")
-    @ApiModelProperty(notes = "Whether the current user is approvable (i.e. entity owner or admin)", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    @ApiModelProperty(notes = "Whether the current user is allowed to approve other users", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     public boolean isApprovable() {
         //Resolve user service bean
         UserService userService = DynamicBeanProvider.get(UserService.class);
@@ -175,23 +188,11 @@ public abstract class UserEntity {
         //List of approved users as projections
         Set<UserExcerpt> users = new HashSet<>();
 
-        //TODO REMOVE!!!!!
-        User testUser = new User();
-        testUser.setId("123456789asdf");
-        testUser.setUsername("test_user");
-        testUser.setFirstName("Max");
-        testUser.setLastName("Mustermann");
-        testUser.setPassword("12345");
-        approvedUsers.add(testUser);
-
         //Iterate over all approved users and create projections from them
         for (User user : approvedUsers) {
             UserExcerpt projection = projectionFactory.createProjection(UserExcerpt.class, user);
             users.add(projection);
         }
-
-        //TODO REMOVE AS WELL!!!!!
-        approvedUsers.remove(testUser);
 
         return users;
     }

@@ -149,8 +149,8 @@ public class RestDeviceController {
 
     @PostMapping("/devices/{deviceId}/approve")
     @ApiOperation(value = "Approves an user for a device entity", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User is already approved for this device"), @ApiResponse(code = 403, message = "Not authorized to approve an user for this device"), @ApiResponse(code = 404, message = "Device not found or not authorized to access this device")})
-    public ResponseEntity<Void> approveUser(@PathVariable @ApiParam(value = "ID of the device to approve a user for", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId, @RequestBody @ApiParam(value = "Name of the user to approve", example = "johndoe", required = true) String username) {
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User is already approved for this device"), @ApiResponse(code = 403, message = "Not authorized to approve an user for this device"), @ApiResponse(code = 404, message = "Device or user not found or not authorized to access this device")})
+    public ResponseEntity<Void> approveUser(@PathVariable @ApiParam(value = "ID of the device to approve an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId, @RequestBody @ApiParam(value = "Name of the user to approve", example = "johndoe", required = true) String username) {
         //Get device from repository by id
         Device entity = (Device) userService.getUserEntityFromRepository(deviceRepository, deviceId);
 
@@ -165,7 +165,7 @@ public class RestDeviceController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
-        //Get user by username
+        //Get user by ID
         Optional<User> userOptional = userService.getUserWithAuthoritiesByUsername(username);
 
         //Check if user could be found
@@ -183,6 +183,47 @@ public class RestDeviceController {
 
         //Approve user
         entity.approveUser(candidateUser);
+        deviceRepository.save(entity);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping("/devices/{deviceId}/disapprove")
+    @ApiOperation(value = "Disapproves an user for a device entity", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User cannot be disapproved for this device"), @ApiResponse(code = 403, message = "Not authorized to disapprove an user for this device"), @ApiResponse(code = 404, message = "Device or user not found or not authorized to access this device")})
+    public ResponseEntity<Void> disapproveUser(@PathVariable @ApiParam(value = "ID of the device to disapprove an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId, @RequestBody @ApiParam(value = "Name of the user to disapprove", example = "johndoe", required = true) String username) {
+        //Get device from repository by id
+        Device entity = (Device) userService.getUserEntityFromRepository(deviceRepository, deviceId);
+
+        //Check if entity could be found
+        if (entity == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Check if current user is allowed to disapprove an user for this device
+        User user = userService.getUserWithAuthorities();
+        if (!(user.isAdmin() || entity.isUserOwner(user))) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        //Get user by ID
+        Optional<User> userOptional = userService.getUserWithAuthoritiesByUsername(username);
+
+        //Check if user could be found
+        if (!userOptional.isPresent()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Get user from optional
+        User candidateUser = userOptional.get();
+
+        //Check if user may be disapproved
+        if (candidateUser.isAdmin() || (entity.isUserOwner(candidateUser)) || (!entity.isUserApproved(candidateUser))) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        //Disapprove user
+        entity.disapproveUser(candidateUser);
         deviceRepository.save(entity);
 
         return new ResponseEntity<>(HttpStatus.OK);

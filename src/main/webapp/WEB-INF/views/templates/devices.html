@@ -24,7 +24,6 @@
                         <th>Device type</th>
                         <th>IP address</th>
                         <th>Owner</th>
-                        <th>Shared Users</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -64,12 +63,12 @@
                         <td>{{item.ipAddress}}</td>
                         <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
-                            <div ng-if="item.isApprovable">
-                                <user-approval entity-id="{{item.id}}" category-name="device"></user-approval>
+                            <div ng-show="item.isApprovable">
+                                <user-approval entity-id="{{item.id}}" category-name="devices"></user-approval>
                             </div>
                         </td>
                         <td>
-                            <form ng-submit="deleteDeviceCtrl.deleteItem()">
+                            <form ng-submit="deleteDeviceCtrl.deleteItem()" ng-show="item.isDeletable">
                                 <button type="submit" class="btn btn-danger m-t-0 waves-effect"
                                         ng-click="deleteDeviceCtrl.item.id = item.id">
                                     Delete
