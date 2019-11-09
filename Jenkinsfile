@@ -25,7 +25,7 @@ pipeline {
                 branch 'master'
             }
             steps {
-                do_static_analysis("http://localhost:9000", "MBP", "MBP-Frontend")
+                do_static_analysis("http://localhost:9000", "MBP")
             }
         }
         
@@ -37,11 +37,7 @@ pipeline {
     }
 }
 
-def do_static_analysis(host, backend_project, frontend_project) {
-    withCredentials([string(credentialsId: 'sonarqube-access', variable: 'sonarqube_token')]) {
-        sh "mvn sonar:sonar -Dsonar.projectKey=${backend_project} -Dsonar.host.url=${host} -Dsonar.login=${sonarqube_token}"
-        sh "/opt/sonarqube-scanner/bin/sonar-scanner -Dsonar.projectKey=${frontend_project} -Dsonar.sources=. -Dsonar.host.url=${host} -Dsonar.login=${sonarqube_token}"
-    }
+def do_static_analysis(host, project) {
     withCredentials([string(credentialsId: 'sonarqube-access', variable: 'sonarqube_token')]) {
         sh "mvn sonar:sonar -Dsonar.projectKey=${project} -Dsonar.host.url=${host} -Dsonar.login=${sonarqube_token}"
     }
