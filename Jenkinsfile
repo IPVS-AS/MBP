@@ -39,7 +39,7 @@ pipeline {
 
 def do_static_analysis(host, project) {
     withCredentials([string(credentialsId: 'sonarqube-access', variable: 'sonarqube_token')]) {
-        sh "mvn sonar:sonar -Dsonar.projectKey=${project} -Dsonar.host.url=${host} -Dsonar.login=${sonarqube_token}"
+        sh "mvn sonar:sonar -Dsonar.projectKey=${project} -Dsonar.host.url=${host} -Dsonar.login=${sonarqube_token} -Dsonar.sources=./src/main/**"
     }
 }
 
