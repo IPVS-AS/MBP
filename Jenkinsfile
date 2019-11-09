@@ -4,9 +4,6 @@ pipeline {
         maven 'Maven 3.3.9'
         jdk 'jdk8'
     }
-    environment {
-        SONARQUBE_TOKEN = credentials('sonarqube-access')
-    }
     stages {
         stage ('Initialize') {
             steps {
@@ -28,7 +25,7 @@ pipeline {
                 branch 'master'
             }
             steps {
-                sh 'mvn sonar:sonar -Dsonar.projectKey=MBP -Dsonar.host.url=http://localhost:9000 -Dsonar.login=${SONARQUBE_TOKEN}'
+                static_analysis("http://localhost:9000", "MBP")
             }
         }
         
@@ -37,6 +34,12 @@ pipeline {
                 deploy("target/MBP-0.1.war", "localhost", "deploy/${env.BRANCH_NAME}")
              }
         }
+    }
+}
+
+def static_analysis(host, project) {
+    withCredentials([string(credentialsId: 'sonarqube-access', variable: 'sonarqube_token')]) {
+        sh "mvn sonar:sonar -Dsonar.projectKey=${project} -Dsonar.host.url=${host} -Dsonar.login=${sonarqube_token}"
     }
 }
 
