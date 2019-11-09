@@ -28,7 +28,7 @@ pipeline {
                 branch 'master'
             }
             steps {
-                sh 'mvn sonar:sonar -Dsonar.projectKey=MBP -Dsonar.host.url=http://localhost:9000 -Dsonar.login=$SONARQUBE_TOKEN'
+                sh 'mvn sonar:sonar -Dsonar.projectKey=MBP -Dsonar.host.url=http://localhost:9000 -Dsonar.login=${SONARQUBE_TOKEN}'
             }
         }
         
