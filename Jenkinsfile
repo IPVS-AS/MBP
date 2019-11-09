@@ -31,7 +31,7 @@ pipeline {
         
         stage ('Deploy'){
             steps {
-                deploy("target/MBP-0.1.war", "localhost", "deploy/${env.BRANCH_NAME}")
+                deploy(file: "target/MBP-0.1.war", host: "localhost", context: "deploy/${env.BRANCH_NAME}")
              }
         }
     }
