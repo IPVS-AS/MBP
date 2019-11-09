@@ -4,6 +4,9 @@ pipeline {
         maven 'Maven 3.3.9'
         jdk 'jdk8'
     }
+    environment {
+        SONARQUBE_TOKEN = credentials('sonarqube-access')
+    }
     stages {
         stage ('Initialize') {
             steps {
@@ -17,6 +20,15 @@ pipeline {
         stage ('Build') {
             steps {
                 sh 'mvn -Dmaven.test.failure.ignore=true clean install' 
+            }
+        }
+        
+        stage('Static Analysis') {
+            when {
+                branch 'master'
+            }
+            steps {
+                sh 'mvn sonar:sonar -Dsonar.projectKey=MBP -Dsonar.host.url=http://localhost:9000 -Dsonar.login=$SONARQUBE_TOKEN'
             }
         }
         
