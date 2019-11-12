@@ -3,7 +3,7 @@ package org.citopt.connde.domain.device;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.citopt.connde.domain.UserEntity;
+import org.citopt.connde.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 

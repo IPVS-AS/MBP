@@ -2,7 +2,7 @@ package org.citopt.connde.web.rest;
 
 import io.swagger.annotations.*;
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.domain.UserEntity;
+import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.user.User;

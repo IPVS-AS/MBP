@@ -1,4 +1,4 @@
-package org.citopt.connde.domain;
+package org.citopt.connde.domain.user_entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,12 +13,23 @@ import org.springframework.data.projection.ProjectionFactory;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.citopt.connde.domain.user_entity.UserEntityRole.*;
+
 /**
  * Base class for entity classes that require user management. It adds support for
  * an owner user that owns a certain entity and is allowed to do everything with it
  * and a set of approved users that are allowed to access this entity as well.
  */
 public abstract class UserEntity {
+
+    //Defines the default policy for user entities
+    protected static final UserEntityPolicy DEFAULT_POLICY = new UserEntityPolicy()
+            .addPermission("create").addRole(USER)
+            .addPermission("read").addRole(APPROVED_USER).addRole(ADMIN)
+            .addPermission("delete").addRole(ENTITY_OWNER).addRole(ADMIN)
+            .addPermission("approve").addRole(ENTITY_OWNER).addRole(ADMIN)
+            .addPermission("disapprove").addRole(ENTITY_OWNER).addRole(ADMIN)
+            .lock();
 
     //Owner of the entity
     @JsonIgnore
@@ -133,6 +144,19 @@ public abstract class UserEntity {
         return user.equals(this.owner) || this.approvedUsers.contains(user);
     }
 
+    @JsonProperty("isOwner")
+    @ApiModelProperty(notes = "Whether the current user is owner of the entity", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    public boolean isOwner() {
+        //Resolve user service bean
+        UserService userService = DynamicBeanProvider.get(UserService.class);
+
+        //Get current user
+        User currentUser = userService.getUserWithAuthorities();
+
+        //Return whether current user is owner of this entity
+        return isUserOwner(currentUser);
+    }
+
     /**
      * Returns the name of the entities' owner.
      *
@@ -146,6 +170,29 @@ public abstract class UserEntity {
             return null;
         }
         return owner.getUsername();
+    }
+
+    @JsonProperty("approvedUsers")
+    @ApiModelProperty(notes = "List of users that are approved to work with this entity, only visible for the entity owner and admins", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    public Set<UserExcerpt> getApprovedUsersProjection() {
+        //Do not expose list if user is not owner or admin
+        if (!isApprovable()) {
+            return null;
+        }
+
+        //Resolve projection factory bean
+        ProjectionFactory projectionFactory = DynamicBeanProvider.get(ProjectionFactory.class);
+
+        //List of approved users as projections
+        Set<UserExcerpt> users = new HashSet<>();
+
+        //Iterate over all approved users and create projections from them
+        for (User user : approvedUsers) {
+            UserExcerpt projection = projectionFactory.createProjection(UserExcerpt.class, user);
+            users.add(projection);
+        }
+
+        return users;
     }
 
     @JsonProperty("isDeletable")
@@ -170,30 +217,7 @@ public abstract class UserEntity {
         //Get current user
         User currentUser = userService.getUserWithAuthorities();
 
-        //Return whether current user is owner of this entity
+        //Return whether current user is owner of this entity or admin
         return isUserOwner(currentUser) || currentUser.isAdmin();
-    }
-
-    @JsonProperty("approvedUsers")
-    @ApiModelProperty(notes = "List of users that are approved to work with this entity, only visible for the entity owner and admins", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
-    public Set<UserExcerpt> getApprovedUsersProjection() {
-        //Do not expose list if user is not owner or admin
-        if (!isApprovable()) {
-            return null;
-        }
-
-        //Resolve projection factory bean
-        ProjectionFactory projectionFactory = DynamicBeanProvider.get(ProjectionFactory.class);
-
-        //List of approved users as projections
-        Set<UserExcerpt> users = new HashSet<>();
-
-        //Iterate over all approved users and create projections from them
-        for (User user : approvedUsers) {
-            UserExcerpt projection = projectionFactory.createProjection(UserExcerpt.class, user);
-            users.add(projection);
-        }
-
-        return users;
     }
 }

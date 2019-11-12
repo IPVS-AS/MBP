@@ -1,9 +1,10 @@
 package org.citopt.connde.service;
 
 import org.citopt.connde.constants.Constants;
-import org.citopt.connde.domain.UserEntity;
+import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.domain.user.Authority;
 import org.citopt.connde.domain.user.User;
+import org.citopt.connde.domain.user_entity.UserEntityRole;
 import org.citopt.connde.repository.AuthorityRepository;
 import org.citopt.connde.repository.UserEntityRepository;
 import org.citopt.connde.repository.UserRepository;
@@ -16,8 +17,6 @@ import java.util.*;
 
 /**
  * Service class for managing users.
- *
- * @author Imeri Amil
  */
 @Service
 public class UserService {
@@ -116,6 +115,14 @@ public class UserService {
         return user;
     }
 
+    /**
+     * Returns a list of user entity roles.
+     * @return
+     */
+    public UserEntityRole[] getUserEntityRoles(){
+        //TODO
+        return null;
+    }
 
     /**
      * Returns a user entity with a certain id from a given repository that is owned by the current user or where the
@@ -217,5 +224,4 @@ public class UserService {
         //Return result
         return resultList;
     }
-
 }

@@ -1,9 +1,7 @@
 package org.citopt.connde.repository;
 
-import org.citopt.connde.domain.UserEntity;
+import org.citopt.connde.domain.user_entity.UserEntity;
 import org.springframework.data.mongodb.repository.MongoRepository;
-
-import java.util.List;
 
 /**
  * Base interface for user entity repositories.
