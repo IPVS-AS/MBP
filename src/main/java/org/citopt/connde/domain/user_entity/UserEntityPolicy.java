@@ -72,7 +72,7 @@ public class UserEntityPolicy {
         }
 
         //Add new permission
-        policyRules.put(permissionName, Collections.emptySet());
+        policyRules.put(permissionName, new HashSet<>());
         lastPermission = permissionName;
 
         return this;

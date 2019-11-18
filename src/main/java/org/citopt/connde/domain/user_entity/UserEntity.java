@@ -31,6 +31,7 @@ public abstract class UserEntity {
             .addPermission("disapprove").addRole(ENTITY_OWNER).addRole(ADMIN)
             .lock();
 
+
     //Owner of the entity
     @JsonIgnore
     @DBRef
