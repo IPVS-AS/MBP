@@ -1,6 +1,5 @@
 package org.citopt.connde.domain.user_entity;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -23,7 +22,7 @@ public class UserEntityPolicy {
     /**
      * Creates a new empty user entity policy.
      */
-    public UserEntityPolicy() {
+    UserEntityPolicy() {
 
     }
 
@@ -55,7 +54,7 @@ public class UserEntityPolicy {
      * @param permissionName The name of the permission to add
      * @return The user entity policy for chaining
      */
-    public UserEntityPolicy addPermission(String permissionName) {
+    UserEntityPolicy addPermission(String permissionName) {
         //Check for lock
         if (this.locked) {
             throw new IllegalArgumentException("The user entity policy is locked and thus read-only.");
@@ -84,7 +83,7 @@ public class UserEntityPolicy {
      * @param role The user entity role to add
      * @return The user entity policy for chaining
      */
-    public UserEntityPolicy addRole(UserEntityRole role) {
+    UserEntityPolicy addRole(UserEntityRole role) {
         return addRole(lastPermission, role);
     }
 
@@ -95,7 +94,7 @@ public class UserEntityPolicy {
      * @param role           he user entity role to add
      * @return The user entity policy for chaining
      */
-    public UserEntityPolicy addRole(String permissionName, UserEntityRole role) {
+    private UserEntityPolicy addRole(String permissionName, UserEntityRole role) {
         //Check for lock
         if (this.locked) {
             throw new IllegalArgumentException("The user entity policy is locked and thus read-only.");
@@ -138,17 +137,21 @@ public class UserEntityPolicy {
      * @return True, if the user is permitted; false otherwise
      */
     public boolean isPermitted(String permissionName, UserEntityRole role) {
-        return isPermitted(permissionName, new UserEntityRole[]{role});
+        //Create set with role as only entry
+        Set<UserEntityRole> roleSet = new HashSet<>();
+        roleSet.add(role);
+
+        return isPermitted(permissionName, roleSet);
     }
 
     /**
-     * Checks whether a user, given by a list of user entity roles, is permitted to perform a certain action.
+     * Checks whether a user, given by a set of user entity roles, is permitted to perform a certain action.
      *
      * @param permissionName The name of the permission to check
-     * @param roles          The list of user entity roles to check
+     * @param roles          The set of user entity roles to check
      * @return True, if the user is permitted; false otherwise
      */
-    public boolean isPermitted(String permissionName, UserEntityRole[] roles) {
+    public boolean isPermitted(String permissionName, Set<UserEntityRole> roles) {
         //Sanity checks
         if ((permissionName == null) || permissionName.isEmpty()) {
             throw new IllegalArgumentException("Permission name must not be null or empty.");
@@ -174,5 +177,21 @@ public class UserEntityPolicy {
 
         //Not permitted
         return false;
+    }
+
+    /**
+     * Returns whether the user entity policy contains a certain permission name or not.
+     *
+     * @param permissionName THe name of the permission to check
+     * @return True, if the permission is contained; false otherwise
+     */
+    public boolean containsPermission(String permissionName) {
+        //Sanity check
+        if ((permissionName == null) || permissionName.isEmpty()) {
+            throw new IllegalArgumentException("Permission name must not be null or empty.");
+        }
+
+        //Check for permission name
+        return policyRules.containsKey(permissionName);
     }
 }
