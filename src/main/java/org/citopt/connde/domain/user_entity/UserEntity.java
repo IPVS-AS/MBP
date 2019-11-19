@@ -215,7 +215,7 @@ public abstract class UserEntity {
     @JsonProperty("isDeletable")
     @ApiModelProperty(notes = "Whether the current user is allowed to delete the entity", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     public boolean isDeletable() {
-        return isPermitted("create");
+        return isPermitted("delete");
     }
 
     /**
@@ -264,6 +264,7 @@ public abstract class UserEntity {
      *
      * @return The user entity policy to use
      */
+    @JsonIgnore
     public UserEntityPolicy getUserEntityPolicy() {
         return DEFAULT_POLICY;
     }
@@ -284,6 +285,6 @@ public abstract class UserEntity {
         UserEntityService userEntityService = DynamicBeanProvider.get(UserEntityService.class);
 
         //Check for permission
-        return userEntityService.isUserPermitted("delete", this);
+        return userEntityService.isUserPermitted(permissionName, this);
     }
 }

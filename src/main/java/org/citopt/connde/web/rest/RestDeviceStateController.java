@@ -3,7 +3,7 @@ package org.citopt.connde.web.rest;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.repository.DeviceRepository;
-import org.citopt.connde.service.UserService;
+import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.deploy.DeviceState;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class RestDeviceStateController {
 
     @Autowired
-    private UserService userService;
+    private UserEntityService userEntityService;
 
     @Autowired
     private DeviceRepository deviceRepository;
@@ -47,7 +47,7 @@ public class RestDeviceStateController {
         Map<String, DeviceState> resultMap = new HashMap<>();
 
         //Get all devices
-        List<Device> deviceList = userService.getUserEntitiesFromRepository(deviceRepository)
+        List<Device> deviceList = userEntityService.getUserEntitiesFromRepository(deviceRepository)
                 .stream().map(entity -> (Device) entity).collect(Collectors.toList());
 
         //Iterate over all devices and determine the device state
@@ -68,7 +68,7 @@ public class RestDeviceStateController {
     @GetMapping(value = "/devices/state/{id}")
     public ResponseEntity<Resource<DeviceState>> getDeviceStatus(@PathVariable(value = "id") String deviceId) {
         //Retrieve device from repository
-        Device device = (Device) userService.getUserEntityFromRepository(deviceRepository, deviceId);
+        Device device = (Device) userEntityService.getUserEntityFromRepository(deviceRepository, deviceId);
 
         //Check if device could be found
         if (device == null) {

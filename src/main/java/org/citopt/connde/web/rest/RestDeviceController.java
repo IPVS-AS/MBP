@@ -2,11 +2,12 @@ package org.citopt.connde.web.rest;
 
 import io.swagger.annotations.*;
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.user.User;
+import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.repository.DeviceRepository;
+import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.UserService;
 import org.citopt.connde.util.ValidationErrorCollection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,9 @@ public class RestDeviceController {
     private UserService userService;
 
     @Autowired
+    private UserEntityService userEntityService;
+
+    @Autowired
     ProjectionFactory projectionFactory;
 
     @Autowired
@@ -54,7 +58,7 @@ public class RestDeviceController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Device not found or not authorized to access this device")})
     public ResponseEntity<Resource<Device>> one(@PathVariable @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId) {
         //Get device from repository by id
-        UserEntity entity = userService.getUserEntityFromRepository(deviceRepository, deviceId);
+        UserEntity entity = userEntityService.getUserEntityFromRepository(deviceRepository, deviceId);
 
         //Check if entity could be found
         if (entity == null) {
@@ -74,7 +78,7 @@ public class RestDeviceController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success")})
     public ResponseEntity<PagedResources<Resource<Device>>> all() {
         //Get all device user entities the current user has access to
-        List<UserEntity> userEntities = userService.getUserEntitiesFromRepository(deviceRepository);
+        List<UserEntity> userEntities = userEntityService.getUserEntitiesFromRepository(deviceRepository);
 
         List<Resource<Device>> deviceList = userEntities.stream()
                 .map(userEntity -> (Device) userEntity)
@@ -93,9 +97,8 @@ public class RestDeviceController {
 
     @PostMapping("/devices")
     @ApiOperation(value = "Creates a new device entity", notes = "A ValidationErrorCollection object is returned in case of a failure.", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "Invalid device properties")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "Invalid device properties"), @ApiResponse(code = 401, message = "Not authorized to create a new device")})
     public ResponseEntity create(@RequestBody @ApiParam(value = "The device to create", required = true) Device device, BindingResult bindingResult) throws URISyntaxException {
-
         ///Validate device object
         deviceValidator.validate(device, bindingResult);
 
@@ -104,10 +107,12 @@ public class RestDeviceController {
             return new ResponseEntity<>(new ValidationErrorCollection(bindingResult), HttpStatus.BAD_REQUEST);
         }
 
-        //Get current user
-        User currentUser = userService.getUserWithAuthorities();
+        if(!device.isCreatable()){
+            return new ResponseEntity<>(new ValidationErrorCollection(bindingResult), HttpStatus.UNAUTHORIZED);
+        }
 
-        //Make current user to owner of the new resource
+        //Set current user as owner of the new resource
+        User currentUser = userService.getUserWithAuthorities();
         device.setOwner(currentUser);
 
         //Save device to repository
@@ -128,16 +133,15 @@ public class RestDeviceController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to delete this device"), @ApiResponse(code = 404, message = "Device not found or not authorized to access this device")})
     public ResponseEntity<Void> delete(@PathVariable @ApiParam(value = "ID of the device to delete", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId) {
         //Get device from repository by id
-        UserEntity entity = userService.getUserEntityFromRepository(deviceRepository, deviceId);
+        UserEntity entity = userEntityService.getUserEntityFromRepository(deviceRepository, deviceId);
 
         //Check if entity could be found
         if (entity == null) {
             return ResponseEntity.notFound().build();
         }
 
-        //Check if current user is allowed to delete the device
-        User user = userService.getUserWithAuthorities();
-        if (!(user.isAdmin() || entity.isUserOwner(user))) {
+        //Check if user is allowed to delete the device
+        if (!entity.isDeletable()) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
@@ -152,7 +156,7 @@ public class RestDeviceController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User is already approved for this device"), @ApiResponse(code = 403, message = "Not authorized to approve an user for this device"), @ApiResponse(code = 404, message = "Device or user not found or not authorized to access this device")})
     public ResponseEntity<Void> approveUser(@PathVariable @ApiParam(value = "ID of the device to approve an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId, @RequestBody @ApiParam(value = "Name of the user to approve", example = "johndoe", required = true) String username) {
         //Get device from repository by id
-        Device entity = (Device) userService.getUserEntityFromRepository(deviceRepository, deviceId);
+        Device entity = (Device) userEntityService.getUserEntityFromRepository(deviceRepository, deviceId);
 
         //Check if entity could be found
         if (entity == null) {
@@ -160,8 +164,7 @@ public class RestDeviceController {
         }
 
         //Check if current user is allowed to approve an user for this device
-        User user = userService.getUserWithAuthorities();
-        if (!(user.isAdmin() || entity.isUserOwner(user))) {
+        if (!entity.isApprovable()) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
@@ -176,7 +179,7 @@ public class RestDeviceController {
         //Get user from optional
         User candidateUser = userOptional.get();
 
-        //Check if user is already approved
+        //Only non-approved and non-admin users may be approved
         if (candidateUser.isAdmin() || entity.isUserApproved(candidateUser)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -193,7 +196,7 @@ public class RestDeviceController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User cannot be disapproved for this device"), @ApiResponse(code = 403, message = "Not authorized to disapprove an user for this device"), @ApiResponse(code = 404, message = "Device or user not found or not authorized to access this device")})
     public ResponseEntity<Void> disapproveUser(@PathVariable @ApiParam(value = "ID of the device to disapprove an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId, @RequestBody @ApiParam(value = "Name of the user to disapprove", example = "johndoe", required = true) String username) {
         //Get device from repository by id
-        Device entity = (Device) userService.getUserEntityFromRepository(deviceRepository, deviceId);
+        Device entity = (Device) userEntityService.getUserEntityFromRepository(deviceRepository, deviceId);
 
         //Check if entity could be found
         if (entity == null) {
@@ -201,8 +204,7 @@ public class RestDeviceController {
         }
 
         //Check if current user is allowed to disapprove an user for this device
-        User user = userService.getUserWithAuthorities();
-        if (!(user.isAdmin() || entity.isUserOwner(user))) {
+        if (!entity.isDisapprovable()) {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
@@ -217,7 +219,7 @@ public class RestDeviceController {
         //Get user from optional
         User candidateUser = userOptional.get();
 
-        //Check if user may be disapproved
+        //Only non-admin users, non-owners and already approved users may be disapproved
         if (candidateUser.isAdmin() || (entity.isUserOwner(candidateUser)) || (!entity.isUserApproved(candidateUser))) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }

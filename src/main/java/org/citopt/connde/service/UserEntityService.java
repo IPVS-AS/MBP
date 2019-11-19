@@ -56,16 +56,16 @@ public class UserEntityService {
         }
 
         //Get user entity from repository
-        UserEntity entities = (UserEntity) repository.findOne(entityId);
+        UserEntity entity = (UserEntity) repository.findOne(entityId);
 
         //Check for null (not found)
-        if (entities == null) {
+        if (entity == null) {
             return null;
         }
 
-        //Return entity if user is admin or approved
-        if (user.isAdmin() || entities.isUserApproved(user)) {
-            return entities;
+        //Return entity if user is permitted
+        if (entity.isReadable()) {
+            return entity;
         }
 
         //User is not approved
@@ -105,17 +105,13 @@ public class UserEntityService {
         //Get all user entities from repository
         List<UserEntity> entities = repository.findAll();
 
-        //Return all entities if user is admin
-        if (user.isAdmin()) {
-            return entities;
-        }
-
         //Create result list
         List<UserEntity> resultList = new ArrayList<>();
 
         //Iterate over all entities in repository
         for (UserEntity entity : entities) {
-            if (entity.isUserApproved(user)) {
+            //Check user permission
+            if (entity.isReadable()) {
                 resultList.add(entity);
             }
         }
