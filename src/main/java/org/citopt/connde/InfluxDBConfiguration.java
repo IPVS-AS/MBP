@@ -35,7 +35,7 @@ public class InfluxDBConfiguration {
     private static final boolean RETRY_ON_CONNECTION_LOSS = true;
 
     //Use GZIP
-    private static final boolean USE_GZIP = true;
+    private static final boolean USE_GZIP = false;
 
 
     /**
