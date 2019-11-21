@@ -1,12 +1,15 @@
 package org.citopt.connde;
 
 
+import okhttp3.OkHttpClient;
 import org.influxdb.BatchOptions;
 import org.influxdb.InfluxDB;
 import org.influxdb.InfluxDBFactory;
 import org.influxdb.dto.Query;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class InfluxDBConfiguration {
@@ -21,7 +24,7 @@ public class InfluxDBConfiguration {
     public static final String RETENTION_POLICY_NAME = "retentionPolicy";
 
     //Duration time
-    private static final String DURATION_TIME = "365d";
+    private static final String DURATION_TIME = "150d";
 
     /**
      * Creates the InfluxDB bean.
@@ -30,8 +33,15 @@ public class InfluxDBConfiguration {
      */
     @Bean
     public InfluxDB influxDB() {
+        //Build HTTP client for InfluxDB
+        OkHttpClient.Builder httpClient = new OkHttpClient().newBuilder()
+                .connectTimeout(1, TimeUnit.MINUTES)
+                .readTimeout(1, TimeUnit.MINUTES)
+                .writeTimeout(5, TimeUnit.SECONDS)
+                .retryOnConnectionFailure(true);
+
         //Connect to the InfluxDB
-        InfluxDB influxDB = InfluxDBFactory.connect(URL);
+        InfluxDB influxDB = InfluxDBFactory.connect(URL, httpClient);
 
         //Set database, create if it does not exist
         influxDB.query(new Query("CREATE DATABASE " + DATABASE_NAME));
