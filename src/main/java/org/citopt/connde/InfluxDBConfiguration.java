@@ -37,7 +37,6 @@ public class InfluxDBConfiguration {
     //Use GZIP
     private static final boolean USE_GZIP = false;
 
-
     /**
      * Creates the InfluxDB bean.
      *
