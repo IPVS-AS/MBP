@@ -22,8 +22,15 @@
       vm.dataLoading = true;
       AuthenticationService.Login(vm.username, vm.password, function(response) {
         if (response.success) {
-          AuthenticationService.SetCredentials(vm.username, vm.password);
+          //Get user object
+          let userData = response.data || {};
+
+          //Enable authorization locally
+          AuthenticationService.SetCredentials(vm.username, vm.password, userData);
+
+          //Redirect
           $location.path('/');
+
         } else {
           if (response.status === 403) {
             FlashService.Error("Authorization error!");

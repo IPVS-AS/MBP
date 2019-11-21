@@ -48,38 +48,44 @@ public class RestUserController {
 
 	/**
 	 * POST /authenticate : Authenticates the received user.
-	 * 
+	 *
 	 * Checks if the user is registered and if the password is correct.
-	 * 
+	 *
 	 * @param user
 	 *            The user to authenticate
 	 * @return the ResponseEntity with status 200 (OK) if authentication
-	 *         successful, or with status 400 (Bad Request) if user not found or
-	 *         password incorrect
+	 *         successful with the user object from database as body,
+	 *         or with status 400 (Bad Request) if user not found or  password incorrect
 	 */
 	@PostMapping("/authenticate")
-	public ResponseEntity<?> authenticate(@Valid @RequestBody User user) {
+	public ResponseEntity<User> authenticate(@Valid @RequestBody User user) {
 		String lowercaseUsername = user.getUsername().toLowerCase(Locale.ENGLISH);
-		Optional<User> userFromDatabase = userRepository.findOneByUsername(lowercaseUsername);
-		if (!userFromDatabase.isPresent()) {
+		Optional<User> dbUserOptional = userRepository.findOneByUsername(lowercaseUsername);
+
+		//Check if user was found
+		if (!dbUserOptional.isPresent()) {
 			return ResponseEntity.badRequest()
 					.headers(HeaderUtil.createFailureAlert("User not found", user.getUsername())).body(null);
-		} else {
-			if (userService.passwordMatches(user.getPassword(), userFromDatabase.get().getPassword())) {
-				return ResponseEntity.ok()
-						.headers(HeaderUtil.createAlert("Authentication successful", user.getUsername())).body(null);
-			} else {
-				return ResponseEntity.badRequest()
-						.headers(HeaderUtil.createFailureAlert("Password incorrect", user.getUsername())).body(null);
-			}
 		}
+
+		//Get user object from database
+		User dbUser = dbUserOptional.get();
+
+		if (userService.passwordMatches(user.getPassword(), dbUser.getPassword())) {
+			return ResponseEntity.ok()
+					.headers(HeaderUtil.createAlert("Authentication successful", user.getUsername())).body(dbUser);
+		} else {
+			return ResponseEntity.badRequest()
+					.headers(HeaderUtil.createFailureAlert("Password incorrect", user.getUsername())).body(null);
+		}
+
 	}
 
 	/**
 	 * POST /users : Creates a new user.
-	 * 
+	 *
 	 * Creates a new user if the username is not already used.
-	 * 
+	 *
 	 * @param user
 	 *            The user to create
 	 * @return the ResponseEntity with status 201 (Created) and with body the
