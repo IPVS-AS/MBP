@@ -112,8 +112,7 @@ public class RestDeviceController {
         }
 
         //Set current user as owner of the new resource
-        User currentUser = userService.getUserWithAuthorities();
-        device.setOwner(currentUser);
+        device.setOwner();
 
         //Save device to repository
         Device createdDevice = deviceRepository.save(device);

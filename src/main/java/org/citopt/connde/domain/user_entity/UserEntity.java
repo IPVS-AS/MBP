@@ -49,7 +49,7 @@ public abstract class UserEntity {
     private Set<User> approvedUsers = new HashSet<>();
 
     /**
-     * Returns the owner user of this entity.
+     * Returns the owner of this entity.
      *
      * @return The owner
      */
@@ -58,12 +58,23 @@ public abstract class UserEntity {
     }
 
     /**
-     * Sets the owner user of this entity.
+     * Sets the owner of this entity.
      *
      * @param owner The owner to set
      */
     public void setOwner(User owner) {
         this.owner = owner;
+    }
+
+    /**
+     * Sets the owner of this entity to the current user.
+     */
+    public void setOwner() {
+        //Resolve user service bean
+        UserService userService = DynamicBeanProvider.get(UserService.class);
+
+        //Get current user and set owner
+        this.owner = userService.getUserWithAuthorities();
     }
 
     /**
