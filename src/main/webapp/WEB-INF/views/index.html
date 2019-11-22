@@ -94,7 +94,7 @@
     <link th:href="@{/plugins/jquery-querybuilder/css/query-builder.default.css}" rel="stylesheet"/>
 </head>
 
-<body ng-class="expert ? 'theme-red' : 'theme-blue'" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
+<body class="theme-blue" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
 <!-- Overlay For Sidebars -->
 <div class="overlay"></div>
 <!-- #END# Overlay For Sidebars -->
@@ -130,7 +130,7 @@
                 {{username}}
             </div>
             <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 10px">
-                {{expert ? "Expert User" : "Normal User"}}
+                {{userData.firstName + " " + userData.lastName}}
             </div>
             <div class="btn-group user-helper-dropdown" uib-dropdown="uib-dropdown" is-open="status.isopen">
                 <!--<button class="dropdown-toggle pull-right">-->
@@ -139,14 +139,6 @@
                 <!--</button>-->
                 <ul class="dropdown-menu pull-right" uib-dropdown-menu="uib-dropdown-menu" role="menu"
                     aria-labelledby="single-button">
-                    <li ng-hide="expert">
-                        <a href="view/expert">
-                            <i class="material-icons">person</i>Go Expert</a>
-                    </li>
-                    <li ng-show="expert">
-                        <a href="view/no-expert">
-                            <i class="material-icons">person</i>Leave Expert</a>
-                    </li>
                     <li>
                         <a href="view/users">
                             <i class="material-icons">person</i>Users</a>
@@ -207,32 +199,30 @@
               <span>Actuators</span>
             </a>
           </li>
-          <li href="view/adapters" ng-show="expert" menu-item="menu-item">
+          <li href="view/adapters" menu-item="menu-item">
             <a href="view/adapters">
               <i class="material-icons">description</i>
               <span>Extraction/Control Operators</span>
             </a>
           </li>
-          <li href="view/monitoring-adapters" ng-show="expert" menu-item="menu-item">
+          <li href="view/monitoring-adapters" menu-item="menu-item">
             <a href="view/monitoring-adapters">
               <i class="material-icons">timeline</i>
               <span>Monitoring Operators</span>
             </a>
           </li>
-<!--           <li href="view/adapters" ng-show="expert" menu-item="menu-item">
+<!--           <li href="view/adapters" menu-item="menu-item">
             <a href="view/adapters">
               <i class="material-icons">description</i>
               <span>Processing Operators</span>
             </a>
           </li> -->
-          <li href="view/settings" ng-show="expert" menu-item="menu-item">
+          <li href="view/settings" menu-item="menu-item">
             <a href="view/settings">
               <i class="material-icons">settings</i>
               <span>Settings</span>
             </a>
           </li>
-          <!-- <li ng-hide="expert"> <a href="view/expert"> <i class="material-icons">person</i> <span>Go Expert</span> </a> </li> <li ng-show="expert"> <a href="view/no-expert"> <i class="material-icons">person</i> <span>Back to Normal User</span> </a>
-          </li>-->
         </ul>
     </div>
     <!-- #Menu -->
