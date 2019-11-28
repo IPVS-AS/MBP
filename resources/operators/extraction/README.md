@@ -19,8 +19,8 @@ The following shows a CLI example using the paho MQTT client:
 	          "value": 20}'
 ''
 
-The name convention for subfolders is <sensor-type>_<IoT_device-type>.
+The name convention for subfolders is `<sensor-type>_<IoT_device-type>`.
 
 ## Content
 
-- [LK-temperature_raspberry-pi](LK-temperature_raspberry-pi): operator scripts to extracts sensor data from a LK temperature sensor. 
+- [LK-temperature_raspberry-pi](LK-temperature_raspberry-pi): operator scripts to extract sensor data from a LK temperature sensor. 

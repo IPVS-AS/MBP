@@ -16,7 +16,7 @@ The following shows a CLI example using the paho MQTT client:
            "id": "596cafaa6c0ccd5d29da0e90", 
            "value": 20}'
 
-The name convention for subfolders is <actuator-type>_<IoT-device-type>.
+The name convention for subfolders is `<actuator-type>_<IoT-device-type>`.
 
 ## Content
 
