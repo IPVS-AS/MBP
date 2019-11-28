@@ -12,12 +12,12 @@ The expected message structure by the MBP is a json-formatted string containing 
 
 The following shows a CLI example using the paho MQTT client: 
  
-''    
+``
     $ mosquitto_pub.exe -t sensor/596cafaa6c0ccd5d29da0e90 
       -m '{"component": "SENSOR", 
            "id": "596cafaa6c0ccd5d29da0e90", 
 	          "value": 20}'
-''
+``
 
 The name convention for subfolders is `<sensor-type>_<IoT_device-type>`.
 
