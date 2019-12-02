@@ -15,9 +15,10 @@ The following shows a CLI example using the paho MQTT client:
     $ mosquitto_pub.exe -t actuator/5ddfd372ddc3d67cf740d6a5 
       -m '{"component": "ACTUATOR", "id": "5ddfd372ddc3d67cf740d6a5", "value": 1}'
 ``
+
 The name convention for subfolders is `<actuator-type>_<IoT-device-type>`.
 
 ## Content
 
 - [relay_raspberry-pi](relay_raspberry-pi): operator scripts to control a relay.
-- [switch_raspberry-pi](switch_raspberry-pi): operator scripts to control a radio frequency (RF) and Arduino-based switch.
+- [switch_raspberry-pi](switch_raspberry-pi): operator scripts to control a radio frequency (RF), Arduino-based switch.
