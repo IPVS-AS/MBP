@@ -25,6 +25,7 @@ class mqttClient(object):
    lastValue = 0
    sensor = ""
    topic = ""
+   axis = ""
 
    def __init__(self, hostname, port, clientid):
       self.hostname = hostname
@@ -45,6 +46,9 @@ class mqttClient(object):
    def setTopic(self, id):
       self.topic = "XDK/" + id
 
+   def setAxis(self, axis):
+      self.axis = axis
+
    def getSensor(self):
       return self.sensor
 
@@ -61,7 +65,10 @@ class mqttClient(object):
    def on_message(self, client, userdata, message):
       print("message received")
       parsed_json = json.loads(message.payload.decode("utf-8", "ignore"))
-      self.setLastValue(parsed_json[self.sensor])
+      if self.axis == "":
+         self.setLastValue(parsed_json[self.sensor])
+      else:
+         self.setLastValue(parsed_json[self.sensor][self.axis])
 
    # publishes message to MQTT broker
    def sendMessage(self, topic, msg):
@@ -110,7 +117,9 @@ def main(argv):
       elif param["name"] == "sensor":
          subscriber.setSensor(param["value"]) 
       elif param["name"] == "id":
-         subscriber.setTopic(param["value"]) 
+         subscriber.setTopic(param["value"])
+      elif param["name"] == "axis":
+         subscriber.setAxis(param["value"]) 
 
    configFileName = "connections.txt"
    topics = []

@@ -9,6 +9,8 @@ The following parameters need to be provided on deployment:
 
  - `"id" (text)`: XDK's MQTT Client ID (E.g. XDK1, XDK2, XDK3...)
 
+ - `"axis" (text)`: some sensors need this value to show the respective axis value (accelerometer has "x", "y" and "z")
+
 The following files are provided in this folder:
  
  - `XDK_MQTT.zip`: This file contains the MQTT Protocol Project which should be import to XDK.
@@ -28,6 +30,22 @@ The following files are provided in this folder:
 The XDK Workbench version used is 3.6.0.
 
 To import/export a project to XDK device see https://developer.bosch.com/web/xdk/importing-a-project
+
+### Setting up the XDK Code
+
+After importing the xdk project goto `MQTT/source/AppController.h`
+
+Edit the following constants o work in your environment:
+
+**WLAN_SSID**: the SSID of the WiFi which the BOSCH device will connect to
+
+**WLAN_PSK**: WiFi password
+
+**APP_MQTT_BROKER_HOST_URL**: is the MQTT broker host address URL.
+
+**APP_MQTT_CLIENT_ID**:  is the device name
+
+**APP_MQTT_TOPIC**: is the topic to subscribe and publish
 
 ## Script details
 
