@@ -13,7 +13,7 @@ The following parameters need to be provided on deployment:
 
 The following files are provided in this folder:
  
- - `XDK_MQTT.zip`: This file contains the MQTT Protocol Project which should be import to XDK.
+ - `XDK_MQTT.zip`: This file contains the MQTT Protocol Project which must be imported into XDK.
  
  - `sensoradapter_xdk_mqtt.py`: This file contains a MQTT client, which publishes XDK sensor values to a configured topic on MBP Broker received through a topic which the script subscribes on the localhost to receive the json containing all the sensors enabled and its values on the XDK device
 
@@ -29,15 +29,15 @@ The following files are provided in this folder:
 
 The XDK Workbench version used is 3.6.0.
 
-To import/export a project to XDK device see https://developer.bosch.com/web/xdk/importing-a-project
+To import/export a project to XDK device check https://developer.bosch.com/web/xdk/importing-a-project
 
 ### Setting up the XDK Code
 
-After importing the xdk project goto `MQTT/source/AppController.h`
+After importing the xdk project go to `MQTT/source/AppController.h` file
 
-Edit the following constants o work in your environment:
+Edit the following constants to work in your environment:
 
-**WLAN_SSID**: the SSID of the WiFi which the BOSCH device will connect to
+**WLAN_SSID**: the SSID of the WiFi which the XDK device will connect to
 
 **WLAN_PSK**: WiFi password
 
@@ -49,7 +49,7 @@ Edit the following constants o work in your environment:
 
 ## Script details
 
-The script `sensoradapter_xdk.py` subscribes on the localhost broker to receive a JSON containing all the sensors enabled and its values on the XDK device...
+The script `sensoradapter_xdk_mqtt.py` subscribes on the localhost broker to receive a JSON containing all the sensors enabled and its values...
 
 Example of JSON received:
 ```
