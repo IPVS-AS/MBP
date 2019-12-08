@@ -57,8 +57,6 @@ After a reboot of the hosting system, in order to decrease the restart time that
 
 ## 2 Quick Start
 
-The MBP UI provides two views, the *expert* and *normal* views. The *expert view* shows the full functionality of the MBP, where *IoT (Environment) Models* can be created and managed. Furthermore, *Operators*, *Devices*, *Sensors* and *Actuators* can be manually registered. The *normal view* is a compacter view, in which the operators are hidden.
-
 To start using the MBP, please click [here](https://github.com/IPVS-AS/MBP/wiki/Quick-Start) to see our Quick Start.
 
 ## 3 MBP REST API

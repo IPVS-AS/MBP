@@ -171,7 +171,7 @@ public class RestValueLogController {
         }
 
         //Try to get unit object from string
-        Unit targetUnit = null;
+        Unit targetUnit;
         try {
             targetUnit = Unit.valueOf(unit);
         } catch (Exception e) {

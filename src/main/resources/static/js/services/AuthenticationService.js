@@ -39,18 +39,22 @@
     /*
      * Set the authorization header and save the data in a cookie
      */
-    function SetCredentials(username, password) {
-      var authdata = Base64.encode(username + ':' + password);
+    function SetCredentials(username, password, userData) {
+      var authData = Base64.encode(username + ':' + password);
+
+      //Sanitize user data
+      userData = userData || {};
 
       $rootScope.globals = {
         currentUser: {
           username: username,
-          authdata: authdata
+          userData: userData,
+          authdata: authData
         }
       };
 
       // set default auth header for http requests
-      $http.defaults.headers.common['Authorization'] = 'Basic ' + authdata;
+      $http.defaults.headers.common['Authorization'] = 'Basic ' + authData;
 
       // store user details in globals cookie that keeps user logged in for 1 week (or until they logout)
       var cookieExp = new Date();

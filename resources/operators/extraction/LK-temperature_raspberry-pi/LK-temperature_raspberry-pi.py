@@ -7,12 +7,17 @@ import time
 import json
 import os, fnmatch
 from os.path import expanduser
-import random
 
-import re
+# hardware imports
+import RPi.GPIO as GPIO
+import spidev
 
+# global hardware config
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
 
-from threading import Thread
+# - Temperature
+temp_adc_channel = int(0)
 
 ############################
 # MQTT Client
@@ -21,11 +26,6 @@ class mqttClient(object):
    hostname = 'localhost'
    port = 1883
    clientid = ''
-
-   lastValue = 0
-   sensor = ""
-   topic = ""
-   axis = ""
 
    def __init__(self, hostname, port, clientid):
       self.hostname = hostname
@@ -38,37 +38,10 @@ class mqttClient(object):
 
       # set mqtt client callbacks
       self.client.on_connect = self.on_connect
-      self.client.on_message = self.on_message
-
-   def setSensor(self, sensor):
-      self.sensor = sensor
-
-   def setTopic(self, id):
-      self.topic = "XDK/" + id
-
-   def setAxis(self, axis):
-      self.axis = axis
-
-   def getSensor(self):
-      return self.sensor
-
-   def setLastValue(self, value):
-      self.lastValue = value
-
-   def getLastValue(self):
-      return self.lastValue
 
    # The callback for when the client receives a CONNACK response from the server.
    def on_connect(self, client, userdata, flags, rc):
       print("[" + datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3] + "]: " + "ClientID: " + self.clientid + "; Connected with result code " + str(rc))
-
-   def on_message(self, client, userdata, message):
-      print("message received")
-      parsed_json = json.loads(message.payload.decode("utf-8", "ignore"))
-      if self.axis == "":
-         self.setLastValue(parsed_json[self.sensor])
-      else:
-         self.setLastValue(parsed_json[self.sensor][self.axis])
 
    # publishes message to MQTT broker
    def sendMessage(self, topic, msg):
@@ -76,8 +49,7 @@ class mqttClient(object):
       print(msg)
 
    # connects to MQTT Broker
-   def startPublisher(self):
-      #self.client.connect(self.hostname, self.port, 60)
+   def start(self):
       self.client.connect(self.hostname, self.port, 60)
 
       #runs a thread in the background to call loop() automatically.
@@ -86,46 +58,49 @@ class mqttClient(object):
       #Call loop_stop() to stop the background thread.
       self.client.loop_start()
 
-   def startSubscriber(self):
-      #self.client.connect(self.hostname, self.port, 60)
-      self.client.connect(self.hostname, self.port, 60)
-      self.client.subscribe(self.topic)
-
-      #runs a thread in the background to call loop() automatically.
-      #This frees up the main thread for other work that may be blocking.
-      #This call also handles reconnecting to the broker.
-      #Call loop_stop() to stop the background thread.
-      self.client.loop_start()
+      
+############################
+# Analog in (on linker-base ADC)
+############################
+class analogInputReader(object):
+   def __init__(self):
+      self.spi = spidev.SpiDev()
+      self.spi.open(0,0) # (bus, device)
+ 
+   def readadc (self, adPin):
+      # read SPI data from MCP3004 chip, 4 possible adc’s (0 thru 3)
+      if ((adPin > 3) or (adPin < 0)):
+         return -1
+      r = self.spi.xfer2([1,8+adPin <<4,0])
+      #print(r)
+      adcout = ((r[1] &3) <<8)+r[2]
+      return adcout
+ 
+   def getLevel (self, adPin):
+      value = self.readadc(adPin)
+      volts = (value*3.3)/1024
+      return (volts, value)
+ 
+   def getTemperature (self, adPin):
+      v0 = self.getLevel(adPin)
+      temp = (((v0[0] * 1000) - 500)/10) # celsius
+      return temp
 
 ############################
 # MAIN
 ############################
 def main(argv):
-
-   hostname = 'localhost'
-   topic_pub = 'test'
-
-   # --- Begin start mqtt client
-   id = "id_%s" % (datetime.utcnow().strftime('%H_%M_%S'))
-   subscriber = mqttClient("localhost", 1883, id)
-
-   #Read other measure interval from parameter data
-   paramArray = json.loads(argv[0])
-   for param in paramArray:
-      if not ('name' in param and 'value' in param):
-          continue
-      elif param["name"] == "sensor":
-         subscriber.setSensor(param["value"]) 
-      elif param["name"] == "id":
-         subscriber.setTopic(param["value"])
-      elif param["name"] == "axis":
-         subscriber.setAxis(param["value"]) 
-
+   #default interval for sending data
+   measureInterval = 30
+   
    configFileName = "connections.txt"
    topics = []
    brokerIps = []
    configExists = False
 
+   hostname = 'localhost'
+   topic_pub = 'test'
+   
    configFile = os.path.join(os.getcwd(), configFileName)
 
    while (not configExists):
@@ -145,36 +120,39 @@ def main(argv):
        brokerIps.append(ip)
 
    # END parsing file
-   
+
    hostname = brokerIps [0]
    topic_pub = topics [0]
    topic_splitted = topic_pub.split('/')
    component = topic_splitted [0]
    component_id = topic_splitted [1]
-
-   subscriber.startSubscriber()
-
-   time.sleep(5.0)
-
+   
+   print("Connecting to: " + hostname + " pub on topic: " + topic_pub)
+   
+   # --- Begin start mqtt client
+   id = "id_%s" % (datetime.utcnow().strftime('%H_%M_%S'))
    publisher = mqttClient(hostname, 1883, id)
-   publisher.startPublisher()
+   publisher.start()
 
+   # Hardware - init analog input reader
+   aiReader = analogInputReader()
+   
    try:  
       while True:
          # messages in json format
-
+         # send message, topic: temperature
          t = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 
-         value = subscriber.getLastValue()
-
-         msg_pub = {"component": component.upper(), "id": component_id, "value": "%f" % (float(value)) }
+         # read temperature
+         measured_temp = aiReader.getTemperature(temp_adc_channel)
+         
+         msg_pub = {"component": component.upper(), "id": component_id, "value": "%.3f" % (measured_temp)}
          publisher.sendMessage (topic_pub, json.dumps(msg_pub))
 
-         time.sleep(5)
-
+         time.sleep(measureInterval)
    except:
       e = sys.exc_info()
       print ("end due to: ", str(e))
-      
+
 if __name__ == "__main__":
    main(sys.argv[1:])

@@ -43,33 +43,38 @@ public class RestUserController {
 
     /**
      * POST /authenticate : Authenticates the received user.
-     * <p>
      * Checks if the user is registered and if the password is correct.
      *
      * @param authData User authentication data to use
      * @return the ResponseEntity with status 200 (OK) if authentication
-     * successful, or with status 400 (Bad Request) if user not found or
-     * password incorrect
+     * successful with the user object from database as body,
+     * or with status 400 (Bad Request) if user not found or  password incorrect
      */
     @PostMapping("/authenticate")
     @ApiOperation(value = "Authenticates a user", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User not found or password incorrect")})
-    public ResponseEntity<?> authenticate(@RequestBody @ApiParam(value = "Authentication data", required = true) UserAuthData authData) {
-        String userName = authData.getUsername().toLowerCase(Locale.ENGLISH);
-        Optional<User> userFromDatabase = userRepository.findOneByUsername(userName);
-        if (!userFromDatabase.isPresent()) {
+    public ResponseEntity<User> authenticate(@RequestBody @ApiParam(value = "Authentication data", required = true) UserAuthData authData) {
+        String lowercaseUsername = authData.getUsername().toLowerCase(Locale.ENGLISH);
+        Optional<User> dbUserOptional = userRepository.findOneByUsername(lowercaseUsername);
+
+        //Check if user was found
+        if (!dbUserOptional.isPresent()) {
             return ResponseEntity.badRequest()
-                    .headers(HeaderUtil.createFailureAlert("User not found", userName)).body(null);
+                    .headers(HeaderUtil.createFailureAlert("User not found", authData.getUsername())).body(null);
+        }
+
+        //Get user object from database
+        User dbUser = dbUserOptional.get();
+
+        if (userService.passwordMatches(authData.getPassword(), dbUser.getPassword())) {
+            return ResponseEntity.ok()
+                    .headers(HeaderUtil.createAlert("Authentication successful", dbUser.getUsername())).body(dbUser);
         } else {
-            if (userService.passwordMatches(authData.getPassword(), userFromDatabase.get().getPassword())) {
-                return ResponseEntity.ok()
-                        .headers(HeaderUtil.createAlert("Authentication successful", userName)).body(null);
-            } else {
-                return ResponseEntity.badRequest()
-                        .headers(HeaderUtil.createFailureAlert("Password incorrect", userName)).body(null);
-            }
+            return ResponseEntity.badRequest()
+                    .headers(HeaderUtil.createFailureAlert("Password incorrect", dbUser.getUsername())).body(null);
         }
     }
+
 
     /**
      * POST /users : Creates a new user.
@@ -177,6 +182,7 @@ public class RestUserController {
     /**
      * Searches and returns a list of user excerpts for all users whose usernames contain a given query string. If the
      * provided query string is too short, an empty list is returned.
+     *
      * @param queryString The query string for searching users
      * @return The list of user excerpts for all matching users
      */

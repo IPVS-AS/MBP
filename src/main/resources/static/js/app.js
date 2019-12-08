@@ -23,12 +23,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
             autoProcessQueue: false
         });
 
-        function redirectExpert($location, SessionService) {
-            if (!SessionService.isExpert()) {
-                $location.path('/');
-            }
-        }
-
         var viewPrefix = '/view';
         // configure the routing rules here
         $routeProvider
@@ -348,7 +342,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 templateUrl: 'templates/adapters',
                 controller: 'AdapterListController as ctrl',
                 resolve: {
-                    isExpert: ['$location', 'SessionService', redirectExpert],
                     adapterPreprocessing: function () {
                     },
                     parameterTypesList: ['ParameterTypeService', function (ParameterTypeService) {
@@ -380,7 +373,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 templateUrl: 'templates/monitoring-adapters',
                 controller: 'MonitoringAdapterListController as ctrl',
                 resolve: {
-                    isExpert: ['$location', 'SessionService', redirectExpert],
                     deviceTypesList: ['ComponentTypeService', function (ComponentTypeService) {
                         return ComponentTypeService.GetByComponent('device').then(function (response) {
                             return response.data;
@@ -421,30 +413,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 templateUrl: 'templates/404'
             })
 
-            // Go expert
-            .when(viewPrefix + '/expert', {
-                redirectTo: function () {
-                    return '/';
-                },
-                resolve: {
-                    goExpert: ['SessionService', function (SessionService) {
-                        SessionService.goExpert();
-                    }]
-                }
-            })
-
-            // Back to normal
-            .when(viewPrefix + '/no-expert', {
-                redirectTo: function () {
-                    return '/';
-                },
-                resolve: {
-                    leaveExpert: ['SessionService', function (SessionService) {
-                        SessionService.leaveExpert();
-                    }]
-                }
-            })
-
             .otherwise({
                 redirectTo: '/'
             });
@@ -476,10 +444,8 @@ app.run(['$rootScope', '$timeout', 'SessionService', '$location', '$cookieStore'
 
                 if ($rootScope.loggedIn) {
                     $rootScope.username = $rootScope.globals.currentUser.username;
+                    $rootScope.userData = $rootScope.globals.currentUser.userData;
                 }
-
-                // set expert
-                $rootScope.expert = SessionService.isExpert();
             });
         });
     }
