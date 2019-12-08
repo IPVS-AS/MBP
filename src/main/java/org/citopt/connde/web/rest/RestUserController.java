@@ -48,7 +48,7 @@ public class RestUserController {
      * @param authData User authentication data to use
      * @return the ResponseEntity with status 200 (OK) if authentication
      * successful with the user object from database as body,
-     * or with status 400 (Bad Request) if user not found or  password incorrect
+     * or with status 400 (Bad Request) if user not found or password incorrect
      */
     @PostMapping("/authenticate")
     @ApiOperation(value = "Authenticates a user", produces = "application/hal+json")
