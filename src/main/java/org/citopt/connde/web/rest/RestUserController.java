@@ -75,7 +75,6 @@ public class RestUserController {
         }
     }
 
-
     /**
      * POST /users : Creates a new user.
      * <p>

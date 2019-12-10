@@ -45,7 +45,7 @@ public class RestDeviceController {
     private UserEntityService userEntityService;
 
     @Autowired
-    ProjectionFactory projectionFactory;
+    private ProjectionFactory projectionFactory;
 
     @Autowired
     private DeviceRepository deviceRepository;
@@ -53,7 +53,7 @@ public class RestDeviceController {
     @Autowired
     private DeviceValidator deviceValidator;
 
-    @GetMapping("/devices/{deviceId}")
+    @RequestMapping(value = "/devices/{deviceId}", method = RequestMethod.GET)
     @ApiOperation(value = "Returns a device entity", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Device not found or not authorized to access this device")})
     public ResponseEntity<Resource<Device>> one(@PathVariable @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId) {
@@ -73,7 +73,7 @@ public class RestDeviceController {
         return ResponseEntity.ok(resource);
     }
 
-    @GetMapping("/devices")
+    @RequestMapping(value = "/devices", method = RequestMethod.GET)
     @ApiOperation(value = "Returns all available device entities", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success")})
     public ResponseEntity<PagedResources<Resource<Device>>> all() {

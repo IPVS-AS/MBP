@@ -1,5 +1,11 @@
 package org.citopt.connde;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.AdapterValidator;
 import org.citopt.connde.domain.component.Actuator;
@@ -14,7 +20,11 @@ import org.citopt.connde.domain.monitoring.MonitoringAdapterValidator;
 import org.citopt.connde.domain.rules.*;
 import org.citopt.connde.domain.user.Authority;
 import org.citopt.connde.domain.user.User;
+import org.citopt.connde.repository.AdapterRepository;
+import org.citopt.connde.repository.SensorRepository;
+import org.citopt.connde.service.UserService;
 import org.citopt.connde.web.rest.RestDeploymentController;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
@@ -25,6 +35,10 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Contains crucial rest configurations for the application.

@@ -11,7 +11,6 @@ import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.UserService;
 import org.citopt.connde.util.ValidationErrorCollection;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.projection.ProjectionFactory;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -45,15 +44,12 @@ public class RestAdapterController {
     private UserEntityService userEntityService;
 
     @Autowired
-    ProjectionFactory projectionFactory;
-
-    @Autowired
     private AdapterRepository adapterRepository;
 
     @Autowired
     private AdapterValidator adapterValidator;
 
-    @GetMapping("/adapters/{adapterId}")
+    @RequestMapping(value = "/adapters/{adapterId}", method = RequestMethod.GET)
     @ApiOperation(value = "Returns an adapter entity", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Adapter not found or not authorized to access this adapter")})
     public ResponseEntity<Resource<Adapter>> one(@PathVariable @ApiParam(value = "ID of the adapter", example = "5c97dc2583aeb6078c5ab672", required = true) String adapterId) {
@@ -73,7 +69,7 @@ public class RestAdapterController {
         return ResponseEntity.ok(resource);
     }
 
-    @GetMapping("/adapters")
+    @RequestMapping(value = "/adapters", method = RequestMethod.GET)
     @ApiOperation(value = "Returns all available adapter entities", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success")})
     public ResponseEntity<PagedResources<Resource<Adapter>>> all() {
@@ -107,7 +103,7 @@ public class RestAdapterController {
             return new ResponseEntity<>(new ValidationErrorCollection(bindingResult), HttpStatus.BAD_REQUEST);
         }
 
-        if(!adapter.isCreatable()){
+        if (!adapter.isCreatable()) {
             return new ResponseEntity<>(new ValidationErrorCollection(bindingResult), HttpStatus.UNAUTHORIZED);
         }
 

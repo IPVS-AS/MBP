@@ -1,28 +1,28 @@
 package org.citopt.connde.domain.component;
 
-import javax.persistence.GeneratedValue;
-import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.adapter.Adapter;
+import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Reference;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.persistence.GeneratedValue;
+
 /**
- *
- * @author rafaelkperes
+ * Document super class for components (actuators, sensors, ...).
  */
 @Document
-public abstract class Component {
-    
+public abstract class Component extends UserEntity {
+
     @Id
     @GeneratedValue
     private String id;
 
     @Indexed(unique = true)
     private String name;
-    
+
     @Indexed
     private String componentType;
 
@@ -47,15 +47,15 @@ public abstract class Component {
     public void setName(String name) {
         this.name = name;
     }
-    
-    public String getComponentType() {
-		return componentType;
-	}
 
-	public void setComponentType(String componentType) {
-		this.componentType = componentType;
-	}
-    
+    public String getComponentType() {
+        return componentType;
+    }
+
+    public void setComponentType(String componentType) {
+        this.componentType = componentType;
+    }
+
     public Adapter getAdapter() {
         return adapter;
     }
@@ -72,7 +72,7 @@ public abstract class Component {
         this.device = address;
     }
 
-    public String getTopicName(){
+    public String getTopicName() {
         return getComponentTypeName() + "/" + id;
     }
 

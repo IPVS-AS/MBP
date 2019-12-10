@@ -64,7 +64,11 @@
                         <td>{{item.componentType}}</td>
                         <td>{{item._embedded.adapter.name}}</td>
                         <td>{{item._embedded.device.name}}</td>
+                        <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
+                            <div ng-show="item.isApprovable" style="display:inline-block">
+                                <user-approval entity-id="{{item.id}}" category-name="sensors"></user-approval>
+                            </div>
                             <form ng-submit="deleteSensorCtrl.deleteItem()">
                                 <button type="submit" class="btn btn-danger m-t-0 waves-effect"
                                         ng-click="deleteSensorCtrl.item.id = item.id">
@@ -140,7 +144,7 @@
                                      ng-class="{'focused error' : addSensorCtrl.item.errors.adapter }">
                                     <select class="form-control show-tick" id="sensor-form-select-adapter"
                                             ng-model="addSensorCtrl.item.adapter"
-                                            ng-options="t._links.self.href as (t.name) for t in ctrl.adapterList">
+                                            ng-options="t.id as (t.name) for t in ctrl.adapterList">
                                         <option value="">Select extraction adapter
                                         <option/>
                                     </select>
@@ -152,7 +156,7 @@
                                 <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.device }">
                                     <select class="form-control show-tick" id="sensor-form-select-device"
                                             ng-model="addSensorCtrl.item.device"
-                                            ng-options="d._links.self.href as (d.name) for d in ctrl.deviceList">
+                                            ng-options="d.id as (d.name) for d in ctrl.deviceList">
                                         <option value="">Select device<option/>
                                     </select>
                                 </div>

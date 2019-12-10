@@ -64,7 +64,11 @@
 						<td>{{item.componentType}}</td>
 						<td>{{item._embedded.adapter.name}}</td>
 						<td>{{item._embedded.device.name}}</td>
+						<td>{{item.ownerName ? item.ownerName : "None"}}</td>
 						<td>
+							<div ng-show="item.isApprovable" style="display:inline-block">
+								<user-approval entity-id="{{item.id}}" category-name="actuators"></user-approval>
+							</div>
 							<form ng-submit="deleteActuatorCtrl.deleteItem()">
 								<button type="submit" class="btn btn-danger m-t-0 waves-effect"
 										ng-click="deleteActuatorCtrl.item.id = item.id">
