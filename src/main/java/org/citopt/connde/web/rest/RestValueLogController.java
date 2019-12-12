@@ -1,5 +1,6 @@
 package org.citopt.connde.web.rest;
 
+import io.swagger.annotations.*;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Component;
@@ -28,6 +29,7 @@ import javax.measure.unit.Unit;
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
+@Api(tags = {"Value logs"}, description = "Retrieval of recorded value logs")
 public class RestValueLogController {
 
     @Autowired
@@ -57,8 +59,10 @@ public class RestValueLogController {
      * @return A pageable list of value logs
      */
     @GetMapping("/actuators/{id}/valueLogs")
-    public ResponseEntity<Page<ValueLog>> getActuatorValueLogs(@PathVariable(value = "id") String actuatorId,
-                                                               @RequestParam(value = "unit", required = false) String unit,
+    @ApiOperation(value = "Retrieves a list of recorded actuator value logs in a certain unit", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access value logs of this actuator"), @ApiResponse(code = 404, message = "Actuator not found")})
+    public ResponseEntity<Page<ValueLog>> getActuatorValueLogs(@PathVariable(value = "id") @ApiParam(value = "ID of the actuator to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId,
+                                                               @RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the actuator values", example = "°C", required = false) String unit,
                                                                Pageable pageable) {
         //Get actuator object
         Actuator actuator = (Actuator) getComponentById(actuatorId, actuatorRepository);
@@ -74,8 +78,10 @@ public class RestValueLogController {
      * @return A pageable list of value logs
      */
     @GetMapping("/sensors/{id}/valueLogs")
-    public ResponseEntity<Page<ValueLog>> getSensorValueLogs(@PathVariable(value = "id") String sensorId,
-                                                             @RequestParam(value = "unit", required = false) String unit,
+    @ApiOperation(value = "Retrieves a list of recorded sensor value log in a certain unit", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access value logs of this sensor"), @ApiResponse(code = 404, message = "Sensor not found")})
+    public ResponseEntity<Page<ValueLog>> getSensorValueLogs(@PathVariable(value = "id") @ApiParam(value = "ID of the sensor to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId,
+                                                             @RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the sensor values", example = "°C", required = false) String unit,
                                                              Pageable pageable) {
         //Get sensor object
         Sensor sensor = (Sensor) getComponentById(sensorId, sensorRepository);
@@ -92,9 +98,11 @@ public class RestValueLogController {
      * @return A pageable list of value logs
      */
     @GetMapping("/monitoring/{deviceId}/valueLogs")
-    public ResponseEntity<Page<ValueLog>> getMonitoringValueLogs(@PathVariable(value = "deviceId") String deviceId,
-                                                                 @RequestParam("adapter") String monitoringAdapterId,
-                                                                 @RequestParam(value = "unit", required = false) String unit,
+    @ApiOperation(value = "Retrieves a list of recorded monitoring value logs in a certain unit", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access value logs of this device or monitoring adapter"), @ApiResponse(code = 404, message = "Device or monitoring adapter not found")})
+    public ResponseEntity<Page<ValueLog>> getMonitoringValueLogs(@PathVariable(value = "deviceId") @ApiParam(value = "ID of the device to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
+                                                                 @RequestParam("adapter") @ApiParam(value = "ID of the monitoring adapter to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringAdapterId,
+                                                                 @RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the monitoring values", example = "°C", required = false) String unit,
                                                                  Pageable pageable) {
         //Get monitoring component object
         MonitoringComponent monitoringComponent = getMonitoringComponent(deviceId, monitoringAdapterId);
