@@ -32,10 +32,10 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 /**
  * REST Controller for device CRUD requests.
  */
-@RestController
-@ExposesResourceFor(Device.class)
-@RequestMapping(RestConfiguration.BASE_PATH)
-@Api(tags = {"Device entities"}, description = "CRUD for device entities")
+//@RestController
+//@ExposesResourceFor(Device.class)
+//@RequestMapping(RestConfiguration.BASE_PATH)
+//@Api(tags = {"Device entities"}, description = "CRUD for device entities")
 public class RestDeviceController {
 
     @Autowired

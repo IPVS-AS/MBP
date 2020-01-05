@@ -6,6 +6,7 @@ import org.citopt.connde.domain.user_entity.UserEntityPolicy;
 import org.citopt.connde.domain.user_entity.UserEntityRole;
 import org.citopt.connde.repository.UserEntityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,6 +21,9 @@ import static org.citopt.connde.domain.user_entity.UserEntityRole.*;
  */
 @Service
 public class UserEntityService {
+
+    private static final Sort DEFAULT_SORT = new Sort(Sort.Direction.ASC, "name");
+
 
     @Autowired
     private UserService userService;
@@ -96,6 +100,7 @@ public class UserEntityService {
      * @param user       The user for which the user entities are supposed to be retrieved
      * @return List of user entities
      */
+    @SuppressWarnings("unchecked")
     public List<UserEntity> getUserEntitiesFromRepository(UserEntityRepository repository, User user) {
         //Sanity check
         if (user == null) {
@@ -103,7 +108,7 @@ public class UserEntityService {
         }
 
         //Get all user entities from repository
-        List<UserEntity> entities = repository.findAll();
+        List<UserEntity> entities = repository.findAll(DEFAULT_SORT);
 
         //Create result list
         List<UserEntity> resultList = new ArrayList<>();

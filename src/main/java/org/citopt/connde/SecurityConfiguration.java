@@ -27,22 +27,22 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-    
+
 	@Bean
 	public RestAuthenticationEntryPoint restAuthenticationEntryPoint() {
 		return new RestAuthenticationEntryPoint();
 	}
-	
+
     @Bean
     public UserDetailsService mongoUserDetails() {
         return new UserDetailsServiceImpl();
     }
-	
+
 	@Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-	
+
 	@Override
     public void configure(AuthenticationManagerBuilder auth) {
         try {
@@ -54,7 +54,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             throw new BeanInitializationException("Security configuration failed", e);
         }
     }
-	
+
 	@Override
 	public void configure(WebSecurity web) throws Exception {
 	    web.ignoring()
@@ -62,7 +62,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	    .antMatchers("/resources/**")
 	    .antMatchers("/webapp/**");
 	}
-	
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http

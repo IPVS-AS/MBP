@@ -11,19 +11,15 @@ import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.UserService;
-import org.citopt.connde.util.ValidationErrorCollection;
-import org.citopt.connde.web.rest.dto.ComponentDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.ExposesResourceFor;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -34,10 +30,10 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 /**
  * REST Controller for sensor CRUD requests.
  */
-@RestController
-@ExposesResourceFor(Sensor.class)
-@RequestMapping(RestConfiguration.BASE_PATH)
-@Api(tags = {"Sensor entities"}, description = "CRUD for sensor entities")
+//@RestController
+//@ExposesResourceFor(Sensor.class)
+//@RequestMapping(RestConfiguration.BASE_PATH)
+//@Api(tags = {"Sensor entities"}, description = "CRUD for sensor entities")
 public class RestSensorController {
 
     @Autowired
@@ -58,6 +54,7 @@ public class RestSensorController {
     @Autowired
     private DeviceRepository deviceRepository;
 
+    /*
     @GetMapping("/sensors/{sensorId}")
     @ApiOperation(value = "Returns a sensor entity", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Sensor not found or not authorized to access this sensor")})
@@ -76,30 +73,31 @@ public class RestSensorController {
                 linkTo(methodOn(RestSensorController.class).all()).withRel("sensors"));
 
         return ResponseEntity.ok(resource);
-    }
+    }*/
 
     @GetMapping("/sensors")
     @ApiOperation(value = "Returns all available sensor entities", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success")})
-    public ResponseEntity<PagedResources<Resource<Sensor>>> all() {
+    public ResponseEntity<PagedResources<Resource<Sensor>>> all(Pageable pageable) {
         //Get all sensor user entities the current user has access to
         List<UserEntity> userEntities = userEntityService.getUserEntitiesFromRepository(sensorRepository);
 
         List<Resource<Sensor>> sensorList = userEntities.stream()
                 .map(userEntity -> (Sensor) userEntity)
                 .map(sensor -> new Resource<>(sensor,
-                        linkTo(methodOn(RestSensorController.class).one(sensor.getId())).withSelfRel(),
-                        linkTo(methodOn(RestSensorController.class).all()).withRel("sensors")))
+                        //linkTo(methodOn(RestSensorController.class).one(sensor.getId())).withSelfRel(),
+                        linkTo(methodOn(RestSensorController.class).all(pageable)).withRel("sensors")))
                 .collect(Collectors.toList());
 
         PagedResources.PageMetadata metadata = new PagedResources.PageMetadata(sensorList.size(), 0, sensorList.size());
 
         PagedResources<Resource<Sensor>> resources = new PagedResources<>(sensorList, metadata,
-                linkTo(methodOn(RestSensorController.class).all()).withSelfRel());
+                linkTo(methodOn(RestSensorController.class).all(pageable)).withSelfRel());
 
         return ResponseEntity.ok(resources);
     }
 
+    /*
     @RequestMapping(value = "/sensors", method = RequestMethod.POST)
     @ApiOperation(value = "Creates a new sensor entity", notes = "A ValidationErrorCollection object is returned in case of a failure.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "Invalid sensor properties"), @ApiResponse(code = 401, message = "Not authorized to create a new sensor")})
@@ -158,7 +156,7 @@ public class RestSensorController {
         sensorRepository.delete(sensorId);
 
         return ResponseEntity.ok().build();
-    }
+    }*/
 
     @PostMapping("/sensors/{sensorId}/approve")
     @ApiOperation(value = "Approves an user for a sensor entity", produces = "application/hal+json")
