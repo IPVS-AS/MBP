@@ -5,12 +5,8 @@ import org.springframework.data.rest.core.config.Projection;
 
 import java.util.List;
 
-/**
- *
- * @author rafaelkperes
- */
 @Projection(name = "list", types = Adapter.class)
-public interface AdapterExcerpt {
+public interface AdapterExcerpt extends UserEntityExcerpt {
 
     String getId();
 

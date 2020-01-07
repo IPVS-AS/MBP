@@ -13,9 +13,12 @@ public interface UserEntityExcerpt {
     @Value("#{target.getOwnerName()}")
     String getOwnerName();
 
+    @Value("#{target.getApprovedUsersProjection()}")
+    Set<UserExcerpt> getApprovedUsers();
+
     @Value("#{target.isApprovable()}")
     boolean getIsApprovable();
 
-    @Value("#{target.getApprovedUsersProjection()}")
-    Set<UserExcerpt> getApprovedUsers();
+    @Value("#{target.isDeletable()}")
+    boolean getIsDeletable();
 }

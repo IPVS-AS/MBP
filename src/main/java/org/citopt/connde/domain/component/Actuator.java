@@ -1,9 +1,6 @@
 package org.citopt.connde.domain.component;
 
-/**
- *
- * @author rafaelkperes
- */
+
 public class Actuator extends Component {
 
     private static final String COMPONENT_TYPE_NAME = "actuator";

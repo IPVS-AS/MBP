@@ -1,6 +1,7 @@
 package org.citopt.connde.repository;
 
 import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.repository.projection.DeviceExcerpt;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Query;
@@ -9,7 +10,7 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 
-@RepositoryRestResource(collectionResourceRel = "devices", path = "devices")
+@RepositoryRestResource(collectionResourceRel = "devices", path = "devices", excerptProjection = DeviceExcerpt.class)
 public interface DeviceRepository extends UserEntityRepository<Device> {
 
     Device findByName(@Param("name") String name);
