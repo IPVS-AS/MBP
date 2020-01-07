@@ -172,7 +172,7 @@ public class UserEntityService {
      * @param entity     The pertained user entity
      * @return True, if the user is permitted; false otherwise
      */
-    public boolean isUserPermitted(String permission, UserEntity entity) {
+    public boolean isUserPermitted(UserEntity entity, String permission) {
         //Sanity checks
         if (entity == null) {
             throw new IllegalArgumentException("User entity must not be null.");

@@ -11,8 +11,6 @@ import org.springframework.validation.Validator;
 /**
  * Validator for device objects. It includes checks for valid formats of MAC addresses, IP addresses and private
  * RSA keys.
- * <p>
- * Created by Jan on 10.12.2018.
  */
 @org.springframework.stereotype.Component
 public class DeviceValidator implements Validator {
