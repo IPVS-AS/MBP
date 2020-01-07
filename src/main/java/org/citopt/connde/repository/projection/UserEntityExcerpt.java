@@ -16,6 +16,9 @@ public interface UserEntityExcerpt {
     @Value("#{target.getApprovedUsersProjection()}")
     Set<UserExcerpt> getApprovedUsers();
 
+    @Value("#{target.isOwning()}")
+    boolean getIsOwning();
+
     @Value("#{target.isApprovable()}")
     boolean getIsApprovable();
 

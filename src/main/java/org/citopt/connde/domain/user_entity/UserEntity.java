@@ -151,9 +151,9 @@ public abstract class UserEntity {
         return user.equals(this.owner) || this.approvedUsers.contains(user);
     }
 
-    @JsonProperty("isOwner")
+    @JsonProperty("isOwning")
     @ApiModelProperty(notes = "Whether the current user is owner of the entity", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
-    public boolean isOwner() {
+    public boolean isOwning() {
         //Resolve user service bean
         UserService userService = DynamicBeanProvider.get(UserService.class);
 
