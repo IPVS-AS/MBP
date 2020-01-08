@@ -26,7 +26,7 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
-@Api(tags = {"User entity approval"}, description = "Approval and disapproval of useres for entities")
+@Api(tags = {"User entity approval"}, description = "Approval and disapproval of users for entities")
 public class RestUserApprovalController {
 
     @Autowired

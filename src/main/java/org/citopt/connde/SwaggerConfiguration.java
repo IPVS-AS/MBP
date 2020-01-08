@@ -4,10 +4,12 @@ import com.fasterxml.classmate.TypeResolver;
 import com.google.common.base.Predicates;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiOperation;
 import org.citopt.connde.util.ValidationErrorCollection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import springfox.documentation.annotations.ApiIgnore;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
@@ -33,6 +35,7 @@ public class SwaggerConfiguration {
      * @return The docket bean
      */
     @Bean
+    @SuppressWarnings("unchecked")
     public Docket docket() {
         //Type resolver for working with types
         TypeResolver typeResolver = new TypeResolver();
@@ -42,8 +45,10 @@ public class SwaggerConfiguration {
                 .useDefaultResponseMessages(false)
                 .additionalModels(typeResolver.resolve(ValidationErrorCollection.class))
                 .select()
-                .apis(Predicates.or(RequestHandlerSelectors.withClassAnnotation(Api.class),
-                        RequestHandlerSelectors.withClassAnnotation(ApiModel.class)))
+                .apis(Predicates.and(Predicates.or(RequestHandlerSelectors.withClassAnnotation(Api.class),
+                        RequestHandlerSelectors.withClassAnnotation(ApiModel.class),
+                        RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class)),
+                        Predicates.not(RequestHandlerSelectors.withClassAnnotation(ApiIgnore.class))))
                 .paths(PathSelectors.any())
                 .build()
                 .apiInfo(apiInfo());
