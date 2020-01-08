@@ -14,7 +14,7 @@ import javax.persistence.GeneratedValue;
  * Document super class for components (actuators, sensors, ...).
  */
 @Document
-public abstract class Component {
+public abstract class Component extends UserEntity {
 
     @Id
     @GeneratedValue

@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface ComponentRepository<C extends Component> extends MongoRepository<C, String> {
+public interface ComponentRepository<C extends Component> extends UserEntityRepository<C> {
     C findByName(@Param("name") String name);
 
     List<ComponentExcerpt> findAllByAdapterId(@Param("adapter.id") String adapterId);
