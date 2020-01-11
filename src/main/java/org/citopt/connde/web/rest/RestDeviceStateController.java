@@ -1,8 +1,10 @@
 package org.citopt.connde.web.rest;
 
+import io.swagger.annotations.*;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.repository.DeviceRepository;
+import org.citopt.connde.security.RestSecurityGuard;
 import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.deploy.DeviceState;
 import org.citopt.connde.service.deploy.SSHDeployer;
@@ -25,7 +27,11 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
+@Api(tags = {"Device state"}, description = "Retrieval of device states")
 public class RestDeviceStateController {
+
+    @Autowired
+    private RestSecurityGuard securityGuard;
 
     @Autowired
     private UserEntityService userEntityService;
@@ -42,6 +48,8 @@ public class RestDeviceStateController {
      * @return A map (device id -> device state) that contains the state of each device
      */
     @GetMapping("/devices/state")
+    @ApiOperation(value = "Retrieves the availability state of all devices for which the user is authorized", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success")})
     public ResponseEntity<Map<String, DeviceState>> getStatusAllDevices() {
         //Create result map (device id -> device state)
         Map<String, DeviceState> resultMap = new HashMap<>();
@@ -66,13 +74,20 @@ public class RestDeviceStateController {
      * @return The availability state of the device as plain string
      */
     @GetMapping(value = "/devices/state/{id}")
-    public ResponseEntity<Resource<DeviceState>> getDeviceStatus(@PathVariable(value = "id") String deviceId) {
+    @ApiOperation(value = "Retrieves the availability state for a device", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access the device"), @ApiResponse(code = 404, message = "Device not found")})
+    public ResponseEntity<Resource<DeviceState>> getDeviceStatus(@PathVariable(value = "id") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId) {
         //Retrieve device from repository
         Device device = (Device) userEntityService.getUserEntityFromRepository(deviceRepository, deviceId);
 
         //Check if device could be found
         if (device == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Security check
+        if (!securityGuard.checkPermission(device, "deploy")) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
 
         //Determine device state

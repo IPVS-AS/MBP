@@ -54,7 +54,7 @@ public class UserEntityPolicy {
      * @param permissionName The name of the permission to add
      * @return The user entity policy for chaining
      */
-    UserEntityPolicy addPermission(String permissionName) {
+    public UserEntityPolicy addPermission(String permissionName) {
         //Check for lock
         if (this.locked) {
             throw new IllegalArgumentException("The user entity policy is locked and thus read-only.");
@@ -83,7 +83,7 @@ public class UserEntityPolicy {
      * @param role The user entity role to add
      * @return The user entity policy for chaining
      */
-    UserEntityPolicy addRole(UserEntityRole role) {
+    public UserEntityPolicy addRole(UserEntityRole role) {
         return addRole(lastPermission, role);
     }
 

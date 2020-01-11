@@ -8,6 +8,7 @@ import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.ComponentRepository;
 import org.citopt.connde.repository.SensorRepository;
+import org.citopt.connde.security.RestSecurityGuard;
 import org.citopt.connde.web.rest.helper.DeploymentWrapper;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,14 +36,14 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
     private DeploymentWrapper deploymentWrapper;
 
     @Autowired
-    private SensorRepository sensorRepository;
+    private ActuatorRepository actuatorRepository;
 
     @Autowired
-    private ActuatorRepository actuatorRepository;
+    private SensorRepository sensorRepository;
 
     @RequestMapping(value = "/start/actuator/{id}", method = RequestMethod.POST)
     @ApiOperation(value = "Starts an actuator with deployment parameters", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 400, message = "Invalid deployment parameters provided"), @ApiResponse(code = 404, message = "Actuator not found"), @ApiResponse(code = 500, message = "Starting attempt failed due to an unexpected I/O error")})
+    @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 400, message = "Invalid deployment parameters provided"), @ApiResponse(code = 403, message = "Not authorized to start the actuator"), @ApiResponse(code = 404, message = "Actuator not found"), @ApiResponse(code = 500, message = "Starting attempt failed due to an unexpected I/O error")})
     public ResponseEntity<ActionResponse> startActuator(@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id,
                                                         @RequestBody @ApiParam(value = "List of deployment parameter instances to use") List<ParameterInstance> parameters) {
         return startComponent(id, actuatorRepository, parameters);
@@ -50,7 +51,7 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
 
     @RequestMapping(value = "/start/sensor/{id}", method = RequestMethod.POST)
     @ApiOperation(value = "Starts a sensor with deployment parameters", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 400, message = "Invalid deployment parameters provided"), @ApiResponse(code = 404, message = "Sensor not found"), @ApiResponse(code = 500, message = "Starting attempt failed due to an unexpected I/O error")})
+    @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 400, message = "Invalid deployment parameters provided"), @ApiResponse(code = 403, message = "Not authorized to start the sensor"), @ApiResponse(code = 404, message = "Sensor not found"), @ApiResponse(code = 500, message = "Starting attempt failed due to an unexpected I/O error")})
     public ResponseEntity<ActionResponse> startSensor(@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id,
                                                       @RequestBody @ApiParam(value = "List of deployment parameter instances to use") List<ParameterInstance> parameters) {
         return startComponent(id, sensorRepository, parameters);
@@ -58,49 +59,49 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
 
     @RequestMapping(value = "/stop/actuator/{id}", method = RequestMethod.POST)
     @ApiOperation(value = "Stops a running actuator", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Actuator not found"), @ApiResponse(code = 500, message = "Stopping attempt failed due to an unexpected I/O error")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to stop the actuator"), @ApiResponse(code = 404, message = "Actuator not found"), @ApiResponse(code = 500, message = "Stopping attempt failed due to an unexpected I/O error")})
     public ResponseEntity<ActionResponse> stopActuator(@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id) {
         return stopComponent(id, actuatorRepository);
     }
 
     @RequestMapping(value = "/stop/sensor/{id}", method = RequestMethod.POST)
     @ApiOperation(value = "Stops a running sensor", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Sensor not found"), @ApiResponse(code = 500, message = "Stopping attempt failed due to an unexpected I/O error")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to stop the sensor"), @ApiResponse(code = 404, message = "Sensor not found"), @ApiResponse(code = 500, message = "Stopping attempt failed due to an unexpected I/O error")})
     public ResponseEntity<ActionResponse> stopSensor(@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id) {
         return stopComponent(id, sensorRepository);
     }
 
     @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.GET)
     @ApiOperation(value = "Checks if an actuator is currently deployed", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Actuator not found"), @ApiResponse(code = 500, message = "Check failed due to an unexpected I/O error")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access the actuator"), @ApiResponse(code = 404, message = "Actuator not found"), @ApiResponse(code = 500, message = "Check failed due to an unexpected I/O error")})
     public ResponseEntity<Boolean> isRunningActuator(@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id) {
         return isRunningComponent(id, actuatorRepository);
     }
 
     @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.GET)
     @ApiOperation(value = "Checks if a sensor is currently deployed", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Sensor not found"), @ApiResponse(code = 500, message = "Check failed due to an unexpected I/O error")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access the sensor"), @ApiResponse(code = 404, message = "Sensor not found"), @ApiResponse(code = 500, message = "Check failed due to an unexpected I/O error")})
     public ResponseEntity<Boolean> isRunningSensor(@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id) {
         return isRunningComponent(id, sensorRepository);
     }
 
     @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.POST)
     @ApiOperation(value = "Deploys an actuator", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 404, message = "Actuator not found"), @ApiResponse(code = 500, message = "Deployment failed due to an unexpected I/O error")})
+    @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to deploy the actuator"), @ApiResponse(code = 404, message = "Actuator not found"), @ApiResponse(code = 500, message = "Deployment failed due to an unexpected I/O error")})
     public ResponseEntity<ActionResponse> deployActuator(@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id) {
         return deployComponent(id, actuatorRepository);
     }
 
     @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.POST)
     @ApiOperation(value = "Deploys a sensor", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 404, message = "Sensor not found"), @ApiResponse(code = 500, message = "Deployment failed due to an unexpected I/O error")})
+    @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to deploy the sensor"), @ApiResponse(code = 404, message = "Sensor not found"), @ApiResponse(code = 500, message = "Deployment failed due to an unexpected I/O error")})
     public ResponseEntity<ActionResponse> deploySensor(@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id) {
         return deployComponent(id, sensorRepository);
     }
 
     @RequestMapping(value = "/deploy/actuator/{id}", method = RequestMethod.DELETE)
     @ApiOperation(value = "Undeploys an actuator", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Actuator not found"), @ApiResponse(code = 500, message = "Undeployment failed due to an unexpected I/O error")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to undeploy the actuator"), @ApiResponse(code = 404, message = "Actuator not found"), @ApiResponse(code = 500, message = "Undeployment failed due to an unexpected I/O error")})
     public ResponseEntity<ActionResponse> undeployActuator(@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id) {
         return undeployComponent(id, actuatorRepository);
     }
@@ -108,12 +109,12 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
 
     @RequestMapping(value = "/deploy/sensor/{id}", method = RequestMethod.DELETE)
     @ApiOperation(value = "Undeploys a sensor", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Sensor not found"), @ApiResponse(code = 500, message = "Undeployment failed due to an unexpected I/O error")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to undeploy the sensor"), @ApiResponse(code = 404, message = "Sensor not found"), @ApiResponse(code = 500, message = "Undeployment failed due to an unexpected I/O error")})
     public ResponseEntity<ActionResponse> undeploySensor(@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id) {
         return undeployComponent(id, sensorRepository);
     }
 
-    private ResponseEntity isRunningComponent(String id, ComponentRepository repository) {
+    private ResponseEntity<Boolean> isRunningComponent(String id, ComponentRepository repository) {
         //Retrieve component from repository
         Component component = (Component) repository.findOne(id);
 

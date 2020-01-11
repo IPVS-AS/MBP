@@ -4,6 +4,7 @@ import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Component;
+import org.citopt.connde.security.RestSecurityGuard;
 import org.citopt.connde.service.deploy.ComponentState;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.citopt.connde.web.rest.response.ActionResponse;
@@ -27,6 +28,9 @@ import java.util.Map;
 public class DeploymentWrapper {
 
     @Autowired
+    private RestSecurityGuard securityGuard;
+
+    @Autowired
     private SSHDeployer sshDeployer;
 
     /**
@@ -39,6 +43,11 @@ public class DeploymentWrapper {
         //Validity check
         if (component == null) {
             return new ResponseEntity<Boolean>(HttpStatus.NOT_FOUND);
+        }
+
+        //Security check
+        if (!securityGuard.checkPermission(component, "deploy")) {
+            return new ResponseEntity<>(Boolean.FALSE, HttpStatus.UNAUTHORIZED);
         }
 
         //Determine component status
@@ -63,6 +72,12 @@ public class DeploymentWrapper {
         if (component == null) {
             ActionResponse response = new ActionResponse(false, "The component does not exist.");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        //Security check
+        if (!securityGuard.checkPermission(component, "deploy")) {
+            ActionResponse response = new ActionResponse(false);
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
 
         //Get adapter for parameter comparison
@@ -118,6 +133,12 @@ public class DeploymentWrapper {
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
+        //Security check
+        if (!securityGuard.checkPermission(component, "deploy")) {
+            ActionResponse response = new ActionResponse(false);
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
+
         //Undeploy component
         try {
             sshDeployer.stopComponent(component);
@@ -140,6 +161,12 @@ public class DeploymentWrapper {
         if (component == null) {
             ActionResponse response = new ActionResponse(false, "The component does not exist.");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        //Security check
+        if (!securityGuard.checkPermission(component, "deploy")) {
+            ActionResponse response = new ActionResponse(false);
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
 
         //Deploy component
@@ -166,6 +193,12 @@ public class DeploymentWrapper {
         if (component == null) {
             ActionResponse response = new ActionResponse(false, "The component does not exist.");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        //Security check
+        if (!securityGuard.checkPermission(component, "deploy")) {
+            ActionResponse response = new ActionResponse(false);
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
 
         //Undeploy component
@@ -209,6 +242,11 @@ public class DeploymentWrapper {
         //Validity check
         if (component == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Security check
+        if (!securityGuard.checkPermission(component, "deploy")) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
 
         //Determine component state
