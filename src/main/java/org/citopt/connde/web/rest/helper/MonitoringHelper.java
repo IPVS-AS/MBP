@@ -36,7 +36,7 @@ public class MonitoringHelper {
      * @param deviceId            The id of the device to wrap
      * @param monitoringAdapterId The id of the monitoring adapter to wrap
      * @return Null, if either the device or the monitoring adapter could not be found
-     * in their repositories; otherwise the deployable monitoring component
+     * in their repositories or the user is not authorized for them; otherwise the deployable monitoring component
      */
     public MonitoringComponent createMonitoringComponent(String deviceId, String monitoringAdapterId) {
         //Retrieve corresponding device and adapter from their repositories

@@ -31,7 +31,6 @@ public abstract class UserEntity {
 
     //Defines the default policy for user entities
     protected static final UserEntityPolicy DEFAULT_POLICY = new UserEntityPolicy()
-            .addPermission(PERMISSION_NAME_CREATE).addRole(USER)
             .addPermission(PERMISSION_NAME_READ).addRole(APPROVED_USER).addRole(ADMIN)
             .addPermission(PERMISSION_NAME_DELETE).addRole(ENTITY_OWNER).addRole(ADMIN)
             .addPermission(PERMISSION_NAME_APPROVE).addRole(ENTITY_OWNER).addRole(ADMIN)
@@ -238,15 +237,6 @@ public abstract class UserEntity {
     @ApiModelProperty(notes = "Whether the current user is allowed to disapprove other users", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     public boolean isDisapprovable() {
         return isPermitted("disapprove");
-    }
-
-    /**
-     * Returns whether the current user is permitted to create other entities of this type.
-     *
-     * @return True, if the user is permitted; false otherwise
-     */
-    public boolean isCreatable() {
-        return isPermitted("create");
     }
 
     /**

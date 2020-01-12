@@ -28,9 +28,6 @@ public class MonitoringAdapterEventHandler {
     private DeviceRepository deviceRepository;
 
     @Autowired
-    private ValueLogRepository valueLogRepository;
-
-    @Autowired
     private CEPTriggerService triggerService;
 
     @Autowired

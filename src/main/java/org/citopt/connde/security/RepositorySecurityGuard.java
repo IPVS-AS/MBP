@@ -12,10 +12,11 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * Provides methods for checking user permissions and retrieving permissible user entities for incoming REST requests.
+ * Provides methods for checking user permissions and retrieving permissible user entities for incoming REST requests
+ * on user entity repositories.
  */
 @Component
-public class RestSecurityGuard {
+public class RepositorySecurityGuard {
 
     @Autowired
     private UserEntityService userEntityService;
@@ -69,7 +70,7 @@ public class RestSecurityGuard {
      * Example within a repository interface:
      * <pre>
      * &#64;Query("{_id: null}") //Fail fast
-     * &#64;PostAuthorize("&#64;RestSecurityGuard.retrieveUserEntities(returnObject, #pageable, &#64;deviceRepository)")
+     * &#64;PostAuthorize("&#64;repositorySecurityGuard.retrieveUserEntities(returnObject, #pageable, &#64;deviceRepository)")
      * Page&#60;Device&#62; findAll(Pageable pageable);
      * </pre>
      *

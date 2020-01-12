@@ -74,7 +74,7 @@ public class RestDeviceStateController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access the device"), @ApiResponse(code = 404, message = "Device not found")})
     public ResponseEntity<Resource<DeviceState>> getDeviceStatus(@PathVariable(value = "id") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId) {
         //Retrieve device from repository
-        Device device = (Device) userEntityService.getUserEntityFromRepository(deviceRepository, deviceId);
+        Device device = deviceRepository.get(deviceId);
 
         //Check if device could be found
         if (device == null) {

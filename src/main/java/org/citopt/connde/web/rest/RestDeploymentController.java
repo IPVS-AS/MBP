@@ -41,7 +41,7 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
     private SensorRepository sensorRepository;
 
     @RequestMapping(value = "/start/actuator/{id}", method = RequestMethod.POST)
-    @ApiOperation(value = "Starts an actuator with deployment parameters", produces = "application/hal+json")
+    @ApiOperation(value = "Starts an actuator with optional deployment parameters", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 400, message = "Invalid deployment parameters provided"), @ApiResponse(code = 403, message = "Not authorized to start the actuator"), @ApiResponse(code = 404, message = "Actuator not found"), @ApiResponse(code = 500, message = "Starting attempt failed due to an unexpected I/O error")})
     public ResponseEntity<ActionResponse> startActuator(@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id,
                                                         @RequestBody @ApiParam(value = "List of deployment parameter instances to use") List<ParameterInstance> parameters) {
@@ -49,7 +49,7 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
     }
 
     @RequestMapping(value = "/start/sensor/{id}", method = RequestMethod.POST)
-    @ApiOperation(value = "Starts a sensor with deployment parameters", produces = "application/hal+json")
+    @ApiOperation(value = "Starts a sensor with optional deployment parameters", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 400, message = "Invalid deployment parameters provided"), @ApiResponse(code = 403, message = "Not authorized to start the sensor"), @ApiResponse(code = 404, message = "Sensor not found"), @ApiResponse(code = 500, message = "Starting attempt failed due to an unexpected I/O error")})
     public ResponseEntity<ActionResponse> startSensor(@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id,
                                                       @RequestBody @ApiParam(value = "List of deployment parameter instances to use") List<ParameterInstance> parameters) {
