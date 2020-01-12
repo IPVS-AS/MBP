@@ -4,7 +4,6 @@ import io.swagger.annotations.*;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.repository.DeviceRepository;
-import org.citopt.connde.security.RestSecurityGuard;
 import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.deploy.DeviceState;
 import org.citopt.connde.service.deploy.SSHDeployer;
@@ -29,9 +28,6 @@ import java.util.stream.Collectors;
 @RequestMapping(RestConfiguration.BASE_PATH)
 @Api(tags = {"Device state"}, description = "Retrieval of device states")
 public class RestDeviceStateController {
-
-    @Autowired
-    private RestSecurityGuard securityGuard;
 
     @Autowired
     private UserEntityService userEntityService;
@@ -86,7 +82,7 @@ public class RestDeviceStateController {
         }
 
         //Security check
-        if (!securityGuard.checkPermission(device, "read")) {
+        if (!device.isReadable()) {
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
 

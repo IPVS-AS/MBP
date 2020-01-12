@@ -4,7 +4,7 @@ import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Component;
-import org.citopt.connde.security.RestSecurityGuard;
+import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.deploy.ComponentState;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.citopt.connde.web.rest.response.ActionResponse;
@@ -28,7 +28,7 @@ import java.util.Map;
 public class DeploymentWrapper {
 
     @Autowired
-    private RestSecurityGuard securityGuard;
+    private UserEntityService userEntityService;
 
     @Autowired
     private SSHDeployer sshDeployer;
@@ -46,7 +46,7 @@ public class DeploymentWrapper {
         }
 
         //Security check
-        if (!securityGuard.checkPermission(component, "deploy")) {
+        if (!userEntityService.isUserPermitted(component, "deploy")) {
             return new ResponseEntity<>(Boolean.FALSE, HttpStatus.UNAUTHORIZED);
         }
 
@@ -75,7 +75,7 @@ public class DeploymentWrapper {
         }
 
         //Security check
-        if (!securityGuard.checkPermission(component, "deploy")) {
+        if (!userEntityService.isUserPermitted(component, "deploy")) {
             ActionResponse response = new ActionResponse(false);
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
@@ -134,7 +134,7 @@ public class DeploymentWrapper {
         }
 
         //Security check
-        if (!securityGuard.checkPermission(component, "deploy")) {
+        if (!userEntityService.isUserPermitted(component, "deploy")) {
             ActionResponse response = new ActionResponse(false);
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
@@ -164,7 +164,7 @@ public class DeploymentWrapper {
         }
 
         //Security check
-        if (!securityGuard.checkPermission(component, "deploy")) {
+        if (!userEntityService.isUserPermitted(component, "deploy")) {
             ActionResponse response = new ActionResponse(false);
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
@@ -196,7 +196,7 @@ public class DeploymentWrapper {
         }
 
         //Security check
-        if (!securityGuard.checkPermission(component, "deploy")) {
+        if (!userEntityService.isUserPermitted(component, "deploy")) {
             ActionResponse response = new ActionResponse(false);
             return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
@@ -245,7 +245,7 @@ public class DeploymentWrapper {
         }
 
         //Security check
-        if (!securityGuard.checkPermission(component, "deploy")) {
+        if (!userEntityService.isUserPermitted(component, "deploy")) {
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
 

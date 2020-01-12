@@ -5,7 +5,6 @@ import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.projection.ComponentExcerpt;
-import org.citopt.connde.security.RestSecurityGuard;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +21,8 @@ import java.util.List;
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
-@Api(tags = {"Component filter"}, description = "Retrieval of components that match a given criteria")
+@Api(tags = {"Component filter"}, description = "Retrieval of components that match given criteria")
 public class RestComponentFilterController {
-
-    @Autowired
-    private RestSecurityGuard restSecurityGuard;
 
     @Autowired
     private ActuatorRepository actuatorRepository;
@@ -89,7 +85,7 @@ public class RestComponentFilterController {
         //Filter actuator excerpts
         for (ComponentExcerpt actuatorExcerpt : actuatorExcerpts) {
             //Perform permission check
-            if (restSecurityGuard.checkPermissionById(actuatorExcerpt.getId(), actuatorRepository, "read")) {
+            if (actuatorRepository.get(actuatorExcerpt.getId()).isReadable()) {
                 componentList.add(actuatorExcerpt);
             }
         }
@@ -97,7 +93,7 @@ public class RestComponentFilterController {
         //Filter sensor excerpts
         for (ComponentExcerpt sensorExcerpt : sensorExcerpts) {
             //Perform permission check
-            if (restSecurityGuard.checkPermissionById(sensorExcerpt.getId(), sensorRepository, "read")) {
+            if (sensorRepository.get(sensorExcerpt.getId()).isReadable()) {
                 componentList.add(sensorExcerpt);
             }
         }

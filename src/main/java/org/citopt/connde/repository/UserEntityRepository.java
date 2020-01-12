@@ -26,7 +26,7 @@ public interface UserEntityRepository<T extends UserEntity> extends MongoReposit
     T get(String id);
 
     @Override
-    @PostAuthorize("@restSecurityGuard.checkPermission(returnObject, 'read')")
+    @PostAuthorize("@repositorySecurityGuard.checkPermission(returnObject, 'read')")
     @ApiOperation(value = "Retrieves an entity by its ID", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access the entity"), @ApiResponse(code = 404, message = "Entity not found")})
     T findOne(@ApiParam(value = "The ID of the entity", example = "5c97dc2583aeb6078c5ab672", required = true) String id);

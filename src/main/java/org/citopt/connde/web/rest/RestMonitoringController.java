@@ -1,5 +1,6 @@
 package org.citopt.connde.web.rest;
 
+import io.swagger.annotations.Api;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Component;
@@ -9,6 +10,7 @@ import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.domain.monitoring.MonitoringComponentDTO;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.projection.MonitoringAdapterExcerpt;
+import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.deploy.ComponentState;
 import org.citopt.connde.web.rest.helper.DeploymentWrapper;
 import org.citopt.connde.web.rest.helper.MonitoringHelper;
@@ -28,7 +30,11 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
+@Api(tags = {"Monitoring"}, description = "Monitoring of devices")
 public class RestMonitoringController {
+
+    @Autowired
+    private UserEntityService userEntityService;
 
     @Autowired
     private DeviceRepository deviceRepository;
@@ -81,6 +87,7 @@ public class RestMonitoringController {
     public ResponseEntity<ActionResponse> enableMonitoring(@PathVariable(value = "deviceId") String deviceId,
                                                            @RequestParam("adapter") String monitoringAdapterId,
                                                            @RequestBody List<ParameterInstance> parameters) {
+        //TODO extract to method
         //Validity check
         if ((deviceId == null) || deviceId.isEmpty() || (monitoringAdapterId == null) || monitoringAdapterId.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

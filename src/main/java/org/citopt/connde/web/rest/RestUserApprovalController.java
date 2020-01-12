@@ -4,6 +4,9 @@ import io.swagger.annotations.*;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
+import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.domain.monitoring.MonitoringAdapter;
+import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.repository.*;
@@ -11,10 +14,10 @@ import org.citopt.connde.repository.projection.ComponentExcerpt;
 import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.UserService;
 import org.citopt.connde.service.deploy.SSHDeployer;
+import org.citopt.connde.web.rest.helper.MonitoringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -42,28 +45,40 @@ public class RestUserApprovalController {
     private DeviceRepository deviceRepository;
 
     @Autowired
+    private MonitoringAdapterRepository monitoringAdapterRepository;
+
+    @Autowired
     private ActuatorRepository actuatorRepository;
 
     @Autowired
     private SensorRepository sensorRepository;
 
     @Autowired
+    private MonitoringHelper monitoringHelper;
+
+    @Autowired
     private SSHDeployer sshDeployer;
 
     @PostMapping("/adapters/{adapterId}/approve")
-    @PreAuthorize("@restSecurityGuard.checkPermission(@adapterRepository.get(#adapterId), 'approve')")
     @ApiOperation(value = "Approves an user for an adapter entity", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User is already approved for this adapter"), @ApiResponse(code = 404, message = "Adapter or user not found or not authorized to access this adapter")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User is already approved for this adapter"), @ApiResponse(code = 403, message = "Not authorized to approve an user for this adapter"), @ApiResponse(code = 404, message = "Adapter or user not found")})
     public ResponseEntity<Void> approveForAdapter(@PathVariable @ApiParam(value = "ID of the adapter to approve an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String adapterId, @RequestBody @ApiParam(value = "Name of the user to approve", example = "johndoe", required = true) String username) {
         return approveUserEntity(adapterId, username, adapterRepository);
     }
 
     @PostMapping("/adapters/{adapterId}/disapprove")
-    @PreAuthorize("@restSecurityGuard.checkPermission(@adapterRepository.get(#adapterId), 'disapprove')")
     @ApiOperation(value = "Disapproves an user for an adapter entity", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User cannot be disapproved for this adapter"), @ApiResponse(code = 404, message = "Adapter or user not found or not authorized to access this adapter")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User cannot be disapproved for this adapter"), @ApiResponse(code = 403, message = "Not authorized to disapprove an user for this adapter"), @ApiResponse(code = 404, message = "Adapter or user not found")})
     public ResponseEntity<Void> disapproveForAdapter(@PathVariable @ApiParam(value = "ID of the adapter to disapprove an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String adapterId, @RequestBody @ApiParam(value = "Name of the user to disapprove", example = "johndoe", required = true) String username) throws IOException {
-        //TODO clean up and extract common helper method for this and the event handler method
+        //TODO clean up and extract common helper method for this
+
+        //Disapprove user for the entity
+        ResponseEntity<Void> disapprovalResult = disapproveUserEntity(adapterId, username, adapterRepository);
+
+        //Check result
+        if (!disapprovalResult.getStatusCode().equals(HttpStatus.OK)) {
+            return disapprovalResult;
+        }
 
         //Get all possibly affected actuators
         List<ComponentExcerpt> affectedActuators = actuatorRepository.findAllByAdapterId(adapterId);
@@ -74,7 +89,7 @@ public class RestUserApprovalController {
             Actuator actuator = actuatorRepository.get(actuatorExcerpt.getId());
 
             //Check if actuator is owned by the affected user
-            if (actuator.getOwnerName().equals(username)) {
+            if (username.equals(actuator.getOwnerName())) {
                 //Undeploy actuator if necessary
                 sshDeployer.undeployIfRunning(actuator);
 
@@ -92,7 +107,7 @@ public class RestUserApprovalController {
             Sensor sensor = sensorRepository.get(sensorExcerpt.getId());
 
             //Check if sensor is owned by the affected user
-            if (sensor.getOwnerName().equals(username)) {
+            if (username.equals(sensor.getOwnerName())) {
                 //Undeploy actuator if necessary
                 sshDeployer.undeployIfRunning(sensor);
 
@@ -101,24 +116,30 @@ public class RestUserApprovalController {
             }
         }
 
-        return disapproveUserEntity(adapterId, username, adapterRepository);
+        return disapprovalResult;
     }
 
     @PostMapping("/devices/{deviceId}/approve")
-    @PreAuthorize("@restSecurityGuard.checkPermission(@deviceRepository.get(#deviceId), 'approve')")
     @ApiOperation(value = "Approves an user for a device entity", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User is already approved for this device"), @ApiResponse(code = 404, message = "Device or user not found or not authorized to access this device")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User is already approved for this device"), @ApiResponse(code = 403, message = "Not authorized to approve an user for this device"), @ApiResponse(code = 404, message = "Device or user not found")})
     public ResponseEntity<Void> approveForDevice(@PathVariable @ApiParam(value = "ID of the device to approve an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId, @RequestBody @ApiParam(value = "Name of the user to approve", example = "johndoe", required = true) String username) {
         return approveUserEntity(deviceId, username, deviceRepository);
     }
 
 
     @PostMapping("/devices/{deviceId}/disapprove")
-    @PreAuthorize("@restSecurityGuard.checkPermission(@deviceRepository.get(#deviceId), 'disapprove')")
     @ApiOperation(value = "Disapproves an user for a device entity", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User cannot be disapproved for this device"), @ApiResponse(code = 404, message = "Device or user not found or not authorized to access this device")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User cannot be disapproved for this device"), @ApiResponse(code = 403, message = "Not authorized to disapprove an user for this device"), @ApiResponse(code = 404, message = "Device or user not found")})
     public ResponseEntity<Void> disapproveForDevice(@PathVariable @ApiParam(value = "ID of the device to disapprove an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId, @RequestBody @ApiParam(value = "Name of the user to disapprove", example = "johndoe", required = true) String username) throws IOException {
-        //TODO clean up and extract common helper method for this and the event handler method
+        //TODO clean up and extract common helper method for this
+
+        //Disapprove user for the entity
+        ResponseEntity<Void> disapprovalResult = disapproveUserEntity(deviceId, username, deviceRepository);
+
+        //Check result
+        if (!disapprovalResult.getStatusCode().equals(HttpStatus.OK)) {
+            return disapprovalResult;
+        }
 
         //Get all possibly affected actuators
         List<ComponentExcerpt> affectedActuators = actuatorRepository.findAllByDeviceId(deviceId);
@@ -129,7 +150,7 @@ public class RestUserApprovalController {
             Actuator actuator = actuatorRepository.get(actuatorExcerpt.getId());
 
             //Check if actuator is owned by the affected user
-            if (actuator.getOwnerName().equals(username)) {
+            if (username.equals(actuator.getOwnerName())) {
                 //Undeploy actuator if necessary
                 sshDeployer.undeployIfRunning(actuator);
 
@@ -147,7 +168,7 @@ public class RestUserApprovalController {
             Sensor sensor = sensorRepository.get(sensorExcerpt.getId());
 
             //Check if sensor is owned by the affected user
-            if (sensor.getOwnerName().equals(username)) {
+            if (username.equals(sensor.getOwnerName())) {
 
                 //Undeploy actuator if necessary
                 sshDeployer.undeployIfRunning(sensor);
@@ -157,39 +178,97 @@ public class RestUserApprovalController {
             }
         }
 
-        return disapproveUserEntity(deviceId, username, deviceRepository);
+        //Get device from repository
+        Device device = deviceRepository.get(deviceId);
+
+        //Get all monitoring adapters that are compatible to the device
+        List<MonitoringAdapter> compatibleMonitoringAdapters = monitoringHelper.getCompatibleAdapters(device);
+
+        //Iterate over the compatible monitoring adapters
+        for (MonitoringAdapter monitoringAdapter : compatibleMonitoringAdapters) {
+
+            //Check if adapter is owned by the affected user
+            if (username.equals(monitoringAdapter.getOwnerName())) {
+                //Create monitoring component from monitoring adapter and device
+                MonitoringComponent monitoringComponent = new MonitoringComponent(monitoringAdapter, device);
+
+                //Undeploy monitoring component if necessary
+                sshDeployer.undeployIfRunning(monitoringComponent);
+            }
+        }
+
+        return disapprovalResult;
+    }
+
+    @PostMapping("/monitoring-adapters/{adapterId}/approve")
+    @ApiOperation(value = "Approves an user for a monitoring adapter entity", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User is already approved for this monitoring adapter"), @ApiResponse(code = 403, message = "Not authorized to approve an user for this monitoring adapter"), @ApiResponse(code = 404, message = "Monitoring adapter or user not found")})
+    public ResponseEntity<Void> approveForMonitoringAdapter(@PathVariable @ApiParam(value = "ID of the monitoring adapter to approve an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String adapterId, @RequestBody @ApiParam(value = "Name of the user to approve", example = "johndoe", required = true) String username) {
+        return approveUserEntity(adapterId, username, monitoringAdapterRepository);
+    }
+
+    @PostMapping("/monitoring-adapters/{adapterId}/disapprove")
+    @ApiOperation(value = "Disapproves an user for a monitoring adapter entity", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User cannot be disapproved for this monitoring adapter"), @ApiResponse(code = 403, message = "Not authorized to disapprove an user for this monitoring adapter"), @ApiResponse(code = 404, message = "Monitoring adapter or user not found")})
+    public ResponseEntity<Void> disapproveForMonitoringAdapter(@PathVariable @ApiParam(value = "ID of the monitoring adapter to disapprove an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String adapterId, @RequestBody @ApiParam(value = "Name of the user to disapprove", example = "johndoe", required = true) String username) throws IOException {
+        //TODO clean up and extract common helper method for this
+
+        //Disapprove user for the entity
+        ResponseEntity<Void> disapprovalResult = disapproveUserEntity(adapterId, username, monitoringAdapterRepository);
+
+        //Check result
+        if (!disapprovalResult.getStatusCode().equals(HttpStatus.OK)) {
+            return disapprovalResult;
+        }
+
+        //Get monitoring adapter
+        MonitoringAdapter monitoringAdapter = monitoringAdapterRepository.get(adapterId);
+
+        //Get all devices that are compatible to the monitoring adapter
+        List<Device> compatibleDevices = monitoringHelper.getCompatibleDevices(monitoringAdapter);
+
+        //Iterate over the compatible devices
+        for (Device device : compatibleDevices) {
+            //Check if adapter is owned by the affected user
+            if (username.equals(device.getOwnerName())) {
+                //Create monitoring component from monitoring adapter and device
+                MonitoringComponent monitoringComponent = new MonitoringComponent(monitoringAdapter, device);
+
+                //Undeploy monitoring component if necessary
+                sshDeployer.undeployIfRunning(monitoringComponent);
+            }
+        }
+
+
+        return disapprovalResult;
     }
 
     @PostMapping("/actuators/{actuatorId}/approve")
-    @PreAuthorize("@restSecurityGuard.checkPermission(@actuatorRepository.get(#actuatorId), 'approve')")
     @ApiOperation(value = "Approves an user for an actuator entity", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User is already approved for this actuator"), @ApiResponse(code = 404, message = "Actuator or user not found or not authorized to access this actuator")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User is already approved for this actuator"), @ApiResponse(code = 403, message = "Not authorized to approve an user for this actuator"), @ApiResponse(code = 404, message = "Actuator or user not found")})
     public ResponseEntity<Void> approveForActuator(@PathVariable @ApiParam(value = "ID of the actuator to approve an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId, @RequestBody @ApiParam(value = "Name of the user to approve", example = "johndoe", required = true) String username) {
         return approveUserEntity(actuatorId, username, actuatorRepository);
     }
 
 
     @PostMapping("/actuators/{actuatorId}/disapprove")
-    @PreAuthorize("@restSecurityGuard.checkPermission(@actuatorRepository.get(#actuatorId), 'disapprove')")
     @ApiOperation(value = "Disapproves an user for an actuator entity", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User cannot be disapproved for this actuator"), @ApiResponse(code = 404, message = "Actuator or user not found or not authorized to access this actuator")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User cannot be disapproved for this actuator"), @ApiResponse(code = 403, message = "Not authorized to disapprove an user for this actuator"), @ApiResponse(code = 404, message = "Actuator or user not found")})
     public ResponseEntity<Void> disapproveForActuator(@PathVariable @ApiParam(value = "ID of the actuator to disapprove an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId, @RequestBody @ApiParam(value = "Name of the user to disapprove", example = "johndoe", required = true) String username) {
         return disapproveUserEntity(actuatorId, username, actuatorRepository);
     }
 
     @PostMapping("/sensors/{sensorId}/approve")
-    @PreAuthorize("@restSecurityGuard.checkPermission(@sensorRepository.get(#sensorId), 'approve')")
     @ApiOperation(value = "Approves an user for a sensor entity", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User is already approved for this sensor"), @ApiResponse(code = 404, message = "Sensor or user not found or not authorized to access this sensor")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User is already approved for this sensor"), @ApiResponse(code = 403, message = "Not authorized to approve an user for this sensor"), @ApiResponse(code = 404, message = "Sensor or user not found")})
     public ResponseEntity<Void> approveForSensor(@PathVariable @ApiParam(value = "ID of the sensor to approve an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId, @RequestBody @ApiParam(value = "Name of the user to approve", example = "johndoe", required = true) String username) {
         return approveUserEntity(sensorId, username, sensorRepository);
     }
 
 
     @PostMapping("/sensors/{sensorId}/disapprove")
-    @PreAuthorize("@restSecurityGuard.checkPermission(@sensorRepository.get(#sensorId), 'disapprove')")
     @ApiOperation(value = "Disapproves an user for a sensor entity", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User cannot be disapproved for this sensor"), @ApiResponse(code = 404, message = "Sensor or user not found or not authorized to access this sensor")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User cannot be disapproved for this sensor"), @ApiResponse(code = 403, message = "Not authorized to disapprove an user for this sensor"), @ApiResponse(code = 404, message = "Sensor or user not found")})
     public ResponseEntity<Void> disapproveForSensor(@PathVariable @ApiParam(value = "ID of the sensor to disapprove an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId, @RequestBody @ApiParam(value = "Name of the sensor to disapprove", example = "johndoe", required = true) String username) {
         return disapproveUserEntity(sensorId, username, sensorRepository);
     }
@@ -205,11 +284,16 @@ public class RestUserApprovalController {
      */
     private ResponseEntity<Void> approveUserEntity(String userEntityId, String username, UserEntityRepository userEntityRepository) {
         //Get user entity from repository by id
-        UserEntity userEntity = userEntityService.getUserEntityFromRepository(userEntityRepository, userEntityId);
+        UserEntity userEntity = userEntityRepository.get(userEntityId);
 
         //Check if entity could be found
         if (userEntity == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Check if user is permitted to approve
+        if (!userEntityService.isUserPermitted(userEntity, "approve")) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
         //Get user by ID
@@ -246,11 +330,16 @@ public class RestUserApprovalController {
      */
     private ResponseEntity<Void> disapproveUserEntity(String userEntityId, String username, UserEntityRepository userEntityRepository) {
         //Get user entity from repository by id
-        UserEntity userEntity = userEntityService.getUserEntityFromRepository(userEntityRepository, userEntityId);
+        UserEntity userEntity = userEntityRepository.get(userEntityId);
 
         //Check if entity could be found
         if (userEntity == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Check if user is permitted to disapprove
+        if (!userEntityService.isUserPermitted(userEntity, "disapprove")) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
         //Get user by ID

@@ -8,7 +8,6 @@ import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.ComponentRepository;
 import org.citopt.connde.repository.SensorRepository;
-import org.citopt.connde.security.RestSecurityGuard;
 import org.citopt.connde.web.rest.helper.DeploymentWrapper;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;

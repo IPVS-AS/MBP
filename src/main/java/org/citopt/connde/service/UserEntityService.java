@@ -24,7 +24,6 @@ public class UserEntityService {
 
     private static final Sort DEFAULT_SORT = new Sort(Sort.Direction.ASC, "name");
 
-
     @Autowired
     private UserService userService;
 

@@ -19,14 +19,14 @@ public interface DeviceRepository extends UserEntityRepository<Device> {
     Device findByName(@Param("name") String name);
 
     @Override
-    @PreAuthorize("@restSecurityGuard.checkPermission(#device, 'delete')")
+    @PreAuthorize("@repositorySecurityGuard.checkPermission(#device, 'delete')")
     @ApiOperation(value = "Deletes a device entity", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 204, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to delete the device entity"), @ApiResponse(code = 404, message = "Device entity not found")})
     void delete(@Param("device") @ApiParam(value = "The ID of the device entity to delete", example = "5c97dc2583aeb6078c5ab672", required = true) Device device);
 
     @Override
     @Query("{_id: null}") //Fail fast
-    @PostAuthorize("@restSecurityGuard.retrieveUserEntities(returnObject, #pageable, @deviceRepository)")
+    @PostAuthorize("@repositorySecurityGuard.retrieveUserEntities(returnObject, #pageable, @deviceRepository)")
     @ApiOperation(value = "Retrieves all device entities for which the user is authorized and which fit onto a given page", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success")})
     Page<Device> findAll(@ApiParam(value = "The page configuration", required = true) Pageable pageable);

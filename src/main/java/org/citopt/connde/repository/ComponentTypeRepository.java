@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 /**
- * Spring Data MongoDB repository for the type entity.
+ * Spring Data MongoDB repository for the component type entity.
  */
 @RepositoryRestResource(excerptProjection = ComponentTypeExcerpt.class)
 public interface ComponentTypeRepository extends MongoRepository<ComponentType, String> {

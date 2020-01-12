@@ -7,6 +7,7 @@ import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.MonitoringAdapterRepository;
 import org.citopt.connde.repository.projection.MonitoringAdapterExcerpt;
+import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,9 @@ import java.util.List;
  */
 @Component
 public class MonitoringHelper {
+
+    @Autowired
+    private UserEntityService userEntityService;
 
     @Autowired
     private DeviceRepository deviceRepository;
@@ -36,8 +40,8 @@ public class MonitoringHelper {
      */
     public MonitoringComponent createMonitoringComponent(String deviceId, String monitoringAdapterId) {
         //Retrieve corresponding device and adapter from their repositories
-        Device device = deviceRepository.findOne(deviceId);
-        MonitoringAdapter monitoringAdapter = monitoringAdapterRepository.findOne(monitoringAdapterId);
+        Device device = (Device) userEntityService.getUserEntityFromRepository(deviceRepository, deviceId);
+        MonitoringAdapter monitoringAdapter = (MonitoringAdapter) userEntityService.getUserEntityFromRepository(monitoringAdapterRepository, monitoringAdapterId);
 
         //Check if both objects were found
         if ((device == null) || (monitoringAdapter == null)) {
@@ -46,6 +50,10 @@ public class MonitoringHelper {
 
         //Create new monitoring component (wrapper)
         MonitoringComponent monitoringComponent = new MonitoringComponent(monitoringAdapter, device);
+
+        //Copy owner and approved users from device to void failing generic security checks
+        monitoringComponent.setOwner(device.getOwner());
+        monitoringComponent.getApprovedUsers().addAll(device.getApprovedUsers());
 
         return monitoringComponent;
     }
