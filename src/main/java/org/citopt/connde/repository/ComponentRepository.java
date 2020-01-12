@@ -6,6 +6,7 @@ import org.citopt.connde.repository.projection.ComponentExcerpt;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;
+import org.springframework.security.access.prepost.PostFilter;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.util.List;

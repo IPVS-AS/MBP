@@ -1,6 +1,7 @@
 package org.citopt.connde.web.rest;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * REST Controller for component types.
- * @author Imeri Amil
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
@@ -54,8 +54,7 @@ public class RestComponentTypeController {
     public ResponseEntity<List<ComponentType>> getAllComponentTypes(Pageable pageable)
             throws URISyntaxException {
         Page<ComponentType> page = componentTypeRepository.findAll(pageable);
-        List<ComponentType> componentTypes = page.getContent().stream()
-                .collect(Collectors.toList());
+        List<ComponentType> componentTypes = new ArrayList<>(page.getContent());
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/component-types");
         return new ResponseEntity<>(componentTypes, headers, HttpStatus.OK);
     }

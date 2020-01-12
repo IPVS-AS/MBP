@@ -29,14 +29,33 @@ public class RestSecurityGuard {
      */
     public boolean checkPermission(UserEntity userEntity, String permission) {
         //Sanity check
-        if (userEntity == null) {
-            throw new IllegalArgumentException("User entity must not be null.");
-        } else if ((permission == null) || (permission.isEmpty())) {
-            throw new IllegalArgumentException("Permission must not be null or empty.");
+        if ((userEntity == null) || (permission == null) || (permission.isEmpty())) {
+            return false;
         }
 
-        //Perform check for permission
+        //Perform permission check
         return userEntityService.isUserPermitted(userEntity, permission);
+    }
+
+    /**
+     * Checks whether the current user has a certain permissions for an user entity, given by its id and repository.
+     *
+     * @param entityId   The id of the user entity to check
+     * @param repository The repository of the user entity
+     * @param permission The permission to check
+     * @return True, if the user has the permission; false otherwise
+     */
+    public boolean checkPermissionById(String entityId, UserEntityRepository repository, String permission) {
+        //Sanity check
+        if ((entityId == null) || (entityId.isEmpty()) || (repository == null)) {
+            return false;
+        }
+
+        //Get entity from repository by id
+        UserEntity userEntity = repository.get(entityId);
+
+        //Perform permission check
+        return checkPermission(userEntity, permission);
     }
 
     /**

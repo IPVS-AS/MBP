@@ -86,7 +86,7 @@ public class RestDeviceStateController {
         }
 
         //Security check
-        if (!securityGuard.checkPermission(device, "deploy")) {
+        if (!securityGuard.checkPermission(device, "read")) {
             return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         }
 

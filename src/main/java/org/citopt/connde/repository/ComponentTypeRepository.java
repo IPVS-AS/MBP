@@ -11,8 +11,6 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 /**
  * Spring Data MongoDB repository for the type entity.
- *
- * @author Imeri Amil
  */
 @RepositoryRestResource(excerptProjection = ComponentTypeExcerpt.class)
 public interface ComponentTypeRepository extends MongoRepository<ComponentType, String> {
