@@ -186,7 +186,7 @@ public class RestUserController {
      * @return The list of user excerpts for all matching users
      */
     @GetMapping("/users/contain")
-    @ApiOperation(value = "Searches and returns all users whose usernames contain a given query string ", notes = "Returns an empty list in case the query string is too short", produces = "application/json")
+    @ApiOperation(value = "Searches and returns all users whose username contain a given query string ", notes = "Returns an empty list in case the query string is too short", produces = "application/json")
     @ApiResponses({@ApiResponse(code = 200, message = "Query result")})
     public ResponseEntity<List<UserExcerpt>> searchUsersContaining(@RequestParam("query") @ApiParam(value = "Query string for searching users", example = "admin", required = true) String queryString) {
         //Trim query

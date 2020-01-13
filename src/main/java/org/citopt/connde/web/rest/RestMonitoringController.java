@@ -93,7 +93,7 @@ public class RestMonitoringController {
      */
     @PostMapping(value = "/monitoring/{deviceId}")
     @ApiOperation(value = "Enables monitoring for a given device and monitoring adapter with optional parameters", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 400, message = "Invalid parameters provided"), @ApiResponse(code = 403, message = "Not authorized to monitor the device"), @ApiResponse(code = 404, message = "Device or monitoring adapter not found or not authorized to access them"), @ApiResponse(code = 500, message = "Check failed due to an unexpected I/O error")})
+    @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 400, message = "Invalid parameters provided"), @ApiResponse(code = 403, message = "Not authorized to monitor the device"), @ApiResponse(code = 404, message = "Device or monitoring adapter not found or not authorized to access them"), @ApiResponse(code = 500, message = "Enabling failed due to an unexpected I/O error")})
     public ResponseEntity<ActionResponse> enableMonitoring(@PathVariable(value = "deviceId") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
                                                            @RequestParam("adapter") @ApiParam(value = "ID of the monitoring adapter", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringAdapterId,
                                                            @RequestBody @ApiParam(value = "List of monitoring parameter instances to use") List<ParameterInstance> parameters) {
@@ -134,7 +134,7 @@ public class RestMonitoringController {
      */
     @DeleteMapping(value = "/monitoring/{deviceId}")
     @ApiOperation(value = "Disables monitoring for a given device and monitoring adapter", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to monitor the device"), @ApiResponse(code = 404, message = "Device or monitoring adapter not found or not authorized to access them"), @ApiResponse(code = 500, message = "Check failed due to an unexpected I/O error")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to monitor the device"), @ApiResponse(code = 404, message = "Device or monitoring adapter not found or not authorized to access them"), @ApiResponse(code = 500, message = "Disabling failed due to an unexpected I/O error")})
     public ResponseEntity<ActionResponse> disableMonitoring(@PathVariable(value = "deviceId") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
                                                             @RequestParam("adapter") @ApiParam(value = "ID of the monitoring adapter", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringAdapterId) {
         //Create new monitoring component

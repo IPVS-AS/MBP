@@ -5,18 +5,19 @@ import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.component.Sensor;
-import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.domain.valueLog.ValueLog;
 import org.citopt.connde.repository.*;
 import org.citopt.connde.service.UnitConverterService;
+import org.citopt.connde.service.UserEntityService;
+import org.citopt.connde.web.rest.helper.MonitoringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 import javax.measure.converter.UnitConverter;
 import javax.measure.unit.Unit;
@@ -24,19 +25,11 @@ import javax.measure.unit.Unit;
 /**
  * REST Controller for retrieving value logs for certain components. Furthermore, it provides
  * features for converting the value log values to desired units.
- *
- * @author Jan
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
 @Api(tags = {"Value logs"}, description = "Retrieval of recorded value logs")
 public class RestValueLogController {
-
-    @Autowired
-    private UnitConverterService unitConverterService;
-
-    @Autowired
-    private ValueLogRepository valueLogRepository;
 
     @Autowired
     private ActuatorRepository actuatorRepository;
@@ -45,10 +38,17 @@ public class RestValueLogController {
     private SensorRepository sensorRepository;
 
     @Autowired
-    private DeviceRepository deviceRepository;
+    private ValueLogRepository valueLogRepository;
 
     @Autowired
-    private MonitoringAdapterRepository monitoringAdapterRepository;
+    private UserEntityService userEntityService;
+
+    @Autowired
+    private UnitConverterService unitConverterService;
+
+    @Autowired
+    private MonitoringHelper monitoringHelper;
+
 
     /**
      * Replies with a pageable list of value logs of a certain actuator.
@@ -59,13 +59,25 @@ public class RestValueLogController {
      * @return A pageable list of value logs
      */
     @GetMapping("/actuators/{id}/valueLogs")
-    @ApiOperation(value = "Retrieves a list of recorded actuator value logs in a certain unit", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access value logs of this actuator"), @ApiResponse(code = 404, message = "Actuator not found")})
+    @ApiOperation(value = "Retrieves a list of recorded actuator value logs in a certain unit which fit onto a given page", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access value logs of this actuator"), @ApiResponse(code = 404, message = "Actuator not found or not authorized to access the actuator")})
     public ResponseEntity<Page<ValueLog>> getActuatorValueLogs(@PathVariable(value = "id") @ApiParam(value = "ID of the actuator to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId,
                                                                @RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the actuator values", example = "°C", required = false) String unit,
-                                                               Pageable pageable) {
-        //Get actuator object
-        Actuator actuator = (Actuator) getComponentById(actuatorId, actuatorRepository);
+                                                               @ApiParam(value = "The page configuration", required = true) Pageable pageable) {
+        //Get actuator
+        Actuator actuator = (Actuator) userEntityService.getUserEntityFromRepository(actuatorRepository, actuatorId);
+
+        //Validity check
+        if (actuator == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Check if user is permitted
+        if (!userEntityService.isUserPermitted(actuator, "deploy")) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        //Retrieve value logs
         return getValueLogs(actuator, unit, pageable);
     }
 
@@ -78,13 +90,25 @@ public class RestValueLogController {
      * @return A pageable list of value logs
      */
     @GetMapping("/sensors/{id}/valueLogs")
-    @ApiOperation(value = "Retrieves a list of recorded sensor value log in a certain unit", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access value logs of this sensor"), @ApiResponse(code = 404, message = "Sensor not found")})
+    @ApiOperation(value = "Retrieves a list of recorded sensor value log in a certain unit which fit onto a given page", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access value logs of this sensor"), @ApiResponse(code = 404, message = "Sensor not found or not authorized to access the sensor")})
     public ResponseEntity<Page<ValueLog>> getSensorValueLogs(@PathVariable(value = "id") @ApiParam(value = "ID of the sensor to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId,
                                                              @RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the sensor values", example = "°C", required = false) String unit,
-                                                             Pageable pageable) {
+                                                             @ApiParam(value = "The page configuration", required = true) Pageable pageable) {
         //Get sensor object
-        Sensor sensor = (Sensor) getComponentById(sensorId, sensorRepository);
+        Sensor sensor = (Sensor) userEntityService.getUserEntityFromRepository(sensorRepository, sensorId);
+
+        //Validity check
+        if (sensor == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Check if user is permitted
+        if (!userEntityService.isUserPermitted(sensor, "deploy")) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        //Retrieve value logs
         return getValueLogs(sensor, unit, pageable);
     }
 
@@ -98,14 +122,26 @@ public class RestValueLogController {
      * @return A pageable list of value logs
      */
     @GetMapping("/monitoring/{deviceId}/valueLogs")
-    @ApiOperation(value = "Retrieves a list of recorded monitoring value logs in a certain unit", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access value logs of this device or monitoring adapter"), @ApiResponse(code = 404, message = "Device or monitoring adapter not found")})
+    @ApiOperation(value = "Retrieves a list of recorded monitoring value logs in a certain unit which fit onto a given page", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access value logs of this monitoring"), @ApiResponse(code = 404, message = "Device or monitoring adapter not found or not authorized to access them")})
     public ResponseEntity<Page<ValueLog>> getMonitoringValueLogs(@PathVariable(value = "deviceId") @ApiParam(value = "ID of the device to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
                                                                  @RequestParam("adapter") @ApiParam(value = "ID of the monitoring adapter to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringAdapterId,
-                                                                 @RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the monitoring values", example = "°C", required = false) String unit,
-                                                                 Pageable pageable) {
-        //Get monitoring component object
-        MonitoringComponent monitoringComponent = getMonitoringComponent(deviceId, monitoringAdapterId);
+                                                                 @RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the monitoring value logs", example = "°C", required = false) String unit,
+                                                                 @ApiParam(value = "The page configuration", required = true) Pageable pageable) {
+        //Create new monitoring component from parameters
+        MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
+
+        //Validity check
+        if (monitoringComponent == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Check if user is permitted
+        if (!userEntityService.isUserPermitted(monitoringComponent.getDevice(), "monitor")) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        //Retrieve value logs
         return getValueLogs(monitoringComponent, unit, pageable);
     }
 
@@ -116,9 +152,20 @@ public class RestValueLogController {
      * @return A response entity that may be returned to the client
      */
     @DeleteMapping("/actuators/{id}/valueLogs")
-    public ResponseEntity<Page<ValueLog>> deleteActuatorValueLogs(@PathVariable(value = "id") String actuatorId) {
-        //Get actuator object
-        Actuator actuator = (Actuator) getComponentById(actuatorId, actuatorRepository);
+    @ApiIgnore("Currently not working")
+    public ResponseEntity deleteActuatorValueLogs(@PathVariable(value = "id") String actuatorId) {
+        //Get actuator
+        Actuator actuator = (Actuator) userEntityService.getUserEntityFromRepository(actuatorRepository, actuatorId);
+
+        //Validity check
+        if (actuator == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Check if user is permitted
+        if (!userEntityService.isUserPermitted(actuator, "deploy")) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
         //Delete value logs of this actuator
         return deleteValueLogs(actuator);
@@ -131,9 +178,20 @@ public class RestValueLogController {
      * @return A response entity that may be returned to the client
      */
     @DeleteMapping("/sensors/{id}/valueLogs")
-    public ResponseEntity<Page<ValueLog>> deleteSensorValueLogs(@PathVariable(value = "id") String sensorId) {
-        //Get sensor object
-        Sensor sensor = (Sensor) getComponentById(sensorId, sensorRepository);
+    @ApiIgnore("Currently not working")
+    public ResponseEntity deleteSensorValueLogs(@PathVariable(value = "id") String sensorId) {
+        //Get sensor
+        Sensor sensor = (Sensor) userEntityService.getUserEntityFromRepository(sensorRepository, sensorId);
+
+        //Validity check
+        if (sensor == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Check if user is permitted
+        if (!userEntityService.isUserPermitted(sensor, "deploy")) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
         //Delete value logs of this sensor
         return deleteValueLogs(sensor);
@@ -147,10 +205,22 @@ public class RestValueLogController {
      * @return A response entity that may be returned to the client
      */
     @DeleteMapping("/monitoring/{deviceId}/valueLogs")
-    public ResponseEntity<Page<ValueLog>> deleteMonitoringValueLogs(@PathVariable(value = "deviceId") String deviceId,
-                                                                    @RequestParam("adapter") String monitoringAdapterId) {
-        //Get monitoring component object
-        MonitoringComponent monitoringComponent = getMonitoringComponent(deviceId, monitoringAdapterId);
+    @ApiIgnore("Currently not working")
+    public ResponseEntity deleteMonitoringValueLogs(@PathVariable(value = "deviceId") String deviceId,
+                                                    @RequestParam("adapter") String monitoringAdapterId) {
+
+        //Create new monitoring component from parameters
+        MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
+
+        //Validity check
+        if (monitoringComponent == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Check if user is permitted
+        if (!userEntityService.isUserPermitted(monitoringComponent.getDevice(), "monitor")) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
 
         //Delete value logs of this component
         return deleteValueLogs(monitoringComponent);
@@ -165,11 +235,6 @@ public class RestValueLogController {
      * @return A pageable list of value logs
      */
     private ResponseEntity<Page<ValueLog>> getValueLogs(Component component, String unit, Pageable pageable) {
-        //Component not found?
-        if (component == null) {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
-        }
-
         //Get value logs for this component
         Page<ValueLog> page = valueLogRepository.findAllByIdRef(component.getId(), pageable);
 
@@ -209,46 +274,9 @@ public class RestValueLogController {
      * @return A response entity that may be returned to the client
      */
     private ResponseEntity deleteValueLogs(Component component) {
-        //Component not found?
-        if (component == null) {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
-        }
-
         valueLogRepository.deleteByIdRef(component.getId());
 
         //Return success response
         return new ResponseEntity(HttpStatus.OK);
-    }
-
-    /**
-     * Fetches a component with a certain id from its repository.
-     *
-     * @param componentId The id of the component that is supposed to be retrieved
-     * @param repository  The repository in which the component is contained
-     * @return The corresponding component object
-     */
-    private Component getComponentById(String componentId, ComponentRepository repository) {
-        return (Component) repository.findOne(componentId);
-    }
-
-
-    /**
-     * Retrieves a monitoring component object for a device and a monitoring adapter, given by their ids.
-     *
-     * @param deviceId            The id of the device that is supposed to be part of the component
-     * @param monitoringAdapterId The id of the monitoring adapter that is supposed to be part of the component
-     * @return The resulting monitoring component
-     */
-    private MonitoringComponent getMonitoringComponent(String deviceId, String monitoringAdapterId) {
-        //Find device and monitoring adapter in their repositories
-        Device device = deviceRepository.findOne(deviceId);
-        MonitoringAdapter monitoringAdapter = monitoringAdapterRepository.findOne(monitoringAdapterId);
-
-        //Ensure that both objects could be found
-        if ((device == null) || (monitoringAdapter == null)) {
-            return null;
-        }
-
-        return new MonitoringComponent(monitoringAdapter, device);
     }
 }
