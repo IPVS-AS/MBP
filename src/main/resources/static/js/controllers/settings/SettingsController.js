@@ -4,21 +4,30 @@
  * Controller for the settings page.
  */
 app.controller('SettingsController',
-    ['$scope', '$http', '$q', 'ENDPOINT_URI', 'NotificationService',
-        function ($scope, $http, $q, ENDPOINT_URI, NotificationService) {
-            var vm = this;
+    ['$scope', '$http', '$q', 'ENDPOINT_URI', 'settings', 'documentationMetaData', 'SettingsService', 'NotificationService',
+        function ($scope, $http, $q, ENDPOINT_URI, settings, documentationMetaData, SettingsService, NotificationService) {
+            let vm = this;
 
-            //Full URL for REST requests
-            var url = ENDPOINT_URI + "/settings";
-
-            //Settings objects that contains all application settings for this page
-            vm.settings = {
-                brokerLocation: null,
-                brokerIPAddress: ""
-            };
+            //Extend controller for settings and meta data object
+            vm.settings = settings;
+            vm.documentationMetaData = documentationMetaData;
 
             /**
-             * Creates a REST request in order to save the settings on the server.
+             * Initializing function, sets up basic things.
+             */
+            (function initController() {
+                //Check if settings could be loaded
+                if (settings == null) {
+                    NotificationService.notify("Could not load application settings.", "error");
+                }
+                //Check if documentation meta data could be loaded
+                if (documentationMetaData == null) {
+                    NotificationService.notify("Could not load documentation meta data.", "error");
+                }
+            })();
+
+            /**
+             * Issues a REST request in order to save the settings.
              *
              * @returns The created REST request
              */
@@ -40,37 +49,9 @@ app.controller('SettingsController',
                     });
             }
 
-            /**
-             * Creates a REST request in order to retrieve the current settings from the server.
-             *
-             * @returns The created REST request
-             */
-            function getSettings() {
-                //Create REST request without payload
-                return $http({
-                    method: 'GET',
-                    url: url
-                }).then(
-                    //Success callback
-                    function (response) {
-                        //Check for valid response payload
-                        if (response.data !== undefined) {
-                            vm.settings = response.data;
-                        } else {
-                            return $q.reject(response);
-                        }
-                    },
-                    //Error callback
-                    function (response) {
-                        return $q.reject(response);
-                    });
-            }
-
             //Expose functions that are triggered externally
             angular.extend(vm, {
                 saveSettings: saveSettings
             });
-
-            //Retrieve settings when loading the page
-            getSettings();
-        }]);
+        }
+    ]);

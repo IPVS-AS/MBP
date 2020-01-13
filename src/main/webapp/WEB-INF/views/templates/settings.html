@@ -1,6 +1,6 @@
 <div class="row clearfix" ng-hide>
 
-    <!-- Register Device Card -->
+    <!-- MQTT Broker settings card -->
     <div class="col-lg-5">
         <div class="card">
             <div class="header">
@@ -52,5 +52,38 @@
             </div>
         </div>
     </div>
-    <!-- #END# Register Device Card -->
+
+    <!-- Documentation card -->
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="header">
+                <h2>
+                    REST API Documentation
+                </h2>
+            </div>
+            <div class="body">
+                <h2 class="card-inside-title">Swagger documentation</h2>
+                <div class="row clearfix">
+                    <div class="col-xs-12">
+                        <p ng-repeat="item in ctrl.documentationMetaData.swaggerURLs">
+                            <a href="{{ctrl.documentationMetaData.contextPath + item.url}}" target="_blank">
+                                {{item.description}}
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                <h2 class="card-inside-title">Export as...</h2>
+                <div class="row clearfix">
+                    <div class="col-xs-12">
+                        <p ng-repeat="item in ctrl.documentationMetaData.exportURLs">
+                            <a href="{{ctrl.documentationMetaData.contextPath + item.url}}" target="_blank">
+                                {{item.description}}
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                <span class="help-block">Remark: Only administrators are allowed to export documentation.</span>
+            </div>
+        </div>
+    </div>
 </div>
