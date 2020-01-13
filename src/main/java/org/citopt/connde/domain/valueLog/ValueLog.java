@@ -34,7 +34,7 @@ public class ValueLog {
     @ApiModelProperty(notes = "MQTT topic", example = "sensor/5c97dc2583aeb6078c5ab672", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String topic;
     @Column(name = "message")
-    @ApiModelProperty(notes = "Full received MQTT message", example = "{\\\"component\\\": \\\"SENSOR\\\", \\\"id\\\": \\\"5d9dfeafb1c4d32a86e5b73d\\\", \\\"value\\\": \\\"434880.000000\\\"}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    @ApiModelProperty(notes = "Full received MQTT message", example = "{ \"component\": \"SENSOR\", \"id\": \"5d9dfeafb1c4d32a86e5b73d\", \"value\": \"434880.000000\"}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String message;
 
     //Fields parsed from the MQTT message

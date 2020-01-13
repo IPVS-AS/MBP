@@ -53,7 +53,7 @@ public class Device extends UserEntity {
     private String password;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @ApiModelProperty(notes = "RSA key for SSH connections to the device", example = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA0enPVikCPvsyhKd317r08RPtbkMG0zRhIqJ/ZHIDV8TpRhoR\n...\n-----END RSA PRIVATE KEY-----", required = true)
+    @ApiModelProperty(notes = "RSA key for SSH connections to the device", example = "-----BEGIN RSA PRIVATE KEY-----\\nMIIEowIBAAKCAQEA0enPVikCPvsyhKd317r08RPtbkMG0zRhIqJ/ZHIDV8TpRhoR\\n...\\n-----END RSA PRIVATE KEY-----", required = true)
     private String rsaKey;
 
     public static String formatMAC(String raw) {

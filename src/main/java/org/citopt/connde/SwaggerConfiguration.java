@@ -29,6 +29,9 @@ import java.util.Collections;
 @Configuration
 @EnableSwagger2
 public class SwaggerConfiguration {
+    public static final String SWAGGER_PATH_UI = "/swagger-ui.html";
+    public static final String SWAGGER_PATH_JSON = "/v2/api-docs";
+
     /**
      * Creates a docket bean that holds the swagger configuration.
      *
