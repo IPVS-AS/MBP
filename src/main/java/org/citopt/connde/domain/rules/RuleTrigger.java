@@ -1,5 +1,6 @@
 package org.citopt.connde.domain.rules;
 
+import org.citopt.connde.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -13,7 +14,7 @@ import java.util.Objects;
  * is detected by the engine, the actions of the containing rules may be executed subsequently.
  */
 @Document
-public class RuleTrigger {
+public class RuleTrigger extends UserEntity {
     @Id
     @GeneratedValue
     private String id;

@@ -21,10 +21,11 @@
                         <th>Name</th>
                         <th class="align-center">Condition</th>
                         <th class="align-center">Actions</th>
-                        <th class="align-center">Executions</th>
-                        <th class="align-center">Last Execution</th>
-                        <th class="align-center">Last Result</th>
+                        <th class="align-center">Runs</th>
+                        <th class="align-center">Last</th>
+                        <th class="align-center">Result</th>
                         <th class="align-center">Active</th>
+                        <th class="align-center">Owner</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -65,8 +66,13 @@
                                 </label>
                             </div>
                         </td>
+                        <td class="align-center">{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
-                            <form ng-submit="deleteRuleCtrl.deleteItem()">
+                            <div ng-show="rule.isApprovable" style="display:inline-block">
+                                <user-approval entity-id="{{item.id}}" category-name="rules"></user-approval>
+                            </div>
+                            <form ng-submit="deleteRuleCtrl.deleteItem()" ng-show="rule.isDeletable"
+                                  style="display: inline-block">
                                 <button type="submit" class="btn btn-danger m-t-0 waves-effect"
                                         ng-click="deleteRuleCtrl.item.id = rule.id">
                                     Delete

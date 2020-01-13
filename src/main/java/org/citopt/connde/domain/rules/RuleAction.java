@@ -1,5 +1,6 @@
 package org.citopt.connde.domain.rules;
 
+import org.citopt.connde.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -13,7 +14,7 @@ import java.util.Objects;
  * was triggered.
  */
 @Document
-public class RuleAction {
+public class RuleAction extends UserEntity {
     @Id
     @GeneratedValue
     private String id;
