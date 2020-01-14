@@ -17,6 +17,7 @@ import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.context.event.EventListener;
@@ -48,6 +49,12 @@ public class ValueLogReceiver {
 
 	//Set ob observers that want to be notified about incoming value logs
 	private Set<ValueLogReceiverObserver> observerSet;
+
+	@Value("security.user.name")
+	private String httpUser;
+
+	@Value("security.user.password")
+	private String httpPassword;
 
 	/**
 	 * Initializes the value logger service.
@@ -137,11 +144,10 @@ public class ValueLogReceiver {
 		//Instantiate memory persistence
 		MemoryPersistence persistence = new MemoryPersistence();
 
-
 		RestTemplate restTemplate = new RestTemplate();
-		HttpHeaders httpHeaders = createHeaders("mbp", "mbp-platform");
+		HttpHeaders httpHeaders = createHeaders(httpUser, httpPassword);
 		HttpEntity<String> request = new HttpEntity<>(httpHeaders);
-		// TODO adjust address
+		// TODO replace address with authorization server address
 		String url = "http://192.168.209.207:8080/MBP/oauth/token?grant_type=client_credentials";
 		ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
 		String accessToken = null;
