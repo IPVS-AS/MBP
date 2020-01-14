@@ -32,21 +32,15 @@ app.controller('SettingsController',
              * @returns The created REST request
              */
             function saveSettings() {
-                //Create REST request with the settings object as payload
-                return $http({
-                    data: vm.settings,
-                    method: 'POST',
-                    url: url
-                }).then(
+                //Perform request
+                return SettingsService.saveSettings(vm.settings).then((response) => {
                     //Success callback
-                    function (response) {
-                        NotificationService.notify('The settings were saved successfully.', 'success');
-                    },
+                    NotificationService.notify('The settings were saved successfully.', 'success');
+                }, (response) => {
                     //Error callback
-                    function (response) {
-                        NotificationService.notify('The settings could not be saved.', 'error');
-                        return $q.reject(response);
-                    });
+                    NotificationService.notify('The settings could not be saved.', 'error');
+                    return $q.reject(response);
+                });
             }
 
             //Expose functions that are triggered externally
