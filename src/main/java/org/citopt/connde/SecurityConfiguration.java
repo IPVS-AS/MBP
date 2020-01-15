@@ -55,14 +55,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    
+
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         //auth.userDetailsService(mongoUserDetails()).passwordEncoder(passwordEncoder());
         auth.inMemoryAuthentication()
+                .withUser("admin").password("admin").roles("CLIENT")
+                .and()
                 .withUser("test-client").password("test").roles("CLIENT")
                 .and()
-                .withUser("admin").password("admin").authorities("ROLE_ADMIN").roles("CLIENT");
+                .withUser("mbp").password("mbp-platform").roles("CLIENT");
     }
 
     @Override
