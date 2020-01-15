@@ -92,7 +92,7 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 			adminUser.put("password", passwordEncoder.encode("admin"));
 			adminUser.put("authorities", authorities);
 
-			documents.add(adminUser)
+			documents.add(adminUser);
 
 			BasicDBObject mbpUser = new BasicDBObject();
 			adminUser.put("_class", "org.citopt.connde.domain.user.User");
