@@ -55,7 +55,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .authorities("CLIENT")
                 .autoApprove(true)
                 .accessTokenValiditySeconds(3600) // 1 hour
-                .refreshTokenValiditySeconds(2592000) // 30 days
+                .refreshTokenValiditySeconds(7200) // 2 hours
                 .redirectUris("http://192.168.209.207:8080/MBP/api/getAccessCode")
                 .and()
                 .withClient("mbp")
@@ -65,7 +65,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .authorities("CLIENT")
                 .autoApprove(true)
                 .accessTokenValiditySeconds(3600)       // 1 hour
-                .refreshTokenValiditySeconds(2592000); // 30 days
+                .refreshTokenValiditySeconds(7200); // 2 hours
     }
 
     @Override

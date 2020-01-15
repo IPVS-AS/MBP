@@ -2,7 +2,9 @@ package org.citopt.connde.service.receiver;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.codec.binary.Base64;
@@ -26,6 +28,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -55,6 +58,24 @@ public class ValueLogReceiver {
 
 	@Value("security.user.password")
 	private String httpPassword;
+
+	@Value("server.address")
+	private String serverAddress;
+
+	@Value("security.oauth2.client.access-token-uri")
+	private String oauth2TokenUri;
+
+	@Value("security.oauth2.client.grant-type")
+	private String oauth2GrantType;
+
+	@Value("security.oauth2.client.client-id")
+	private String oauth2ClientId;
+
+	@Value("security.oauth2.client.client-secret")
+	private String oauth2ClientSecret;
+
+	private String accessToken;
+	private String refreshToken;
 
 	/**
 	 * Initializes the value logger service.
@@ -147,14 +168,16 @@ public class ValueLogReceiver {
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders httpHeaders = createHeaders(httpUser, httpPassword);
 		HttpEntity<String> request = new HttpEntity<>(httpHeaders);
-		// TODO replace address with authorization server address
-		String url = "http://192.168.209.207:8080/MBP/oauth/token?grant_type=client_credentials";
-		ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
-		String accessToken = null;
+		Map<String, String> parameters = new HashMap<>();
+		parameters.put("grant_type", oauth2GrantType);
+		parameters.put("client-id", oauth2ClientId);
+		parameters.put("client-secret", oauth2ClientSecret);
+		ResponseEntity<String> response = restTemplate.exchange(oauth2TokenUri, HttpMethod.POST, request, String.class, parameters);
 		try {
-			JSONObject body = new JSONObject(response.getBody().toString());
+			JSONObject body = new JSONObject(response.getBody());
 			accessToken = body.getString("access_token");
 		} catch (JSONException e) {
+			// TODO error handling if the retrieval of a token fails
 			e.printStackTrace();
 		}
 
