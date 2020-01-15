@@ -59,8 +59,6 @@ public class RestSettingsController {
             valueLogReceiver.setupAndStart();
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (MqttException e) {
-            System.err.print("MqttException: " + e.getMessage());
         }
         return new ResponseEntity(HttpStatus.OK);
     }

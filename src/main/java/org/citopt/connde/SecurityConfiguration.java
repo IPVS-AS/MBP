@@ -58,13 +58,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
-        //auth.userDetailsService(mongoUserDetails()).passwordEncoder(passwordEncoder());
-        auth.inMemoryAuthentication()
-                .withUser("admin").password("admin").roles("CLIENT")
-                .and()
-                .withUser("test-client").password("test").roles("CLIENT")
-                .and()
-                .withUser("mbp").password("mbp-platform").roles("CLIENT");
+        auth.userDetailsService(mongoUserDetails()).passwordEncoder(passwordEncoder());
     }
 
     @Override
@@ -83,7 +77,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/api/authenticate").permitAll()
-                .antMatchers(HttpMethod.POST, "/api/users").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/users").hasAuthority(Constants.ADMIN)
                 .antMatchers(HttpMethod.PUT, "/api/users").hasAuthority(Constants.ADMIN)
                 .antMatchers(HttpMethod.GET, "/api/users").hasAuthority(Constants.ADMIN)
                 .antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)

@@ -2,6 +2,10 @@ package org.citopt.connde.security.oauth2.authorization;
 
 import java.util.Arrays;
 
+import javax.ws.rs.BeanParam;
+
+import org.citopt.connde.constants.Constants;
+import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.security.RestAuthenticationEntryPoint;
 import org.citopt.connde.service.UserDetailsServiceImpl;
@@ -26,12 +30,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @EnableAuthorizationServer
 public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
-    @Autowired
-    SensorRepository sensorRepository;
-
-    private final UserDetailsServiceImpl userDetailsService;
     private final AuthenticationManager authenticationManager;
-    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
     private final ClientUserDetailsServiceImpl clientUserDetailsService;
 
     public OAuth2AuthorizationServerConfiguration(@Qualifier("authenticationManagerBean") AuthenticationManager authenticationManager,
@@ -39,43 +38,40 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                                                   @Qualifier("mongoUserDetails") UserDetailsServiceImpl userDetailsService,
                                                   @Qualifier("clientUserDetailsService") ClientUserDetailsServiceImpl clientUserDetailsService) {
         this.authenticationManager = authenticationManager;
-        this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
-        this.userDetailsService = userDetailsService;
         this.clientUserDetailsService = clientUserDetailsService;
     }
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        //TODO real client ids
+        //TODO real client ids from MongoDB
         clients.inMemory()
                 .withClient("test-client")
                 .secret("test")
                 .authorizedGrantTypes("authorization_code", "refresh_token")
                 .scopes("write")
-                .authorities("CLIENT")
+                .authorities(Constants.ANONYMOUS)
                 .autoApprove(true)
                 .accessTokenValiditySeconds(3600) // 1 hour
                 .refreshTokenValiditySeconds(7200) // 2 hours
-                .redirectUris("http://192.168.209.207:8080/MBP/api/getAccessCode")
+                .redirectUris("http://localhost:8080/MBP/api/getAccessCode")
                 .and()
                 .withClient("mbp")
                 .secret("mbp-platform")
-                .authorizedGrantTypes("client_credentials", "refresh_token")
+                .authorizedGrantTypes("client_credentials")
                 .scopes("read")
-                .authorities("CLIENT")
+                .authorities(Constants.ADMIN)
                 .autoApprove(true)
-                .accessTokenValiditySeconds(3600)       // 1 hour
-                .refreshTokenValiditySeconds(7200); // 2 hours
+                .accessTokenValiditySeconds(3600); // 1 hour
     }
 
     @Override
-    public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+    public void configure(AuthorizationServerSecurityConfigurer security) {
     	//TODO basic http auth for checkTokenAccess (-> also in RestOauthController)
         security.tokenKeyAccess("permitAll()").checkTokenAccess("permitAll()");
     }
 
     @Override
-    public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+    public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
         TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
         tokenEnhancerChain.setTokenEnhancers(Arrays.asList(tokenEnhancer(), accessTokenConverter()));
         endpoints

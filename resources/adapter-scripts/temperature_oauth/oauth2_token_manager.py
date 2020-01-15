@@ -16,5 +16,5 @@ def get_access_token(client_id, client_secret, authorization_code):
     return token["access_token"], token["refresh_token"]
 
 def get_access_token_with_refresh_token(client_id, client_secret, refresh_token):
-    oauth = OAuth2Session(client_id)
-    token = oauth.fetch_token
+    #oauth = OAuth2Session(client_id)
+    #token = oauth.fetch_token

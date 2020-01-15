@@ -90,6 +90,29 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 			adminUser.put("authorities", authorities);
 			
 			collection.insert(adminUser);
+
+			BasicDBObject mbpUser = new BasicDBObject();
+			adminUser.put("_class", "org.citopt.connde.domain.user.User");
+			adminUser.put("first_name", "MBP");
+			adminUser.put("last_name", "Platform");
+			adminUser.put("username", "mbp");
+			adminUser.put("password", passwordEncoder.encode("mbp-platform"));
+			adminUser.put("authorities", authorities);
+
+			collection.insert(mbpUser);
+
+			Set<BasicDBObject> deviceAuthorities = new HashSet<>();
+			authorities.add(authorityAnonymous);
+
+			BasicDBObject deviceUser = new BasicDBObject();
+			adminUser.put("_class", "org.citopt.connde.domain.user.User");
+			adminUser.put("first_name", "IoT");
+			adminUser.put("last_name", "Device");
+			adminUser.put("username", "device");
+			adminUser.put("password", passwordEncoder.encode("iot-device"));
+			adminUser.put("authorities", deviceAuthorities);
+
+			collection.insert(deviceUser);
 		}
 	}
 }

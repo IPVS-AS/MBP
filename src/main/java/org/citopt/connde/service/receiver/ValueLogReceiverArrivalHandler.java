@@ -3,6 +3,7 @@ package org.citopt.connde.service.receiver;
 import org.citopt.connde.domain.valueLog.ValueLog;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,6 +47,11 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
     @Override
     public void connectionLost(Throwable throwable) {
         System.err.println("Mqtt client lost connection.");
+        try {
+            throw new MqttException(throwable);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

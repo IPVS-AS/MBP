@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import groovy.util.logging.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.citopt.connde.service.settings.SettingsService;
 import org.citopt.connde.service.settings.model.BrokerLocation;
@@ -28,7 +29,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -36,6 +36,7 @@ import org.springframework.web.client.RestTemplate;
  * themselves to the ValueLogReceiver and get notified when a new value message arrives.
  */
 @Service
+@Slf4j
 public class ValueLogReceiver {
 	//Set of MQTT topics to subscribe to
 	private static final String[] SUBSCRIBE_TOPICS = {"device/#", "sensor/#", "actuator/#", "monitoring/#"};
@@ -75,7 +76,6 @@ public class ValueLogReceiver {
 	private String oauth2ClientSecret;
 
 	private String accessToken;
-	private String refreshToken;
 
 	/**
 	 * Initializes the value logger service.
@@ -95,8 +95,6 @@ public class ValueLogReceiver {
 		//Setup the mqtt client
 		try {
 			setupAndStart();
-		} catch (MqttException e) {
-			System.err.println("MqttException: " + e.getMessage());
 		} catch (IOException e) {
 			System.err.println("IOException: " + e.getMessage());
 		}
@@ -146,25 +144,52 @@ public class ValueLogReceiver {
 	 * @throws MqttException In case of an error during execution of mqtt operations
 	 * @throws IOException   In case of an I/O issue
 	 */
-	public void setupAndStart() throws MqttException, IOException {
-		//Disconnect the old mqtt client if already connected
-		if ((mqttClient != null) && (mqttClient.isConnected())) {
-			mqttClient.disconnectForcibly();
+	public void setupAndStart() throws IOException {
+		try {
+			//Disconnect the old mqtt client if already connected
+			if ((mqttClient != null) && (mqttClient.isConnected())) {
+				mqttClient.disconnectForcibly();
+			}
+
+			//Stores the address of the desired mqtt broker
+			String brokerAddress = "localhost";
+
+			//Determine from settings if a remote broker should be used instead
+			Settings settings = settingsService.getSettings();
+			if (settings.getBrokerLocation().equals(BrokerLocation.REMOTE)) {
+				//Retrieve IP address of external broker from settings
+				brokerAddress = settings.getBrokerIPAddress();
+			}
+
+			//Instantiate memory persistence
+			MemoryPersistence persistence = new MemoryPersistence();
+
+			requestOAuth2Token();
+
+			//Create new mqtt client with the full broker URL
+			mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
+			MqttConnectOptions connectOptions = new MqttConnectOptions();
+			connectOptions.setCleanSession(true);
+			connectOptions.setUserName(accessToken);
+			connectOptions.setPassword("any".toCharArray());
+
+			//Connect and subscribe to the topics
+			mqttClient.connect(connectOptions);
+			mqttClient.subscribe(SUBSCRIBE_TOPICS);
+
+			//Create new callback handler for messages and register it
+			MqttCallback callback = new ValueLogReceiverArrivalHandler(observerSet);
+			mqttClient.setCallback(callback);
+		} catch (MqttException e) {
+			System.err.print("Error during MQTT connection, trying to reconnect with new client..." + e.getMessage());
+			setupAndStart();
 		}
+	}
 
-		//Stores the address of the desired mqtt broker
-		String brokerAddress = "localhost";
-
-		//Determine from settings if a remote broker should be used instead
-		Settings settings = settingsService.getSettings();
-		if (settings.getBrokerLocation().equals(BrokerLocation.REMOTE)) {
-			//Retrieve IP address of external broker from settings
-			brokerAddress = settings.getBrokerIPAddress();
-		}
-
-		//Instantiate memory persistence
-		MemoryPersistence persistence = new MemoryPersistence();
-
+	/**
+	 * Request an OAuth2 Access Token with client credentials of the MBP.
+	 */
+	public void requestOAuth2Token() {
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders httpHeaders = createHeaders(httpUser, httpPassword);
 		HttpEntity<String> request = new HttpEntity<>(httpHeaders);
@@ -180,21 +205,6 @@ public class ValueLogReceiver {
 			// TODO error handling if the retrieval of a token fails
 			e.printStackTrace();
 		}
-
-		//Create new mqtt client with the full broker URL
-		mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
-		MqttConnectOptions connectOptions = new MqttConnectOptions();
-		connectOptions.setCleanSession(true);
-		connectOptions.setUserName(accessToken);
-		connectOptions.setPassword("any".toCharArray());
-
-		//Connect and subscribe to the topics
-		mqttClient.connect(connectOptions);
-		mqttClient.subscribe(SUBSCRIBE_TOPICS);
-
-		//Create new callback handler for messages and register it
-		MqttCallback callback = new ValueLogReceiverArrivalHandler(observerSet);
-		mqttClient.setCallback(callback);
 	}
 
 	/**
