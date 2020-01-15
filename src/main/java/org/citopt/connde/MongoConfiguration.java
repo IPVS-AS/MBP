@@ -5,7 +5,9 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.citopt.connde.constants.Constants;
@@ -75,7 +77,8 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 		
 		// Add admin user
 		if (!database.collectionExists("user")){
-			DBCollection collection = database.createCollection("user", null);	
+			DBCollection collection = database.createCollection("user", null);
+			List<BasicDBObject> documents = new ArrayList<>();
 
 			Set<BasicDBObject> authorities = new HashSet<>();
 			authorities.add(authorityAdmin);
@@ -88,8 +91,8 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 			adminUser.put("username", "admin");
 			adminUser.put("password", passwordEncoder.encode("admin"));
 			adminUser.put("authorities", authorities);
-			
-			collection.insert(adminUser);
+
+			documents.add(adminUser)
 
 			BasicDBObject mbpUser = new BasicDBObject();
 			adminUser.put("_class", "org.citopt.connde.domain.user.User");
@@ -99,7 +102,7 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 			adminUser.put("password", passwordEncoder.encode("mbp-platform"));
 			adminUser.put("authorities", authorities);
 
-			collection.insert(mbpUser);
+			documents.add(mbpUser);
 
 			Set<BasicDBObject> deviceAuthorities = new HashSet<>();
 			authorities.add(authorityAnonymous);
@@ -110,9 +113,11 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 			adminUser.put("last_name", "Device");
 			adminUser.put("username", "device");
 			adminUser.put("password", passwordEncoder.encode("iot-device"));
-			adminUser.put("authorities", authorities);
+			adminUser.put("authorities", deviceAuthorities);
 
-			collection.insert(deviceUser);
+			documents.add(deviceUser);
+
+			collection.insert(documents);
 		}
 	}
 }
