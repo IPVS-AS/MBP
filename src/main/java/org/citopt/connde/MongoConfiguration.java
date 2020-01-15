@@ -110,7 +110,7 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 			adminUser.put("last_name", "Device");
 			adminUser.put("username", "device");
 			adminUser.put("password", passwordEncoder.encode("iot-device"));
-			adminUser.put("authorities", deviceAuthorities);
+			adminUser.put("authorities", authorities);
 
 			collection.insert(deviceUser);
 		}
