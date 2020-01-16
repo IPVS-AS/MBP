@@ -95,12 +95,12 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 			documents.add(adminUser);
 
 			BasicDBObject mbpUser = new BasicDBObject();
-			adminUser.put("_class", "org.citopt.connde.domain.user.User");
-			adminUser.put("first_name", "MBP");
-			adminUser.put("last_name", "Platform");
-			adminUser.put("username", "mbp");
-			adminUser.put("password", passwordEncoder.encode("mbp-platform"));
-			adminUser.put("authorities", authorities);
+			mbpUser.put("_class", "org.citopt.connde.domain.user.User");
+			mbpUser.put("first_name", "MBP");
+			mbpUser.put("last_name", "Platform");
+			mbpUser.put("username", "mbp");
+			mbpUser.put("password", passwordEncoder.encode("mbp-platform"));
+			mbpUser.put("authorities", authorities);
 
 			documents.add(mbpUser);
 
@@ -108,12 +108,12 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 			authorities.add(authorityAnonymous);
 
 			BasicDBObject deviceUser = new BasicDBObject();
-			adminUser.put("_class", "org.citopt.connde.domain.user.User");
-			adminUser.put("first_name", "IoT");
-			adminUser.put("last_name", "Device");
-			adminUser.put("username", "device");
-			adminUser.put("password", passwordEncoder.encode("iot-device"));
-			adminUser.put("authorities", deviceAuthorities);
+			deviceUser.put("_class", "org.citopt.connde.domain.user.User");
+			deviceUser.put("first_name", "IoT");
+			deviceUser.put("last_name", "Device");
+			deviceUser.put("username", "device");
+			deviceUser.put("password", passwordEncoder.encode("iot-device"));
+			deviceUser.put("authorities", deviceAuthorities);
 
 			documents.add(deviceUser);
 
