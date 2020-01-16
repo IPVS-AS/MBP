@@ -30,8 +30,7 @@ public class OAuth2ResourceServerConfiguration extends ResourceServerConfigurerA
 		http
 				.anonymous().disable()
 				.authorizeRequests()
-				.antMatchers("/api/testOauth").access("#oauth2.hasScope('write')")
-				.anyRequest().access("#oauth2.hasScope('read')");
+				.antMatchers("/api/testOauth").access("#oauth2.hasScope('write')");
 	}
 
 	@Bean
