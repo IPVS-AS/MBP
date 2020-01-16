@@ -38,9 +38,12 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
     private String serverAddress;
 
     private final AuthenticationManager authenticationManager;
+    private final UserDetailsServiceImpl userDetailsService;
 
-    public OAuth2AuthorizationServerConfiguration(@Qualifier("authenticationManagerBean") AuthenticationManager authenticationManager) {
+    public OAuth2AuthorizationServerConfiguration(@Qualifier("authenticationManagerBean") AuthenticationManager authenticationManager,
+                                                  @Qualifier("mongoUserDetails") UserDetailsServiceImpl userDetailsService) {
         this.authenticationManager = authenticationManager;
+        this.userDetailsService = userDetailsService;
     }
 
     @Override
@@ -78,6 +81,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
         endpoints
                 .tokenStore(tokenStore())
                 .accessTokenConverter(accessTokenConverter())
+                .userDetailsService(userDetailsService)
                 .authenticationManager(authenticationManager);
     }
 

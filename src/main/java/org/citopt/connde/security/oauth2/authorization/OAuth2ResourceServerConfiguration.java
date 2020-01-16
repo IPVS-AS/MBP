@@ -49,6 +49,7 @@ public class OAuth2ResourceServerConfiguration extends ResourceServerConfigurerA
 	@Primary
 	public DefaultTokenServices tokenServices() {
 		DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
+		defaultTokenServices.setSupportRefreshToken(true);
 		defaultTokenServices.setTokenStore(tokenStore());
 		return defaultTokenServices;
 	}
