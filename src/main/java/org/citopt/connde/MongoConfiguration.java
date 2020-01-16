@@ -66,12 +66,15 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 		authorityAdmin.put("_id", Constants.ADMIN);
 		BasicDBObject authorityUser = new BasicDBObject();
 		authorityUser.put("_id", Constants.USER);
+		BasicDBObject authorityDevice = new BasicDBObject();
+		authorityDevice.put("_id", Constants.DEVICE);
 		BasicDBObject authorityAnonymous = new BasicDBObject();
 		authorityAnonymous.put("_id", Constants.ANONYMOUS);
 		if(!database.collectionExists("authority")){
 			DBCollection collection = database.createCollection("authority", null);
 			collection.insert(authorityAdmin);
 			collection.insert(authorityUser);
+			collection.insert(authorityDevice);
 			collection.insert(authorityAnonymous);
 		}
 		
@@ -105,7 +108,7 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 			documents.add(mbpUser);
 
 			Set<BasicDBObject> deviceAuthorities = new HashSet<>();
-			authorities.add(authorityAnonymous);
+			authorities.add(authorityDevice);
 
 			BasicDBObject deviceUser = new BasicDBObject();
 			deviceUser.put("_class", "org.citopt.connde.domain.user.User");

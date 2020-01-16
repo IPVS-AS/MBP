@@ -13,6 +13,8 @@ public final class Constants {
 
     public static final String USER = "ROLE_USER";
 
+	public static final String DEVICE = "ROLE_DEVICE";
+
     public static final String ANONYMOUS = "ROLE_ANONYMOUS";
     
     public static final String[][] componentTypes = { 

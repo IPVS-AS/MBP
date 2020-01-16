@@ -49,7 +49,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .secret("test")
                 .authorizedGrantTypes("authorization_code", "refresh_token")
                 .scopes("write")
-                .authorities(Constants.ANONYMOUS)
+                .authorities(Constants.DEVICE)
                 .autoApprove(true)
                 .accessTokenValiditySeconds(3600) // 1 hour
                 .refreshTokenValiditySeconds(7200) // 2 hours
