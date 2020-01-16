@@ -2,7 +2,6 @@ package org.citopt.connde;
 
 import org.citopt.connde.constants.Constants;
 import org.citopt.connde.security.RestAuthenticationEntryPoint;
-import org.citopt.connde.security.oauth2.authorization.ClientUserDetailsServiceImpl;
 import org.citopt.connde.service.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -47,11 +46,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    public ClientUserDetailsServiceImpl clientUserDetailsService() {
-        return new ClientUserDetailsServiceImpl();
-    }
-
-    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -73,9 +67,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Order(Ordered.HIGHEST_PRECEDENCE)
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .csrf().disable()
-                .authorizeRequests()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
+            .csrf().disable()
+            .authorizeRequests()
                 .antMatchers("/api/authenticate").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/users").hasAuthority(Constants.ADMIN)
                 .antMatchers(HttpMethod.PUT, "/api/users").hasAuthority(Constants.ADMIN)
@@ -83,8 +77,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)
                 .antMatchers(HttpMethod.DELETE, "/api/users/:username").hasAuthority(Constants.ADMIN)
                 .antMatchers("/oauth/**").authenticated()
-                .and().httpBasic().authenticationEntryPoint(restAuthenticationEntryPoint())
-                .and()
+            .and().httpBasic().authenticationEntryPoint(restAuthenticationEntryPoint())
+            .and()
                 .logout()
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
                 .logoutSuccessUrl("/login")

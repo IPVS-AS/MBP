@@ -1,5 +1,6 @@
 package org.citopt.connde.security.oauth2.authorization;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -16,6 +17,9 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @EnableResourceServer
 public class OAuth2ResourceServerConfiguration extends ResourceServerConfigurerAdapter {
 
+	@Value("security.oauth2.resource.jwt.key-value")
+	private String signingKey;
+
 	@Override
 	public void configure(ResourceServerSecurityConfigurer config) {
 		config.tokenServices(tokenServices());
@@ -29,7 +33,6 @@ public class OAuth2ResourceServerConfiguration extends ResourceServerConfigurerA
 					.antMatchers("/api/testOauth").and().authorizeRequests()
 					.antMatchers("/api/testOauth").access("#oauth2.hasScope('write')")
 					.anyRequest().access("#oauth2.hasScope('read')");
-				//.antMatchers("/api/verifyPermission").access("hasRole('CLIENT')");
 	}
 
 	@Bean
@@ -40,7 +43,7 @@ public class OAuth2ResourceServerConfiguration extends ResourceServerConfigurerA
 	@Bean
 	public JwtAccessTokenConverter accessTokenConverter() {
 		JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-		converter.setSigningKey("123");
+		converter.setSigningKey(signingKey);
 		return converter;
 	}
 

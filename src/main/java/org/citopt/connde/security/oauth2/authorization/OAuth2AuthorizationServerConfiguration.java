@@ -11,6 +11,7 @@ import org.citopt.connde.security.RestAuthenticationEntryPoint;
 import org.citopt.connde.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,15 +31,13 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @EnableAuthorizationServer
 public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
-    private final AuthenticationManager authenticationManager;
-    private final ClientUserDetailsServiceImpl clientUserDetailsService;
+    @Value("security.oauth2.resource.jwt.key-value")
+    private String signingKey;
 
-    public OAuth2AuthorizationServerConfiguration(@Qualifier("authenticationManagerBean") AuthenticationManager authenticationManager,
-                                                  @Qualifier("restAuthenticationEntryPoint") RestAuthenticationEntryPoint restAuthenticationEntryPoint,
-                                                  @Qualifier("mongoUserDetails") UserDetailsServiceImpl userDetailsService,
-                                                  @Qualifier("clientUserDetailsService") ClientUserDetailsServiceImpl clientUserDetailsService) {
+    private final AuthenticationManager authenticationManager;
+
+    public OAuth2AuthorizationServerConfiguration(@Qualifier("authenticationManagerBean") AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
-        this.clientUserDetailsService = clientUserDetailsService;
     }
 
     @Override
@@ -66,8 +65,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
 
     @Override
     public void configure(AuthorizationServerSecurityConfigurer security) {
-    	//TODO basic http auth for checkTokenAccess (-> also in RestOauthController)
-        security.tokenKeyAccess("permitAll()").checkTokenAccess("permitAll()");
+        security.tokenKeyAccess("permitAll()").checkTokenAccess("isAuthenticated()");
     }
 
     @Override
@@ -77,7 +75,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
         endpoints
                 .tokenStore(tokenStore())
                 .accessTokenConverter(accessTokenConverter())
-                .authenticationManager(authenticationManager).userDetailsService(clientUserDetailsService);
+                .authenticationManager(authenticationManager);
     }
 
     @Bean
@@ -96,8 +94,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
     @Bean
     public JwtAccessTokenConverter accessTokenConverter() {
         JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-        // TODO SigningKey austauschen
-        converter.setSigningKey("123");
+        converter.setSigningKey(signingKey);
         return converter;
     }
 
