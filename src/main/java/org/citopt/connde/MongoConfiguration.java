@@ -78,7 +78,6 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 			collection.insert(authorityAnonymous);
 		}
 		
-		// Add admin user
 		if (!database.collectionExists("user")){
 			DBCollection collection = database.createCollection("user", null);
 			List<BasicDBObject> documents = new ArrayList<>();
@@ -86,7 +85,8 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 			Set<BasicDBObject> authorities = new HashSet<>();
 			authorities.add(authorityAdmin);
 			authorities.add(authorityUser);
-			
+
+			// An administration user
 			BasicDBObject adminUser = new BasicDBObject();
 			adminUser.put("_class", "org.citopt.connde.domain.user.User");
 			adminUser.put("first_name", "Admin");
@@ -97,6 +97,7 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 
 			documents.add(adminUser);
 
+			// A user for the MBP platform to authenticate itself over http to retrieve an OAuth token
 			BasicDBObject mbpUser = new BasicDBObject();
 			mbpUser.put("_class", "org.citopt.connde.domain.user.User");
 			mbpUser.put("first_name", "MBP");
@@ -110,6 +111,7 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 			Set<BasicDBObject> deviceAuthorities = new HashSet<>();
 			deviceAuthorities.add(authorityDevice);
 
+			// A user which is used by IoT devices for http authentication
 			BasicDBObject deviceUser = new BasicDBObject();
 			deviceUser.put("_class", "org.citopt.connde.domain.user.User");
 			deviceUser.put("first_name", "IoT");
@@ -119,7 +121,6 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 			deviceUser.put("authorities", deviceAuthorities);
 
 			documents.add(deviceUser);
-
 			collection.insert(documents);
 		}
 	}
