@@ -31,10 +31,10 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 @EnableAuthorizationServer
 public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
-    @Value("security.oauth2.resource.jwt.key-value")
+    @Value("${security.oauth2.resource.jwt.key-value}")
     private String signingKey;
 
-    @Value("server.address")
+    @Value("${server.address}")
     private String serverAddress;
 
     private final AuthenticationManager authenticationManager;

@@ -54,25 +54,25 @@ public class ValueLogReceiver {
 	//Set ob observers that want to be notified about incoming value logs
 	private Set<ValueLogReceiverObserver> observerSet;
 
-	@Value("security.user.name")
+	@Value("${security.user.name}")
 	private String httpUser;
 
-	@Value("security.user.password")
+	@Value("${security.user.password}")
 	private String httpPassword;
 
-	@Value("server.address")
+	@Value("${server.address}")
 	private String serverAddress;
 
-	@Value("security.oauth2.client.access-token-uri")
+	@Value("${security.oauth2.client.access-token-uri}")
 	private String oauth2TokenUri;
 
-	@Value("security.oauth2.client.grant-type")
+	@Value("${security.oauth2.client.grant-type}")
 	private String oauth2GrantType;
 
-	@Value("security.oauth2.client.client-id")
+	@Value("${security.oauth2.client.client-id}")
 	private String oauth2ClientId;
 
-	@Value("security.oauth2.client.client-secret")
+	@Value("${security.oauth2.client.client-secret}")
 	private String oauth2ClientSecret;
 
 	private String accessToken;
@@ -196,7 +196,8 @@ public class ValueLogReceiver {
 		Map<String, String> parameters = new HashMap<>();
 		parameters.put("grant_type", oauth2GrantType);
 		parameters.put("client-id", oauth2ClientId);
-		parameters.put("client-secret", oauth2ClientSecret);
+		//parameters.put("client-secret", oauth2ClientSecret);
+		System.out.println(oauth2TokenUri);
 		ResponseEntity<String> response = restTemplate.exchange(oauth2TokenUri, HttpMethod.POST, request, String.class, parameters);
 		try {
 			JSONObject body = new JSONObject(response.getBody());

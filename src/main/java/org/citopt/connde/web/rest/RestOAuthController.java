@@ -28,7 +28,7 @@ public class RestOAuthController {
 
 	private static final Logger LOGGER = Logger.getLogger(RestOAuthController.class.getName());
 
-	@Value("server.address")
+	@Value("${server.address}")
 	private String serverAddress;
 
 	@RequestMapping(value = "/getAccessCode", method = RequestMethod.GET)

@@ -485,7 +485,7 @@ app.controller('ComponentDetailsController',
             function getDeviceCode() {
                 fetch('http://192.168.209.207:8080/MBP/oauth/authorize?client_id=device-client&response_type=code&scope=write', {
                     headers: {
-                        //TODO basic authentication with username/password
+                        //TODO basic authentication with static username/password
                         'Authorization': 'Basic ZGV2aWNlOmlvdC1kZXZpY2U='
                     }
                 }).then(function (response) {
