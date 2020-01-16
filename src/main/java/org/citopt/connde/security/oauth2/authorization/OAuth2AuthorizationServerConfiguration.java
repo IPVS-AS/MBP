@@ -53,8 +53,8 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .scopes("write")
                 .authorities(Constants.DEVICE)
                 .autoApprove(true)
-                .accessTokenValiditySeconds(3600) // 1 hour
-                .refreshTokenValiditySeconds(7200) // 2 hours
+                .accessTokenValiditySeconds(120) // 1 hour
+                .refreshTokenValiditySeconds(500) // 2 hours
                 .redirectUris("http://192.168.209.207:8080/MBP/api/getAccessCode")
                 .and()
                 .withClient("mbp")
