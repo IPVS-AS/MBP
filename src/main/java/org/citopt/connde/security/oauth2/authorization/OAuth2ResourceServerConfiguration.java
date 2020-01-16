@@ -29,10 +29,9 @@ public class OAuth2ResourceServerConfiguration extends ResourceServerConfigurerA
 	public void configure(HttpSecurity http) throws Exception {
 		http
 				.anonymous().disable()
-				.requestMatchers()
-					.antMatchers("/api/testOauth").and().authorizeRequests()
-					.antMatchers("/api/testOauth").access("#oauth2.hasScope('write')")
-					.anyRequest().access("#oauth2.hasScope('read')");
+				.authorizeRequests()
+				.antMatchers("/api/testOauth").access("#oauth2.hasScope('write')")
+				.anyRequest().access("#oauth2.hasScope('read')");
 	}
 
 	@Bean

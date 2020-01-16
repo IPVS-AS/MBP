@@ -8,6 +8,7 @@ import javax.json.Json;
 
 import org.apache.commons.codec.binary.Base64;
 import org.citopt.connde.RestConfiguration;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,9 @@ public class RestOAuthController {
 
 	private static final Logger LOGGER = Logger.getLogger(RestOAuthController.class.getName());
 
+	@Value("server.address")
+	private String serverAddress;
+
 	@RequestMapping(value = "/getAccessCode", method = RequestMethod.GET)
 	public String getDeviceCode(@RequestParam("code") String code) {
 		return code;
@@ -41,7 +45,7 @@ public class RestOAuthController {
 	public HttpStatus checkOauthTokenUser(@RequestHeader("authorization") String authorizationHeader) {
 		LOGGER.log(Level.INFO, "############################### Authorization header : " + authorizationHeader);
 		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<Json> response = restTemplate.getForEntity("http://192.168.209.207:8080/MBP/oauth/check_token?token=" + authorizationHeader, Json.class);
+		ResponseEntity<Json> response = restTemplate.getForEntity(serverAddress + "/oauth/check_token?token=" + authorizationHeader, Json.class);
 		if (response.getStatusCode().equals(HttpStatus.OK)) {
 			LOGGER.log(Level.INFO, "CHECK OAUTH TOKEN FOR USER RETURNED OK ################");
 			return HttpStatus.OK;
