@@ -22,6 +22,8 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.test.autoconfigure.properties.PropertyMapping;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpEntity;
@@ -37,6 +39,7 @@ import org.springframework.web.client.RestTemplate;
  */
 @Service
 @Slf4j
+@PropertySource(value = "classpath:application.properties")
 public class ValueLogReceiver {
 	//Set of MQTT topics to subscribe to
 	private static final String[] SUBSCRIBE_TOPICS = {"device/#", "sensor/#", "actuator/#", "monitoring/#"};
@@ -154,6 +157,8 @@ public class ValueLogReceiver {
 			//Stores the address of the desired mqtt broker
 			String brokerAddress = "localhost";
 
+			System.out.println(oauth2TokenUri + " ######################");
+
 			//Determine from settings if a remote broker should be used instead
 			Settings settings = settingsService.getSettings();
 			if (settings.getBrokerLocation().equals(BrokerLocation.REMOTE)) {
@@ -196,8 +201,7 @@ public class ValueLogReceiver {
 		Map<String, String> parameters = new HashMap<>();
 		parameters.put("grant_type", oauth2GrantType);
 		parameters.put("client-id", oauth2ClientId);
-		//parameters.put("client-secret", oauth2ClientSecret);
-		System.out.println(oauth2TokenUri);
+		parameters.put("client-secret", oauth2ClientSecret);
 		ResponseEntity<String> response = restTemplate.exchange(oauth2TokenUri, HttpMethod.POST, request, String.class, parameters);
 		try {
 			JSONObject body = new JSONObject(response.getBody());

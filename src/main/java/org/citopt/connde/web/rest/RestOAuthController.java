@@ -9,6 +9,7 @@ import javax.json.Json;
 import org.apache.commons.codec.binary.Base64;
 import org.citopt.connde.RestConfiguration;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import static org.apache.commons.lang3.RandomStringUtils.randomNumeric;
 
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
+@PropertySource(value = "classpath:application.properties")
 public class RestOAuthController {
 
 	private static final Logger LOGGER = Logger.getLogger(RestOAuthController.class.getName());
