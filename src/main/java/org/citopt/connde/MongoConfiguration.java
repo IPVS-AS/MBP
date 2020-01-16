@@ -108,7 +108,7 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 			documents.add(mbpUser);
 
 			Set<BasicDBObject> deviceAuthorities = new HashSet<>();
-			authorities.add(authorityDevice);
+			deviceAuthorities.add(authorityDevice);
 
 			BasicDBObject deviceUser = new BasicDBObject();
 			deviceUser.put("_class", "org.citopt.connde.domain.user.User");
