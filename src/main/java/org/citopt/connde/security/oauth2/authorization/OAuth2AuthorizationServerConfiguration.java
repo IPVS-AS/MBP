@@ -44,8 +44,8 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         //TODO real client ids from MongoDB
         clients.inMemory()
-                .withClient("test-client")
-                .secret("test")
+                .withClient("device-client")
+                .secret("device")
                 .authorizedGrantTypes("authorization_code", "refresh_token")
                 .scopes("write")
                 .authorities(Constants.DEVICE)
