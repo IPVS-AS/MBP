@@ -32,6 +32,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Background service that receives incoming MQTT value log messages of that comply to certain topics. The service implements the observer pattern which allows other other components to register
@@ -198,16 +199,16 @@ public class ValueLogReceiver {
 		RestTemplate restTemplate = new RestTemplate();
 		HttpHeaders httpHeaders = createHeaders(httpUser, httpPassword);
 		HttpEntity<String> request = new HttpEntity<>(httpHeaders);
-		Map<String, String> parameters = new HashMap<>();
-		parameters.put("grant_type", oauth2GrantType);
-		parameters.put("client-id", oauth2ClientId);
-		parameters.put("client-secret", oauth2ClientSecret);
-		ResponseEntity<String> response = restTemplate.exchange(oauth2TokenUri, HttpMethod.POST, request, String.class, parameters);
+		UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(oauth2TokenUri)
+				.queryParam("grant_type", oauth2GrantType)
+				.queryParam("client-id", oauth2ClientId)
+				.queryParam("scope", "read");
+		System.out.println("#########################" + uriComponentsBuilder.toUriString());
+		ResponseEntity<String> response = restTemplate.exchange(uriComponentsBuilder.toUriString(), HttpMethod.POST, request, String.class);
 		try {
 			JSONObject body = new JSONObject(response.getBody());
 			accessToken = body.getString("access_token");
 		} catch (JSONException e) {
-			// TODO error handling if the retrieval of a token fails
 			e.printStackTrace();
 		}
 	}
