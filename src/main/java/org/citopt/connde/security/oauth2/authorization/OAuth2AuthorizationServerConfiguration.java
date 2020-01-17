@@ -60,7 +60,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .autoApprove(true)
                 .accessTokenValiditySeconds(120) // 1 hour
                 .refreshTokenValiditySeconds(500) // 2 hours
-                .redirectUris("http://192.168.209.207:8080/MBP/api/getAccessCode")
+                .redirectUris(serverAddress + "/api/getAccessCode")
                 .and()
                 .withClient("mbp")
                 .secret("mbp-platform")

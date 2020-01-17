@@ -483,9 +483,9 @@ app.controller('ComponentDetailsController',
              * Retrieve authorization code for the device from the OAuth Authorization server.
              */
             function getDeviceCode() {
-                fetch('http://192.168.209.207:8080/MBP/oauth/authorize?client_id=device-client&response_type=code&scope=write', {
+                fetch(location.origin + '/MBP/oauth/authorize?client_id=device-client&response_type=code&scope=write', {
                     headers: {
-                        //TODO basic authentication with static username/password
+                        // Basic http authentication with username "device" and the according password from MBP
                         'Authorization': 'Basic ZGV2aWNlOmlvdC1kZXZpY2U='
                     }
                 }).then(function (response) {
