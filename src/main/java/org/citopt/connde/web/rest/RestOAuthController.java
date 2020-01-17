@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -44,28 +45,30 @@ public class RestOAuthController {
 	}
 
 	@RequestMapping(value = "/checkOauthTokenUser", method = RequestMethod.POST)
-	public HttpStatus checkOauthTokenUser(@RequestHeader("authorization") String authorizationHeader) {
+	public ResponseEntity<?> checkOauthTokenUser(@RequestHeader("authorization") String authorizationHeader) {
+		LOGGER.log(Level.INFO, "############################### Checking Single User #########################");
 		LOGGER.log(Level.INFO, "############################### Authorization header : " + authorizationHeader);
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<Json> response = restTemplate.getForEntity("http://192.168.209.207:8080/MBP/oauth/check_token?token=" + authorizationHeader, Json.class);
 		if (response.getStatusCode().equals(HttpStatus.OK)) {
 			LOGGER.log(Level.INFO, "CHECK OAUTH TOKEN FOR USER RETURNED OK ################");
-			return HttpStatus.OK;
+			return new ResponseEntity<>(null, HttpStatus.OK);
 		}
 		LOGGER.log(Level.INFO, "TOKEN FOR USER IS INVALID ################");
-		return HttpStatus.UNAUTHORIZED;
+		return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
 	}
 
 	@RequestMapping(value = "/checkOauthTokenSuperuser", method = RequestMethod.POST)
-	public HttpStatus checkOauthTokenSuperuser(@RequestHeader("authorization") String authorizationHeader) {
+	@ResponseStatus(HttpStatus.UNAUTHORIZED)
+	public ResponseEntity<?> checkOauthTokenSuperuser(@RequestHeader("authorization") String authorizationHeader) {
 		LOGGER.log(Level.INFO, "CHECK OAUTH TOKEN FOR SUPERUSER RETURNED 401 ################");
-		return HttpStatus.UNAUTHORIZED;
+		return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
 	}
 
 	@RequestMapping(value = "/checkOauthTokenAcl", method = RequestMethod.POST)
-	public HttpStatus checkOauthTokenAcl(@RequestHeader("authorization") String authorizationHeader) {
+	public ResponseEntity<?> checkOauthTokenAcl(@RequestHeader("authorization") String authorizationHeader) {
 		LOGGER.log(Level.INFO, "CHECK OAUTH TOKEN FOR ACL RETURNED 401 ################");
-		return HttpStatus.UNAUTHORIZED;
+		return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
 	}
 
 	private String getBearerTokenFromAuthHeader(String authorizationHeader) {

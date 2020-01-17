@@ -58,7 +58,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .scopes("write")
                 .authorities(Constants.DEVICE)
                 .autoApprove(true)
-                .accessTokenValiditySeconds(120) // 1 hour
+                .accessTokenValiditySeconds(120) // 120 seconds
                 .refreshTokenValiditySeconds(500) // 2 hours
                 .redirectUris(serverAddress + "/api/getAccessCode")
                 .and()
@@ -68,7 +68,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .scopes("read")
                 .authorities(Constants.ADMIN)
                 .autoApprove(true)
-                .accessTokenValiditySeconds(3600); // 1 hour
+                .accessTokenValiditySeconds(120); // 1 hour
     }
 
     @Override
