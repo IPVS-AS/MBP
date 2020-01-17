@@ -52,19 +52,19 @@ public class RestOAuthController {
 			LOGGER.log(Level.INFO, "CHECK OAUTH TOKEN FOR USER RETURNED OK ################");
 			return HttpStatus.OK;
 		}
-		return HttpStatus.FORBIDDEN;
+		return HttpStatus.UNAUTHORIZED;
 	}
 
 	@RequestMapping(value = "/checkOauthTokenSuperuser", method = RequestMethod.POST)
 	public HttpStatus checkOauthTokenSuperuser(@RequestHeader("authorization") String authorizationHeader) {
 		LOGGER.log(Level.INFO, "CHECK OAUTH TOKEN FOR SUPERUSER RETURNED 403 ################");
-		return HttpStatus.FORBIDDEN;
+		return HttpStatus.UNAUTHORIZED;
 	}
 
 	@RequestMapping(value = "/checkOauthTokenAcl", method = RequestMethod.POST)
 	public HttpStatus checkOauthTokenAcl(@RequestHeader("authorization") String authorizationHeader) {
 		LOGGER.log(Level.INFO, "CHECK OAUTH TOKEN FOR ACL RETURNED 403 ################");
-		return HttpStatus.FORBIDDEN;
+		return HttpStatus.UNAUTHORIZED;
 	}
 
 	private String getBearerTokenFromAuthHeader(String authorizationHeader) {

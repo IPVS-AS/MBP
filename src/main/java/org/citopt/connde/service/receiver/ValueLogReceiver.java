@@ -158,8 +158,6 @@ public class ValueLogReceiver {
 			//Stores the address of the desired mqtt broker
 			String brokerAddress = "localhost";
 
-			System.out.println(oauth2TokenUri + " ######################");
-
 			//Determine from settings if a remote broker should be used instead
 			Settings settings = settingsService.getSettings();
 			if (settings.getBrokerLocation().equals(BrokerLocation.REMOTE)) {
@@ -203,7 +201,6 @@ public class ValueLogReceiver {
 				.queryParam("grant_type", oauth2GrantType)
 				.queryParam("client-id", oauth2ClientId)
 				.queryParam("scope", "read");
-		System.out.println("#########################" + uriComponentsBuilder.toUriString());
 		ResponseEntity<String> response = restTemplate.exchange(uriComponentsBuilder.toUriString(), HttpMethod.POST, request, String.class);
 		try {
 			JSONObject body = new JSONObject(response.getBody());
