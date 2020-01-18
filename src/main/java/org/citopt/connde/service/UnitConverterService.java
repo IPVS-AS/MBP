@@ -16,7 +16,7 @@ public class UnitConverterService {
     private static final int ROUNDING_DECIMAL_PLACES = 4;
 
     /**
-     * Converts the value of a value log into a different unit by using a given unit converter.
+     * Converts the value of a value log into a different unit by usingqq a given unit converter.
      * Rounding to a certain number of decimal places (as specified in ROUNDING_DECIMAL_PLACES)
      * is applied to the resulting value.
      *
@@ -25,6 +25,7 @@ public class UnitConverterService {
      *                  desired target unit
      */
     public void convertValueLogValue(ValueLog valueLog, UnitConverter converter) {
+        /*
         //Get value of current log
         double value = Double.valueOf(valueLog.getValue());
 
@@ -38,6 +39,6 @@ public class UnitConverterService {
         convertedValue = Math.round(convertedValue * roundingConst) / roundingConst;
 
         //Write value to log
-        valueLog.setValue(convertedValue);
+        valueLog.setValue(Double.toString(convertedValue));*/
     }
 }

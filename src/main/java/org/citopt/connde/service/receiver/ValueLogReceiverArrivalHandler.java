@@ -85,7 +85,7 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
         valueLog.setQos(qos);
         valueLog.setTime(time);
         valueLog.setIdref(componentID);
-        valueLog.setValue(json.getDouble(JSON_KEY_VALUE));
+        valueLog.setValue(json.getString(JSON_KEY_VALUE));
         valueLog.setComponent(componentType);
 
         //Notify all observers

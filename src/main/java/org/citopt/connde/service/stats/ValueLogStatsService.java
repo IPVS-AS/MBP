@@ -89,6 +89,7 @@ public class ValueLogStatsService {
         double averageAccumulator = 0;
 
         //Iterate over all value logs in the list
+        /*
         for (ValueLog log : valueLogList) {
             //Get value of the current log
             double logValue = log.getValue();
@@ -105,7 +106,7 @@ public class ValueLogStatsService {
 
             //Increase accumulator
             averageAccumulator += logValue;
-        }
+        }*/
 
         //Finally set min and max log
         stats.setMinimumLog(minLog);
@@ -123,13 +124,14 @@ public class ValueLogStatsService {
         double varianceAccumulator = 0;
 
         //Iterate over all value logs in the list
+        /*
         for (ValueLog log : valueLogList) {
             //Get current value
             double logValue = log.getValue();
 
             //Increase accumulator with respect to the value
             varianceAccumulator += Math.pow(logValue - average, 2);
-        }
+        }*/
 
         //Calculate the variance
         double variance = varianceAccumulator / ((double) valueLogList.size());

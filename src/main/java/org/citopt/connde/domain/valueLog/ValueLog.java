@@ -35,7 +35,7 @@ public class ValueLog {
     @Column(name = "component")
     private String component; //Component type
     @Column(name = "value")
-    private double value;
+    private String value;
 
     /**
      * Returns the time at which the value log was received.
@@ -145,7 +145,7 @@ public class ValueLog {
      *
      * @return The value
      */
-    public double getValue() {
+    public String getValue() {
         return value;
     }
 
@@ -154,7 +154,7 @@ public class ValueLog {
      *
      * @param value The value to set
      */
-    public void setValue(double value) {
+    public void setValue(String value) {
         this.value = value;
     }
 }
