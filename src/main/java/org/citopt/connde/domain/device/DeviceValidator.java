@@ -81,19 +81,12 @@ public class DeviceValidator implements Validator {
 
         //Retrieve fields that need to be of a certain format
         String ipAddress = device.getIpAddress();
-        String macAddress = device.getMacAddress();
         String rsaKey = device.getRsaKey();
 
         //Validate format of the IP address
         if ((ipAddress != null) && (!Validation.isValidIPAddress(ipAddress))) {
             errors.rejectValue("ipAddress", "device.ipAddress.illegal_format",
                     "Illegal IP address provided.");
-        }
-
-        //Validate format of the MAC address (if provided)
-        if ((macAddress != null) && (!macAddress.isEmpty()) && (!Validation.isValidUnformattedMACAddress(macAddress))) {
-            errors.rejectValue("macAddress", "device.macAddress.illegal_format",
-                    "Illegal MAC address provided.");
         }
 
         //Validate format of the private RSA key
