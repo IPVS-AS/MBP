@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import groovy.util.logging.Slf4j;
 import org.apache.commons.codec.binary.Base64;
@@ -30,6 +32,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -41,6 +45,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Service
 @Slf4j
 @PropertySource(value = "classpath:application.properties")
+@EnableScheduling
 public class ValueLogReceiver {
 	//Set of MQTT topics to subscribe to
 	private static final String[] SUBSCRIBE_TOPICS = {"device/#", "sensor/#", "actuator/#", "monitoring/#"};
@@ -80,6 +85,7 @@ public class ValueLogReceiver {
 	private String oauth2ClientSecret;
 
 	private String accessToken;
+	private long expiresIn;
 
 	/**
 	 * Initializes the value logger service.
@@ -148,6 +154,7 @@ public class ValueLogReceiver {
 	 * @throws MqttException In case of an error during execution of mqtt operations
 	 * @throws IOException   In case of an I/O issue
 	 */
+	@Scheduled(fixedDelay = 120000)
 	public void setupAndStart() throws IOException {
 		try {
 			//Disconnect the old mqtt client if already connected
@@ -205,6 +212,7 @@ public class ValueLogReceiver {
 		try {
 			JSONObject body = new JSONObject(response.getBody());
 			accessToken = body.getString("access_token");
+			expiresIn = body.getLong("expires_in");
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
