@@ -25,7 +25,7 @@ pipeline {
                 branch 'master'
             }
             steps {
-                do_static_analysis("http://localhost:9000", "MBP")
+                //do_static_analysis("http://localhost:9000", "MBP")
             }
         }
         
