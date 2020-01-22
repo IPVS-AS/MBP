@@ -1,28 +1,38 @@
 package org.citopt.connde.domain.component;
 
-import javax.persistence.GeneratedValue;
-import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.adapter.Adapter;
+import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.domain.user_entity.UserEntity;
+import org.citopt.connde.domain.user_entity.UserEntityPolicy;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Reference;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.persistence.GeneratedValue;
+
+import static org.citopt.connde.domain.user_entity.UserEntityRole.ADMIN;
+import static org.citopt.connde.domain.user_entity.UserEntityRole.APPROVED_USER;
+
 /**
- *
- * @author rafaelkperes
+ * Document super class for components (actuators, sensors, ...).
  */
 @Document
-public abstract class Component {
-    
+public abstract class Component extends UserEntity {
+    //Permission name for deployment
+    private static final String PERMISSION_NAME_DEPLOY = "deploy";
+
+    //Extend default policy by deployment permission
+    private static final UserEntityPolicy COMPONENT_POLICY = new UserEntityPolicy(DEFAULT_POLICY)
+            .addPermission(PERMISSION_NAME_DEPLOY).addRole(APPROVED_USER).addRole(ADMIN).lock();
+
     @Id
     @GeneratedValue
     private String id;
 
     @Indexed(unique = true)
     private String name;
-    
+
     @Indexed
     private String componentType;
 
@@ -47,15 +57,15 @@ public abstract class Component {
     public void setName(String name) {
         this.name = name;
     }
-    
-    public String getComponentType() {
-		return componentType;
-	}
 
-	public void setComponentType(String componentType) {
-		this.componentType = componentType;
-	}
-    
+    public String getComponentType() {
+        return componentType;
+    }
+
+    public void setComponentType(String componentType) {
+        this.componentType = componentType;
+    }
+
     public Adapter getAdapter() {
         return adapter;
     }
@@ -72,7 +82,7 @@ public abstract class Component {
         this.device = address;
     }
 
-    public String getTopicName(){
+    public String getTopicName() {
         return getComponentTypeName() + "/" + id;
     }
 
@@ -81,5 +91,11 @@ public abstract class Component {
     @Override
     public String toString() {
         return "Component{" + "id=" + id + ", name=" + name + ", type=" + adapter + '}';
+    }
+
+
+    @Override
+    public UserEntityPolicy getUserEntityPolicy() {
+        return COMPONENT_POLICY;
     }
 }

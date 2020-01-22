@@ -2,6 +2,7 @@ package org.citopt.connde.domain.rules;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.citopt.connde.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
  * total number of executions that were performed.
  */
 @Document
-public class Rule {
+public class Rule extends UserEntity {
     @Id
     @GeneratedValue
     private String id;

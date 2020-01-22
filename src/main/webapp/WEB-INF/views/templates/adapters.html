@@ -5,7 +5,8 @@
             <div class="header">
                 <div class="col-lg-6">
                     <h2>Extraction/Control Operators
-                    <small>These operators extract sensor data and/or send control commands to actuactors</small></h2>
+                        <small>These operators extract sensor data and/or send control commands to actuactors</small>
+                    </h2>
                 </div>
                 <div class="align-right">
                     <button id="add-button" type="button"
@@ -24,6 +25,7 @@
                         <th>Description</th>
                         <th>Unit</th>
                         <th>Parameters</th>
+                        <th>Owner</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -42,8 +44,13 @@
                             </button>
                             <span ng-repeat-end="">&nbsp;</span>
                         </td>
+                        <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
-                            <form ng-submit="deleteAdapterCtrl.deleteItem()">
+                            <div ng-show="item.isApprovable" style="display:inline-block">
+                                <user-approval entity-id="{{item.id}}" category-name="adapters"></user-approval>
+                            </div>
+                            <form ng-submit="deleteAdapterCtrl.deleteItem()" ng-show="item.isDeletable"
+                                  style="display: inline-block">
                                 <button type="submit" class="btn btn-danger m-t-0 waves-effect"
                                         ng-click="deleteAdapterCtrl.item.id = item.id"> Delete
                                 </button>
@@ -51,7 +58,7 @@
                         </td>
                     </tr>
                     <tr ng-show="adapterListCtrl.items.length === 0">
-                        <td>No adapters registered.</td>
+                        <td>No operators registered.</td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -78,7 +85,6 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </h5>
-
                 </div>
                 <form id="addAdapterForm" ng-submit="addAdapterCtrl.addItem()">
                     <fieldset id="adapter-form">

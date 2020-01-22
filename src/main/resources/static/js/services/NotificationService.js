@@ -6,7 +6,7 @@
 app.factory('NotificationService', function () {
 
     //Private
-    var typeList = {
+    let typeList = {
         success: {
             icon: 'check',
             btType: 'success'
@@ -35,10 +35,10 @@ app.factory('NotificationService', function () {
             }
 
             //Get corresponding type object
-            var chosenType = typeList[type];
+            let chosenType = typeList[type];
 
             //Create options object
-            var options = {};
+            let options = {};
             options.message = message;
             options.title = '<i style="font-size: 16px" class="material-icons">' + chosenType.icon + '</i>';
 

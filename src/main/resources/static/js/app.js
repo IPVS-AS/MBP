@@ -405,7 +405,21 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
             .when(viewPrefix + '/settings', {
                 category: 'settings',
                 templateUrl: 'templates/settings',
-                controller: 'SettingsController as ctrl'
+                controller: 'SettingsController as ctrl',
+                resolve: {
+                    settings: ['SettingsService', function (SettingsService) {
+                        //Retrieve settings initially
+                        return SettingsService.getSettings().then(function (response) {
+                            return response.data;
+                        });
+                    }],
+                    documentationMetaData: ['SettingsService', function (SettingsService) {
+                        //Retrieve settings initially
+                        return SettingsService.getDocumentationMetaData().then(function (response) {
+                            return response.data;
+                        });
+                    }]
+                }
             })
 
             // Error 404

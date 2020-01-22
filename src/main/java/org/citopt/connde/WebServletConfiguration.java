@@ -1,13 +1,25 @@
 package org.citopt.connde;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.citopt.connde.domain.adapter.Adapter;
+import org.citopt.connde.repository.AdapterRepository;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -18,12 +30,18 @@ import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  *
  * @author rafaelkperes
  */
 @Configuration
 @EnableWebMvc
+@EnableSpringDataWebSupport
 @ComponentScan(basePackages = {
     "org.citopt.connde"
 })
@@ -37,6 +55,12 @@ public class WebServletConfiguration
     private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {
         "classpath:/META-INF/resources/", "classpath:/resources/",
         "classpath:/static/", "classpath:/public/"};
+
+    @Override
+    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+        configurer.ignoreAcceptHeader(true);
+        configurer.defaultContentType(MediaTypes.HAL_JSON);
+    }
 
     @Override
     public void setApplicationContext(ApplicationContext ac)
@@ -55,6 +79,14 @@ public class WebServletConfiguration
             registry.addResourceHandler("/**").addResourceLocations(
                     CLASSPATH_RESOURCE_LOCATIONS);
         }
+    }
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers){
+        PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
+        resolver.setFallbackPageable(new PageRequest(0, Integer.MAX_VALUE));
+        argumentResolvers.add(resolver);
+        super.addArgumentResolvers(argumentResolvers);
     }
 
     /* start Thymeleaf */

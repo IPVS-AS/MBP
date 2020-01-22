@@ -57,7 +57,7 @@ app.controller('DeviceListController',
 
                 //Determines the device's name by checking all devices in the device list
                 for (var i = 0; i < deviceList.length; i++) {
-                    if (deviceId == deviceList[i].id) {
+                    if (deviceId === deviceList[i].id) {
                         deviceName = deviceList[i].name;
                         break;
                     }
@@ -85,7 +85,7 @@ app.controller('DeviceListController',
                         title: 'Delete device',
                         type: 'warning',
                         html: "Are you sure you want to delete the device \"" +
-                        deviceName + "\"?" + affectedWarning,
+                            deviceName + "\"?" + affectedWarning,
                         showCancelButton: true,
                         confirmButtonText: 'Delete',
                         confirmButtonClass: 'bg-red',
@@ -121,7 +121,7 @@ app.controller('DeviceListController',
                 //Resolve device object of the affected device
                 var device = null;
                 for (var i = 0; i < deviceList.length; i++) {
-                    if (deviceList[i].id == id) {
+                    if (deviceList[i].id === id) {
                         device = deviceList[i];
                     }
                 }
@@ -136,7 +136,7 @@ app.controller('DeviceListController',
 
                 //Perform server request and set state of the device object accordingly
                 DeviceService.getDeviceState(device.id).then(function (response) {
-                    device.state = response.data;
+                    device.state = response.data.content;
                 }, function (response) {
                     device.state = 'UNKNOWN';
                     NotificationService.notify("Could not retrieve the device state.", "error");

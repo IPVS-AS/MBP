@@ -1,9 +1,5 @@
 package org.citopt.connde.service;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-
 import org.citopt.connde.constants.Constants;
 import org.citopt.connde.domain.user.Authority;
 import org.citopt.connde.domain.user.User;
@@ -14,9 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
 /**
  * Service class for managing users.
- * @author Imeri Amil
  */
 @Service
 public class UserService {
@@ -44,17 +43,17 @@ public class UserService {
         userRepository.save(newUser);
         return newUser;
     }
-    
-    public boolean passwordMatches(String userPassword, String userFromDatabasePassword){
-    	return passwordEncoder.matches(userPassword, userFromDatabasePassword);
+
+    public boolean passwordMatches(String userPassword, String userFromDatabasePassword) {
+        return passwordEncoder.matches(userPassword, userFromDatabasePassword);
     }
-    
+
     public User createUser(User user) {
-    	Authority authority = authorityRepository.findOne(Constants.USER);
-    	Set<Authority> authorities = new HashSet<>();
-    	authorities.add(authority);
-    	user.setAuthorities(authorities);
-    	user.setPassword(passwordEncoder.encode(user.getPassword()));
+        Authority authority = authorityRepository.findOne(Constants.USER);
+        Set<Authority> authorities = new HashSet<>();
+        authorities.add(authority);
+        user.setAuthorities(authorities);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
         return user;
     }
@@ -69,19 +68,19 @@ public class UserService {
 
     public void updateUser(String id, String username, String password, String firstName, String lastName, Set<Authority> authorities) {
         Optional.of(userRepository
-            .findOne(id))
-            .ifPresent(user -> {
-                user.setUsername(username);
-                user.setPassword(passwordEncoder.encode(password));
-                user.setFirstName(firstName);
-                user.setLastName(lastName);
-                Set<Authority> managedAuthorities = user.getAuthorities();
-                managedAuthorities.clear();
-                authorities.forEach(
-                    authority -> managedAuthorities.add(authorityRepository.findOne(authority.getName()))
-                );
-                userRepository.save(user);
-            });
+                .findOne(id))
+                .ifPresent(user -> {
+                    user.setUsername(username);
+                    user.setPassword(passwordEncoder.encode(password));
+                    user.setFirstName(firstName);
+                    user.setLastName(lastName);
+                    Set<Authority> managedAuthorities = user.getAuthorities();
+                    managedAuthorities.clear();
+                    authorities.forEach(
+                            authority -> managedAuthorities.add(authorityRepository.findOne(authority.getName()))
+                    );
+                    userRepository.save(user);
+                });
     }
 
     public void deleteUser(String username) {
@@ -103,17 +102,15 @@ public class UserService {
     }
 
     public User getUserWithAuthorities(String id) {
-        User user = userRepository.findOne(id);
-        return user;
+        return userRepository.findOne(id);
     }
 
     public User getUserWithAuthorities() {
         Optional<User> optionalUser = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername());
         User user = null;
         if (optionalUser.isPresent()) {
-          user = optionalUser.get();
-         }
-         return user;
+            user = optionalUser.get();
+        }
+        return user;
     }
-
 }

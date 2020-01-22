@@ -21,6 +21,7 @@
                         <th>Name</th>
                         <th>Type</th>
                         <th>Testing</th>
+                        <th>Owner</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -38,8 +39,13 @@
                                 </button>
                             </form>
                         </td>
+                        <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
-                            <form ng-submit="deleteRuleActionCtrl.deleteItem()">
+                            <div ng-show="item.isApprovable" style="display:inline-block">
+                                <user-approval entity-id="{{item.id}}" category-name="rule-actions"></user-approval>
+                            </div>
+                            <form ng-submit="deleteRuleActionCtrl.deleteItem()" ng-show="item.isDeletable"
+                                  style="display: inline-block">
                                 <button type="submit" class="btn btn-danger m-t-0 waves-effect"
                                         ng-click="deleteRuleActionCtrl.item.id = item.id">
                                     Delete

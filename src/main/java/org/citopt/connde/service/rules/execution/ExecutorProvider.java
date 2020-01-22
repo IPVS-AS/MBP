@@ -5,6 +5,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
+/**
+ * Allows to look up Spring managed rule action executor beans by class and to provide them to non-bean classes.
+ */
 @Component
 public class ExecutorProvider implements ApplicationContextAware {
     private static ApplicationContext context;
@@ -20,6 +23,12 @@ public class ExecutorProvider implements ApplicationContextAware {
         return context.getBean(executorClass);
     }
 
+    /**
+     * Sets the internal application context.
+     *
+     * @param applicationContext The application context to set
+     * @throws BeansException In case of an unexpected error
+     */
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         context = applicationContext;

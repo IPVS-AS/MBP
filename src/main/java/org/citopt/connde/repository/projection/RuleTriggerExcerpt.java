@@ -1,16 +1,16 @@
 package org.citopt.connde.repository.projection;
 
 import org.citopt.connde.domain.adapter.Adapter;
+import org.citopt.connde.domain.rules.RuleTrigger;
 import org.springframework.data.rest.core.config.Projection;
 
 import java.util.List;
 
 /**
- *
- * @author rafaelkperes
+ * Excerpt projection for rule trigger entities.
  */
-@Projection(name = "list", types = Adapter.class)
-public interface AdapterListProjection {
+@Projection(name = "list", types = RuleTrigger.class)
+public interface RuleTriggerExcerpt extends UserEntityExcerpt {
 
     String getId();
 
@@ -18,7 +18,5 @@ public interface AdapterListProjection {
 
     String getDescription();
 
-    String getUnit();
-
-    List getParameters();
+    String getQuery();
 }

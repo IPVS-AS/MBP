@@ -4,10 +4,12 @@ import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Component;
+import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.deploy.ComponentState;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -26,6 +28,9 @@ import java.util.Map;
 public class DeploymentWrapper {
 
     @Autowired
+    private UserEntityService userEntityService;
+
+    @Autowired
     private SSHDeployer sshDeployer;
 
     /**
@@ -34,10 +39,15 @@ public class DeploymentWrapper {
      * @param component The component to check
      * @return A ResponseEntity object that contains the result
      */
-    public ResponseEntity<Boolean> isRunningComponent(Component component) {
+    public ResponseEntity<Boolean> isComponentRunning(Component component) {
         //Validity check
         if (component == null) {
             return new ResponseEntity<Boolean>(HttpStatus.NOT_FOUND);
+        }
+
+        //Security check
+        if (!userEntityService.isUserPermitted(component, "deploy")) {
+            return new ResponseEntity<>(Boolean.FALSE, HttpStatus.UNAUTHORIZED);
         }
 
         //Determine component status
@@ -62,6 +72,12 @@ public class DeploymentWrapper {
         if (component == null) {
             ActionResponse response = new ActionResponse(false, "The component does not exist.");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        //Security check
+        if (!userEntityService.isUserPermitted(component, "deploy")) {
+            ActionResponse response = new ActionResponse(false);
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
 
         //Get adapter for parameter comparison
@@ -117,6 +133,12 @@ public class DeploymentWrapper {
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
+        //Security check
+        if (!userEntityService.isUserPermitted(component, "deploy")) {
+            ActionResponse response = new ActionResponse(false);
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+        }
+
         //Undeploy component
         try {
             sshDeployer.stopComponent(component);
@@ -131,7 +153,7 @@ public class DeploymentWrapper {
     /**
      * Deploys a component onto its device.
      *
-     * @param component          The component to deploy
+     * @param component The component to deploy
      * @return A ResponseEntity object that contains an ActionResponse which describes the result of the deployment
      */
     public ResponseEntity<ActionResponse> deployComponent(Component component) {
@@ -139,6 +161,12 @@ public class DeploymentWrapper {
         if (component == null) {
             ActionResponse response = new ActionResponse(false, "The component does not exist.");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        //Security check
+        if (!userEntityService.isUserPermitted(component, "deploy")) {
+            ActionResponse response = new ActionResponse(false);
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
 
         //Deploy component
@@ -165,6 +193,12 @@ public class DeploymentWrapper {
         if (component == null) {
             ActionResponse response = new ActionResponse(false, "The component does not exist.");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        //Security check
+        if (!userEntityService.isUserPermitted(component, "deploy")) {
+            ActionResponse response = new ActionResponse(false);
+            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
         }
 
         //Undeploy component
@@ -204,15 +238,23 @@ public class DeploymentWrapper {
      * @param component The component for which the state is supposed to be determined
      * @return A ResponseEntity object that holds the component state of the component
      */
-    public ResponseEntity<ComponentState> getComponentState(Component component) {
+    public ResponseEntity<Resource<ComponentState>> getComponentState(Component component) {
         //Validity check
         if (component == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
+        //Security check
+        if (!userEntityService.isUserPermitted(component, "deploy")) {
+            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        }
+
         //Determine component state
         ComponentState componentState = sshDeployer.determineComponentState(component);
 
-        return new ResponseEntity<>(componentState, HttpStatus.OK);
+        //Wrap component state into resource
+        Resource<ComponentState> stateResource = new Resource<>(componentState);
+
+        return new ResponseEntity<>(stateResource, HttpStatus.OK);
     }
 }
