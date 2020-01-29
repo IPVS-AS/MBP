@@ -24,6 +24,16 @@
         </repository>
     </repositories>
 
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-plugins-release</id>
+            <url>https://repo.spring.io/plugins-release</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
     <dependencies>
         <!-- https://mvnrepository.com/artifact/commons-validator/commons-validator -->
         <dependency>
