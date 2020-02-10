@@ -42,6 +42,9 @@ public class RestUserApprovalController {
     private UserEntityService userEntityService;
 
     @Autowired
+    private EnvironmentModelRepository environmentModelRepository;
+
+    @Autowired
     private AdapterRepository adapterRepository;
 
     @Autowired
@@ -73,6 +76,20 @@ public class RestUserApprovalController {
 
     @Autowired
     private MonitoringHelper monitoringHelper;
+
+    @PostMapping("/env-models/{modelId}/approve")
+    @ApiOperation(value = "Approves an user for an environment model entity", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User is already approved for this environment model"), @ApiResponse(code = 403, message = "Not authorized to approve an user for this environment model"), @ApiResponse(code = 404, message = "Environment model or user not found")})
+    public ResponseEntity<Void> approveForEnvironmentModel(@PathVariable @ApiParam(value = "ID of the environment model to approve an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String modelId, @RequestBody @ApiParam(value = "Name of the user to approve", example = "johndoe", required = true) String username) {
+        return approveUserEntity(modelId, username, environmentModelRepository);
+    }
+
+    @PostMapping("/env-models/{modelId}/disapprove")
+    @ApiOperation(value = "Disapproves an user for an environment model entity", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "User cannot be disapproved for this environment model"), @ApiResponse(code = 403, message = "Not authorized to disapprove an user for this environment model"), @ApiResponse(code = 404, message = "Environment model or user not found")})
+    public ResponseEntity<Void> disapproveForEnvironmentModel(@PathVariable @ApiParam(value = "ID of the environment model to disapprove an user for", example = "5c97dc2583aeb6078c5ab672", required = true) String modelId, @RequestBody @ApiParam(value = "Name of the user to disapprove", example = "johndoe", required = true) String username) throws IOException {
+        return disapproveUserEntity(modelId, username, environmentModelRepository);
+    }
 
     @PostMapping("/adapters/{adapterId}/approve")
     @ApiOperation(value = "Approves an user for an adapter entity", produces = "application/hal+json")

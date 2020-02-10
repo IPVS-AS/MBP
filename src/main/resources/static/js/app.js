@@ -103,18 +103,25 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 controller: 'UsersController as vm'
             })
 
-            // Model
-            .when(viewPrefix + '/model', {
-                templateUrl: 'templates/model',
-                controller: 'ModelController as vm',
+            // Environment Model
+            .when(viewPrefix + '/env-models', {
+                category: 'env-models',
+                templateUrl: 'templates/env-models',
+                controller: 'EnvModelListController as ctrl',
                 resolve: {
-                    adapterList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('adapters');
+                    envModelList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('env-models');
+                    }],
+                    addEnvModel: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'env-models');
+                    }],
+                    deleteEnvModel: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'env-models');
                     }]
                 }
             })
 
-            //Rules list
+            // Rules list
             .when(viewPrefix + '/rules', {
                 category: 'rules',
                 templateUrl: 'templates/rules',
@@ -138,7 +145,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            //Rule actions list
+            // Rule actions list
             .when(viewPrefix + '/rule-actions', {
                 category: 'rule-actions',
                 templateUrl: 'templates/rule-actions',
@@ -167,7 +174,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            //Rule triggers list
+            // Rule triggers list
             .when(viewPrefix + '/rule-triggers', {
                 category: 'rule-triggers',
                 templateUrl: 'templates/rule-triggers',

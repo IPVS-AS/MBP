@@ -1,21 +1,19 @@
-package org.citopt.connde.domain.model;
+package org.citopt.connde.domain.env_model;
 
 import java.io.Serializable;
 
 import javax.persistence.GeneratedValue;
 import javax.validation.constraints.NotNull;
 
+import org.citopt.connde.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
 * Model entity.
-* @author Imeri Amil
 */
 @Document
-public class Model implements Serializable{
-	
-	private static final long serialVersionUID = 1L;
+public class EnvironmentModel extends UserEntity {
 	
     @Id
     @GeneratedValue
