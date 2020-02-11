@@ -2,8 +2,6 @@ package org.citopt.connde.repository;
 
 import io.swagger.annotations.*;
 import org.citopt.connde.domain.env_model.EnvironmentModel;
-import org.citopt.connde.domain.rules.RuleTrigger;
-import org.citopt.connde.repository.projection.RuleTriggerExcerpt;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Query;
