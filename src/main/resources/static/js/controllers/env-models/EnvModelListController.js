@@ -13,7 +13,7 @@ app.controller('EnvModelListController',
              * Initializing function, sets up basic things.
              */
             (function initController() {
-                //Initialize wizard
+                //Initialize wizardo
                 $(document).ready(function () {
 
                 });
@@ -65,8 +65,7 @@ app.controller('EnvModelListController',
                     $scope: $scope,
                     deleteItem: deleteEnvModel,
                     confirmDeletion: confirmDelete
-                }),
-                componentList: componentList
+                })
             });
 
             //Watch addition of environment models and add them to the list

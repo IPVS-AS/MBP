@@ -2,14 +2,10 @@
 /* --- Tool --------------------------------------------------------------------------------------------*/
 /* ---------------------------------------------------------------------------------------------------- */
 #modelingToolView {
-  width: 100%;
-  white-space: nowrap;
-  /* box-shadow: 1px 1px 1px 1px grey; */
-  height: 100%;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center center;
-  /* background-image: url('../images/model/grey-white-background.jpg'); */
+    width: 100%;
+    white-space: nowrap;
+    /* box-shadow: 1px 1px 1px 1px grey; */
+    height: 100%;
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
@@ -17,41 +13,41 @@
 /* ---------------------------------------------------------------------------------------------------- */
 /* Style the tool-header with a grey background and some padding */
 .tool-header {
-  overflow: hidden;
-/*   box-shadow: 1px 1px 1px 1px #e9e8e4; */
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-  background-position: center center;
-/*   background-image: url('../images/model/white-background.jpg'); */
-  margin-bottom: 15px;
-  padding: 2px;
+    overflow: hidden;
+    /*   box-shadow: 1px 1px 1px 1px #e9e8e4; */
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center center;
+    /*   background-image: url('../images/model/white-background.jpg'); */
+    margin-bottom: 15px;
+    padding: 2px;
 }
 
 /* Float the link section to the right */
 .tool-header-right {
-  float: right;
+    float: right;
 }
 
 .tool-header-left {
-  float: left;
+    float: left;
 }
 
 .tool-button {
-  position: relative;
-  z-index: 2;
-  padding: 1px 14px;
-  margin: 10px auto;
-  transition: transform 0.3s;
-  border-radius: 50px;
-  background-color: transparent;
-  font-size: 12px;
+    position: relative;
+    z-index: 2;
+    padding: 1px 14px;
+    margin: 10px auto;
+    transition: transform 0.3s;
+    border-radius: 50px;
+    background-color: transparent;
+    font-size: 12px;
 }
 
 /* Add media queries for responsiveness - when the screen is 500px wide or less, stack the links on top of each other */
 @media screen and (max-width: 500px) {
-  .tool-header-right {
-    float: none;
-  }
+    .tool-header-right {
+        float: none;
+    }
 }
 
 .tool-header-navbar-brand {
@@ -60,98 +56,99 @@
     font-size: 18px;
     line-height: 50px;
 }
+
 /* ---------------------------------------------------------------------------------------------------- */
 /* --- jsPlumb demo ----------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------- */
 .jtk-main {
-  background-color: #dce0e8;
-  font-family: Arial, sans-serif;
-  margin-left: auto;
-  margin-right: auto;
-  width: 100%;
-  max-width: 1500px;
-  position: relative;
+    background-color: #dce0e8;
+    font-family: Arial, sans-serif;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 1500px;
+    position: relative;
 }
 
 .jtk-main .description {
-  font-size: 13px;
-  margin-top: 25px;
-  padding: 13px;
-  margin-bottom: 22px;
-  background-color: #f4f5ef;
+    font-size: 13px;
+    margin-top: 25px;
+    padding: 13px;
+    margin-bottom: 22px;
+    background-color: #f4f5ef;
 }
 
 .jtk-main .description li {
-  list-style-type: disc !important;
+    list-style-type: disc !important;
 }
 
 .jtk-canvas {
-  margin-left: 160px;
-  height: 445px;
-  max-height: 700px;
-  border: 1px solid #CCC;
-  background-color: white;
+    margin-left: 160px;
+    height: 445px;
+    max-height: 700px;
+    border: 1px solid #CCC;
+    background-color: white;
 }
 
 .canvas-wide {
-  margin-left: 0;
+    margin-left: 0;
 }
 
 li {
-  list-style-type: none;
+    list-style-type: none;
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
 /* --- jquery-ui -------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------- */
 .ui-icon {
-  background-image: url("") !important;
+    background-image: url("") !important;
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
 /* --- Info sidebar input list ------------------------------------------------------------------------ */
 /* ---------------------------------------------------------------------------------------------------- */
 .input-list {
-  max-width: 400px;
-  background: #fff;
-  border-radius: 2px;
-  padding: 5px;
+    max-width: 400px;
+    background: #fff;
+    border-radius: 2px;
+    padding: 5px;
 }
 
 .input-list h1 {
-  display: block;
-  text-align: center;
-  padding: 0;
-  margin: 0px 0px 20px 0px;
-  color: #5C5C5C;
-  font-size: x-large;
+    display: block;
+    text-align: center;
+    padding: 0;
+    margin: 0px 0px 20px 0px;
+    color: #5C5C5C;
+    font-size: x-large;
 }
 
 .input-list ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .input-list li {
-  display: block;
-  padding: 2px;
-  border: 1px solid #adadad;
-  margin-bottom: 13px;
-  margin-top: 13px;
-  border-radius: 3px;
+    display: block;
+    padding: 2px;
+    border: 1px solid #adadad;
+    margin-bottom: 13px;
+    margin-top: 13px;
+    border-radius: 3px;
 }
 
-.input-list li>label {
-  display: block;
-  float: left;
-  margin-top: -13px;
-  background: #FFFFFF;
-  height: 16px;
-  padding: 2px 5px 2px 5px;
-  color: #a3a3a3;
-  font-size: 12px;
-  overflow: hidden;
+.input-list li > label {
+    display: block;
+    float: left;
+    margin-top: -13px;
+    background: #FFFFFF;
+    height: 16px;
+    padding: 2px 5px 2px 5px;
+    color: #a3a3a3;
+    font-size: 12px;
+    overflow: hidden;
 }
 
 .input-list input[type="text"],
@@ -165,17 +162,17 @@ li {
 .input-list input[type="password"],
 .input-list textarea,
 .input-list select {
-  box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  width: 100%;
-  display: block;
-  outline: none;
-  border: none;
-  height: 20px;
-  line-height: 20px;
-  font-size: 13px;
-  padding: 2px;
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    width: 100%;
+    display: block;
+    outline: none;
+    border: none;
+    height: 20px;
+    line-height: 20px;
+    font-size: 13px;
+    padding: 2px;
 }
 
 .input-list input[type="text"]:focus,
@@ -188,519 +185,518 @@ li {
 .input-list input[type="url"]:focus,
 .input-list input[type="password"]:focus,
 .input-list textarea:focus,
-.input-list select:focus {}
+.input-list select:focus {
+}
 
-.input-list li>span {
-  background: #F3F3F3;
-  display: block;
-  padding: 3px;
-  margin: 0 -9px -9px -9px;
-  text-align: center;
-  color: #C0C0C0;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 11px;
+.input-list li > span {
+    background: #F3F3F3;
+    display: block;
+    padding: 3px;
+    margin: 0 -9px -9px -9px;
+    text-align: center;
+    color: #C0C0C0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
 }
 
 .input-list textarea {
-  resize: none;
+    resize: none;
 }
 
 .input-list input[type="submit"],
 .input-list input[type="button"] {
-  background: #2471FF;
-  border: none;
-  padding: 10px 20px 10px 20px;
-  border-bottom: 3px solid #5994FF;
-  border-radius: 3px;
-  color: #D2E2FF;
+    background: #2471FF;
+    border: none;
+    padding: 10px 20px 10px 20px;
+    border-bottom: 3px solid #5994FF;
+    border-radius: 3px;
+    color: #D2E2FF;
 }
 
 .input-list input[type="submit"]:hover,
 .input-list input[type="button"]:hover {
-  background: #6B9FFF;
-  color: #fff;
+    background: #6B9FFF;
+    color: #fff;
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
 /* --- Font Awesome icons ----------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------- */
 .icon-stack {
-  position: relative;
-  display: inline-block;
-  width: 1.3em;
-  height: 1.3em;
-  line-height: 1.3em;
-  vertical-align: middle;
+    position: relative;
+    display: inline-block;
+    width: 1.3em;
+    height: 1.3em;
+    line-height: 1.3em;
+    vertical-align: middle;
 }
 
 .icon-stack-1x,
 .icon-stack-2x,
 .icon-stack-3x {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  text-align: center;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    text-align: center;
 }
 
 .icon-stack-1x {
-  line-height: inherit;
-  font-size: 0.9em;
+    line-height: inherit;
+    font-size: 0.9em;
 }
 
 .icon-stack-2x {
-  font-size: 1.2em;
+    font-size: 1.2em;
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
 /* --- jsPlumb modeling-tool -------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------- */
 .demo {
-  /* for IE10+ touch devices */
-  touch-action: none;
+    /* for IE10+ touch devices */
+    touch-action: none;
 }
 
 #canvas {
-  z-index: 1;
+    z-index: 1;
 }
 
-#canvasPalette {
-  overflow: scroll;
+.canvasPalette {
+    overflow: scroll;
 }
 
 .modeling-tool .window {
-  width: 50px;
-  height: 50px;
-  line-height: 40px;
-  cursor: pointer;
-  padding: 0.5em;
-  -webkit-transition: -webkit-box-shadow 0.15s ease-in;
-  -moz-transition: -moz-box-shadow 0.15s ease-in;
-  -o-transition: -o-box-shadow 0.15s ease-in;
-  transition: box-shadow 0.15s ease-in;
+    width: 50px;
+    height: 50px;
+    line-height: 40px;
+    cursor: pointer;
+    padding: 0.5em;
+    -webkit-transition: -webkit-box-shadow 0.15s ease-in;
+    -moz-transition: -moz-box-shadow 0.15s ease-in;
+    -o-transition: -o-box-shadow 0.15s ease-in;
+    transition: box-shadow 0.15s ease-in;
 }
 
 .modeling-tool .window:hover {
-  box-shadow: 2px 2px 19px #444;
-  -o-box-shadow: 2px 2px 19px #444;
-  -webkit-box-shadow: 2px 2px 19px #444;
-  -moz-box-shadow: 2px 2px 19px #444;
+    box-shadow: 2px 2px 19px #444;
+    -o-box-shadow: 2px 2px 19px #444;
+    -webkit-box-shadow: 2px 2px 19px #444;
+    -moz-box-shadow: 2px 2px 19px #444;
 }
 
 .custom {
-  position: absolute;
+    position: absolute;
 }
 
 .modeling-tool .jtk-connector {
-  z-index: 22;
+    z-index: 22;
 }
 
 .modeling-tool .jtk-endpoint, path {
-  z-index: 21;
-  cursor: pointer;
+    z-index: 21;
+    cursor: pointer;
 }
 
 .aLabel {
-  -webkit-transition: background-color 0.25s ease-in;
-  -moz-transition: background-color 0.25s ease-in;
-  transition: background-color 0.25s ease-in;
-  -webkit-user-modify: read-write;
-  -moz-user-modify: read-write;
-  user-modify: read-write;
+    -webkit-transition: background-color 0.25s ease-in;
+    -moz-transition: background-color 0.25s ease-in;
+    transition: background-color 0.25s ease-in;
+    -webkit-user-modify: read-write;
+    -moz-user-modify: read-write;
+    user-modify: read-write;
 }
 
 .aLabel.jtk-hover, .jtk-source-hover, .jtk-target-hover, .dragHover {
-  box-shadow: 2px 2px 19px #444;
-  -o-box-shadow: 2px 2px 19px #444;
-  -webkit-box-shadow: 2px 2px 19px #444;
-  -moz-box-shadow: 2px 2px 19px #444;
-  border: 2px solid grey;
+    box-shadow: 2px 2px 19px #444;
+    -o-box-shadow: 2px 2px 19px #444;
+    -webkit-box-shadow: 2px 2px 19px #444;
+    -moz-box-shadow: 2px 2px 19px #444;
+    border: 2px solid grey;
 }
 
 .aLabel {
-  background-color: white;
-  opacity: 0.8;
-  padding: 0.2em;
-  border-radius: 0.5em;
-  border: 1px solid grey;
-  cursor: text;
-  font-size: 10px;
-  z-index: 23;
+    background-color: white;
+    opacity: 0.8;
+    padding: 0.2em;
+    border-radius: 0.5em;
+    border: 1px solid grey;
+    cursor: text;
+    font-size: 10px;
+    z-index: 23;
 }
 
 .clicked-element {
-  box-shadow: 2px 2px 19px #444;
-  -o-box-shadow: 2px 2px 19px #444;
-  -webkit-box-shadow: 2px 2px 19px #444;
-  -moz-box-shadow: 2px 2px 19px #444;
-  border: 2px solid #4863A0;
+    box-shadow: 2px 2px 19px #444;
+    -o-box-shadow: 2px 2px 19px #444;
+    -webkit-box-shadow: 2px 2px 19px #444;
+    -moz-box-shadow: 2px 2px 19px #444;
+    border: 2px solid #4863A0;
 }
 
 .error-element {
-  box-shadow: 2px 2px 19px #444;
-  -o-box-shadow: 2px 2px 19px #444;
-  -webkit-box-shadow: 2px 2px 19px #444;
-  -moz-box-shadow: 2px 2px 19px #444;
-  border: 2px solid red;
+    box-shadow: 2px 2px 19px #444;
+    -o-box-shadow: 2px 2px 19px #444;
+    -webkit-box-shadow: 2px 2px 19px #444;
+    -moz-box-shadow: 2px 2px 19px #444;
+    border: 2px solid red;
 }
 
 .success-element {
-  box-shadow: 2px 2px 19px #444;
-  -o-box-shadow: 2px 2px 19px #444;
-  -webkit-box-shadow: 2px 2px 19px #444;
-  -moz-box-shadow: 2px 2px 19px #444;
-  border: 2px solid green;
+    box-shadow: 2px 2px 19px #444;
+    -o-box-shadow: 2px 2px 19px #444;
+    -webkit-box-shadow: 2px 2px 19px #444;
+    -moz-box-shadow: 2px 2px 19px #444;
+    border: 2px solid green;
 }
 
 .deployed-element {
-  box-shadow: 2px 2px 19px #444;
-  -o-box-shadow: 2px 2px 19px #444;
-  -webkit-box-shadow: 2px 2px 19px #444;
-  -moz-box-shadow: 2px 2px 19px #444;
-  border: 2px solid orange;
+    box-shadow: 2px 2px 19px #444;
+    -o-box-shadow: 2px 2px 19px #444;
+    -webkit-box-shadow: 2px 2px 19px #444;
+    -moz-box-shadow: 2px 2px 19px #444;
+    border: 2px solid orange;
 }
 
 .ep {
-  position: absolute;
-  bottom: 37%;
-  right: 0px;
-  width: 30%;
-  height: 30%;
-  background-color: green;
-  cursor: pointer;
-  box-shadow: 0 0 2px black;
-  -webkit-transition: -webkit-box-shadow 0.25s ease-in;
-  -moz-transition: -moz-box-shadow 0.25s ease-in;
-  transition: box-shadow 0.25s ease-in;
+    position: absolute;
+    bottom: 37%;
+    right: 0px;
+    width: 30%;
+    height: 30%;
+    background-color: green;
+    cursor: pointer;
+    box-shadow: 0 0 2px black;
+    -webkit-transition: -webkit-box-shadow 0.25s ease-in;
+    -moz-transition: -moz-box-shadow 0.25s ease-in;
+    transition: box-shadow 0.25s ease-in;
 }
 
 .ep:hover {
-  box-shadow: 2px 2px 19px black;
+    box-shadow: 2px 2px 19px black;
 }
 
 /* --- Floorplans --------------------------------------------------------------------------------------- */
-.floorplan {}
+.floorplan {
+}
 
 .room-floorplan {
-  border: 7px solid black;
-  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
-  -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
-  text-align: center;
-  display: inline-block;
-  z-index: 2;
+    border: 7px solid black;
+    -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
+    -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
+    text-align: center;
+    display: inline-block;
+    z-index: 2;
 }
 
 .wall-floorplan {
-  background-image: url("../images/model/wall-floorplan.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
-  text-align: center;
-  display: inline-block;
-  z-index: 3;
+    background-color: black;
+    text-align: center;
+    display: inline-block;
+    z-index: 3;
 }
 
 .door-floorplan {
-  background-image: url("../images/model/door-floorplan.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
-  text-align: center;
-  display: inline-block;
-  z-index: 9;
+    background-image: url("../images/model/door-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 9;
 }
 
 .window-floorplan {
-  background-image: url("../images/model/window-floorplan.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
-  text-align: center;
-  display: inline-block;
-  z-index: 9;
+    background-image: url("../images/model/window-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 9;
 }
 
 .stairs-floorplan {
-  background-image: url("../images/model/stairs-floorplan.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
-  text-align: center;
-  display: inline-block;
-  z-index: 3;
+    background-image: url("../images/model/stairs-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 3;
 }
 
 .table-floorplan {
-  background-image: url("../images/model/table-floorplan.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
-  text-align: center;
-  display: inline-block;
-  z-index: 8;
+    background-image: url("../images/model/table-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 8;
 }
 
 .chair-floorplan {
-  background-image: url("../images/model/chair-floorplan.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
-  text-align: center;
-  display: inline-block;
-  z-index: 7;
+    background-image: url("../images/model/chair-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 7;
 }
 
 .couch-floorplan {
-  background-image: url("../images/model/couch-floorplan.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
-  text-align: center;
-  display: inline-block;
-  z-index: 6;
+    background-image: url("../images/model/couch-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 6;
 }
 
 .bed-floorplan {
-  background-image: url("../images/model/bed-floorplan.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
-  text-align: center;
-  display: inline-block;
-  z-index: 6;
+    background-image: url("../images/model/bed-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 6;
 }
 
 .kitchen-sink-floorplan {
-  background-image: url("../images/model/kitchen-sink-floorplan.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
-  text-align: center;
-  display: inline-block;
-  z-index: 6;
+    background-image: url("../images/model/kitchen-sink-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 6;
 }
 
 .bathtub-floorplan {
-  background-image: url("../images/model/bathtub-floorplan.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
-  text-align: center;
-  display: inline-block;
-  z-index: 6;
+    background-image: url("../images/model/bathtub-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 6;
 }
 
 .bath-sink-floorplan {
-  background-image: url("../images/model/bath-sink-floorplan.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
-  text-align: center;
-  display: inline-block;
-  z-index: 6;
+    background-image: url("../images/model/bath-sink-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 6;
 }
 
 .toilet-floorplan {
-  background-image: url("../images/model/toilet-floorplan.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
-  text-align: center;
-  display: inline-block;
-  z-index: 6;
+    background-image: url("../images/model/toilet-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 6;
 }
 
 /* --- device, actuator, sensor --------------------------------------------------------------------------- */
 .device, .actuator, .sensor {
-  border-radius: 10px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
-  text-align: center;
-  display: inline-block;
-  z-index: 11;
+    border-radius: 10px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 11;
 }
 
 .device:hover, .actuator:hover, .sensor:hover {
-  border: 2px solid grey;
+    border: 2px solid grey;
 }
 
 .as-container {
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
-  text-align: center;
-  display: inline-block;
-  background-image: url("../images/model/container.png");
-  background-size: cover;
-  border-radius: 10px;
-  border: 2px solid grey;
-  min-height: 50px !important;
-  min-width: 50px !important;
-  overflow: auto;
-  cursor: default;
-  z-index: 10;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    background-image: url("../images/model/container.png");
+    background-size: cover;
+    border-radius: 10px;
+    border: 2px solid grey;
+    min-height: 50px !important;
+    min-width: 50px !important;
+    overflow: auto;
+    cursor: default;
+    z-index: 10;
 }
 
 /* --- Devices ------------------------------------------------------------------------------------------- */
 .raspberry-pi-device {
-  background-image: url("../images/model/raspberry-pi-device.png");
+    background-image: url("../images/model/raspberry-pi-device.png");
 }
 
 .arduino-device {
-  background-image: url("../images/model/arduino-device.png");
+    background-image: url("../images/model/arduino-device.png");
 }
 
 .computer-device {
-  background-image: url("../images/model/computer-device.png");
+    background-image: url("../images/model/computer-device.png");
 }
 
 .laptop-device {
-  background-image: url("../images/model/laptop-device.png");
+    background-image: url("../images/model/laptop-device.png");
 }
 
 .tv-device {
-  background-image: url("../images/model/tv-device.png");
+    background-image: url("../images/model/tv-device.png");
 }
 
 .smartphone-device {
-  background-image: url("../images/model/smartphone-device.png");
+    background-image: url("../images/model/smartphone-device.png");
 }
 
 .smartwatch-device {
-  background-image: url("../images/model/smartwatch-device.png");
+    background-image: url("../images/model/smartwatch-device.png");
 }
 
 .audio-system-device {
-  background-image: url("../images/model/audio-system-device.png");
+    background-image: url("../images/model/audio-system-device.png");
 }
 
 .voice-controller-device {
-  background-image: url("../images/model/voice-controller-device.png");
+    background-image: url("../images/model/voice-controller-device.png");
 }
 
 .camera-device {
-  background-image: url("../images/model/camera-device.png");
+    background-image: url("../images/model/camera-device.png");
 }
 
 .default-device {
-  background-image: url("../images/model/default-device.png");
+    background-image: url("../images/model/default-device.png");
 }
 
 /* --- Actuators ----------------------------------------------------------------------------------------- */
 .light-actuator {
-  background-image: url("../images/model/light-actuator.png");
+    background-image: url("../images/model/light-actuator.png");
 }
 
 .led-actuator {
-  background-image: url("../images/model/led-actuator.png");
+    background-image: url("../images/model/led-actuator.png");
 }
 
 .speaker-actuator {
-  background-image: url("../images/model/speaker-actuator.png");
+    background-image: url("../images/model/speaker-actuator.png");
 }
 
 .buzzer-actuator {
-  background-image: url("../images/model/buzzer-actuator.png");
+    background-image: url("../images/model/buzzer-actuator.png");
 }
 
 .vibration-actuator {
-  background-image: url("../images/model/vibration-actuator.png");
+    background-image: url("../images/model/vibration-actuator.png");
 }
 
 .heater-actuator {
-  background-image: url("../images/model/heater-actuator.png");
+    background-image: url("../images/model/heater-actuator.png");
 }
 
 .air-conditioner-actuator {
-  background-image: url("../images/model/air-conditioner-actuator.png");
+    background-image: url("../images/model/air-conditioner-actuator.png");
 }
 
 .switch-actuator {
-  background-image: url("../images/model/switch-actuator.png");
+    background-image: url("../images/model/switch-actuator.png");
 }
 
 .motor-actuator {
-  background-image: url("../images/model/motor-actuator.png");
+    background-image: url("../images/model/motor-actuator.png");
 }
 
 .default-actuator {
-  background-image: url("../images/model/default-actuator.png");
+    background-image: url("../images/model/default-actuator.png");
 }
 
 /* --- Sensors ------------------------------------------------------------------------------------------- */
 .camera-sensor {
-  background-image: url("../images/model/camera-sensor.png");
+    background-image: url("../images/model/camera-sensor.png");
 }
 
 .sound-sensor {
-  background-image: url("../images/model/sound-sensor.png");
+    background-image: url("../images/model/sound-sensor.png");
 }
 
 .temperature-sensor {
-  background-image: url("../images/model/temperature-sensor.png");
+    background-image: url("../images/model/temperature-sensor.png");
 }
 
 .humidity-sensor {
-  background-image: url("../images/model/humidity-sensor.png");
+    background-image: url("../images/model/humidity-sensor.png");
 }
 
 .gas-sensor {
-  background-image: url("../images/model/gas-sensor.png");
+    background-image: url("../images/model/gas-sensor.png");
 }
 
 .light-sensor {
-  background-image: url("../images/model/light-sensor.png");
+    background-image: url("../images/model/light-sensor.png");
 }
 
 .motion-sensor {
-  background-image: url("../images/model/motion-sensor.png");
+    background-image: url("../images/model/motion-sensor.png");
 }
 
 .location-sensor {
-  background-image: url("../images/model/location-sensor.png");
+    background-image: url("../images/model/location-sensor.png");
 }
 
 .gyroscope-sensor {
-  background-image: url("../images/model/gyroscope-sensor.png");
+    background-image: url("../images/model/gyroscope-sensor.png");
 }
 
 .proximity-sensor {
-  background-image: url("../images/model/proximity-sensor.png");
+    background-image: url("../images/model/proximity-sensor.png");
 }
 
 .touch-sensor {
-  background-image: url("../images/model/touch-sensor.png");
+    background-image: url("../images/model/touch-sensor.png");
 }
 
 .vibration-sensor {
-  background-image: url("../images/model/vibration-sensor.png");
+    background-image: url("../images/model/vibration-sensor.png");
 }
 
 .default-sensor {
-  background-image: url("../images/model/default-sensor.png");
+    background-image: url("../images/model/default-sensor.png");
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
 /* --- Rest ------------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------- */
 #toolPalette .panel-body {
-  height: 270px;
+    height: 270px;
 }
 
 #toolPalette .panel-footer {
-  height: 50px;
+    height: 50px;
 }
 
 #toolPalette .panel-group {
-  margin: 5px;
+    margin: 5px;
 }
 
-#dragList {
-  padding: 2px;
+.dragList {
+    padding: 2px;
 }
 
-#dragList li {
-  margin-bottom: 10px;
-  text-align: center;
+.dragList li {
+    margin-bottom: 10px;
+    text-align: center;
 }

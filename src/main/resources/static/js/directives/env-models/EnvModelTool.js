@@ -5,13 +5,13 @@
 /**
  * Directive for a modeling tool that can be used for creating and editing IoT environment models.
  */
-app.directive('EnvModelTool',
-    ['ENDPOINT_URI', '$scope', '$timeout', '$q', '$controller', 'ModelService', 'ComponentService', 'DeviceService',
-        'CrudService', 'adapterList',
-        function (ENDPOINT_URI, $scope, $timeout, $q, $controller, ModelService, ComponentService, DeviceService,
-                  CrudService, adapterList) {
+app.directive('envModelTool',
+    ['ENDPOINT_URI', '$timeout', '$q', '$controller', 'ModelService', 'ComponentService', 'DeviceService',
+        'CrudService',
+        function (ENDPOINT_URI, $timeout, $q, $controller, ModelService, ComponentService, DeviceService,
+                  CrudService) {
 
-            function initJSPlumb(scope){
+            function initJSPlumb(scope) {
                 let jsPlumbInstance;
                 let canvasId = "#canvas";
                 let elementIdCount = 0; // used for canvas ID uniquness
@@ -26,6 +26,10 @@ app.directive('EnvModelTool',
                 scope.loadedModels = [];
                 scope.currentModel = {};
                 scope.clickedComponent = {};
+                scope.adapterListCtrl = $controller('ItemListController as adapterListCtrl', {
+                    $scope: scope,
+                    list: []
+                });
 
                 //Expose functions for template
                 scope.drawModel = drawModel;
@@ -40,14 +44,6 @@ app.directive('EnvModelTool',
                 (function initController() {
                     loadModels();
                 })();
-
-                // Use the AdapterListController to load the adapters
-                angular.extend(vm, {
-                    adapterListCtrl: $controller('ItemListController as adapterListCtrl', {
-                        $scope: $scope,
-                        list: adapterList
-                    })
-                });
 
 
                 /*
@@ -102,21 +98,19 @@ app.directive('EnvModelTool',
                  * jQuery makes the element with the given ID resizable
                  */
                 function makeResizable(id) {
-                    $(id).resizable({
-                        start: function(event, ui) {
+                    //Get element
+                    let element = $(id);
+
+                    //Make element resizable
+                    element.resizable({
+                        //Check if aspect ratio needs to be preserved
+                        aspectRatio: (!element.hasClass("free-resize")),
+                        start: (event, ui) => {
                             $(".close-icon").hide();
-                            $(id).css({
-                                'outline': "2px solid grey"
-                            });
+                            element.css('outline', '2px solid grey');
                         },
-                        resize: function(event, ui) {
-                            jsPlumbInstance.revalidate(ui.helper);
-                        },
-                        stop: function(event, ui) {
-                            $(id).css({
-                                'outline': "none"
-                            });
-                        },
+                        resize: (event, ui) => jsPlumbInstance.revalidate(ui.helper),
+                        stop: (event, ui) => element.css('outline', 'none'),
                         handles: "all"
                     });
                 }
@@ -126,7 +120,7 @@ app.directive('EnvModelTool',
                  */
                 function makeDraggable(id, className) {
                     $(id).draggable({
-                        helper: function() {
+                        helper: function () {
                             return $("<div/>", {
                                 class: className
                             });
@@ -139,9 +133,8 @@ app.directive('EnvModelTool',
                 /*
                  * Make all the elements from the palette draggable
                  */
-
-                makeDraggable("#roomFloorplan", "window floorplan room-floorplan custom");
-                makeDraggable("#wallFloorplan", "window floorplan wall-floorplan custom");
+                makeDraggable("#roomFloorplan", "window floorplan room-floorplan custom free-resize");
+                makeDraggable("#wallFloorplan", "window floorplan wall-floorplan custom free-resize");
                 makeDraggable("#doorFloorplan", "window floorplan door-floorplan custom");
                 makeDraggable("#windowFloorplan", "window floorplan window-floorplan custom");
                 makeDraggable("#stairsFloorplan", "window floorplan stairs-floorplan custom");
@@ -196,7 +189,7 @@ app.directive('EnvModelTool',
                 // jQuery makes the canvas droppable
                 $(canvasId).droppable({
                     accept: ".window",
-                    drop: function(event, ui) {
+                    drop: function (event, ui) {
                         if (clicked) {
                             // Get the drop position
                             properties.top = ui.offset.top - $(this).offset().top;
@@ -229,202 +222,202 @@ app.directive('EnvModelTool',
                  */
 
                 // Floorplan
-                $('#roomFloorplan').mousedown(function() {
+                $('#roomFloorplan').mousedown(function () {
                     loadProperties("window floorplan room-floorplan custom jtk-node", undefined);
                 });
 
-                $('#wallFloorplan').mousedown(function() {
+                $('#wallFloorplan').mousedown(function () {
                     loadProperties("window floorplan wall-floorplan custom jtk-node", undefined);
                 });
 
-                $('#doorFloorplan').mousedown(function() {
+                $('#doorFloorplan').mousedown(function () {
                     loadProperties("window floorplan door-floorplan custom jtk-node", undefined);
                 });
 
-                $('#windowFloorplan').mousedown(function() {
+                $('#windowFloorplan').mousedown(function () {
                     loadProperties("window floorplan window-floorplan custom jtk-node", undefined);
                 });
 
-                $('#stairsFloorplan').mousedown(function() {
+                $('#stairsFloorplan').mousedown(function () {
                     loadProperties("window floorplan stairs-floorplan custom jtk-node", undefined);
                 });
 
-                $('#tableFloorplan').mousedown(function() {
+                $('#tableFloorplan').mousedown(function () {
                     loadProperties("window floorplan table-floorplan custom jtk-node", undefined);
                 });
 
-                $('#chairFloorplan').mousedown(function() {
+                $('#chairFloorplan').mousedown(function () {
                     loadProperties("window floorplan chair-floorplan custom jtk-node", undefined);
                 });
 
-                $('#couchFloorplan').mousedown(function() {
+                $('#couchFloorplan').mousedown(function () {
                     loadProperties("window floorplan couch-floorplan custom jtk-node", undefined);
                 });
 
-                $('#bedFloorplan').mousedown(function() {
+                $('#bedFloorplan').mousedown(function () {
                     loadProperties("window floorplan bed-floorplan custom jtk-node", undefined);
                 });
 
-                $('#kitchenSinkFloorplan').mousedown(function() {
+                $('#kitchenSinkFloorplan').mousedown(function () {
                     loadProperties("window floorplan kitchen-sink-floorplan custom jtk-node", undefined);
                 });
 
-                $('#bathtubFloorplan').mousedown(function() {
+                $('#bathtubFloorplan').mousedown(function () {
                     loadProperties("window floorplan bathtub-floorplan custom jtk-node", undefined);
                 });
 
-                $('#bathSinkFloorplan').mousedown(function() {
+                $('#bathSinkFloorplan').mousedown(function () {
                     loadProperties("window floorplan bath-sink-floorplan custom jtk-node", undefined);
                 });
 
-                $('#toiletFloorplan').mousedown(function() {
+                $('#toiletFloorplan').mousedown(function () {
                     loadProperties("window floorplan toilet-floorplan custom jtk-node", undefined);
                 });
 
                 // Devices
-                $('#raspberryPiDevice').mousedown(function() {
+                $('#raspberryPiDevice').mousedown(function () {
                     loadProperties("window device raspberry-pi-device custom jtk-node", "Raspberry Pi");
                 });
 
-                $('#arduinoDevice').mousedown(function() {
+                $('#arduinoDevice').mousedown(function () {
                     loadProperties("window device arduino-device custom jtk-node", "Arduino");
                 });
 
-                $('#computerDevice').mousedown(function() {
+                $('#computerDevice').mousedown(function () {
                     loadProperties("window device computer-device custom jtk-node", "Computer");
                 });
 
-                $('#laptopDevice').mousedown(function() {
+                $('#laptopDevice').mousedown(function () {
                     loadProperties("window device laptop-device custom jtk-node", "Laptop");
                 });
 
-                $('#tvDevice').mousedown(function() {
+                $('#tvDevice').mousedown(function () {
                     loadProperties("window device tv-device custom jtk-node", "TV");
                 });
 
-                $('#smartphoneDevice').mousedown(function() {
+                $('#smartphoneDevice').mousedown(function () {
                     loadProperties("window device smartphone-device custom jtk-node", "Smartphone");
                 });
 
-                $('#smartwatchDevice').mousedown(function() {
+                $('#smartwatchDevice').mousedown(function () {
                     loadProperties("window device smartwatch-device custom jtk-node", "Smartwatch");
                 });
 
-                $('#audioSystemDevice').mousedown(function() {
+                $('#audioSystemDevice').mousedown(function () {
                     loadProperties("window device audio-system-device custom jtk-node", "Audio System");
                 });
 
-                $('#voiceControllerDevice').mousedown(function() {
+                $('#voiceControllerDevice').mousedown(function () {
                     loadProperties("window device voice-controller-device custom jtk-node", "Voice Controller");
                 });
 
-                $('#cameraDevice').mousedown(function() {
+                $('#cameraDevice').mousedown(function () {
                     loadProperties("window device camera-device custom jtk-node", "Camera");
                 });
 
-                $('#defaultDevice').mousedown(function() {
+                $('#defaultDevice').mousedown(function () {
                     loadProperties("window device default-device custom jtk-node", undefined);
                 });
 
                 // Actuators
-                $('#lightActuator').mousedown(function() {
+                $('#lightActuator').mousedown(function () {
                     loadProperties("window actuator light-actuator custom jtk-node", "Light");
                 });
 
-                $('#ledActuator').mousedown(function() {
+                $('#ledActuator').mousedown(function () {
                     loadProperties("window actuator led-actuator custom jtk-node", "LED");
                 });
 
-                $('#speakerActuator').mousedown(function() {
+                $('#speakerActuator').mousedown(function () {
                     loadProperties("window actuator speaker-actuator custom jtk-node", "Speaker");
                 });
 
-                $('#buzzerActuator').mousedown(function() {
+                $('#buzzerActuator').mousedown(function () {
                     loadProperties("window actuator buzzer-actuator custom jtk-node", "Buzzer");
                 });
 
-                $('#vibrationActuator').mousedown(function() {
+                $('#vibrationActuator').mousedown(function () {
                     loadProperties("window actuator vibration-actuator custom jtk-node", "Vibration");
                 });
 
-                $('#heaterActuator').mousedown(function() {
+                $('#heaterActuator').mousedown(function () {
                     loadProperties("window actuator heater-actuator custom jtk-node", "Heater");
                 });
 
-                $('#airConditionerActuator').mousedown(function() {
+                $('#airConditionerActuator').mousedown(function () {
                     loadProperties("window actuator air-conditioner-actuator custom jtk-node", "Air Conditioner");
                 });
 
-                $('#switchActuator').mousedown(function() {
+                $('#switchActuator').mousedown(function () {
                     loadProperties("window actuator switch-actuator custom jtk-node", "Switch");
                 });
 
-                $('#motorActuator').mousedown(function() {
+                $('#motorActuator').mousedown(function () {
                     loadProperties("window actuator motor-actuator custom jtk-node", "Motor");
                 });
 
-                $('#defaultActuator').mousedown(function() {
+                $('#defaultActuator').mousedown(function () {
                     loadProperties("window actuator default-actuator custom jtk-node", undefined);
                 });
 
-                $('#aContainer').mousedown(function() {
+                $('#aContainer').mousedown(function () {
                     loadProperties("window as-container custom jtk-node", undefined);
                 });
 
                 // Sensors
-                $('#cameraSensor').mousedown(function() {
+                $('#cameraSensor').mousedown(function () {
                     loadProperties("window sensor camera-sensor custom jtk-node", "Camera");
                 });
 
-                $('#soundSensor').mousedown(function() {
+                $('#soundSensor').mousedown(function () {
                     loadProperties("window sensor sound-sensor custom jtk-node", "Sound");
                 });
 
-                $('#temperatureSensor').mousedown(function() {
+                $('#temperatureSensor').mousedown(function () {
                     loadProperties("window sensor temperature-sensor custom jtk-node", "Temperature");
                 });
 
-                $('#humiditySensor').mousedown(function() {
+                $('#humiditySensor').mousedown(function () {
                     loadProperties("window sensor humidity-sensor custom jtk-node", "Humidity");
                 });
 
-                $('#gasSensor').mousedown(function() {
+                $('#gasSensor').mousedown(function () {
                     loadProperties("window sensor gas-sensor custom jtk-node", "Gas");
                 });
 
-                $('#lightSensor').mousedown(function() {
+                $('#lightSensor').mousedown(function () {
                     loadProperties("window sensor light-sensor custom jtk-node", "Light");
                 });
 
-                $('#motionSensor').mousedown(function() {
+                $('#motionSensor').mousedown(function () {
                     loadProperties("window sensor motion-sensor custom jtk-node", "Motion");
                 });
 
-                $('#locationSensor').mousedown(function() {
+                $('#locationSensor').mousedown(function () {
                     loadProperties("window sensor location-sensor custom jtk-node", "Location");
                 });
 
-                $('#gyroscopeSensor').mousedown(function() {
+                $('#gyroscopeSensor').mousedown(function () {
                     loadProperties("window sensor gyroscope-sensor custom jtk-node", "Gyroscope");
                 });
 
-                $('#proximitySensor').mousedown(function() {
+                $('#proximitySensor').mousedown(function () {
                     loadProperties("window sensor proximity-sensor custom jtk-node", "Proximity");
                 });
 
-                $('#touchSensor').mousedown(function() {
+                $('#touchSensor').mousedown(function () {
                     loadProperties("window sensor touch-sensor custom jtk-node", "Touch");
                 });
 
-                $('#vibrationSensor').mousedown(function() {
+                $('#vibrationSensor').mousedown(function () {
                     loadProperties("window sensor vibration-sensor custom jtk-node", "Vibration");
                 });
 
-                $('#defaultSensor').mousedown(function() {
+                $('#defaultSensor').mousedown(function () {
                     loadProperties("window sensor default-sensor custom jtk-node", undefined);
                 });
 
-                $('#sContainer').mousedown(function() {
+                $('#sContainer').mousedown(function () {
                     loadProperties("window as-container custom jtk-node", undefined);
                 });
 
@@ -432,8 +425,11 @@ app.directive('EnvModelTool',
                  * Create an element to be drawn on the canvas
                  */
                 function createElement(id, node) {
+                    //Create element
+                    let element = $('<div>').attr('id', id);
+
                     if (node) { // Use node for loaded model
-                        let element = $('<div>').addClass(node.clsName).attr('id', id);
+                        element.addClass(node.clsName);
                         // The position to create the element
                         element.css({
                             'top': node.positionY,
@@ -444,7 +440,7 @@ app.directive('EnvModelTool',
                         element.outerHeight(node.height);
 
                         // Set rotation angle; no need for room
-                        if (node.angle && (node.clsName.indexOf("room-floorplan") == -1)) {
+                        if (node.angle && (node.clsName.indexOf("free-resize") === -1)) {
                             element.data("angle", node.angle);
                             setAngle(element, false);
                         }
@@ -476,7 +472,7 @@ app.directive('EnvModelTool',
                             element.data("containerNodes", node.containerNodes);
                         }
                     } else { // Use properties on drop
-                        let element = $('<div>').addClass(properties.clsName).attr('id', id);
+                        element.addClass(properties.clsName);
                         // The position to create the dropped element
                         element.css({
                             'top': properties.top,
@@ -517,7 +513,7 @@ app.directive('EnvModelTool',
                         // Make the container droppable; accept only sensors and actuators
                         $element.droppable({
                             accept: ".actuator, .sensor",
-                            drop: function(event, ui) {
+                            drop: function (event, ui) {
                                 element.css({
                                     'top': ui.offset.top - $(this).offset().top,
                                     'left': ui.offset.left - $(this).offset().left
@@ -529,14 +525,14 @@ app.directive('EnvModelTool',
                         // If the container contains elements, create and add them
                         if ($element.data("containerNodes")) {
                             let containerNodes = $element.data("containerNodes");
-                            containerNodes.forEach(function(value, index, array) {
+                            containerNodes.forEach(function (value, index, array) {
                                 let nodeElement = createElement(value.elementId, value);
                                 $element.append(nodeElement);
                                 addEndpoints(nodeElement);
                             });
                         }
 
-                        $element.scroll(function() {
+                        $element.scroll(function () {
                             jsPlumbInstance.repaintEverything();
                         });
                     }
@@ -549,18 +545,18 @@ app.directive('EnvModelTool',
                  */
                 function addEndpoints(element) {
                     let type = element.attr('class').toString().split(" ")[1];
-                    if (type == "device") {
+                    if (type === "device") {
                         targetEndpoint.maxConnections = -1;
                         jsPlumbInstance.makeSource(element, sourceEndpoint);
                         jsPlumbInstance.makeTarget(element, targetEndpoint);
-                    } else if (type == "actuator" || type == "sensor") {
+                    } else if (type === "actuator" || type === "sensor") {
                         targetEndpoint.maxConnections = 1;
                         jsPlumbInstance.makeTarget(element, targetEndpoint);
                     }
                 }
 
                 // When the element on the canvas is clicked
-                $(document).on("click", ".jtk-node", function() {
+                $(document).on("click", ".jtk-node", function () {
                     // Load the corresponding data to show it in the tool
                     loadData($(this));
 
@@ -581,9 +577,9 @@ app.directive('EnvModelTool',
                 });
 
                 // Rotate the element on double click
-                $(document).on('dblclick', ".jtk-node", function() {
-                    if ($(this).attr("class").indexOf("room-floorplan") == -1 &&
-                        $(this).attr("class").indexOf("as-container") == -1) {
+                $(document).on('dblclick', ".jtk-node", function () {
+                    if ($(this).attr("class").indexOf("room-floorplan") === -1 &&
+                        $(this).attr("class").indexOf("as-container") === -1) {
                         setAngle($(this), true);
                     }
                 });
@@ -613,13 +609,13 @@ app.directive('EnvModelTool',
                 }
 
                 // When the canvas is clicked, save the data from the input fields to the corresponding element
-                $(canvasId).on('click', function(e) {
+                $(canvasId).on('click', function (e) {
                     saveData();
                 });
 
 
                 // When the close icon is clicked to delete the element, first undeploy and deregister
-                $(document).on("click", ".close-icon", function() {
+                $(document).on("click", ".close-icon", function () {
                     scope.processing = {};
                     scope.processing.status = true;
                     scope.processing.finished = false;
@@ -628,14 +624,14 @@ app.directive('EnvModelTool',
                     let element = $(this).parent();
                     let type = element.attr('class').toString().split(" ")[1];
 
-                    if (type == "device" && element.data("id")) { // Case: A device has attached sensors and actuators, which are deployed or registered
+                    if (type === "device" && element.data("id")) { // Case: A device has attached sensors and actuators, which are deployed or registered
                         deletionPromises = [];
                         $.each(jsPlumbInstance.getConnections({
                             source: element.attr("id")
-                        }), function(index, connection) {
+                        }), function (index, connection) {
                             let target = $(connection.target);
                             let targetType = target.attr('class').toString().split(" ")[1];
-                            if (targetType == "sensor" || targetType == "actuator") {
+                            if (targetType === "sensor" || targetType === "actuator") {
                                 // Undeploy and deregister the attached sensor/actuator
                                 if (target.data("deployed")) {
                                     let promise = undeployComponent(targetType, target, false);
@@ -648,11 +644,11 @@ app.directive('EnvModelTool',
                         });
 
                         // Save the model afterwards to stay updated
-                        $q.all(deletionPromises).then(function() {
+                        $q.all(deletionPromises).then(function () {
                             if (scope.processing.undeployedDeregistered) {
                                 deregisterComponent(type, element, true);
                             } else {
-                                saveModel().then(function(response) {
+                                saveModel().then(function (response) {
                                     scope.processing.message = "Sensor or actuator error";
                                     scope.processing.success = false;
                                     processingTimeout();
@@ -676,7 +672,7 @@ app.directive('EnvModelTool',
                  */
                 function undeployComponent(type, element, deleteFromModel) {
                     return ComponentService.undeploy(ENDPOINT_URI + "/deploy/" + type + "/" + element.data("id")).then(
-                        function(response) {
+                        function (response) {
                             element.data("deployed", false);
                             element.removeData("depError");
                             element.removeClass("error-element");
@@ -686,14 +682,14 @@ app.directive('EnvModelTool',
                             let promise = deregisterComponent(type, element, deleteFromModel);
                             deletionPromises.push(promise);
                         },
-                        function(response) {
+                        function (response) {
                             element.data("depError", response.data ? response.data.globalMessage : response.status);
                             element.removeClass("success-element");
                             element.removeClass("deployed-element");
                             element.addClass("error-element");
                             scope.processing.undeployedDeregistered = false;
                             if (deleteFromModel) {
-                                saveModel().then(function(response) {
+                                saveModel().then(function (response) {
                                     scope.processing.message = "Undeployment of " + element.data("name") + " ended with an error";
                                     scope.processing.success = false;
                                     processingTimeout();
@@ -709,7 +705,7 @@ app.directive('EnvModelTool',
                     let item = {};
                     item.id = element.data("id");
                     return CrudService.deleteItem(type + "s", item).then(
-                        function(response) {
+                        function (response) {
                             element.removeData("id");
                             element.removeData("depError");
                             element.removeData("regError");
@@ -720,13 +716,13 @@ app.directive('EnvModelTool',
                                 deleteElementFromCanvas(element, true);
                             }
                         },
-                        function(response) {
+                        function (response) {
                             element.data("regError", response.status);
                             element.removeClass("success-element");
                             element.addClass("error-element");
                             scope.processing.undeployedDeregistered = false;
                             if (deleteFromModel) {
-                                saveModel().then(function(response) {
+                                saveModel().then(function (response) {
                                     scope.processing.message = "Deregistration of " + element.data("name") + " ended with an error";
                                     scope.processing.success = false;
                                     processingTimeout();
@@ -739,11 +735,11 @@ app.directive('EnvModelTool',
                  * Delete the element from the canvas and jsPlumbInstance
                  */
                 function deleteElementFromCanvas(element, savingModel) {
-                    $timeout(function() {
+                    $timeout(function () {
                         scope.clickedComponent = {};
                         jsPlumbInstance.remove(element);
                         if (savingModel) {
-                            saveModel().then(function(response) {
+                            saveModel().then(function (response) {
                                 scope.processing.message = element.data("name") + " deleted";
                                 scope.processing.success = true;
                                 processingTimeout();
@@ -761,7 +757,7 @@ app.directive('EnvModelTool',
                 jsPlumbInstance.bind("dblclick", jsPlumbInstance.deleteConnection);
 
                 // Show the name input on click
-                jsPlumbInstance.bind("click", function(connection, originalEvent) {
+                jsPlumbInstance.bind("click", function (connection, originalEvent) {
                     let overlay = connection.getOverlay("label");
                     if (overlay.isVisible() && originalEvent.target.localName == 'path') {
                         overlay.hide();
@@ -771,7 +767,7 @@ app.directive('EnvModelTool',
                 });
 
                 // Add device name and id to sensor or actuator when a connection is created
-                jsPlumbInstance.bind("connection", function(info) {
+                jsPlumbInstance.bind("connection", function (info) {
                     saveData();
                     let source = $(info.source);
                     let target = $(info.target);
@@ -782,7 +778,7 @@ app.directive('EnvModelTool',
                 });
 
                 // Undeploy, deregister and remove device name and id from sensor or actuator when a connection is removed
-                jsPlumbInstance.bind("connectionDetached", function(info) {
+                jsPlumbInstance.bind("connectionDetached", function (info) {
                     onDetach(info);
                 });
 
@@ -807,9 +803,9 @@ app.directive('EnvModelTool',
                         }
 
                         // Save the model after undeployment and deregistration
-                        $q.all(deletionPromises).then(function() {
+                        $q.all(deletionPromises).then(function () {
                             if (deletionPromises.length !== 0) {
-                                saveModel().then(function(response) {
+                                saveModel().then(function (response) {
                                     if (scope.processing.undeployedDeregistered) {
                                         scope.processing.message = target.data("name") + " deregistered";
                                         scope.processing.success = true;
@@ -832,7 +828,7 @@ app.directive('EnvModelTool',
                  * Load the data from the element to show it in the tool and input fields
                  */
                 function loadData(element) {
-                    $timeout(function() {
+                    $timeout(function () {
                         if (element.attr("class").indexOf("device") > -1) {
                             scope.clickedComponent.category = "DEVICE";
                             scope.clickedComponent.id = element.data("id");
@@ -926,7 +922,7 @@ app.directive('EnvModelTool',
                         }
                     }
 
-                    $timeout(function() {
+                    $timeout(function () {
                         scope.clickedComponent = {};
                     });
                     $(".close-icon").hide();
@@ -941,7 +937,7 @@ app.directive('EnvModelTool',
                 function updateDeviceSA(device) {
                     $.each(jsPlumbInstance.getConnections({
                         source: device.attr("id")
-                    }), function(index, connection) {
+                    }), function (index, connection) {
                         let target = $(connection.target);
                         if (target.attr("class").indexOf("device") == -1) {
                             target.data("device", device.data("name"));
@@ -958,13 +954,13 @@ app.directive('EnvModelTool',
                     scope.currentModel = JSON.parse(model);
                     let environment = JSON.parse(scope.currentModel.value);
                     // Draw first the nodes
-                    $.each(environment.nodes, function(index, node) {
+                    $.each(environment.nodes, function (index, node) {
                         element = createElement(node.elementId, node);
                         drawElement(element);
                         element = "";
                     });
                     // Connect the created nodes
-                    $.each(environment.connections, function(index, connection) {
+                    $.each(environment.connections, function (index, connection) {
                         let conn = jsPlumbInstance.connect({
                             source: connection.sourceId,
                             target: connection.targetId,
@@ -982,9 +978,10 @@ app.directive('EnvModelTool',
                  * Load models from database
                  */
                 function loadModels() {
-                    return ModelService.GetModelsByUsername().then(function(response) {
+                    return ModelService.GetModelsByUsername().then(function (response) {
                         scope.loadedModels = response.data;
-                    }, function(response) {});
+                    }, function (response) {
+                    });
                 }
 
                 /*
@@ -1008,7 +1005,7 @@ app.directive('EnvModelTool',
                     let nodes = [];
 
                     // Get all nodes from the canvas
-                    $(".jtk-node").each(function(index, element) {
+                    $(".jtk-node").each(function (index, element) {
                         totalCount++;
                         let $element = $(element);
                         let type = $element.attr('class').toString().split(" ")[1];
@@ -1060,7 +1057,7 @@ app.directive('EnvModelTool',
                         } else if (type == "as-container") {
                             let containerNodes = [];
                             // Get the chlidren from the container, which are sensors and actuators
-                            $element.children(".jtk-node").each(function(indexC, elementC) {
+                            $element.children(".jtk-node").each(function (indexC, elementC) {
                                 let $elementC = $(elementC);
                                 containerNodes.push({
                                     nodeType: $elementC.attr('class').toString().split(" ")[1],
@@ -1109,7 +1106,7 @@ app.directive('EnvModelTool',
 
                     // Get all connections
                     let connections = [];
-                    $.each(jsPlumbInstance.getConnections(), function(index, connection) {
+                    $.each(jsPlumbInstance.getConnections(), function (index, connection) {
                         connections.push({
                             id: connection.id,
                             sourceId: connection.source.id,
@@ -1133,7 +1130,7 @@ app.directive('EnvModelTool',
 
                     // Save the model in the database
                     return ModelService.SaveModel(model).then(
-                        function(response) {
+                        function (response) {
                             if (savingIndividual) {
                                 scope.processing.message = "Model saved";
                                 scope.processing.success = true;
@@ -1143,7 +1140,7 @@ app.directive('EnvModelTool',
                             scope.selectedOptionName = scope.currentModel.name;
                             loadModels();
                         },
-                        function(response) {
+                        function (response) {
                             if (savingIndividual) {
                                 scope.processing.message = response.headers('X-MBP-error') ? response.headers('X-MBP-error') : "Model saving error";
                                 scope.processing.success = false;
@@ -1164,7 +1161,7 @@ app.directive('EnvModelTool',
 
                     // Undeploy and deregister each node if needed
                     deletionPromises = [];
-                    $(".jtk-node").each(function(index, element) {
+                    $(".jtk-node").each(function (index, element) {
                         let $element = $(element);
                         let type = $element.attr('class').toString().split(" ")[1];
                         if ($element.data("deployed")) {
@@ -1177,14 +1174,14 @@ app.directive('EnvModelTool',
                     });
 
                     // After all deregistrations and undeployments - delete the model
-                    $q.all(deletionPromises).then(function() {
+                    $q.all(deletionPromises).then(function () {
                         if (scope.processing.undeployedDeregistered) {
-                            ModelService.DeleteModel(scope.currentModel.name).then(function(response) {
+                            ModelService.DeleteModel(scope.currentModel.name).then(function (response) {
                                 scope.processing.message = scope.currentModel.name + " deleted";
                                 scope.processing.success = true;
                                 processingTimeout();
                                 newModel();
-                            }, function(response) {
+                            }, function (response) {
                                 scope.processing.message = "Deletion error";
                                 scope.processing.success = false;
                                 processingTimeout();
@@ -1203,10 +1200,10 @@ app.directive('EnvModelTool',
                 function clearCanvas() {
                     jsPlumbInstance.unbind("connectionDetached");
                     jsPlumbInstance.empty("canvas");
-                    $timeout(function() {
+                    $timeout(function () {
                         scope.clickedComponent = {};
                     });
-                    jsPlumbInstance.bind("connectionDetached", function(info) {
+                    jsPlumbInstance.bind("connectionDetached", function (info) {
                         onDetach(info);
                     });
                 }
@@ -1218,8 +1215,8 @@ app.directive('EnvModelTool',
                     elementIdCount = 0;
                     scope.currentModel = {};
                     clearCanvas();
-                    loadModels().then(function(response) {
-                        $timeout(function() {
+                    loadModels().then(function (response) {
+                        $timeout(function () {
                             scope.selectedOptionName = "";
                             $("#select-models").val("");
                         });
@@ -1239,7 +1236,7 @@ app.directive('EnvModelTool',
 
                     // First register devices
                     let devicePromises = [];
-                    $(".jtk-node").each(function(index, element) {
+                    $(".jtk-node").each(function (index, element) {
                         let $element = $(element);
                         let type = $element.attr('class').toString().split(" ")[1];
 
@@ -1258,10 +1255,10 @@ app.directive('EnvModelTool',
                     });
 
                     // After all http requests
-                    $q.all(devicePromises).then(function() {
+                    $q.all(devicePromises).then(function () {
                         // Then register actuators and sensors
                         let actuatorSensorPromises = [];
-                        $(".jtk-node").each(function(index, element) {
+                        $(".jtk-node").each(function (index, element) {
                             let $element = $(element);
                             let type = $element.attr('class').toString().split(" ")[1];
 
@@ -1277,13 +1274,13 @@ app.directive('EnvModelTool',
                         });
 
                         // Save the model after all registrations
-                        $q.all(actuatorSensorPromises).then(function() {
+                        $q.all(actuatorSensorPromises).then(function () {
                             if (devicePromises.length === 0 && actuatorSensorPromises.length === 0) {
                                 scope.processing.message = "No components to register";
                                 scope.processing.success = false;
                                 processingTimeout();
                             } else {
-                                saveModel().then(function(response) {
+                                saveModel().then(function (response) {
                                     if (scope.processing.registered && scope.processing.saved) {
                                         scope.processing.message = "Registration completed, model saved";
                                         scope.processing.success = true;
@@ -1309,9 +1306,9 @@ app.directive('EnvModelTool',
                  */
                 function register(type, item, element) {
                     return CrudService.addItem(type + "s", item).then(
-                        function(response) {
+                        function (response) {
                             element.data("id", response.id);
-                            if (type == "device") {
+                            if (type === "device") {
                                 // Update the attached sensors and actuators with generated ID of the device, need for their registration
                                 updateDeviceSA(element);
                             }
@@ -1320,7 +1317,7 @@ app.directive('EnvModelTool',
                             element.removeClass("error-element");
                             element.addClass("success-element");
                         },
-                        function(response) {
+                        function (response) {
                             console.log(response);
                             if (response.response.data) {
                                 element.data("regError", response.response.data.errors[0].message);
@@ -1344,7 +1341,7 @@ app.directive('EnvModelTool',
 
                     // Get and deploy all undeployed sensors and actuators
                     let deployPromises = [];
-                    $(".jtk-node").each(function(index, element) {
+                    $(".jtk-node").each(function (index, element) {
                         let $element = $(element);
                         let type = $element.attr('class').toString().split(" ")[1];
 
@@ -1358,13 +1355,13 @@ app.directive('EnvModelTool',
                     });
 
                     // Save the model after the deployment
-                    $q.all(deployPromises).then(function() {
+                    $q.all(deployPromises).then(function () {
                         if (deployPromises.length === 0) {
                             scope.processing.message = "No components to deploy";
                             scope.processing.success = false;
                             processingTimeout();
                         } else {
-                            saveModel().then(function(response) {
+                            saveModel().then(function (response) {
                                 if (scope.processing.deployed && scope.processing.saved) {
                                     scope.processing.message = "Deployment completed, model saved";
                                     scope.processing.success = true;
@@ -1390,7 +1387,7 @@ app.directive('EnvModelTool',
                 function deploy(component, element) {
                     let parameterValues = [];
                     return ComponentService.deploy(parameterValues, component).then(
-                        function(response) {
+                        function (response) {
                             element.data("deployed", true);
                             element.removeData("regError");
                             element.removeData("depError");
@@ -1398,7 +1395,7 @@ app.directive('EnvModelTool',
                             element.removeClass("success-element");
                             element.addClass("deployed-element");
                         },
-                        function(response) {
+                        function (response) {
                             element.data("depError", response.data ? response.data.globalMessage : response.status);
                             element.removeClass("success-element");
                             element.removeClass("deployed-element");
@@ -1417,7 +1414,7 @@ app.directive('EnvModelTool',
                     scope.processing.finished = false;
 
                     let undeployPromises = [];
-                    $(".jtk-node").each(function(index, element) {
+                    $(".jtk-node").each(function (index, element) {
                         let $element = $(element);
                         let type = $element.attr('class').toString().split(" ")[1];
 
@@ -1431,13 +1428,13 @@ app.directive('EnvModelTool',
                     });
 
                     // save the model after the undeployment
-                    $q.all(undeployPromises).then(function() {
+                    $q.all(undeployPromises).then(function () {
                         if (undeployPromises.length === 0) {
                             scope.processing.message = "No components to undeploy";
                             scope.processing.success = false;
                             processingTimeout();
                         } else {
-                            saveModel().then(function(response) {
+                            saveModel().then(function (response) {
                                 if (scope.processing.undeployed && scope.processing.saved) {
                                     scope.processing.message = "Undeployment completed, model saved";
                                     scope.processing.success = true;
@@ -1462,7 +1459,7 @@ app.directive('EnvModelTool',
                  */
                 function undeploy(component, element) {
                     return ComponentService.undeploy(component).then(
-                        function(response) {
+                        function (response) {
                             element.data("deployed", false);
                             element.removeData("depError");
                             element.removeData("regError");
@@ -1470,7 +1467,7 @@ app.directive('EnvModelTool',
                             element.removeClass("deployed-element");
                             element.addClass("success-element");
                         },
-                        function(response) {
+                        function (response) {
                             element.data("depError", response.data ? response.data.globalMessage : response.status);
                             element.removeClass("success-element");
                             element.removeClass("deployed-element");
@@ -1485,7 +1482,7 @@ app.directive('EnvModelTool',
                 function processingTimeout() {
                     scope.processing.status = false;
                     scope.processing.finished = true;
-                    $timeout(function() {
+                    $timeout(function () {
                         scope.processing.finished = false;
                     }, 3000);
                 }
@@ -1502,9 +1499,7 @@ app.directive('EnvModelTool',
             let link = function (scope, element, attrs) {
 
                 //Expose public API
-                scope.api = {
-
-                };
+                scope.api = {};
 
                 //Initialize modelling tool
                 let initFunction = initJSPlumb.bind(this, scope);
@@ -1515,59 +1510,7 @@ app.directive('EnvModelTool',
             return {
                 restrict: 'E', //Elements only
                 template:
-                    '<div id="modelingToolView" class="card">' +
-                    '<div class="header">' +
-                    '<div class="row align-center">' +
-                    '<div class="navbar-brand tool-header-right" ng-show="processing.status">' +
-                    '<div class="col-xs-12 align-center">' +
-                    '<div class="preloader pl-size-xs">' +
-                    '<div class="spinner-layer pl-blue">' +
-                    '<div class="circle-clipper left">' +
-                    '<div class="circle"></div></div>' +
-                    '<div class="circle-clipper right">' +
-                    '<div class="circle"></div>' +
-                    '</div></div></div></div></div>' +
-                    '<div class="navbar-brand tool-header-right" ng-show="processing.finished">' +
-                    '<div ng-show="processing.success">' +
-                    '<span style="color: green; font-size: 12px">{{processing.message}}</span>' +
-                    '<i class="fas fa-check-circle" style="color: green"></i>' +
-                    '</div>' +
-                    '<div ng-show="!processing.success">' +
-                    '<span style="color: red; font-size: 12px">{{processing.message}}</span>' +
-                    '<i class="fas fa-times-circle" style="color: red"></i>' +
-                    '</div></div>' +
-                    '<span class="tool-header-navbar-brand" style="color: black">IoT Environment Modeling Tool</span>' +
-                    '</div>' +
-                    '<div class="row" style="margin-left: 0px; margin-right: 0px; padding: 5px">' +
-                    '<div class="col-lg-5 focused" style="padding: 5px">' +
-                    '<select class="form-control show-tick" id="select-models" ng-change="drawModel(model)"' +
-                    'ng-model="model" style="display: inline-block; width: 50%">' +
-                    '<option disabled="disabled" value="">-- Select IoT model --</option>' +
-                    '<option ng-repeat="model in loadedModels" value="{{model}}" ng-selected="model.name === selectedOptionName">{{model.name}}</option>' +
-                    '</select>' +
-                    '<input id="modelNameInput" type="text" name="name" ng-model="currentModel.name" autocomplete="off" placeholder="Enter IoT model name" style="display: inline-block; width: 50%"/>' +
-                    '</div>' +
-                    '<div class="col-lg-5 align-right" style="padding: 2px">' +
-                    '<button id="newModelBtn" class="btn bg-blue btn-circle waves-effect waves-circle waves-float" title="New model" ng-click="newModel()">' +
-                    '<i class="material-icons">add</i>' +
-                    '</button>' +
-                    '<button id="saveModelBtn" class="btn bg-blue btn-circle waves-effect waves-circle waves-float" title="Save" ng-click="saveModel()" ng-disabled="!currentModel.name || currentModel.name === \'\'">' +
-                    '<i class="material-icons">save</i>' +
-                    '</button>' +
-                    '<button id="deleteModelBtn" class="btn bg-blue btn-circle waves-effect waves-circle waves-float" title="Delete" ng-click="deleteModel()" ng-disabled="!currentModel.name || currentModel.name === \'\'">' +
-                    '<i class="material-icons">delete</i>' +
-                    '</button>&nbsp;&nbsp;' +
-                    '<button id="registerComponentsBtn" class="btn bg-green btn-circle waves-effect waves-circle waves-float"title="Register components" ng-click="registerComponents()"ng-disabled="!currentModel.name || currentModel.name === \'\'">' +
-                    '<i class="material-icons">backup</i>' +
-                    '</button>' +
-                    '<button id="deployComponentsBtn" class="btn bg-green btn-circle waves-effect waves-circle waves-float"title="Deploy model" ng-click="deployComponents()"ng-disabled="!currentModel.name || currentModel.name === \'\'">' +
-                    '<i class="material-icons">sync</i>' +
-                    '</button>' +
-                    '<button id="undeployComponentsBtn" class="btn bg-green btn-circle waves-effect waves-circle waves-float"title="Undeploy model" ng-click="undeployComponents()"ng-disabled="!currentModel.name || currentModel.name === \'\'">' +
-                    '<i class="material-icons">sync_disabled</i>' +
-                    '</button>' +
-                    '</div></div></div>' +
-                    '<div class="body">' +
+                    '<div id="modelingToolView">' +
                     '<!-- Palette -->' +
                     '<div id="toolPalette" style="display: inline-block; vertical-align: top; width:20%; height: 100%">' +
                     '<div class="panel-group" id="accordion">' +
@@ -1580,91 +1523,64 @@ app.directive('EnvModelTool',
                     '</h4>' +
                     '</div>' +
                     '<div id="collapseFloorplans" class="panel-collapse collapse in">' +
-                    '<div class="panel-body canvas-wide modeling-tool" id="canvasPalette">' +
-                    '<ul id="dragList">' +
+                    '<div class="panel-body canvas-wide modeling-tool canvasPalette">' +
+                    '<ul class="dragList">' +
                     '<li>' +
                     '<div class="window floorplan room-floorplan" id="roomFloorplan"></div>' +
-                    '<strong>' +
-                    '<p>Room</p>' +
-                    '</strong>' +
+                    '<p><strong>Room</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window floorplan wall-floorplan" id="wallFloorplan"></div>' +
-                    '<strong>' +
-                    '<p>Wall</p>' +
-                    '</strong>' +
+                    '<p><strong>Wall</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window floorplan door-floorplan" id="doorFloorplan"></div>' +
-                    '<strong>' +
-                    '<p>Door</p>' +
-                    '</strong>' +
+                    '<p><strong>Door</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window floorplan window-floorplan" id="windowFloorplan"></div>' +
-                    '<strong>' +
-                    '<p>Window</p>' +
-                    '</strong>' +
+                    '<p><strong>Window</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window floorplan stairs-floorplan" id="stairsFloorplan"></div>' +
-                    '<strong>' +
-                    '<p>Stairs</p>' +
-                    '</strong>' +
+                    '<p><strong>Stairs</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window floorplan table-floorplan" id="tableFloorplan"></div>' +
-                    '<strong>' +
-                    '<p>Table</p>' +
-                    '</strong>' +
+                    '<p><strong>Table</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window floorplan chair-floorplan" id="chairFloorplan"></div>' +
-                    '<strong>' +
-                    '<p>Chair</p>' +
-                    '</strong>' +
+                    '<p><strong>Chair</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window floorplan couch-floorplan" id="couchFloorplan"></div>' +
-                    '<strong>' +
-                    '<p>Couch</p>' +
-                    '</strong>' +
+                    '<p><strong>Couch</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window floorplan bed-floorplan" id="bedFloorplan"></div>' +
-                    '<strong>' +
-                    '<p>Bed</p>' +
-                    '</strong>' +
+                    '<p><strong>Bed</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window floorplan kitchen-sink-floorplan" id="kitchenSinkFloorplan"></div>' +
-                    '<strong>' +
-                    '<p>Kitchen sink</p>' +
-                    '</strong>' +
+                    '<p><strong>Kitchen sink</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window floorplan bathtub-floorplan" id="bathtubFloorplan"></div>' +
-                    '<strong>' +
-                    '<p>Bathtub</p>' +
-                    '</strong>' +
+                    '<p><strong>Bathtub</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window floorplan bath-sink-floorplan" id="bathSinkFloorplan"></div>' +
-                    '<strong>' +
-                    '<p>Bath sink</p>' +
-                    '</strong>' +
+                    '<p><strong>Bath sink</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window floorplan toilet-floorplan" id="toiletFloorplan"></div>' +
-                    '<strong>' +
-                    '<p>Toilet</p>' +
-                    '</strong>' +
+                    '<p><strong>Toilet</strong></p>' +
                     '</li>' +
                     '</ul>' +
                     '</div>' +
                     '</div>' +
                     '</div>' +
-                    '' +
                     '<div class="panel panel-default">' +
                     '<div class="panel-heading" style="overflow-x: hidden;">' +
                     '<h4 class="panel-title">' +
@@ -1674,73 +1590,51 @@ app.directive('EnvModelTool',
                     '</h4>' +
                     '</div>' +
                     '<div id="collapseDevices" class="panel-collapse collapse">' +
-                    '<div class="panel-body canvas-wide modeling-tool" id="canvasPalette">' +
-                    '<ul id="dragList">' +
+                    '<div class="panel-body canvas-wide modeling-tool canvasPalette">' +
+                    '<ul class="dragList">' +
                     '<li>' +
                     '<div class="window device raspberry-pi-device" id="raspberryPiDevice"></div>' +
-                    '<strong>' +
-                    '<p>Raspberry Pi</p>' +
-                    '</strong>' +
+                    '<p><strong>Raspberry Pi</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window device arduino-device" id="arduinoDevice"></div>' +
-                    '<strong>' +
-                    '<p>Arduino</p>' +
-                    '</strong>' +
+                    '<p><strong>Arduino</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window device computer-device" id="computerDevice"></div>' +
-                    '<strong>' +
-                    '<p>Computer</p>' +
-                    '</strong>' +
+                    '<p><strong>Computer</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window device laptop-device" id="laptopDevice"></div>' +
-                    '<strong>' +
-                    '<p>Laptop</p>' +
-                    '</strong>' +
+                    '<p><strong>Laptop</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window device tv-device" id="tvDevice"></div>' +
-                    '<strong>' +
-                    '<p>TV</p>' +
-                    '</strong>' +
+                    '<p><strong>TV</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window device smartphone-device" id="smartphoneDevice"></div>' +
-                    '<strong>' +
-                    '<p>Smartphone</p>' +
-                    '</strong>' +
+                    '<p><strong>Smartphone</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window device smartwatch-device" id="smartwatchDevice"></div>' +
-                    '<strong>' +
-                    '<p>Smartwatch</p>' +
-                    '</strong>' +
+                    '<p><strong>Smartwatch</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window device audio-system-device" id="audioSystemDevice"></div>' +
-                    '<strong>' +
-                    '<p>Audio System</p>' +
-                    '</strong>' +
+                    '<p><strong>Audio System</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window device voice-controller-device" id="voiceControllerDevice"></div>' +
-                    '<strong>' +
-                    '<p>Voice Controller</p>' +
-                    '</strong>' +
+                    '<p><strong>Voice Controller</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window device camera-device" id="cameraDevice"></div>' +
-                    '<strong>' +
-                    '<p>Camera</p>' +
-                    '</strong>' +
+                    '<p><strong>Camera</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window device default-device" id="defaultDevice"></div>' +
-                    '<strong>' +
-                    '<p>Default device</p>' +
-                    '</strong>' +
+                    '<p><strong>Default device</strong></p>' +
                     '</li>' +
                     '</ul>' +
                     '</div>' +
@@ -1755,179 +1649,136 @@ app.directive('EnvModelTool',
                     '</h4>' +
                     '</div>' +
                     '<div id="collapseActuators" class="panel-collapse collapse">' +
-                    '<div class="panel-body canvas-wide modeling-tool" id="canvasPalette">' +
-                    '<ul id="dragList">' +
+                    '<div class="panel-body canvas-wide modeling-tool canvasPalette">' +
+                    '<ul class="dragList">' +
                     '<li>' +
                     '<div class="window actuator light-actuator" id="lightActuator"></div>' +
-                    '<strong>' +
-                    '<p>Light</p>' +
-                    '</strong>' +
+                    '<p><strong>Light</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window actuator led-actuator" id="ledActuator"></div>' +
-                    '<strong>' +
-                    '<p>LED</p>' +
-                    '</strong>' +
+                    '<p><strong>LED</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window actuator speaker-actuator" id="speakerActuator"></div>' +
-                    '<strong>' +
-                    '<p>Speaker</p>' +
-                    '</strong>' +
+                    '<p><strong>Speaker</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window actuator buzzer-actuator" id="buzzerActuator"></div>' +
-                    '<strong>' +
-                    '<p>Buzzer</p>' +
-                    '</strong>' +
+                    '<p><strong>Buzzer</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window actuator vibration-actuator" id="vibrationActuator"></div>' +
-                    '<strong>' +
-                    '<p>Vibration</p>' +
-                    '</strong>' +
+                    '<p><strong>Vibration</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window actuator heater-actuator" id="heaterActuator"></div>' +
-                    '<strong>' +
-                    '<p>Heater</p>' +
-                    '</strong>' +
+                    '<p><strong>Heater</strong></p>' +
                     '</li>' +
                     '<li>' +
-                    '<div class="window actuator air-conditioner-actuator"' +
-                    ' id="airConditionerActuator"></div>' +
-                    '<strong>' +
-                    '<p>Air Conditioner</p>' +
-                    '</strong>' +
+                    '<div class="window actuator air-conditioner-actuator" id="airConditionerActuator"></div>' +
+                    '<p><strong>Air Conditioner</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window actuator switch-actuator" id="switchActuator"></div>' +
-                    '<strong>' +
-                    '<p>Switch</p>' +
-                    '</strong>' +
+                    '<p><strong>Switch</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window actuator motor-actuator" id="motorActuator"></div>' +
-                    '<strong>' +
-                    '<p>Motor</p>' +
-                    '</strong>' +
+                    '<p><strong>Motor</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window actuator default-actuator" id="defaultActuator"></div>' +
-                    '<strong>' +
-                    '<p>Default actuator</p>' +
-                    '</strong>' +
+                    '<p><strong>Default actuator</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window as-container" id="aContainer"></div>' +
-                    '<strong>' +
-                    '<p>Container</p>' +
-                    '</strong>' +
+                    '<p><strong>Container</strong></p>' +
                     '</li>' +
                     '</ul>' +
-                    '</div</div></div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
                     '<div class="panel panel-default">' +
                     '<div class="panel-heading" style="overflow-x: hidden;">' +
                     '<h4 class="panel-title">' +
-                    '<a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion"' +
-                    '   href="#collapseSensors">' +
+                    '<a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseSensors">' +
                     '<i class="material-icons" style="font-size: 20px;">settings_remote</i>' +
                     '<span class="glyphicon glyphicon-chevron-down pull-right"></span>Sensor types</a>' +
                     '</h4>' +
                     '</div>' +
                     '<div id="collapseSensors" class="panel-collapse collapse">' +
-                    '<div class="panel-body canvas-wide modeling-tool" id="canvasPalette">' +
-                    '<ul id="dragList">' +
+                    '<div class="panel-body canvas-wide modeling-tool canvasPalette">' +
+                    '<ul class="dragList">' +
                     '<li>' +
                     '<div class="window sensor camera-sensor" id="cameraSensor"></div>' +
-                    '<strong>' +
-                    '<p>Camera</p>' +
-                    '</strong>' +
+                    '<p><strong>Camera</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window sensor sound-sensor" id="soundSensor"></div>' +
-                    '<strong>' +
-                    '<p>Sound</p>' +
-                    '</strong>' +
+                    '<p><strong>Sound</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window sensor temperature-sensor" id="temperatureSensor"></div>' +
-                    '<strong>' +
-                    '<p>Temperature</p>' +
-                    '</strong>' +
+                    '<p><strong>Temperature</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window sensor humidity-sensor" id="humiditySensor"></div>' +
-                    '<strong>' +
-                    '<p>Humidity</p>' +
-                    '</strong>' +
+                    '<p><strong>Humidity</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window sensor gas-sensor" id="gasSensor"></div>' +
-                    '<strong>' +
-                    '<p>Gas</p>' +
-                    '</strong>' +
+                    '<p><strong>Gas</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window sensor light-sensor" id="lightSensor"></div>' +
-                    '<strong>' +
-                    '<p>Light</p>' +
-                    '</strong>' +
+                    '<p><strong>Light</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window sensor motion-sensor" id="motionSensor"></div>' +
-                    '<strong>' +
-                    '<p>Motion</p>' +
-                    '</strong>' +
+                    '<p><strong>Motion</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window sensor location-sensor" id="locationSensor"></div>' +
-                    '<strong>' +
-                    '<p>Location</p>' +
-                    '</strong>' +
+                    '<p><strong>Location</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window sensor gyroscope-sensor" id="gyroscopeSensor"></div>' +
-                    '<strong>' +
-                    '<p>Gyroscope</p>' +
-                    '</strong>' +
+                    '<p><strong>Gyroscope</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window sensor proximity-sensor" id="proximitySensor"></div>' +
-                    '<strong>' +
-                    '<p>Proximity</p>' +
-                    '</strong>' +
+                    '<p><strong>Proximity</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window sensor touch-sensor" id="touchSensor"></div>' +
-                    '<strong>' +
-                    '<p>Touch</p>' +
-                    '</strong>' +
+                    '<p><strong>Touch</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window sensor vibration-sensor" id="vibrationSensor"></div>' +
-                    '<strong>' +
-                    '<p>Vibration</p>' +
-                    '</strong>' +
+                    '<p><strong>Vibration</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window sensor default-sensor" id="defaultSensor"></div>' +
-                    '<strong>' +
-                    '<p>Default sensor</p>' +
-                    '</strong>' +
+                    '<p><strong>Default sensor</strong></p>' +
                     '</li>' +
                     '<li>' +
                     '<div class="window as-container" id="sContainer"></div>' +
-                    '<strong>' +
-                    '<p>Container</p>' +
-                    '</strong>' +
+                    '<p><strong>Container</strong></p>' +
                     '</li>' +
                     '</ul>' +
-                    '</div></div></div></div></div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- Canvas - Modeling Area -->' +
                     '<div id="myDiagram" style="display: inline-block; vertical-align: top; width:64%; height: 100%">' +
                     '<div class="jtk-main">' +
                     '<div class="jtk-canvas canvas-wide modeling-tool jtk-surface jtk-surface-nopan" id="canvas"></div>' +
-                    '</div></div>' +
+                    '</div>' +
+                    '</div>' +
+                    '<!-- Info sidebar -->' +
                     '<div id="infoSidebar" style="display: inline-block; vertical-align: top; width:17%; height: 100%">' +
                     '<div class="panel panel-default" style="margin: 5px;" ng-show="clickedComponent.category == \'DEVICE\'">' +
                     '<div class="panel-heading" style="text-align: center; overflow-x: hidden;">' +
@@ -1936,45 +1787,52 @@ app.directive('EnvModelTool',
                     '<div id="deviceInfo" class="input-list">' +
                     '<ul>' +
                     '<li>' +
-                    '<label for="name">Name</label>' +
+                    '<label for="deviceNameInput">Name</label>' +
                     '<input id="deviceNameInput" type="text" name="name" ng-model="clickedComponent.name" autocomplete="off">' +
+                    '<!-- <span>Enter your full name here</span> -->' +
                     '</li>' +
                     '<li>' +
-                    '<label for="type">Device type</label>' +
+                    '<label for="deviceTypeInput">Device type</label>' +
                     '<input id="deviceTypeInput" type="text" name="type" ng-model="clickedComponent.type" autocomplete="off">' +
                     '</li>' +
                     '<li>' +
-                    '<label for="mac">MAC address</label>' +
+                    '<label for="deviceMacInput">MAC address</label>' +
                     '<input id="deviceMacInput" type="text" name="mac" ng-model="clickedComponent.mac" autocomplete="off" placeholder="HH-HH-HH-HH-HH-HH">' +
                     '</li>' +
                     '<li>' +
-                    '<label for="ip">IP address</label>' +
+                    '<label for="deviceIpInput">IP address</label>' +
                     '<input id="deviceIpInput" type="text" name="ip" ng-model="clickedComponent.ip" autocomplete="off">' +
                     '</li>' +
                     '<li>' +
-                    '<label for="username">User name</label>' +
+                    '<label for="deviceUsernameInput">User name</label>' +
                     '<input id="deviceUsernameInput" type="text" name="username" ng-model="clickedComponent.username" autocomplete="off">' +
                     '</li>' +
                     '<li>' +
-                    '<label for="password">Password</label>' +
+                    '<label for="devicePasswordInput">Password</label>' +
                     '<input id="devicePasswordInput" type="password" name="password" ng-model="clickedComponent.password" autocomplete="off">' +
                     '</li>' +
                     '<li>' +
-                    '<label for="rsaKey">RSA Key</label>' +
+                    '<label for="deviceRsaKeyInput">RSA Key</label>' +
                     '<textarea id="deviceRsaKeyInput" type="text" name="rsaKey" placeholder="Private RSA key" ng-model="clickedComponent.rsaKey" rows="4"></textarea>' +
                     '</li>' +
                     '</ul>' +
                     '</div>' +
                     '<div class="panel-footer" style="height: 100%; overflow-x: scroll">' +
-                    '<span><b>Status</b></span>' +
+                    '<span>' +
+                    '<b>Status</b>' +
+                    '</span>' +
                     '<br>' +
                     '<span>' +
                     '<i class="fas fa-check-circle" ng-show="clickedComponent.id"></i>' +
-                    '<i class="fas fa-times-circle" ng-show="!clickedComponent.id"></i>Registered' +
+                    '<i class="fas fa-times-circle" ng-show="!clickedComponent.id"></i>' +
+                    'Registered' +
                     '<span style="color: red; font-size: 12px" ng-show="clickedComponent.regError">' +
-                    '<br>{{clickedComponent.regError}}</span>' +
+                    '<br>' +
+                    '{{clickedComponent.regError}}' +
                     '</span>' +
-                    '</div></div>' +
+                    '</span>' +
+                    '</div>' +
+                    '</div>' +
                     '<div class="panel panel-default" style="margin: 5px;" ng-show="clickedComponent.category == \'ACTUATOR\'">' +
                     '<div class="panel-heading" style="text-align: center;overflow-x: hidden;">' +
                     '<h4 class="panel-title">Actuator</h4>' +
@@ -1982,21 +1840,21 @@ app.directive('EnvModelTool',
                     '<div id="actuatorInfo" class="input-list">' +
                     '<ul>' +
                     '<li>' +
-                    '<label for="name">Name</label>' +
+                    '<label for="actuatorNameInput">Name</label>' +
                     '<input id="actuatorNameInput" type="text" name="name" ng-model="clickedComponent.name" autocomplete="off">' +
                     '</li>' +
                     '<li>' +
-                    '<label for="type">Type</label>' +
+                    '<label for="actuatorTypeInput">Type</label>' +
                     '<input id="actuatorTypeInput" type="text" name="type" ng-model="clickedComponent.type" autocomplete="off">' +
                     '</li>' +
                     '<li>' +
-                    '<label for="adapter">Adapter</label>' +
+                    '<label for="actuatorAdapterInput">Adapter</label>' +
                     '<select class="form-control show-tick" id="actuatorAdapterInput" ng-model="clickedComponent.adapter" ng-options="t.id as (t.name) for t in adapterListCtrl.items">' +
                     '<option value="">Select adapter</option>' +
                     '</select>' +
                     '</li>' +
                     '<li>' +
-                    '<label for="device">Device</label>' +
+                    '<label for="actuatorDeviceInput">Device</label>' +
                     '<input id="actuatorDeviceInput" type="text" name="device" ng-model="clickedComponent.device" autocomplete="off" disabled="disabled">' +
                     '</li>' +
                     '</ul>' +
@@ -2008,15 +1866,21 @@ app.directive('EnvModelTool',
                     '<br>' +
                     '<span>' +
                     '<i class="fas fa-check-circle" ng-show="clickedComponent.id"></i>' +
-                    '<i class="fas fa-times-circle" ng-show="!clickedComponent.id"></i>Registered' +
-                    '<span style="color: red; font-size: 12px" ng-show="clickedComponent.regError"><br>{{clickedComponent.regError}}</span>' +
+                    '<i class="fas fa-times-circle" ng-show="!clickedComponent.id"></i>' +
+                    'Registered' +
+                    '<span style="color: red; font-size: 12px" ng-show="clickedComponent.regError">' +
+                    '<br>' +
+                    '{{clickedComponent.regError}}' +
+                    '</span>' +
                     '</span>' +
                     '<br>' +
                     '<span>' +
                     '<i class="fas fa-check-circle" ng-show="clickedComponent.deployed"></i>' +
-                    '<i class="fas fa-times-circle" ng-show="!clickedComponent.deployed"></i>Deployed' +
+                    '<i class="fas fa-times-circle" ng-show="!clickedComponent.deployed"></i>' +
+                    'Deployed' +
                     '<span style="color: red; font-size: 12px" ng-show="clickedComponent.depError">' +
-                    '<br>{{clickedComponent.depError}}' +
+                    '<br>' +
+                    '{{clickedComponent.depError}}' +
                     '</span>' +
                     '</span>' +
                     '</div>' +
@@ -2028,21 +1892,21 @@ app.directive('EnvModelTool',
                     '<div id="sensorInfo" class="input-list">' +
                     '<ul>' +
                     '<li>' +
-                    '<label for="name">Name</label>' +
+                    '<label for="sensorNameInput">Name</label>' +
                     '<input id="sensorNameInput" type="text" name="name" ng-model="clickedComponent.name" autocomplete="off">' +
                     '</li>' +
                     '<li>' +
-                    '<label for="type">Type</label>' +
+                    '<label for="sensorTypeInput">Type</label>' +
                     '<input id="sensorTypeInput" type="text" name="type" ng-model="clickedComponent.type" autocomplete="off">' +
                     '</li>' +
                     '<li>' +
-                    '<label for="adapter">Adapter</label>' +
+                    '<label for="sensorAdapterInput">Adapter</label>' +
                     '<select class="form-control show-tick" id="sensorAdapterInput" ng-model="clickedComponent.adapter" ng-options="t.id as (t.name) for t in adapterListCtrl.items">' +
                     '<option value="">Select adapter</option>' +
                     '</select>' +
                     '</li>' +
                     '<li>' +
-                    '<label for="device">Device</label>' +
+                    '<label for="sensorDeviceInput">Device</label>' +
                     '<input id="sensorDeviceInput" type="text" name="device" ng-model="clickedComponent.device" autocomplete="off" disabled="disabled">' +
                     '</li>' +
                     '</ul>' +
@@ -2054,18 +1918,27 @@ app.directive('EnvModelTool',
                     '<br>' +
                     '<span>' +
                     '<i class="fas fa-check-circle" ng-show="clickedComponent.id"></i>' +
-                    '<i class="fas fa-times-circle" ng-show="!clickedComponent.id"></i>Registered' +
+                    '<i class="fas fa-times-circle" ng-show="!clickedComponent.id"></i>' +
+                    'Registered' +
                     '<span style="color: red; font-size: 12px" ng-show="clickedComponent.regError">' +
-                    '<br>{{clickedComponent.regError}}</span>' +
+                    '<br>' +
+                    '{{clickedComponent.regError}}' +
+                    '</span>' +
                     '</span>' +
                     '<br>' +
                     '<span>' +
                     '<i class="fas fa-check-circle" ng-show="clickedComponent.deployed"></i>' +
-                    '<i class="fas fa-times-circle" ng-show="!clickedComponent.deployed"></i>Deployed' +
+                    '<i class="fas fa-times-circle" ng-show="!clickedComponent.deployed"></i>' +
+                    'Deployed' +
                     '<span style="color: red; font-size: 12px" ng-show="clickedComponent.depError">' +
-                    '<br>{{clickedComponent.depError}}</span>' +
+                    '<br>' +
+                    '{{clickedComponent.depError}}' +
                     '</span>' +
-                    '</div></div></div></div></div>'
+                    '</span>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>'
                 ,
                 link: link,
                 scope: {

@@ -32,6 +32,15 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 templateUrl: 'templates/home',
                 controller: 'HomeController as ctrl',
                 resolve: {
+                    countModels: ['CrudService', function (CrudService) {
+                        return CrudService.countItems('env-models').then(
+                            (count) => {
+                                return count;
+                            }, (response) => {
+                                return 0;
+                            }
+                        );
+                    }],
                     countActuators: ['CrudService', function (CrudService) {
                         return CrudService.countItems('actuators').then(
                             function (count) {
