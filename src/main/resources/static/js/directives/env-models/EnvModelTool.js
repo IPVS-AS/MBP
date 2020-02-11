@@ -6,10 +6,8 @@
  * Directive for a modeling tool that can be used for creating and editing IoT environment models.
  */
 app.directive('envModelTool',
-    ['ENDPOINT_URI', '$timeout', '$q', '$controller', 'ModelService', 'ComponentService', 'DeviceService',
-        'CrudService',
-        function (ENDPOINT_URI, $timeout, $q, $controller, ModelService, ComponentService, DeviceService,
-                  CrudService) {
+    ['ENDPOINT_URI', '$timeout', '$q', '$controller', 'ModelService', 'ComponentService', 'DeviceService', 'CrudService',
+        function (ENDPOINT_URI, $timeout, $q, $controller, ModelService, ComponentService, DeviceService, CrudService) {
 
             function initJSPlumb(scope) {
                 let jsPlumbInstance;
@@ -98,19 +96,19 @@ app.directive('envModelTool',
                  * jQuery makes the element with the given ID resizable
                  */
                 function makeResizable(id) {
-                    //Get element
-                    let element = $(id);
+                    //Find elements
+                    let elements = $(id);
 
                     //Make element resizable
-                    element.resizable({
+                    elements.resizable({
                         //Check if aspect ratio needs to be preserved
-                        aspectRatio: (!element.hasClass("free-resize")),
+                        aspectRatio: (!elements.hasClass("free-resize")),
                         start: (event, ui) => {
                             $(".close-icon").hide();
-                            element.css('outline', '2px solid grey');
+                            elements.css('outline', '2px solid grey');
                         },
                         resize: (event, ui) => jsPlumbInstance.revalidate(ui.helper),
-                        stop: (event, ui) => element.css('outline', 'none'),
+                        stop: (event, ui) => elements.css('outline', 'none'),
                         handles: "all"
                     });
                 }
@@ -133,8 +131,8 @@ app.directive('envModelTool',
                 /*
                  * Make all the elements from the palette draggable
                  */
-                makeDraggable("#roomFloorplan", "window floorplan room-floorplan custom free-resize");
-                makeDraggable("#wallFloorplan", "window floorplan wall-floorplan custom free-resize");
+                makeDraggable("#roomFloorplan", "window floorplan room-floorplan custom");
+                makeDraggable("#wallFloorplan", "window floorplan wall-floorplan custom");
                 makeDraggable("#doorFloorplan", "window floorplan door-floorplan custom");
                 makeDraggable("#windowFloorplan", "window floorplan window-floorplan custom");
                 makeDraggable("#stairsFloorplan", "window floorplan stairs-floorplan custom");
@@ -169,7 +167,6 @@ app.directive('envModelTool',
                 makeDraggable("#switchActuator", "window actuator switch-actuator custom");
                 makeDraggable("#motorActuator", "window actuator motor-actuator custom");
                 makeDraggable("#defaultActuator", "window actuator default-actuator custom");
-                makeDraggable("#aContainer", "window as-container custom");
 
                 makeDraggable("#cameraSensor", "window sensor camera-sensor custom");
                 makeDraggable("#soundSensor", "window sensor sound-sensor custom");
@@ -184,7 +181,6 @@ app.directive('envModelTool',
                 makeDraggable("#touchSensor", "window sensor touch-sensor custom");
                 makeDraggable("#vibrationSensor", "window sensor vibration-sensor custom");
                 makeDraggable("#defaultSensor", "window sensor default-sensor custom");
-                makeDraggable("#sContainer", "window as-container custom");
 
                 // jQuery makes the canvas droppable
                 $(canvasId).droppable({
@@ -223,11 +219,11 @@ app.directive('envModelTool',
 
                 // Floorplan
                 $('#roomFloorplan').mousedown(function () {
-                    loadProperties("window floorplan room-floorplan custom jtk-node", undefined);
+                    loadProperties("window floorplan room-floorplan custom free-resize jtk-node", undefined);
                 });
 
                 $('#wallFloorplan').mousedown(function () {
-                    loadProperties("window floorplan wall-floorplan custom jtk-node", undefined);
+                    loadProperties("window floorplan wall-floorplan custom free-resize jtk-node", undefined);
                 });
 
                 $('#doorFloorplan').mousedown(function () {
@@ -360,10 +356,6 @@ app.directive('envModelTool',
                     loadProperties("window actuator default-actuator custom jtk-node", undefined);
                 });
 
-                $('#aContainer').mousedown(function () {
-                    loadProperties("window as-container custom jtk-node", undefined);
-                });
-
                 // Sensors
                 $('#cameraSensor').mousedown(function () {
                     loadProperties("window sensor camera-sensor custom jtk-node", "Camera");
@@ -417,10 +409,6 @@ app.directive('envModelTool',
                     loadProperties("window sensor default-sensor custom jtk-node", undefined);
                 });
 
-                $('#sContainer').mousedown(function () {
-                    loadProperties("window as-container custom jtk-node", undefined);
-                });
-
                 /*
                  * Create an element to be drawn on the canvas
                  */
@@ -446,7 +434,7 @@ app.directive('envModelTool',
                         }
 
                         // Append the data to the element
-                        if (node.nodeType == "device") {
+                        if (node.nodeType === "device") {
                             element.append("<div class=\"ep\"></div>");
                             element.data("id", node.id);
                             element.data("name", node.name);
@@ -457,7 +445,7 @@ app.directive('envModelTool',
                             element.data("password", node.password);
                             element.data("rsaKey", node.rsaKey);
                             element.data("regError", node.regError);
-                        } else if (node.nodeType == "actuator" || node.nodeType == "sensor") {
+                        } else if (node.nodeType === "actuator" || node.nodeType === "sensor") {
                             element.data("id", node.id);
                             element.data("name", node.name);
                             element.data("type", node.type);
@@ -467,9 +455,6 @@ app.directive('envModelTool',
                             element.data("deployed", node.deployed);
                             element.data("regError", node.regError);
                             element.data("depError", node.depError);
-                        } else if (node.nodeType == "as-container") {
-                            // Append the children/elements
-                            element.data("containerNodes", node.containerNodes);
                         }
                     } else { // Use properties on drop
                         element.addClass(properties.clsName);
@@ -478,10 +463,13 @@ app.directive('envModelTool',
                             'top': properties.top,
                             'left': properties.left
                         });
+
                         // Increase the size of room
-                        if (properties.clsName.indexOf("room-floorplan") > -1) {
-                            element.outerWidth("250px");
-                            element.outerHeight("250px");
+                        if (element.hasClass("room-floorplan")) {
+                            element.css({width: '50px', height: '50px'}).animate({
+                                width: '250px',
+                                height: '250px'
+                            }, 1000);
                         }
                         // Add connection square on device
                         if (properties.clsName.indexOf("device") > -1) {
@@ -508,34 +496,6 @@ app.directive('envModelTool',
                         filter: ".ui-resizable-handle"
                     });
 
-                    // If the container is the element to draw
-                    if ($element.attr("class").indexOf("as-container") > -1) {
-                        // Make the container droppable; accept only sensors and actuators
-                        $element.droppable({
-                            accept: ".actuator, .sensor",
-                            drop: function (event, ui) {
-                                element.css({
-                                    'top': ui.offset.top - $(this).offset().top,
-                                    'left': ui.offset.left - $(this).offset().left
-                                });
-                                $element.append(element);
-                            }
-                        });
-
-                        // If the container contains elements, create and add them
-                        if ($element.data("containerNodes")) {
-                            let containerNodes = $element.data("containerNodes");
-                            containerNodes.forEach(function (value, index, array) {
-                                let nodeElement = createElement(value.elementId, value);
-                                $element.append(nodeElement);
-                                addEndpoints(nodeElement);
-                            });
-                        }
-
-                        $element.scroll(function () {
-                            jsPlumbInstance.repaintEverything();
-                        });
-                    }
                     addEndpoints($element);
                     makeResizable(".custom");
                 }
@@ -569,19 +529,14 @@ app.directive('envModelTool',
 
                     // Add the colored outline
                     $(this).addClass("clicked-element");
-                    if ($(this).attr("class").indexOf("room-floorplan") > -1) {
-                        $(this).css({
-                            'outline': "2px solid #4863A0"
-                        });
-                    }
                 });
 
                 // Rotate the element on double click
                 $(document).on('dblclick', ".jtk-node", function () {
-                    if ($(this).attr("class").indexOf("room-floorplan") === -1 &&
-                        $(this).attr("class").indexOf("as-container") === -1) {
-                        setAngle($(this), true);
+                    if ($(this).hasClass("free-resize")) {
+                        return;
                     }
+                    setAngle($(this), true);
                 });
 
                 /*
@@ -1030,10 +985,7 @@ app.directive('envModelTool',
                                 rsaKey: $element.data("rsaKey"),
                                 regError: $element.data("regError")
                             });
-                        } else if (type == "actuator" || type == "sensor") {
-                            let parent = $($element.parent());
-                            // Do not add if parent is container - the elements are added below
-                            if (parent.attr("class").indexOf("as-container") == -1) {
+                        } else if (type === "actuator" || type === "sensor") {
                                 nodes.push({
                                     nodeType: type,
                                     elementId: $element.attr('id'),
@@ -1053,43 +1005,6 @@ app.directive('envModelTool',
                                     regError: $element.data("regError"),
                                     depError: $element.data("depError")
                                 });
-                            }
-                        } else if (type == "as-container") {
-                            let containerNodes = [];
-                            // Get the chlidren from the container, which are sensors and actuators
-                            $element.children(".jtk-node").each(function (indexC, elementC) {
-                                let $elementC = $(elementC);
-                                containerNodes.push({
-                                    nodeType: $elementC.attr('class').toString().split(" ")[1],
-                                    elementId: $elementC.attr('id'),
-                                    clsName: $elementC.attr('class').toString(),
-                                    positionX: parseInt($elementC.css("left"), 10),
-                                    positionY: parseInt($elementC.css("top"), 10),
-                                    width: $elementC.outerWidth(),
-                                    height: $elementC.outerHeight(),
-                                    angle: $elementC.data("angle"),
-                                    id: $elementC.data("id"),
-                                    name: $elementC.data("name"),
-                                    type: $elementC.data("type"),
-                                    adapter: $elementC.data("adapter"),
-                                    device: $elementC.data("device"),
-                                    deviceId: $elementC.data("deviceId"),
-                                    deployed: $elementC.data("deployed"),
-                                    regError: $elementC.data("regError"),
-                                    depError: $elementC.data("depError")
-                                });
-                            });
-                            nodes.push({
-                                nodeType: type,
-                                elementId: $element.attr('id'),
-                                clsName: $element.attr('class').toString(),
-                                positionX: parseInt($element.css("left"), 10),
-                                positionY: parseInt($element.css("top"), 10),
-                                width: $element.outerWidth(),
-                                height: $element.outerHeight(),
-                                angle: $element.data("angle"),
-                                containerNodes: containerNodes
-                            });
                         } else { // Floorplans
                             nodes.push({
                                 nodeType: type,
@@ -1691,10 +1606,6 @@ app.directive('envModelTool',
                     '<div class="window actuator default-actuator" id="defaultActuator"></div>' +
                     '<p><strong>Default actuator</strong></p>' +
                     '</li>' +
-                    '<li>' +
-                    '<div class="window as-container" id="aContainer"></div>' +
-                    '<p><strong>Container</strong></p>' +
-                    '</li>' +
                     '</ul>' +
                     '</div>' +
                     '</div>' +
@@ -1761,10 +1672,6 @@ app.directive('envModelTool',
                     '<li>' +
                     '<div class="window sensor default-sensor" id="defaultSensor"></div>' +
                     '<p><strong>Default sensor</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window as-container" id="sContainer"></div>' +
-                    '<p><strong>Container</strong></p>' +
                     '</li>' +
                     '</ul>' +
                     '</div>' +
