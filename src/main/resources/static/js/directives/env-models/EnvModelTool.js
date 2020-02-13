@@ -109,7 +109,7 @@ app.directive('envModelTool',
                     let rotateOptions = {
                         handleOffset: {'top': 5, 'left': 5},
                         snap: true,
-                        step: 20
+                        step: 22.5
                     };
 
                     element.rotatable(rotateOptions);
