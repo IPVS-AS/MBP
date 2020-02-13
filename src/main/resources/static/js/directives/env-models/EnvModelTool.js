@@ -17,7 +17,7 @@ app.directive('envModelTool',
                 let properties = {}; // keeps the properties of each element to draw on canvas
                 let element = ""; // the element which will be appended to the canvas
                 let clicked = false; // true if an element from the palette was clicked
-                let resizing = false; //Remembers if the user is currently resizing an element
+                let isMoving = false; //Remembers if the user is currently moving or modifying an element
                 let deletionPromises = [];
 
                 //Expose fields for template
@@ -108,6 +108,11 @@ app.directive('envModelTool',
 
                     let rotateOptions = {
                         handleOffset: {'top': 5, 'left': 5},
+                        rotate: function (el) {
+                            jsPlumbInstance.revalidate(el);
+                        },
+                        start: () => (isMoving = true),
+                        stop: () => (isMoving = false),
                         snap: true,
                         step: 22.5
                     };
@@ -131,9 +136,9 @@ app.directive('envModelTool',
                     element.resizable({
                         //Check if aspect ratio needs to be preserved
                         aspectRatio: (!element.hasClass("free-resize")),
-                        start: (event, ui) => {
-                        },
                         resize: (event, ui) => jsPlumbInstance.revalidate(ui.helper),
+                        start: (event, ui) => (isMoving = true),
+                        stop: (event, ui) => (isMoving = false),
                         handles: "all"
                     });
                 }
@@ -533,12 +538,13 @@ app.directive('envModelTool',
 
                 // In case the diagram container is clicked
                 DIAGRAM_CONTAINER.on("click", function (event) {
+                    //Ensure that user is not currently moving an element
+                    if(isMoving){
+                        return;
+                    }
                     let element = $(event.target).filter('.jtk-node');
                     focusElement(element);
                 });
-
-                // Rotate the element on double click
-                DIAGRAM_CONTAINER.on("dblclick", ".jtk-node:not(.free-resize)", () => setAngle($(this), true));
 
                 // In case a key is pressed
                 $(document).on("keydown", function (event) {
@@ -1196,7 +1202,7 @@ app.directive('envModelTool',
                         let $element = $(element);
                         let type = $element.attr('class').toString().split(" ")[1];
 
-                        if (type == "device" && !$element.data("id")) {
+                        if (type === "device" && !$element.data("id")) {
                             let item = {};
                             item.name = $element.data("name");
                             item.componentType = $element.data("type");
