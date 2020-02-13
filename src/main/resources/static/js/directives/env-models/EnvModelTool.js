@@ -10,12 +10,14 @@ app.directive('envModelTool',
         function (ENDPOINT_URI, $timeout, $q, $controller, ModelService, ComponentService, DeviceService, CrudService) {
 
             function initJSPlumb(scope) {
+                const DIAGRAM_CONTAINER = $("#myDiagram");
                 let jsPlumbInstance;
                 let canvasId = "#canvas";
                 let elementIdCount = 0; // used for canvas ID uniquness
                 let properties = {}; // keeps the properties of each element to draw on canvas
                 let element = ""; // the element which will be appended to the canvas
                 let clicked = false; // true if an element from the palette was clicked
+                let resizing = false; //Remembers if the user is currently resizing an element
                 let deletionPromises = [];
 
                 //Expose fields for template
@@ -92,23 +94,46 @@ app.directive('envModelTool',
                     allowLoopback: false
                 };
 
-                /*
-                 * jQuery makes the element with the given ID resizable
+                /**
+                 * Makes the given element rotatable.
+                 *
+                 * @param element The element to rotate
                  */
-                function makeResizable(id) {
-                    //Find elements
-                    let elements = $(id);
+                function makeRotatable(element) {
+                    //Check if rotatability may be just enabled again
+                    if (element.has(".ui-rotatable-handle").length) {
+                        element.rotatable("enable").find('.ui-rotatable-handle').show();
+                        return;
+                    }
+
+                    let rotateOptions = {
+                        handleOffset: {'top': 5, 'left': 5},
+                        snap: true,
+                        step: 20
+                    };
+
+                    element.rotatable(rotateOptions);
+                }
+
+                /*
+                 * jQuery makes the given element resizable.
+                 *
+                 * @param element The element to resize
+                 */
+                function makeResizable(element) {
+                    //Check if resizability may be just enabled again
+                    if (element.hasClass("ui-resizable-disabled")) {
+                        element.resizable("enable");
+                        return;
+                    }
 
                     //Make element resizable
-                    elements.resizable({
+                    element.resizable({
                         //Check if aspect ratio needs to be preserved
-                        aspectRatio: (!elements.hasClass("free-resize")),
+                        aspectRatio: (!element.hasClass("free-resize")),
                         start: (event, ui) => {
-                            $(".close-icon").hide();
-                            elements.css('outline', '2px solid grey');
                         },
                         resize: (event, ui) => jsPlumbInstance.revalidate(ui.helper),
-                        stop: (event, ui) => elements.css('outline', 'none'),
                         handles: "all"
                     });
                 }
@@ -194,9 +219,8 @@ app.directive('envModelTool',
                             elementIdCount++;
                             let id = "canvasWindow" + elementIdCount;
                             // Create and draw the element in the canvas
-                            element = createElement(id, undefined);
+                            element = createElement(id);
                             drawElement(element);
-                            // element = "";
                         }
                     }
                 });
@@ -409,80 +433,73 @@ app.directive('envModelTool',
                     loadProperties("window sensor default-sensor custom jtk-node", undefined);
                 });
 
-                /*
-                 * Create an element to be drawn on the canvas
+                /**
+                 * Create an element to be drawn on the canvas with a certain id.
                  */
-                function createElement(id, node) {
+                function createElement(id) {
                     //Create element
-                    let element = $('<div>').attr('id', id);
+                    let element = $('<div>').attr('id', id).addClass(properties.clsName);
 
-                    if (node) { // Use node for loaded model
-                        element.addClass(node.clsName);
-                        // The position to create the element
-                        element.css({
-                            'top': node.positionY,
-                            'left': node.positionX
-                        });
-                        // Define the size of the element
-                        element.outerWidth(node.width);
-                        element.outerHeight(node.height);
+                    // The position to create the dropped element
+                    element.css({
+                        'top': properties.top,
+                        'left': properties.left
+                    });
 
-                        // Set rotation angle; no need for room
-                        if (node.angle && (node.clsName.indexOf("free-resize") === -1)) {
-                            element.data("angle", node.angle);
-                            setAngle(element, false);
-                        }
-
-                        // Append the data to the element
-                        if (node.nodeType === "device") {
-                            element.append("<div class=\"ep\"></div>");
-                            element.data("id", node.id);
-                            element.data("name", node.name);
-                            element.data("type", node.type);
-                            element.data("mac", node.mac);
-                            element.data("ip", node.ip);
-                            element.data("username", node.username);
-                            element.data("password", node.password);
-                            element.data("rsaKey", node.rsaKey);
-                            element.data("regError", node.regError);
-                        } else if (node.nodeType === "actuator" || node.nodeType === "sensor") {
-                            element.data("id", node.id);
-                            element.data("name", node.name);
-                            element.data("type", node.type);
-                            element.data("adapter", node.adapter);
-                            element.data("device", node.device);
-                            element.data("deviceId", node.deviceId);
-                            element.data("deployed", node.deployed);
-                            element.data("regError", node.regError);
-                            element.data("depError", node.depError);
-                        }
-                    } else { // Use properties on drop
-                        element.addClass(properties.clsName);
-                        // The position to create the dropped element
-                        element.css({
-                            'top': properties.top,
-                            'left': properties.left
-                        });
-
-                        // Increase the size of room
-                        if (element.hasClass("room-floorplan")) {
-                            element.css({width: '50px', height: '50px'}).animate({
-                                width: '250px',
-                                height: '250px'
-                            }, 1000);
-                        }
-                        // Add connection square on device
-                        if (properties.clsName.indexOf("device") > -1) {
-                            element.append("<div class=\"ep\"></div>");
-                        }
-
-                        if (properties.type) {
-                            element.data("type", properties.type);
-                        }
+                    // Increase the size of room
+                    if (element.hasClass("room-floorplan")) {
+                        element.css({width: '50px', height: '50px'}).animate({
+                            width: '250px',
+                            height: '250px'
+                        }, 1000);
+                    }
+                    // Add connection square on device
+                    if (properties.clsName.indexOf("device") > -1) {
+                        element.append("<div class=\"ep\"></div>");
                     }
 
-                    // Append the close icon, which is used to delete the element
-                    element.append("<i style='display: none' class=\"fa fa-times fa-lg close-icon\"><\/i>");
+                    if (properties.type) {
+                        element.data("type", properties.type);
+                    }
+
+                    //Put focus on new element
+                    focusElement(element);
+
+                    return element;
+                }
+
+
+                /**
+                 * Create an element from a given node to be drawn on the canvas with a certain id.
+                 */
+                function createElementFromNode(id, node) {
+                    //Create element
+                    let element = $('<div>').attr('id', id).addClass(node.clsName);
+
+                    // The position to create the element
+                    element.css({
+                        'top': node.positionY,
+                        'left': node.positionX
+                    });
+
+                    // Define the size of the element
+                    element.outerWidth(node.width);
+                    element.outerHeight(node.height);
+
+                    // Set rotation angle; no need for room
+                    if (node.angle && (node.clsName.indexOf("free-resize") === -1)) {
+                        element.data("angle", node.angle);
+                        setAngle(element, false);
+                    }
+
+                    // Append the data to the element
+                    element.data(node);
+
+                    //Append ep if device
+                    if (node.nodeType === "device") {
+                        element.append("<div class=\"ep\"></div>");
+                    }
+
                     return element;
                 }
 
@@ -497,7 +514,6 @@ app.directive('envModelTool',
                     });
 
                     addEndpoints($element);
-                    makeResizable(".custom");
                 }
 
                 /*
@@ -515,29 +531,61 @@ app.directive('envModelTool',
                     }
                 }
 
-                // When the element on the canvas is clicked
-                $(document).on("click", ".jtk-node", function () {
-                    // Load the corresponding data to show it in the tool
-                    loadData($(this));
-
-                    // Show the close icon
-                    let marginLeft = $(this).outerWidth() + 6 + "px";
-                    $(".close-icon").prop("title", "Delete the element");
-                    $(this).find("i").css({
-                        'margin-left': marginLeft
-                    }).show();
-
-                    // Add the colored outline
-                    $(this).addClass("clicked-element");
+                // In case the diagram container is clicked
+                DIAGRAM_CONTAINER.on("click", function (event) {
+                    let element = $(event.target).filter('.jtk-node');
+                    focusElement(element);
                 });
 
                 // Rotate the element on double click
-                $(document).on('dblclick', ".jtk-node", function () {
-                    if ($(this).hasClass("free-resize")) {
+                DIAGRAM_CONTAINER.on("dblclick", ".jtk-node:not(.free-resize)", () => setAngle($(this), true));
+
+                // In case a key is pressed
+                $(document).on("keydown", function (event) {
+                    //Require DEL key
+                    if (event.which !== 46) {
                         return;
                     }
-                    setAngle($(this), true);
+
+                    //Get elements with focus and iterate over them
+                    $('.clicked-element').each(function () {
+                        deleteElement($(this));
+                    });
                 });
+
+                // When the canvas is clicked, save the data from the input fields to the corresponding element
+                $(canvasId).on('click', function (e) {
+                    saveData();
+                });
+
+                /**
+                 * Puts the focus on a given element while removing the focus of all other elements. Focused
+                 * elements become resizable.
+                 * @param element The element to focus; null, of no element is suppoesd to be focused
+                 */
+                function focusElement(element) {
+                    //Get all focused elements and remove focus, resizability and rotatability
+                    $('.clicked-element').removeClass('clicked-element').resizable("disable")
+                        .rotatable("disable").find('.ui-rotatable-handle').hide();
+
+                    //Check if a new focus element was provided
+                    if ((element === null) || (element.length < 1)) {
+                        return;
+                    }
+
+                    // Load the corresponding data to show it in the tool
+                    loadData(element);
+
+                    //Make element resizable
+                    makeResizable(element);
+
+                    //Make element rotatable
+                    makeRotatable(element);
+
+                    // Put focus on element
+                    element.addClass("clicked-element");
+                }
+
 
                 /*
                  * Rotate the element with css
@@ -563,20 +611,16 @@ app.directive('envModelTool',
                     }
                 }
 
-                // When the canvas is clicked, save the data from the input fields to the corresponding element
-                $(canvasId).on('click', function (e) {
-                    saveData();
-                });
-
-
-                // When the close icon is clicked to delete the element, first undeploy and deregister
-                $(document).on("click", ".close-icon", function () {
+                /**
+                 * Undeploys, unregisters and deletes an element.
+                 * @param element The element to delete
+                 */
+                function deleteElement(element) {
                     scope.processing = {};
                     scope.processing.status = true;
                     scope.processing.finished = false;
                     scope.processing.undeployedDeregistered = true;
 
-                    let element = $(this).parent();
                     let type = element.attr('class').toString().split(" ")[1];
 
                     if (type === "device" && element.data("id")) { // Case: A device has attached sensors and actuators, which are deployed or registered
@@ -620,7 +664,7 @@ app.directive('envModelTool',
                             scope.processing.status = false;
                         }
                     }
-                });
+                }
 
                 /*
                  * Undeploy and deregister the element
@@ -880,10 +924,7 @@ app.directive('envModelTool',
                     $timeout(function () {
                         scope.clickedComponent = {};
                     });
-                    $(".close-icon").hide();
-                    $(".jtk-node").removeClass("clicked-element").css({
-                        'outline': "none"
-                    });
+                    focusElement(null);
                 }
 
                 /*
@@ -910,7 +951,7 @@ app.directive('envModelTool',
                     let environment = JSON.parse(scope.currentModel.value);
                     // Draw first the nodes
                     $.each(environment.nodes, function (index, node) {
-                        element = createElement(node.elementId, node);
+                        element = createElementFromNode(node.elementId, node);
                         drawElement(element);
                         element = "";
                     });
@@ -986,25 +1027,25 @@ app.directive('envModelTool',
                                 regError: $element.data("regError")
                             });
                         } else if (type === "actuator" || type === "sensor") {
-                                nodes.push({
-                                    nodeType: type,
-                                    elementId: $element.attr('id'),
-                                    clsName: $element.attr('class').toString(),
-                                    positionX: parseInt($element.css("left"), 10),
-                                    positionY: parseInt($element.css("top"), 10),
-                                    width: $element.outerWidth(),
-                                    height: $element.outerHeight(),
-                                    angle: $element.data("angle"),
-                                    id: $element.data("id"),
-                                    name: $element.data("name"),
-                                    type: $element.data("type"),
-                                    adapter: $element.data("adapter"),
-                                    device: $element.data("device"),
-                                    deviceId: $element.data("deviceId"),
-                                    deployed: $element.data("deployed"),
-                                    regError: $element.data("regError"),
-                                    depError: $element.data("depError")
-                                });
+                            nodes.push({
+                                nodeType: type,
+                                elementId: $element.attr('id'),
+                                clsName: $element.attr('class').toString(),
+                                positionX: parseInt($element.css("left"), 10),
+                                positionY: parseInt($element.css("top"), 10),
+                                width: $element.outerWidth(),
+                                height: $element.outerHeight(),
+                                angle: $element.data("angle"),
+                                id: $element.data("id"),
+                                name: $element.data("name"),
+                                type: $element.data("type"),
+                                adapter: $element.data("adapter"),
+                                device: $element.data("device"),
+                                deviceId: $element.data("deviceId"),
+                                deployed: $element.data("deployed"),
+                                regError: $element.data("regError"),
+                                depError: $element.data("depError")
+                            });
                         } else { // Floorplans
                             nodes.push({
                                 nodeType: type,
@@ -1421,7 +1462,7 @@ app.directive('envModelTool',
                 jsPlumb.ready(initFunction);
             };
 
-            //Configure and expose the directive
+//Configure and expose the directive
             return {
                 restrict: 'E', //Elements only
                 template:
@@ -1863,4 +1904,5 @@ app.directive('envModelTool',
                 }
             };
         }]
-);
+)
+;

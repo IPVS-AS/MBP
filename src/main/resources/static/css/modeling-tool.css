@@ -58,7 +58,7 @@
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
-/* --- jsPlumb demo ----------------------------------------------------------------------------------- */
+/* --- jsPlumb ---------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------- */
 .jtk-main {
     background-color: #dce0e8;
@@ -269,18 +269,66 @@ li {
     width: 50px;
     height: 50px;
     line-height: 40px;
-    cursor: pointer;
-    -webkit-transition: -webkit-box-shadow 0.15s ease-in;
-    -moz-transition: -moz-box-shadow 0.15s ease-in;
-    -o-transition: -o-box-shadow 0.15s ease-in;
-    transition: box-shadow 0.15s ease-in;
 }
 
-.modeling-tool .window:hover {
-    box-shadow: 2px 2px 19px #444;
-    -o-box-shadow: 2px 2px 19px #444;
-    -webkit-box-shadow: 2px 2px 19px #444;
-    -moz-box-shadow: 2px 2px 19px #444;
+.modeling-tool .window:not(.custom) {
+    cursor: pointer;
+}
+
+.modeling-tool .window.custom {
+    cursor: move;
+}
+
+.modeling-tool .window .ui-resizable-handle {
+    width: 12px;
+    height: 12px;
+    border-radius: 20px;
+    background-color: #2196f3;
+    border: 1px solid white;
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-n {
+    left: calc(50% - 6px);
+    top: -7px;
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-e {
+    right: -7px;
+    top: calc(50% - 6px);
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-s {
+    left: calc(50% - 6px);
+    bottom: -7px;
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-w {
+    left: -7px;
+    top: calc(50% - 6px);
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-ne {
+    right: -7px;
+    top: -7px;
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-se {
+    right: -7px;
+    bottom: -7px;
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-sw {
+    left: -7px;
+    bottom: -7px;
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-nw {
+    left: -7px;
+    top: -7px;
+}
+
+.modeling-tool .window.clicked-element {
+    outline: 2px dashed #2196f3;
 }
 
 .custom {
@@ -322,14 +370,6 @@ li {
     cursor: text;
     font-size: 10px;
     z-index: 23;
-}
-
-.clicked-element {
-    box-shadow: 2px 2px 19px #444;
-    -o-box-shadow: 2px 2px 19px #444;
-    -webkit-box-shadow: 2px 2px 19px #444;
-    -moz-box-shadow: 2px 2px 19px #444;
-    border: 2px solid #4863A0;
 }
 
 .error-element {
@@ -379,13 +419,26 @@ li {
 }
 
 .room-floorplan {
-    border: 7px solid black;
-    -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
-    -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 0 0 3px white;
     text-align: center;
     display: inline-block;
     z-index: 2;
+    border: 7px solid black;
+}
+
+.room-floorplan .ui-resizable-handle.ui-resizable-n, .room-floorplan .ui-resizable-handle.ui-resizable-ne, .room-floorplan .ui-resizable-handle.ui-resizable-nw {
+    top: -14px !important;
+}
+
+.room-floorplan .ui-resizable-handle.ui-resizable-s, .room-floorplan .ui-resizable-handle.ui-resizable-se, .room-floorplan .ui-resizable-handle.ui-resizable-sw {
+    bottom: -14px !important;
+}
+
+.room-floorplan .ui-resizable-handle.ui-resizable-e, .room-floorplan .ui-resizable-handle.ui-resizable-ne, .room-floorplan .ui-resizable-handle.ui-resizable-se {
+    right: -14px !important;
+}
+
+.room-floorplan .ui-resizable-handle.ui-resizable-w, .room-floorplan .ui-resizable-handle.ui-resizable-nw, .room-floorplan .ui-resizable-handle.ui-resizable-sw {
+    left: -14px !important;
 }
 
 .wall-floorplan {
@@ -514,10 +567,6 @@ li {
     text-align: center;
     display: inline-block;
     z-index: 11;
-}
-
-.device:hover, .actuator:hover, .sensor:hover {
-    border: 2px solid grey;
 }
 
 /* --- Devices ------------------------------------------------------------------------------------------- */
