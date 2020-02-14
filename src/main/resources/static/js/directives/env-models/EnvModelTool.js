@@ -112,7 +112,7 @@ app.directive('envModelTool',
                             jsPlumbInstance.revalidate(el);
                         },
                         start: () => (isMoving = true),
-                        stop: () => (isMoving = false),
+                        stop: () => ($timeout(() => (isMoving = false), 200)),
                         snap: true,
                         step: 22.5
                     };
@@ -138,7 +138,7 @@ app.directive('envModelTool',
                         aspectRatio: (!element.hasClass("free-resize")),
                         resize: (event, ui) => jsPlumbInstance.revalidate(ui.helper),
                         start: (event, ui) => (isMoving = true),
-                        stop: (event, ui) => (isMoving = false),
+                        stop: () => ($timeout(() => (isMoving = false), 200)),
                         handles: "all"
                     });
                 }
@@ -539,7 +539,7 @@ app.directive('envModelTool',
                 // In case the diagram container is clicked
                 DIAGRAM_CONTAINER.on("click", function (event) {
                     //Ensure that user is not currently moving an element
-                    if(isMoving){
+                    if (isMoving) {
                         return;
                     }
                     let element = $(event.target).filter('.jtk-node');
@@ -930,7 +930,6 @@ app.directive('envModelTool',
                     $timeout(function () {
                         scope.clickedComponent = {};
                     });
-                    focusElement(null);
                 }
 
                 /*
