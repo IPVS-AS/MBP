@@ -367,6 +367,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
+
             //Monitoring adapters
             .when(viewPrefix + '/monitoring-adapters', {
                 category: 'monitoring-adapters',
@@ -411,6 +412,31 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
             // Error 404
             .when(viewPrefix + '/404', {
                 templateUrl: 'templates/404'
+            })
+
+            .when(viewPrefix + '/analytics', {
+                category: 'analytics',
+                templateUrl: 'templates/analytics',
+                controller: 'ModelsListController as ctrl',
+                resolve: {
+                    sensorList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('sensors');
+                    }],
+                    addSensor: ['CrudService', function (CrudService) {
+                        // bind category parameter
+                        return angular.bind(this, CrudService.addItem, 'sensors');
+                    }],
+                    deleteSensor: ['CrudService', function (CrudService) {
+                        // bind category parameter
+                        return angular.bind(this, CrudService.deleteItem, 'sensors');
+                    }],
+                    deviceList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('devices');
+                    }],
+                    adapterList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('adapters');
+                    }]
+                }
             })
 
             .otherwise({

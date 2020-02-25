@@ -1,0 +1,134 @@
+<div>
+    <!-- List of Sensors Card -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>Existing Models</h2>
+                </div>
+                <div class="align-right">
+                    <button id="add-button" type="button"
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float" data-toggle="modal"
+                            data-target="#addAnalyticsModal" data-backdrop="static" data-keyboard="false">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
+            </div>
+            <div class="body">
+                <table class="table table-hover" st-table="displayedCollection" st-safe-src="existingmodels">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th class="align-center">Type</th>
+                        <th>Algorithm</th>
+                        <th>Time Created</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                        <td>
+                            <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>
+                        </td>
+                        <td>{{item.algorithm}}</td>
+                        <td>{{item.type}}</td>
+                        <td>{{item.time}}</td>
+                        <td>
+                            <form ng-submit="deleteSensorCtrl.deleteItem()">
+                                <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                        ng-click="deleteSensorCtrl.item.id = item.id">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr ng-show="existingmodels.length === 0">
+                        <td>No Models Created.</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td class="text-center" st-pagination="" st-items-by-page="15" colspan="4"></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- #END# List of Sensors Card -->
+
+    <!-- Modal -->
+    <div class="modal fade" id="addAnalyticsModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create new Model
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+
+                </div>
+                <form id="addModelForm" ng-submit="addModelCtrl.addItem()">
+                    <fieldset id="model-form">
+                        <div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : addModelCtrl.item.errors.name }">
+                                <div class="form-line" ng-class="{'focused error' : addModelCtrl.item.errors.name }">
+                                    <input class="form-control" id="modal-header-form-input-name" type="text"
+                                           placeholder="Name" ng-model="addModelCtrl.item.name"/>
+                                </div>
+                            </div>
+                            <!-- item.componentType group -->
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <select class="form-control show-tick" id="model-form-select-type"
+                                            ng-model="modelselected" ng-options="type.name for type in modelType" ng-change="onChange()">
+                                        <option value="">Select Model Type</option>
+                                    </select>
+                                </div>
+                                <span class="help-block" ng-show="addModelCtrl.item.errors.componentType">{{addModelCtrl.item.errors.componentType.message}}</span>
+                            </div>
+                            <!-- item.adpter group -->
+                            <div class="form-group" ng-class="{'has-error' : addModelCtrl.item.errors.adapter }">
+                                <div class="form-line">
+                                    <select class="form-control show-tick" id="model-form-select-type"
+                                            ng-model="algorithmsselected" ng-options="algorithm.name for algorithm in algorithms">
+                                        <option value="">Select Algorithm</option>
+                                    </select>
+                                </div>
+                                <span class="help-block" ng-show="addModelCtrl.item.errors.adapter">{{addModelCtrl.item.errors.adapter.message}}</span>
+                            </div>
+                            <div class="form-group" ng-if="showTimeTextbox === 'Stream Mining'" >
+                                    <div class="form-line" ng-class="{'focused error' : addModelCtrl.item.errors.name }">
+                                        <input class="form-control" id="modal-header-form-input-name" type="text"
+                                               placeholder="Time to run (in days)" ng-model="time_in_days"/>
+                                    </div>
+                            </div>
+                            <!-- item.device group -->
+                            <div class="form-group" ng-class="{'has-error' : addModelCtrl.item.errors.device }">
+                                <div class="form-line">
+                                    <select class="form-control show-tick" id="model-form-select-type"
+                                            ng-model="sensorselected" ng-options="sensor.name for sensor in sensors">
+                                        <option value="">Select Sensor</option>
+                                    </select>
+                                </div>
+                                <span class="help-block" ng-show="addModelCtrl.item.errors.device">{{addModelCtrl.item.errors.device.message}}</span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Create Model</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- #END# Modal -->
+</div>
