@@ -148,10 +148,10 @@ app.directive('envModelTool',
                  */
                 function makeDraggable(id, className) {
                     $(id).draggable({
-                        helper: function () {
+                        helper: () => {
                             return $("<div/>", {
                                 class: className
-                            });
+                            })
                         },
                         revert: false
                     });

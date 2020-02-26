@@ -3,9 +3,7 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="header">
-                <div class="col-lg-6">
-                    <h2>Environment Models</h2>
-                </div>
+                <h2>Environment Models</h2>
                 <div class="align-right">
                     <button id="add-button" type="button" data-toggle="collapse" data-target="#add-model-card"
                             class="btn bg-blue btn-circle waves-effect waves-circle waves-float">
@@ -72,11 +70,51 @@
     <div class="col-lg-12">
         <div id="add-model-card" class="card collapse">
             <div class="header">
-                <div class="col-lg-6">
-                    <h2>IoT Environment Modelling Tool</h2>
-                </div>
+                <h2>
+                    IoT Environment Modelling Tool
+                    <small>Model your IoT environment.</small>
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a href="javascript:void(0);" data-toggle="cardloading" data-loading-effect="timer" style="">
+                            <i class="material-icons" ng-style="{'color': (true ? 'red' : '')}">save</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0);" data-toggle="cardloading" data-loading-effect="timer" style="">
+                            <i class="material-icons">undo</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0);" data-toggle="cardloading" data-loading-effect="timer" style="">
+                            <i class="material-icons">redo</i>
+                        </a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                           aria-haspopup="true" aria-expanded="false">
+                            <i class="material-icons">more_vert</i>
+                        </a>
+                        <ul class="dropdown-menu pull-right">
+                            <li><a href="javascript:void(0);" class=" waves-effect waves-block">Export</a></li>
+                            <li><a href="javascript:void(0);" class=" waves-effect waves-block">Import</a></li>
+                        </ul>
+                    </li>
+                </ul>
             </div>
             <div class="body">
+                <form>
+                    <fieldset>
+                        <div class="form-group" ng-class="{'has-error' : false }">
+                            <label for="modelNameInput">Model name:</label>
+                            <div class="form-line" ng-class="{'focused error' : false }">
+                                <input class="form-control" type="text" placeholder="Name" ng-model="ctrl.modelName"
+                                       id="modelNameInput"/>
+                            </div>
+                            <span class="help-block" ng-show="addActuatorCtrl.item.errors.name">{{""}}</span>
+                        </div>
+                    </fieldset>
+                </form>
                 <env-model-tool api="ctrl.envModelToolApi"></env-model-tool>
             </div>
         </div>
