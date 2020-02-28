@@ -3,44 +3,51 @@
 /**
  * Provides services for managing rules.
  */
-app.factory('AnalyticsService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
-    function ($http, $resource, $q, ENDPOINT_URI) {
+app.factory('AnalyticsService', ['$http', '$resource', '$q',
+    function ($http, $resource, $q) {
         //URLs for server requests
-        const URL_GEt_RULE_ACTION_TYPES = ENDPOINT_URI + '/rule-actions/types';
-        const URL_TEST_RULE_ACTION = ENDPOINT_URI + '/rule-actions/test/';
-        const URL_ENABLE_RULE = ENDPOINT_URI + '/rules/enable/';
-        const URL_DISABLE_RULE = ENDPOINT_URI + '/rules/disable/';
+        const ANALYTICS_SERVER = 'http://localhost:5000'
+        const GET_ALL_MODELS = ANALYTICS_SERVER + '/getmodels';
+        const CREATE_NEW_MODEL = ANALYTICS_SERVER + '/createmodel?';
+        const GET_STREAM_ALGORITHMS = ANALYTICS_SERVER + '/getstreamalgorithms';
+        const GET_BATCH_ALGORITHMS = ANALYTICS_SERVER + '/getbatchalgorithms';
 
-
-        var existingmodels = [{"id": 1, "name": "Electricity", "algorithm": "Regression", "type": "Str", "time": "23542"}, 
-            {"id": 2, "name": "Temperature", "algorithm": "Regression", "type": "Str", "time": "23542"}]; 
+        var existingmodels = [{"name": "Electricity", "algorithm": "Regression", "type": "Str", "time": "23542"}, 
+            {"name": "Temperature", "algorithm": "Regression", "type": "Str", "time": "23542"}]; 
 
         var modelType = [{"id": 1, "name": "Stream Mining"}, 
             {"id": 2, "name": "Batch Processing"}];
 
-        var batchAlgo = ["Regression", "Classification"];
-
-        var streamAlgo = ["KNN", "Stream K means"];    
 
         function getExistingModels() {
-            return existingmodels;
+            return $http.get(GET_ALL_MODELS);
         }
         function getModelTypes() {
             return modelType;
         }
+
         function getBatchAlgorithms() {
-            return batchAlgo;
-        }
-        function getStreamAlgorithms() {
-            return streamAlgo;
-        }
-        function createBatchModel(name, algorithm, sensorid){
-            console.log('got batch request');
-        }
-        function createStreamModel(name, algorithm, sensorid, time){
-            console.log('got stream request');
+            return $http.get(GET_BATCH_ALGORITHMS);
         }
 
+        function getStreamAlgorithms() {
+            return $http.get(GET_STREAM_ALGORITHMS);
+        }
+
+        function createBatchModel(name, algorithm, sensorid){
+            console.log('got batch request');
+            console.log(name);
+            console.log(algorithm);
+            console.log(sensorid);
+            console.log(CREATE_NEW_MODEL + 'algorithm=' + algorithm + '&sensorid=' + sensorid + '&name=' + name);
+            return $http.post(CREATE_NEW_MODEL + 'algorithm=' + algorithm + '&sensorid=' + sensorid + '&name=' + name);
+        }
+
+        function createStreamModel(name, algorithm, sensorid, time){
+            console.log('got stream request');
+            console.log(CREATE_NEW_MODEL + 'algorithm=' + algorithm + '&sensorid=' + sensorid + '&name=' + name + '&time=' + time);
+            return $http.post(CREATE_NEW_MODEL+'algorithm='+algorithm+'&sensorid='+sensorid+'&name='+name+'&time=' + time);
+        }
 
 
         //Expose public methods

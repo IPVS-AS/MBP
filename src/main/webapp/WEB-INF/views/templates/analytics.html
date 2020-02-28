@@ -19,18 +19,18 @@
                     <thead>
                     <tr>
                         <th>Name</th>
-                        <th class="align-center">Type</th>
+                        <th>Type</th>
                         <th>Algorithm</th>
                         <th>Time Created</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                    <tr id="{{item.name}}" ng-repeat="item in displayedCollection">
                         <td>
                             <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>
                         </td>
-                        <td>{{item.algorithm}}</td>
                         <td>{{item.type}}</td>
+                        <td>{{item.algorithm}}</td>
                         <td>{{item.time}}</td>
                         <td>
                             <form ng-submit="deleteSensorCtrl.deleteItem()">
@@ -96,7 +96,7 @@
                             <div class="form-group" ng-class="{'has-error' : addModelCtrl.item.errors.adapter }">
                                 <div class="form-line">
                                     <select class="form-control show-tick" id="model-form-select-type"
-                                            ng-model="algorithmsselected" ng-options="algorithm for algorithm in algorithms">
+                                            ng-model="algorithmsselected" ng-options="algorithm.name for algorithm in algorithms">
                                         <option value="">Select Algorithm</option>
                                     </select>
                                 </div>

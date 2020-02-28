@@ -7,13 +7,16 @@ app.controller('ModelsListController',
     ['$scope','sensorList', 'AnalyticsService',
         function ($scope, sensorList, AnalyticsService) {   
 
-            $scope.existingmodels = AnalyticsService.getExistingModels();
+            AnalyticsService.getExistingModels().then(function (response) {
+                            $scope.existingmodels = response.data;
+                            console.log($scope.existingmodels);
+                    });
 
             $scope.modelType = AnalyticsService.getModelTypes();
 
-            var batchAlgo = AnalyticsService.getBatchAlgorithms();
+            //var batchAlgo = AnalyticsService.getBatchAlgorithms();
 
-            var streamAlgo = AnalyticsService.getStreamAlgorithms();
+            //var streamAlgo = AnalyticsService.getStreamAlgorithms();
 
             $scope.algorithms = [];
 
@@ -24,10 +27,16 @@ app.controller('ModelsListController',
             $scope.onChange = function(){
                 $scope.showTimeTextbox = $scope.modelselected.name;
                 if ($scope.modelselected.name === 'Stream Mining') {
-                       $scope.algorithms = streamAlgo ;
+                       AnalyticsService.getStreamAlgorithms().then(function (response) {
+                            $scope.algorithms = response.data;
+                    });
+                       console.log($scope.algorithms);
                        $scope.showTimeTextbox = true;
                   } else {
-                    $scope.algorithms = batchAlgo;
+                    AnalyticsService.getBatchAlgorithms().then(function (response) {
+                            $scope.algorithms = response.data;
+                    });
+                    console.log($scope.algorithms);
                     $scope.showTimeTextbox = false;
                   }
             }
