@@ -71,7 +71,7 @@
                     </h5>
 
                 </div>
-                <form id="addModelForm" ng-submit="addModelCtrl.addItem()">
+                <form id="addModelForm" ng-submit="addModel()">
                     <fieldset id="model-form">
                         <div class="modal-body">
                             <!-- "global" error for addItem -->
@@ -79,7 +79,7 @@
                             <div class="form-group" ng-class="{'has-error' : addModelCtrl.item.errors.name }">
                                 <div class="form-line" ng-class="{'focused error' : addModelCtrl.item.errors.name }">
                                     <input class="form-control" id="modal-header-form-input-name" type="text"
-                                           placeholder="Name" ng-model="addModelCtrl.item.name"/>
+                                           placeholder="Name" ng-model="modelname"/>
                                 </div>
                             </div>
                             <!-- item.componentType group -->
@@ -96,19 +96,18 @@
                             <div class="form-group" ng-class="{'has-error' : addModelCtrl.item.errors.adapter }">
                                 <div class="form-line">
                                     <select class="form-control show-tick" id="model-form-select-type"
-                                            ng-model="algorithmsselected" ng-options="algorithm.name for algorithm in algorithms">
+                                            ng-model="algorithmsselected" ng-options="algorithm for algorithm in algorithms">
                                         <option value="">Select Algorithm</option>
                                     </select>
                                 </div>
                                 <span class="help-block" ng-show="addModelCtrl.item.errors.adapter">{{addModelCtrl.item.errors.adapter.message}}</span>
                             </div>
-                            <div class="form-group" ng-if="showTimeTextbox === 'Stream Mining'" >
-                                    <div class="form-line" ng-class="{'focused error' : addModelCtrl.item.errors.name }">
-                                        <input class="form-control" id="modal-header-form-input-name" type="text"
-                                               placeholder="Time to run (in days)" ng-model="time_in_days"/>
+                            <div class="form-group" ng-show="showTimeTextbox">
+                                    <div class="form-line">
+                                        <input class="form-control" id="model-form-time-in-days" type="text"
+                                               placeholder="Time to run (in days)" ng-model="timeInDays"/>
                                     </div>
                             </div>
-                            <!-- item.device group -->
                             <div class="form-group" ng-class="{'has-error' : addModelCtrl.item.errors.device }">
                                 <div class="form-line">
                                     <select class="form-control show-tick" id="model-form-select-type"

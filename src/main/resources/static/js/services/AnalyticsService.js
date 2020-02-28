@@ -18,18 +18,39 @@ app.factory('AnalyticsService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
         var modelType = [{"id": 1, "name": "Stream Mining"}, 
             {"id": 2, "name": "Batch Processing"}];
 
-        var algorithms = [{"id": 1, "name": "Regrssion"}, 
-            {"id": 2, "name": "Classification"}];
+        var batchAlgo = ["Regression", "Classification"];
+
+        var streamAlgo = ["KNN", "Stream K means"];    
 
         function getExistingModels() {
             return existingmodels;
+        }
+        function getModelTypes() {
+            return modelType;
+        }
+        function getBatchAlgorithms() {
+            return batchAlgo;
+        }
+        function getStreamAlgorithms() {
+            return streamAlgo;
+        }
+        function createBatchModel(name, algorithm, sensorid){
+            console.log('got batch request');
+        }
+        function createStreamModel(name, algorithm, sensorid, time){
+            console.log('got stream request');
         }
 
 
 
         //Expose public methods
         return {
-            getExistingModels: getExistingModels
+            getExistingModels: getExistingModels,
+            getModelTypes: getModelTypes,
+            getBatchAlgorithms: getBatchAlgorithms,
+            getStreamAlgorithms: getStreamAlgorithms,
+            createBatchModel: createBatchModel,
+            createStreamModel:createStreamModel
 
         }
     }

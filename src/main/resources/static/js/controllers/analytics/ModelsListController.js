@@ -9,30 +9,37 @@ app.controller('ModelsListController',
 
             $scope.existingmodels = AnalyticsService.getExistingModels();
 
-            $scope.modelType = [{"id": 1, "name": "Stream Mining"}, 
-            {"id": 2, "name": "Batch Processing"}];
+            $scope.modelType = AnalyticsService.getModelTypes();
 
-            var batchAlgo = [{"id": 1, "name": "Regrssion"}, 
-            {"id": 2, "name": "Classification"}];
+            var batchAlgo = AnalyticsService.getBatchAlgorithms();
 
-            var streamAlgo = [{"id": 1, "name": "KNN"}, 
-            {"id": 2, "name": "Stream K means"}];
+            var streamAlgo = AnalyticsService.getStreamAlgorithms();
 
             $scope.algorithms = [];
 
             $scope.sensors = sensorList;
 
-            $scope.showTimeTextbox = "";
+            $scope.showTimeTextbox = false;
 
             $scope.onChange = function(){
-                console.log('got change');
-                console.log($scope.modelselected.name);
                 $scope.showTimeTextbox = $scope.modelselected.name;
                 if ($scope.modelselected.name === 'Stream Mining') {
                        $scope.algorithms = streamAlgo ;
+                       $scope.showTimeTextbox = true;
                   } else {
                     $scope.algorithms = batchAlgo;
+                    $scope.showTimeTextbox = false;
                   }
+            }
+
+            $scope.addModel = function(){
+                console.log('got form');
+                console.log($scope.algorithmsselected)
+                if ($scope.modelselected.name === 'Batch Processing') {
+                    AnalyticsService.createBatchModel($scope.modelname, $scope.algorithmsselected.name, $scope.sensorselected.id);   
+                  } else if ($scope.modelselected.name === 'Stream Mining'){
+                    AnalyticsService.createStreamModel($scope.modelname, $scope.algorithmsselected.name, $scope.sensorselected.id, $scope.timeInDays);
+                  }                
             }
         }
     ]);
