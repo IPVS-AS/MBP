@@ -11,6 +11,7 @@ app.factory('AnalyticsService', ['$http', '$resource', '$q',
         const CREATE_NEW_MODEL = ANALYTICS_SERVER + '/createmodel?';
         const GET_STREAM_ALGORITHMS = ANALYTICS_SERVER + '/getstreamalgorithms';
         const GET_BATCH_ALGORITHMS = ANALYTICS_SERVER + '/getbatchalgorithms';
+        const GET_MODEL_STATISTICS = ANALYTICS_SERVER + '/getstatistics?'
 
         var existingmodels = [{"name": "Electricity", "algorithm": "Regression", "type": "Str", "time": "23542"}, 
             {"name": "Temperature", "algorithm": "Regression", "type": "Str", "time": "23542"}]; 
@@ -35,20 +36,19 @@ app.factory('AnalyticsService', ['$http', '$resource', '$q',
         }
 
         function createBatchModel(name, algorithm, sensorid){
-            console.log('got batch request');
-            console.log(name);
-            console.log(algorithm);
-            console.log(sensorid);
             console.log(CREATE_NEW_MODEL + 'algorithm=' + algorithm + '&sensorid=' + sensorid + '&name=' + name);
-            return $http.post(CREATE_NEW_MODEL + 'algorithm=' + algorithm + '&sensorid=' + sensorid + '&name=' + name);
+            $http.post(CREATE_NEW_MODEL + 'algorithm=' + algorithm + '&sensorid=' + sensorid + '&name=' + name);
         }
 
         function createStreamModel(name, algorithm, sensorid, time){
-            console.log('got stream request');
             console.log(CREATE_NEW_MODEL + 'algorithm=' + algorithm + '&sensorid=' + sensorid + '&name=' + name + '&time=' + time);
-            return $http.post(CREATE_NEW_MODEL+'algorithm='+algorithm+'&sensorid='+sensorid+'&name='+name+'&time=' + time);
+            $http.post(CREATE_NEW_MODEL+'algorithm='+algorithm+'&sensorid='+sensorid+'&name='+name+'&time=' + time);
         }
 
+        function getModelStatistics(name) {
+            console.log(GET_MODEL_STATISTICS + 'model_name=' + name);
+            return $http.get(GET_MODEL_STATISTICS + 'model_name=' + name);
+        }
 
         //Expose public methods
         return {
@@ -57,7 +57,8 @@ app.factory('AnalyticsService', ['$http', '$resource', '$q',
             getBatchAlgorithms: getBatchAlgorithms,
             getStreamAlgorithms: getStreamAlgorithms,
             createBatchModel: createBatchModel,
-            createStreamModel:createStreamModel
+            createStreamModel:createStreamModel,
+            getModelStatistics: getModelStatistics
 
         }
     }

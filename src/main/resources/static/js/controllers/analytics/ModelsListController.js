@@ -30,25 +30,29 @@ app.controller('ModelsListController',
                        AnalyticsService.getStreamAlgorithms().then(function (response) {
                             $scope.algorithms = response.data;
                     });
-                       console.log($scope.algorithms);
                        $scope.showTimeTextbox = true;
                   } else {
                     AnalyticsService.getBatchAlgorithms().then(function (response) {
                             $scope.algorithms = response.data;
                     });
-                    console.log($scope.algorithms);
                     $scope.showTimeTextbox = false;
                   }
             }
 
             $scope.addModel = function(){
-                console.log('got form');
-                console.log($scope.algorithmsselected)
                 if ($scope.modelselected.name === 'Batch Processing') {
                     AnalyticsService.createBatchModel($scope.modelname, $scope.algorithmsselected.name, $scope.sensorselected.id);   
                   } else if ($scope.modelselected.name === 'Stream Mining'){
                     AnalyticsService.createStreamModel($scope.modelname, $scope.algorithmsselected.name, $scope.sensorselected.id, $scope.timeInDays);
                   }                
             }
+            $scope.getStatistics = function(name){
+                console.log(name);
+                AnalyticsService.getModelStatistics(name).then(function (response) {
+                            $scope.statistics=response.data;
+                            console.log($scope.statistics);
+                    });          
+            }            
+
         }
     ]);

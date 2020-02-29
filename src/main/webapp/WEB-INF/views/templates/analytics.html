@@ -27,7 +27,9 @@
                     <tbody>
                     <tr id="{{item.name}}" ng-repeat="item in displayedCollection">
                         <td>
-                            <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>
+                            <button style="background:none; border:none; color:#2196F3; " data-toggle="modal" data-target="#showModelStatistics" data-backdrop="static" data-keyboard="false" ng-click="getStatistics(item.name)">
+                        <i>{{item.name}}</i>
+                    </button>
                         </td>
                         <td>{{item.type}}</td>
                         <td>{{item.algorithm}}</td>
@@ -130,4 +132,23 @@
         </div>
     </div>
     <!-- #END# Modal -->
+
+    <div class="modal fade" id="showModelStatistics" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Model Statistics
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                
+                <div *ngFor="let item of statistics | keyvalue">
+                    {{ item.key }} - {{ item.value }}
+                </div>
+                
+            </div>
+        </div>
+    </div>
 </div>
