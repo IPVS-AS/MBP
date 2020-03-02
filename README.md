@@ -39,10 +39,10 @@ Please execute the following steps:
 - Install [Homebrew](https://brew.sh/index_de),
 - Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), [InfluxDB](https://portal.influxdata.com/downloads/) and [Tomcat8](https://tomcat.apache.org/download-80.cgi)  
 
- `$ brew install mosquitto`
- `$ brew install mongodb-community` 
- `$ brew install influxdb` 
- `$ brew install tomcat@8` 
+ `$ brew install mosquitto`  
+ `$ brew install mongodb-community`  
+ `$ brew install influxdb`  
+ `$ brew install tomcat@8`  
  
 - Create the *MBP.war* file by building the provided maven project
     
@@ -51,7 +51,7 @@ Please execute the following steps:
 - Deploy the MBP application on Tomcat by moving the `MBP-0.1.war` to the Tomcat `webapps` folder in the path:
 usr/local/Cellar/tomcat/9.0.10/libexec .
 - Restart Tomcat:
-`$brew services restart tomcat` 
+`$ brew services restart tomcat` 
 
 Once the installation is completed, the MBP will be available on the URL *http://[MBP-Host]:8080/MBP-0.1*.
 
