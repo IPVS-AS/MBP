@@ -10,7 +10,7 @@ app.directive('envModelTool',
         function (ENDPOINT_URI, $timeout, $q, $controller, ModelService, ComponentService, DeviceService, CrudService) {
 
             function initJSPlumb(scope) {
-                const DIAGRAM_CONTAINER = $("#myDiagram");
+                const DIAGRAM_CONTAINER = $("#toolCanvasContainer");
                 let jsPlumbInstance;
                 let canvasId = "#canvas";
                 let elementIdCount = 0; // used for canvas ID uniquness
@@ -1473,14 +1473,14 @@ app.directive('envModelTool',
                 template:
                     '<div id="modelingToolView">' +
                     '<!-- Palette -->' +
-                    '<div id="toolPalette" style="display: inline-block; vertical-align: top; width:20%; height: 100%">' +
+                    '<div id="toolPalette" style="display: inline-block; vertical-align: top; width: 220px;">' +
                     '<div class="panel-group" id="accordion">' +
                     '<div class="panel panel-default">' +
                     '<div class="panel-heading" style="overflow-x: hidden;">' +
                     '<h4 class="panel-title">' +
-                    '<a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseFloorplans">' +
-                    '<i class="material-icons" style="font-size: 20px;">weekend</i>' +
-                    '<span class="glyphicon glyphicon-chevron-down pull-right"></span>Floorplans</a>' +
+                    '<a class="clickable collapsed" data-toggle="collapse" data-target="#collapseFloorplans" aria-expanded="false">' +
+                    '<span class="material-icons" style="font-size: 20px;">weekend</span>Floorplans' +
+                    '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>' +
                     '</h4>' +
                     '</div>' +
                     '<div id="collapseFloorplans" class="panel-collapse collapse in">' +
@@ -1545,9 +1545,9 @@ app.directive('envModelTool',
                     '<div class="panel panel-default">' +
                     '<div class="panel-heading" style="overflow-x: hidden;">' +
                     '<h4 class="panel-title">' +
-                    '<a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseDevices">' +
-                    '<i class="material-icons" style="font-size: 20px;">devices</i>' +
-                    '<span class="glyphicon glyphicon-chevron-down pull-right"></span>Device types</a>' +
+                    '<a class="clickable collapsed" data-toggle="collapse" data-target="#collapseDevices" aria-expanded="false">' +
+                    '<span class="material-icons" style="font-size: 20px;">devices</span>Device types' +
+                    '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>' +
                     '</h4>' +
                     '</div>' +
                     '<div id="collapseDevices" class="panel-collapse collapse">' +
@@ -1604,9 +1604,9 @@ app.directive('envModelTool',
                     '<div class="panel panel-default">' +
                     '<div class="panel-heading" style="overflow-x: hidden;">' +
                     '<h4 class="panel-title">' +
-                    '<a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseActuators">' +
-                    '<i class="material-icons" style="font-size: 20px;">wb_incandescent</i>' +
-                    '<span class="glyphicon glyphicon-chevron-down pull-right"></span>Actuator types</a>' +
+                    '<a class="clickable collapsed" data-toggle="collapse" data-target="#collapseActuators" aria-expanded="false">' +
+                    '<span class="material-icons" style="font-size: 20px;">wb_incandescent</span>Actuator types' +
+                    '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>' +
                     '</h4>' +
                     '</div>' +
                     '<div id="collapseActuators" class="panel-collapse collapse">' +
@@ -1659,9 +1659,9 @@ app.directive('envModelTool',
                     '<div class="panel panel-default">' +
                     '<div class="panel-heading" style="overflow-x: hidden;">' +
                     '<h4 class="panel-title">' +
-                    '<a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion" href="#collapseSensors">' +
-                    '<i class="material-icons" style="font-size: 20px;">settings_remote</i>' +
-                    '<span class="glyphicon glyphicon-chevron-down pull-right"></span>Sensor types</a>' +
+                    '<a class="clickable collapsed" data-toggle="collapse" data-target="#collapseSensors" aria-expanded="false">' +
+                    '<span class="material-icons" style="font-size: 20px;">settings_remote</span>Operators' +
+                    '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>' +
                     '</h4>' +
                     '</div>' +
                     '<div id="collapseSensors" class="panel-collapse collapse">' +
@@ -1726,14 +1726,14 @@ app.directive('envModelTool',
                     '</div>' +
                     '</div>' +
                     '<!-- Canvas - Modeling Area -->' +
-                    '<div id="myDiagram" style="display: inline-block; vertical-align: top; width:64%; height: 100%">' +
+                    '<div id="toolCanvasContainer">' +
                     '<div class="jtk-main">' +
                     '<div class="jtk-canvas canvas-wide modeling-tool jtk-surface jtk-surface-nopan" id="canvas"></div>' +
                     '</div>' +
                     '</div>' +
                     '<!-- Info sidebar -->' +
-                    '<div id="infoSidebar" style="display: inline-block; vertical-align: top; width:17%; height: 100%">' +
-                    '<div class="panel panel-default" style="margin: 5px;" ng-show="clickedComponent.category == \'DEVICE\'">' +
+                    '<div id="infoSidebar" style="display: inline-block; width:160px; vertical-align: top;">' +
+                    '<div class="panel panel-default" ng-show="clickedComponent.category == \'DEVICE\'">' +
                     '<div class="panel-heading" style="text-align: center; overflow-x: hidden;">' +
                     '<h4 class="panel-title">Device</h4>' +
                     '</div>' +
@@ -1742,7 +1742,6 @@ app.directive('envModelTool',
                     '<li>' +
                     '<label for="deviceNameInput">Name</label>' +
                     '<input id="deviceNameInput" type="text" name="name" ng-model="clickedComponent.name" autocomplete="off">' +
-                    '<!-- <span>Enter your full name here</span> -->' +
                     '</li>' +
                     '<li>' +
                     '<label for="deviceTypeInput">Device type</label>' +

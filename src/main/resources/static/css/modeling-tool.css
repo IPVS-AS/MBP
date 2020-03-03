@@ -83,8 +83,7 @@
 }
 
 .jtk-canvas {
-    margin-left: 160px;
-    height: 445px;
+    height: 442px;
     max-height: 700px;
     border: 1px solid #CCC;
     background-color: white;
@@ -709,7 +708,7 @@ li {
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
-/* --- Rest ------------------------------------------------------------------------------------------- */
+/* --- Remainder -------------------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------- */
 #toolPalette .panel-body {
     height: 270px;
@@ -719,8 +718,10 @@ li {
     height: 50px;
 }
 
-#toolPalette .panel-group {
-    margin: 5px;
+#toolCanvasContainer {
+    width: calc(100% - 220px - 160px - 5px);
+    display: inline-block;
+    vertical-align: top;
 }
 
 .dragList {
