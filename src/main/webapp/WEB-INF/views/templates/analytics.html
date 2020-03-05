@@ -27,7 +27,7 @@
                     <tbody>
                     <tr id="{{item.name}}" ng-repeat="item in displayedCollection">
                         <td>
-                            <button style="background:none; border:none; color:#2196F3; " data-toggle="modal" data-target="#showModelStatistics" data-backdrop="static" data-keyboard="false" ng-click="getStatistics(item.name)">
+                            <button style="background:none; border:none; color:#2196F3; " data-toggle="modal" data-target="#showModelStatistics" data-backdrop="static" data-keyboard="false" ng-click="getStatistics(item.name, item.algorithm)">
                         <i>{{item.name}}</i>
                     </button>
                         </td>
@@ -35,9 +35,8 @@
                         <td>{{item.algorithm}}</td>
                         <td>{{item.time}}</td>
                         <td>
-                            <form ng-submit="deleteSensorCtrl.deleteItem()">
-                                <button type="submit" class="btn btn-danger m-t-0 waves-effect"
-                                        ng-click="deleteSensorCtrl.item.id = item.id">
+                            <form ng-submit="deleteModel(item.name)">
+                                <button type="submit" class="btn btn-danger m-t-0 waves-effect">
                                     Delete
                                 </button>
                             </form>
@@ -77,14 +76,20 @@
                     <fieldset id="model-form">
                         <div class="modal-body">
                             <!-- "global" error for addItem -->
-                            <!-- item.name group -->
                             <div class="form-group" ng-class="{'has-error' : addModelCtrl.item.errors.name }">
                                 <div class="form-line" ng-class="{'focused error' : addModelCtrl.item.errors.name }">
                                     <input class="form-control" id="modal-header-form-input-name" type="text"
                                            placeholder="Name" ng-model="modelname"/>
                                 </div>
                             </div>
-                            <!-- item.componentType group -->
+
+                            <div class="form-group" ng-class="{'has-error' : addModelCtrl.item.errors.name }">
+                                <div class="form-line" ng-class="{'focused error' : addModelCtrl.item.errors.name }">
+                                    <input class="form-control" id="modal-header-form-input-description" type="text"
+                                           placeholder="Short Description" ng-model="modeldescription"/>
+                                </div>
+                            </div>
+
                             <div class="form-group">
                                 <div class="form-line">
                                     <select class="form-control show-tick" id="model-form-select-type"
@@ -92,9 +97,8 @@
                                         <option value="">Select Model Type</option>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addModelCtrl.item.errors.componentType">{{addModelCtrl.item.errors.componentType.message}}</span>
                             </div>
-                            <!-- item.adpter group -->
+
                             <div class="form-group" ng-class="{'has-error' : addModelCtrl.item.errors.adapter }">
                                 <div class="form-line">
                                     <select class="form-control show-tick" id="model-form-select-type"
@@ -102,14 +106,15 @@
                                         <option value="">Select Algorithm</option>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addModelCtrl.item.errors.adapter">{{addModelCtrl.item.errors.adapter.message}}</span>
                             </div>
+
                             <div class="form-group" ng-show="showTimeTextbox">
-                                    <div class="form-line">
-                                        <input class="form-control" id="model-form-time-in-days" type="text"
-                                               placeholder="Time to run (in days)" ng-model="timeInDays"/>
-                                    </div>
+                                <div class="form-line">
+                                    <input class="form-control" id="model-form-time-in-days" type="text"
+                                            placeholder="Time to run (in days)" ng-model="timeInDays"/>
+                                </div>
                             </div>
+
                             <div class="form-group" ng-class="{'has-error' : addModelCtrl.item.errors.device }">
                                 <div class="form-line">
                                     <select class="form-control show-tick" id="model-form-select-type"
@@ -117,8 +122,8 @@
                                         <option value="">Select Sensor</option>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addModelCtrl.item.errors.device">{{addModelCtrl.item.errors.device.message}}</span>
                             </div>
+
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
@@ -136,6 +141,7 @@
     <div class="modal fade" id="showModelStatistics" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
+                
                 <div class="modal-header">
                     <h5 class="modal-title">Model Statistics
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -143,11 +149,33 @@
                         </button>
                     </h5>
                 </div>
-                
-                <div *ngFor="let item of statistics | keyvalue">
-                    {{ item.key }} - {{ item.value }}
+
+                <div class="modal-body">
+                    <table>
+                      <tr ng-repeat="(key, value) in statistics">
+                            <td style="padding:10px"> {{key}} </td> <td> {{ value }} </td>
+                      </tr>
+                    </table>
+
+                    <button class="btn btn-primary m-t-0 waves-effect" ng-show="showPredictButton" ng-click="predictValue()">Use model to make prediction</button>
+                    <form id="addModelForm" ng-submit="getPredictedValue()" ng-show="showPredictionForm">
+                        <fieldset id="model-form">
+                            <div class="form-group">
+                                    <div class="form-line">
+                                        <input class="form-control" id="model-form-prediction" type="text"
+                                               placeholder="Enter Comma Separated Value" ng-model="valuetopredict"/>
+                                    </div>
+                            </div>                            
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Predict Value</button>
+                        </fieldset>
+                    </form>
+
+                    <table ng-show="showPredictionResult">
+                      <tr ng-repeat="(key, value) in prediction">
+                            <td style="padding:10px"> {{key}} </td> <td> {{ value }} </td>
+                      </tr>
+                    </table>                    
                 </div>
-                
             </div>
         </div>
     </div>
