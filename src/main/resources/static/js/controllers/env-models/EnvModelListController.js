@@ -13,7 +13,7 @@ app.controller('EnvModelListController',
              * Initializing function, sets up basic things.
              */
             (function initController() {
-                //Initialize wizardo
+                //Initialize
                 $(document).ready(function () {
 
                 });

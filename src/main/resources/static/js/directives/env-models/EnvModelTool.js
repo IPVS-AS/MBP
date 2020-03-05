@@ -9,16 +9,21 @@ app.directive('envModelTool',
     ['ENDPOINT_URI', '$timeout', '$q', '$controller', 'ModelService', 'ComponentService', 'DeviceService', 'CrudService',
         function (ENDPOINT_URI, $timeout, $q, $controller, ModelService, ComponentService, DeviceService, CrudService) {
 
-            function initJSPlumb(scope) {
+            function initialize(scope) {
                 const DIAGRAM_CONTAINER = $("#toolCanvasContainer");
                 let jsPlumbInstance;
                 let canvasId = "#canvas";
                 let elementIdCount = 0; // used for canvas ID uniquness
                 let properties = {}; // keeps the properties of each element to draw on canvas
                 let element = ""; // the element which will be appended to the canvas
+                let deletionPromises = [];
                 let clicked = false; // true if an element from the palette was clicked
                 let isMoving = false; //Remembers if the user is currently moving or modifying an element
-                let deletionPromises = [];
+                let eventStart = null; //Remembers the initial state of an element event (drag, rotate, resize)
+
+                //Stacks for Undo and Redo functions
+                let historyStack = [];
+                let futureStack = [];
 
                 //Expose fields for template
                 scope.processing = {}; // used to show/hide the progress circle
@@ -39,6 +44,8 @@ app.directive('envModelTool',
                 scope.registerComponents = registerComponents;
                 scope.deployComponents = deployComponents;
                 scope.undeployComponents = undeployComponents;
+                scope.api.undo = undoAction;
+                scope.api.redo = redoAction;
 
                 // On initialization load the models from the database
                 (function initController() {
@@ -112,7 +119,21 @@ app.directive('envModelTool',
                             jsPlumbInstance.revalidate(el);
                         },
                         start: () => (isMoving = true),
-                        stop: () => ($timeout(() => (isMoving = false), 200)),
+                        stop: function (el, event) {
+                            //Unset moving flag
+                            $timeout(() => (isMoving = false), 200);
+
+                            //Create event object for stack
+                            let eventObject = {
+                                element: element,
+                                type: "rotate",
+                                start: event.angle.start,
+                                stop: event.angle.stop
+                            };
+
+                            //Put event descriptor on stack
+                            historyStack.push(eventObject);
+                        },
                         snap: true,
                         step: 22.5
                     };
@@ -137,8 +158,22 @@ app.directive('envModelTool',
                         //Check if aspect ratio needs to be preserved
                         aspectRatio: (!element.hasClass("free-resize")),
                         resize: (event, ui) => jsPlumbInstance.revalidate(ui.helper),
-                        start: (event, ui) => (isMoving = true),
-                        stop: () => ($timeout(() => (isMoving = false), 200)),
+                        start: () => (isMoving = true),
+                        stop: function (el, event) {
+                            //Unset moving flag
+                            $timeout(() => (isMoving = false), 200);
+
+                            //Create event object for stack
+                            let eventObject = {
+                                element: element,
+                                type: "resize",
+                                start: {...event.originalSize},
+                                stop: {...event.size}
+                            };
+
+                            //Put event descriptor on stack
+                            historyStack.push(eventObject);
+                        },
                         handles: "all"
                     });
                 }
@@ -147,6 +182,7 @@ app.directive('envModelTool',
                  * jQuery makes the element draggable
                  */
                 function makeDraggable(id, className) {
+
                     $(id).draggable({
                         helper: () => {
                             return $("<div/>", {
@@ -218,14 +254,24 @@ app.directive('envModelTool',
                     drop: function (event, ui) {
                         if (clicked) {
                             // Get the drop position
-                            properties.top = ui.offset.top - $(this).offset().top;
                             properties.left = ui.offset.left - $(this).offset().left;
+                            properties.top = ui.offset.top - $(this).offset().top;
                             clicked = false;
                             elementIdCount++;
                             let id = "canvasWindow" + elementIdCount;
                             // Create and draw the element in the canvas
                             element = createElement(id);
                             drawElement(element);
+
+                            //Create event object for stack
+                            let eventObject = {
+                                element: element,
+                                type: "create",
+                                position: [properties.left, properties.top]
+                            };
+
+                            //Put event descriptor on stack
+                            historyStack.push(eventObject);
                         }
                     }
                 });
@@ -515,7 +561,23 @@ app.directive('envModelTool',
                     $(canvasId).append($element);
                     // Make the element on the canvas draggable
                     jsPlumbInstance.draggable(jsPlumbInstance.getSelector(".jtk-node"), {
-                        filter: ".ui-resizable-handle"
+                        filter: ".ui-resizable-handle",
+                        start: function (event) {
+                            let startPosition = event.pos || [];
+                            eventStart = [...startPosition];
+                        },
+                        stop: function (event) {
+                            //Create event object for stack
+                            let eventObject = {
+                                element: $element,
+                                type: "drag",
+                                start: eventStart,
+                                stop: [...event.pos]
+                            };
+
+                            //Put event descriptor on stack
+                            historyStack.push(eventObject);
+                        }
                     });
 
                     addEndpoints($element);
@@ -548,21 +610,88 @@ app.directive('envModelTool',
 
                 // In case a key is pressed
                 $(document).on("keydown", function (event) {
-                    //Require DEL key
-                    if (event.which !== 46) {
-                        return;
+                    //Check for pressed key
+                    switch (event.which) {
+                        //DEL key
+                        case 46:
+                            deleteFocusedElements();
+                            break;
+                        //Arrow left key
+                        case 37:
+                            moveFocusedElements("left", 3);
+                            break;
+                        //Arrow up key
+                        case 38:
+                            moveFocusedElements("up", 3);
+                            break;
+                        //Arrow right key
+                        case 39:
+                            moveFocusedElements("right", 3);
+                            break;
+                        //Arrow down key
+                        case 40:
+                            moveFocusedElements("down", 3);
+                            break;
+                        default:
+                            return;
                     }
 
-                    //Get elements with focus and iterate over them
-                    $('.clicked-element').each(function () {
-                        deleteElement($(this));
-                    });
+                    //Key event was processed, so prevent default behaviour
+                    event.preventDefault();
                 });
 
                 // When the canvas is clicked, save the data from the input fields to the corresponding element
                 $(canvasId).on('click', function (e) {
                     saveData();
                 });
+
+                /**
+                 * Moves all currently focused elements in a certain direction for a given number of pixels.
+                 * @param direction The direction (left, up, right, down) in which to move the elements:
+                 * @param pixels The absolute number of pixels to move the element
+                 */
+                function moveFocusedElements(direction, pixels) {
+                    //Sanity check for pixels
+                    pixels = Math.abs(pixels || 0);
+
+                    //Remember move distance for each direction
+                    let moveX = "+=0";
+                    let moveY = "+=0";
+
+                    switch (direction) {
+                        case "left":
+                            moveX = "-=" + pixels;
+                            break;
+                        case "up":
+                            moveY = "-=" + pixels;
+                            break;
+                        case "right":
+                            moveX = "+=" + pixels;
+                            break;
+                        case "down":
+                            moveY = "+=" + pixels;
+                            break;
+                    }
+
+                    //Get elements with focus and move them
+                    $('.clicked-element').animate({
+                        left: moveX,
+                        top: moveY
+                    }, 10).each(function () {
+                        //Revalidate with jsPlumb
+                        jsPlumbInstance.revalidate($(this));
+                    });
+                }
+
+                /**
+                 * Deletes all currently focused elements.
+                 */
+                function deleteFocusedElements() {
+                    //Get elements with focus and delete them
+                    $('.clicked-element').each(function () {
+                        deleteElement($(this));
+                    });
+                }
 
                 /**
                  * Puts the focus on a given element while removing the focus of all other elements. Focused
@@ -1447,6 +1576,24 @@ app.directive('envModelTool',
                         scope.processing.finished = false;
                     }, 3000);
                 }
+
+                /**
+                 * [Public]
+                 * Undoes the most recent action.
+                 */
+                function undoAction() {
+                    alert("undo");
+                    console.log(historyStack);
+                }
+
+                /**
+                 * [Public]
+                 * Redoes the most recent undone action.
+                 */
+                function redoAction() {
+                    alert("redo");
+                    console.log(historyStack);
+                }
             }
 
 
@@ -1463,7 +1610,7 @@ app.directive('envModelTool',
                 scope.api = {};
 
                 //Initialize modelling tool
-                let initFunction = initJSPlumb.bind(this, scope);
+                let initFunction = initialize.bind(this, scope);
                 jsPlumb.ready(initFunction);
             };
 
@@ -1478,7 +1625,7 @@ app.directive('envModelTool',
                     '<div class="panel panel-default">' +
                     '<div class="panel-heading" style="overflow-x: hidden;">' +
                     '<h4 class="panel-title">' +
-                    '<a class="clickable collapsed" data-toggle="collapse" data-target="#collapseFloorplans" aria-expanded="false">' +
+                    '<a class="clickable" data-toggle="collapse" data-target="#collapseFloorplans" aria-expanded="false">' +
                     '<span class="material-icons" style="font-size: 20px;">weekend</span>Floorplans' +
                     '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>' +
                     '</h4>' +
@@ -1785,7 +1932,7 @@ app.directive('envModelTool',
                     '</span>' +
                     '</div>' +
                     '</div>' +
-                    '<div class="panel panel-default" style="margin: 5px;" ng-show="clickedComponent.category == \'ACTUATOR\'">' +
+                    '<div class="panel panel-default" ng-show="clickedComponent.category == \'ACTUATOR\'">' +
                     '<div class="panel-heading" style="text-align: center;overflow-x: hidden;">' +
                     '<h4 class="panel-title">Actuator</h4>' +
                     '</div>' +
@@ -1837,7 +1984,7 @@ app.directive('envModelTool',
                     '</span>' +
                     '</div>' +
                     '</div>' +
-                    '<div class="panel panel-default" style="margin: 5px;" ng-show="clickedComponent.category == \'SENSOR\'">' +
+                    '<div class="panel panel-default" ng-show="clickedComponent.category == \'SENSOR\'">' +
                     '<div class="panel-heading" style="text-align: center;overflow-x: hidden;">' +
                     '<h4 class="panel-title">Sensor</h4>' +
                     '</div>' +
