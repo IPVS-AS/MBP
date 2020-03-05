@@ -1,6 +1,6 @@
 # Monitoring Operator: Scripts to read CPU temperature
 
-This folder contains operator scripts to read CPU temperature (°C) of Raspberry Pis. 
+This folder contains operator scripts to read CPU temperature values of Raspberry Pis and publish them on a MQTT topic. In order to determine the CPU temperature, the command line utility `vcgencmd` is used which allows to get various information from the VideoCore GPU on the Raspberry Pi. The extracted values are in degree Celsius (°C).
 
 ## Hardware Setup 
 
