@@ -14,12 +14,20 @@ GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(relayPin, GPIO.OUT)
 
+########## Config ##########
+PORT = 1883
+CONNECTIONS_FILE = "connections.txt"
+TOPIC_ACTION = "action/%s/#"
+ACTION_LOG_FILE = "actions.txt"
+
+
+############################
+
 ############################
 # MQTT Client
 ############################
 class mqttClient(object):
    hostname = 'localhost'
-   port = 1883
    clientid = ''
    topic_sub = ''
    subscriber = False
@@ -48,7 +56,7 @@ class mqttClient(object):
    def on_message(self, client, userdata, msg):
       payload_json = json.loads(msg.payload.decode('ascii'))
       if payload_json is not None:
-         value_str = payload_json ["value"]
+         value_str = payload_json ["data"]
          value = float (value_str)
          
          if (value >= 1):
@@ -63,6 +71,14 @@ class mqttClient(object):
                self.lastCmd = 'OFF'
                print('OFF')
 
+         # Convert message payload to string
+         message_string = message.payload.decode(encoding='UTF-8')
+
+         # Open actions log file and append message
+         with open(ACTION_LOG_FILE, "a") as file:
+            file.write(message_string)
+            file.write("\n\n")
+            
    # publishes message to MQTT broker
    def sendMessage(self, topic, msg):
       self.client.publish(topic=topic, payload=msg, qos=0, retain=False)
@@ -90,8 +106,6 @@ class mqttClient(object):
 def main(argv):
    #default sleep interval
    measureInterval = 10
-   
-   configFileName = "connections.txt"
    topics = []
    brokerIps = []
    configExists = False
@@ -99,7 +113,7 @@ def main(argv):
    hostname = 'localhost'
    topic_sub = 'test'
 
-   configFile = os.path.join(os.getcwd(), configFileName)
+   configFile = os.path.join(os.getcwd(), CONNECTIONS_FILE)
    
    while (not configExists):
        configExists = os.path.exists(configFile)
@@ -124,12 +138,15 @@ def main(argv):
    topic_splitted = topic_sub.split('/')
    component = topic_splitted [0]
    component_id = topic_splitted [1]
-   
+    
+   # Generate action topic to subscribe to
+   topic_sub = TOPIC_ACTION % component_id
    print("Connecting to: " + hostname + " sub on topic: " + topic_sub)
-   
+  
+  
    # --- Begin start mqtt client
    id = "id_%s" % (datetime.utcnow().strftime('%H_%M_%S'))
-   subscriber = mqttClient(hostname, 1883, id)
+   subscriber = mqttClient(hostname, PORT, id)
    subscriber.startAsSubcriber(topic_sub)
 
    while (True):
