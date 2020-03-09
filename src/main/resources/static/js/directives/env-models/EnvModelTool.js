@@ -11,15 +11,20 @@ app.directive('envModelTool',
 
             function initialize(scope) {
                 const DIAGRAM_CONTAINER = $("#toolCanvasContainer");
+                const MARKING_RECT = $("#toolMarkingRect").hide();
                 let jsPlumbInstance;
                 let canvasId = "#canvas";
-                let elementIdCount = 0; // used for canvas ID uniquness
+                let elementIdCount = 0; // used for canvas ID uniqueness
                 let properties = {}; // keeps the properties of each element to draw on canvas
                 let element = ""; // the element which will be appended to the canvas
                 let deletionPromises = [];
                 let clicked = false; // true if an element from the palette was clicked
                 let isMoving = false; //Remembers if the user is currently moving or modifying an element
                 let eventStart = null; //Remembers the initial state of an element event (drag, rotate, resize)
+                let markingRectPos = { //Remembers the position of the marking rect
+                    x: 0,
+                    y: 0
+                };
 
                 //Stacks for Undo and Redo functions
                 let historyStack = [];
@@ -640,9 +645,36 @@ app.directive('envModelTool',
                     event.preventDefault();
                 });
 
-                // When the canvas is clicked, save the data from the input fields to the corresponding element
+                // Events of the canvas
                 $(canvasId).on('click', function (e) {
+                    //Save data from input fields to the corresponding element
                     saveData();
+                }).on('mousedown', function (e) {
+                    //Save starting position of the marking rect
+                    markingRectPos.x = e.offsetX;
+                    markingRectPos.y = e.offsetY;
+
+                    MARKING_RECT.css({
+                        left: e.offsetX + 'px',
+                        top: e.offsetY + 'px',
+                        display: '',
+                    }).width(0).height(0);
+
+                }).on('mousemove', function (e) {
+                    let posX = Math.min(markingRectPos.x, e.offsetX);
+                    let posY = Math.min(markingRectPos.y, e.offsetY);
+                    let width = Math.abs(markingRectPos.x - e.offsetX);
+                    let height = Math.abs(markingRectPos.y - e.offsetY);
+
+                    MARKING_RECT.css({
+                        left: posX + 'px',
+                        top: posY + 'px',
+                        width: width + 'px',
+                        height: height + 'px'
+                    });
+
+                }).on('mouseup', function (e) {
+                    MARKING_RECT.hide();
                 });
 
                 /**
@@ -980,7 +1012,7 @@ app.directive('envModelTool',
                                 $("#deviceInfo *").attr("disabled", true).off('click');
                             } else {
                                 $("#deviceInfo *").attr("disabled", false).on('click');
-                                if (element.attr("class").indexOf("default") == -1) {
+                                if (element.attr("class").indexOf("default") === -1) {
                                     $("#deviceTypeInput").attr("disabled", true);
                                 }
                             }
@@ -1614,7 +1646,7 @@ app.directive('envModelTool',
                 jsPlumb.ready(initFunction);
             };
 
-//Configure and expose the directive
+            //Configure and expose the directive
             return {
                 restrict: 'E', //Elements only
                 template:
@@ -1875,11 +1907,13 @@ app.directive('envModelTool',
                     '<!-- Canvas - Modeling Area -->' +
                     '<div id="toolCanvasContainer">' +
                     '<div class="jtk-main">' +
-                    '<div class="jtk-canvas canvas-wide modeling-tool jtk-surface jtk-surface-nopan" id="canvas"></div>' +
+                    '<div class="jtk-canvas canvas-wide modeling-tool jtk-surface jtk-surface-nopan" id="canvas">' +
+                    '<div id="toolMarkingRect"></div>' +
+                    '</div>' +
                     '</div>' +
                     '</div>' +
                     '<!-- Info sidebar -->' +
-                    '<div id="infoSidebar" style="display: inline-block; width:160px; vertical-align: top;">' +
+                    '<div id="infoSidebar" style="display: inline-block; width:162px; vertical-align: top;">' +
                     '<div class="panel panel-default" ng-show="clickedComponent.category == \'DEVICE\'">' +
                     '<div class="panel-heading" style="text-align: center; overflow-x: hidden;">' +
                     '<h4 class="panel-title">Device</h4>' +

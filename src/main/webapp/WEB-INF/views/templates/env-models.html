@@ -6,7 +6,8 @@
                 <h2>Environment Models</h2>
                 <div class="align-right">
                     <button id="add-button" type="button" data-toggle="collapse" data-target="#add-model-card"
-                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float">
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float"
+                            ng-click="modelProperties={'name': 'Unnamed Model', 'description': ''}">
                         <i class="material-icons">add</i>
                     </button>
                 </div>
@@ -70,10 +71,11 @@
     <div class="col-lg-12">
         <div id="add-model-card" class="card collapse">
             <div class="header">
-                <h2 class="editable">
-                    Unnamed IoT Model
+                <h2 class="editable" data-toggle="modal" data-target="#modelPropertiesModal" data-backdrop="static"
+                    data-keyboard="false">
+                    {{modelProperties.name}}
                     <i class="material-icons" style="font-size: 16px;margin-left: 5px;line-height: 15px;">mode_edit</i>
-                    <small>Description</small>
+                    <small>{{modelProperties.description}}</small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
                     <li class="dropdown">
@@ -89,7 +91,7 @@
                 </ul>
             </div>
             <div class="body">
-                <div class="btn-group" role="group" style="margin-left: 226px; width: calc(100% - 220px - 160px - 7px)">
+                <div class="btn-group" role="group" style="margin-left: 221px; width: calc(100% - 220px - 160px - 2px)">
                     <button type="button" class="btn btn-default waves-effect">
                         <i class="material-icons" ng-style="{'color': (true ? 'red' : '')}">save</i>
                     </button>
@@ -111,6 +113,51 @@
                     </div>
                 </div>
                 <env-model-tool api="envModelToolApi"></env-model-tool>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model properties modal -->
+    <div class="modal fade" id="modelPropertiesModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change model properties
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form ng-submit="">
+                    <fieldset>
+                        <div class="modal-body">
+                            <!-- Model name -->
+                            <div class="form-group" ng-class="{'has-error' : modelProperties.errors.name }">
+                                <div class="form-line" ng-class="{'focused error' : modelProperties.errors.name }">
+                                    <label for="modelNameInput">Name:</label>
+                                    <input id="modelNameInput" class="form-control" type="text" placeholder="Model name"
+                                           ng-model="modelProperties.name"/>
+                                </div>
+                                <span class="help-block" ng-show="modelProperties.errors.name">{{modelProperties.errors.name}}</span>
+                            </div>
+                            <!-- Model description -->
+                            <div class="form-group" ng-class="{'has-error' : modelProperties.errors.description }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : modelProperties.errors.description }">
+                                    <label for="modelDescriptionInput">Description:</label>
+                                    <input id="modelDescriptionInput" class="form-control" type="text"
+                                           placeholder="Describe this model..." ng-model="modelProperties.description"/>
+                                </div>
+                                <span class="help-block" ng-show="modelProperties.errors.description">{{modelProperties.errors.description}}</span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                        </div>
+                    </fieldset>
+                </form>
             </div>
         </div>
     </div>

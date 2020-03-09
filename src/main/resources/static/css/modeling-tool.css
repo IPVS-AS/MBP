@@ -719,11 +719,18 @@ li {
 }
 
 #toolCanvasContainer {
-    width: calc(100% - 220px - 160px - 5px);
+    position: relative;
+    width: calc(100% - 220px - 160px);
     display: inline-block;
     vertical-align: top;
-    margin-left: 5px;
-    margin-right: 5px;
+}
+
+#toolMarkingRect {
+    position: absolute;
+    pointer-events: none;
+    border: 1px solid blue;
+    background-color: rgba(0, 0, 200, 0.5);
+    z-index: 99999;
 }
 
 .dragList {
