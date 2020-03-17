@@ -1,12 +1,14 @@
 # Multi-purpose Binding and Provisioning Platform (MBP)
-This platform enables means for (i) automated binding of IoT devices in order to access their sensors and actuators, and (ii) automated software provisioning.
 
-![MBP-UI](resources/MBP.PNG)  
-*MBP UI (based on [Bootstrap templates](https://startbootstrap.com/template-overviews/sb-admin-2/))*
+This project contains the **Multi-purpose Binding and Provisioning Platform (MBP)**, an IoT platform developed for easy binding, provisioning, and management of IoT environments. 
+Furthermore, the MBP enables the simple realization of IoT applications, such as heating, ventilation, air conditioning (HVAC) systems, by allowing users to create rules for the IoT environment, in a straightforward and event-condition-action fashion. 
+The efficient and timely data processing of IoT environments are assured through underlying complex event processing technologies.
+An Android-based smartphone application that connects to the MBP is provided as the GitHub project [MBP-Docker](https://github.com/IPVS-AS/MBP-Docker).
 
 ![MBP Home](resources/gifs/user-registration.gif)
+MBP UI (based on [Bootstrap templates](https://startbootstrap.com/template-overviews/sb-admin-2/))
 
-How to install the MBP and use its API is explained in detail in the following:  
+How to install and use the MBP is explained in the following.
 
 **[1 Installation](#1-installation)**  
 **[2 Quick Start](#2-quick-start)**  
@@ -22,13 +24,13 @@ The following software components are used in order to set up the MBP:
 - [Tomcat8](https://tomcat.apache.org/download-80.cgi)
 - Maven
 
-### Installation on Linux 
-Please run the [installation script](install.sh), which automatically installs the software components listed above. Once the installation is completed, the MBP will be available on the URL *http://[MBP-Host]:8080/MBP*.  
+### 1.1 Installation on Linux 
+Please run the [installation script](install.sh), which automatically installs the aforementioned software components. Once the installation is completed, the MBP will be available on the URL `http://[MBP-Host]:8080/MBP`.  
 
-### Installation on Windows
+### 1.2 Installation on Windows
 Please execute the following steps:  
 - Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), [InfluxDB](https://portal.influxdata.com/downloads/) and [Tomcat8](https://tomcat.apache.org/download-80.cgi)   
-- Create the *MBP.war* file by building the provided maven project
+- Create the `MBP.war` file by building the provided maven project
     
     `$ mvn clean install`  
     
@@ -36,30 +38,30 @@ Please execute the following steps:
 
 Once the installation is completed, the MBP will be available on the URL *http://[MBP-Host]:8080/MBP*.
 
-### Installation on Mac Os:
+### 1.3 Installation on Mac Os
 Please execute the following steps:
 - Install [Homebrew](https://brew.sh/index_de),
 - Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), [InfluxDB](https://portal.influxdata.com/downloads/) and [Tomcat8](https://tomcat.apache.org/download-80.cgi)  
-
- `$ brew install mosquitto`  
- `$ brew install mongodb-community`  
- `$ brew install influxdb`  
- `$ brew install tomcat@8`  
+    `$ brew install mosquitto`  
+    `$ brew install mongodb-community`  
+    `$ brew install influxdb`  
+    `$ brew install tomcat@8`  
  
-- Create the *MBP.war* file by building the provided maven project
+- Create the `MBP.war` file by building the provided maven project
     
     `$ mvn clean install`  
     
 - Deploy the MBP application on Tomcat by moving the `MBP-0.1.war` to the Tomcat `webapps` folder in the path:
 usr/local/Cellar/tomcat/9.0.10/libexec .
-- Restart Tomcat:
+- Restart Tomcat:  
 `$ brew services restart tomcat` 
 
-Once the installation is completed, the MBP will be available on the URL *http://[MBP-Host]:8080/MBP-0.1*.
+Once the installation is completed, the MBP will be available on the URL `http://[MBP-Host]:8080/MBP-0.1`.
 
-### Installation using Docker
-There is a [docker container](https://github.com/IPVS-AS/MBP-Docker) available which includes a ready-to-use setup of the MBP application and its dependencies.
-    
+### 1.4 Installation using Docker
+To install the MBP as a docker container, please refer to the GitHub project [MBP2Go](https://github.com/IPVS-AS/MBP2Go).
+This project includes a ready-to-use setup of the MBP application and its dependencies.
+
 ### Tip: Cross-Origin Resource Sharing (CORS)
 
 Make sure that [Cross-Origin Resource Sharing (CORS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) is allowed for all origins. To do that, add the following filter to Tomcat's 'web.xml':
