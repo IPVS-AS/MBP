@@ -4,6 +4,8 @@ This platform enables means for (i) automated binding of IoT devices in order to
 ![MBP-UI](resources/MBP.PNG)  
 *MBP UI (based on [Bootstrap templates](https://startbootstrap.com/template-overviews/sb-admin-2/))*
 
+![MBP Home](resources/gifs/user-registration.gif)
+
 How to install the MBP and use its API is explained in detail in the following:  
 
 **[1 Installation](#1-installation)**  
