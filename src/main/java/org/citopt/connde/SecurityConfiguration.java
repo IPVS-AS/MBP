@@ -76,7 +76,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/api/users").hasAuthority(Constants.ADMIN)
                 .antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)
                 .antMatchers(HttpMethod.DELETE, "/api/users/:username").hasAuthority(Constants.ADMIN)
-                .antMatchers("/oauth/**").authenticated()
             .and().httpBasic().authenticationEntryPoint(restAuthenticationEntryPoint())
             .and()
                 .logout()

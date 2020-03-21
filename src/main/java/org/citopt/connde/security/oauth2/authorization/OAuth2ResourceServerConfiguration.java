@@ -30,9 +30,8 @@ public class OAuth2ResourceServerConfiguration extends ResourceServerConfigurerA
 	@Override
 	public void configure(HttpSecurity http) throws Exception {
 		http
-				.anonymous().disable()
 				.authorizeRequests()
-				.antMatchers("/api/testOauth").access("#oauth2.hasScope('write')");
+				.antMatchers("/").permitAll();
 	}
 
 	@Bean

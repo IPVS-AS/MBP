@@ -2,14 +2,8 @@ package org.citopt.connde.security.oauth2.authorization;
 
 import java.util.Arrays;
 
-import javax.ws.rs.BeanParam;
-
 import org.citopt.connde.constants.Constants;
-import org.citopt.connde.domain.component.Sensor;
-import org.citopt.connde.repository.SensorRepository;
-import org.citopt.connde.security.RestAuthenticationEntryPoint;
 import org.citopt.connde.service.UserDetailsServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -36,8 +30,8 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
     @Value("${security.oauth2.resource.jwt.key-value}")
     private String signingKey;
 
-    @Value("${server.address}")
-    private String serverAddress;
+    @Value("${security.oauth2.client.pre-established-redirect-uri}")
+    private String redirectUri;
 
     private final AuthenticationManager authenticationManager;
     private final UserDetailsServiceImpl userDetailsService;
@@ -50,7 +44,6 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
 
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        //TODO real client ids from MongoDB
         clients.inMemory()
                 .withClient("device-client")
                 .secret("device")
@@ -58,9 +51,9 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .scopes("write")
                 .authorities(Constants.DEVICE)
                 .autoApprove(true)
-                .accessTokenValiditySeconds(120) // 120 seconds
-                .refreshTokenValiditySeconds(500) // 2 hours
-                .redirectUris(serverAddress + "/api/getAccessCode")
+                .accessTokenValiditySeconds(300) //  5 minutes
+                .refreshTokenValiditySeconds(600) // 10 minutes
+                .redirectUris(redirectUri)
                 .and()
                 .withClient("mbp")
                 .secret("mbp-platform")
