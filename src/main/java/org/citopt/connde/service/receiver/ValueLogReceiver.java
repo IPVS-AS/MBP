@@ -2,12 +2,8 @@ package org.citopt.connde.service.receiver;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import groovy.util.logging.Slf4j;
 import org.apache.commons.codec.binary.Base64;
@@ -24,7 +20,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.test.autoconfigure.properties.PropertyMapping;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.context.event.EventListener;
@@ -68,9 +63,6 @@ public class ValueLogReceiver {
 
 	@Value("${security.user.password}")
 	private String httpPassword;
-
-	@Value("${server.address}")
-	private String serverAddress;
 
 	@Value("${security.oauth2.client.access-token-uri}")
 	private String oauth2TokenUri;
