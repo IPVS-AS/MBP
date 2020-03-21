@@ -41,13 +41,13 @@ public class RestOAuthController {
 	@RequestMapping(value = "/checkOauthTokenSuperuser", method = RequestMethod.POST)
 	public ResponseEntity<?> checkOauthTokenSuperuser(@RequestHeader("authorization") String authorizationHeader) {
 		LOGGER.log(Level.INFO, "Check OAuth Token Superuser");
-		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+		return new ResponseEntity<>(HttpStatus.OK, HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/checkOauthTokenAcl", method = RequestMethod.POST)
 	public ResponseEntity<?> checkOauthTokenAcl(@RequestHeader("authorization") String authorizationHeader) {
 		LOGGER.log(Level.INFO, "Check OAuth Token Acl");
-		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+		return new ResponseEntity<>(HttpStatus.OK, HttpStatus.OK);
 	}
 
 	private ResponseEntity<?> checkToken(String authorizationHeader) {
