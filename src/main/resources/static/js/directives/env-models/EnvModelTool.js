@@ -11,9 +11,10 @@ app.directive('envModelTool',
 
             function initialize(scope) {
                 const DIAGRAM_CONTAINER = $("#toolCanvasContainer");
-                const MARKING_RECT = $("#toolMarkingRect").hide();
+                const CANVAS = $("#canvas");
+                const MARKING_RECT_CONTAINER = $("#toolMarkingRectContainer").hide();
+                const MARKING_RECT = $("#toolMarkingRect");
                 let jsPlumbInstance;
-                let canvasId = "#canvas";
                 let elementIdCount = 0; // used for canvas ID uniqueness
                 let properties = {}; // keeps the properties of each element to draw on canvas
                 let element = ""; // the element which will be appended to the canvas
@@ -172,8 +173,8 @@ app.directive('envModelTool',
                             let eventObject = {
                                 element: element,
                                 type: "resize",
-                                start: {...event.originalSize},
-                                stop: {...event.size}
+                                //start: {...event.originalSize},
+                                //stop: {...event.size}
                             };
 
                             //Put event descriptor on stack
@@ -254,7 +255,7 @@ app.directive('envModelTool',
                 makeDraggable("#defaultSensor", "window sensor default-sensor custom");
 
                 // jQuery makes the canvas droppable
-                $(canvasId).droppable({
+                CANVAS.droppable({
                     accept: ".window",
                     drop: function (event, ui) {
                         if (clicked) {
@@ -518,7 +519,10 @@ app.directive('envModelTool',
                         element.data("type", properties.type);
                     }
 
-                    //Put focus on new element
+                    //Remove focus from all elements
+                    clearFocus();
+
+                    //Put focus on the new element
                     focusElement(element);
 
                     return element;
@@ -563,7 +567,7 @@ app.directive('envModelTool',
                  * Draw/append the element on the canvas
                  */
                 function drawElement($element) {
-                    $(canvasId).append($element);
+                    CANVAS.append($element);
                     // Make the element on the canvas draggable
                     jsPlumbInstance.draggable(jsPlumbInstance.getSelector(".jtk-node"), {
                         filter: ".ui-resizable-handle",
@@ -577,7 +581,7 @@ app.directive('envModelTool',
                                 element: $element,
                                 type: "drag",
                                 start: eventStart,
-                                stop: [...event.pos]
+                                //stop: [...event.pos]
                             };
 
                             //Put event descriptor on stack
@@ -609,7 +613,19 @@ app.directive('envModelTool',
                     if (isMoving) {
                         return;
                     }
+
+                    //Get element
                     let element = $(event.target).filter('.jtk-node');
+
+                    //Sanity check
+                    if(!element.length){
+                        return;
+                    }
+
+                    //Remove focus from all elements
+                    clearFocus();
+
+                    //Put focus on the clicked element
                     focusElement(element);
                 });
 
@@ -646,21 +662,34 @@ app.directive('envModelTool',
                 });
 
                 // Events of the canvas
-                $(canvasId).on('click', function (e) {
+                CANVAS.on('click', function (e) {
                     //Save data from input fields to the corresponding element
                     saveData();
                 }).on('mousedown', function (e) {
+                    //Make sure canvas is the actual target
+                    if (!$(e.target).hasClass("jtk-canvas")) {
+                        return;
+                    }
+
                     //Save starting position of the marking rect
                     markingRectPos.x = e.offsetX;
                     markingRectPos.y = e.offsetY;
 
                     MARKING_RECT.css({
                         left: e.offsetX + 'px',
-                        top: e.offsetY + 'px',
-                        display: '',
+                        top: e.offsetY + 'px'
                     }).width(0).height(0);
 
+                    //Display marking rect
+                    MARKING_RECT_CONTAINER.css('display', '');
+
                 }).on('mousemove', function (e) {
+                    //Do not mark if an element is currently moved
+                    if (isMoving) {
+                        MARKING_RECT_CONTAINER.hide();
+                        return;
+                    }
+
                     let posX = Math.min(markingRectPos.x, e.offsetX);
                     let posY = Math.min(markingRectPos.y, e.offsetY);
                     let width = Math.abs(markingRectPos.x - e.offsetX);
@@ -672,9 +701,42 @@ app.directive('envModelTool',
                         width: width + 'px',
                         height: height + 'px'
                     });
+                });
+                $('body').on('mouseup', function (e) {
 
-                }).on('mouseup', function (e) {
-                    MARKING_RECT.hide();
+                    if(isMoving){
+                        //Hide marking rect
+                        MARKING_RECT_CONTAINER.hide();
+                        return;
+                    }
+
+                    //Get final rect dimensions
+                    let markPosition = MARKING_RECT.position();
+                    let markWidth = MARKING_RECT.width();
+                    let markHeight = MARKING_RECT.height();
+
+                    //Remove focus from all elements
+                    clearFocus();
+
+                    //Get all selectable nodes
+                    $('.jtk-node').each(function () {
+                        let node = $(this);
+                        let nodePosition = node.position();
+                        let nodeWidth = node.width();
+                        let nodeHeight = node.height();
+
+                        //Check if node is within the mark
+                        if ((markPosition.left < nodePosition.left)
+                            && (markPosition.top < nodePosition.top)
+                            && ((markPosition.left + markWidth) > (nodePosition.left + nodeWidth))
+                            && ((markPosition.top + markHeight) > (nodePosition.top + nodeHeight))) {
+                            //Put focus on node
+                            focusElement(node);
+                        }
+                    });
+
+                    //Hide marking rect
+                    MARKING_RECT_CONTAINER.hide();
                 });
 
                 /**
@@ -726,16 +788,11 @@ app.directive('envModelTool',
                 }
 
                 /**
-                 * Puts the focus on a given element while removing the focus of all other elements. Focused
-                 * elements become resizable.
-                 * @param element The element to focus; null, of no element is suppoesd to be focused
+                 * Puts the focus on a given element. Focused elements become resizable and rotatable.
+                 * @param element The element to focus
                  */
                 function focusElement(element) {
-                    //Get all focused elements and remove focus, resizability and rotatability
-                    $('.clicked-element').removeClass('clicked-element').resizable("disable")
-                        .rotatable("disable").find('.ui-rotatable-handle').hide();
-
-                    //Check if a new focus element was provided
+                    //Sanity check
                     if ((element === null) || (element.length < 1)) {
                         return;
                     }
@@ -751,6 +808,20 @@ app.directive('envModelTool',
 
                     // Put focus on element
                     element.addClass("clicked-element");
+                }
+
+                /**
+                 * Removes the focus from all elements. This also disables resizability and rotatability of the
+                 * affected elements.
+                 */
+                function clearFocus() {
+                    //Get all focused elements and remove focus, resizability and rotatability
+                    $('.clicked-element')
+                        .removeClass('clicked-element')
+                        .resizable("disable")
+                        .rotatable("disable")
+                        .find('.ui-rotatable-handle')
+                        .hide();
                 }
 
 
@@ -1908,7 +1979,9 @@ app.directive('envModelTool',
                     '<div id="toolCanvasContainer">' +
                     '<div class="jtk-main">' +
                     '<div class="jtk-canvas canvas-wide modeling-tool jtk-surface jtk-surface-nopan" id="canvas">' +
+                    '<div id="toolMarkingRectContainer">' +
                     '<div id="toolMarkingRect"></div>' +
+                    '</div>' +
                     '</div>' +
                     '</div>' +
                     '</div>' +
