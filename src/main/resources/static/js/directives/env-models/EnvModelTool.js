@@ -12,8 +12,8 @@ app.directive('envModelTool',
             function initialize(scope) {
                 const DIAGRAM_CONTAINER = $("#toolCanvasContainer");
                 const CANVAS = $("#canvas");
-                const MARKING_RECT_CONTAINER = $("#toolMarkingRectContainer").hide();
-                const MARKING_RECT = $("#toolMarkingRect");
+                let MARKING_RECT_CONTAINER = $(null);
+                let MARKING_RECT = $(null);
                 let jsPlumbInstance;
                 let elementIdCount = 0; // used for canvas ID uniqueness
                 let properties = {}; // keeps the properties of each element to draw on canvas
@@ -21,7 +21,6 @@ app.directive('envModelTool',
                 let deletionPromises = [];
                 let clicked = false; // true if an element from the palette was clicked
                 let isMoving = false; //Remembers if the user is currently moving or modifying an element
-                let eventStart = null; //Remembers the initial state of an element event (drag, rotate, resize)
                 let markingRectPos = { //Remembers the position of the marking rect
                     x: 0,
                     y: 0
@@ -44,18 +43,12 @@ app.directive('envModelTool',
 
                 //Expose functions for template
                 scope.drawModel = drawModel;
-                scope.aveModel = saveModel;
-                scope.deleteModel = deleteModel;
-                scope.newModel = newModel;
-                scope.registerComponents = registerComponents;
-                scope.deployComponents = deployComponents;
-                scope.undeployComponents = undeployComponents;
                 scope.api.undo = undoAction;
                 scope.api.redo = redoAction;
 
                 // On initialization load the models from the database
                 (function initController() {
-                    loadModels();
+                    initMarkingRect();
                 })();
 
 
@@ -108,6 +101,18 @@ app.directive('envModelTool',
                 };
 
                 /**
+                 * Initializes the marking rectangle.
+                 */
+                function initMarkingRect() {
+                    //Create marking rect elements
+                    MARKING_RECT = $('<div class="markingRect">');
+                    MARKING_RECT_CONTAINER = $('<div class="markingRectContainer">').hide();
+
+                    //Append elements to canvas
+                    CANVAS.append(MARKING_RECT_CONTAINER.append(MARKING_RECT));
+                }
+
+                /**
                  * Makes the given element rotatable.
                  *
                  * @param element The element to rotate
@@ -126,19 +131,15 @@ app.directive('envModelTool',
                         },
                         start: () => (isMoving = true),
                         stop: function (el, event) {
+
+                            //Save final rotation angle
+                            element.data("angle", event.angle.stop);
+
                             //Unset moving flag
                             $timeout(() => (isMoving = false), 200);
 
-                            //Create event object for stack
-                            let eventObject = {
-                                element: element,
-                                type: "rotate",
-                                start: event.angle.start,
-                                stop: event.angle.stop
-                            };
-
-                            //Put event descriptor on stack
-                            historyStack.push(eventObject);
+                            //Write model to history stack
+                            writeModelToHistoryStack();
                         },
                         snap: true,
                         step: 22.5
@@ -169,16 +170,8 @@ app.directive('envModelTool',
                             //Unset moving flag
                             $timeout(() => (isMoving = false), 200);
 
-                            //Create event object for stack
-                            let eventObject = {
-                                element: element,
-                                type: "resize",
-                                //start: {...event.originalSize},
-                                //stop: {...event.size}
-                            };
-
-                            //Put event descriptor on stack
-                            historyStack.push(eventObject);
+                            //Write model to history stack
+                            writeModelToHistoryStack();
                         },
                         handles: "all"
                     });
@@ -269,15 +262,8 @@ app.directive('envModelTool',
                             element = createElement(id);
                             drawElement(element);
 
-                            //Create event object for stack
-                            let eventObject = {
-                                element: element,
-                                type: "create",
-                                position: [properties.left, properties.top]
-                            };
-
-                            //Put event descriptor on stack
-                            historyStack.push(eventObject);
+                            //Write model to history stack
+                            writeModelToHistoryStack();
                         }
                     }
                 });
@@ -538,18 +524,19 @@ app.directive('envModelTool',
 
                     // The position to create the element
                     element.css({
-                        'top': node.positionY,
-                        'left': node.positionX
+                        'left': node.left,
+                        'top': node.top
                     });
 
                     // Define the size of the element
                     element.outerWidth(node.width);
                     element.outerHeight(node.height);
 
-                    // Set rotation angle; no need for room
-                    if (node.angle && (node.clsName.indexOf("free-resize") === -1)) {
+                    // Set rotation angle
+                    if (node.angle) {
                         element.data("angle", node.angle);
-                        setAngle(element, false);
+                        //TODO
+                        //setAngle(element, false);
                     }
 
                     // Append the data to the element
@@ -572,20 +559,15 @@ app.directive('envModelTool',
                     jsPlumbInstance.draggable(jsPlumbInstance.getSelector(".jtk-node"), {
                         filter: ".ui-resizable-handle",
                         start: function (event) {
-                            let startPosition = event.pos || [];
-                            eventStart = [...startPosition];
+                            //Remove focus from all events
+                            clearFocus();
+
+                            //Put focus on dragged element
+                            focusElement($element);
                         },
                         stop: function (event) {
-                            //Create event object for stack
-                            let eventObject = {
-                                element: $element,
-                                type: "drag",
-                                start: eventStart,
-                                //stop: [...event.pos]
-                            };
-
-                            //Put event descriptor on stack
-                            historyStack.push(eventObject);
+                            //Write model to history stack
+                            writeModelToHistoryStack();
                         }
                     });
 
@@ -618,7 +600,7 @@ app.directive('envModelTool',
                     let element = $(event.target).filter('.jtk-node');
 
                     //Sanity check
-                    if(!element.length){
+                    if (!element.length) {
                         return;
                     }
 
@@ -704,7 +686,7 @@ app.directive('envModelTool',
                 });
                 $('body').on('mouseup', function (e) {
 
-                    if(isMoving){
+                    if (isMoving) {
                         //Hide marking rect
                         MARKING_RECT_CONTAINER.hide();
                         return;
@@ -850,141 +832,12 @@ app.directive('envModelTool',
                 }
 
                 /**
-                 * Undeploys, unregisters and deletes an element.
+                 * Deletes an element from the canvas.
                  * @param element The element to delete
                  */
                 function deleteElement(element) {
-                    scope.processing = {};
-                    scope.processing.status = true;
-                    scope.processing.finished = false;
-                    scope.processing.undeployedDeregistered = true;
-
-                    let type = element.attr('class').toString().split(" ")[1];
-
-                    if (type === "device" && element.data("id")) { // Case: A device has attached sensors and actuators, which are deployed or registered
-                        deletionPromises = [];
-                        $.each(jsPlumbInstance.getConnections({
-                            source: element.attr("id")
-                        }), function (index, connection) {
-                            let target = $(connection.target);
-                            let targetType = target.attr('class').toString().split(" ")[1];
-                            if (targetType === "sensor" || targetType === "actuator") {
-                                // Undeploy and deregister the attached sensor/actuator
-                                if (target.data("deployed")) {
-                                    let promise = undeployComponent(targetType, target, false);
-                                    deletionPromises.push(promise);
-                                } else if (target.data("id")) {
-                                    let promise = deregisterComponent(targetType, target, false);
-                                    deletionPromises.push(promise);
-                                }
-                            }
-                        });
-
-                        // Save the model afterwards to stay updated
-                        $q.all(deletionPromises).then(function () {
-                            if (scope.processing.undeployedDeregistered) {
-                                deregisterComponent(type, element, true);
-                            } else {
-                                saveModel().then(function (response) {
-                                    scope.processing.message = "Sensor or actuator error";
-                                    scope.processing.success = false;
-                                    processingTimeout();
-                                });
-                            }
-                        });
-                    } else { // Case: device, sensor or actuator
-                        if (element.data("deployed")) {
-                            undeployComponent(type, element, true);
-                        } else if (element.data("id")) {
-                            deregisterComponent(type, element, true);
-                        } else {
-                            deleteElementFromCanvas(element, false);
-                            scope.processing.status = false;
-                        }
-                    }
+                    jsPlumbInstance.remove(element);
                 }
-
-                /*
-                 * Undeploy and deregister the element
-                 */
-                function undeployComponent(type, element, deleteFromModel) {
-                    return ComponentService.undeploy(ENDPOINT_URI + "/deploy/" + type + "/" + element.data("id")).then(
-                        function (response) {
-                            element.data("deployed", false);
-                            element.removeData("depError");
-                            element.removeClass("error-element");
-                            element.removeClass("deployed-element");
-                            element.addClass("success-element");
-                            // Deregister the element in second step
-                            let promise = deregisterComponent(type, element, deleteFromModel);
-                            deletionPromises.push(promise);
-                        },
-                        function (response) {
-                            element.data("depError", response.data ? response.data.globalMessage : response.status);
-                            element.removeClass("success-element");
-                            element.removeClass("deployed-element");
-                            element.addClass("error-element");
-                            scope.processing.undeployedDeregistered = false;
-                            if (deleteFromModel) {
-                                saveModel().then(function (response) {
-                                    scope.processing.message = "Undeployment of " + element.data("name") + " ended with an error";
-                                    scope.processing.success = false;
-                                    processingTimeout();
-                                });
-                            }
-                        });
-                }
-
-                /*
-                 * Deregister and delete the element from canvas
-                 */
-                function deregisterComponent(type, element, deleteFromModel) {
-                    let item = {};
-                    item.id = element.data("id");
-                    return CrudService.deleteItem(type + "s", item).then(
-                        function (response) {
-                            element.removeData("id");
-                            element.removeData("depError");
-                            element.removeData("regError");
-                            element.removeClass("error-element");
-                            element.removeClass("success-element");
-                            // On success delete the element from canvas
-                            if (deleteFromModel) {
-                                deleteElementFromCanvas(element, true);
-                            }
-                        },
-                        function (response) {
-                            element.data("regError", response.status);
-                            element.removeClass("success-element");
-                            element.addClass("error-element");
-                            scope.processing.undeployedDeregistered = false;
-                            if (deleteFromModel) {
-                                saveModel().then(function (response) {
-                                    scope.processing.message = "Deregistration of " + element.data("name") + " ended with an error";
-                                    scope.processing.success = false;
-                                    processingTimeout();
-                                });
-                            }
-                        });
-                }
-
-                /*
-                 * Delete the element from the canvas and jsPlumbInstance
-                 */
-                function deleteElementFromCanvas(element, savingModel) {
-                    $timeout(function () {
-                        scope.clickedComponent = {};
-                        jsPlumbInstance.remove(element);
-                        if (savingModel) {
-                            saveModel().then(function (response) {
-                                scope.processing.message = element.data("name") + " deleted";
-                                scope.processing.success = true;
-                                processingTimeout();
-                            });
-                        }
-                    });
-                }
-
 
                 /*
                  * Bind listeners to the connections
@@ -1020,44 +873,11 @@ app.directive('envModelTool',
                 });
 
                 function onDetach(info) {
-                    scope.processing = {};
-                    scope.processing.status = true;
-                    scope.processing.finished = false;
-                    scope.processing.undeployedDeregistered = true;
-
                     let target = $(info.target);
                     let targetType = target.attr('class').toString().split(" ")[1];
-                    if (targetType == "sensor" || targetType == "actuator") {
-                        deletionPromises = [];
-                        if (target.data("deployed")) {
-                            let promise = undeployComponent(targetType, target, false);
-                            deletionPromises.push(promise);
-                        } else if (target.data("id")) {
-                            let promise = deregisterComponent(targetType, target, false);
-                            deletionPromises.push(promise);
-                        } else {
-                            scope.processing.status = false;
-                        }
-
-                        // Save the model after undeployment and deregistration
-                        $q.all(deletionPromises).then(function () {
-                            if (deletionPromises.length !== 0) {
-                                saveModel().then(function (response) {
-                                    if (scope.processing.undeployedDeregistered) {
-                                        scope.processing.message = target.data("name") + " deregistered";
-                                        scope.processing.success = true;
-                                    } else {
-                                        scope.processing.message = target.data("name") + " error";
-                                        scope.processing.success = false;
-                                    }
-                                    processingTimeout();
-                                });
-                            }
-                        });
+                    if (targetType === "sensor" || targetType === "actuator") {
                         target.removeData("device");
                         target.removeData("deviceId");
-                    } else {
-                        scope.processing.status = false;
                     }
                 }
 
@@ -1172,7 +992,7 @@ app.directive('envModelTool',
                         source: device.attr("id")
                     }), function (index, connection) {
                         let target = $(connection.target);
-                        if (target.attr("class").indexOf("device") == -1) {
+                        if (target.attr("class").indexOf("device") === -1) {
                             target.data("device", device.data("name"));
                             target.data("deviceId", device.data("id"));
                         }
@@ -1207,94 +1027,61 @@ app.directive('envModelTool',
                     elementIdCount = environment.elementIdCount;
                 }
 
-                /*
-                 * Load models from database
+                /**
+                 * Exports the model in its current state to a JSON string.
+                 * @return The exported JSON string representing the model
                  */
-                function loadModels() {
-                    return ModelService.GetModelsByUsername().then(function (response) {
-                        scope.loadedModels = response.data;
-                    }, function (response) {
-                    });
-                }
-
-                /*
-                 * Create the JSON representation and save it in the database
-                 */
-                function saveModel() {
+                function exportToJSON() {
+                    //Save all unsaved form data
                     saveData();
-
-                    // Distinguishing between saving with button and saving after registration/deployment because of the feedback
-                    let savingIndividual = true;
-                    if (scope.processing.status) {
-                        savingIndividual = false;
-                    } else {
-                        scope.processing = {};
-                        scope.processing.status = true;
-                        scope.processing.finished = false;
-                    }
-                    scope.processing.saved = true;
 
                     let totalCount = 0;
                     let nodes = [];
 
-                    // Get all nodes from the canvas
-                    $(".jtk-node").each(function (index, element) {
-                        totalCount++;
-                        let $element = $(element);
-                        let type = $element.attr('class').toString().split(" ")[1];
+                    //Iterate over all nodes of the canvas
+                    $(".jtk-node").each(function (index) {
+                        let $element = $(this);
 
-                        if (type == "device") {
-                            nodes.push({
-                                nodeType: type,
-                                elementId: $element.attr('id'),
-                                clsName: $element.attr('class').toString(),
-                                positionX: parseInt($element.css("left"), 10),
-                                positionY: parseInt($element.css("top"), 10),
-                                width: $element.outerWidth(),
-                                height: $element.outerHeight(),
-                                angle: $element.data("angle"),
-                                id: $element.data("id"),
-                                name: $element.data("name"),
-                                type: $element.data("type"),
-                                mac: $element.data("mac"),
-                                ip: $element.data("ip"),
-                                username: $element.data("username"),
-                                password: $element.data("password"),
-                                rsaKey: $element.data("rsaKey"),
-                                regError: $element.data("regError")
-                            });
-                        } else if (type === "actuator" || type === "sensor") {
-                            nodes.push({
-                                nodeType: type,
-                                elementId: $element.attr('id'),
-                                clsName: $element.attr('class').toString(),
-                                positionX: parseInt($element.css("left"), 10),
-                                positionY: parseInt($element.css("top"), 10),
-                                width: $element.outerWidth(),
-                                height: $element.outerHeight(),
-                                angle: $element.data("angle"),
-                                id: $element.data("id"),
-                                name: $element.data("name"),
-                                type: $element.data("type"),
-                                adapter: $element.data("adapter"),
-                                device: $element.data("device"),
-                                deviceId: $element.data("deviceId"),
-                                deployed: $element.data("deployed"),
-                                regError: $element.data("regError"),
-                                depError: $element.data("depError")
-                            });
-                        } else { // Floorplans
-                            nodes.push({
-                                nodeType: type,
-                                elementId: $element.attr('id'),
-                                clsName: $element.attr('class').toString(),
-                                positionX: parseInt($element.css("left"), 10),
-                                positionY: parseInt($element.css("top"), 10),
-                                width: $element.outerWidth(),
-                                height: $element.outerHeight(),
-                                angle: $element.data("angle")
-                            });
+                        totalCount++;
+
+                        //Read element classes and remove uninteresting ones
+                        let classNames = $element.attr('class')
+                            .replace('jtk-draggable')
+                            .replace('ui-resizable')
+                            .replace('ui-resizable-disabled')
+                            .replace('ui-rotatable-disabled')
+                            .replace('clicked-element')
+                            .replace(/ +(?= )/g, '');
+
+                        //Create basic node object
+                        let nodeObject = {
+                            nodeType: "floorplan", //Default, may be altered below
+                            elementId: $element.attr('id'),
+                            clsName: classNames,
+                            left: $element.position().left,
+                            top: $element.position().top,
+                            width: $element.width(),
+                            height: $element.height(),
+                        };
+
+                        //Read data from element and merge them with the node object
+                        Object.assign(nodeObject, $element.data());
+
+                        //Remove useless properties
+                        delete nodeObject['uiRotatable'];
+                        delete nodeObject['uiResizable'];
+
+                        //Determine node type
+                        if ($element.hasClass("device")) {
+                            nodeObject['nodeType'] = "device";
+                        } else if ($element.hasClass("actuator")) {
+                            nodeObject['nodeType'] = "actuator";
+                        } else if ($element.hasClass("sensor")) {
+                            nodeObject['nodeType'] = "sensor";
                         }
+
+                        //Push node object
+                        nodes.push(nodeObject);
                     });
 
                     // Get all connections
@@ -1316,75 +1103,39 @@ app.directive('envModelTool',
                     environment.numberOfElements = totalCount;
                     environment.elementIdCount = elementIdCount;
 
-                    let model = {};
-                    model.value = JSON.stringify(environment);
-                    model.name = scope.currentModel.name;
-                    model.id = scope.currentModel.id;
-
-                    // Save the model in the database
-                    return ModelService.SaveModel(model).then(
-                        function (response) {
-                            if (savingIndividual) {
-                                scope.processing.message = "Model saved";
-                                scope.processing.success = true;
-                                processingTimeout();
-                            }
-                            scope.currentModel = response.data;
-                            scope.selectedOptionName = scope.currentModel.name;
-                            loadModels();
-                        },
-                        function (response) {
-                            if (savingIndividual) {
-                                scope.processing.message = response.headers('X-MBP-error') ? response.headers('X-MBP-error') : "Model saving error";
-                                scope.processing.success = false;
-                                processingTimeout();
-                            }
-                            scope.processing.saved = false;
-                        });
+                    return JSON.stringify(environment);
                 }
 
-                /*
-                 * Delete the model from the database considering the registration and deployment
+                /**
+                 * Imports the model from a JSON string.
+                 * @param jsonString The JSON string to import the model from
                  */
-                function deleteModel() {
-                    scope.processing = {};
-                    scope.processing.status = true;
-                    scope.processing.finished = false;
-                    scope.processing.undeployedDeregistered = true;
+                function importFromJSON(jsonString) {
+                    //Parse the JSON string
+                    let jsonObject = JSON.parse(jsonString);
 
-                    // Undeploy and deregister each node if needed
-                    deletionPromises = [];
-                    $(".jtk-node").each(function (index, element) {
-                        let $element = $(element);
-                        let type = $element.attr('class').toString().split(" ")[1];
-                        if ($element.data("deployed")) {
-                            let promise = undeployComponent(type, $element, false);
-                            deletionPromises.push(promise);
-                        } else if ($element.data("id")) {
-                            let promise = deregisterComponent(type, $element, false);
-                            deletionPromises.push(promise);
-                        }
+                    //Remove all current nodes from the canvas
+                    clearCanvas();
+
+                    //First create the nodes
+                    $.each(jsonObject.nodes, function (index, node) {
+                        let element = createElementFromNode(node.elementId, node);
+                        drawElement(element);
                     });
 
-                    // After all deregistrations and undeployments - delete the model
-                    $q.all(deletionPromises).then(function () {
-                        if (scope.processing.undeployedDeregistered) {
-                            ModelService.DeleteModel(scope.currentModel.name).then(function (response) {
-                                scope.processing.message = scope.currentModel.name + " deleted";
-                                scope.processing.success = true;
-                                processingTimeout();
-                                newModel();
-                            }, function (response) {
-                                scope.processing.message = "Deletion error";
-                                scope.processing.success = false;
-                                processingTimeout();
-                            });
-                        } else {
-                            scope.processing.message = "Undeployment or deregistration error";
-                            scope.processing.success = false;
-                            processingTimeout();
+                    //Connect the created nodes
+                    $.each(jsonObject.connections, function (index, connection) {
+                        let conn = jsPlumbInstance.connect({
+                            source: connection.sourceId,
+                            target: connection.targetId,
+                            type: "basic"
+                        });
+                        conn.getOverlay("label").label = connection.label;
+                        if (connection.labelVisible) {
+                            conn.getOverlay("label").show();
                         }
                     });
+                    elementIdCount = jsonObject.elementIdCount;
                 }
 
                 /*
@@ -1399,285 +1150,15 @@ app.directive('envModelTool',
                     jsPlumbInstance.bind("connectionDetached", function (info) {
                         onDetach(info);
                     });
+                    initMarkingRect();
                 }
 
-                /*
-                 * Clear the canvas to make a new model
+                /**
+                 * Writes the model in its current state to the history stack.
                  */
-                function newModel() {
-                    elementIdCount = 0;
-                    scope.currentModel = {};
-                    clearCanvas();
-                    loadModels().then(function (response) {
-                        $timeout(function () {
-                            scope.selectedOptionName = "";
-                            $("#select-models").val("");
-                        });
-                    });
-                }
-
-                /*
-                 * Register all components on the canvas
-                 */
-                function registerComponents() {
-                    saveData();
-
-                    scope.processing = {};
-                    scope.processing.status = true;
-                    scope.processing.registered = true;
-                    scope.processing.finished = false;
-
-                    // First register devices
-                    let devicePromises = [];
-                    $(".jtk-node").each(function (index, element) {
-                        let $element = $(element);
-                        let type = $element.attr('class').toString().split(" ")[1];
-
-                        if (type === "device" && !$element.data("id")) {
-                            let item = {};
-                            item.name = $element.data("name");
-                            item.componentType = $element.data("type");
-                            item.macAddress = DeviceService.normalizeMacAddress($element.data("mac"));
-                            item.ipAddress = $element.data("ip");
-                            item.username = $element.data("username");
-                            item.password = $element.data("password");
-                            item.rsaKey = $element.data("rsaKey");
-                            let promise = register(type, item, $element);
-                            devicePromises.push(promise);
-                        }
-                    });
-
-                    // After all http requests
-                    $q.all(devicePromises).then(function () {
-                        // Then register actuators and sensors
-                        let actuatorSensorPromises = [];
-                        $(".jtk-node").each(function (index, element) {
-                            let $element = $(element);
-                            let type = $element.attr('class').toString().split(" ")[1];
-
-                            if ((type == "actuator" || type == "sensor") && !$element.data("id")) {
-                                let item = {};
-                                item.name = $element.data("name");
-                                item.componentType = $element.data("type");
-                                item.adapter = ENDPOINT_URI + "/adapters/" + $element.data("adapter");
-                                item.device = ENDPOINT_URI + "/devices/" + $element.data("deviceId");
-                                let promise = register(type, item, $element);
-                                actuatorSensorPromises.push(promise);
-                            }
-                        });
-
-                        // Save the model after all registrations
-                        $q.all(actuatorSensorPromises).then(function () {
-                            if (devicePromises.length === 0 && actuatorSensorPromises.length === 0) {
-                                scope.processing.message = "No components to register";
-                                scope.processing.success = false;
-                                processingTimeout();
-                            } else {
-                                saveModel().then(function (response) {
-                                    if (scope.processing.registered && scope.processing.saved) {
-                                        scope.processing.message = "Registration completed, model saved";
-                                        scope.processing.success = true;
-                                    } else if (scope.processing.registered && !scope.processing.saved) {
-                                        scope.processing.message = "Registration completed, model saving error";
-                                        scope.processing.success = false;
-                                    } else if (!scope.processing.registered && scope.processing.saved) {
-                                        scope.processing.message = "Registration error, model saved";
-                                        scope.processing.success = false;
-                                    } else if (!scope.processing.registered && !scope.processing.saved) {
-                                        scope.processing.message = "Registration error, model saving error";
-                                        scope.processing.success = false;
-                                    }
-                                    processingTimeout();
-                                });
-                            }
-                        });
-                    });
-                }
-
-                /*
-                 * Register a component
-                 */
-                function register(type, item, element) {
-                    return CrudService.addItem(type + "s", item).then(
-                        function (response) {
-                            element.data("id", response.id);
-                            if (type === "device") {
-                                // Update the attached sensors and actuators with generated ID of the device, need for their registration
-                                updateDeviceSA(element);
-                            }
-                            element.removeData("regError");
-                            element.removeData("depError");
-                            element.removeClass("error-element");
-                            element.addClass("success-element");
-                        },
-                        function (response) {
-                            console.log(response);
-                            if (response.response.data) {
-                                element.data("regError", response.response.data.errors[0].message);
-                            } else {
-                                element.data("regError", response.response.status);
-                            }
-                            element.removeClass("success-element");
-                            element.addClass("error-element");
-                            scope.processing.registered = false;
-                        });
-                }
-
-                /*
-                 * Deploy all sensors and actuators on the canvas
-                 */
-                function deployComponents() {
-                    scope.processing = {};
-                    scope.processing.status = true;
-                    scope.processing.deployed = true;
-                    scope.processing.finished = false;
-
-                    // Get and deploy all undeployed sensors and actuators
-                    let deployPromises = [];
-                    $(".jtk-node").each(function (index, element) {
-                        let $element = $(element);
-                        let type = $element.attr('class').toString().split(" ")[1];
-
-                        if (type == "actuator" && !$element.data("deployed")) {
-                            let promise = deploy(ENDPOINT_URI + "/deploy/actuator/" + $element.data("id"), $element);
-                            deployPromises.push(promise);
-                        } else if (type == "sensor" && !$element.data("deployed")) {
-                            let promise = deploy(ENDPOINT_URI + "/deploy/sensor/" + $element.data("id"), $element);
-                            deployPromises.push(promise);
-                        }
-                    });
-
-                    // Save the model after the deployment
-                    $q.all(deployPromises).then(function () {
-                        if (deployPromises.length === 0) {
-                            scope.processing.message = "No components to deploy";
-                            scope.processing.success = false;
-                            processingTimeout();
-                        } else {
-                            saveModel().then(function (response) {
-                                if (scope.processing.deployed && scope.processing.saved) {
-                                    scope.processing.message = "Deployment completed, model saved";
-                                    scope.processing.success = true;
-                                } else if (scope.processing.deployed && !scope.processing.saved) {
-                                    scope.processing.message = "Deployment completed, model saving error";
-                                    scope.processing.success = false;
-                                } else if (!scope.processing.deployed && scope.processing.saved) {
-                                    scope.processing.message = "Deployment error, model saved";
-                                    scope.processing.success = false;
-                                } else if (!scope.processing.deployed && !scope.processing.saved) {
-                                    scope.processing.message = "Deployment error, model saving error";
-                                    scope.processing.success = false;
-                                }
-                                processingTimeout();
-                            });
-                        }
-                    });
-                }
-
-                /*
-                 * Deploy a component
-                 */
-                function deploy(component, element) {
-                    let parameterValues = [];
-                    return ComponentService.deploy(parameterValues, component).then(
-                        function (response) {
-                            element.data("deployed", true);
-                            element.removeData("regError");
-                            element.removeData("depError");
-                            element.removeClass("error-element");
-                            element.removeClass("success-element");
-                            element.addClass("deployed-element");
-                        },
-                        function (response) {
-                            element.data("depError", response.data ? response.data.globalMessage : response.status);
-                            element.removeClass("success-element");
-                            element.removeClass("deployed-element");
-                            element.addClass("error-element");
-                            scope.processing.deployed = false;
-                        });
-                }
-
-                /*
-                 * Undeploy all deployed sensors and actuators on the canvas
-                 */
-                function undeployComponents() {
-                    scope.processing = {};
-                    scope.processing.status = true;
-                    scope.processing.undeployed = true;
-                    scope.processing.finished = false;
-
-                    let undeployPromises = [];
-                    $(".jtk-node").each(function (index, element) {
-                        let $element = $(element);
-                        let type = $element.attr('class').toString().split(" ")[1];
-
-                        if (type == "actuator" && $element.data("deployed")) {
-                            let promise = undeploy(ENDPOINT_URI + "/deploy/actuator/" + $element.data("id"), $element);
-                            undeployPromises.push(promise);
-                        } else if (type == "sensor" && $element.data("deployed")) {
-                            let promise = undeploy(ENDPOINT_URI + "/deploy/sensor/" + $element.data("id"), $element);
-                            undeployPromises.push(promise);
-                        }
-                    });
-
-                    // save the model after the undeployment
-                    $q.all(undeployPromises).then(function () {
-                        if (undeployPromises.length === 0) {
-                            scope.processing.message = "No components to undeploy";
-                            scope.processing.success = false;
-                            processingTimeout();
-                        } else {
-                            saveModel().then(function (response) {
-                                if (scope.processing.undeployed && scope.processing.saved) {
-                                    scope.processing.message = "Undeployment completed, model saved";
-                                    scope.processing.success = true;
-                                } else if (scope.processing.undeployed && !scope.processing.saved) {
-                                    scope.processing.message = "Undeployment completed, model saving error";
-                                    scope.processing.success = false;
-                                } else if (!scope.processing.undeployed && scope.processing.saved) {
-                                    scope.processing.message = "Undeployment error, model saved";
-                                    scope.processing.success = false;
-                                } else if (!scope.processing.undeployed && !scope.processing.saved) {
-                                    scope.processing.message = "Undeployment error, model saving error";
-                                    scope.processing.success = false;
-                                }
-                                processingTimeout();
-                            });
-                        }
-                    });
-                }
-
-                /*
-                 * Undeploy a component
-                 */
-                function undeploy(component, element) {
-                    return ComponentService.undeploy(component).then(
-                        function (response) {
-                            element.data("deployed", false);
-                            element.removeData("depError");
-                            element.removeData("regError");
-                            element.removeClass("error-element");
-                            element.removeClass("deployed-element");
-                            element.addClass("success-element");
-                        },
-                        function (response) {
-                            element.data("depError", response.data ? response.data.globalMessage : response.status);
-                            element.removeClass("success-element");
-                            element.removeClass("deployed-element");
-                            element.addClass("error-element");
-                            scope.processing.undeployed = false;
-                        });
-                }
-
-                /*
-                 * Defines how long the feedback message is displayed in the tool
-                 */
-                function processingTimeout() {
-                    scope.processing.status = false;
-                    scope.processing.finished = true;
-                    $timeout(function () {
-                        scope.processing.finished = false;
-                    }, 3000);
+                function writeModelToHistoryStack() {
+                    //Export the model and push it on the stack
+                    historyStack.push(exportToJSON());
                 }
 
                 /**
@@ -1685,8 +1166,16 @@ app.directive('envModelTool',
                  * Undoes the most recent action.
                  */
                 function undoAction() {
-                    alert("undo");
-                    console.log(historyStack);
+                    //Check if there is an action to undo
+                    if (historyStack.length < 2) {
+                        return;
+                    }
+
+                    //Push last state to the future stack
+                    futureStack.push(historyStack.pop());
+
+                    //Get previous state from history stack and restore model
+                    importFromJSON(historyStack.pop());
                 }
 
                 /**
@@ -1694,7 +1183,6 @@ app.directive('envModelTool',
                  * Redoes the most recent undone action.
                  */
                 function redoAction() {
-                    alert("redo");
                     console.log(historyStack);
                 }
             }
@@ -1979,9 +1467,6 @@ app.directive('envModelTool',
                     '<div id="toolCanvasContainer">' +
                     '<div class="jtk-main">' +
                     '<div class="jtk-canvas canvas-wide modeling-tool jtk-surface jtk-surface-nopan" id="canvas">' +
-                    '<div id="toolMarkingRectContainer">' +
-                    '<div id="toolMarkingRect"></div>' +
-                    '</div>' +
                     '</div>' +
                     '</div>' +
                     '</div>' +
