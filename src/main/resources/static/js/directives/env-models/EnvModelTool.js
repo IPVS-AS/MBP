@@ -17,8 +17,6 @@ app.directive('envModelTool',
                 let jsPlumbInstance;
                 let elementIdCount = 0; // used for canvas ID uniqueness
                 let properties = {}; // keeps the properties of each element to draw on canvas
-                let element = ""; // the element which will be appended to the canvas
-                let deletionPromises = [];
                 let clicked = false; // true if an element from the palette was clicked
                 let isMoving = false; //Remembers if the user is currently moving or modifying an element
                 let markingRectPos = { //Remembers the position of the marking rect
@@ -26,14 +24,17 @@ app.directive('envModelTool',
                     y: 0
                 };
 
-                //Stacks for Undo and Redo functions
-                let historyStack = [];
-                let futureStack = [];
+                //Undo/Redo Manager
+                const UNDO_MANAGER = new JSUndoManager({
+                    limit: 50,
+                    debug: true
+                });
+                //Remembers the last state of the model
+                let lastModelState = "";
 
                 //Expose fields for template
                 scope.processing = {}; // used to show/hide the progress circle
                 scope.selectedOptionName = "";
-                scope.loadedModels = [];
                 scope.currentModel = {};
                 scope.clickedComponent = {};
                 scope.adapterListCtrl = $controller('ItemListController as adapterListCtrl', {
@@ -42,11 +43,10 @@ app.directive('envModelTool',
                 });
 
                 //Expose functions for template
-                scope.drawModel = drawModel;
                 scope.api.undo = undoAction;
                 scope.api.redo = redoAction;
 
-                // On initialization load the models from the database
+                // Initialization
                 (function initController() {
                     initMarkingRect();
                 })();
@@ -100,6 +100,9 @@ app.directive('envModelTool',
                     allowLoopback: false
                 };
 
+                //Save empty model state
+                lastModelState = exportToJSON();
+
                 /**
                  * Initializes the marking rectangle.
                  */
@@ -113,15 +116,20 @@ app.directive('envModelTool',
                 }
 
                 /**
-                 * Makes the given element rotatable.
-                 *
-                 * @param element The element to rotate
+                 * Makes the given element rotatable. Optionally, a start angle may be passed.
+                 * @param element The element that is supposed to become rotatable
+                 * @param startAngle The optional start angle of the rotation in radians
                  */
-                function makeRotatable(element) {
+                function makeRotatable(element, startAngle) {
                     //Check if rotatability may be just enabled again
                     if (element.has(".ui-rotatable-handle").length) {
                         element.rotatable("enable").find('.ui-rotatable-handle').show();
                         return;
+                    }
+
+                    //Sanity check for angle
+                    if (typeof startAngle === 'undefined') {
+                        startAngle = 0;
                     }
 
                     let rotateOptions = {
@@ -132,15 +140,19 @@ app.directive('envModelTool',
                         start: () => (isMoving = true),
                         stop: function (el, event) {
 
-                            //Save final rotation angle
-                            element.data("angle", event.angle.stop);
+                            //Normalize final rotation angle
+                            let finalAngle = normalizeRadians(event.angle.stop);
+
+                            //Save rotation angle
+                            element.data("angle", finalAngle);
 
                             //Unset moving flag
                             $timeout(() => (isMoving = false), 200);
 
                             //Write model to history stack
-                            writeModelToHistoryStack();
+                            writeToUndo();
                         },
+                        radians: startAngle,
                         snap: true,
                         step: 22.5
                     };
@@ -171,7 +183,7 @@ app.directive('envModelTool',
                             $timeout(() => (isMoving = false), 200);
 
                             //Write model to history stack
-                            writeModelToHistoryStack();
+                            writeToUndo();
                         },
                         handles: "all"
                     });
@@ -259,11 +271,11 @@ app.directive('envModelTool',
                             elementIdCount++;
                             let id = "canvasWindow" + elementIdCount;
                             // Create and draw the element in the canvas
-                            element = createElement(id);
+                            let element = createElement(id);
                             drawElement(element);
 
                             //Write model to history stack
-                            writeModelToHistoryStack();
+                            writeToUndo();
                         }
                     }
                 });
@@ -477,6 +489,25 @@ app.directive('envModelTool',
                 });
 
                 /**
+                 * Normalizes an angle in radians to an element of [0, 2 * PI[
+                 * @param radians
+                 * @returns The normalized radian angle
+                 */
+                function normalizeRadians(radians) {
+                    //Increase by 2 * PI if necessary
+                    while (radians < 0) {
+                        radians += 2 * Math.PI;
+                    }
+
+                    //Decrease by 2 * PI if necessary
+                    while (radians >= 2 * Math.PI) {
+                        radians -= 2 * Math.PI;
+                    }
+
+                    return radians;
+                }
+
+                /**
                  * Create an element to be drawn on the canvas with a certain id.
                  */
                 function createElement(id) {
@@ -522,22 +553,18 @@ app.directive('envModelTool',
                     //Create element
                     let element = $('<div>').attr('id', id).addClass(node.clsName);
 
+                    // Set rotation angle if available
+                    if ((typeof node.angle !== "undefined") && (node.angle > 0)) {
+                        setAngle(element, node.angle);
+                    }
+
                     // The position to create the element
                     element.css({
-                        'left': node.left,
-                        'top': node.top
+                        'left': node.left + 'px',
+                        'top': node.top + 'px',
+                        'width': node.width + 'px',
+                        'height': node.height + 'px'
                     });
-
-                    // Define the size of the element
-                    element.outerWidth(node.width);
-                    element.outerHeight(node.height);
-
-                    // Set rotation angle
-                    if (node.angle) {
-                        element.data("angle", node.angle);
-                        //TODO
-                        //setAngle(element, false);
-                    }
 
                     // Append the data to the element
                     element.data(node);
@@ -567,7 +594,7 @@ app.directive('envModelTool',
                         },
                         stop: function (event) {
                             //Write model to history stack
-                            writeModelToHistoryStack();
+                            writeToUndo();
                         }
                     });
 
@@ -721,6 +748,19 @@ app.directive('envModelTool',
                     MARKING_RECT_CONTAINER.hide();
                 });
 
+
+                /*
+                 * Rotates a given element by a certain angle while initializing its rotatability.
+                 * @param element The element to rotate
+                 * @param angle The angle in radians for which to rotate the element
+                 */
+                function setAngle(element, angle) {
+                    makeRotatable(element, angle);
+                    element.rotatable("disable")
+                        .find('.ui-rotatable-handle')
+                        .hide();
+                }
+
                 /**
                  * Moves all currently focused elements in a certain direction for a given number of pixels.
                  * @param direction The direction (left, up, right, down) in which to move the elements:
@@ -767,6 +807,7 @@ app.directive('envModelTool',
                     $('.clicked-element').each(function () {
                         deleteElement($(this));
                     });
+                    writeToUndo();
                 }
 
                 /**
@@ -804,31 +845,6 @@ app.directive('envModelTool',
                         .rotatable("disable")
                         .find('.ui-rotatable-handle')
                         .hide();
-                }
-
-
-                /*
-                 * Rotate the element with css
-                 */
-                function setAngle(element, rotate) {
-                    let angle = 0;
-                    if (rotate) {
-                        angle = (element.data('angle') + 90) || 90;
-                    } else {
-                        angle = element.data("angle");
-                    }
-                    element.css({
-                        '-webkit-transform': 'rotate(' + angle + 'deg)',
-                        '-moz-transform': 'rotate(' + angle + 'deg)',
-                        '-ms-transform': 'rotate(' + angle + 'deg)',
-                        'transform': 'rotate(' + angle + 'deg)',
-                    });
-                    element.data('angle', angle);
-                    if (element.outerHeight() > element.outerWidth()) {
-                        element.outerWidth(element.outerHeight());
-                    } else {
-                        element.outerHeight(element.outerWidth());
-                    }
                 }
 
                 /**
@@ -999,34 +1015,6 @@ app.directive('envModelTool',
                     });
                 }
 
-                /*
-                 * Draw a model on the canvas based on the saved JSON representation
-                 */
-                function drawModel(model) {
-                    clearCanvas();
-                    scope.currentModel = JSON.parse(model);
-                    let environment = JSON.parse(scope.currentModel.value);
-                    // Draw first the nodes
-                    $.each(environment.nodes, function (index, node) {
-                        element = createElementFromNode(node.elementId, node);
-                        drawElement(element);
-                        element = "";
-                    });
-                    // Connect the created nodes
-                    $.each(environment.connections, function (index, connection) {
-                        let conn = jsPlumbInstance.connect({
-                            source: connection.sourceId,
-                            target: connection.targetId,
-                            type: "basic"
-                        });
-                        conn.getOverlay("label").label = connection.label;
-                        if (connection.labelVisible) {
-                            conn.getOverlay("label").show();
-                        }
-                    });
-                    elementIdCount = environment.elementIdCount;
-                }
-
                 /**
                  * Exports the model in its current state to a JSON string.
                  * @return The exported JSON string representing the model
@@ -1040,18 +1028,18 @@ app.directive('envModelTool',
 
                     //Iterate over all nodes of the canvas
                     $(".jtk-node").each(function (index) {
-                        let $element = $(this);
-
                         totalCount++;
 
+                        let $element = $(this);
+
                         //Read element classes and remove uninteresting ones
-                        let classNames = $element.attr('class')
-                            .replace('jtk-draggable')
-                            .replace('ui-resizable')
-                            .replace('ui-resizable-disabled')
-                            .replace('ui-rotatable-disabled')
-                            .replace('clicked-element')
-                            .replace(/ +(?= )/g, '');
+                        let classNames = $('<div>').addClass($element.attr('class'))
+                            .removeClass('jtk-draggable')
+                            .removeClass('ui-resizable')
+                            .removeClass('ui-resizable-disabled')
+                            .removeClass('ui-rotatable-disabled')
+                            .removeClass('clicked-element')
+                            .attr('class');
 
                         //Create basic node object
                         let nodeObject = {
@@ -1154,11 +1142,23 @@ app.directive('envModelTool',
                 }
 
                 /**
-                 * Writes the model in its current state to the history stack.
+                 * Writes the model in its current state to the undo manager.
                  */
-                function writeModelToHistoryStack() {
-                    //Export the model and push it on the stack
-                    historyStack.push(exportToJSON());
+                function writeToUndo() {
+                    let undoModelState = lastModelState;
+                    lastModelState = exportToJSON();
+                    let redoModelState = lastModelState;
+
+                    UNDO_MANAGER.record({
+                        undo: function () {
+                            importFromJSON(undoModelState);
+                            lastModelState = undoModelState;
+                        },
+                        redo: function () {
+                            importFromJSON(redoModelState);
+                            lastModelState = redoModelState;
+                        }
+                    });
                 }
 
                 /**
@@ -1166,16 +1166,7 @@ app.directive('envModelTool',
                  * Undoes the most recent action.
                  */
                 function undoAction() {
-                    //Check if there is an action to undo
-                    if (historyStack.length < 2) {
-                        return;
-                    }
-
-                    //Push last state to the future stack
-                    futureStack.push(historyStack.pop());
-
-                    //Get previous state from history stack and restore model
-                    importFromJSON(historyStack.pop());
+                    UNDO_MANAGER.undo();
                 }
 
                 /**
@@ -1183,7 +1174,7 @@ app.directive('envModelTool',
                  * Redoes the most recent undone action.
                  */
                 function redoAction() {
-                    console.log(historyStack);
+                    UNDO_MANAGER.redo();
                 }
             }
 
