@@ -51,8 +51,8 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .scopes("write")
                 .authorities(Constants.DEVICE)
                 .autoApprove(true)
-                .accessTokenValiditySeconds(300) //  5 minutes
-                .refreshTokenValiditySeconds(600) // 10 minutes
+                .accessTokenValiditySeconds(600) //  5 minutes
+                .refreshTokenValiditySeconds(1200) // 10 minutes
                 .redirectUris(redirectUri)
                 .and()
                 .withClient("mbp")
@@ -61,7 +61,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .scopes("read")
                 .authorities(Constants.ADMIN)
                 .autoApprove(true)
-                .accessTokenValiditySeconds(120); // 365 days = 31536000
+                .accessTokenValiditySeconds(31536000); // 365 days = 31536000
     }
 
     @Override

@@ -52,10 +52,13 @@ public class RestOAuthController {
 
 	private ResponseEntity<?> checkToken(String authorizationHeader) {
 		RestTemplate restTemplate = new RestTemplate();
+		LOGGER.log(Level.INFO, "Checking with token uri " + checkTokenUri + " and " + authorizationHeader);
 		ResponseEntity<Json> response = restTemplate.getForEntity(checkTokenUri +  "?token=" + authorizationHeader, Json.class);
 		if (response.getStatusCode().equals(HttpStatus.OK)) {
+			LOGGER.log(Level.INFO, HttpStatus.OK.toString());
 			return new ResponseEntity<>(HttpStatus.OK, HttpStatus.OK);
 		}
+		LOGGER.log(Level.INFO, HttpStatus.UNAUTHORIZED.toString());
 		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
 	}
 }
