@@ -146,7 +146,7 @@ public class ValueLogReceiver {
 	 * @throws MqttException In case of an error during execution of mqtt operations
 	 * @throws IOException   In case of an I/O issue
 	 */
-	@Scheduled(fixedDelay = 120000)
+	@Scheduled(fixedDelay = 60000)
 	public void setupAndStart() throws IOException {
 		try {
 			//Disconnect the old mqtt client if already connected
@@ -185,7 +185,7 @@ public class ValueLogReceiver {
 			mqttClient.setCallback(callback);
 		} catch (MqttException e) {
 			System.err.print("Error during MQTT connection, trying to reconnect with new client..." + e.getMessage());
-			setupAndStart();
+			//setupAndStart();
 		}
 	}
 
