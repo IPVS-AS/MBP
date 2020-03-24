@@ -1159,6 +1159,17 @@ app.directive('envModelTool',
                             lastModelState = redoModelState;
                         }
                     });
+
+                    //Update undo/redo state
+                    updateUndoState();
+                }
+
+                /**
+                 * Updates the current state of the undo/redo functions at the outbound interface of the directive.
+                 */
+                function updateUndoState() {
+                    scope.canUndo = UNDO_MANAGER.canUndo();
+                    scope.canRedo = UNDO_MANAGER.canRedo();
                 }
 
                 /**
@@ -1167,6 +1178,9 @@ app.directive('envModelTool',
                  */
                 function undoAction() {
                     UNDO_MANAGER.undo();
+
+                    //Update undo/redo state
+                    updateUndoState();
                 }
 
                 /**
@@ -1175,6 +1189,9 @@ app.directive('envModelTool',
                  */
                 function redoAction() {
                     UNDO_MANAGER.redo();
+
+                    //Update undo/redo state
+                    updateUndoState();
                 }
             }
 
@@ -1625,8 +1642,10 @@ app.directive('envModelTool',
                 link: link,
                 scope: {
                     //Public API
-                    api: "=api"
-
+                    api: "=api",
+                    //Hold the current state of the undo/redo functions
+                    canUndo: '=canUndo',
+                    canRedo: '=canRedo'
                     /*
                     //The unit in which the statistics are supposed to be displayed
                     unit: '@unit',

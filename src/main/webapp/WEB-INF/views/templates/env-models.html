@@ -95,10 +95,12 @@
                     <button type="button" class="btn btn-default waves-effect">
                         <i class="material-icons" ng-style="{'color': (true ? 'red' : '')}">save</i>
                     </button>
-                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.undo()">
+                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.undo()"
+                            ng-disabled="!canUndo">
                         <i class="material-icons">undo</i>
                     </button>
-                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.redo()">
+                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.redo()"
+                            ng-disabled="!canRedo">
                         <i class="material-icons">redo</i>
                     </button>
                     <div class="btn-group" role="group">
@@ -112,7 +114,7 @@
                         </ul>
                     </div>
                 </div>
-                <env-model-tool api="envModelToolApi"></env-model-tool>
+                <env-model-tool api="envModelToolApi" can-undo="canUndo" can-redo="canRedo"></env-model-tool>
             </div>
         </div>
     </div>
