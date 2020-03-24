@@ -150,7 +150,7 @@ app.directive('envModelTool',
                             $timeout(() => (isMoving = false), 200);
 
                             //Write model to history stack
-                            writeToUndo();
+                            saveUndo();
                         },
                         radians: startAngle,
                         snap: true,
@@ -183,7 +183,10 @@ app.directive('envModelTool',
                             $timeout(() => (isMoving = false), 200);
 
                             //Write model to history stack
-                            writeToUndo();
+                            saveUndo();
+
+                            console.log("Event:");
+                            console.log(event);
                         },
                         handles: "all"
                     });
@@ -274,8 +277,10 @@ app.directive('envModelTool',
                             let element = createElement(id);
                             drawElement(element);
 
-                            //Write model to history stack
-                            writeToUndo();
+                            //Write model to history stack if its not a room (because of its animation)
+                            if (!element.hasClass("room-floorplan")) {
+                                saveUndo();
+                            }
                         }
                     }
                 });
@@ -517,15 +522,20 @@ app.directive('envModelTool',
                     // The position to create the dropped element
                     element.css({
                         'top': properties.top,
-                        'left': properties.left
+                        'left': properties.left,
+                        'width': '50px',
+                        'height': '50px'
                     });
 
                     // Increase the size of room
                     if (element.hasClass("room-floorplan")) {
-                        element.css({width: '50px', height: '50px'}).animate({
+                        element.animate({
                             width: '250px',
                             height: '250px'
-                        }, 1000);
+                        }, 1000, function () {
+                            //Save state with final size
+                            saveUndo();
+                        });
                     }
                     // Add connection square on device
                     if (properties.clsName.indexOf("device") > -1) {
@@ -594,7 +604,7 @@ app.directive('envModelTool',
                         },
                         stop: function (event) {
                             //Write model to history stack
-                            writeToUndo();
+                            saveUndo();
                         }
                     });
 
@@ -807,7 +817,7 @@ app.directive('envModelTool',
                     $('.clicked-element').each(function () {
                         deleteElement($(this));
                     });
-                    writeToUndo();
+                    saveUndo();
                 }
 
                 /**
@@ -1041,6 +1051,10 @@ app.directive('envModelTool',
                             .removeClass('clicked-element')
                             .attr('class');
 
+                        //Remove transformation to extract data from the unrotated element
+                        let transformation = $element.css('transform');
+                        $element.css('transform', '');
+
                         //Create basic node object
                         let nodeObject = {
                             nodeType: "floorplan", //Default, may be altered below
@@ -1049,11 +1063,14 @@ app.directive('envModelTool',
                             left: $element.position().left,
                             top: $element.position().top,
                             width: $element.width(),
-                            height: $element.height(),
+                            height: $element.height()
                         };
 
+                        //Apply transformation again
+                        $element.css('transform', transformation);
+
                         //Read data from element and merge them with the node object
-                        Object.assign(nodeObject, $element.data());
+                        nodeObject = Object.assign({}, $element.data(), nodeObject);
 
                         //Remove useless properties
                         delete nodeObject['uiRotatable'];
@@ -1144,10 +1161,12 @@ app.directive('envModelTool',
                 /**
                  * Writes the model in its current state to the undo manager.
                  */
-                function writeToUndo() {
+                function saveUndo() {
                     let undoModelState = lastModelState;
                     lastModelState = exportToJSON();
                     let redoModelState = lastModelState;
+
+                    console.log(lastModelState);
 
                     UNDO_MANAGER.record({
                         undo: function () {
