@@ -23,14 +23,13 @@ app.directive('envModelTool',
                     x: 0,
                     y: 0
                 };
-
                 //Undo/Redo Manager
                 const UNDO_MANAGER = new JSUndoManager({
                     limit: 50,
                     debug: true
                 });
-                //Remembers the last state of the model
-                let lastModelState = "";
+                let lastModelState = ""; //Remembers the last state of the model
+                let copyClipboard = [];
 
                 //Expose fields for template
                 scope.processing = {}; // used to show/hide the progress circle
@@ -45,6 +44,10 @@ app.directive('envModelTool',
                 //Expose functions for template
                 scope.api.undo = undoAction;
                 scope.api.redo = redoAction;
+                scope.api.copy = copyFocusedElements;
+                scope.api.cut = cutFocusedElements;
+                scope.api.paste = pasteElements;
+                scope.api.delete = deleteFocusedElements;
 
                 // Initialization
                 (function initController() {
@@ -55,7 +58,6 @@ app.directive('envModelTool',
                 /*
                  * Define the types and look of the nodes and connections
                  */
-
                 jsPlumbInstance = window.jsp = jsPlumb.getInstance({
                     Endpoint: ["Dot", {
                         radius: 2
@@ -184,9 +186,6 @@ app.directive('envModelTool',
 
                             //Write model to history stack
                             saveUndo();
-
-                            console.log("Event:");
-                            console.log(event);
                         },
                         handles: "all"
                     });
@@ -626,28 +625,6 @@ app.directive('envModelTool',
                     }
                 }
 
-                // In case the diagram container is clicked
-                DIAGRAM_CONTAINER.on("click", function (event) {
-                    //Ensure that user is not currently moving an element
-                    if (isMoving) {
-                        return;
-                    }
-
-                    //Get element
-                    let element = $(event.target).filter('.jtk-node');
-
-                    //Sanity check
-                    if (!element.length) {
-                        return;
-                    }
-
-                    //Remove focus from all elements
-                    clearFocus();
-
-                    //Put focus on the clicked element
-                    focusElement(element);
-                });
-
                 // In case a key is pressed
                 $(document).on("keydown", function (event) {
                     //Check for pressed key
@@ -684,6 +661,25 @@ app.directive('envModelTool',
                 CANVAS.on('click', function (e) {
                     //Save data from input fields to the corresponding element
                     saveData();
+
+                    //Ensure that user is not currently moving an element
+                    if (isMoving) {
+                        return;
+                    }
+
+                    //Get element
+                    let element = $(event.target).filter('.jtk-node');
+
+                    //Sanity check
+                    if (!element.length) {
+                        return;
+                    }
+
+                    //Remove focus from all elements
+                    clearFocus();
+
+                    //Put focus on the clicked element
+                    focusElement(element);
                 }).on('mousedown', function (e) {
                     //Make sure canvas is the actual target
                     if (!$(e.target).hasClass("jtk-canvas")) {
@@ -703,6 +699,11 @@ app.directive('envModelTool',
                     MARKING_RECT_CONTAINER.css('display', '');
 
                 }).on('mousemove', function (e) {
+                    //Abort if marking rect is not visible
+                    if (!MARKING_RECT_CONTAINER.is(":visible")) {
+                        return;
+                    }
+
                     //Do not mark if an element is currently moved
                     if (isMoving) {
                         MARKING_RECT_CONTAINER.hide();
@@ -721,10 +722,14 @@ app.directive('envModelTool',
                         height: height + 'px'
                     });
                 });
-                $('body').on('mouseup', function (e) {
+                $('body').on('mouseup', function (event) {
+                    //Abort if marking rect is not visible
+                    if (!MARKING_RECT_CONTAINER.is(":visible")) {
+                        return;
+                    }
 
+                    //Abort if user is currently moving an element
                     if (isMoving) {
-                        //Hide marking rect
                         MARKING_RECT_CONTAINER.hide();
                         return;
                     }
@@ -818,6 +823,7 @@ app.directive('envModelTool',
                         deleteElement($(this));
                     });
                     saveUndo();
+                    scope.isFocused = false;
                 }
 
                 /**
@@ -841,6 +847,9 @@ app.directive('envModelTool',
 
                     // Put focus on element
                     element.addClass("clicked-element");
+
+                    //Update exposed state
+                    scope.isFocused = true;
                 }
 
                 /**
@@ -848,13 +857,16 @@ app.directive('envModelTool',
                  * affected elements.
                  */
                 function clearFocus() {
-                    //Get all focused elements and remove focus, resizability and rotatability
+                    //Get all focused elements and clear them
                     $('.clicked-element')
                         .removeClass('clicked-element')
                         .resizable("disable")
                         .rotatable("disable")
                         .find('.ui-rotatable-handle')
                         .hide();
+
+                    //Update exposed state
+                    scope.isFocused = false;
                 }
 
                 /**
@@ -1026,6 +1038,58 @@ app.directive('envModelTool',
                 }
 
                 /**
+                 * Creates and returns a node object reprsenting a given DOM element.
+                 * @param element The element to export
+                 */
+                function exportElementToObject(element) {
+                    //Read element classes and remove uninteresting ones
+                    let classNames = $('<div>').addClass(element.attr('class'))
+                        .removeClass('jtk-draggable')
+                        .removeClass('ui-resizable')
+                        .removeClass('ui-resizable-disabled')
+                        .removeClass('ui-rotatable-disabled')
+                        .removeClass('clicked-element')
+                        .attr('class');
+
+                    //Remove transformation to extract data from the unrotated element
+                    let transformation = element.css('transform');
+                    element.css('transform', '');
+
+                    //Create basic node object
+                    let nodeObject = {
+                        nodeType: "floorplan", //Default, may be altered below
+                        elementId: element.attr('id'),
+                        clsName: classNames,
+                        left: element.position().left,
+                        top: element.position().top,
+                        width: element.width(),
+                        height: element.height()
+                    };
+
+                    //Apply transformation again
+                    element.css('transform', transformation);
+
+                    //Read data from element and merge them with the node object
+                    nodeObject = Object.assign({}, element.data(), nodeObject);
+
+                    //Remove useless properties
+                    delete nodeObject['uiRotatable'];
+                    delete nodeObject['uiResizable'];
+
+                    //Determine node type
+                    if (element.hasClass("device")) {
+                        nodeObject['nodeType'] = "device";
+                    } else if (element.hasClass("actuator")) {
+                        nodeObject['nodeType'] = "actuator";
+                    } else if (element.hasClass("sensor")) {
+                        nodeObject['nodeType'] = "sensor";
+                    }
+
+                    //Return the final object
+                    return nodeObject;
+                }
+
+                /**
                  * Exports the model in its current state to a JSON string.
                  * @return The exported JSON string representing the model
                  */
@@ -1036,54 +1100,12 @@ app.directive('envModelTool',
                     let totalCount = 0;
                     let nodes = [];
 
-                    //Iterate over all nodes of the canvas
+                    //Iterate over all elements of the canvas
                     $(".jtk-node").each(function (index) {
                         totalCount++;
 
-                        let $element = $(this);
-
-                        //Read element classes and remove uninteresting ones
-                        let classNames = $('<div>').addClass($element.attr('class'))
-                            .removeClass('jtk-draggable')
-                            .removeClass('ui-resizable')
-                            .removeClass('ui-resizable-disabled')
-                            .removeClass('ui-rotatable-disabled')
-                            .removeClass('clicked-element')
-                            .attr('class');
-
-                        //Remove transformation to extract data from the unrotated element
-                        let transformation = $element.css('transform');
-                        $element.css('transform', '');
-
-                        //Create basic node object
-                        let nodeObject = {
-                            nodeType: "floorplan", //Default, may be altered below
-                            elementId: $element.attr('id'),
-                            clsName: classNames,
-                            left: $element.position().left,
-                            top: $element.position().top,
-                            width: $element.width(),
-                            height: $element.height()
-                        };
-
-                        //Apply transformation again
-                        $element.css('transform', transformation);
-
-                        //Read data from element and merge them with the node object
-                        nodeObject = Object.assign({}, $element.data(), nodeObject);
-
-                        //Remove useless properties
-                        delete nodeObject['uiRotatable'];
-                        delete nodeObject['uiResizable'];
-
-                        //Determine node type
-                        if ($element.hasClass("device")) {
-                            nodeObject['nodeType'] = "device";
-                        } else if ($element.hasClass("actuator")) {
-                            nodeObject['nodeType'] = "actuator";
-                        } else if ($element.hasClass("sensor")) {
-                            nodeObject['nodeType'] = "sensor";
-                        }
+                        //Export a node object from the current element
+                        let nodeObject = exportElementToObject($(this));
 
                         //Push node object
                         nodes.push(nodeObject);
@@ -1108,6 +1130,7 @@ app.directive('envModelTool',
                     environment.numberOfElements = totalCount;
                     environment.elementIdCount = elementIdCount;
 
+                    //Stringify JSON
                     return JSON.stringify(environment);
                 }
 
@@ -1166,8 +1189,6 @@ app.directive('envModelTool',
                     lastModelState = exportToJSON();
                     let redoModelState = lastModelState;
 
-                    console.log(lastModelState);
-
                     UNDO_MANAGER.record({
                         undo: function () {
                             importFromJSON(undoModelState);
@@ -1179,16 +1200,17 @@ app.directive('envModelTool',
                         }
                     });
 
-                    //Update undo/redo state
-                    updateUndoState();
+                    //Update exposed states
+                    updateExposedStates();
                 }
 
                 /**
-                 * Updates the current state of the undo/redo functions at the outbound interface of the directive.
+                 * Updates all states that are exposed to the outside and indiciate which options are currently available.
                  */
-                function updateUndoState() {
+                function updateExposedStates() {
                     scope.canUndo = UNDO_MANAGER.canUndo();
                     scope.canRedo = UNDO_MANAGER.canRedo();
+                    scope.canPaste = (copyClipboard.length > 0);
                 }
 
                 /**
@@ -1198,8 +1220,8 @@ app.directive('envModelTool',
                 function undoAction() {
                     UNDO_MANAGER.undo();
 
-                    //Update undo/redo state
-                    updateUndoState();
+                    //Update exposed states
+                    updateExposedStates();
                 }
 
                 /**
@@ -1209,8 +1231,109 @@ app.directive('envModelTool',
                 function redoAction() {
                     UNDO_MANAGER.redo();
 
-                    //Update undo/redo state
-                    updateUndoState();
+                    //Update exposed states
+                    updateExposedStates();
+                }
+
+                /**
+                 * [Public]
+                 * Copies the currently selected elements to the clipboard.
+                 */
+                function copyFocusedElements() {
+                    //Get focused elements
+                    let focusedElements = $('.clicked-element');
+
+                    //Check if there are focused elements
+                    if (focusedElements.length < 1) {
+                        return;
+                    }
+
+                    //Clear clipboard
+                    copyClipboard = [];
+
+                    //Iterate over all focused elements
+                    focusedElements.each(function (index) {
+                        //Export the current element to object
+                        let nodeObject = exportElementToObject($(this));
+
+                        //Push object to clipboard
+                        copyClipboard.push(nodeObject);
+                    });
+
+                    //Update exposed states
+                    updateExposedStates();
+                }
+
+                /**
+                 * [Public]
+                 * Removes the currently selected elements and copies them to the clipboard.
+                 */
+                function cutFocusedElements() {
+                    //Get focused elements
+                    let focusedElements = $('.clicked-element');
+
+                    //Check if there are focused elements
+                    if (focusedElements.length < 1) {
+                        return;
+                    }
+
+                    //Clear clipboard
+                    copyClipboard = [];
+
+                    //Iterate over all focused elements
+                    focusedElements.each(function (index) {
+                        //Wrap current element
+                        let element = $(this);
+
+                        //Export the current element to object
+                        let nodeObject = exportElementToObject(element);
+
+                        //Push object to clipboard
+                        copyClipboard.push(nodeObject);
+
+                        //Delete element
+                        deleteElement(element);
+                    });
+
+                    //Update exposed states
+                    updateExposedStates();
+                }
+
+                /**
+                 * [Public]
+                 * Pastes the elements in the clipboard and adds them to the canvas.
+                 */
+                function pasteElements() {
+                    //Abort if there are no elements in the clipboard
+                    if (copyClipboard.length < 1) {
+                        returN;
+                    }
+
+                    //Remove focus from all elements
+                    clearFocus();
+
+                    //Iterate over the clipboard
+                    $.each(copyClipboard, function (index, nodeObject) {
+                        //Generate new element ID
+                        let elementID = "canvasWindow" + (++elementIdCount);
+
+                        //Create element from node object
+                        let newElement = createElementFromNode(elementID, nodeObject);
+
+                        drawElement(newElement);
+
+                        //Mve the element away from its original position
+                        newElement.animate({
+                            left: "+=20",
+                            top: "+=20"
+                        }, 0);
+
+                        //Put focus on the element
+                        focusElement(newElement);
+                    });
+
+                    //Save the current state
+                    saveUndo();
                 }
             }
 
@@ -1664,7 +1787,9 @@ app.directive('envModelTool',
                     api: "=api",
                     //Hold the current state of the undo/redo functions
                     canUndo: '=canUndo',
-                    canRedo: '=canRedo'
+                    canRedo: '=canRedo',
+                    canPaste: '=canPaste',
+                    isFocused: '=isFocused'
                     /*
                     //The unit in which the statistics are supposed to be displayed
                     unit: '@unit',

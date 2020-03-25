@@ -103,18 +103,25 @@
                             ng-disabled="!canRedo">
                         <i class="material-icons">redo</i>
                     </button>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-default waves-effect dropdown-toggle"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">Dropdown
-                            <span class="caret"></span>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a href="javascript:void(0);" class=" waves-effect waves-block">Dropdown link</a></li>
-                            <li><a href="javascript:void(0);" class=" waves-effect waves-block">Dropdown link</a></li>
-                        </ul>
-                    </div>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.copy()"
+                            ng-disabled="!isFocused">
+                        <i class="material-icons">content_copy</i>
+                    </button>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.cut()"
+                            ng-disabled="!isFocused">
+                        <i class="material-icons">content_cut</i>
+                    </button>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.paste()"
+                            ng-disabled="!canPaste">
+                        <i class="material-icons">content_paste</i>
+                    </button>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.delete()"
+                            ng-disabled="!isFocused">
+                        <i class="material-icons">delete</i>
+                    </button>
                 </div>
-                <env-model-tool api="envModelToolApi" can-undo="canUndo" can-redo="canRedo"></env-model-tool>
+                <env-model-tool api="envModelToolApi" can-undo="canUndo" can-redo="canRedo" can-paste="canPaste"
+                                is-focused="isFocused"></env-model-tool>
             </div>
         </div>
     </div>
