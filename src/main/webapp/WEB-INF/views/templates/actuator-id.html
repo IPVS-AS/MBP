@@ -36,7 +36,7 @@
                         <td>{{componentDetailsCtrl.component.componentType}}</td>
                     </tr>
                     <tr>
-                        <th>Adapter:</th>
+                        <th>Operator:</th>
                         <td>{{componentDetailsCtrl.component._embedded.adapter.name}}</td>
                     </tr>
                     <tr>
@@ -133,25 +133,25 @@
                     <span ng-show="componentDetailsCtrl.deploymentState=='READY'">
                         <button class="btn btn-primary waves-effect" ng-click="componentDetailsCtrl.deploy()">
                             <i class="material-icons">file_download</i>
-                            <span>Deploy actuator</span>
+                            <span>Deploy operator</span>
                         </button>
                     </span>
                     <span ng-show="['DEPLOYED', 'RUNNING'].includes(componentDetailsCtrl.deploymentState)">
                         <button class="btn bg-deep-orange waves-effect" ng-click="componentDetailsCtrl.undeploy()">
                             <i class="material-icons">file_upload</i>
-                            <span>Undeploy actuator</span>
+                            <span>Undeploy operator</span>
                         </button>
                     </span>
                     <span ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
                         <button class="btn bg-cyan waves-effect" ng-click="componentDetailsCtrl.startComponent()">
                             <i class="material-icons">play_arrow</i>
-                            <span>Start actuator</span>
+                            <span>Start operator</span>
                         </button>
                     </span>
                     <span ng-show="componentDetailsCtrl.deploymentState=='RUNNING'">
                         <button class="btn bg-orange waves-effect" ng-click="componentDetailsCtrl.stopComponent()">
                             <i class="material-icons">pause</i>
-                            <span>Pause actuator</span>
+                            <span>Pause operator</span>
                         </button>
                     </span>
                 </div>

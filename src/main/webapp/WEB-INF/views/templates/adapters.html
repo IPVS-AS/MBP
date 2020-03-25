@@ -80,7 +80,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Register a new adapter
+                    <h5 class="modal-title">Register a new operator
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -107,7 +107,7 @@
                                  ng-class="{'has-error' : addAdapterCtrl.item.errors.description }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addAdapterCtrl.item.errors.description }">
-                                    <input class="form-control no-resize" placeholder="Describe this adapter..."
+                                    <input class="form-control no-resize" placeholder="Describe this operator..."
                                            ng-model="addAdapterCtrl.item.description">
                                 </div>
                                 <span class="help-block" ng-show="addAdapterCtrl.item.errors.description">{{addAdapterCtrl.item.errors.description.message}}</span>
@@ -122,7 +122,7 @@
                                 <span class="help-block" ng-show="addAdapterCtrl.item.errors.unit">{{addAdapterCtrl.item.errors.unit.message}}</span>
                             </div>
                             <!-- item.routine group -->
-                            <label>Adapter scripts:</label>
+                            <label>Operator scripts:</label>
                             <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.routines }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addAdapterCtrl.item.errors.routines }">
