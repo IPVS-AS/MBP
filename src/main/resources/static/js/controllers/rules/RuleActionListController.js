@@ -5,9 +5,9 @@
  */
 app.controller('RuleActionListController',
     ['$scope', '$controller', '$interval', 'ruleActionList', 'ruleActionTypesList', 'actuatorList', 'sensorList',
-        'addRuleAction', 'deleteRuleAction', 'RuleService', 'NotificationService',
+        'addRuleAction', 'deleteRuleAction', 'RuleService', 'NotificationService', 'DeviceService',
         function ($scope, $controller, $interval, ruleActionList, ruleActionTypesList, actuatorList, sensorList,
-                  addRuleAction, deleteRuleAction, RuleService, NotificationService) {
+                  addRuleAction, deleteRuleAction, RuleService, NotificationService, DeviceService) {
             //Array of colors to be used for the different rule action types
             const ACTION_TYPES_COLORS = ['bg-pink', 'bg-purple', 'bg-deep-purple', 'bg-indigo', 'bg-blue',
                 'bg-light-blue', 'bg-cyan', 'bg-teal', 'bg-green', 'bg-light-green', 'bg-lime', 'bg-yellow',
@@ -100,16 +100,42 @@ app.controller('RuleActionListController',
                     }
                 }
 
-                //Show the alert to the user and return the resulting promise
-                return Swal.fire({
-                    title: 'Delete rule action',
-                    type: 'warning',
-                    html: "Are you sure you want to delete rule action \"" + ruleActionName + "\"?",
-                    showCancelButton: true,
-                    confirmButtonText: 'Delete',
-                    confirmButtonClass: 'bg-red',
-                    focusConfirm: false,
-                    cancelButtonText: 'Cancel'
+                return DeviceService.getUsingRules(data.id).then(function (result) {
+                    var affectedWarning = "";
+
+                    console.log(" ENTERED IN THE FUNTION ");
+
+                    //If list is not empty, create a message that contains the names of all affected components
+                    if (result.data.length > 0) {
+
+                        console.log("daataa");
+
+                        affectedWarning = "<br/><br/><strong>The following components are currently " +
+                            "using this device and will be deleted as well:</strong><br/>";
+
+                        for (var i = 0; i < result.data.length; i++) {
+                            affectedWarning += "- ";
+                            affectedWarning += result.data[i].name;
+                            affectedWarning += " (" + result.data[i].component + ")";
+                            affectedWarning += "<br/>";
+                        }
+                    }
+                    console.log(" noooo daataa");
+
+                    //Show the alert to the user and return the resulting promise
+                    return Swal.fire({
+                        title: 'Delete rule action',
+                        type: 'warning',
+                        html: "Are you sure you want to delete rule action \"" + ruleActionName + "\"?" + affectedWarning,
+                        showCancelButton: true,
+                        confirmButtonText: 'Delete',
+                        confirmButtonClass: 'bg-red',
+                        focusConfirm: false,
+                        cancelButtonText: 'Cancel'
+                    });
+                }, function () {
+                    console.log(" ERROOO ");
+                    NotificationService.notify("Could not retrieve affected components.", "error");
                 });
             }
 

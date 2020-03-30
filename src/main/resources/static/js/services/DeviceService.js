@@ -7,11 +7,19 @@ app.factory('DeviceService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT
     //URL under which the using components can be retrieved
     const URL_GET_USING_COMPONENTS = ENDPOINT_URI + '/components/by-device/';
 
+    //URL under which the using components can be retrieved
+    const URL_GET_USING_RULES = ENDPOINT_URI + '/rules/by-ruleAction/';
+
     //URL under which the availability state of all devices can be retrieved
     const URL_GET_ALL_DEVICE_STATES = ENDPOINT_URI + '/devices/state';
 
     //URL under which the availability state of a certain device can be retrieved
     const URL_GET_DEVICE_STATE = ENDPOINT_URI + '/devices/state/';
+
+    //Performs a server request in order to retrieve a list of all using components.
+    function getUsingRules(ruleActionId) {
+        return $http.get(URL_GET_USING_RULES + ruleActionId);
+    }
 
     //Performs a server request in order to retrieve a list of all using components.
     function getUsingComponents(adapterId) {
@@ -51,6 +59,7 @@ app.factory('DeviceService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT
         getDeviceState: getDeviceState,
         getAllDeviceStates: getAllDeviceStates,
         formatMacAddress: formatMacAddress,
-        normalizeMacAddress: normalizeMacAddress
+        normalizeMacAddress: normalizeMacAddress,
+        getUsingRules: getUsingRules
     };
 }]);
