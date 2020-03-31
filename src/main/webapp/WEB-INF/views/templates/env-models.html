@@ -92,37 +92,39 @@
             </div>
             <div class="body">
                 <div class="btn-group" role="group" style="margin-left: 221px; width: calc(100% - 220px - 160px - 2px)">
-                    <button type="button" class="btn btn-default waves-effect">
+                    <button type="button" class="btn btn-default waves-effect" data-toggle="tooltip" title="Save">
                         <i class="material-icons" ng-style="{'color': (true ? 'red' : '')}">save</i>
                     </button>
                     <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.undo()"
-                            ng-disabled="!canUndo">
+                            ng-disabled="!canUndo" data-toggle="tooltip" title="Undo action">
                         <i class="material-icons">undo</i>
                     </button>
                     <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.redo()"
-                            ng-disabled="!canRedo">
+                            ng-disabled="!canRedo" data-toggle="tooltip" title="Redo action">
                         <i class="material-icons">redo</i>
                     </button>
                     <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.copy()"
-                            ng-disabled="!isFocused">
+                            ng-disabled="!isFocused" data-toggle="tooltip" title="Copy selected">
                         <i class="material-icons">content_copy</i>
                     </button>
                     <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.cut()"
-                            ng-disabled="!isFocused">
+                            ng-disabled="!isFocused" data-toggle="tooltip" title="Cut selected">
                         <i class="material-icons">content_cut</i>
                     </button>
                     <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.paste()"
-                            ng-disabled="!canPaste">
+                            ng-disabled="!canPaste" data-toggle="tooltip" title="Paste">
                         <i class="material-icons">content_paste</i>
                     </button>
                     <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.delete()"
-                            ng-disabled="!isFocused">
+                            ng-disabled="!isFocused" data-toggle="tooltip" title="Delete selected">
                         <i class="material-icons">delete</i>
                     </button>
-                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.export()">
+                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.export()"
+                            data-toggle="tooltip" title="Export model">
                         <i class="material-icons">file_upload</i>
                     </button>
-                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.import()">
+                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.import()"
+                            data-toggle="tooltip" title="Import model">
                         <i class="material-icons">file_download</i>
                     </button>
                 </div>

@@ -13,6 +13,7 @@ app.directive('envModelTool',
                 const DIAGRAM_CONTAINER = $("#toolCanvasContainer");
                 const CANVAS = $("#canvas");
                 const EXPORT_MODAL = $("#exportModelModal");
+                const IMPORT_MODAL = $("#importModelModal");
                 let MARKING_RECT_CONTAINER = $(null);
                 let MARKING_RECT = $(null);
                 let jsPlumbInstance;
@@ -43,6 +44,8 @@ app.directive('envModelTool',
                 });
                 scope.showExportModelMessage = false;
                 scope.copyExportModelToClipboard = copyExportModelToClipboard;
+                scope.importModelErrorMessage = false;
+                scope.importModelRequest = importModelRequest;
 
                 //Expose functions for template
                 scope.api.undo = undoAction;
@@ -1349,7 +1352,13 @@ app.directive('envModelTool',
                  * Opens a modal dialog to export the current model as JSON string.
                  */
                 function exportModel() {
+                    //Export model
                     scope.exportModelString = exportToJSON();
+
+                    //Reset copy message
+                    scope.showExportModelMessage = false;
+
+                    //Show modal
                     EXPORT_MODAL.modal();
                 }
 
@@ -1358,14 +1367,53 @@ app.directive('envModelTool',
                  * Opens a modal dialog to import a model given as JSON string.
                  */
                 function importModel() {
-
+                    IMPORT_MODAL.modal();
                 }
 
+                /**
+                 * Copies the model in the export text field of the modal dialog to the clipboard.
+                 */
                 function copyExportModelToClipboard() {
                     let textArea = EXPORT_MODAL.find('textarea');
                     textArea.select();
                     document.execCommand('copy');
                     scope.showExportModelMessage = true;
+                }
+
+                /**
+                 * Called when the user wants to import a modal from the import dialog.
+                 */
+                function importModelRequest() {
+                    //Get JSON string
+                    let modelJSON = scope.importModelString;
+
+                    //First sanity check
+                    if ((modelJSON == null) || (modelJSON === "")) {
+                        scope.importModelErrorMessage = "No model data provided.";
+                        return;
+                    }
+
+                    //Save current model
+                    let currentModel = exportToJSON();
+
+                    //Try to import the model
+                    try {
+                        //Import the model
+                        importFromJSON(modelJSON);
+
+                        //Import was successful, so save state for undo
+                        saveUndo();
+
+                        //Clear error message and hide the modal
+                        scope.importModelErrorMessage = false;
+                        IMPORT_MODAL.modal('hide');
+                    } catch (e) {
+                        //Set error message
+                        scope.importModelErrorMessage = "Invalid model data provided.";
+
+                        //Reset model
+                        importFromJSON(currentModel);
+                    }
                 }
             }
 
@@ -1821,12 +1869,29 @@ app.directive('envModelTool',
                     '</h5></div>' +
                     '<form id="addActuatorForm" ng-submit="addActuatorCtrl.addItem()"><fieldset>' +
                     '<div class="modal-body"><div class="form-group"><div class="form-line">' +
-                    '<textarea class="form-control" style="height: 200px;" ng-model="exportModelString" onclick="this.select()"></textarea>' +
+                    '<textarea class="form-control" style="height: 120px;" ng-model="exportModelString" onclick="this.select()"></textarea>' +
                     '</div></div>' +
-                    '<span class="text-success" ng-show="showExportModelMessage">Copied model to clipboard.</span></div>' +
+                    '<span class="text-success" ng-show="showExportModelMessage"><i class="material-icons" style="vertical-align:bottom;">done</i>&nbsp;Copied model to clipboard.</span></div>' +
                     '<div class="modal-footer">' +
-                    '<button type="button" class="btn btn-primary m-t-0 waves-effect" ng-click="copyExportModelToClipboard()">Copy to Clipboard</button>' +
                     '<button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">Close</button>' +
+                    '<button type="button" class="btn btn-primary m-t-0 waves-effect" ng-click="copyExportModelToClipboard()">Copy to Clipboard</button>' +
+                    '</div></fieldset></form></div></div></div>' +
+                    '<div class="modal fade" id="importModelModal" tabindex="-1" role="dialog">' +
+                    '<div class="modal-dialog" role="document">' +
+                    '<div class="modal-content">' +
+                    '<div class="modal-header">' +
+                    '<h5 class="modal-title"><i class="material-icons" style="vertical-align: bottom;">file_download</i>&nbsp;Import model' +
+                    '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
+                    '</h5></div>' +
+                    '<form id="addActuatorForm" ng-submit="importModelRequest()"><fieldset>' +
+                    '<div class="modal-body"><div class="form-group"><div class="form-line">' +
+                    '<span>Please paste the model that is supposed to be imported below:</span>' +
+                    '<textarea class="form-control" style="height: 120px;" ng-model="importModelString" onclick="document.execCommand(\'paste\');"></textarea>' +
+                    '</div></div>' +
+                    '<span class="text-danger" ng-show="importModelErrorMessage"><i class="material-icons" style="vertical-align:bottom;">error_outline</i>&nbsp;{{importModelErrorMessage}}</span></div>' +
+                    '<div class="modal-footer">' +
+                    '<button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">Close</button>' +
+                    '<button type="submit" class="btn btn-primary m-t-0 waves-effect">Import</button>' +
                     '</div></fieldset></form></div></div></div>'
                 ,
                 link: link,

@@ -15,7 +15,10 @@ app.controller('EnvModelListController',
             (function initController() {
                 //Initialize
                 $(document).ready(function () {
-
+                    //Enable tooltips
+                    $('[data-toggle="tooltip"]').tooltip({
+                        delay: {"show": 500, "hide": 0}
+                    });
                 });
             })();
 
