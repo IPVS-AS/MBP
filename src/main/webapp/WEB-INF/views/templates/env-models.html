@@ -119,6 +119,12 @@
                             ng-disabled="!isFocused">
                         <i class="material-icons">delete</i>
                     </button>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.export()">
+                        <i class="material-icons">file_upload</i>
+                    </button>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.import()">
+                        <i class="material-icons">file_download</i>
+                    </button>
                 </div>
                 <env-model-tool api="envModelToolApi" can-undo="canUndo" can-redo="canRedo" can-paste="canPaste"
                                 is-focused="isFocused"></env-model-tool>
