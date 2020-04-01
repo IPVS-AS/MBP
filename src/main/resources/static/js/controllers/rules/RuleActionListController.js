@@ -5,9 +5,9 @@
  */
 app.controller('RuleActionListController',
     ['$scope', '$controller', '$interval', 'ruleActionList', 'ruleActionTypesList', 'actuatorList', 'sensorList',
-        'addRuleAction', 'deleteRuleAction', 'RuleService', 'NotificationService', 'DeviceService',
+        'addRuleAction', 'deleteRuleAction', 'RuleService', 'NotificationService', 'RuleActionService',
         function ($scope, $controller, $interval, ruleActionList, ruleActionTypesList, actuatorList, sensorList,
-                  addRuleAction, deleteRuleAction, RuleService, NotificationService, DeviceService) {
+                  addRuleAction, deleteRuleAction, RuleService, NotificationService, RuleActionService) {
             //Array of colors to be used for the different rule action types
             const ACTION_TYPES_COLORS = ['bg-pink', 'bg-purple', 'bg-deep-purple', 'bg-indigo', 'bg-blue',
                 'bg-light-blue', 'bg-cyan', 'bg-teal', 'bg-green', 'bg-light-green', 'bg-lime', 'bg-yellow',
@@ -100,7 +100,7 @@ app.controller('RuleActionListController',
                     }
                 }
 
-                return DeviceService.getUsingRules(data.id).then(function (result) {
+                return RuleActionService.getUsingRules(data.id).then(function (result) {
                     var affectedWarning = "";
 
                     console.log(" ENTERED IN THE FUNTION ");
