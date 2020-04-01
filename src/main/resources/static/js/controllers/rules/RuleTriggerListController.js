@@ -53,8 +53,7 @@ app.controller('RuleTriggerListController',
              * @returns A promise of the user's decision
              */
             function confirmDelete(data) {
-
-                console.log("ALOOO");
+                
                 let ruleTriggerId = data.id;
                 let ruleTriggerName = "";
 
