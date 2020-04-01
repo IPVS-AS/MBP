@@ -12,14 +12,16 @@ app.directive('envModelTool',
             function initialize(scope) {
                 const DIAGRAM_CONTAINER = $("#toolCanvasContainer");
                 const CANVAS = $("#canvas");
+                const DEVICE_DETAILS_MODAL = $("#deviceDetailsModal");
+                const COMPONENT_DETAILS_MODAL = $("#componentDetailsModal");
                 const EXPORT_MODAL = $("#exportModelModal");
                 const IMPORT_MODAL = $("#importModelModal");
-                let MARKING_RECT_CONTAINER = $(null);
-                let MARKING_RECT = $(null);
-                let jsPlumbInstance;
-                let elementIdCount = 0; // used for canvas ID uniqueness
-                let properties = {}; // keeps the properties of each element to draw on canvas
-                let clicked = false; // true if an element from the palette was clicked
+                let markingRectContainer = $(null);
+                let markingRect = $(null);
+                let jsPlumbInstance = null;
+                let elementIdCount = 0; //Used for canvas ID uniqueness
+                let properties = {}; //Keeps the properties of each element to draw on canvas
+                let currentDetailsElement = $(null); //The element for which the details modal is opened
                 let isMoving = false; //Remembers if the user is currently moving or modifying an element
                 let markingRectPos = { //Remembers the position of the marking rect
                     x: 0,
@@ -33,23 +35,38 @@ app.directive('envModelTool',
                 let lastModelState = ""; //Remembers the last state of the model
                 let copyClipboard = [];
 
-                //Expose fields for template
-                scope.processing = {}; // used to show/hide the progress circle
-                scope.selectedOptionName = "";
-                scope.currentModel = {};
+                //Class for data of the device details modal
+                const DeviceDetails = function () {
+                    this.name = '';
+                    this.ipAddress = '';
+                    this.username = '';
+                    this.password = '';
+                    this.rsaKey = '';
+                };
+
+                //Class for data of the actuator/sensor details modal
+                const ComponentDetails = function () {
+                    this.name = '';
+                    this.adapter = null;
+                };
+
+                /*
+                Expose functions and fields for template
+                 */
                 scope.clickedComponent = {};
-                scope.adapterListCtrl = $controller('ItemListController as adapterListCtrl', {
-                    $scope: scope,
-                    list: []
-                });
+                scope.modalElementDetails = new DeviceDetails(); //Field values of the element details modals
+                scope.saveElementDetails = saveElementDetails;
                 scope.showExportModelMessage = false;
                 scope.copyExportModelToClipboard = copyExportModelToClipboard;
                 scope.importModelErrorMessage = false;
                 scope.importModelRequest = importModelRequest;
 
-                //Expose functions for template
+                /*
+                Build API that is available for the outside
+                 */
                 scope.api.undo = undoAction;
                 scope.api.redo = redoAction;
+                scope.api.openDetails = openMarkedElementDetails;
                 scope.api.copy = copyFocusedElements;
                 scope.api.cut = cutFocusedElements;
                 scope.api.paste = pasteElements;
@@ -57,7 +74,9 @@ app.directive('envModelTool',
                 scope.api.export = exportModel;
                 scope.api.import = importModel;
 
-                // Initialization
+                /*
+                Initialization
+                 */
                 (function initController() {
                     initMarkingRect();
                 })();
@@ -118,11 +137,11 @@ app.directive('envModelTool',
                  */
                 function initMarkingRect() {
                     //Create marking rect elements
-                    MARKING_RECT = $('<div class="markingRect">');
-                    MARKING_RECT_CONTAINER = $('<div class="markingRectContainer">').hide();
+                    markingRect = $('<div class="markingRect">');
+                    markingRectContainer = $('<div class="markingRectContainer">').hide();
 
                     //Append elements to canvas
-                    CANVAS.append(MARKING_RECT_CONTAINER.append(MARKING_RECT));
+                    CANVAS.append(markingRectContainer.append(markingRect));
                 }
 
                 /**
@@ -269,25 +288,22 @@ app.directive('envModelTool',
                 makeDraggable("#vibrationSensor", "window sensor vibration-sensor custom");
                 makeDraggable("#defaultSensor", "window sensor default-sensor custom");
 
-                // jQuery makes the canvas droppable
+                //Make the canvas droppable
                 CANVAS.droppable({
                     accept: ".window",
                     drop: function (event, ui) {
-                        if (clicked) {
-                            // Get the drop position
-                            properties.left = ui.offset.left - $(this).offset().left;
-                            properties.top = ui.offset.top - $(this).offset().top;
-                            clicked = false;
-                            elementIdCount++;
-                            let id = "canvasWindow" + elementIdCount;
-                            // Create and draw the element in the canvas
-                            let element = createElement(id);
-                            drawElement(element);
+                        // Get the drop position
+                        properties.left = ui.offset.left - $(this).offset().left;
+                        properties.top = ui.offset.top - $(this).offset().top;
+                        elementIdCount++;
+                        let id = "canvasWindow" + elementIdCount;
+                        // Create and draw the element in the canvas
+                        let element = createElement(id);
+                        drawElement(element);
 
-                            //Write model to history stack if its not a room (because of its animation)
-                            if (!element.hasClass("room-floorplan")) {
-                                saveUndo();
-                            }
+                        //Write model to history stack if its not a room (because of its animation)
+                        if (!element.hasClass("room-floorplan")) {
+                            saveUndo();
                         }
                     }
                 });
@@ -300,7 +316,6 @@ app.directive('envModelTool',
                     properties = {};
                     properties.clsName = clsName;
                     properties.type = type;
-                    clicked = true;
                 }
 
 
@@ -698,23 +713,23 @@ app.directive('envModelTool',
                     markingRectPos.x = e.offsetX;
                     markingRectPos.y = e.offsetY;
 
-                    MARKING_RECT.css({
+                    markingRect.css({
                         left: e.offsetX + 'px',
                         top: e.offsetY + 'px'
                     }).width(0).height(0);
 
                     //Display marking rect
-                    MARKING_RECT_CONTAINER.css('display', '');
+                    markingRectContainer.css('display', '');
 
                 }).on('mousemove', function (e) {
                     //Abort if marking rect is not visible
-                    if (!MARKING_RECT_CONTAINER.is(":visible")) {
+                    if (!markingRectContainer.is(":visible")) {
                         return;
                     }
 
                     //Do not mark if an element is currently moved
                     if (isMoving) {
-                        MARKING_RECT_CONTAINER.hide();
+                        markingRectContainer.hide();
                         return;
                     }
 
@@ -723,7 +738,7 @@ app.directive('envModelTool',
                     let width = Math.abs(markingRectPos.x - e.offsetX);
                     let height = Math.abs(markingRectPos.y - e.offsetY);
 
-                    MARKING_RECT.css({
+                    markingRect.css({
                         left: posX + 'px',
                         top: posY + 'px',
                         width: width + 'px',
@@ -732,20 +747,20 @@ app.directive('envModelTool',
                 });
                 $('body').on('mouseup', function (event) {
                     //Abort if marking rect is not visible
-                    if (!MARKING_RECT_CONTAINER.is(":visible")) {
+                    if (!markingRectContainer.is(":visible")) {
                         return;
                     }
 
                     //Abort if user is currently moving an element
                     if (isMoving) {
-                        MARKING_RECT_CONTAINER.hide();
+                        markingRectContainer.hide();
                         return;
                     }
 
                     //Get final rect dimensions
-                    let markPosition = MARKING_RECT.position();
-                    let markWidth = MARKING_RECT.width();
-                    let markHeight = MARKING_RECT.height();
+                    let markPosition = markingRect.position();
+                    let markWidth = markingRect.width();
+                    let markHeight = markingRect.height();
 
                     //Remove focus from all elements
                     clearFocus();
@@ -768,7 +783,7 @@ app.directive('envModelTool',
                     });
 
                     //Hide marking rect
-                    MARKING_RECT_CONTAINER.hide();
+                    markingRectContainer.hide();
                 });
 
 
@@ -1049,6 +1064,42 @@ app.directive('envModelTool',
                 }
 
                 /**
+                 * Opens the element details for a certain element in case it represents a device, an actuator
+                 * or a sensor.
+                 */
+                function openElementDetails(element) {
+                    //Remember element
+                    currentDetailsElement = element;
+
+                    //Check for element type
+                    if (element.hasClass('device')) {
+                        //Device, load details data for this element into modal
+                        scope.modalElementDetails = currentDetailsElement.data('details') || new DeviceDetails();
+
+                        //Show device modal
+                        DEVICE_DETAILS_MODAL.modal();
+                    } else if (currentDetailsElement.hasClass('actuator') || currentDetailsElement.hasClass('sensor')) {
+                        //Component, load details data for this element into modal
+                        scope.modalElementDetails = currentDetailsElement.data('details') || new ComponentDetails();
+
+                        //Show component modal
+                        COMPONENT_DETAILS_MODAL.modal();
+                    }
+                }
+
+                function saveElementDetails() {
+                    //Check for element type
+                    if (currentDetailsElement.hasClass('device')) {
+                        DEVICE_DETAILS_MODAL.modal('hide');
+                    } else if (currentDetailsElement.hasClass('actuator') || currentDetailsElement.hasClass('sensor')) {
+                        COMPONENT_DETAILS_MODAL.modal('hide');
+                    }
+
+                    //Store element details
+                    currentDetailsElement.data('details', scope.modalElementDetails);
+                }
+
+                /**
                  * Creates and returns a node object reprsenting a given DOM element.
                  * @param element The element to export
                  */
@@ -1244,6 +1295,23 @@ app.directive('envModelTool',
 
                     //Update exposed states
                     updateExposedStates();
+                }
+
+                /**
+                 * [Public]
+                 * Opens the element details modal for the selected elements.
+                 */
+                function openMarkedElementDetails() {
+                    //Get focused device, actuator and sensor elements
+                    let focusedElements = $('.clicked-element.device, .clicked-element.actuator, .clicked-element.sensor');
+
+                    //Check if elements could be found
+                    if (focusedElements.length < 1) {
+                        return;
+                    }
+
+                    //Just open the element details modal for the first element
+                    openElementDetails(focusedElements.first());
                 }
 
                 /**
@@ -1628,7 +1696,7 @@ app.directive('envModelTool',
                     '<div class="panel-heading" style="overflow-x: hidden;">' +
                     '<h4 class="panel-title">' +
                     '<a class="clickable collapsed" data-toggle="collapse" data-target="#collapseSensors" aria-expanded="false">' +
-                    '<span class="material-icons" style="font-size: 20px;">settings_remote</span>Operators' +
+                    '<span class="material-icons" style="font-size: 20px;">settings_remote</span>Sensors' +
                     '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>' +
                     '</h4>' +
                     '</div>' +
@@ -1700,165 +1768,6 @@ app.directive('envModelTool',
                     '</div>' +
                     '</div>' +
                     '</div>' +
-                    '<!-- Info sidebar -->' +
-                    '<div id="infoSidebar" style="display: inline-block; width:162px; vertical-align: top;">' +
-                    '<div class="panel panel-default" ng-show="clickedComponent.category == \'DEVICE\'">' +
-                    '<div class="panel-heading" style="text-align: center; overflow-x: hidden;">' +
-                    '<h4 class="panel-title">Device</h4>' +
-                    '</div>' +
-                    '<div id="deviceInfo" class="input-list">' +
-                    '<ul>' +
-                    '<li>' +
-                    '<label for="deviceNameInput">Name</label>' +
-                    '<input id="deviceNameInput" type="text" name="name" ng-model="clickedComponent.name" autocomplete="off">' +
-                    '</li>' +
-                    '<li>' +
-                    '<label for="deviceTypeInput">Device type</label>' +
-                    '<input id="deviceTypeInput" type="text" name="type" ng-model="clickedComponent.type" autocomplete="off">' +
-                    '</li>' +
-                    '<li>' +
-                    '<label for="deviceMacInput">MAC address</label>' +
-                    '<input id="deviceMacInput" type="text" name="mac" ng-model="clickedComponent.mac" autocomplete="off" placeholder="HH-HH-HH-HH-HH-HH">' +
-                    '</li>' +
-                    '<li>' +
-                    '<label for="deviceIpInput">IP address</label>' +
-                    '<input id="deviceIpInput" type="text" name="ip" ng-model="clickedComponent.ip" autocomplete="off">' +
-                    '</li>' +
-                    '<li>' +
-                    '<label for="deviceUsernameInput">User name</label>' +
-                    '<input id="deviceUsernameInput" type="text" name="username" ng-model="clickedComponent.username" autocomplete="off">' +
-                    '</li>' +
-                    '<li>' +
-                    '<label for="devicePasswordInput">Password</label>' +
-                    '<input id="devicePasswordInput" type="password" name="password" ng-model="clickedComponent.password" autocomplete="off">' +
-                    '</li>' +
-                    '<li>' +
-                    '<label for="deviceRsaKeyInput">RSA Key</label>' +
-                    '<textarea id="deviceRsaKeyInput" type="text" name="rsaKey" placeholder="Private RSA key" ng-model="clickedComponent.rsaKey" rows="4"></textarea>' +
-                    '</li>' +
-                    '</ul>' +
-                    '</div>' +
-                    '<div class="panel-footer" style="height: 100%; overflow-x: scroll">' +
-                    '<span>' +
-                    '<b>Status</b>' +
-                    '</span>' +
-                    '<br>' +
-                    '<span>' +
-                    '<i class="fas fa-check-circle" ng-show="clickedComponent.id"></i>' +
-                    '<i class="fas fa-times-circle" ng-show="!clickedComponent.id"></i>' +
-                    'Registered' +
-                    '<span style="color: red; font-size: 12px" ng-show="clickedComponent.regError">' +
-                    '<br>' +
-                    '{{clickedComponent.regError}}' +
-                    '</span>' +
-                    '</span>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="panel panel-default" ng-show="clickedComponent.category == \'ACTUATOR\'">' +
-                    '<div class="panel-heading" style="text-align: center;overflow-x: hidden;">' +
-                    '<h4 class="panel-title">Actuator</h4>' +
-                    '</div>' +
-                    '<div id="actuatorInfo" class="input-list">' +
-                    '<ul>' +
-                    '<li>' +
-                    '<label for="actuatorNameInput">Name</label>' +
-                    '<input id="actuatorNameInput" type="text" name="name" ng-model="clickedComponent.name" autocomplete="off">' +
-                    '</li>' +
-                    '<li>' +
-                    '<label for="actuatorTypeInput">Type</label>' +
-                    '<input id="actuatorTypeInput" type="text" name="type" ng-model="clickedComponent.type" autocomplete="off">' +
-                    '</li>' +
-                    '<li>' +
-                    '<label for="actuatorAdapterInput">Adapter</label>' +
-                    '<select class="form-control show-tick" id="actuatorAdapterInput" ng-model="clickedComponent.adapter" ng-options="t.id as (t.name) for t in adapterListCtrl.items">' +
-                    '<option value="">Select adapter</option>' +
-                    '</select>' +
-                    '</li>' +
-                    '<li>' +
-                    '<label for="actuatorDeviceInput">Device</label>' +
-                    '<input id="actuatorDeviceInput" type="text" name="device" ng-model="clickedComponent.device" autocomplete="off" disabled="disabled">' +
-                    '</li>' +
-                    '</ul>' +
-                    '</div>' +
-                    '<div class="panel-footer" style="height: 100%; overflow-x: scroll">' +
-                    '<span>' +
-                    '<b>Status</b>' +
-                    '</span>' +
-                    '<br>' +
-                    '<span>' +
-                    '<i class="fas fa-check-circle" ng-show="clickedComponent.id"></i>' +
-                    '<i class="fas fa-times-circle" ng-show="!clickedComponent.id"></i>' +
-                    'Registered' +
-                    '<span style="color: red; font-size: 12px" ng-show="clickedComponent.regError">' +
-                    '<br>' +
-                    '{{clickedComponent.regError}}' +
-                    '</span>' +
-                    '</span>' +
-                    '<br>' +
-                    '<span>' +
-                    '<i class="fas fa-check-circle" ng-show="clickedComponent.deployed"></i>' +
-                    '<i class="fas fa-times-circle" ng-show="!clickedComponent.deployed"></i>' +
-                    'Deployed' +
-                    '<span style="color: red; font-size: 12px" ng-show="clickedComponent.depError">' +
-                    '<br>' +
-                    '{{clickedComponent.depError}}' +
-                    '</span>' +
-                    '</span>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="panel panel-default" ng-show="clickedComponent.category == \'SENSOR\'">' +
-                    '<div class="panel-heading" style="text-align: center;overflow-x: hidden;">' +
-                    '<h4 class="panel-title">Sensor</h4>' +
-                    '</div>' +
-                    '<div id="sensorInfo" class="input-list">' +
-                    '<ul>' +
-                    '<li>' +
-                    '<label for="sensorNameInput">Name</label>' +
-                    '<input id="sensorNameInput" type="text" name="name" ng-model="clickedComponent.name" autocomplete="off">' +
-                    '</li>' +
-                    '<li>' +
-                    '<label for="sensorTypeInput">Type</label>' +
-                    '<input id="sensorTypeInput" type="text" name="type" ng-model="clickedComponent.type" autocomplete="off">' +
-                    '</li>' +
-                    '<li>' +
-                    '<label for="sensorAdapterInput">Adapter</label>' +
-                    '<select class="form-control show-tick" id="sensorAdapterInput" ng-model="clickedComponent.adapter" ng-options="t.id as (t.name) for t in adapterListCtrl.items">' +
-                    '<option value="">Select adapter</option>' +
-                    '</select>' +
-                    '</li>' +
-                    '<li>' +
-                    '<label for="sensorDeviceInput">Device</label>' +
-                    '<input id="sensorDeviceInput" type="text" name="device" ng-model="clickedComponent.device" autocomplete="off" disabled="disabled">' +
-                    '</li>' +
-                    '</ul>' +
-                    '</div>' +
-                    '<div class="panel-footer" style="height: 100%; overflow-x: scroll">' +
-                    '<span>' +
-                    '<b>Status</b>' +
-                    '</span>' +
-                    '<br>' +
-                    '<span>' +
-                    '<i class="fas fa-check-circle" ng-show="clickedComponent.id"></i>' +
-                    '<i class="fas fa-times-circle" ng-show="!clickedComponent.id"></i>' +
-                    'Registered' +
-                    '<span style="color: red; font-size: 12px" ng-show="clickedComponent.regError">' +
-                    '<br>' +
-                    '{{clickedComponent.regError}}' +
-                    '</span>' +
-                    '</span>' +
-                    '<br>' +
-                    '<span>' +
-                    '<i class="fas fa-check-circle" ng-show="clickedComponent.deployed"></i>' +
-                    '<i class="fas fa-times-circle" ng-show="!clickedComponent.deployed"></i>' +
-                    'Deployed' +
-                    '<span style="color: red; font-size: 12px" ng-show="clickedComponent.depError">' +
-                    '<br>' +
-                    '{{clickedComponent.depError}}' +
-                    '</span>' +
-                    '</span>' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>' +
                     '</div>' +
                     '<div class="modal fade" id="exportModelModal" tabindex="-1" role="dialog">' +
                     '<div class="modal-dialog" role="document">' +
@@ -1892,6 +1801,54 @@ app.directive('envModelTool',
                     '<div class="modal-footer">' +
                     '<button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">Close</button>' +
                     '<button type="submit" class="btn btn-primary m-t-0 waves-effect">Import</button>' +
+                    '</div></fieldset></form></div></div></div>' +
+                    '<div class="modal fade" id="deviceDetailsModal" tabindex="-1" role="dialog">' +
+                    '<div class="modal-dialog" role="document">' +
+                    '<div class="modal-content">' +
+                    '<div class="modal-header">' +
+                    '<h5 class="modal-title">Device settings' +
+                    '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
+                    '<span aria-hidden="true">&times;</span>' +
+                    '</button></h5></div>' +
+                    '<form ng-submit="saveElementDetails()"><fieldset>' +
+                    '<div class="modal-body">' +
+                    '<div class="form-group"><div class="form-line">' +
+                    '<input class="form-control" type="text" placeholder="Name" ng-model="modalElementDetails.name"/></div></div>' +
+                    '<div class="form-group"><div class="form-line">' +
+                    '<input class="form-control" type="text" placeholder="IP address" ng-model="modalElementDetails.ipAddress"/>' +
+                    '</div></div>' +
+                    '<div class="form-group"><div class="form-line">' +
+                    '<input class="form-control" type="text" placeholder="User name" ng-model="modalElementDetails.username"/>' +
+                    '</div></div>' +
+                    '<div class="form-group"><div class="form-line">' +
+                    '<input class="form-control" type="text" placeholder="Password" ng-model="modalElementDetails.password"/>' +
+                    '</div></div>' +
+                    '<div class="form-group"><div class="form-line">' +
+                    '<textarea class="form-control" type="text" placeholder="Private RSA key" ng-model="modalElementDetails.rsaKey" rows="4"></textarea>' +
+                    '</div></div></div>' +
+                    '<div class="modal-footer">' +
+                    '<button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">Close</button>' +
+                    '<button type="submit" class="btn btn-primary m-t-0 waves-effect">Save</button>' +
+                    '</div></fieldset></form></div></div></div>' +
+                    '<div class="modal fade" id="componentDetailsModal" tabindex="-1" role="dialog">' +
+                    '<div class="modal-dialog" role="document">' +
+                    '<div class="modal-content">' +
+                    '<div class="modal-header">' +
+                    '<h5 class="modal-title">Component settings' +
+                    '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
+                    '<span aria-hidden="true">&times;</span>' +
+                    '</button></h5></div>' +
+                    '<form ng-submit="saveElementDetails()"><fieldset>' +
+                    '<div class="modal-body">' +
+                    '<div class="form-group"><div class="form-line">' +
+                    '<input class="form-control" type="text" placeholder="Name" ng-model="modalElementDetails.name"/></div></div>' +
+                    '<div class="form-group"><div class="form-line">' +
+                    '<select class="form-control show-tick" ng-model="modalElementDetails.adapter" ng-options="t.id as (t.name) for t in adapterList">' +
+                    '<option value="">Select operator<option/>' +
+                    '</select></div></div></div>' +
+                    '<div class="modal-footer">' +
+                    '<button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">Close</button>' +
+                    '<button type="submit" class="btn btn-primary m-t-0 waves-effect">Save</button>' +
                     '</div></fieldset></form></div></div></div>'
                 ,
                 link: link,
@@ -1902,7 +1859,11 @@ app.directive('envModelTool',
                     canUndo: '=canUndo',
                     canRedo: '=canRedo',
                     canPaste: '=canPaste',
-                    isFocused: '=isFocused'
+                    isFocused: '=isFocused',
+
+                    //Input
+                    adapterList: '=adapterList',
+                    deviceTypes: '=deviceTypes'
                     /*
                     //The unit in which the statistics are supposed to be displayed
                     unit: '@unit',

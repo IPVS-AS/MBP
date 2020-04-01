@@ -126,6 +126,14 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }],
                     deleteEnvModel: ['CrudService', function (CrudService) {
                         return angular.bind(this, CrudService.deleteItem, 'env-models');
+                    }],
+                    adapterList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('adapters');
+                    }],
+                    deviceTypesList: ['ComponentTypeService', function (ComponentTypeService) {
+                        return ComponentTypeService.GetByComponent('DEVICE').then(function (response) {
+                            return response.data || [];
+                        });
                     }]
                 }
             })

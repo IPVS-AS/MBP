@@ -105,120 +105,6 @@ li {
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
-/* --- Info sidebar input list ------------------------------------------------------------------------ */
-/* ---------------------------------------------------------------------------------------------------- */
-.input-list {
-    max-width: 400px;
-    background: #fff;
-    border-radius: 2px;
-    padding: 5px;
-}
-
-.input-list h1 {
-    display: block;
-    text-align: center;
-    padding: 0;
-    margin: 0px 0px 20px 0px;
-    color: #5C5C5C;
-    font-size: x-large;
-}
-
-.input-list ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.input-list li {
-    display: block;
-    padding: 2px;
-    border: 1px solid #adadad;
-    margin-bottom: 13px;
-    margin-top: 13px;
-    border-radius: 3px;
-}
-
-.input-list li > label {
-    display: block;
-    float: left;
-    margin-top: -13px;
-    background: #FFFFFF;
-    height: 16px;
-    padding: 2px 5px 2px 5px;
-    color: #a3a3a3;
-    font-size: 12px;
-    overflow: hidden;
-}
-
-.input-list input[type="text"],
-.input-list input[type="date"],
-.input-list input[type="datetime"],
-.input-list input[type="email"],
-.input-list input[type="number"],
-.input-list input[type="search"],
-.input-list input[type="time"],
-.input-list input[type="url"],
-.input-list input[type="password"],
-.input-list textarea,
-.input-list select {
-    box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    width: 100%;
-    display: block;
-    outline: none;
-    border: none;
-    height: 20px;
-    line-height: 20px;
-    font-size: 13px;
-    padding: 2px;
-}
-
-.input-list input[type="text"]:focus,
-.input-list input[type="date"]:focus,
-.input-list input[type="datetime"]:focus,
-.input-list input[type="email"]:focus,
-.input-list input[type="number"]:focus,
-.input-list input[type="search"]:focus,
-.input-list input[type="time"]:focus,
-.input-list input[type="url"]:focus,
-.input-list input[type="password"]:focus,
-.input-list textarea:focus,
-.input-list select:focus {
-}
-
-.input-list li > span {
-    background: #F3F3F3;
-    display: block;
-    padding: 3px;
-    margin: 0 -9px -9px -9px;
-    text-align: center;
-    color: #C0C0C0;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 11px;
-}
-
-.input-list textarea {
-    resize: none;
-}
-
-.input-list input[type="submit"],
-.input-list input[type="button"] {
-    background: #2471FF;
-    border: none;
-    padding: 10px 20px 10px 20px;
-    border-bottom: 3px solid #5994FF;
-    border-radius: 3px;
-    color: #D2E2FF;
-}
-
-.input-list input[type="submit"]:hover,
-.input-list input[type="button"]:hover {
-    background: #6B9FFF;
-    color: #fff;
-}
-
-/* ---------------------------------------------------------------------------------------------------- */
 /* --- Font Awesome icons ----------------------------------------------------------------------------- */
 /* ---------------------------------------------------------------------------------------------------- */
 .icon-stack {
@@ -720,7 +606,7 @@ li {
 
 #toolCanvasContainer {
     position: relative;
-    width: calc(100% - 220px - 160px);
+    width: calc(100% - 220px);
     display: inline-block;
     vertical-align: top;
 }

@@ -91,7 +91,7 @@
                 </ul>
             </div>
             <div class="body">
-                <div class="btn-group" role="group" style="margin-left: 221px; width: calc(100% - 220px - 160px - 2px)">
+                <div class="btn-group" role="group" style="margin-left: 221px; width: calc(100% - 220px - 2px)">
                     <button type="button" class="btn btn-default waves-effect" data-toggle="tooltip" title="Save">
                         <i class="material-icons" ng-style="{'color': (true ? 'red' : '')}">save</i>
                     </button>
@@ -102,6 +102,10 @@
                     <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.redo()"
                             ng-disabled="!canRedo" data-toggle="tooltip" title="Redo action">
                         <i class="material-icons">redo</i>
+                    </button>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.openDetails()"
+                            ng-disabled="!isFocused" data-toggle="tooltip" title="Open details">
+                        <i class="material-icons">info_outline</i>
                     </button>
                     <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.copy()"
                             ng-disabled="!isFocused" data-toggle="tooltip" title="Copy selected">
@@ -129,7 +133,7 @@
                     </button>
                 </div>
                 <env-model-tool api="envModelToolApi" can-undo="canUndo" can-redo="canRedo" can-paste="canPaste"
-                                is-focused="isFocused"></env-model-tool>
+                                is-focused="isFocused" adapter-list="ctrl.adapterList" device-types="ctrl.deviceTypesList"></env-model-tool>
             </div>
         </div>
     </div>

@@ -4,8 +4,8 @@
  * Controller for the environment models list page.
  */
 app.controller('EnvModelListController',
-    ['$scope', '$controller', '$interval', 'envModelList', 'addEnvModel', 'deleteEnvModel',
-        function ($scope, $controller, $interval, envModelList, addEnvModel, deleteEnvModel) {
+    ['$scope', '$controller', '$interval', 'envModelList', 'addEnvModel', 'deleteEnvModel', 'adapterList', 'deviceTypesList',
+        function ($scope, $controller, $interval, envModelList, addEnvModel, deleteEnvModel, adapterList, deviceTypesList) {
 
             let vm = this;
 
@@ -68,7 +68,9 @@ app.controller('EnvModelListController',
                     $scope: $scope,
                     deleteItem: deleteEnvModel,
                     confirmDeletion: confirmDelete
-                })
+                }),
+                adapterList: adapterList,
+                deviceTypesList: deviceTypesList
             });
 
             //Watch addition of environment models and add them to the list
