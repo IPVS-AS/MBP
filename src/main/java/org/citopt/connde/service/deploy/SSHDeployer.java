@@ -118,6 +118,7 @@ public class SSHDeployer {
      * @return The current state of the device
      */
     public DeviceState determineDeviceState(Device device) {
+        //Sanity check
         if (device == null) {
             throw new IllegalArgumentException("Device must not be null.");
         }
@@ -125,17 +126,12 @@ public class SSHDeployer {
         //Get ip address
         String ipAddress = device.getIpAddress();
 
-        //Check if device is reachable
-        boolean reachable;
+        //Check if remote device can be pinged
+        boolean pingable = false;
         try {
-            reachable = InetAddress.getByName(ipAddress).isReachable(AVAILABILITY_CHECK_TIMEOUT);
-        } catch (IOException e) {
-            return DeviceState.OFFLINE;
-        }
-
-        //Check if device was not reachable
-        if (!reachable) {
-            return DeviceState.OFFLINE;
+            pingable = InetAddress.getByName(ipAddress).isReachable(AVAILABILITY_CHECK_TIMEOUT);
+        } catch (IOException ignored) {
+            //No abort, because pings could be just disabled in the network --> check SSH
         }
 
         //Check if it is possible to establish a SSH connection
@@ -144,19 +140,21 @@ public class SSHDeployer {
             //Get new SSH session from pool
             sshSession = sshSessionPool.getNewSSHSession(device);
         } catch (IOException e) {
-            return DeviceState.ONLINE;
+            sshSession = null;
         }
 
-        //Sanity check
+        //Check for valid SSH session object
         if (sshSession == null) {
-            return DeviceState.ONLINE;
+            //Invalid, device is either online with no SSH or offline
+            return pingable ? DeviceState.ONLINE : DeviceState.OFFLINE;
         }
 
         //Check if it is possible to execute a basic command
         if (sshSession.isCommandExecutable()) {
             return DeviceState.SSH_AVAILABLE;
         } else {
-            return DeviceState.ONLINE;
+            //No commands can be executed via SSH, device is either online with no SSH or offline
+            return pingable ? DeviceState.ONLINE : DeviceState.OFFLINE;
         }
     }
 
