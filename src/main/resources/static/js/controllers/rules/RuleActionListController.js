@@ -103,24 +103,18 @@ app.controller('RuleActionListController',
                 return RuleActionService.getUsingRules(data.id).then(function (result) {
                     var affectedWarning = "";
 
-                    console.log(" ENTERED IN THE FUNTION ");
-
                     //If list is not empty, create a message that contains the names of all affected components
                     if (result.data.length > 0) {
 
-                        console.log("daataa");
-
-                        affectedWarning = "<br/><br/><strong>The following components are currently " +
-                            "using this device and will be deleted as well:</strong><br/>";
+                        affectedWarning = "<br/><br/><strong>The following rules are currently " +
+                            "using this rule action and will be deleted as well:</strong><br/>";
 
                         for (var i = 0; i < result.data.length; i++) {
                             affectedWarning += "- ";
                             affectedWarning += result.data[i].name;
-                            affectedWarning += " (" + result.data[i].component + ")";
                             affectedWarning += "<br/>";
                         }
                     }
-                    console.log(" noooo daataa");
 
                     //Show the alert to the user and return the resulting promise
                     return Swal.fire({
@@ -134,7 +128,6 @@ app.controller('RuleActionListController',
                         cancelButtonText: 'Cancel'
                     });
                 }, function () {
-                    console.log(" ERROOO ");
                     NotificationService.notify("Could not retrieve affected components.", "error");
                 });
             }
