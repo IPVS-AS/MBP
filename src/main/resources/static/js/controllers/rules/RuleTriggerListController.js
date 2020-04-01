@@ -4,8 +4,8 @@
  * Controller for the rule triggers list page.
  */
 app.controller('RuleTriggerListController',
-    ['$scope', '$controller', '$interval', 'ruleTriggerList', 'addRuleTrigger', 'deleteRuleTrigger', 'actuatorList', 'sensorList', 'monitoringComponentList',
-        function ($scope, $controller, $interval, ruleTriggerList, addRuleTrigger, deleteRuleTrigger, actuatorList, sensorList, monitoringComponentList) {
+    ['$scope', '$controller', '$interval', 'ruleTriggerList', 'addRuleTrigger', 'deleteRuleTrigger', 'actuatorList', 'sensorList', 'monitoringComponentList', 'RuleTriggerService',
+        function ($scope, $controller, $interval, ruleTriggerList, addRuleTrigger, deleteRuleTrigger, actuatorList, sensorList, monitoringComponentList, RuleTriggerService) {
             //Selectors for various DOM elements
             const SELECTOR_ADD_TRIGGER_CARD = "#add-trigger-card";
             const SELECTOR_WIZARD_CONTAINER = "#add-trigger-wizard";
@@ -53,6 +53,8 @@ app.controller('RuleTriggerListController',
              * @returns A promise of the user's decision
              */
             function confirmDelete(data) {
+
+                console.log("ALOOO");
                 let ruleTriggerId = data.id;
                 let ruleTriggerName = "";
 
@@ -64,17 +66,39 @@ app.controller('RuleTriggerListController',
                     }
                 }
 
-                //Show the alert to the user and return the resulting promise
-                return Swal.fire({
-                    title: 'Delete rule trigger',
-                    type: 'warning',
-                    html: "Are you sure you want to delete rule trigger \"" + ruleTriggerName + "\"?",
-                    showCancelButton: true,
-                    confirmButtonText: 'Delete',
-                    confirmButtonClass: 'bg-red',
-                    focusConfirm: false,
-                    cancelButtonText: 'Cancel'
+                return RuleTriggerService.getUsingRules( ruleTriggerId ).then(function (result) {
+
+                    var affectedWarning = "";
+
+                    //If list is not empty, create a message that contains the names of all affected components
+                    if (result.data.length > 0) {
+
+                        affectedWarning = "<br/><br/><strong>The following rules are currently " +
+                            "using this rule trigger and will be deleted as well:</strong><br/>";
+
+                        for (var i = 0; i < result.data.length; i++) {
+                            affectedWarning += "- ";
+                            affectedWarning += result.data[i].name;
+                            affectedWarning += "<br/>";
+                        }
+                    }
+
+                    //Show the alert to the user and return the resulting promise
+                    return Swal.fire({
+                        title: 'Delete rule trigger',
+                        type: 'warning',
+                        html: "Are you sure you want to delete rule trigger \"" + ruleTriggerName + "\"?"+ affectedWarning,
+                        showCancelButton: true,
+                        confirmButtonText: 'Delete',
+                        confirmButtonClass: 'bg-red',
+                        focusConfirm: false,
+                        cancelButtonText: 'Cancel'
+                    });
+
+                }, function () {
+                    NotificationService.notify("Could not retrieve affected components.", "error");
                 });
+
             }
 
             /**
