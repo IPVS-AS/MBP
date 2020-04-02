@@ -106,16 +106,16 @@ public class SSHSessionPool {
 
         //Retrieve private rsa key
         String rsaKey = device.getRsaKey();
+        String password = device.getPassword();
 
         //Check key for validity
-        if ((rsaKey == null) || (rsaKey.isEmpty())) {
-            throw new IllegalArgumentException("No private RSA key for SSH connection provided.");
+        if (((rsaKey == null) || (rsaKey.isEmpty())) && ((password == null) || (password.isEmpty()))) {
+            throw new IllegalArgumentException("No private RSA key or Password for SSH connection provided.");
         }
 
         //Retrieve ssh connection parameter
         String url = device.getIpAddress();
         String username = device.getUsername();
-        String password = device.getPassword();
 
         //Create new ssh session and connect
         SSHSession sshSession = new SSHSession(url, SSH_PORT, username, password, rsaKey);
