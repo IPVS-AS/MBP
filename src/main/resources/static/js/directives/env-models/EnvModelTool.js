@@ -1124,8 +1124,8 @@ app.directive('envModelTool',
                         clsName: classNames,
                         left: element.position().left,
                         top: element.position().top,
-                        width: element.width(),
-                        height: element.height()
+                        width: element.outerWidth(),
+                        height: element.outerHeight()
                     };
 
                     //Apply transformation again
