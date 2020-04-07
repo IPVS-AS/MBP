@@ -2,6 +2,7 @@ package org.citopt.connde.web.rest;
 
 import io.swagger.annotations.*;
 import org.citopt.connde.RestConfiguration;
+import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.RuleRepository;
@@ -56,11 +57,14 @@ public class RestComponentFilterController {
     public ResponseEntity<List<Rule>> getRulesByRuleTriggerID(@PathVariable(value = "id") @ApiParam(value = "ID of the rule trigger", example = "5c97dc2583aeb6078c5ab672", required = true) String ruleTriggerId) {
 
         List<Rule> rules = ruleRepository.findAll();
+
+        // Making sure user has access to the rule trigger whose id is parameter
+        RuleTrigger ruleTrigger = ruleTriggerRepository.findOne(ruleTriggerId);
         List<Rule> dependentRules = new ArrayList<>();
 
         for (Rule rule : rules) {
 
-            if (rule.getTrigger().getId().equals(ruleTriggerId)) {
+            if (rule.getTrigger().getId().equals(ruleTrigger.getId())) {
                 dependentRules.add(rule);
             }
 
