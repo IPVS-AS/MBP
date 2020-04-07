@@ -4,8 +4,8 @@
  * Controller for the rule triggers list page.
  */
 app.controller('RuleTriggerListController',
-    ['$scope', '$controller', '$interval', 'ruleTriggerList', 'addRuleTrigger', 'deleteRuleTrigger', 'actuatorList', 'sensorList', 'monitoringComponentList', 'RuleTriggerService',
-        function ($scope, $controller, $interval, ruleTriggerList, addRuleTrigger, deleteRuleTrigger, actuatorList, sensorList, monitoringComponentList, RuleTriggerService) {
+    ['$scope', '$controller', '$interval', 'ruleTriggerList', 'addRuleTrigger', 'deleteRuleTrigger', 'actuatorList', 'sensorList', 'monitoringComponentList', 'RuleTriggerService', 'NotificationService',
+        function ($scope, $controller, $interval, ruleTriggerList, addRuleTrigger, deleteRuleTrigger, actuatorList, sensorList, monitoringComponentList, RuleTriggerService, NotificationService) {
             //Selectors for various DOM elements
             const SELECTOR_ADD_TRIGGER_CARD = "#add-trigger-card";
             const SELECTOR_WIZARD_CONTAINER = "#add-trigger-wizard";
