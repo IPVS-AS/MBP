@@ -2,12 +2,14 @@ package org.citopt.connde.web.rest;
 
 import io.swagger.annotations.*;
 import org.citopt.connde.RestConfiguration;
+import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.RuleRepository;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.repository.RuleActionRepository;
+import org.citopt.connde.repository.RuleTriggerRepository;
 import org.citopt.connde.repository.projection.ComponentExcerpt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -38,7 +40,38 @@ public class RestComponentFilterController {
     private RuleActionRepository ruleActionRepository;
 
     @Autowired
+    private RuleTriggerRepository ruleTriggerRepository;
+
+    @Autowired
     private RuleRepository ruleRepository;
+
+    /**
+     * Returns a list of rules that make use of a certain rule trigger.
+     *
+     * @param ruleTriggerId The id of the rule trigger for which using rules should be found
+     * @return A list of all rules that make use of the rule trigger
+     */
+    @GetMapping("/rules/by-ruleTrigger/{id}")
+    @ApiOperation(value = "Retrieves the rules which make use of a certain rule trigger and for which the user is authorized", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success")})
+    public ResponseEntity<List<Rule>> getRulesByRuleTriggerID(@PathVariable(value = "id") @ApiParam(value = "ID of the rule trigger", example = "5c97dc2583aeb6078c5ab672", required = true) String ruleTriggerId) {
+
+        List<Rule> rules = ruleRepository.findAll();
+
+        // Making sure user has access to the rule trigger whose id is parameter
+        RuleTrigger ruleTrigger = ruleTriggerRepository.findOne(ruleTriggerId);
+        List<Rule> dependentRules = new ArrayList<>();
+
+        for (Rule rule : rules) {
+
+            if (rule.getTrigger().getId().equals(ruleTrigger.getId())) {
+                dependentRules.add(rule);
+            }
+
+        }
+
+        return new ResponseEntity<>(dependentRules, HttpStatus.OK);
+    }
 
     /**
      * Returns a list of rules that make use of a certain rule action.
