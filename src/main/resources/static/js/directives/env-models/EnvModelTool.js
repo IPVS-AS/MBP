@@ -64,6 +64,7 @@ app.directive('envModelTool',
                 /*
                 Build API that is available for the outside
                  */
+                scope.api.getModelJSON = getModelJSON;
                 scope.api.undo = undoAction;
                 scope.api.redo = redoAction;
                 scope.api.openDetails = openMarkedElementDetails;
@@ -178,8 +179,8 @@ app.directive('envModelTool',
                             //Unset moving flag
                             $timeout(() => (isMoving = false), 200);
 
-                            //Write model to history stack
-                            saveUndo();
+                            //Indicate that the model has changed
+                            onModelChanged();
                         },
                         radians: startAngle,
                         snap: true,
@@ -211,8 +212,8 @@ app.directive('envModelTool',
                             //Unset moving flag
                             $timeout(() => (isMoving = false), 200);
 
-                            //Write model to history stack
-                            saveUndo();
+                            //Indicate that the model has changed
+                            onModelChanged();
                         },
                         handles: "all"
                     });
@@ -303,7 +304,8 @@ app.directive('envModelTool',
 
                         //Write model to history stack if its not a room (because of its animation)
                         if (!element.hasClass("room-floorplan")) {
-                            saveUndo();
+                            //Indicate that the model has changed
+                            onModelChanged();
                         }
                     }
                 });
@@ -555,8 +557,8 @@ app.directive('envModelTool',
                             width: '250px',
                             height: '250px'
                         }, 1000, function () {
-                            //Save state with final size
-                            saveUndo();
+                            //Save state with final size and indicate that the model has changed
+                            onModelChanged();
                         });
                     }
                     // Add connection square on device
@@ -625,8 +627,8 @@ app.directive('envModelTool',
                             focusElement($element);
                         },
                         stop: function (event) {
-                            //Write model to history stack
-                            saveUndo();
+                            //Indicate that the model has changed
+                            onModelChanged();
                         }
                     });
 
@@ -682,9 +684,6 @@ app.directive('envModelTool',
 
                 // Events of the canvas
                 CANVAS.on('click', function (e) {
-                    //Save data from input fields to the corresponding element
-                    saveData();
-
                     //Ensure that user is not currently moving an element
                     if (isMoving) {
                         return;
@@ -845,7 +844,10 @@ app.directive('envModelTool',
                     $('.clicked-element').each(function () {
                         deleteElement($(this));
                     });
-                    saveUndo();
+
+                    //Indicate that the model has changed
+                    onModelChanged();
+
                     scope.isFocused = false;
                 }
 
@@ -919,16 +921,15 @@ app.directive('envModelTool',
 
                 // Add device name and id to sensor or actuator when a connection is created
                 jsPlumbInstance.bind("connection", function (info) {
-                    saveData();
                     let source = $(info.source);
                     let target = $(info.target);
-                    if (target.attr("class").indexOf("device") == -1) {
+                    if (target.attr("class").indexOf("device") === -1) {
                         target.data("device", source.data("name"));
                         target.data("deviceId", source.data("id"));
                     }
 
-                    //Save state
-                    saveUndo();
+                    //Indicate that the model has changed
+                    onModelChanged();
                 });
 
                 // Undeploy, deregister and remove device name and id from sensor or actuator when a connection is removed
@@ -1018,37 +1019,6 @@ app.directive('envModelTool',
                 }
 
                 /*
-                 * Save the data from the input fields in the element
-                 */
-                function saveData() {
-                    let element = scope.clickedComponent.element;
-                    if (element) {
-                        if (element.attr("class").indexOf("device") > -1) {
-                            element.data("name", scope.clickedComponent.name);
-                            element.data("type", scope.clickedComponent.type);
-                            element.data("mac", scope.clickedComponent.mac);
-                            element.data("ip", scope.clickedComponent.ip);
-                            element.data("username", scope.clickedComponent.username);
-                            element.data("password", scope.clickedComponent.password);
-                            element.data("rsaKey", scope.clickedComponent.rsaKey);
-                            updateDeviceSA(element);
-                        } else if (element.attr("class").indexOf("actuator") > -1) {
-                            element.data("name", scope.clickedComponent.name);
-                            element.data("type", scope.clickedComponent.type);
-                            element.data("adapter", scope.clickedComponent.adapter);
-                        } else if (element.attr("class").indexOf("sensor") > -1) {
-                            element.data("name", scope.clickedComponent.name);
-                            element.data("type", scope.clickedComponent.type);
-                            element.data("adapter", scope.clickedComponent.adapter);
-                        }
-                    }
-
-                    $timeout(function () {
-                        scope.clickedComponent = {};
-                    });
-                }
-
-                /*
                  * Update device name and ID in the attached sensors and actuators
                  */
                 function updateDeviceSA(device) {
@@ -1097,6 +1067,9 @@ app.directive('envModelTool',
 
                     //Store element details
                     currentDetailsElement.data('details', scope.modalElementDetails);
+
+                    //Model has changed
+                    onModelChanged();
                 }
 
                 /**
@@ -1156,9 +1129,6 @@ app.directive('envModelTool',
                  * @return The exported JSON string representing the model
                  */
                 function exportToJSON() {
-                    //Save all unsaved form data
-                    saveData();
-
                     let totalCount = 0;
                     let nodes = [];
 
@@ -1246,7 +1216,7 @@ app.directive('envModelTool',
                 /**
                  * Writes the model in its current state to the undo manager.
                  */
-                function saveUndo() {
+                function saveForUndo() {
                     let undoModelState = lastModelState;
                     lastModelState = exportToJSON();
                     let redoModelState = lastModelState;
@@ -1267,12 +1237,34 @@ app.directive('envModelTool',
                 }
 
                 /**
-                 * Updates all states that are exposed to the outside and indiciate which options are currently available.
+                 * Must be called in case the model changed, so that the exposed "onChanged"
+                 * callback function may be triggered and the model can be pushed on the history stack
+                 * for undo/redo.
+                 */
+                function onModelChanged() {
+                    //Save current model for undo
+                    saveForUndo();
+
+                    //Trigger the exposed callback
+                    scope.onModelChanged();
+                }
+
+                /**
+                 * Updates all states that are exposed to the outside and indicates which options are currently available.
                  */
                 function updateExposedStates() {
                     scope.canUndo = UNDO_MANAGER.canUndo();
                     scope.canRedo = UNDO_MANAGER.canRedo();
                     scope.canPaste = (copyClipboard.length > 0);
+                }
+
+                /**
+                 * [Public]
+                 * Exports and returns the current model as JSON string.
+                 */
+                function getModelJSON() {
+                    //Export model
+                    return exportToJSON();
                 }
 
                 /**
@@ -1385,7 +1377,7 @@ app.directive('envModelTool',
                 function pasteElements() {
                     //Abort if there are no elements in the clipboard
                     if (copyClipboard.length < 1) {
-                        returN;
+                        return;
                     }
 
                     //Remove focus from all elements
@@ -1411,8 +1403,8 @@ app.directive('envModelTool',
                         focusElement(newElement);
                     });
 
-                    //Save the current state
-                    saveUndo();
+                    //Indicate that the model has changed
+                    onModelChanged();
                 }
 
                 /**
@@ -1469,8 +1461,8 @@ app.directive('envModelTool',
                         //Import the model
                         importFromJSON(modelJSON);
 
-                        //Import was successful, so save state for undo
-                        saveUndo();
+                        //Import was successful, so indicate that the model has changed
+                        onModelChanged();
 
                         //Clear error message and hide the modal
                         scope.importModelErrorMessage = false;
@@ -1863,7 +1855,11 @@ app.directive('envModelTool',
 
                     //Input
                     adapterList: '=adapterList',
-                    deviceTypes: '=deviceTypes'
+                    deviceTypes: '=deviceTypes',
+
+                    //Callbacks
+                    onModelChanged: '&onChanged'
+
                     /*
                     //The unit in which the statistics are supposed to be displayed
                     unit: '@unit',

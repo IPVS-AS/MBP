@@ -92,48 +92,53 @@
             </div>
             <div class="body">
                 <div class="btn-group" role="group" style="margin-left: 221px; width: calc(100% - 220px - 2px)">
-                    <button type="button" class="btn btn-default waves-effect" data-toggle="tooltip" title="Save">
-                        <i class="material-icons" ng-style="{'color': (true ? 'red' : '')}">save</i>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.saveModel()"
+                            ng-disabled="!ctrl.saveNecessary" data-toggle="tooltip" title="Save model">
+                        <i class="material-icons" ng-style="{'color': (ctrl.saveNecessary ? 'red' : '')}">save</i>
                     </button>
-                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.undo()"
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.undo()"
                             ng-disabled="!canUndo" data-toggle="tooltip" title="Undo action">
                         <i class="material-icons">undo</i>
                     </button>
-                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.redo()"
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.redo()"
                             ng-disabled="!canRedo" data-toggle="tooltip" title="Redo action">
                         <i class="material-icons">redo</i>
                     </button>
-                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.openDetails()"
+                    <button type="button" class="btn btn-default waves-effect"
+                            ng-click="ctrl.envModelToolApi.openDetails()"
                             ng-disabled="!isFocused" data-toggle="tooltip" title="Open details">
                         <i class="material-icons">info_outline</i>
                     </button>
-                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.copy()"
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.copy()"
                             ng-disabled="!isFocused" data-toggle="tooltip" title="Copy selected">
                         <i class="material-icons">content_copy</i>
                     </button>
-                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.cut()"
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.cut()"
                             ng-disabled="!isFocused" data-toggle="tooltip" title="Cut selected">
                         <i class="material-icons">content_cut</i>
                     </button>
-                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.paste()"
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.paste()"
                             ng-disabled="!canPaste" data-toggle="tooltip" title="Paste">
                         <i class="material-icons">content_paste</i>
                     </button>
-                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.delete()"
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.delete()"
                             ng-disabled="!isFocused" data-toggle="tooltip" title="Delete selected">
                         <i class="material-icons">delete</i>
                     </button>
-                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.export()"
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.export()"
                             data-toggle="tooltip" title="Export model">
                         <i class="material-icons">file_upload</i>
                     </button>
-                    <button type="button" class="btn btn-default waves-effect" ng-click="envModelToolApi.import()"
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.import()"
                             data-toggle="tooltip" title="Import model">
                         <i class="material-icons">file_download</i>
                     </button>
                 </div>
-                <env-model-tool api="envModelToolApi" can-undo="canUndo" can-redo="canRedo" can-paste="canPaste"
-                                is-focused="isFocused" adapter-list="ctrl.adapterList" device-types="ctrl.deviceTypesList"></env-model-tool>
+                <env-model-tool api="ctrl.envModelToolApi"
+                                can-undo="canUndo" can-redo="canRedo" can-paste="canPaste" is-focused="isFocused"
+                                adapter-list="ctrl.adapterList" device-types="ctrl.deviceTypesList"
+                                on-changed="ctrl.onModelChanged()">
+                </env-model-tool>
             </div>
         </div>
     </div>

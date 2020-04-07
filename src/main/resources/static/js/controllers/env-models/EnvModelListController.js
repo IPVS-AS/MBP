@@ -7,7 +7,11 @@ app.controller('EnvModelListController',
     ['$scope', '$controller', '$interval', 'envModelList', 'addEnvModel', 'deleteEnvModel', 'adapterList', 'deviceTypesList',
         function ($scope, $controller, $interval, envModelList, addEnvModel, deleteEnvModel, adapterList, deviceTypesList) {
 
+            //Save current scope
             let vm = this;
+
+            //Whether the current model of the modelling tool has been changed and needs to be saved
+            vm.saveNecessary = false;
 
             /**
              * Initializing function, sets up basic things.
@@ -18,9 +22,37 @@ app.controller('EnvModelListController',
                     //Enable tooltips
                     $('[data-toggle="tooltip"]').tooltip({
                         delay: {"show": 500, "hide": 0}
+                    }).on('click', function () {
+                        //Hide tooltip in button click
+                        $(this).tooltip("hide");
                     });
                 });
             })();
+
+            /**
+             * [Public]
+             * Called, when the user wants to save a model by clicking on the save button of the modelling tool
+             * menu bar.
+             */
+            function saveModel() {
+                let model = vm.envModelToolApi.getModelJSON();
+                console.log("Model:");
+                console.log(model);
+
+                //Model was saved, no save needed
+                vm.saveNecessary = false;
+            }
+
+            /**
+             * [Public]
+             * Callback that is triggered in case the current model of the environment modelling tool has changed.
+             */
+            function onModelChanged() {
+                console.log("Model changed");
+
+                //Model has been changed and needs to be saved
+                vm.saveNecessary = true;
+            }
 
             /**
              * [Public]
@@ -70,7 +102,9 @@ app.controller('EnvModelListController',
                     confirmDeletion: confirmDelete
                 }),
                 adapterList: adapterList,
-                deviceTypesList: deviceTypesList
+                deviceTypesList: deviceTypesList,
+                saveModel: saveModel,
+                onModelChanged: onModelChanged
             });
 
             //Watch addition of environment models and add them to the list
