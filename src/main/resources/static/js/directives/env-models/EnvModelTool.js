@@ -1768,7 +1768,7 @@ app.directive('envModelTool',
                     '<h5 class="modal-title"><i class="material-icons" style="vertical-align: bottom;">file_upload</i>&nbsp;Export model' +
                     '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
                     '</h5></div>' +
-                    '<form id="addActuatorForm" ng-submit="addActuatorCtrl.addItem()"><fieldset>' +
+                    '<form><fieldset>' +
                     '<div class="modal-body"><div class="form-group"><div class="form-line">' +
                     '<textarea class="form-control" style="height: 120px;" ng-model="exportModelString" onclick="this.select()"></textarea>' +
                     '</div></div>' +
@@ -1784,7 +1784,7 @@ app.directive('envModelTool',
                     '<h5 class="modal-title"><i class="material-icons" style="vertical-align: bottom;">file_download</i>&nbsp;Import model' +
                     '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>' +
                     '</h5></div>' +
-                    '<form id="addActuatorForm" ng-submit="importModelRequest()"><fieldset>' +
+                    '<form ng-submit="importModelRequest()"><fieldset>' +
                     '<div class="modal-body"><div class="form-group"><div class="form-line">' +
                     '<span>Please paste the model that is supposed to be imported below:</span>' +
                     '<textarea class="form-control" style="height: 120px;" ng-model="importModelString" onclick="document.execCommand(\'paste\');"></textarea>' +

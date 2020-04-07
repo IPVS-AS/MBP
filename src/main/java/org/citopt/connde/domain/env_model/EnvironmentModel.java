@@ -32,14 +32,6 @@ public class EnvironmentModel extends UserEntity {
 
     private String modelJSON;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @CreatedDate
-    private Date created;
-
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @LastModifiedDate
-    private Date lastModified;
-
     //Maps ids of entities (devices, sensors, ...) to the corresponding entity objects
     @JsonIgnore
     private Map<String, UserEntity> entityMapping;
@@ -76,21 +68,6 @@ public class EnvironmentModel extends UserEntity {
         this.modelJSON = modelJSON;
     }
 
-    public Date getCreated() {
-        return created;
-    }
-
-    public void setCreated(Date created) {
-        this.created = created;
-    }
-
-    public Date getLastModified() {
-        return lastModified;
-    }
-
-    public void setLastModified(Date lastModified) {
-        this.lastModified = lastModified;
-    }
 
     public Map<String, UserEntity> getEntityMapping() {
         return entityMapping;

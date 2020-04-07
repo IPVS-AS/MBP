@@ -3,7 +3,11 @@
 'use strict';
 
 app.factory('CrudService', ['$resource', '$q', 'ENDPOINT_URI', function ($resource, $q, ENDPOINT_URI) {
-    var Item = $resource(ENDPOINT_URI + '/:category/:id', {category: '@category', id: '@id'});
+    var Item = $resource(ENDPOINT_URI + '/:category/:id', {category: '@category', id: '@id'}, {
+        update: {
+            method: 'PUT'
+        }
+    });
 
     var ItemSearch = $resource(ENDPOINT_URI + '/:category/search/:query', {category: '@category', query: '@query'});
 
@@ -124,8 +128,18 @@ app.factory('CrudService', ['$resource', '$q', 'ENDPOINT_URI', function ($resour
                     $q.reject(response);
                 }
             );
-        }
+        },
 
+        updateItem: function (category, data) {
+            return Item.update({category: category, id: data.id}, data).$promise.then(
+                function (response) {
+                    return response;
+                },
+                function (response) {
+                    $q.reject(response);
+                }
+            );
+        }
     };
 }]);
 

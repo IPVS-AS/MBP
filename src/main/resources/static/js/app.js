@@ -124,6 +124,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     addEnvModel: ['CrudService', function (CrudService) {
                         return angular.bind(this, CrudService.addItem, 'env-models');
                     }],
+                    updateEnvModel: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.updateItem, 'env-models');
+                    }],
                     deleteEnvModel: ['CrudService', function (CrudService) {
                         return angular.bind(this, CrudService.deleteItem, 'env-models');
                     }],

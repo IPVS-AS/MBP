@@ -8,9 +8,12 @@ import org.citopt.connde.domain.user.User;
 import org.citopt.connde.repository.projection.UserExcerpt;
 import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.UserService;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.projection.ProjectionFactory;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -47,6 +50,16 @@ public abstract class UserEntity {
     @DBRef
     private Set<User> approvedUsers = new HashSet<>();
 
+    //Creation date, managed by Mongo Auditing
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @CreatedDate
+    private Date created;
+
+    //Date of the last modification, managed by Mongo Auditing
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @LastModifiedDate
+    private Date lastModified;
+
     /**
      * Returns the owner of this entity.
      *
@@ -81,6 +94,42 @@ public abstract class UserEntity {
      */
     public void setApprovedUsers(Set<User> approvedUsers) {
         this.approvedUsers = approvedUsers;
+    }
+
+    /**
+     * Returns the creation date of the entity.
+     *
+     * @return The creation date
+     */
+    public Date getCreated() {
+        return created;
+    }
+
+    /**
+     * Sets the creation date of the entity.
+     *
+     * @param created The creation date to set
+     */
+    public void setCreated(Date created) {
+        this.created = created;
+    }
+
+    /**
+     * Returns the date of the last modification of the entity.
+     *
+     * @return The modification date
+     */
+    public Date getLastModified() {
+        return lastModified;
+    }
+
+    /**
+     * Sets the date of the last modification of the entity.
+     *
+     * @param lastModified The modification date to set
+     */
+    public void setLastModified(Date lastModified) {
+        this.lastModified = lastModified;
     }
 
     /**

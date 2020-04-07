@@ -4,8 +4,8 @@
  * Controller for the environment models list page.
  */
 app.controller('EnvModelListController',
-    ['$scope', '$controller', '$interval', 'envModelList', 'addEnvModel', 'deleteEnvModel', 'adapterList', 'deviceTypesList',
-        function ($scope, $controller, $interval, envModelList, addEnvModel, deleteEnvModel, adapterList, deviceTypesList) {
+    ['$scope', '$controller', '$interval', 'envModelList', 'addEnvModel', 'updateEnvModel', 'deleteEnvModel', 'adapterList', 'deviceTypesList',
+        function ($scope, $controller, $interval, envModelList, addEnvModel, updateEnvModel, deleteEnvModel, adapterList, deviceTypesList) {
 
             //Save current scope
             let vm = this;
@@ -16,9 +16,6 @@ app.controller('EnvModelListController',
             //Internal fields
             let isNewModel = true; //Whether the currently edited model is a new one
             let modelID = null; //The ID of the currently edited model or null if it is a new model
-
-            console.log("Model list:");
-            console.log(envModelList);
 
             /**
              * Initializing function, sets up basic things.
@@ -38,13 +35,39 @@ app.controller('EnvModelListController',
 
             function createNewModel(modelObject) {
                 vm.addEnvModelCtrl.item = modelObject;
-                vm.addEnvModelCtrl.addItem().then(function (data) {
-                    console.log(data);
+                vm.addEnvModelCtrl.addItem().then(function () {
+                    //Check for success
+                    if (vm.addEnvModelCtrl.success) {
+                        //Success, switch from new to existing model
+                        isNewModel = false;
+                        modelID = vm.addEnvModelCtrl.result.id;
+                    } else {
+                        //Failure handling
+                        //TODO
+                        console.log(vm.addEnvModelCtrl.item.errors);
+
+                    }
                 });
             }
 
             function updateExistingModel(modelObject) {
+                //Pass model object to controller
+                vm.updateEnvModelCtrl.item = modelObject;
 
+                //Pass model ID to the controller
+                vm.updateEnvModelCtrl.item.id = modelID;
+
+                vm.updateEnvModelCtrl.updateItem().then(function (data) {
+                    //Check for success
+                    if (vm.updateEnvModelCtrl.success) {
+                        console.log(data);
+                        console.log(vm.updateEnvModelCtrl.result)
+                    } else {
+                        //Failure handling
+                        //TODO
+                        console.log(vm.updateEnvModelCtrl.item.errors);
+                    }
+                });
             }
 
             /**
@@ -85,8 +108,6 @@ app.controller('EnvModelListController',
              * Callback that is triggered in case the current model of the environment modelling tool has changed.
              */
             function onModelChanged() {
-                console.log("Model changed");
-
                 //Model has been changed and needs to be saved
                 vm.saveNecessary = true;
             }
@@ -133,6 +154,10 @@ app.controller('EnvModelListController',
                     $scope: $scope,
                     addItem: addEnvModel
                 }),
+                updateEnvModelCtrl: $controller('UpdateItemController as updateEnvModelCtrl', {
+                    $scope: $scope,
+                    updateItem: updateEnvModel
+                }),
                 deleteEnvModelCtrl: $controller('DeleteItemController as deleteEnvModelCtrl', {
                     $scope: $scope,
                     deleteItem: deleteEnvModel,
@@ -159,6 +184,19 @@ app.controller('EnvModelListController',
                         //Add environment model to list
                         vm.envModelListCtrl.pushItem(envModel);
                     }
+                }
+            );
+
+            //Watch update of environment models and update them in the list accordingly
+            $scope.$watch(
+                function () {
+                    //Value being watched
+                    return vm.updateEnvModelCtrl.result;
+                },
+                function () {
+                    //Callback
+                    let updatedModel = vm.updateEnvModelCtrl.result;
+                    vm.envModelListCtrl.updateItem(updatedModel);
                 }
             );
 
