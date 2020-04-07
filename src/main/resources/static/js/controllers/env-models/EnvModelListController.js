@@ -6,6 +6,8 @@
 app.controller('EnvModelListController',
     ['$scope', '$controller', '$interval', 'envModelList', 'addEnvModel', 'updateEnvModel', 'deleteEnvModel', 'adapterList', 'deviceTypesList',
         function ($scope, $controller, $interval, envModelList, addEnvModel, updateEnvModel, deleteEnvModel, adapterList, deviceTypesList) {
+            //Get required DOM elements
+            const MODEL_EDIT_ENVIRONMENT = $("#model-edit-card");
 
             //Save current scope
             let vm = this;
@@ -13,9 +15,13 @@ app.controller('EnvModelListController',
             //Whether the current model of the modelling tool has been changed and needs to be saved
             vm.saveNecessary = false;
 
+            //Stores properties of the current model (name, description)
+            vm.modelProperties = {name: "", description: ""};
+
             //Internal fields
             let isNewModel = true; //Whether the currently edited model is a new one
-            let modelID = null; //The ID of the currently edited model or null if it is a new model
+            let currentModelID = null; //The ID of the currently edited model or null if it is a new model
+            let ignorePropertyUpdate = false; //True, if updates of model properties should be ignored for save indication
 
             /**
              * Initializing function, sets up basic things.
@@ -33,14 +39,14 @@ app.controller('EnvModelListController',
                 });
             })();
 
-            function createNewModel(modelObject) {
+            function saveNewModel(modelObject) {
                 vm.addEnvModelCtrl.item = modelObject;
                 vm.addEnvModelCtrl.addItem().then(function () {
                     //Check for success
                     if (vm.addEnvModelCtrl.success) {
                         //Success, switch from new to existing model
                         isNewModel = false;
-                        modelID = vm.addEnvModelCtrl.result.id;
+                        currentModelID = vm.addEnvModelCtrl.result.id;
                     } else {
                         //Failure handling
                         //TODO
@@ -50,12 +56,12 @@ app.controller('EnvModelListController',
                 });
             }
 
-            function updateExistingModel(modelObject) {
+            function saveExistingModel(modelObject) {
                 //Pass model object to controller
                 vm.updateEnvModelCtrl.item = modelObject;
 
                 //Pass model ID to the controller
-                vm.updateEnvModelCtrl.item.id = modelID;
+                vm.updateEnvModelCtrl.item.id = currentModelID;
 
                 vm.updateEnvModelCtrl.updateItem().then(function (data) {
                     //Check for success
@@ -67,6 +73,86 @@ app.controller('EnvModelListController',
                         //TODO
                         console.log(vm.updateEnvModelCtrl.item.errors);
                     }
+                });
+            }
+
+            /**
+             * [Public]
+             * Called, when the user wants to create a new model.
+             */
+            function createNewModel() {
+                //Hide modelling tool with callback
+                MODEL_EDIT_ENVIRONMENT.slideUp(400, function () {
+                    //Load empty model so that the user may create a new one
+                    vm.envModelToolApi.loadEmptyModel();
+
+                    //Ignore properties update, since it is not done by the user
+                    ignorePropertyUpdate = true;
+
+                    //Set default model properties
+                    vm.modelProperties = {
+                        name: "Unnamed Model",
+                        description: ""
+                    };
+
+                    //Set edit mode
+                    isNewModel = true;
+                    currentModelID = null;
+
+                    //New model, so no save necessary
+                    vm.saveNecessary = false;
+
+                    //Show modelling tool again
+                    MODEL_EDIT_ENVIRONMENT.slideDown();
+                });
+            }
+
+            /**
+             * [Public]
+             * Called, when the user wants to edit a model of the model list.
+             */
+            function editModel(modelID) {
+                //Will hold the model that is supposed to be edited
+                let modelToEdit = null;
+
+                //Iterate over all models in the model list to find the matching model
+                for (let i = 0; i < envModelList.length; i++) {
+                    //Check for matching ID
+                    if (envModelList[i].id === modelID) {
+                        //Model found
+                        modelToEdit = envModelList[i];
+                        break;
+                    }
+                }
+
+                //Check if model could be found
+                if (modelToEdit == null) {
+                    return;
+                }
+
+                //Hide modelling tool with callback
+                MODEL_EDIT_ENVIRONMENT.slideUp(400, function () {
+                    //Load model to make it editable
+                    vm.envModelToolApi.loadModel(modelToEdit.modelJSON);
+
+                    //Ignore properties update, since it is not done by the user
+                    ignorePropertyUpdate = true;
+
+                    //Set model properties
+                    vm.modelProperties = {
+                        name: modelToEdit.name,
+                        description: modelToEdit.description
+                    };
+
+                    //Set edit mode
+                    isNewModel = false;
+                    currentModelID = modelToEdit.id;
+
+                    //New model, so no save necessary
+                    vm.saveNecessary = false;
+
+                    //Display modelling tool again
+                    MODEL_EDIT_ENVIRONMENT.slideDown();
                 });
             }
 
@@ -93,10 +179,10 @@ app.controller('EnvModelListController',
                 //Check if the current model is a new model
                 if (isNewModel) {
                     //New model, create it
-                    createNewModel(modelObject);
+                    saveNewModel(modelObject);
                 } else {
                     //Existing model, update it
-                    updateExistingModel(modelObject);
+                    saveExistingModel(modelObject);
                 }
 
                 //Model was saved, no save necessary anymore
@@ -165,8 +251,25 @@ app.controller('EnvModelListController',
                 }),
                 adapterList: adapterList,
                 deviceTypesList: deviceTypesList,
+                createNewModel: createNewModel,
+                editModel: editModel,
                 saveModel: saveModel,
                 onModelChanged: onModelChanged
+            });
+
+            //Watch change of model properties and indicate necessary saving
+            $scope.$watch(function () {
+                //Value being watched
+                return vm.modelProperties.name + vm.modelProperties.description;
+            }, function () {
+                //Callback on change; check if property update is supposed to be ignored
+                if (ignorePropertyUpdate) {
+                    //Update ignored, but take next one serious
+                    ignorePropertyUpdate = false;
+                } else {
+                    //Do not ignore, indicate a necessary save
+                    vm.saveNecessary = true;
+                }
             });
 
             //Watch addition of environment models and add them to the list

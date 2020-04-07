@@ -32,7 +32,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 templateUrl: 'templates/home',
                 controller: 'HomeController as ctrl',
                 resolve: {
-                    countModels: ['CrudService', function (CrudService) {
+                    countEnvModels: ['CrudService', function (CrudService) {
                         return CrudService.countItems('env-models').then(
                             (count) => {
                                 return count;

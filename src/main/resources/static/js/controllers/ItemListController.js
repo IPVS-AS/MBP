@@ -8,7 +8,7 @@
 app.controller('ItemListController',
     ['$scope', '$route', 'list',
         function ($scope, $route, list) {
-            var vm = this;
+            let vm = this;
 
             /**
              * [Public]

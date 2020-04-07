@@ -65,6 +65,8 @@ app.directive('envModelTool',
                 Build API that is available for the outside
                  */
                 scope.api.getModelJSON = getModelJSON;
+                scope.api.loadModel = loadModel;
+                scope.api.loadEmptyModel = loadEmptyModel;
                 scope.api.undo = undoAction;
                 scope.api.redo = redoAction;
                 scope.api.openDetails = openMarkedElementDetails;
@@ -1261,10 +1263,41 @@ app.directive('envModelTool',
                 /**
                  * [Public]
                  * Exports and returns the current model as JSON string.
+                 * @returns The current model as JSON string
                  */
                 function getModelJSON() {
                     //Export model
                     return exportToJSON();
+                }
+
+                /**
+                 * [Public]
+                 * Loads a model, given as JSON string.
+                 * @param modelJSON The JSON string representing the model to load
+                 */
+                function loadModel(modelJSON) {
+                    //Load model
+                    importFromJSON(modelJSON);
+
+                    //Reset undo manager
+                    UNDO_MANAGER.reset();
+                    lastModelState = "";
+                    copyClipboard = [];
+
+                    //Reset ID count
+                    elementIdCount = 0;
+
+                    //Update exposed states
+                    updateExposedStates();
+                }
+
+                /**
+                 * [Public]
+                 * Loads an empty model so that the user may create a new one.
+                 */
+                function loadEmptyModel() {
+                    //Load empty model
+                    loadModel("{}");
                 }
 
                 /**
