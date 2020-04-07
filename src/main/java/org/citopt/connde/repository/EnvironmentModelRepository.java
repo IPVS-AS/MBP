@@ -2,6 +2,7 @@ package org.citopt.connde.repository;
 
 import io.swagger.annotations.*;
 import org.citopt.connde.domain.env_model.EnvironmentModel;
+import org.citopt.connde.repository.projection.EnvironmentModelExcerpt;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Query;
@@ -14,7 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 /**
  * Repository for environment models.
  */
-@RepositoryRestResource(collectionResourceRel = "env-models", path = "env-models")
+@RepositoryRestResource(collectionResourceRel = "env-models", path = "env-models", excerptProjection = EnvironmentModelExcerpt.class)
 @Api(tags = {"Environment model entities"}, description = "CRUD for environment model entities")
 public interface EnvironmentModelRepository extends UserEntityRepository<EnvironmentModel> {
 

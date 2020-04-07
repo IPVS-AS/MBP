@@ -1,62 +1,102 @@
 package org.citopt.connde.domain.env_model;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.citopt.connde.domain.user_entity.UserEntity;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
 import javax.validation.constraints.NotNull;
-
-import org.citopt.connde.domain.user_entity.UserEntity;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import java.util.Date;
+import java.util.Map;
 
 /**
-* Model entity.
-*/
+ * Document class for environment model entities, created by the environment modelling tool.
+ */
 @Document
 public class EnvironmentModel extends UserEntity {
-	
+
     @Id
     @GeneratedValue
     private String id;
-    
+
     @NotNull
+    @Indexed(unique = true)
     private String name;
-    
-    @NotNull
-    private String value;
-    
-    @NotNull
-    private String username;
 
-	public String getId() {
-		return id;
-	}
+    private String description;
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    private String modelJSON;
 
-	public String getName() {
-		return name;
-	}
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @CreatedDate
+    private Date created;
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @LastModifiedDate
+    private Date lastModified;
 
-	public String getValue() {
-		return value;
-	}
+    //Maps ids of entities (devices, sensors, ...) to the corresponding entity objects
+    @JsonIgnore
+    private Map<String, UserEntity> entityMapping;
 
-	public void setValue(String value) {
-		this.value = value;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public String getUsername() {
-		return username;
-	}
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getModelJSON() {
+        return modelJSON;
+    }
+
+    public void setModelJSON(String modelJSON) {
+        this.modelJSON = modelJSON;
+    }
+
+    public Date getCreated() {
+        return created;
+    }
+
+    public void setCreated(Date created) {
+        this.created = created;
+    }
+
+    public Date getLastModified() {
+        return lastModified;
+    }
+
+    public void setLastModified(Date lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public Map<String, UserEntity> getEntityMapping() {
+        return entityMapping;
+    }
+
+    public void setEntityMapping(Map<String, UserEntity> entityMapping) {
+        this.entityMapping = entityMapping;
+    }
 }

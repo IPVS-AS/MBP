@@ -13,6 +13,13 @@ app.controller('EnvModelListController',
             //Whether the current model of the modelling tool has been changed and needs to be saved
             vm.saveNecessary = false;
 
+            //Internal fields
+            let isNewModel = true; //Whether the currently edited model is a new one
+            let modelID = null; //The ID of the currently edited model or null if it is a new model
+
+            console.log("Model list:");
+            console.log(envModelList);
+
             /**
              * Initializing function, sets up basic things.
              */
@@ -29,17 +36,47 @@ app.controller('EnvModelListController',
                 });
             })();
 
+            function createNewModel(modelObject) {
+                vm.addEnvModelCtrl.item = modelObject;
+                vm.addEnvModelCtrl.addItem().then(function (data) {
+                    console.log(data);
+                });
+            }
+
+            function updateExistingModel(modelObject) {
+
+            }
+
             /**
              * [Public]
              * Called, when the user wants to save a model by clicking on the save button of the modelling tool
              * menu bar.
              */
             function saveModel() {
-                let model = vm.envModelToolApi.getModelJSON();
-                console.log("Model:");
-                console.log(model);
+                //Get and parse model name and description
+                let modelName = vm.modelProperties.name.trim() || "";
+                let modelDescription = vm.modelProperties.description.trim() || "";
 
-                //Model was saved, no save needed
+                //Export current model as JSON string
+                let modelJSON = vm.envModelToolApi.getModelJSON();
+
+                //Create object for the model
+                let modelObject = {
+                    name: modelName,
+                    description: modelDescription,
+                    modelJSON: modelJSON
+                };
+
+                //Check if the current model is a new model
+                if (isNewModel) {
+                    //New model, create it
+                    createNewModel(modelObject);
+                } else {
+                    //Existing model, update it
+                    updateExistingModel(modelObject);
+                }
+
+                //Model was saved, no save necessary anymore
                 vm.saveNecessary = false;
             }
 

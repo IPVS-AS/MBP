@@ -7,7 +7,7 @@
                 <div class="align-right">
                     <button id="add-button" type="button" data-toggle="collapse" data-target="#add-model-card"
                             class="btn bg-blue btn-circle waves-effect waves-circle waves-float"
-                            ng-click="modelProperties={'name': 'Unnamed Model', 'description': ''}">
+                            ng-click="ctrl.modelProperties={'name': 'Unnamed Model', 'description': ''}">
                         <i class="material-icons">add</i>
                     </button>
                 </div>
@@ -73,9 +73,9 @@
             <div class="header">
                 <h2 class="editable" data-toggle="modal" data-target="#modelPropertiesModal" data-backdrop="static"
                     data-keyboard="false">
-                    {{modelProperties.name}}
+                    {{ctrl.modelProperties.name}}
                     <i class="material-icons" style="font-size: 16px;margin-left: 5px;line-height: 15px;">mode_edit</i>
-                    <small>{{modelProperties.description}}</small>
+                    <small>{{ctrl.modelProperties.description}}</small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
                     <li class="dropdown">
@@ -154,27 +154,27 @@
                         </button>
                     </h5>
                 </div>
-                <form ng-submit="">
+                <form>
                     <fieldset>
                         <div class="modal-body">
                             <!-- Model name -->
-                            <div class="form-group" ng-class="{'has-error' : modelProperties.errors.name }">
-                                <div class="form-line" ng-class="{'focused error' : modelProperties.errors.name }">
+                            <div class="form-group" ng-class="{'has-error' : ctrl.modelProperties.errors.name }">
+                                <div class="form-line" ng-class="{'focused error' : ctrl.modelProperties.errors.name }">
                                     <label for="modelNameInput">Name:</label>
                                     <input id="modelNameInput" class="form-control" type="text" placeholder="Model name"
-                                           ng-model="modelProperties.name"/>
+                                           ng-model="ctrl.modelProperties.name"/>
                                 </div>
-                                <span class="help-block" ng-show="modelProperties.errors.name">{{modelProperties.errors.name}}</span>
+                                <span class="help-block" ng-show="ctrl.modelProperties.errors.name">{{ctrl.modelProperties.errors.name}}</span>
                             </div>
                             <!-- Model description -->
-                            <div class="form-group" ng-class="{'has-error' : modelProperties.errors.description }">
+                            <div class="form-group" ng-class="{'has-error' : ctrl.modelProperties.errors.description }">
                                 <div class="form-line"
-                                     ng-class="{'focused error' : modelProperties.errors.description }">
+                                     ng-class="{'focused error' : ctrl.modelProperties.errors.description }">
                                     <label for="modelDescriptionInput">Description:</label>
                                     <input id="modelDescriptionInput" class="form-control" type="text"
-                                           placeholder="Describe this model..." ng-model="modelProperties.description"/>
+                                           placeholder="Describe this model..." ng-model="ctrl.modelProperties.description"/>
                                 </div>
-                                <span class="help-block" ng-show="modelProperties.errors.description">{{modelProperties.errors.description}}</span>
+                                <span class="help-block" ng-show="ctrl.modelProperties.errors.description">{{ctrl.modelProperties.errors.description}}</span>
                             </div>
                         </div>
                         <div class="modal-footer">
