@@ -16,10 +16,11 @@ app.controller('AdapterListController',
                     vm.addAdapterCtrl.item.serviceFile = file;
                 }
             };
-
             vm.dzRoutinesOptions = {
                 paramName: 'routinesFile',
                 addRemoveLinks: true,
+                previewTemplate:document.querySelector('#tpl').innerHTML,
+                createImageThumbnails: false,
                 maxFilesize: '100',
                 maxFiles: 99
             };

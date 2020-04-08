@@ -179,9 +179,21 @@
                             <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.routines }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addAdapterCtrl.item.errors.routines }">
-                                    <div class="dropzone" options="ctrl.dzRoutinesOptions"
+                                    <div class="dropzone row" options="ctrl.dzRoutinesOptions"
                                          callbacks="ctrl.dzRoutinesCallbacks" methods="ctrl.dzMethods"
                                          ng-dropzone></div>
+                                    <div style="display:none;">
+                                      <div id='tpl' class="dz-preview dz-file-preview ">
+                                        <div class="dz-details col-lg-4 col-sm-6 col-12">
+                                            <div class="dz-filename"><span data-dz-name></span></div>
+                                            <img data-dz-thumbnail />
+                                        </div>
+                                        <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
+                                        <div class="dz-success-mark"><span>✔</span></div>
+                                        <div class="dz-error-mark"><span>✘</span></div>
+                                        <div class="dz-error-message"><span data-dz-errormessage></span></div>
+                                       </div>
+                                     </div>
                                 </div>
                                 <span class="help-block" ng-show="addAdapterCtrl.item.errors.routines">{{addAdapterCtrl.item.errors.routines.message}}</span>
                             </div>
