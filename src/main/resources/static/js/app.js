@@ -114,6 +114,26 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
+            // Key pairs list
+            .when(viewPrefix + '/key-pairs', {
+                category: 'key-pairs',
+                templateUrl: 'templates/key-pairs',
+                controller: 'KeyPairListController as ctrl',
+                resolve: {
+                    keyPairList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('key-pairs');
+                    }],
+                    addKeyPair: ['CrudService', function (CrudService) {
+                        // bind category parameter
+                        return angular.bind(this, CrudService.addItem, 'key-pairs');
+                    }],
+                    deleteKeyPair: ['CrudService', function (CrudService) {
+                        // bind category parameter
+                        return angular.bind(this, CrudService.deleteItem, 'key-pairs');
+                    }]
+                }
+            })
+
             //Rules list
             .when(viewPrefix + '/rules', {
                 category: 'rules',
