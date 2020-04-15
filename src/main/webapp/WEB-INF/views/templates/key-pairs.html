@@ -28,12 +28,20 @@
                     <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Public Key</th>
                         <th>Owner</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
                         <td>{{item.name}}</td>
+                        <td>
+                            <form ng-submit="ctrl.downloadPublicKey(item.id)" style="display: inline-block">
+                                <button type="submit" class="btn btn-default m-t-0 waves-effect">
+                                    <i class="material-icons" style="font-size: 15px;">file_download</i>
+                                </button>
+                            </form>
+                        </td>
                         <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
                             <div ng-show="item.isApprovable" style="display:inline-block">
@@ -147,7 +155,8 @@
                                     <input class="form-control" type="text"
                                            placeholder="Name" ng-model="ctrl.generation.name"/>
                                 </div>
-                                <span class="help-block" ng-show="ctrl.generation.error">{{ctrl.generation.error}}</span>
+                                <span class="help-block"
+                                      ng-show="ctrl.generation.error">{{ctrl.generation.error}}</span>
                             </div>
                         </div>
                         <div class="modal-footer">

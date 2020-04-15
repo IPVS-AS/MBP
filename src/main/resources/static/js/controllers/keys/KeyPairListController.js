@@ -19,6 +19,37 @@ app.controller('KeyPairListController',
 
             /**
              * [Public]
+             * Allows to download the public key of a key pair with a certain ID.
+             * @param keyPairId the ID of the key pair
+             */
+            function downloadPublicKey(keyPairId) {
+                //Search for key pair with matching ID
+                let keyPair = null;
+                for (let i = 0; i < keyPairList.length; i++) {
+                    //Check for matching ID
+                    if (keyPairList[i].id === keyPairId) {
+                        keyPair = keyPairList[i];
+                        break;
+                    }
+                }
+
+                //Check if key pair could be found
+                if (keyPair == null) {
+                    return;
+                }
+
+                //Prepare download file as blob
+                let filename = keyPair.name + ".pubk";
+                let blob = new Blob([keyPair.publicKey], {
+                    type: "text/plain;charset=utf-8"
+                });
+
+                //Initiate download
+                saveAs(blob, filename);
+            }
+
+            /**
+             * [Public]
              * Called when the user submitted the form form generating a key pair.
              */
             function generateKeyPair() {
@@ -95,7 +126,8 @@ app.controller('KeyPairListController',
                         deleteItem: deleteKeyPair,
                         confirmDeletion: confirmDelete
                     }),
-                generateKeyPair: generateKeyPair
+                generateKeyPair: generateKeyPair,
+                downloadPublicKey: downloadPublicKey
             });
 
             // Watch addition of new items
