@@ -24,7 +24,7 @@ public class InfluxDBConfiguration {
     public static final String RETENTION_POLICY_NAME = "retentionPolicy";
 
     //Duration time
-    private static final String DURATION_TIME = "30d";
+    private static final String DURATION_TIME = "90d";
 
     //Timeouts
     private static final long CONNECT_TIMEOUT_MINUTES = 1;
