@@ -1,32 +1,28 @@
-(function() {
-  'use strict';
+/* global app */
 
-  angular
-    .module('app')
-    .factory('ModelService', ModelService);
+/**
+ * Provides services for managing environment models.
+ */
+app.factory('EnvModelService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
+    function ($http, $resource, $q, ENDPOINT_URI) {
+        //URLs for server requests
+        const URL_BASE =  ENDPOINT_URI + '/env-models/';
+        const URL_SUFFIX_REGISTER  = '/register';
 
-  ModelService.$inject = ['$http', 'ENDPOINT_URI', 'BASE_URI'];
+        /**
+         * [Public]
+         * Performs a server request in order to register all components of a given model.
+         * @param modelID The ID of the affected model
+         * @returns {*}
+         */
+        function registerComponents(modelID) {
+            return $http.post(URL_BASE + modelID + URL_SUFFIX_REGISTER);
+        }
 
-  function ModelService($http, ENDPOINT_URI, BASE_URI) {
-    var service = {};
-
-    service.SaveModel = SaveModel;
-    service.GetModelsByUsername = GetModelsByUsername;
-    service.DeleteModel = DeleteModel;
-
-    return service;
-
-    function SaveModel(model) {
-      return $http.post(ENDPOINT_URI + '/model', model);
+        //Expose public methods
+        return {
+            registerComponents: registerComponents,
+        }
     }
+]);
 
-    function GetModelsByUsername() {
-      return $http.get(ENDPOINT_URI + '/models');
-    }
-
-    function DeleteModel(name) {
-      return $http.delete(ENDPOINT_URI + '/models/' + name);
-    }
-  }
-
-})();

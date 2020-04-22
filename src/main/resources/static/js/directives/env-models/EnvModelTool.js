@@ -6,8 +6,8 @@
  * Directive for a modeling tool that can be used for creating and editing IoT environment models.
  */
 app.directive('envModelTool',
-    ['ENDPOINT_URI', '$timeout', '$q', '$controller', 'ModelService', 'ComponentService', 'DeviceService', 'CrudService',
-        function (ENDPOINT_URI, $timeout, $q, $controller, ModelService, ComponentService, DeviceService, CrudService) {
+    ['ENDPOINT_URI', '$timeout', '$q', '$controller',
+        function (ENDPOINT_URI, $timeout, $q, $controller) {
 
             function initialize(scope) {
                 const DIAGRAM_CONTAINER = $("#toolCanvasContainer");

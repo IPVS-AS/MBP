@@ -47,7 +47,7 @@
                             </form>
                             <div ng-show="item.isApprovable" style="display:inline-block">
                                 <user-approval entity-id="{{item.id}}" category-name="env-models"></user-approval>
-                            </div>
+                            </div>&nbsp;&nbsp;
                             <form ng-submit="deleteEnvModelCtrl.deleteItem()" ng-show="item.isDeletable"
                                   style="display:inline-block;">
                                 <button type="submit" class="btn btn-danger m-t-0 waves-effect"
@@ -95,6 +95,40 @@
                 </ul>
             </div>
             <div class="body">
+
+                <div class="progress chart-progress">
+                    <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar"
+                         style="transition: unset">
+                        <span class="sr-only"></span>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12 align-right" style="padding: 2px">
+                        <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
+                                title="Register components" ng-click="ctrl.registerComponents()">
+                            <i class="material-icons">backup</i>
+                        </button>
+                        <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
+                                title="Deploy components" ng-click="ctrl.deployComponents()">
+                            <i class="material-icons">sync</i>
+                        </button>
+                        <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
+                                title="Undeploy components" ng-click="ctrl.undeployComponents()">
+                            <i class="material-icons">sync_disabled</i>
+                        </button>
+                        <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
+                                title="Start components" ng-click="ctrl.startComponents()">
+                            <i class="material-icons">play_arrow</i>
+                        </button>
+                        <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
+                                title="Stop components" ng-click="ctrl.stopComponents()">
+                            <i class="material-icons">pause</i>
+                        </button>
+                    </div>
+                </div>
+
+
                 <div class="btn-group" role="group" style="margin-left: 221px; width: calc(100% - 220px - 2px)">
                     <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.saveModel()"
                             ng-disabled="!ctrl.saveNecessary" data-toggle="tooltip" title="Save model">

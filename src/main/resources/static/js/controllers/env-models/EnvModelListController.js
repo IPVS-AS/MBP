@@ -4,8 +4,10 @@
  * Controller for the environment models list page.
  */
 app.controller('EnvModelListController',
-    ['$scope', '$controller', '$interval', 'envModelList', 'addEnvModel', 'updateEnvModel', 'deleteEnvModel', 'adapterList', 'deviceTypesList',
-        function ($scope, $controller, $interval, envModelList, addEnvModel, updateEnvModel, deleteEnvModel, adapterList, deviceTypesList) {
+    ['$scope', '$controller', '$interval', 'envModelList', 'addEnvModel', 'updateEnvModel', 'deleteEnvModel',
+        'adapterList', 'deviceTypesList', 'EnvModelService', 'NotificationService',
+        function ($scope, $controller, $interval, envModelList, addEnvModel, updateEnvModel, deleteEnvModel,
+                  adapterList, deviceTypesList, EnvModelService, NotificationService) {
             //Get required DOM elements
             const MODEL_EDIT_ENVIRONMENT = $("#model-edit-card");
 
@@ -78,6 +80,62 @@ app.controller('EnvModelListController',
 
             /**
              * [Public]
+             * Called when the components of the current model are supposed to be registered.
+             */
+            function registerComponents() {
+
+                $('.progress-bar').stop(true).width(0).animate({
+                    width: "100%",
+                }, 3 * 1000);
+
+                //Perform request
+                EnvModelService.registerComponents(currentModelID).then(function (response) {
+                    //Success
+                    NotificationService.notify("Component registration succeeded.", "success");
+                    $('.progress-bar').stop(true).width(0);
+                }, function (response) {
+                    //Failure
+                    NotificationService.notify("Component registration failed.", "error");
+                    $('.progress-bar').stop(true).width(0);
+                });
+            }
+
+            /**
+             * [Public]
+             * Called when the components of the current model are supposed to be deployed.
+             */
+            function deployComponents() {
+
+            }
+
+
+            /**
+             * [Public]
+             * Called when the components of the current model are supposed to be undeployed.
+             */
+            function undeployComponents() {
+
+            }
+
+
+            /**
+             * [Public]
+             * Called when the components of the current model are supposed to be started.
+             */
+            function startComponents() {
+
+            }
+
+            /**
+             * [Public]
+             * Called when the components of the current model are supposed to be stopped.
+             */
+            function stopComponents() {
+
+            }
+
+            /**
+             * [Public]
              * Called, when the user wants to create a new model.
              */
             function createNewModel() {
@@ -132,9 +190,6 @@ app.controller('EnvModelListController',
 
                 //Hide modelling tool with callback
                 MODEL_EDIT_ENVIRONMENT.slideUp(400, function () {
-                    //Load model to make it editable
-                    vm.envModelToolApi.loadModel(modelToEdit.modelJSON);
-
                     //Ignore properties update, since it is not done by the user
                     ignorePropertyUpdate = true;
 
@@ -152,7 +207,10 @@ app.controller('EnvModelListController',
                     vm.saveNecessary = false;
 
                     //Display modelling tool again
-                    MODEL_EDIT_ENVIRONMENT.slideDown();
+                    MODEL_EDIT_ENVIRONMENT.slideDown(400, function () {
+                        //Load model to make it editable
+                        vm.envModelToolApi.loadModel(modelToEdit.modelJSON);
+                    });
                 });
             }
 
@@ -251,6 +309,11 @@ app.controller('EnvModelListController',
                 }),
                 adapterList: adapterList,
                 deviceTypesList: deviceTypesList,
+                registerComponents: registerComponents,
+                deployComponents: deployComponents,
+                undeployComponents: undeployComponents,
+                startComponents: startComponents,
+                stopComponents: stopComponents,
                 createNewModel: createNewModel,
                 editModel: editModel,
                 saveModel: saveModel,

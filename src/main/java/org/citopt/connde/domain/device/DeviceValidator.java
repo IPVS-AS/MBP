@@ -70,13 +70,6 @@ public class DeviceValidator implements Validator {
                 errors, "rsaKey", "device.rsaKey.empty",
                 "The RSA key must not be empty!");
 
-        //Check if name is unique
-        Device anotherDevice = deviceRepository.findByName(device.getName());
-        if (anotherDevice != null) {
-            errors.rejectValue("name", "device.name.duplicate",
-                    "The name is already registered.");
-        }
-
         //Retrieve fields that need to be of a certain format
         String ipAddress = device.getIpAddress();
         String rsaKey = device.getRsaKey();
