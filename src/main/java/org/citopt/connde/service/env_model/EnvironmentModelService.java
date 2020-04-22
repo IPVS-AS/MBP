@@ -7,7 +7,7 @@ import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.env_model.EnvironmentModel;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
-import org.citopt.connde.repository.AdapterRepository;
+import org.citopt.connde.repository.*;
 import org.citopt.connde.service.UserService;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.json.JSONArray;
@@ -18,7 +18,9 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Service for tasks related to environment models.
@@ -39,7 +41,19 @@ public class EnvironmentModelService {
     private SensorValidator sensorValidator;
 
     @Autowired
+    private EnvironmentModelRepository environmentModelRepository;
+
+    @Autowired
     private AdapterRepository adapterRepository;
+
+    @Autowired
+    private DeviceRepository deviceRepository;
+
+    @Autowired
+    private ActuatorRepository actuatorRepository;
+
+    @Autowired
+    private SensorRepository sensorRepository;
 
     //JSON key names
     private static final String MODEL_JSON_KEY_NODES = "nodes";
@@ -54,11 +68,45 @@ public class EnvironmentModelService {
     private static final String MODEL_JSON_KEY_DEVICE_RSAKEY = "rsaKey";
     private static final String MODEL_JSON_KEY_COMPONENT_ADAPTER = "adapter";
     private static final String MODEL_JSON_KEY_CONNECTIONS = "connections";
+    private static final String MODEL_JSON_KEY_CONNECTION_SOURCE = "sourceId";
+    private static final String MODEL_JSON_KEY_CONNECTION_TARGET = "targetId";
 
     //Node types of the model
     private static final String MODEL_NODE_TYPE_DEVICE = "device";
     private static final String MODEL_NODE_TYPE_ACTUATOR = "actuator";
     private static final String MODEL_NODE_TYPE_SENSOR = "sensor";
+
+    /**
+     * Unregisters (i.e. deletes) the components of an environment model.
+     *
+     * @param model The model whose components are supposed to be unregistered.
+     */
+    public void unregisterComponents(EnvironmentModel model) {
+        //Sanity check
+        if (model == null) {
+            throw new IllegalArgumentException("Model must not be null.");
+        }
+
+        //Get entities that are associated with the model
+        Set<UserEntity> entities = model.getEntitySet();
+
+        //Santiy check
+        if ((entities == null) || entities.isEmpty()) {
+            return;
+        }
+
+        //Iterate over all entities and delete them
+        for (UserEntity entity : entities) {
+            //Check entity type
+            if (entity instanceof Device) {
+                deviceRepository.delete((Device) entity);
+            } else if (entity instanceof Actuator) {
+                actuatorRepository.delete((Actuator) entity);
+            } else if (entity instanceof Sensor) {
+                sensorRepository.delete((Sensor) entity);
+            }
+        }
+    }
 
     /**
      * Registers the components of an environment model.
@@ -76,15 +124,64 @@ public class EnvironmentModelService {
         EnvironmentModelParseResult parseResult;
         try {
             parseResult = parseModel(model);
-        } catch (JSONException e) {
+        } catch (Exception e) {
             //Parsing failed
             return new ActionResponse(false, "Could not parse model.");
         }
+
+        //Check if errors occurred while parsing
+        if (parseResult.hasErrors()) {
+            //TODO transform result errors into action response
+            return new ActionResponse(false, "Could not parse model.");
+        }
+
+        //New set for remembering all registered entities
+        Set<UserEntity> registeredEntitySet = new HashSet<>();
+
+        //Unregister all components that have been previously registered
+        unregisterComponents(model);
+
+        //Register all devices
+        for (Device device : parseResult.getDeviceSet()) {
+            String deviceId = registerDevice(device);
+
+            //Update device ID
+            device.setId(deviceId);
+
+            //Add to registered entity set
+            registeredEntitySet.add(device);
+        }
+
+        //Get connections from parse result
+        Map<Component, Device> connections = parseResult.getConnections();
+
+        //Register all components for which a device is given
+        for (Component component : parseResult.getComponentSet()) {
+            //Skip component if no connection exists for it
+            if (!connections.containsKey(component)) {
+                continue;
+            }
+
+            //Get associated device and set it
+            Device targetDevice = connections.get(component);
+            component.setDevice(targetDevice);
+
+            //Register component
+            registerComponent(component);
+
+            //Add to registered entity set
+            registeredEntitySet.add(component);
+        }
+
+        //Update entity mapping of the model
+        model.setEntitySet(registeredEntitySet);
+        environmentModelRepository.save(model);
 
         return new ActionResponse(true);
     }
 
     private EnvironmentModelParseResult parseModel(EnvironmentModel model) throws JSONException {
+        //TODO refactor this way too long method
         //Sanity check
         if (model == null) {
             throw new IllegalArgumentException("Model must not be null.");
@@ -99,9 +196,8 @@ public class EnvironmentModelService {
         //Get all nodes
         JSONArray nodes = jsonObject.getJSONArray(MODEL_JSON_KEY_NODES);
 
-        //Create entity maps (node id -> entity object)
-        Map<String, Device> deviceMap = new HashMap<>();
-        Map<String, Component> componentMap = new HashMap<>();
+        //Create entity mapping (node id -> entity object) which is required for parsing connections
+        Map<String, UserEntity> entityMapping = new HashMap<>();
 
         //Iterate over all nodes to get all devices
         for (int i = 0; i < nodes.length(); i++) {
@@ -127,7 +223,7 @@ public class EnvironmentModelService {
                 entity = device;
 
                 //Add device to map
-                deviceMap.put(nodeID, device);
+                entityMapping.put(nodeID, device);
 
                 //Add device to result
                 result.addDevice(device);
@@ -140,8 +236,8 @@ public class EnvironmentModelService {
                 Component component = unmarshallComponent(nodeObject);
                 entity = component;
 
-                //Add device to map
-                componentMap.put(nodeID, component);
+                //Add component to map
+                entityMapping.put(nodeID, component);
 
                 //Add component to result
                 result.addComponent(component);
@@ -162,13 +258,91 @@ public class EnvironmentModelService {
             User owner = userService.getUserWithAuthorities();
             entity.setOwner(owner);
 
+            //Mark entity as modelled
+            entity.setWasModelled(true);
+
             //CHeck for errors
-            if ((errors != null) && errors.hasErrors()) {
+            if (errors.hasErrors()) {
                 result.addErrors(entity, errors);
             }
         }
 
+        //Return already if there were errors
+        if (result.hasErrors()) {
+            return result;
+        }
+
+        //Stores all connections (source id -> target id)
+        Map<String, String> connectionsMap = new HashMap<>();
+
+        //Get all connections
+        JSONArray connections = jsonObject.optJSONArray(MODEL_JSON_KEY_CONNECTIONS);
+
+        //Iterate over the connections and parse them one by one
+        for (int i = 0; i < connections.length(); i++) {
+            //Get current connection object
+            JSONObject connectionObject = connections.getJSONObject(i);
+
+            //Get source and target ID
+            String sourceId = connectionObject.optString(MODEL_JSON_KEY_CONNECTION_SOURCE, "");
+            String targetId = connectionObject.optString(MODEL_JSON_KEY_CONNECTION_TARGET, "");
+
+            //Only remember connection if source device and target component exist
+            if (entityMapping.containsKey(sourceId) && entityMapping.containsKey(targetId)) {
+                //Get source and target entity
+                UserEntity sourceEntity = entityMapping.get(sourceId);
+                UserEntity targetEntity = entityMapping.get(targetId);
+
+                //Skip connection if entities are of wrong type
+                if ((!(sourceEntity instanceof Device) || (!(targetEntity instanceof Component)))) {
+                    continue;
+                }
+
+                //Add connection
+                result.addConnection((Device) sourceEntity, (Component) targetEntity);
+            }
+        }
+
         return result;
+    }
+
+    /**
+     * Registers a device in the device repository and returns its new ID.
+     *
+     * @param device The device to register
+     * @return The generated ID of the device
+     */
+    private String registerDevice(Device device) {
+        //Sanity check
+        if (device == null) {
+            throw new IllegalArgumentException("Device must not be null.");
+        }
+
+        //Insert device into repository
+        Device savedEntity = deviceRepository.insert(device);
+
+        //Get new ID and return it
+        return savedEntity.getId();
+    }
+
+    /**
+     * Registers a component in its dedicated repository and returns its new ID.
+     *
+     * @param component The component to register
+     * @return The generated ID of the component
+     */
+    private String registerComponent(Component component) {
+        //Sanity check
+        if (component == null) {
+            throw new IllegalArgumentException("Component must not be null.");
+        }
+
+        //Insert component into its repository and return the new id
+        if (component instanceof Actuator) {
+            return actuatorRepository.insert((Actuator) component).getId();
+        } else {
+            return sensorRepository.insert((Sensor) component).getId();
+        }
     }
 
 
@@ -218,6 +392,9 @@ public class EnvironmentModelService {
         //Find adapter from repository and set it
         Adapter adapter = adapterRepository.findOne(componentDetails.optString(MODEL_JSON_KEY_COMPONENT_ADAPTER));
         component.setAdapter(adapter);
+
+        //Set a fake device for passing validation TODO
+        component.setDevice(new Device());
 
         return component;
     }

@@ -2,7 +2,6 @@ package org.citopt.connde.service.env_model;
 
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.springframework.validation.Errors;
 
@@ -24,8 +23,8 @@ public class EnvironmentModelParseResult {
         this.errors = new HashMap<>();
     }
 
-    public boolean isSuccess() {
-        return errors.isEmpty();
+    public boolean hasErrors() {
+        return !errors.isEmpty();
     }
 
     public void addDevice(Device device) {
@@ -37,6 +36,15 @@ public class EnvironmentModelParseResult {
         this.deviceSet.add(device);
     }
 
+    public void removeDevice(Device device) {
+        //Sanity check
+        if (device == null) {
+            throw new IllegalArgumentException("Device must not be null.");
+        }
+
+        this.deviceSet.remove(device);
+    }
+
     public void addComponent(Component component) {
         //Sanity check
         if (component == null) {
@@ -46,7 +54,16 @@ public class EnvironmentModelParseResult {
         this.componentSet.add(component);
     }
 
-    public void addConnection(Component component, Device device) {
+    public void removeComponent(Component component) {
+        //Sanity check
+        if (component == null) {
+            throw new IllegalArgumentException("Component must not be null.");
+        }
+
+        this.componentSet.remove(component);
+    }
+
+    public void addConnection(Device device, Component component) {
         //Sanity check
         if (component == null) {
             throw new IllegalArgumentException("Component must not be null.");

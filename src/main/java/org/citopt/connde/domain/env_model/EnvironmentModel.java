@@ -1,18 +1,14 @@
 package org.citopt.connde.domain.env_model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.citopt.connde.domain.user_entity.UserEntity;
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
-import java.util.Map;
+import java.util.Set;
 
 /**
  * Document class for environment model entities, created by the environment modelling tool.
@@ -32,9 +28,9 @@ public class EnvironmentModel extends UserEntity {
 
     private String modelJSON;
 
-    //Maps ids of entities (devices, sensors, ...) to the corresponding entity objects
+    //Set of entities that were created for the model
     @JsonIgnore
-    private Map<String, UserEntity> entityMapping;
+    private Set<UserEntity> entitySet;
 
     public String getId() {
         return id;
@@ -69,11 +65,11 @@ public class EnvironmentModel extends UserEntity {
     }
 
 
-    public Map<String, UserEntity> getEntityMapping() {
-        return entityMapping;
+    public Set<UserEntity> getEntitySet() {
+        return entitySet;
     }
 
-    public void setEntityMapping(Map<String, UserEntity> entityMapping) {
-        this.entityMapping = entityMapping;
+    public void setEntitySet(Set<UserEntity> entitySet) {
+        this.entitySet = entitySet;
     }
 }

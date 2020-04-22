@@ -40,6 +40,10 @@ public abstract class UserEntity {
             .addPermission(PERMISSION_NAME_DISAPPROVE).addRole(ENTITY_OWNER).addRole(ADMIN)
             .lock();
 
+    //Whether the entity was modelled as part of an environment model
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private boolean wasModelled = false;
+
     //Owner of the entity
     @JsonIgnore
     @DBRef
@@ -59,6 +63,22 @@ public abstract class UserEntity {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @LastModifiedDate
     private Date lastModified;
+
+    /**
+     * Returns whether the entity was modelled as part of an environment model.
+     * @return True, if it was modelled; false otherwise
+     */
+    public boolean wasModelled() {
+        return wasModelled;
+    }
+
+    /**
+     * Sets whether the entity was modelled as part of an environment model.
+     * @param wasModelled Set to true, if it was modelled; false otherwise
+     */
+    public void setWasModelled(boolean wasModelled) {
+        this.wasModelled = wasModelled;
+    }
 
     /**
      * Returns the owner of this entity.

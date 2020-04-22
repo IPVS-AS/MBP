@@ -1,6 +1,5 @@
 package org.citopt.connde.repository.projection;
 
-import io.swagger.annotations.ApiModelProperty;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Set;
@@ -10,6 +9,8 @@ import java.util.Set;
  * user entity types.
  */
 public interface UserEntityExcerpt {
+    boolean getWasModelled();
+
     @Value("#{target.getOwnerName()}")
     String getOwnerName();
 
