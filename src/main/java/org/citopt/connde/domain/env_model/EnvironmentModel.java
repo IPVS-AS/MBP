@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
 import javax.validation.constraints.NotNull;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -30,7 +31,7 @@ public class EnvironmentModel extends UserEntity {
 
     //Entities that were created for the model (node id -> entity)
     @JsonIgnore
-    private Map<String, UserEntity> entityMap;
+    private Map<String, UserEntity> entityMap = new HashMap<>();
 
     public String getId() {
         return id;

@@ -1,5 +1,6 @@
-package org.citopt.connde.service.env_model.event_service;
+package org.citopt.connde.service.env_model.events;
 
+import org.citopt.connde.service.env_model.events.types.EnvironmentModelEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -9,10 +10,17 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Service which allows to subscribe to environment models in order to get notified in case certain events occur. On
+ * subscription, a server-sent events emitter is returned which will then emit the events (notifications) related
+ * to the subscribed model.
+ */
 @Service
 public class EnvironmentModelEventService {
     //Time after which the emitter times out
     private static final Long EMITTER_TIMEOUT = 30 * 60 * 1000L;
+
+    private static long EVENT_ID_COUNTER = 0L;
 
     //Subscription map (model id -> set of subscribers)
     private Map<String, Set<SseEmitter>> subscriptions;
@@ -54,7 +62,7 @@ public class EnvironmentModelEventService {
         return emitter;
     }
 
-    public void publishEvent(String modelId) {
+    public void publishEvent(String modelId, EnvironmentModelEvent event) {
         //Sanity check
         if ((modelId == null) || (modelId.isEmpty())) {
             throw new IllegalArgumentException("Model ID must not be null or empty.");
@@ -68,18 +76,19 @@ public class EnvironmentModelEventService {
         //Get set of subscribers for this model
         Set<SseEmitter> subscribers = subscriptions.get(modelId);
 
-        //Create event
-        SseEmitter.SseEventBuilder event = SseEmitter.event()
-                .data("asdf")
-                .name("asdf");
+        //Wrap given event as SSE event
+        SseEmitter.SseEventBuilder sseEvent = SseEmitter.event()
+                .id(generateEventID())
+                .data(event)
+                .name(event.getName());
 
-        //Iterate over all subscribers and publish the event
+        //Iterate over all subscribed emitters and publish the event
         for (SseEmitter subscriber : subscribers) {
             try {
-                subscriber.send(event);
+                subscriber.send(sseEvent);
             } catch (IOException e) {
-                //Unsubscribe on exception
-                unsubscribe(modelId, subscriber);
+                //Complete emitter, leading to unsubscription
+                subscriber.completeWithError(e);
             }
         }
     }
@@ -91,7 +100,7 @@ public class EnvironmentModelEventService {
      * @param emitter The emitter to unsubscribe
      */
     private void unsubscribe(String modelId, SseEmitter emitter) {
-        //Sanity check
+        //Sanity checks
         if ((modelId == null) || (modelId.isEmpty())) {
             throw new IllegalArgumentException("Model ID must not be null or empty.");
         } else if (emitter == null) {
@@ -131,5 +140,21 @@ public class EnvironmentModelEventService {
 
         //Return configured emitter
         return emitter;
+    }
+
+    /**
+     * Generates a new ID for events that is unique within the runtime of the service.
+     *
+     * @return The generated event ID
+     */
+    private String generateEventID() {
+        //Get next event ID and convert to string
+        String eventID = Long.toString(EVENT_ID_COUNTER);
+
+        //Increase counter
+        EVENT_ID_COUNTER++;
+
+        //Return generated ID
+        return eventID;
     }
 }

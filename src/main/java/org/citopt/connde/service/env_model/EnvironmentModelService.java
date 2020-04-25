@@ -9,6 +9,8 @@ import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.repository.*;
 import org.citopt.connde.service.UserService;
+import org.citopt.connde.service.env_model.events.EnvironmentModelEventService;
+import org.citopt.connde.service.env_model.events.types.EntityRegisteredEvent;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -53,6 +55,9 @@ public class EnvironmentModelService {
     @Autowired
     private SensorRepository sensorRepository;
 
+    @Autowired
+    private EnvironmentModelEventService eventService;
+
     //JSON key names
     private static final String MODEL_JSON_KEY_NODES = "nodes";
     private static final String MODEL_JSON_KEY_NODE_ID = "elementId";
@@ -75,11 +80,11 @@ public class EnvironmentModelService {
     private static final String MODEL_NODE_TYPE_SENSOR = "sensor";
 
     /**
-     * Unregisters (i.e. deletes) the components of an environment model.
+     * Unregisters (deletes) the entities of an environment model.
      *
-     * @param model The model whose components are supposed to be unregistered.
+     * @param model The model whose entities are supposed to be unregistered.
      */
-    public void unregisterComponents(EnvironmentModel model) {
+    public void unregisterEntities(EnvironmentModel model) {
         //Sanity check
         if (model == null) {
             throw new IllegalArgumentException("Model must not be null.");
@@ -100,11 +105,11 @@ public class EnvironmentModelService {
 
             //Check entity type
             if (entity instanceof Device) {
-                deviceRepository.delete((Device) entity);
+                deviceRepository.delete(((Device) entity).getId());
             } else if (entity instanceof Actuator) {
-                actuatorRepository.delete((Actuator) entity);
+                actuatorRepository.delete(((Actuator) entity).getId());
             } else if (entity instanceof Sensor) {
-                sensorRepository.delete((Sensor) entity);
+                sensorRepository.delete(((Sensor) entity).getId());
             }
         }
     }
@@ -136,11 +141,12 @@ public class EnvironmentModelService {
             return new ActionResponse(false, "Could not parse model.");
         }
 
-        //New map (node id -> entity object) for remembering all registered entities
-        Map<String, UserEntity> registeredEntities = new HashMap<>();
-
         //Unregister all components that have been previously registered
-        unregisterComponents(model);
+        unregisterEntities(model);
+
+        //Get map (node id -> entity object) of registered entities and clear it
+        Map<String, UserEntity> registeredEntities = model.getEntityMap();
+        registeredEntities.clear();
 
         //Register all devices
         for (Map.Entry<String, Device> entry : parseResult.getDeviceMap().entrySet()) {
@@ -148,13 +154,23 @@ public class EnvironmentModelService {
             Device device = entry.getValue();
 
             //Register device and obtain ID
-            String deviceId = registerDevice(device);
+            String deviceId;
+            try {
+                deviceId = registerDevice(device);
+            } catch (Exception e) {
+                //Unregister all entities on failure
+                unregisterEntities(model);
+                return new ActionResponse(false, "Failed to register entities.");
+            }
 
             //Update device ID
             device.setId(deviceId);
 
             //Add to registered entity set
             registeredEntities.put(entry.getKey(), device);
+
+            //Publish corresponding event
+            publishRegistrationEvent(model, entry.getKey(), device);
         }
 
         //Get connections from parse result
@@ -174,11 +190,24 @@ public class EnvironmentModelService {
             Device targetDevice = connections.get(component);
             component.setDevice(targetDevice);
 
-            //Register component
-            registerComponent(component);
+            //Register component and obtain ID
+            String componentId;
+            try {
+                componentId = registerComponent(component);
+            } catch (Exception e) {
+                //Unregister all entities on failure
+                unregisterEntities(model);
+                return new ActionResponse(false, "Failed to register entities.");
+            }
+
+            //Set component ID
+            component.setId(componentId);
 
             //Add to registered entity set
             registeredEntities.put(entry.getKey(), component);
+
+            //Publish corresponding event
+            publishRegistrationEvent(model, entry.getKey(), component);
         }
 
         //Update entity mapping of the model
@@ -186,6 +215,21 @@ public class EnvironmentModelService {
         environmentModelRepository.save(model);
 
         return new ActionResponse(true);
+    }
+
+    private void publishRegistrationEvent(EnvironmentModel model, String nodeId, UserEntity entity) {
+        //Sanity check
+        if (model == null) {
+            throw new IllegalArgumentException("Model must not b e null.");
+        } else if (entity == null) {
+            throw new IllegalArgumentException("Entity must not be null.");
+        }
+
+        //Create new event
+        EntityRegisteredEvent event = new EntityRegisteredEvent(nodeId, entity);
+
+        //Publish event
+        eventService.publishEvent(model.getId(), event);
     }
 
     private EnvironmentModelParseResult parseModel(EnvironmentModel model) throws JSONException {
