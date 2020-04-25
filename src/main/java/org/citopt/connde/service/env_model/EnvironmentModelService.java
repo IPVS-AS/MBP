@@ -18,9 +18,7 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Service for tasks related to environment models.
@@ -88,7 +86,7 @@ public class EnvironmentModelService {
         }
 
         //Get entities that are associated with the model
-        Set<UserEntity> entities = model.getEntitySet();
+        Map<String, UserEntity> entities = model.getEntityMap();
 
         //Santiy check
         if ((entities == null) || entities.isEmpty()) {
@@ -96,7 +94,10 @@ public class EnvironmentModelService {
         }
 
         //Iterate over all entities and delete them
-        for (UserEntity entity : entities) {
+        for (Map.Entry<String, UserEntity> entry : entities.entrySet()) {
+            //Get entity
+            UserEntity entity = entry.getValue();
+
             //Check entity type
             if (entity instanceof Device) {
                 deviceRepository.delete((Device) entity);
@@ -135,28 +136,35 @@ public class EnvironmentModelService {
             return new ActionResponse(false, "Could not parse model.");
         }
 
-        //New set for remembering all registered entities
-        Set<UserEntity> registeredEntitySet = new HashSet<>();
+        //New map (node id -> entity object) for remembering all registered entities
+        Map<String, UserEntity> registeredEntities = new HashMap<>();
 
         //Unregister all components that have been previously registered
         unregisterComponents(model);
 
         //Register all devices
-        for (Device device : parseResult.getDeviceSet()) {
+        for (Map.Entry<String, Device> entry : parseResult.getDeviceMap().entrySet()) {
+            //Get device
+            Device device = entry.getValue();
+
+            //Register device and obtain ID
             String deviceId = registerDevice(device);
 
             //Update device ID
             device.setId(deviceId);
 
             //Add to registered entity set
-            registeredEntitySet.add(device);
+            registeredEntities.put(entry.getKey(), device);
         }
 
         //Get connections from parse result
         Map<Component, Device> connections = parseResult.getConnections();
 
         //Register all components for which a device is given
-        for (Component component : parseResult.getComponentSet()) {
+        for (Map.Entry<String, Component> entry : parseResult.getComponentMap().entrySet()) {
+            //Get component
+            Component component = entry.getValue();
+
             //Skip component if no connection exists for it
             if (!connections.containsKey(component)) {
                 continue;
@@ -170,11 +178,11 @@ public class EnvironmentModelService {
             registerComponent(component);
 
             //Add to registered entity set
-            registeredEntitySet.add(component);
+            registeredEntities.put(entry.getKey(), component);
         }
 
         //Update entity mapping of the model
-        model.setEntitySet(registeredEntitySet);
+        model.setEntityMap(registeredEntities);
         environmentModelRepository.save(model);
 
         return new ActionResponse(true);
@@ -226,7 +234,7 @@ public class EnvironmentModelService {
                 entityMapping.put(nodeID, device);
 
                 //Add device to result
-                result.addDevice(device);
+                result.addDevice(device, nodeID);
 
                 //Validate device
                 errors = new BeanPropertyBindingResult(device, "device");
@@ -240,7 +248,7 @@ public class EnvironmentModelService {
                 entityMapping.put(nodeID, component);
 
                 //Add component to result
-                result.addComponent(component);
+                result.addComponent(component, nodeID);
 
                 //Validate component
                 errors = new BeanPropertyBindingResult(component, "component");

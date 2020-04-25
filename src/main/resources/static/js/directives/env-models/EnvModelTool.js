@@ -1197,7 +1197,7 @@ app.directive('envModelTool',
                             conn.getOverlay("label").show();
                         }
                     });
-                    elementIdCount = jsonObject.elementIdCount;
+                    elementIdCount = jsonObject.elementIdCount || 0;
                 }
 
                 /*
@@ -1284,9 +1284,6 @@ app.directive('envModelTool',
                     lastModelState = "";
                     copyClipboard = [];
 
-                    //Reset ID count
-                    elementIdCount = 0;
-
                     //Update exposed states
                     updateExposedStates();
                 }
@@ -1298,6 +1295,9 @@ app.directive('envModelTool',
                 function loadEmptyModel() {
                     //Load empty model
                     loadModel("{}");
+
+                    //Reset ID count
+                    elementIdCount = 0;
                 }
 
                 /**
@@ -1892,15 +1892,6 @@ app.directive('envModelTool',
 
                     //Callbacks
                     onModelChanged: '&onChanged'
-
-                    /*
-                    //The unit in which the statistics are supposed to be displayed
-                    unit: '@unit',
-                    //Functions that are called when the chart loads/finishes loading data
-                    loadingStart: '&loadingStart',
-                    loadingFinish: '&loadingFinish',
-                    //Function for updating the value stats data
-                    getStats: '&getStats'*/
                 }
             };
         }]

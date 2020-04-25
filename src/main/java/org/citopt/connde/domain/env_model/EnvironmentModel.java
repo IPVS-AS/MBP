@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
 import javax.validation.constraints.NotNull;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * Document class for environment model entities, created by the environment modelling tool.
@@ -28,9 +28,9 @@ public class EnvironmentModel extends UserEntity {
 
     private String modelJSON;
 
-    //Set of entities that were created for the model
+    //Entities that were created for the model (node id -> entity)
     @JsonIgnore
-    private Set<UserEntity> entitySet;
+    private Map<String, UserEntity> entityMap;
 
     public String getId() {
         return id;
@@ -64,12 +64,11 @@ public class EnvironmentModel extends UserEntity {
         this.modelJSON = modelJSON;
     }
 
-
-    public Set<UserEntity> getEntitySet() {
-        return entitySet;
+    public Map<String, UserEntity> getEntityMap() {
+        return entityMap;
     }
 
-    public void setEntitySet(Set<UserEntity> entitySet) {
-        this.entitySet = entitySet;
+    public void setEntityMap(Map<String, UserEntity> entityMap) {
+        this.entityMap = entityMap;
     }
 }

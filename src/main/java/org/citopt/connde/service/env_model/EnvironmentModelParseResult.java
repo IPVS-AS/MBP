@@ -6,19 +6,19 @@ import org.citopt.connde.domain.user_entity.UserEntity;
 import org.springframework.validation.Errors;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class EnvironmentModelParseResult {
-    private Set<Device> deviceSet;
-    private Set<Component> componentSet;
+    //(node id -> component)
+    private Map<String, Device> deviceMap;
+    //(node id -> component)
+    private Map<String, Component> componentMap;
     private Map<Component, Device> connections;
     private Map<UserEntity, Errors> errors;
 
     public EnvironmentModelParseResult() {
-        this.deviceSet = new HashSet<>();
-        this.componentSet = new HashSet<>();
+        this.deviceMap = new HashMap<>();
+        this.componentMap = new HashMap<>();
         this.connections = new HashMap<>();
         this.errors = new HashMap<>();
     }
@@ -27,40 +27,44 @@ public class EnvironmentModelParseResult {
         return !errors.isEmpty();
     }
 
-    public void addDevice(Device device) {
+    public void addDevice(Device device, String nodeId) {
         //Sanity check
         if (device == null) {
             throw new IllegalArgumentException("Device must not be null.");
+        } else if ((nodeId == null) || (nodeId.isEmpty())) {
+            throw new IllegalArgumentException("Node ID must not be null or empty.");
         }
 
-        this.deviceSet.add(device);
+        this.deviceMap.put(nodeId, device);
     }
 
-    public void removeDevice(Device device) {
+    public void removeDevice(String nodeId) {
         //Sanity check
-        if (device == null) {
-            throw new IllegalArgumentException("Device must not be null.");
+        if ((nodeId == null) || (nodeId.isEmpty())) {
+            throw new IllegalArgumentException("Node ID must not be null.");
         }
 
-        this.deviceSet.remove(device);
+        this.deviceMap.remove(nodeId);
     }
 
-    public void addComponent(Component component) {
-        //Sanity check
-        if (component == null) {
-            throw new IllegalArgumentException("Component must not be null.");
-        }
-
-        this.componentSet.add(component);
-    }
-
-    public void removeComponent(Component component) {
+    public void addComponent(Component component, String nodeId) {
         //Sanity check
         if (component == null) {
             throw new IllegalArgumentException("Component must not be null.");
+        } else if ((nodeId == null) || (nodeId.isEmpty())) {
+            throw new IllegalArgumentException("Node ID must not be null or empty.");
         }
 
-        this.componentSet.remove(component);
+        this.componentMap.put(nodeId, component);
+    }
+
+    public void removeComponent(String nodeId) {
+        //Sanity check
+        if ((nodeId == null) || nodeId.isEmpty()) {
+            throw new IllegalArgumentException("Node ID must not be null or empty.");
+        }
+
+        this.componentMap.remove(nodeId);
     }
 
     public void addConnection(Device device, Component component) {
@@ -85,20 +89,20 @@ public class EnvironmentModelParseResult {
         this.errors.put(entity, errors);
     }
 
-    public Set<Device> getDeviceSet() {
-        return deviceSet;
+    public Map<String, Device> getDeviceMap() {
+        return deviceMap;
     }
 
-    public void setDeviceSet(Set<Device> deviceSet) {
-        this.deviceSet = deviceSet;
+    public void setDeviceMap(Map<String, Device> deviceMap) {
+        this.deviceMap = deviceMap;
     }
 
-    public Set<Component> getComponentSet() {
-        return componentSet;
+    public Map<String, Component> getComponentMap() {
+        return componentMap;
     }
 
-    public void setComponentSet(Set<Component> componentSet) {
-        this.componentSet = componentSet;
+    public void setComponentMap(Map<String, Component> componentMap) {
+        this.componentMap = componentMap;
     }
 
     public Map<Component, Device> getConnections() {
