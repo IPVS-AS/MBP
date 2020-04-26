@@ -27,6 +27,8 @@ app.directive('envModelTool',
                     x: 0,
                     y: 0
                 };
+                //Possible states of nodes
+                const NODE_STATES = ['none', 'registered', 'deployed', 'started'];
                 //Undo/Redo Manager
                 const UNDO_MANAGER = new JSUndoManager({
                     limit: 50,
@@ -76,6 +78,7 @@ app.directive('envModelTool',
                 scope.api.delete = deleteFocusedElements;
                 scope.api.export = exportModel;
                 scope.api.import = importModel;
+                scope.api.updateNodeState = updateNodeState;
 
                 /*
                 Initialization
@@ -299,7 +302,7 @@ app.directive('envModelTool',
                         properties.left = ui.offset.left - $(this).offset().left;
                         properties.top = ui.offset.top - $(this).offset().top;
                         elementIdCount++;
-                        let id = "canvasWindow" + elementIdCount;
+                        let id = "node" + elementIdCount;
                         // Create and draw the element in the canvas
                         let element = createElement(id);
                         drawElement(element);
@@ -1419,7 +1422,7 @@ app.directive('envModelTool',
                     //Iterate over the clipboard
                     $.each(copyClipboard, function (index, nodeObject) {
                         //Generate new element ID
-                        let elementID = "canvasWindow" + (++elementIdCount);
+                        let elementID = "node" + (++elementIdCount);
 
                         //Create element from node object
                         let newElement = createElementFromNode(elementID, nodeObject);
@@ -1461,6 +1464,17 @@ app.directive('envModelTool',
                  */
                 function importModel() {
                     IMPORT_MODAL.modal();
+                }
+
+                /**
+                 * [Public]
+                 * @param nodeId The ID of the node that is supposed to be updated
+                 * @param newState The new state of the node (none|registered|deployed|started)
+                 */
+                function updateNodeState(nodeId, newState) {
+                    //TODO
+                    //NODE_STATES
+                    console.log("Update " + nodeId + ': ' + newState);
                 }
 
                 /**

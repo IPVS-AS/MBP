@@ -238,14 +238,6 @@ li {
     user-modify: read-write;
 }
 
-.aLabel.jtk-hover, .jtk-source-hover, .jtk-target-hover, .dragHover {
-    box-shadow: 2px 2px 19px #444;
-    -o-box-shadow: 2px 2px 19px #444;
-    -webkit-box-shadow: 2px 2px 19px #444;
-    -moz-box-shadow: 2px 2px 19px #444;
-    border: 2px solid grey;
-}
-
 .aLabel {
     background-color: white;
     opacity: 0.8;

@@ -1,14 +1,18 @@
 package org.citopt.connde.service.env_model.events;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.citopt.connde.service.env_model.events.types.EnvironmentModelEvent;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Service which allows to subscribe to environment models in order to get notified in case certain events occur. On
@@ -21,6 +25,9 @@ public class EnvironmentModelEventService {
     private static final Long EMITTER_TIMEOUT = 30 * 60 * 1000L;
 
     private static long EVENT_ID_COUNTER = 0L;
+
+    //Tread pool for asynchronous processing
+    private static ExecutorService threadPool = Executors.newCachedThreadPool();
 
     //Subscription map (model id -> set of subscribers)
     private Map<String, Set<SseEmitter>> subscriptions;
@@ -79,17 +86,19 @@ public class EnvironmentModelEventService {
         //Wrap given event as SSE event
         SseEmitter.SseEventBuilder sseEvent = SseEmitter.event()
                 .id(generateEventID())
-                .data(event)
+                .data(event.toString())
                 .name(event.getName());
 
         //Iterate over all subscribed emitters and publish the event
         for (SseEmitter subscriber : subscribers) {
-            try {
-                subscriber.send(sseEvent);
-            } catch (IOException e) {
-                //Complete emitter, leading to unsubscription
-                subscriber.completeWithError(e);
-            }
+            threadPool.execute(() -> {
+                try {
+                    subscriber.send(sseEvent);
+                } catch (Exception e) {
+                    //Complete emitter, leading to unsubscription
+                    subscriber.completeWithError(e);
+                }
+            });
         }
     }
 

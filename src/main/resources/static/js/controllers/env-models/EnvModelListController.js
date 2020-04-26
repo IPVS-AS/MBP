@@ -21,6 +21,7 @@ app.controller('EnvModelListController',
             vm.modelProperties = {name: "", description: ""};
 
             //Internal fields
+            let modelSubscription = null; //Subscription to model events
             let isNewModel = true; //Whether the currently edited model is a new one
             let currentModelID = null; //The ID of the currently edited model or null if it is a new model
             let ignorePropertyUpdate = false; //True, if updates of model properties should be ignored for save indication
@@ -65,6 +66,7 @@ app.controller('EnvModelListController',
                 //Pass model ID to the controller
                 vm.updateEnvModelCtrl.item.id = currentModelID;
 
+                //Create requeest for updating the model
                 vm.updateEnvModelCtrl.updateItem().then(function (data) {
                     //Check for success
                     if (vm.updateEnvModelCtrl.success) {
@@ -75,6 +77,30 @@ app.controller('EnvModelListController',
                         //TODO
                         console.log(vm.updateEnvModelCtrl.item.errors);
                     }
+                });
+            }
+
+            function subscribeModel(modelId) {
+                //Close old subscription if existing
+                if (modelSubscription != null) {
+                    modelSubscription.close();
+                }
+
+                //Subscribe model
+                modelSubscription = EnvModelService.subscribeModel(modelId, function (event) {
+                    //Parse event data
+                    let eventData = JSON.parse(event.data);
+
+                    //Update node state
+                    vm.envModelToolApi.updateNodeState(eventData.nodeId, 'registered');
+                }, function (event) {
+
+                }, function (event) {
+
+                }, function (event) {
+
+                }, function (event) {
+
                 });
             }
 
@@ -210,6 +236,9 @@ app.controller('EnvModelListController',
                     MODEL_EDIT_ENVIRONMENT.slideDown(400, function () {
                         //Load model to make it editable
                         vm.envModelToolApi.loadModel(modelToEdit.modelJSON);
+
+                        //Subscribe to model
+                        subscribeModel(modelToEdit.id);
                     });
                 });
             }

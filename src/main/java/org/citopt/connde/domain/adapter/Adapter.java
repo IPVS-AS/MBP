@@ -1,6 +1,7 @@
 package org.citopt.connde.domain.adapter;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.exception.InsertFailureException;
@@ -32,6 +33,8 @@ public class Adapter extends UserEntity {
     private String unit;
 
     private Code service;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<Code> routines;
 
     private List<Parameter> parameters;

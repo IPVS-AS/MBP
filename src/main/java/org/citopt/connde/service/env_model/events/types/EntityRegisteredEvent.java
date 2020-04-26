@@ -2,7 +2,7 @@ package org.citopt.connde.service.env_model.events.types;
 
 import org.citopt.connde.domain.user_entity.UserEntity;
 
-public class EntityRegisteredEvent implements EnvironmentModelEvent {
+public class EntityRegisteredEvent extends EnvironmentModelEvent {
     //Name of the event
     private static final String EVENT_NAME = "entity_registered";
 

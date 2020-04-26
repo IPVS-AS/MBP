@@ -214,6 +214,7 @@ public class EnvironmentModelService {
         model.setEntityMap(registeredEntities);
         environmentModelRepository.save(model);
 
+        //Success
         return new ActionResponse(true);
     }
 
@@ -233,7 +234,6 @@ public class EnvironmentModelService {
     }
 
     private EnvironmentModelParseResult parseModel(EnvironmentModel model) throws JSONException {
-        //TODO refactor this way too long method
         //Sanity check
         if (model == null) {
             throw new IllegalArgumentException("Model must not be null.");
