@@ -51,4 +51,27 @@ public class RestEnvModelController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @PostMapping(value = "/env-models/{id}/deploy")
+    @ApiOperation(value = "Deploys the components of a given environment model", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to deploy the components of this environment model"), @ApiResponse(code = 404, message = "Environment model not found"), @ApiResponse(code = 500, message = "Deployment failed")})
+    public ResponseEntity<ActionResponse> deployrComponents(@PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String modelID) {
+        //Get environment model
+        EnvironmentModel model = environmentModelRepository.findOne(modelID);
+
+        //Check if model could be found
+        if (model == null) {
+            return new ResponseEntity<>(new ActionResponse(false, "Model could not be found"), HttpStatus.NOT_FOUND);
+        }
+
+        //Call service for component registration
+        ActionResponse response = environmentModelService.deployComponents(model);
+
+        //Check for success and return response
+        if (response.isSuccess()) {
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }

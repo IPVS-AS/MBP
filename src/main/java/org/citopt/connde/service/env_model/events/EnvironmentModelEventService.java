@@ -1,9 +1,6 @@
 package org.citopt.connde.service.env_model.events;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.citopt.connde.service.env_model.events.types.EnvironmentModelEvent;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -69,6 +66,12 @@ public class EnvironmentModelEventService {
         return emitter;
     }
 
+    /**
+     * Publishes a given event to all subscribers of a certain environment model.
+     *
+     * @param modelId The ID of the environment model
+     * @param event   The event to publish
+     */
     public void publishEvent(String modelId, EnvironmentModelEvent event) {
         //Sanity check
         if ((modelId == null) || (modelId.isEmpty())) {

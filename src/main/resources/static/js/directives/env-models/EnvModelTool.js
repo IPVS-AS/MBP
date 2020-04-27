@@ -28,7 +28,7 @@ app.directive('envModelTool',
                     y: 0
                 };
                 //Possible states of nodes
-                const NODE_STATES = ['none', 'registered', 'deployed', 'started'];
+                const NODE_STATES = ['registered', 'deployed', 'started', 'error'];
                 //Undo/Redo Manager
                 const UNDO_MANAGER = new JSUndoManager({
                     limit: 50,
@@ -79,6 +79,7 @@ app.directive('envModelTool',
                 scope.api.export = exportModel;
                 scope.api.import = importModel;
                 scope.api.updateNodeState = updateNodeState;
+                scope.api.displayComponentValue = displayComponentValue;
 
                 /*
                 Initialization
@@ -566,14 +567,13 @@ app.directive('envModelTool',
                             onModelChanged();
                         });
                     }
-                    // Add connection square on device
-                    if (properties.clsName.indexOf("device") > -1) {
-                        element.append("<div class=\"ep\"></div>");
-                    }
 
                     if (properties.type) {
                         element.data("type", properties.type);
                     }
+
+                    //Add connection endpoint and status indicator if required
+                    enrichElement(element);
 
                     //Remove focus from all elements
                     clearFocus();
@@ -592,12 +592,12 @@ app.directive('envModelTool',
                     //Create element
                     let element = $('<div>').attr('id', id).addClass(node.clsName);
 
-                    // Set rotation angle if available
+                    //Set rotation angle if available
                     if ((typeof node.angle !== "undefined") && (node.angle > 0)) {
                         setAngle(element, node.angle);
                     }
 
-                    // The position to create the element
+                    //The position to create the element
                     element.css({
                         'left': node.left + 'px',
                         'top': node.top + 'px',
@@ -605,15 +605,43 @@ app.directive('envModelTool',
                         'height': node.height + 'px'
                     });
 
-                    // Append the data to the element
+                    //Append the data to the element
                     element.data(node);
 
-                    //Append ep if device
-                    if (node.nodeType === "device") {
-                        element.append("<div class=\"ep\"></div>");
-                    }
+                    //Add connection endpoint and status indicator if required
+                    enrichElement(element);
 
                     return element;
+                }
+
+                /**
+                 * Enriches a given DOM element for a status indicator and an connection endpoint, if necessary.
+                 * @param element The DOM element to enrich
+                 */
+                function enrichElement(element) {
+                    //Check if element requires a status indicator
+                    if (!(element.hasClass('device') ||
+                        element.hasClass('actuator') ||
+                        element.hasClass('sensor'))) {
+                        return;
+                    }
+
+                    //Create status indicator
+                    let statusIndicator = $('<div>').addClass('status-indicator');
+
+                    //Append indicator
+                    element.append(statusIndicator);
+
+                    //Check if entity is a device
+                    if (!element.hasClass("device")) {
+                        return;
+                    }
+
+                    //Create connection endpoint
+                    let endpoint = $('<div>').addClass('ep');
+
+                    //Append endpoint
+                    element.append(endpoint);
                 }
 
                 /*
@@ -1468,13 +1496,73 @@ app.directive('envModelTool',
 
                 /**
                  * [Public]
+                 * Updates the state of a node with a given ID.
                  * @param nodeId The ID of the node that is supposed to be updated
-                 * @param newState The new state of the node (none|registered|deployed|started)
+                 * @param newState The new state of the node (registered|deployed|started|error)
                  */
                 function updateNodeState(nodeId, newState) {
-                    //TODO
-                    //NODE_STATES
-                    console.log("Update " + nodeId + ': ' + newState);
+                    //Find element of corresponding status indicator
+                    let indicatorElement = $('#' + nodeId + ' .status-indicator');
+
+                    //Check if element could be found
+                    if (indicatorElement.length < 1) {
+                        return;
+                    }
+
+                    //Remove all state classes from the indicator
+                    indicatorElement.removeClass(NODE_STATES.join(" "));
+
+                    //Check for no state
+                    if ((typeof newState === 'undefined') || (NODE_STATES.indexOf(newState) < 0)) {
+                        return;
+                    }
+
+                    //Add status as class to the element
+                    indicatorElement.addClass(newState);
+                }
+
+                /**
+                 * [Public]
+                 * Displays a received value next to its node with a certain ID.
+                 * @param nodeId The ID of the node that is supposed to be updated
+                 * @param newState The new state of the node (registered|deployed|started|error)
+                 */
+                function displayComponentValue(nodeId, newState) {
+                    //Find element of the node
+                    let element = $('#' + nodeId);
+
+                    //Check if element could be found
+                    if (element.length < 1) {
+                        return;
+                    }
+
+                    //Get element position
+                    let elementPos = element.position();
+
+                    //Determine position of the value container
+                    let x = elementPos.left + element.outerWidth();
+                    let y = elementPos.top - 30;
+
+                    //Create value container
+                    let valueContainer = $('<div>').addClass('component-value').css({
+                        'left': x + 'px',
+                        'top': y + 'px',
+                        'opacity': '0'
+                    }).text(newState);
+
+                    //Append container to canvas
+                    CANVAS.append(valueElement);
+
+                    //Animate the value container (appearance and disappearance)
+                    valueContainer.animate({
+                        'opacity': 1,
+                        'top': '+=30'
+                    }, 1500, () => {
+                        valueContainer.animate({
+                            'opacity': 0,
+                            'top': '-=80'
+                        }, 1500);
+                    });
                 }
 
                 /**

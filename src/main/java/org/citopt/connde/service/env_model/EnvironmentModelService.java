@@ -9,8 +9,11 @@ import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.repository.*;
 import org.citopt.connde.service.UserService;
+import org.citopt.connde.service.deploy.ComponentState;
+import org.citopt.connde.service.deploy.SSHDeployer;
 import org.citopt.connde.service.env_model.events.EnvironmentModelEventService;
-import org.citopt.connde.service.env_model.events.types.EntityRegisteredEvent;
+import org.citopt.connde.service.env_model.events.types.EntityState;
+import org.citopt.connde.service.env_model.events.types.EntityStateEvent;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,9 +31,6 @@ import java.util.Map;
  */
 @org.springframework.stereotype.Component
 public class EnvironmentModelService {
-
-    @Autowired
-    private UserService userService;
 
     @Autowired
     private DeviceValidator deviceValidator;
@@ -56,7 +57,13 @@ public class EnvironmentModelService {
     private SensorRepository sensorRepository;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private EnvironmentModelEventService eventService;
+
+    @Autowired
+    private SSHDeployer sshDeployer;
 
     //JSON key names
     private static final String MODEL_JSON_KEY_NODES = "nodes";
@@ -170,7 +177,7 @@ public class EnvironmentModelService {
             registeredEntities.put(entry.getKey(), device);
 
             //Publish corresponding event
-            publishRegistrationEvent(model, entry.getKey(), device);
+            publishEntityState(model, entry.getKey(), device, EntityState.REGISTERED);
         }
 
         //Get connections from parse result
@@ -207,7 +214,7 @@ public class EnvironmentModelService {
             registeredEntities.put(entry.getKey(), component);
 
             //Publish corresponding event
-            publishRegistrationEvent(model, entry.getKey(), component);
+            publishEntityState(model, entry.getKey(), component, EntityState.REGISTERED);
         }
 
         //Update entity mapping of the model
@@ -218,19 +225,91 @@ public class EnvironmentModelService {
         return new ActionResponse(true);
     }
 
-    private void publishRegistrationEvent(EnvironmentModel model, String nodeId, UserEntity entity) {
+    /**
+     * Deploys the components of an environment model.
+     *
+     * @param model The model whose components are supposed to be deployed
+     * @return An action response containing the result of the deployment
+     */
+    public ActionResponse deployComponents(EnvironmentModel model) {
         //Sanity check
         if (model == null) {
-            throw new IllegalArgumentException("Model must not b e null.");
-        } else if (entity == null) {
-            throw new IllegalArgumentException("Entity must not be null.");
+            throw new IllegalArgumentException("Model must not be null.");
         }
 
+        //Remember if deployment was successful (at least one component could be deployed)
+        boolean success = false;
+
+        //Map holding all occurred errors
+        Map<String, String> deploymentErrors = new HashMap<>();
+
+        //Get map of all entities
+        Map<String, UserEntity> entityMap = model.getEntityMap();
+
+        //Iterate over all entities
+        for (String nodeId : entityMap.keySet()) {
+            //Get entity
+            UserEntity entity = entityMap.get(nodeId);
+
+            //Check if entity is a component
+            if (!(entity instanceof Component)) {
+                continue;
+            }
+
+            //Cast entity to component
+            Component component = (Component) entity;
+
+            //Resolve current state of the component
+            ComponentState componentState = sshDeployer.determineComponentState(component);
+
+            //Check if deployment is necessary and possible
+            switch (componentState) {
+                case DEPLOYED:
+                    //Component is already deployed
+                    publishEntityState(model, nodeId, component, EntityState.DEPLOYED);
+                    continue;
+                case RUNNING:
+                    //Component is already running
+                    publishEntityState(model, nodeId, component, EntityState.STARTED);
+                    continue;
+                case UNKNOWN:
+                case NOT_READY:
+                    //Impossible to deploy component
+                    publishEntityState(model, nodeId, component, EntityState.REGISTERED);
+
+                    //Update deployment error map
+                    deploymentErrors.put(nodeId, "Impossible to deploy.");
+                    continue;
+            }
+
+            //Try to deploy component
+            try {
+                sshDeployer.deployComponent(component);
+
+                //Deployment succeeded
+                success = true;
+
+                //Publish update event
+                publishEntityState(model, nodeId, component, EntityState.DEPLOYED);
+            } catch (IOException e) {
+                //Remember error
+                deploymentErrors.put(nodeId, "Deployment failed unexpectedly.");
+            }
+        }
+
+        //Create action response
+        ActionResponse response = new ActionResponse(success);
+        response.setFieldErrors(deploymentErrors);
+
+        return response;
+    }
+
+    private void publishEntityState(EnvironmentModel model, String nodeId, UserEntity entity, EntityState entityState) {
         //Create new event
-        EntityRegisteredEvent event = new EntityRegisteredEvent(nodeId, entity);
+        EntityStateEvent updateEvent = new EntityStateEvent(nodeId, entity, entityState);
 
         //Publish event
-        eventService.publishEvent(model.getId(), event);
+        eventService.publishEvent(model.getId(), updateEvent);
     }
 
     private EnvironmentModelParseResult parseModel(EnvironmentModel model) throws JSONException {

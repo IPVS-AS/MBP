@@ -9,13 +9,14 @@ app.factory('EnvModelService', ['$http', '$resource', '$q', '$timeout', 'ENDPOIN
         const URL_BASE = ENDPOINT_URI + '/env-models/';
         const URL_SUFFIX_SUBSCRIBE = '/subscribe';
         const URL_SUFFIX_REGISTER = '/register';
+        const URL_SUFFIX_DEPLOY = '/deploy';
+        const URL_SUFFIX_UNDEPLOY = '/undeploy';
+        const URL_SUFFIX_START = '/start';
+        const URL_SUFFIX_STOP = '/stop';
 
         //Names of events that occur after subscription
-        const MODEL_EVENT_REGISTER = 'entity_registered';
-        const MODEL_EVENT_DEPLOY = 'component_deploy';
-        const MODEL_EVENT_UNDEPLOY = 'component_undeploy';
-        const MODEL_EVENT_START = 'component_start';
-        const MODEL_EVENT_STOP = 'component_stop';
+        const MODEL_EVENT_ENTITY_UPDATE = 'entity_update';
+        const MODEL_EVENT_VALUE = 'value_received';
 
         //Time after which reconnect is supposed to be tried
         const RECONNECT_TIME = 5 * 1000;
@@ -26,14 +27,11 @@ app.factory('EnvModelService', ['$http', '$resource', '$q', '$timeout', 'ENDPOIN
          * for the individual events may be registered.
          *
          * @param modelID The ID of the model to subscribe to
-         * @param onRegister Callback for entity registration events
-         * @param onDeploy Callback for component deployment events
-         * @param onUndeploy Callback for component undeployment events
-         * @param onStart Callback for component start events
-         * @param onStop Callback for component stop events
+         * @param onEntityUpdate Callback for entity state update events
+         * @param onValue Callback for received component values
          * @returns {EventSource} The created event source object
          */
-        function subscribeModel(modelID, onRegister, onDeploy, onUndeploy, onStart, onStop) {
+        function subscribeModel(modelID, onEntityUpdate, onValue) {
             //Create event source
             let eventSource = new EventSource(URL_BASE + modelID + URL_SUFFIX_SUBSCRIBE);
 
@@ -46,16 +44,13 @@ app.factory('EnvModelService', ['$http', '$resource', '$q', '$timeout', 'ENDPOIN
 
                 //Try to re.-subscribe after some time
                 $timeout(function () {
-                    subscribeModel(modelID, onRegister, onDeploy, onUndeploy, onStart, onStop);
+                    subscribeModel(modelID, onEntityUpdate, onValue);
                 }, RECONNECT_TIME);
             };
 
             //Add event listeners
-            eventSource.addEventListener(MODEL_EVENT_REGISTER, onRegister || new Function());
-            eventSource.addEventListener(MODEL_EVENT_DEPLOY, onDeploy || new Function());
-            eventSource.addEventListener(MODEL_EVENT_UNDEPLOY, onUndeploy || new Function());
-            eventSource.addEventListener(MODEL_EVENT_START, onStart || new Function());
-            eventSource.addEventListener(MODEL_EVENT_STOP, onStop || new Function());
+            eventSource.addEventListener(MODEL_EVENT_ENTITY_UPDATE, onEntityUpdate || new Function());
+            eventSource.addEventListener(MODEL_EVENT_VALUE, onValue || new Function());
 
             return eventSource;
         }
@@ -63,17 +58,61 @@ app.factory('EnvModelService', ['$http', '$resource', '$q', '$timeout', 'ENDPOIN
         /**
          * [Public]
          * Performs a server request in order to register all components of a given model.
-         * @param modelID The ID of the affected model
+         * @param modelID The ID of the model
          * @returns {*}
          */
         function registerComponents(modelID) {
             return $http.post(URL_BASE + modelID + URL_SUFFIX_REGISTER);
         }
 
+        /**
+         * [Public]
+         * Performs a server request in order to deploy all components of a given model.
+         * @param modelID The ID of the model
+         * @returns {*}
+         */
+        function deployComponents(modelID) {
+            return $http.post(URL_BASE + modelID + URL_SUFFIX_DEPLOY);
+        }
+
+        /**
+         * [Public]
+         * Performs a server request in order to undeploy all components of a given model.
+         * @param modelID The ID of the model
+         * @returns {*}
+         */
+        function undeployComponents(modelID) {
+            return $http.post(URL_BASE + modelID + URL_SUFFIX_UNDEPLOY);
+        }
+
+        /**
+         * [Public]
+         * Performs a server request in order to start all components of a given model.
+         * @param modelID The ID of the model
+         * @returns {*}
+         */
+        function startComponents(modelID) {
+            return $http.post(URL_BASE + modelID + URL_SUFFIX_START);
+        }
+
+        /**
+         * [Public]
+         * Performs a server request in order to stop all components of a given model.
+         * @param modelID The ID of the model
+         * @returns {*}
+         */
+        function stopComponents(modelID) {
+            return $http.post(URL_BASE + modelID + URL_SUFFIX_STOP);
+        }
+
         //Expose public methods
         return {
             subscribeModel: subscribeModel,
             registerComponents: registerComponents,
+            deployComponents: deployComponents,
+            undeployComponents: undeployComponents,
+            startComponents: startComponents,
+            stopComponents: stopComponents
         }
     }
 ]);

@@ -2,16 +2,19 @@ package org.citopt.connde.service.env_model.events.types;
 
 import org.citopt.connde.domain.user_entity.UserEntity;
 
-public class EntityRegisteredEvent extends EnvironmentModelEvent {
+public class EntityStateEvent extends EnvironmentModelEvent {
+
     //Name of the event
-    private static final String EVENT_NAME = "entity_registered";
+    private static final String EVENT_NAME = "entity_update";
 
     private String nodeId;
     private UserEntity entity;
+    private EntityState entityState;
 
-    public EntityRegisteredEvent(String nodeId, UserEntity entity) {
+    public EntityStateEvent(String nodeId, UserEntity entity, EntityState entityState) {
         this.nodeId = nodeId;
         this.entity = entity;
+        this.entityState = entityState;
     }
 
     /**
@@ -38,5 +41,13 @@ public class EntityRegisteredEvent extends EnvironmentModelEvent {
 
     public void setEntity(UserEntity entity) {
         this.entity = entity;
+    }
+
+    public EntityState getEntityState() {
+        return entityState;
+    }
+
+    public void setEntityState(EntityState entityState) {
+        this.entityState = entityState;
     }
 }

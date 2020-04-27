@@ -10,6 +10,7 @@ app.controller('EnvModelListController',
                   adapterList, deviceTypesList, EnvModelService, NotificationService) {
             //Get required DOM elements
             const MODEL_EDIT_ENVIRONMENT = $("#model-edit-card");
+            const MODEL_PROGRESS_BAR = $("#model-progress");
 
             //Save current scope
             let vm = this;
@@ -32,10 +33,13 @@ app.controller('EnvModelListController',
             (function initController() {
                 //Initialize
                 $(document).ready(function () {
+                    //Hide progress bar
+                    hideProgress();
+
                     //Enable tooltips
                     $('[data-toggle="tooltip"]').tooltip({
                         delay: {"show": 500, "hide": 0}
-                    }).on('click', function () {
+                    }).on('click', () => {
                         //Hide tooltip in button click
                         $(this).tooltip("hide");
                     });
@@ -54,7 +58,6 @@ app.controller('EnvModelListController',
                         //Failure handling
                         //TODO
                         console.log(vm.addEnvModelCtrl.item.errors);
-
                     }
                 });
             }
@@ -81,27 +84,51 @@ app.controller('EnvModelListController',
             }
 
             function subscribeModel(modelId) {
+                /**
+                 * Callback for entity state change events.
+                 * @param event Event object that has been sent
+                 */
+                let onEntityStateChange = function (event) {
+                    //Parse event data
+                    let eventData = JSON.parse(event.data);
+
+                    //Get new entity state
+                    let entityState = eventData.entityState.toLowerCase();
+
+                    //Just update node state in the environment model tool accordingly
+                    vm.envModelToolApi.updateNodeState(eventData.nodeId, entityState);
+                }
+
+                /**
+                 * Callback for received component values.
+                 * @param event Event object that has been sent
+                 */
+                let onComponentValueReceived = function (event) {
+
+                }
+
                 //Close old subscription if existing
                 if (modelSubscription != null) {
                     modelSubscription.close();
                 }
 
-                //Subscribe model
-                modelSubscription = EnvModelService.subscribeModel(modelId, function (event) {
-                    //Parse event data
-                    let eventData = JSON.parse(event.data);
+                //Subscribe model and pass callback functions
+                modelSubscription = EnvModelService.subscribeModel(modelId, onEntityStateChange,
+                    onComponentValueReceived);
+            }
 
-                    //Update node state
-                    vm.envModelToolApi.updateNodeState(eventData.nodeId, 'registered');
-                }, function (event) {
+            /**
+             * Shows the progress bar, indicating ongoing action.
+             */
+            function showProgress() {
+                MODEL_PROGRESS_BAR.slideDown();
+            }
 
-                }, function (event) {
-
-                }, function (event) {
-
-                }, function (event) {
-
-                });
+            /**
+             * Hides the progress bar.
+             */
+            function hideProgress() {
+                MODEL_PROGRESS_BAR.slideUp();
             }
 
             /**
@@ -109,20 +136,18 @@ app.controller('EnvModelListController',
              * Called when the components of the current model are supposed to be registered.
              */
             function registerComponents() {
-
-                $('.progress-bar').stop(true).width(0).animate({
-                    width: "100%",
-                }, 3 * 1000);
+                //Show progress bar
+                showProgress();
 
                 //Perform request
                 EnvModelService.registerComponents(currentModelID).then(function (response) {
                     //Success
                     NotificationService.notify("Component registration succeeded.", "success");
-                    $('.progress-bar').stop(true).width(0);
+                    hideProgress();
                 }, function (response) {
                     //Failure
                     NotificationService.notify("Component registration failed.", "error");
-                    $('.progress-bar').stop(true).width(0);
+                    hideProgress();
                 });
             }
 
@@ -131,7 +156,19 @@ app.controller('EnvModelListController',
              * Called when the components of the current model are supposed to be deployed.
              */
             function deployComponents() {
+                //Show progress bar
+                showProgress();
 
+                //Perform request
+                EnvModelService.deployComponents(currentModelID).then(function (response) {
+                    //Success
+                    NotificationService.notify("Deployment succeeded.", "success");
+                    hideProgress();
+                }, function (response) {
+                    //Failure
+                    NotificationService.notify("Deployment failed.", "error");
+                    hideProgress();
+                });
             }
 
 
@@ -140,7 +177,19 @@ app.controller('EnvModelListController',
              * Called when the components of the current model are supposed to be undeployed.
              */
             function undeployComponents() {
+                //Show progress bar
+                showProgress();
 
+                //Perform request
+                EnvModelService.undeployComponents(currentModelID).then(function (response) {
+                    //Success
+                    NotificationService.notify("Undeployment succeeded.", "success");
+                    hideProgress();
+                }, function (response) {
+                    //Failure
+                    NotificationService.notify("Undeployment failed.", "error");
+                    hideProgress();
+                });
             }
 
 
@@ -149,7 +198,19 @@ app.controller('EnvModelListController',
              * Called when the components of the current model are supposed to be started.
              */
             function startComponents() {
+                //Show progress bar
+                showProgress();
 
+                //Perform request
+                EnvModelService.startComponents(currentModelID).then(function (response) {
+                    //Success
+                    NotificationService.notify("Components were starteds.", "success");
+                    hideProgress();
+                }, function (response) {
+                    //Failure
+                    NotificationService.notify("Failed to start components.", "error");
+                    hideProgress();
+                });
             }
 
             /**
@@ -157,7 +218,19 @@ app.controller('EnvModelListController',
              * Called when the components of the current model are supposed to be stopped.
              */
             function stopComponents() {
+                //Show progress bar
+                showProgress();
 
+                //Perform request
+                EnvModelService.stopComponents(currentModelID).then(function (response) {
+                    //Success
+                    NotificationService.notify("Components were stopped.", "success");
+                    hideProgress();
+                }, function (response) {
+                    //Failure
+                    NotificationService.notify("Failed to stop components.", "error");
+                    hideProgress();
+                });
             }
 
             /**
