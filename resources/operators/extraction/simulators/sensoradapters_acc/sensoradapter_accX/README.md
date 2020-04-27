@@ -9,8 +9,7 @@ The following parameters need to be provided on deployment:
  - `"event" (number)`: The event to be simulated. (1: Object in idle state; 2: Object in motion)
 - `"anomaly" (number)`: The anomaly to be simulated. (3: fly bumps into the object; 4: outlier; 5: wrong value type; 6: no anomaly)
 - `"weightObject" (number)`: The weight of the object to be observed.
-- `"sensitivityClass" (number)`: Sensitivity class to where other vibrations should be ignored. 
-(0: Immediate reaction: 0.0g; 1: imperceptible: <0.001g; 2: very light: 0.001-0.002g; 3: light: 0,002-0,005g)
+- `"sensitivityClass" (number)`: Sensitivity class to where other vibrations should be ignored. (0: Immediate reaction: 0.0g; 1: imperceptible: <0.001g; 2: very light: 0.001-0.002g; 3: light: 0,002-0,005g)
 - `"reactionMeters" (number)`: After how many meters of acceleration an action should be executed within the application. 
 - `"useNewData" (switch)`: Specifies whether the last simulated data should be reused. 
 - `"directionAnomaly" (number)`: The direction in which the anomaly is to be simulated. 
