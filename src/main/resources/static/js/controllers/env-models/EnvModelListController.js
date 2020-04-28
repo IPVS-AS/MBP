@@ -21,6 +21,9 @@ app.controller('EnvModelListController',
             //Stores properties of the current model (name, description)
             vm.modelProperties = {name: "", description: ""};
 
+            //Text to display on the progress bar
+            vm.progressBarText = "";
+
             //Internal fields
             let modelSubscription = null; //Subscription to model events
             let isNewModel = true; //Whether the currently edited model is a new one
@@ -118,9 +121,20 @@ app.controller('EnvModelListController',
             }
 
             /**
-             * Shows the progress bar, indicating ongoing action.
+             * Shows the progress bar, indicating an action in progress. Optionally, a text may be
+             * passed that is supposed to be displayed on the progress bar.
+             * @param text The text to display on the progress bar
              */
-            function showProgress() {
+            function showProgress(text) {
+                //Sanity check
+                if ((typeof text) === "undefined") {
+                    text = "";
+                }
+
+                //Set progress bar text
+                vm.progressBarText = text;
+
+                //Show progress bar with animation
                 MODEL_PROGRESS_BAR.slideDown();
             }
 
@@ -128,7 +142,11 @@ app.controller('EnvModelListController',
              * Hides the progress bar.
              */
             function hideProgress() {
-                MODEL_PROGRESS_BAR.slideUp();
+                //Hide progress bar with animation
+                MODEL_PROGRESS_BAR.slideUp(() => {
+                    //Clear progress bar text
+                    vm.progressBarText = "";
+                });
             }
 
             /**
@@ -137,7 +155,7 @@ app.controller('EnvModelListController',
              */
             function registerComponents() {
                 //Show progress bar
-                showProgress();
+                showProgress("Registering...");
 
                 //Perform request
                 EnvModelService.registerComponents(currentModelID).then(function (response) {
@@ -157,7 +175,7 @@ app.controller('EnvModelListController',
              */
             function deployComponents() {
                 //Show progress bar
-                showProgress();
+                showProgress("Deploying...");
 
                 //Perform request
                 EnvModelService.deployComponents(currentModelID).then(function (response) {
@@ -178,7 +196,7 @@ app.controller('EnvModelListController',
              */
             function undeployComponents() {
                 //Show progress bar
-                showProgress();
+                showProgress("Undeploying...");
 
                 //Perform request
                 EnvModelService.undeployComponents(currentModelID).then(function (response) {
@@ -199,7 +217,7 @@ app.controller('EnvModelListController',
              */
             function startComponents() {
                 //Show progress bar
-                showProgress();
+                showProgress("Starting...");
 
                 //Perform request
                 EnvModelService.startComponents(currentModelID).then(function (response) {
@@ -219,7 +237,7 @@ app.controller('EnvModelListController',
              */
             function stopComponents() {
                 //Show progress bar
-                showProgress();
+                showProgress("Stopping...");
 
                 //Perform request
                 EnvModelService.stopComponents(currentModelID).then(function (response) {

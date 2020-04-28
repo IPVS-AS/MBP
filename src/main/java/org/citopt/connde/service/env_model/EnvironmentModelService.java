@@ -23,6 +23,7 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -304,6 +305,232 @@ public class EnvironmentModelService {
         return response;
     }
 
+    /**
+     * Undeploys the components of an environment model.
+     *
+     * @param model The model whose components are supposed to be undeployed
+     * @return An action response containing the result of the undeployment
+     */
+    public ActionResponse undeployComponents(EnvironmentModel model) {
+        //Sanity check
+        if (model == null) {
+            throw new IllegalArgumentException("Model must not be null.");
+        }
+
+        //Remember if undeployment was successful (at least one component could be undeployed)
+        boolean success = false;
+
+        //Map holding all occurred errors
+        Map<String, String> undeploymentErrors = new HashMap<>();
+
+        //Get map of all entities
+        Map<String, UserEntity> entityMap = model.getEntityMap();
+
+        //Iterate over all entities
+        for (String nodeId : entityMap.keySet()) {
+            //Get entity
+            UserEntity entity = entityMap.get(nodeId);
+
+            //Check if entity is a component
+            if (!(entity instanceof Component)) {
+                continue;
+            }
+
+            //Cast entity to component
+            Component component = (Component) entity;
+
+            //Resolve current state of the component
+            ComponentState componentState = sshDeployer.determineComponentState(component);
+
+            //Check if undeployment is necessary and possible
+            switch (componentState) {
+                case READY:
+                case UNKNOWN:
+                case NOT_READY:
+                    //Impossible to undeploy component
+                    publishEntityState(model, nodeId, component, EntityState.REGISTERED);
+                    continue;
+            }
+
+            //Try to undeploy component
+            try {
+                sshDeployer.undeployComponent(component);
+
+                //Undeployment succeeded
+                success = true;
+
+                //Publish update event
+                publishEntityState(model, nodeId, component, EntityState.REGISTERED);
+            } catch (IOException e) {
+                //Remember error
+                undeploymentErrors.put(nodeId, "Undeployment failed unexpectedly.");
+            }
+        }
+
+        //Create action response
+        ActionResponse response = new ActionResponse(success);
+        response.setFieldErrors(undeploymentErrors);
+
+        return response;
+    }
+
+    /**
+     * Starts the components of an environment model.
+     *
+     * @param model The model whose components are supposed to be started
+     * @return An action response containing the result of the starting
+     */
+    public ActionResponse startComponents(EnvironmentModel model) {
+        //Sanity check
+        if (model == null) {
+            throw new IllegalArgumentException("Model must not be null.");
+        }
+
+        //Remember if start was successful (at least one component could be started)
+        boolean success = false;
+
+        //Map holding all occurred errors
+        Map<String, String> startErrors = new HashMap<>();
+
+        //Get map of all entities
+        Map<String, UserEntity> entityMap = model.getEntityMap();
+
+        //Iterate over all entities
+        for (String nodeId : entityMap.keySet()) {
+            //Get entity
+            UserEntity entity = entityMap.get(nodeId);
+
+            //Check if entity is a component
+            if (!(entity instanceof Component)) {
+                continue;
+            }
+
+            //Cast entity to component
+            Component component = (Component) entity;
+
+            //Resolve current state of the component
+            ComponentState componentState = sshDeployer.determineComponentState(component);
+
+            //Check if starting is necessary and possible
+            switch (componentState) {
+                case RUNNING:
+                    //Component is running
+                    publishEntityState(model, nodeId, component, EntityState.STARTED);
+                    continue;
+                case READY:
+                case UNKNOWN:
+                case NOT_READY:
+                    //Impossible to undeploy component
+                    publishEntityState(model, nodeId, component, EntityState.REGISTERED);
+
+                    //Update deployment error map
+                    startErrors.put(nodeId, "Impossible to start.");
+                    continue;
+            }
+
+            //Try to start component
+            try {
+                sshDeployer.startComponent(component, new ArrayList<>());
+
+                //Start succeeded
+                success = true;
+
+                //Publish update event
+                publishEntityState(model, nodeId, component, EntityState.STARTED);
+            } catch (IOException e) {
+                //Remember error
+                startErrors.put(nodeId, "Starting failed unexpectedly.");
+            }
+        }
+
+        //Create action response
+        ActionResponse response = new ActionResponse(success);
+        response.setFieldErrors(startErrors);
+
+        return response;
+    }
+
+    /**
+     * Stops the components of an environment model.
+     *
+     * @param model The model whose components are supposed to be stopped
+     * @return An action response containing the result of the stopping
+     */
+    public ActionResponse stopComponents(EnvironmentModel model) {
+        //Sanity check
+        if (model == null) {
+            throw new IllegalArgumentException("Model must not be null.");
+        }
+
+        //Remember if stop was successful (at least one component could be stopped)
+        boolean success = false;
+
+        //Map holding all occurred errors
+        Map<String, String> stopErrors = new HashMap<>();
+
+        //Get map of all entities
+        Map<String, UserEntity> entityMap = model.getEntityMap();
+
+        //Iterate over all entities
+        for (String nodeId : entityMap.keySet()) {
+            //Get entity
+            UserEntity entity = entityMap.get(nodeId);
+
+            //Check if entity is a component
+            if (!(entity instanceof Component)) {
+                continue;
+            }
+
+            //Cast entity to component
+            Component component = (Component) entity;
+
+            //Resolve current state of the component
+            ComponentState componentState = sshDeployer.determineComponentState(component);
+
+            //Check if stopping is necessary and possible
+            switch (componentState) {
+                case DEPLOYED:
+                    //Component is not running
+                    publishEntityState(model, nodeId, component, EntityState.DEPLOYED);
+                    continue;
+                case READY:
+                case UNKNOWN:
+                case NOT_READY:
+                    //Impossible to undeploy component
+                    publishEntityState(model, nodeId, component, EntityState.REGISTERED);
+                    continue;
+            }
+
+            //Try to stop component
+            try {
+                sshDeployer.stopComponent(component);
+
+                //Stop succeeded
+                success = true;
+
+                //Publish update event
+                publishEntityState(model, nodeId, component, EntityState.DEPLOYED);
+            } catch (IOException e) {
+                //Remember error
+                stopErrors.put(nodeId, "Starting failed unexpectedly.");
+            }
+        }
+
+        //Create action response
+        ActionResponse response = new ActionResponse(success);
+        response.setFieldErrors(stopErrors);
+
+        return response;
+    }
+
+    /**
+     * Publishes the state of an entity to all subscribers of a model.
+     *
+     * @param model       The model to which the entity belongs
+     * @param nodeId      The node ID of the affected entity within the model
+     * @param entity      The entity whose state is supposed to be updated
+     * @param entityState The new state of the entity
+     */
     private void publishEntityState(EnvironmentModel model, String nodeId, UserEntity entity, EntityState entityState) {
         //Create new event
         EntityStateEvent updateEvent = new EntityStateEvent(nodeId, entity, entityState);

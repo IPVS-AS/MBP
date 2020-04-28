@@ -31,7 +31,7 @@ public class RestEnvModelController {
 
     @PostMapping(value = "/env-models/{id}/register")
     @ApiOperation(value = "Registers the components of a given environment model", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to register the components of this environment model"), @ApiResponse(code = 404, message = "Environment model not found"), @ApiResponse(code = 500, message = "Registration failed")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to register the components of this environment model"), @ApiResponse(code = 404, message = "Environment model not found"), @ApiResponse(code = 500, message = "Registration failed")})
     public ResponseEntity<ActionResponse> registerComponents(@PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String modelID) {
         //Get environment model
         EnvironmentModel model = environmentModelRepository.findOne(modelID);
@@ -46,7 +46,7 @@ public class RestEnvModelController {
 
         //Check for success and return response
         if (response.isSuccess()) {
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -54,7 +54,7 @@ public class RestEnvModelController {
 
     @PostMapping(value = "/env-models/{id}/deploy")
     @ApiOperation(value = "Deploys the components of a given environment model", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to deploy the components of this environment model"), @ApiResponse(code = 404, message = "Environment model not found"), @ApiResponse(code = 500, message = "Deployment failed")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to deploy the components of this environment model"), @ApiResponse(code = 404, message = "Environment model not found"), @ApiResponse(code = 500, message = "Deployment failed")})
     public ResponseEntity<ActionResponse> deployrComponents(@PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String modelID) {
         //Get environment model
         EnvironmentModel model = environmentModelRepository.findOne(modelID);
@@ -64,8 +64,77 @@ public class RestEnvModelController {
             return new ResponseEntity<>(new ActionResponse(false, "Model could not be found"), HttpStatus.NOT_FOUND);
         }
 
-        //Call service for component registration
+        //Call service for component deployment
         ActionResponse response = environmentModelService.deployComponents(model);
+
+        //Check for success and return response
+        if (response.isSuccess()) {
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping(value = "/env-models/{id}/undeploy")
+    @ApiOperation(value = "Undeploys the components of a given environment model", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to undeploy the components of this environment model"), @ApiResponse(code = 404, message = "Environment model not found"), @ApiResponse(code = 500, message = "Undeployment failed")})
+    public ResponseEntity<ActionResponse> undeployComponents(@PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String modelID) {
+        //Get environment model
+        EnvironmentModel model = environmentModelRepository.findOne(modelID);
+
+        //Check if model could be found
+        if (model == null) {
+            return new ResponseEntity<>(new ActionResponse(false, "Model could not be found"), HttpStatus.NOT_FOUND);
+        }
+
+        //Call service for component undeployment
+        ActionResponse response = environmentModelService.undeployComponents(model);
+
+        //Check for success and return response
+        if (response.isSuccess()) {
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping(value = "/env-models/{id}/start")
+    @ApiOperation(value = "Starts the components of a given environment model", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to start the components of this environment model"), @ApiResponse(code = 404, message = "Environment model not found"), @ApiResponse(code = 500, message = "Starting failed")})
+    public ResponseEntity<ActionResponse> startComponents(@PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String modelID) {
+        //Get environment model
+        EnvironmentModel model = environmentModelRepository.findOne(modelID);
+
+        //Check if model could be found
+        if (model == null) {
+            return new ResponseEntity<>(new ActionResponse(false, "Model could not be found"), HttpStatus.NOT_FOUND);
+        }
+
+        //Call service for component start
+        ActionResponse response = environmentModelService.startComponents(model);
+
+        //Check for success and return response
+        if (response.isSuccess()) {
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping(value = "/env-models/{id}/stop")
+    @ApiOperation(value = "Stops the components of a given environment model", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to stop the components of this environment model"), @ApiResponse(code = 404, message = "Environment model not found"), @ApiResponse(code = 500, message = "Stopping failed")})
+    public ResponseEntity<ActionResponse> stopComponents(@PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String modelID) {
+        //Get environment model
+        EnvironmentModel model = environmentModelRepository.findOne(modelID);
+
+        //Check if model could be found
+        if (model == null) {
+            return new ResponseEntity<>(new ActionResponse(false, "Model could not be found"), HttpStatus.NOT_FOUND);
+        }
+
+        //Call service for component stop
+        ActionResponse response = environmentModelService.stopComponents(model);
 
         //Check for success and return response
         if (response.isSuccess()) {
