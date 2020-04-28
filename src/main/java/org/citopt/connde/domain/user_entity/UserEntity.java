@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import org.citopt.connde.DynamicBeanProvider;
+import org.citopt.connde.domain.env_model.EnvironmentModel;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.repository.projection.UserExcerpt;
 import org.citopt.connde.service.UserEntityService;
@@ -40,9 +41,10 @@ public abstract class UserEntity {
             .addPermission(PERMISSION_NAME_DISAPPROVE).addRole(ENTITY_OWNER).addRole(ADMIN)
             .lock();
 
-    //Whether the entity was modelled as part of an environment model
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private boolean wasModelled = false;
+    //The environment model for which the entity was created (null if none)
+    @JsonIgnore
+    @DBRef
+    private EnvironmentModel environmentModel = null;
 
     //Owner of the entity
     @JsonIgnore
@@ -65,19 +67,23 @@ public abstract class UserEntity {
     private Date lastModified;
 
     /**
-     * Returns whether the entity was modelled as part of an environment model.
-     * @return True, if it was modelled; false otherwise
+     * Returns the environment model for which the entity was created. If it has not been created
+     * for an environment model, null is returned.
+     *
+     * @return The environment model
      */
-    public boolean wasModelled() {
-        return wasModelled;
+    public EnvironmentModel getEnvironmentModel() {
+        return environmentModel;
     }
 
     /**
-     * Sets whether the entity was modelled as part of an environment model.
-     * @param wasModelled Set to true, if it was modelled; false otherwise
+     * Sets the environment model for which the entity was created. If null is passed,
+     * the entity was not created for an environment model.
+     *
+     * @param environmentModel The environment model to set
      */
-    public void setWasModelled(boolean wasModelled) {
-        this.wasModelled = wasModelled;
+    public void setEnvironmentModel(EnvironmentModel environmentModel) {
+        this.environmentModel = environmentModel;
     }
 
     /**
@@ -217,6 +223,17 @@ public abstract class UserEntity {
 
         //Do check
         return user.equals(this.owner) || this.approvedUsers.contains(user);
+    }
+
+    /**
+     * Returns whether the entity was modelled as part of an environment model.
+     *
+     * @return True, if it was modelled; false otherwise
+     */
+    @JsonProperty("wasModelled")
+    @ApiModelProperty(notes = "Whether the entity was modelled as part of an environment model", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    public boolean wasModelled() {
+        return (environmentModel != null);
     }
 
     @JsonProperty("isOwning")

@@ -1523,11 +1523,12 @@ app.directive('envModelTool',
 
                 /**
                  * [Public]
-                 * Displays a received value next to its node with a certain ID.
+                 * Displays a received value together with its unit next to its node with a certain ID.
                  * @param nodeId The ID of the node that is supposed to be updated
-                 * @param newState The new state of the node (registered|deployed|started|error)
+                 * @param unit The unit of the received component value
+                 * @param value The received component value
                  */
-                function displayComponentValue(nodeId, newState) {
+                function displayComponentValue(nodeId, unit, value) {
                     //Find element of the node
                     let element = $('#' + nodeId);
 
@@ -1536,33 +1537,41 @@ app.directive('envModelTool',
                         return;
                     }
 
+                    //Put display text together
+                    let displayText = value + "" + unit;
+
                     //Get element position
                     let elementPos = element.position();
 
                     //Determine position of the value container
                     let x = elementPos.left + element.outerWidth();
-                    let y = elementPos.top - 30;
+                    let y = elementPos.top + (element.outerHeight() / 2) - 10;
 
                     //Create value container
                     let valueContainer = $('<div>').addClass('component-value').css({
                         'left': x + 'px',
-                        'top': y + 'px',
-                        'opacity': '0'
-                    }).text(newState);
+                        'top': y + 'px'
+                    }).hide().text(displayText);
 
                     //Append container to canvas
-                    CANVAS.append(valueElement);
+                    CANVAS.append(valueContainer);
 
                     //Animate the value container (appearance and disappearance)
+                    valueContainer.fadeIn().delay(2000).fadeOut();
+
+                    /*
                     valueContainer.animate({
                         'opacity': 1,
                         'top': '+=30'
-                    }, 1500, () => {
-                        valueContainer.animate({
+                    }, 1000, () => {
+                        valueContainer.delay(2000).animate({
                             'opacity': 0,
                             'top': '-=80'
-                        }, 1500);
-                    });
+                        }, 1000, () => {
+                            //Animation finished, remove container
+                            valueContainer.remove();
+                        });
+                    });*/
                 }
 
                 /**

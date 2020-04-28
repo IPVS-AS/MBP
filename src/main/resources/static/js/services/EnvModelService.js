@@ -16,7 +16,7 @@ app.factory('EnvModelService', ['$http', '$resource', '$q', '$timeout', 'ENDPOIN
 
         //Names of events that occur after subscription
         const MODEL_EVENT_ENTITY_UPDATE = 'entity_update';
-        const MODEL_EVENT_VALUE = 'value_received';
+        const MODEL_EVENT_VALUE = 'component_value';
 
         //Time after which reconnect is supposed to be tried
         const RECONNECT_TIME = 5 * 1000;

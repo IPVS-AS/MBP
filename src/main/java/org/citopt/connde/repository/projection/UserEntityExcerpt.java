@@ -9,6 +9,7 @@ import java.util.Set;
  * user entity types.
  */
 public interface UserEntityExcerpt {
+    @Value("#{target.wasModelled()}")
     boolean getWasModelled();
 
     @Value("#{target.getOwnerName()}")

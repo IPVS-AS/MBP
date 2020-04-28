@@ -12,7 +12,6 @@ import org.citopt.connde.service.UserService;
 import org.citopt.connde.service.deploy.ComponentState;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.citopt.connde.service.env_model.events.EnvironmentModelEventService;
-import org.citopt.connde.service.env_model.events.types.EntityState;
 import org.citopt.connde.service.env_model.events.types.EntityStateEvent;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.json.JSONArray;
@@ -86,6 +85,13 @@ public class EnvironmentModelService {
     private static final String MODEL_NODE_TYPE_DEVICE = "device";
     private static final String MODEL_NODE_TYPE_ACTUATOR = "actuator";
     private static final String MODEL_NODE_TYPE_SENSOR = "sensor";
+
+    public void getEntityStates(EnvironmentModel model){
+        //Sanity check
+        if (model == null) {
+            throw new IllegalArgumentException("Model must not be null.");
+        }
+    }
 
     /**
      * Unregisters (deletes) the entities of an environment model.
@@ -617,7 +623,7 @@ public class EnvironmentModelService {
             entity.setOwner(owner);
 
             //Mark entity as modelled
-            entity.setWasModelled(true);
+            entity.setEnvironmentModel(model);
 
             //CHeck for errors
             if (errors.hasErrors()) {

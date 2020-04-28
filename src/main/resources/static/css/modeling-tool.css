@@ -294,8 +294,8 @@ li {
 .modeling-tool .status-indicator {
     margin-left: 1px;
     margin-top: 1px;
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     border-radius: 12px;
     background-color: black;
     box-shadow: 1px 1px 5px black;
@@ -311,6 +311,7 @@ li {
 
 .modeling-tool .status-indicator.started {
     background-color: green;
+    animation: pulse 2s infinite;
 }
 
 .modeling-tool .status-indicator.error {
@@ -319,12 +320,28 @@ li {
 
 .modeling-tool .component-value {
     position: absolute;
-    width: 20px;
+    width: 50px;
     height: 20px;
     font-size: 20px;
-    border-radius: 5px;
-    border: 1px dashed black;
 }
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
 
 /* --- Floorplans --------------------------------------------------------------------------------------- */
 .floorplan {

@@ -4,9 +4,9 @@
  * Controller for the environment models list page.
  */
 app.controller('EnvModelListController',
-    ['$scope', '$controller', '$interval', 'envModelList', 'addEnvModel', 'updateEnvModel', 'deleteEnvModel',
+    ['$scope', '$controller', '$timeout', 'envModelList', 'addEnvModel', 'updateEnvModel', 'deleteEnvModel',
         'adapterList', 'deviceTypesList', 'EnvModelService', 'NotificationService',
-        function ($scope, $controller, $interval, envModelList, addEnvModel, updateEnvModel, deleteEnvModel,
+        function ($scope, $controller, $timeout, envModelList, addEnvModel, updateEnvModel, deleteEnvModel,
                   adapterList, deviceTypesList, EnvModelService, NotificationService) {
             //Get required DOM elements
             const MODEL_EDIT_ENVIRONMENT = $("#model-edit-card");
@@ -43,8 +43,10 @@ app.controller('EnvModelListController',
                     $('[data-toggle="tooltip"]').tooltip({
                         delay: {"show": 500, "hide": 0}
                     }).on('click', () => {
-                        //Hide tooltip in button click
-                        $(this).tooltip("hide");
+                        //Hide all tooltips on button click
+                        $timeout(() => {
+                            $(".tooltip").tooltip("hide");
+                        }, 500);
                     });
                 });
             })();
@@ -107,7 +109,11 @@ app.controller('EnvModelListController',
                  * @param event Event object that has been sent
                  */
                 let onComponentValueReceived = function (event) {
+                    //Parse event data
+                    let eventData = JSON.parse(event.data);
 
+                    //Display component value
+                    vm.envModelToolApi.displayComponentValue(eventData.nodeId, eventData.unit, eventData.value);
                 }
 
                 //Close old subscription if existing

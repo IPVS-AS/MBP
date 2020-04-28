@@ -1,6 +1,7 @@
 package org.citopt.connde.service.env_model.events.types;
 
 import org.citopt.connde.domain.user_entity.UserEntity;
+import org.citopt.connde.service.env_model.EntityState;
 
 public class EntityStateEvent extends EnvironmentModelEvent {
 
