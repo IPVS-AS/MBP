@@ -127,6 +127,38 @@ app.controller('EnvModelListController',
             }
 
             /**
+             * Loads the states of all registered entities of the current model and updates the environment model
+             * tool with them.
+             */
+            function loadEntityStates() {
+                //Show progress
+                showProgress("Loading entity states...")
+
+                //Perform request to load the entity states
+                EnvModelService.getEntityStates(currentModelID).then(function (response) {
+                    //Get entity states
+                    let entityStates = response.data;
+
+                    //Iterate over all entities
+                    for (let nodeId of Object.keys(entityStates)) {
+                        //Get state of the current entity
+                        let state = entityStates[nodeId].toLowerCase();
+
+                        //Update environment model tool accordingly
+                        vm.envModelToolApi.updateNodeState(nodeId, state);
+                    }
+
+                    //Hide the progress bar
+                    hideProgress();
+
+                }, function () {
+                    //Failure
+                    NotificationService.notify("Failed to load the entity states.", "error");
+                    hideProgress();
+                });
+            }
+
+            /**
              * Shows the progress bar, indicating an action in progress. Optionally, a text may be
              * passed that is supposed to be displayed on the progress bar.
              * @param text The text to display on the progress bar
@@ -335,7 +367,10 @@ app.controller('EnvModelListController',
                         vm.envModelToolApi.loadModel(modelToEdit.modelJSON);
 
                         //Subscribe to model
-                        subscribeModel(modelToEdit.id);
+                        subscribeModel(currentModelID);
+
+                        //Update states of all registered entities
+                        loadEntityStates();
                     });
                 });
             }

@@ -86,11 +86,59 @@ public class EnvironmentModelService {
     private static final String MODEL_NODE_TYPE_ACTUATOR = "actuator";
     private static final String MODEL_NODE_TYPE_SENSOR = "sensor";
 
-    public void getEntityStates(EnvironmentModel model){
+    /**
+     * Returns a map (node id -> entity state) holding the states for all registered entities of a given
+     * environment model.
+     *
+     * @param model The environment model for which the entity states are supposed to be determined
+     * @return The map (node id -> entity state) holding the states of all entities
+     */
+    public Map<String, EntityState> determineEntityStates(EnvironmentModel model) {
         //Sanity check
         if (model == null) {
             throw new IllegalArgumentException("Model must not be null.");
         }
+
+        //Create new map (node id -> state) holding the states for each entity
+        Map<String, EntityState> entityStates = new HashMap<>();
+
+        //Get all registered entities (node id -> entity object)
+        Map<String, UserEntity> registeredEntities = model.getEntityMap();
+
+        //Iterate over all entities
+        for (String nodeId : registeredEntities.keySet()) {
+            //Get current entity object
+            UserEntity entity = registeredEntities.get(nodeId);
+
+            //Check if entity is a device
+            if (entity instanceof Device) {
+                //Device can only be registered
+                entityStates.put(nodeId, EntityState.REGISTERED);
+                continue;
+            }
+
+            //Skip entities that are no components
+            if (!(entity instanceof Component)) {
+                continue;
+            }
+
+            //Determine state of the component
+            ComponentState componentState = sshDeployer.determineComponentState((Component) entity);
+
+            //Translate component state to entity state and add it to map
+            switch (componentState) {
+                case RUNNING:
+                    entityStates.put(nodeId, EntityState.STARTED);
+                    break;
+                case DEPLOYED:
+                    entityStates.put(nodeId, EntityState.DEPLOYED);
+                default:
+                    entityStates.put(nodeId, EntityState.REGISTERED);
+            }
+        }
+
+        //Return result
+        return entityStates;
     }
 
     /**

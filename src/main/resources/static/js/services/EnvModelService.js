@@ -13,6 +13,7 @@ app.factory('EnvModelService', ['$http', '$resource', '$q', '$timeout', 'ENDPOIN
         const URL_SUFFIX_UNDEPLOY = '/undeploy';
         const URL_SUFFIX_START = '/start';
         const URL_SUFFIX_STOP = '/stop';
+        const URL_SUFFIX_ENTITY_STATES = '/states';
 
         //Names of events that occur after subscription
         const MODEL_EVENT_ENTITY_UPDATE = 'entity_update';
@@ -105,6 +106,16 @@ app.factory('EnvModelService', ['$http', '$resource', '$q', '$timeout', 'ENDPOIN
             return $http.post(URL_BASE + modelID + URL_SUFFIX_STOP);
         }
 
+        /**
+         * [Public]
+         * Performs a server request in order to retrieve the states of all registered entities of a given model.
+         * @param modelID The ID of the model
+         * @returns {*}
+         */
+        function getEntityStates(modelID) {
+            return $http.get(URL_BASE + modelID + URL_SUFFIX_ENTITY_STATES);
+        }
+
         //Expose public methods
         return {
             subscribeModel: subscribeModel,
@@ -112,7 +123,8 @@ app.factory('EnvModelService', ['$http', '$resource', '$q', '$timeout', 'ENDPOIN
             deployComponents: deployComponents,
             undeployComponents: undeployComponents,
             startComponents: startComponents,
-            stopComponents: stopComponents
+            stopComponents: stopComponents,
+            getEntityStates: getEntityStates
         }
     }
 ]);

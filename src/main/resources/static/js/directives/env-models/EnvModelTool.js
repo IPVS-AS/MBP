@@ -1538,7 +1538,7 @@ app.directive('envModelTool',
                     }
 
                     //Put display text together
-                    let displayText = value + "" + unit;
+                    let displayText = value + " " + unit;
 
                     //Get element position
                     let elementPos = element.position();
