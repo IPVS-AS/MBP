@@ -424,7 +424,7 @@ public class TestEngine implements ValueLogReceiverObserver {
         ResponseEntity<String> response;
         try {
             TestDetails testDetails = testDetailsRepository.findById(testId);
-            Desktop.getDesktop().open(new File(testDetails.getPathPDF()));
+            // Desktop.getDesktop().open(new File(testDetails.getPathPDF()));
             response = new ResponseEntity<>(HttpStatus.OK);
         } catch (IOException e) {
             e.printStackTrace();
