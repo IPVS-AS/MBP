@@ -422,18 +422,12 @@ public class TestEngine implements ValueLogReceiverObserver {
     public ResponseEntity<String> openPDF(String testId) {
 
         ResponseEntity<String> response;
-        try {
-            TestDetails testDetails = testDetailsRepository.findById(testId);
-            // Desktop.getDesktop().open(new File(testDetails.getPathPDF()));
-            response = new ResponseEntity<>(HttpStatus.OK);
-        } catch (IOException e) {
-            e.printStackTrace();
-            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        TestDetails testDetails = testDetailsRepository.findById(testId);
+        // Desktop.getDesktop().open(new File(testDetails.getPathPDF()));
+        response = new ResponseEntity<>(HttpStatus.OK);
 
         return response;
     }
-
 
 }
 
