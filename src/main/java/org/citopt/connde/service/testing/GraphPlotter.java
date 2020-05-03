@@ -33,6 +33,8 @@ import java.util.Map;
 public class GraphPlotter extends JFrame {
 
     public void createGraphReport(TestDetails test) throws IOException {
+        System.setProperty("java.awt.headless", "true");
+
         XYDataset dataset = createDataset(test);
 
         JFreeChart chart = ChartFactory.createXYLineChart("Simulation Values", // chart title
