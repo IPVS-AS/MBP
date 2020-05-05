@@ -5,15 +5,6 @@
 
     <version>0.1</version>
     <packaging>war</packaging>
-    <artifactId> aop-before-advice-example</artifactId>
-    <name>aop-before-advice-example</name>
-    <description>Demo project for Spring Boot</description>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.2.RELEASE</version>
-        <relativePath /> <!-- lookup parent from repository -->
-    </parent>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
