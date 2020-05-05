@@ -4,7 +4,8 @@ This folder contains operator scripts to control an actuator that does not trigg
 
 ## Hardware Setup 
 
- - a virtual machine (VM)
+ -  a computer running a Linux-based OS, such as a Raspberry Pi or a Laptop running the Ubuntu OS. (Optionally, you can also use a virtual machine)
+
 
 ## Operator files 
 

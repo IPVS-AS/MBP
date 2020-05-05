@@ -79,7 +79,8 @@ public class TestReport {
 
 
         // Creating an ImageData object from the graph of sensor values, which was previously created with the GraphPlotter
-        Image graphSensorVal = Image.getInstance(testId + ".png");
+        Image graphSensorVal = Image.getInstance(testId + ".gif");
+        graphSensorVal.setAlignment(Element.ALIGN_CENTER);
 
         // Test-Success
         Font fontConfig = new Font();

@@ -1,6 +1,7 @@
 package org.citopt.connde.service.testing;
 
 
+import org.aspectj.lang.annotation.Before;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
@@ -20,8 +21,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+
 import java.awt.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.List;
 
@@ -420,11 +423,17 @@ public class TestEngine implements ValueLogReceiverObserver {
      * @param testId ID of the specific test
      */
     public ResponseEntity<String> openPDF(String testId) {
-
         ResponseEntity<String> response;
-        TestDetails testDetails = testDetailsRepository.findById(testId);
-        // Desktop.getDesktop().open(new File(testDetails.getPathPDF()));
-        response = new ResponseEntity<>(HttpStatus.OK);
+        try {
+            TestDetails test = testDetailsRepository.findById(testId);
+            File testRepo = new File(test.getPathPDF());
+            Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + testRepo);
+            response = new ResponseEntity<>(HttpStatus.OK);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
 
         return response;
     }
