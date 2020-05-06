@@ -11,6 +11,7 @@ app.controller('EnvModelListController',
             //Get required DOM elements
             const MODEL_EDIT_ENVIRONMENT = $("#model-edit-card");
             const MODEL_PROGRESS_BAR = $("#model-progress");
+            const MODEL_ERROR_MESSAGE = $("#model-error-message");
 
             //Save current scope
             let vm = this;
@@ -23,6 +24,9 @@ app.controller('EnvModelListController',
 
             //Text to display on the progress bar
             vm.progressBarText = "";
+
+            //Array of error messages to display
+            vm.errorMessageList = "";
 
             //Internal fields
             let modelSubscription = null; //Subscription to model events
@@ -38,6 +42,9 @@ app.controller('EnvModelListController',
                 $(document).ready(function () {
                     //Hide progress bar
                     hideProgress();
+
+                    //Hide error message
+                    hideErrorMessage();
 
                     //Enable tooltips
                     $('[data-toggle="tooltip"]').tooltip({
@@ -188,6 +195,48 @@ app.controller('EnvModelListController',
             }
 
             /**
+             * Displays an object of errors as list of error messages.
+             * @param errorObject The error object to display
+             */
+            function showErrorList(errorObject) {
+                //Clear error message array
+                vm.errorMessageList = [];
+
+                //Iterate over all fields of the error object
+                for (let fieldId in errorObject) {
+                    //Check for error field
+                    if (!errorObject.hasOwnProperty(fieldId)) {
+                        continue;
+                    }
+
+                    //Add error message
+                    vm.errorMessageList.push(errorObject[fieldId]);
+                }
+
+                //Display the message
+                showErrorMessage();
+            }
+
+            /**
+             * Displays the error message.
+             */
+            function showErrorMessage() {
+                //Show container
+                MODEL_ERROR_MESSAGE.slideDown();
+            }
+
+            /**
+             * Hides the error message.
+             */
+            function hideErrorMessage() {
+                //Reset error message array
+                vm.errorMessageList = [];
+
+                //Hide container
+                MODEL_ERROR_MESSAGE.slideUp();
+            }
+
+            /**
              * [Public]
              * Called when the components of the current model are supposed to be registered.
              */
@@ -200,7 +249,13 @@ app.controller('EnvModelListController',
                     //Success
                     NotificationService.notify("Component registration succeeded.", "success");
                     hideProgress();
+                    hideErrorMessage();
                 }, function (response) {
+                    //Display errors if available
+                    if (response.data.fieldErrors) {
+                        showErrorList(response.data.fieldErrors);
+                    }
+
                     //Failure
                     NotificationService.notify("Component registration failed.", "error");
                     hideProgress();

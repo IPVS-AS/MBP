@@ -105,6 +105,14 @@
                 </div>
 
                 <div class="row">
+                    <div class="col-lg-12">
+                        <div id="model-error-message" class="alert alert-danger">
+                            <strong>Errors occurred:</strong>
+                            <ul>
+                                <li ng-repeat="error in ctrl.errorMessageList">- {{error}}</li>
+                            </ul>
+                        </div>
+                    </div>
                     <div class="col-lg-12 align-right" style="padding: 2px">
                         <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
                                 title="Register components" ng-click="ctrl.registerComponents()">

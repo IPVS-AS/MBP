@@ -8,6 +8,9 @@ import org.springframework.validation.Errors;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Result of parsing environment models.
+ */
 public class EnvironmentModelParseResult {
     //(node id -> component)
     private Map<String, Device> deviceMap;
@@ -119,5 +122,49 @@ public class EnvironmentModelParseResult {
 
     public void setErrors(Map<UserEntity, Errors> errors) {
         this.errors = errors;
+    }
+
+    /**
+     * Returns the node ID for a device that is part of the parse result.
+     * @param device The device to get the node id for
+     * @return The node ID of the device or null if the device could not be found
+     */
+    public String getNodeIdForDevice(Device device) {
+        //Sanity check
+        if (device == null) {
+            throw new IllegalArgumentException("Device must not be null.");
+        }
+
+        //Iterate over all devices to find the matching one
+        for (String currentNodeId : deviceMap.keySet()) {
+            //Check if current device matches the given one
+            if (deviceMap.get(currentNodeId).equals(device)) {
+                return currentNodeId;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the node ID for a component that is part of the parse result.
+     * @param component The component to get the node id for
+     * @return The node ID of the component or null if the component could not be found
+     */
+    public String getNodeIdForComponent(Component component) {
+        //Sanity check
+        if (component == null) {
+            throw new IllegalArgumentException("Component must not be null.");
+        }
+
+        //Iterate over all components to find the matching one
+        for (String currentNodeId : componentMap.keySet()) {
+            //Check if current component matches the given one
+            if (componentMap.get(currentNodeId).equals(component)) {
+                return currentNodeId;
+            }
+        }
+
+        return null;
     }
 }

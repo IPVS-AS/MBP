@@ -20,10 +20,12 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -199,8 +201,8 @@ public class EnvironmentModelService {
 
         //Check if errors occurred while parsing
         if (parseResult.hasErrors()) {
-            //TODO transform result errors into action response
-            return new ActionResponse(false, "Could not parse model.");
+            //Transform errors to action response
+            return getActionResponseFromParseResult(parseResult);
         }
 
         //Unregister all components that have been previously registered
@@ -578,6 +580,67 @@ public class EnvironmentModelService {
     }
 
     /**
+     * Converts a given parse result object into an action response object by transforming all parse errors.
+     *
+     * @param parseResult The parse result object to transform
+     * @return The generated action response object
+     */
+    private ActionResponse getActionResponseFromParseResult(EnvironmentModelParseResult parseResult) {
+        //Sanity check
+        if (parseResult == null) {
+            throw new IllegalArgumentException("Parse result must not be null.");
+        }
+
+        //Check for errors
+        if (!parseResult.hasErrors()) {
+            //No errors
+            return new ActionResponse(true);
+        }
+
+        //Create new action response object
+        ActionResponse actionResponse = new ActionResponse(false);
+
+        //Get parse errors
+        Map<UserEntity, Errors> parseErrors = parseResult.getErrors();
+
+        //Iterate over all parse errors
+        for (UserEntity entity : parseErrors.keySet()) {
+            //Get iterator for errors of this entity
+            Iterator<FieldError> errorIterator = parseErrors.get(entity).getFieldErrors().iterator();
+
+            //Get node ID of the entity
+            String nodeId = null;
+
+            //Check for entity type
+            if (entity instanceof Device) {
+                nodeId = parseResult.getNodeIdForDevice((Device) entity);
+            } else if (entity instanceof Component) {
+                nodeId = parseResult.getNodeIdForComponent((Component) entity);
+            }
+
+            //Check if node id was found
+            if (nodeId == null) {
+                //Skip error
+                continue;
+            }
+
+            //Iterate over the errors
+            while (errorIterator.hasNext()) {
+                //Get next error
+                FieldError error = errorIterator.next();
+
+                //Put field name together
+                String fieldName = nodeId + "." + error.getField();
+
+                //Add error to action response
+                actionResponse.addFieldError(fieldName, error.getDefaultMessage());
+            }
+        }
+
+        return actionResponse;
+    }
+
+    /**
      * Publishes the state of an entity to all subscribers of a model.
      *
      * @param model       The model to which the entity belongs
@@ -615,6 +678,11 @@ public class EnvironmentModelService {
         for (int i = 0; i < nodes.length(); i++) {
             //Get current node object
             JSONObject nodeObject = nodes.getJSONObject(i);
+
+            //Ensure that details are available
+            if (!nodeObject.has(MODEL_JSON_KEY_NODE_DETAILS)) {
+                continue;
+            }
 
             //Get node ID
             String nodeID = nodeObject.getString(MODEL_JSON_KEY_NODE_ID);
