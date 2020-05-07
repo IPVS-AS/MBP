@@ -34,7 +34,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	}
 
     @Bean
-    public UserDetailsService mongoUserDetails() {
+    public UserDetailsServiceImpl mongoUserDetails() {
         return new UserDetailsServiceImpl();
     }
 

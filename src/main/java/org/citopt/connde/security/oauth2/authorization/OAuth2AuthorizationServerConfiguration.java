@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -33,12 +32,9 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
     @Value("${security.oauth2.client.pre-established-redirect-uri}")
     private String redirectUri;
 
-    private final AuthenticationManager authenticationManager;
     private final UserDetailsServiceImpl userDetailsService;
 
-    public OAuth2AuthorizationServerConfiguration(@Qualifier("authenticationManagerBean") AuthenticationManager authenticationManager,
-                                                  @Qualifier("mongoUserDetails") UserDetailsServiceImpl userDetailsService) {
-        this.authenticationManager = authenticationManager;
+    public OAuth2AuthorizationServerConfiguration(@Qualifier("mongoUserDetails") UserDetailsServiceImpl userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
@@ -76,8 +72,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
         endpoints
                 .tokenStore(tokenStore())
                 .accessTokenConverter(accessTokenConverter())
-                .userDetailsService(userDetailsService)
-                .authenticationManager(authenticationManager);
+                .userDetailsService(userDetailsService);
     }
 
     @Bean
