@@ -18,14 +18,14 @@ app.controller('AddItemController', ['addItem', 'NotificationService', function 
                         vm.item = {};
 
                         //Notify the user
-                        NotificationService.notify('Entitiy successfully created.', 'success')
+                        NotificationService.notify('Entity successfully created.', 'success')
                     },
                     function (errors) {
                         //Failure, add the received errors to the form
                         vm.item.errors = errors;
 
                         //Notify the user
-                        NotificationService.notify('Could not create entitiy.', 'error')
+                        NotificationService.notify('Could not create entity.', 'error')
                     }
             );
 

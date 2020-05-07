@@ -76,7 +76,7 @@ app.controller('ComponentDetailsController',
                 //Retrieve the state of the current component
                 ComponentService.getComponentState(COMPONENT_ID, COMPONENT_TYPE_URL).then(function (response) {
                     //Success
-                    vm.deploymentState = response.data;
+                    vm.deploymentState = response.data.content;
                 }, function (response) {
                     //Failure
                     vm.deploymentState = 'UNKNOWN';
@@ -98,7 +98,7 @@ app.controller('ComponentDetailsController',
                 //Retrieve device state
                 DeviceService.getDeviceState(componentDetails._embedded.device.id).then(function (response) {
                     //Success
-                    vm.deviceState = response.data;
+                    vm.deviceState = response.data.content;
                 }, function (response) {
                     //Failure
                     vm.deviceState = 'UNKNOWN';

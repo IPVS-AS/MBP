@@ -218,7 +218,7 @@ app.controller('DeviceDetailsController',
 
                     //Perform server request and set state of the adapter object accordingly
                     MonitoringService.getMonitoringState(DEVICE_ID, adapter.id).then(function (response) {
-                        adapter.state = response.data;
+                        adapter.state = response.data.content;
                         adapter.enable = (adapter.state === "RUNNING");
                     }, function (response) {
                         adapter.state = 'UNKNOWN';
@@ -563,7 +563,7 @@ app.controller('DeviceDetailsController',
                 //Retrieve the state of the current device
                 DeviceService.getDeviceState(DEVICE_ID).then(function (response) {
                     //Success
-                    vm.deviceState = response.data;
+                    vm.deviceState = response.data.content;
                 }, function (response) {
                     //Failure
                     vm.deviceState = 'UNKNOWN';

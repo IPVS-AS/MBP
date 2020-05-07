@@ -8,8 +8,8 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
         //URLs for server requests
         const URL_GET_COMPATIBLE_ADAPTERS = ENDPOINT_URI + '/monitoring-adapters/by-device/';
         const URL_MONITORING_PREFIX = ENDPOINT_URI + '/monitoring/';
-        const URL_GET_STATE = ENDPOINT_URI + '/monitoring/state/';
-        const URL_GET_VALUE_LOG_STATS = ENDPOINT_URI + '/monitoring/stats/';
+        const URL_GET_STATE = URL_MONITORING_PREFIX + 'state/';
+        const URL_STATS_SUFFIX = '/stats';
         const URL_VALUE_LOGS_SUFFIX = '/valueLogs';
         const URL_ADAPTER_SUFFIX = '?adapter=';
 
@@ -115,7 +115,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
             }
 
             //Execute request
-            return $http.get(URL_GET_VALUE_LOG_STATS + deviceId, {
+            return $http.get(URL_MONITORING_PREFIX + deviceId + URL_STATS_SUFFIX, {
                 params: parameters
             });
         }
@@ -174,6 +174,17 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
             });
         }
 
+        /**
+         * [Public]
+         * Performs a server request in order to retrieve all available monitoring components. Each monitoring
+         * component consists out of a device and a compatible monitoring adapter.
+         *
+         * @returns {*}
+         */
+        function getMonitoringComponents() {
+            return $http.get(URL_MONITORING_PREFIX);
+        }
+
 
         /**
          * [Private]
@@ -196,7 +207,8 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
             disableMonitoring: disableMonitoring,
             getMonitoringValueLogStats: getMonitoringValueLogStats,
             getMonitoringValueLogs: getMonitoringValueLogs,
-            deleteMonitoringValueLogs: deleteMonitoringValueLogs
+            deleteMonitoringValueLogs: deleteMonitoringValueLogs,
+            getMonitoringComponents: getMonitoringComponents
         }
     }
 ]);

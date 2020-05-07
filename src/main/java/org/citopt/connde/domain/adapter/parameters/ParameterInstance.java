@@ -1,11 +1,17 @@
 package org.citopt.connde.domain.adapter.parameters;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Objects of this class represent instantiated deployment parameters for which an actual value was provided.
  */
+@ApiModel(description = "Deployment parameter instances with assigned values")
 public class ParameterInstance {
     //Name and value of the parameter
+    @ApiModelProperty(notes = "The name of the deployment parameter", example = "interval", required = true)
     private String name;
+    @ApiModelProperty(notes = "The value that was assigned to the deployment parameter", example = "500", required = true)
     private Object value;
 
     /**

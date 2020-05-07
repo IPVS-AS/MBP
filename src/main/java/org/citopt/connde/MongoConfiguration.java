@@ -34,7 +34,7 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
     }
 
     @Override
-    public MongoClient mongo() throws Exception {
+    public MongoClient mongo() {
         if(mongoClient == null) {
             mongoClient = new MongoClient();
         }
@@ -49,7 +49,7 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
     
 	private void addValuesInDatabase(MongoClient mongoClient) {
 		DB database = mongoClient.getDB(DB_NAME);
-		
+
 		// Add component types
 		if (!database.collectionExists("componentType")){
 			DBCollection collection = database.createCollection("componentType", null);

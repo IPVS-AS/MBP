@@ -11,8 +11,6 @@ import org.springframework.validation.Validator;
 /**
  * Validator for device objects. It includes checks for valid formats of MAC addresses, IP addresses and private
  * RSA keys.
- * <p>
- * Created by Jan on 10.12.2018.
  */
 @org.springframework.stereotype.Component
 public class DeviceValidator implements Validator {
@@ -68,10 +66,16 @@ public class DeviceValidator implements Validator {
                 "The user name must not be empty.");
 
         //Check if rsa key was provided (mandatory)
-        ValidationUtils.rejectIfEmptyOrWhitespace(
-                errors, "rsaKey", "device.rsaKey.empty",
-                "The RSA key must not be empty!");
+        if (!(device.hasRSAKey() || device.hasPassword()))  {
 
+          ValidationUtils.rejectIfEmptyOrWhitespace(
+                  errors, "password", "device.password.empty",
+                  "You must inform a password or a RSA key.");
+
+          ValidationUtils.rejectIfEmptyOrWhitespace(
+                  errors, "rsaKey", "device.rsaKey.empty",
+                  "You must inform a password or a RSA key.");
+        }
         //Check if name is unique
         Device anotherDevice = deviceRepository.findByName(device.getName());
         if (anotherDevice != null) {
@@ -81,19 +85,12 @@ public class DeviceValidator implements Validator {
 
         //Retrieve fields that need to be of a certain format
         String ipAddress = device.getIpAddress();
-        String macAddress = device.getMacAddress();
         String rsaKey = device.getRsaKey();
 
         //Validate format of the IP address
         if ((ipAddress != null) && (!Validation.isValidIPAddress(ipAddress))) {
             errors.rejectValue("ipAddress", "device.ipAddress.illegal_format",
                     "Illegal IP address provided.");
-        }
-
-        //Validate format of the MAC address (if provided)
-        if ((macAddress != null) && (!macAddress.isEmpty()) && (!Validation.isValidUnformattedMACAddress(macAddress))) {
-            errors.rejectValue("macAddress", "device.macAddress.illegal_format",
-                    "Illegal MAC address provided.");
         }
 
         //Validate format of the private RSA key

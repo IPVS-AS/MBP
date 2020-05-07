@@ -8,5 +8,4 @@ import org.springframework.data.rest.webmvc.config.RepositoryRestMvcConfiguratio
  */
 @Configuration
 public class RestMVCConfiguration extends RepositoryRestMvcConfiguration {
-
 }

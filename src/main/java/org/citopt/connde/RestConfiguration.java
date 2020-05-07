@@ -11,11 +11,17 @@ import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringAdapterValidator;
+import org.citopt.connde.domain.rules.*;
 import org.citopt.connde.domain.user.Authority;
 import org.citopt.connde.domain.user.User;
+import org.citopt.connde.repository.AdapterRepository;
+import org.citopt.connde.repository.SensorRepository;
+import org.citopt.connde.service.UserService;
 import org.citopt.connde.web.rest.RestDeploymentController;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
@@ -23,6 +29,10 @@ import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.ResourceProcessor;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Contains crucial rest configurations for the application.
@@ -34,20 +44,31 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
 	//Base path for REST calls (URL prefix)
 	public static final String BASE_PATH = "/api";
 
-	/**
-	 * REST configuration for the repositories that are used within this application.
-	 *
-	 * @param config Repository REST configuration to extend
-	 */
-	@Override
-	public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-		super.configureRepositoryRestConfiguration(config);
+    /**
+     * Creates a projection factory bean for applying projections on entities.
+     *
+     * @return The created bean
+     */
+    @Bean
+    public SpelAwareProxyProjectionFactory projectionFactory() {
+        return new SpelAwareProxyProjectionFactory();
+    }
 
-		System.out.println("load RepositoryRestMvcConfiguration");
+    /**
+     * REST configuration for the repositories that are used within this application.
+     *
+     * @param config Repository REST configuration to extend
+     */
+    @Override
+    public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
+        super.configureRepositoryRestConfiguration(config);
 
-		config.setBasePath(BASE_PATH);
-		config.exposeIdsFor(Device.class, Adapter.class, MonitoringAdapter.class, Actuator.class, Sensor.class, User.class, Authority.class, ComponentType.class);
-	}
+        System.out.println("load RepositoryRestMvcConfiguration");
+
+        config.setBasePath(BASE_PATH);
+        config.exposeIdsFor(Device.class, Adapter.class, MonitoringAdapter.class, Actuator.class, Sensor.class,
+                User.class, Authority.class, ComponentType.class, Rule.class, RuleTrigger.class, RuleAction.class);
+    }
 
 	/**
 	 * Creates and adds validators for the REST documents.
@@ -73,10 +94,22 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
 		v.addValidator("beforeSave", new ActuatorValidator());
 		v.addValidator("beforeCreate", new ActuatorValidator());
 
-		//Devices
-		v.addValidator("beforeSave", new DeviceValidator());
-		v.addValidator("beforeCreate", new DeviceValidator());
-	}
+        //Devices
+        v.addValidator("beforeSave", new DeviceValidator());
+        v.addValidator("beforeCreate", new DeviceValidator());
+
+        //Rules
+        v.addValidator("beforeSave", new RuleValidator());
+        v.addValidator("beforeCreate", new RuleValidator());
+
+        //Rule actions
+        v.addValidator("beforeSave", new RuleActionValidator());
+        v.addValidator("beforeCreate", new RuleActionValidator());
+
+        //Rule triggers
+        v.addValidator("beforeSave", new RuleTriggerValidator());
+        v.addValidator("beforeCreate", new RuleTriggerValidator());
+    }
 
 	/**
 	 * Resource processor for sensors.

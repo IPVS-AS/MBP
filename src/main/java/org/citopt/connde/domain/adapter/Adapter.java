@@ -2,6 +2,7 @@ package org.citopt.connde.domain.adapter;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
+import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.exception.InsertFailureException;
 import org.citopt.connde.exception.NotFoundException;
 import org.springframework.data.annotation.Id;
@@ -15,11 +16,9 @@ import java.util.List;
 
 /**
  * Document class for Adapters.
- *
- * @author rafaelkperes
  */
 @Document
-public class Adapter {
+public class Adapter extends UserEntity {
 
     @Id
     @GeneratedValue

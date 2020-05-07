@@ -5,7 +5,8 @@
             <div class="header">
                 <div class="col-lg-6">
                     <h2>Extraction/Control Operators
-                    <small>These operators extract sensor data and/or send control commands to actuactors</small></h2>
+                        <small>These operators extract sensor data and/or send control commands to actuactors</small>
+                    </h2>
                 </div>
                 <div class="align-right">
                     <button id="add-button" type="button"
@@ -25,6 +26,7 @@
                         <th>Description</th>
                         <th>Unit</th>
                         <th>Parameters</th>
+                        <th>Owner</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -43,8 +45,13 @@
                             </button>
                             <span ng-repeat-end="">&nbsp;</span>
                         </td>
+                        <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
-                            <form ng-submit="deleteAdapterCtrl.deleteItem()">
+                            <div ng-show="item.isApprovable" style="display:inline-block">
+                                <user-approval entity-id="{{item.id}}" category-name="adapters"></user-approval>
+                            </div>
+                            <form ng-submit="deleteAdapterCtrl.deleteItem()" ng-show="item.isDeletable"
+                                  style="display: inline-block">
                                 <button type="submit" class="btn btn-danger m-t-0 waves-effect"
                                         ng-click="deleteAdapterCtrl.item.id = item.id"> Delete
                                 </button>
@@ -52,7 +59,7 @@
                         </td>
                     </tr>
                     <tr ng-show="adapterListCtrl.items.length === 0">
-                        <td>No adapters registered.</td>
+                        <td>No operators registered.</td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -74,12 +81,11 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Register a new adapter
+                    <h5 class="modal-title">Register a new operator
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </h5>
-
                 </div>
                 <form id="addAdapterForm" ng-submit="addAdapterCtrl.addItem()">
                     <fieldset id="adapter-form">
@@ -102,7 +108,7 @@
                                  ng-class="{'has-error' : addAdapterCtrl.item.errors.description }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addAdapterCtrl.item.errors.description }">
-                                    <input class="form-control no-resize" placeholder="Describe this adapter..."
+                                    <input class="form-control no-resize" placeholder="Describe this operator..."
                                            ng-model="addAdapterCtrl.item.description">
                                 </div>
                                 <span class="help-block" ng-show="addAdapterCtrl.item.errors.description">{{addAdapterCtrl.item.errors.description.message}}</span>
@@ -117,13 +123,25 @@
                                 <span class="help-block" ng-show="addAdapterCtrl.item.errors.unit">{{addAdapterCtrl.item.errors.unit.message}}</span>
                             </div>
                             <!-- item.routine group -->
-                            <label>Adapter scripts:</label>
+                            <label>Operator scripts:</label>
                             <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.routines }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addAdapterCtrl.item.errors.routines }">
                                     <div class="dropzone" options="ctrl.dzRoutinesOptions"
                                          callbacks="ctrl.dzRoutinesCallbacks" methods="ctrl.dzMethods"
                                          ng-dropzone></div>
+                                     <div style="display:none;">
+                                       <div id='tpl' class="dz-preview dz-file-preview ">
+                                         <div class="dz-details col-lg-4 col-sm-6 col-12">
+                                             <div class="dz-filename"><span data-dz-name></span></div>
+                                             <img data-dz-thumbnail />
+                                         </div>
+                                         <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
+                                         <div class="dz-success-mark"><span>✔</span></div>
+                                         <div class="dz-error-mark"><span>✘</span></div>
+                                         <div class="dz-error-message"><span data-dz-errormessage></span></div>
+                                        </div>
+                                      </div>
                                 </div>
                                 <span class="help-block" ng-show="addAdapterCtrl.item.errors.routines">{{addAdapterCtrl.item.errors.routines.message}}</span>
                             </div>

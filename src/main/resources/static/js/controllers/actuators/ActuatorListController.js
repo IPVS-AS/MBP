@@ -120,7 +120,7 @@ app.controller('ActuatorListController',
 
           //Perform server request and set state of the actuator object accordingly
           ComponentService.getComponentState(actuator.id, 'actuators').then(function (response) {
-            actuator.state = response.data;
+            actuator.state = response.data.content;
           }, function (response) {
             actuator.state = 'UNKNOWN';
             NotificationService.notify("Could not retrieve the actuator state.", "error");

@@ -7,7 +7,7 @@ app.controller('MonitoringAdapterListController',
     ['$scope', '$controller', '$timeout', 'deviceTypesList', 'monitoringAdapterList', 'addMonitoringAdapter', 'deleteMonitoringAdapter', 'parameterTypesList', 'NotificationService',
         function ($scope, $controller, $timeout, deviceTypesList, monitoringAdapterList, addMonitoringAdapter, deleteMonitoringAdapter, parameterTypesList, NotificationService) {
             //Array of colors to be used for the different device types
-            var DEVICE_TYPES_COLORS = ['bg-pink', 'bg-purple', 'bg-deep-purple', 'bg-indigo', 'bg-blue',
+            const DEVICE_TYPES_COLORS = ['bg-pink', 'bg-purple', 'bg-deep-purple', 'bg-indigo', 'bg-blue',
                 'bg-light-blue', 'bg-cyan', 'bg-teal', 'bg-green', 'bg-light-green', 'bg-lime', 'bg-yellow',
                 'bg-amber', 'bg-orange', 'bg-deep-orange'];
 
@@ -24,7 +24,7 @@ app.controller('MonitoringAdapterListController',
                     return;
                 }
 
-                //Extend device types list for color
+                //Extend device types for color
                 for (var i = 0; i < deviceTypesList.length; i++) {
                     var colorIndex = i % DEVICE_TYPES_COLORS.length;
                     deviceTypesList[i].color = DEVICE_TYPES_COLORS[colorIndex];

@@ -23,12 +23,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
             autoProcessQueue: false
         });
 
-        function redirectExpert($location, SessionService) {
-            if (!SessionService.isExpert()) {
-                $location.path('/');
-            }
-        }
-
         var viewPrefix = '/view';
         // configure the routing rules here
         $routeProvider
@@ -109,16 +103,102 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 controller: 'UsersController as vm'
             })
 
-      // Model
-      .when(viewPrefix + '/model', {
-        templateUrl: 'templates/model',
-        controller: 'ModelController as vm',
-        resolve: {
-          adapterList: ['CrudService', function(CrudService) {
-            return CrudService.fetchAllItems('adapters');
-          }]
-        }
-      })
+            // Model
+            .when(viewPrefix + '/model', {
+                templateUrl: 'templates/model',
+                controller: 'ModelController as vm',
+                resolve: {
+                    adapterList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('adapters');
+                    }]
+                }
+            })
+
+            //Rules list
+            .when(viewPrefix + '/rules', {
+                category: 'rules',
+                templateUrl: 'templates/rules',
+                controller: 'RuleListController as ctrl',
+                resolve: {
+                    ruleList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rules');
+                    }],
+                    addRule: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'rules');
+                    }],
+                    deleteRule: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'rules');
+                    }],
+                    ruleActionList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rule-actions');
+                    }],
+                    ruleTriggerList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rule-triggers');
+                    }]
+                }
+            })
+
+            //Rule actions list
+            .when(viewPrefix + '/rule-actions', {
+                category: 'rule-actions',
+                templateUrl: 'templates/rule-actions',
+                controller: 'RuleActionListController as ctrl',
+                resolve: {
+                    ruleActionList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rule-actions');
+                    }],
+                    ruleActionTypesList: ['RuleService', function (RuleService) {
+                        return RuleService.getRuleActionTypes().then(function (response) {
+                            return response.data || [];
+                        });
+                    }],
+                    actuatorList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('actuators');
+                    }],
+                    sensorList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('sensors');
+                    }],
+                    addRuleAction: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'rule-actions');
+                    }],
+                    deleteRuleAction: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'rule-actions');
+                    }]
+                }
+            })
+
+            //Rule triggers list
+            .when(viewPrefix + '/rule-triggers', {
+                category: 'rule-triggers',
+                templateUrl: 'templates/rule-triggers',
+                controller: 'RuleTriggerListController as ctrl',
+                resolve: {
+                    ruleTriggerList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rule-triggers');
+                    }],
+                    addRuleTrigger: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'rule-triggers');
+                    }],
+                    deleteRuleTrigger: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'rule-triggers');
+                    }],
+                    actuatorList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('actuators');
+                    }],
+                    sensorList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('sensors');
+                    }],
+                    monitoringComponentList: ['MonitoringService', function (MonitoringService) {
+                        return MonitoringService.getMonitoringComponents().then(function (response) {
+                            if (response.data) {
+                                return response.data;
+                            } else {
+                                return [];
+                            }
+                        });
+                    }]
+                }
+            })
 
             // Actuator List and Register (includes Device List and Register)
             .when(viewPrefix + '/actuators', {
@@ -262,7 +342,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 templateUrl: 'templates/adapters',
                 controller: 'AdapterListController as ctrl',
                 resolve: {
-                    isExpert: ['$location', 'SessionService', redirectExpert],
                     adapterPreprocessing: function () {
                     },
                     parameterTypesList: ['ParameterTypeService', function (ParameterTypeService) {
@@ -294,7 +373,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 templateUrl: 'templates/monitoring-adapters',
                 controller: 'MonitoringAdapterListController as ctrl',
                 resolve: {
-                    isExpert: ['$location', 'SessionService', redirectExpert],
                     deviceTypesList: ['ComponentTypeService', function (ComponentTypeService) {
                         return ComponentTypeService.GetByComponent('device').then(function (response) {
                             return response.data;
@@ -327,36 +405,26 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
             .when(viewPrefix + '/settings', {
                 category: 'settings',
                 templateUrl: 'templates/settings',
-                controller: 'SettingsController as ctrl'
+                controller: 'SettingsController as ctrl',
+                resolve: {
+                    settings: ['SettingsService', function (SettingsService) {
+                        //Retrieve settings initially
+                        return SettingsService.getSettings().then(function (response) {
+                            return response.data;
+                        });
+                    }],
+                    documentationMetaData: ['SettingsService', function (SettingsService) {
+                        //Retrieve settings initially
+                        return SettingsService.getDocumentationMetaData().then(function (response) {
+                            return response.data;
+                        });
+                    }]
+                }
             })
 
             // Error 404
             .when(viewPrefix + '/404', {
                 templateUrl: 'templates/404'
-            })
-
-            // Go expert
-            .when(viewPrefix + '/expert', {
-                redirectTo: function () {
-                    return '/';
-                },
-                resolve: {
-                    goExpert: ['SessionService', function (SessionService) {
-                        SessionService.goExpert();
-                    }]
-                }
-            })
-
-            // Back to normal
-            .when(viewPrefix + '/no-expert', {
-                redirectTo: function () {
-                    return '/';
-                },
-                resolve: {
-                    leaveExpert: ['SessionService', function (SessionService) {
-                        SessionService.leaveExpert();
-                    }]
-                }
             })
 
             .otherwise({
@@ -390,26 +458,8 @@ app.run(['$rootScope', '$timeout', 'SessionService', '$location', '$cookieStore'
 
                 if ($rootScope.loggedIn) {
                     $rootScope.username = $rootScope.globals.currentUser.username;
+                    $rootScope.userData = $rootScope.globals.currentUser.userData;
                 }
-
-                // set expert
-                $rootScope.expert = SessionService.isExpert();
-
-                // copied from admin.js
-                var loadAdminBSB = function () {
-                    $.AdminBSB.browser.activate();
-                    $.AdminBSB.leftSideBar.activate();
-                    //$.AdminBSB.navbar.activate();
-                    $.AdminBSB.dropdownMenu.activate();
-                    $.AdminBSB.input.activate();
-                    $.AdminBSB.select.activate();
-                    $.AdminBSB.search.activate();
-
-                    setTimeout(function () {
-                        $('.page-loader-wrapper').fadeOut();
-                    }, 50);
-                };
-                loadAdminBSB();
             });
         });
     }

@@ -12,8 +12,10 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Set;
+import java.util.Set;
 
 /**
+ * then added to the value log repository.
  * Provides methods for handling incoming Mqtt events and parsing incoming value messages to value logs
  * which are then passed to the observers of the ValueLogReceiver.
  */

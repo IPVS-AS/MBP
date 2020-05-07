@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ValueLogWriter implements ValueLogReceiverObserver {
 
-    //Repository component to use for storing value logs
+    //Repository component to use for storing value logs (autowired)
     private ValueLogRepository valueLogRepository;
 
     /**

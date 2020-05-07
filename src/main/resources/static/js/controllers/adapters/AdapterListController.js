@@ -16,9 +16,11 @@ app.controller('AdapterListController',
                     vm.addAdapterCtrl.item.serviceFile = file;
                 }
             };
-
             vm.dzRoutinesOptions = {
                 paramName: 'routinesFile',
+                addRemoveLinks: true,
+                previewTemplate:document.querySelector('#tpl').innerHTML,
+                createImageThumbnails: false,
                 maxFilesize: '100',
                 maxFiles: 99
             };
@@ -29,7 +31,11 @@ app.controller('AdapterListController',
                         vm.addAdapterCtrl.item.routineFiles = [];
                     }
                     vm.addAdapterCtrl.item.routineFiles.push(file);
-                }
+                },
+                'removedfile': function(file){
+                  vm.addAdapterCtrl.item.routineFiles.splice(vm.addAdapterCtrl.item.routineFiles.indexOf(file),1);
+                },
+
             };
 
             vm.dzMethods = {};
@@ -105,7 +111,7 @@ app.controller('AdapterListController',
 
                 //Determines the adapter's name by checking all adapters in the adapter list
                 for (var i = 0; i < adapterList.length; i++) {
-                    if (adapterId == adapterList[i].id) {
+                    if (adapterId === adapterList[i].id) {
                         adapterName = adapterList[i].name;
                         break;
                     }
@@ -188,7 +194,7 @@ app.controller('AdapterListController',
                     var data = vm.addAdapterCtrl.result;
                     if (data) {
                         //Close modal on success
-                        $(".modal").modal('toggle');
+                        $("#addAdapterModal").modal('toggle');
 
                         //Call pre processing function
                         if (adapterPreprocessing) {

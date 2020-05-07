@@ -1,17 +1,20 @@
 package org.citopt.connde.web.rest;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.service.receiver.ValueLogReceiver;
+import org.citopt.connde.constants.Constants;
+import org.citopt.connde.service.mqtt.MQTTService;
 import org.citopt.connde.service.settings.SettingsService;
 import org.citopt.connde.service.settings.model.Settings;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
@@ -22,12 +25,14 @@ import java.io.IOException;
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
+@Api(tags = {"Settings"}, description = "Retrieval and modification of platform-wide settings")
 public class RestSettingsController {
 
     @Autowired
     private SettingsService settingsService;
+
     @Autowired
-    private ValueLogReceiver valueLogReceiver;
+    private MQTTService mqttService;
 
     /**
      * Called when the client wants to retrieve the settings.
@@ -35,6 +40,9 @@ public class RestSettingsController {
      * @return The settings object
      */
     @RequestMapping(value = "/settings", method = RequestMethod.GET)
+    @Secured({Constants.ADMIN})
+    @ApiOperation(value = "Retrieves the current settings of the platform", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access the settings")})
     public ResponseEntity<Settings> getSettings() {
         //Get settings from settings service and return them
         Settings settings;
@@ -48,18 +56,24 @@ public class RestSettingsController {
 
     /**
      * Called when the client wants to change the settings.
-     * @param settings
-     * @return
+     *
+     * @param settings The settings to update
+     * @return OK (200) in case everything was successful
      */
-    @RequestMapping(value = "/settings", method = RequestMethod.POST)
+    @PostMapping("/settings")
+    @Secured({Constants.ADMIN})
+    @ApiOperation(value = "Modifies the current settings of the platform", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to modify the settings")})
     public ResponseEntity saveSettings(@RequestBody Settings settings) {
-        //Save settings and restart value logger, since it needs to use a different ip address now
+        //Save settings and re-initialize MQTT service, since it needs to use a different IP address now
         try {
             settingsService.saveSettings(settings);
-            valueLogReceiver.setupAndStart();
+            mqttService.initialize();
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
+        //Everything fine
         return new ResponseEntity(HttpStatus.OK);
     }
 }

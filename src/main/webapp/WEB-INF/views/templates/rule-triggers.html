@@ -1,0 +1,133 @@
+<div>
+    <!-- List Card -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>Rule Conditions</h2>
+                </div>
+                <div class="align-right">
+                    <button id="add-button" type="button" data-toggle="collapse" data-target="#add-trigger-card"
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
+            </div>
+            <div class="body">
+                <table class="table table-hover" st-table="displayedCollection" st-safe-src="ruleTriggerListCtrl.items">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Query</th>
+                        <th>Owner</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                        <td>
+                            {{item.name}}
+                        </td>
+                        <td>
+                            <div ng-if="item.description">
+                                <a class="clickable" data-toggle="collapse" data-target="#description-{{item.id}}">
+                                    Show Description
+                                </a>
+                                <div id="description-{{item.id}}" class="collapse">
+                                    <span>{{item.description}}</span>
+                                </div>
+                            </div>
+                            <div ng-if="!item.description">
+                                <span>None</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <a class="clickable" data-toggle="collapse" data-target="#query-{{item.id}}">
+                                    Show Query
+                                </a>
+                                <div id="query-{{item.id}}" class="collapse">
+                                    <code>{{item.query}}</code>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{item.ownerName ? item.ownerName : "None"}}</td>
+                        <td>
+                            <div ng-show="item.isApprovable" style="display:inline-block">
+                                <user-approval entity-id="{{item.id}}" category-name="rule-triggers"></user-approval>
+                            </div>
+                            <form ng-submit="deleteRuleTriggerCtrl.deleteItem()" ng-show="item.isDeletable"
+                                  style="display: inline-block">
+                                <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                        ng-click="deleteRuleTriggerCtrl.item.id = item.id">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr ng-show="ruleTriggerListCtrl.items.length === 0">
+                        <td>No rule conditions registered.</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add trigger card -->
+    <div class="col-lg-12">
+        <div id="add-trigger-card" class="card collapse">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>Add condition</h2>
+                </div>
+            </div>
+            <div class="body">
+                <div id="add-trigger-wizard">
+                    <h1>Condition data</h1>
+                    <section>
+                        <p>Please provide a name and an optional description for the new rule condition.</p><br/>
+                        <!-- item.name group -->
+                        <div class="form-group">
+                            <div class="form-line">
+                                <input id="trigger-name" class="form-control" type="text" placeholder="Name"/>
+                            </div>
+                            <span class="help-block"></span>
+                        </div>
+                        <!-- item.description group -->
+                        <div class="form-group">
+                            <div class="form-line">
+                                    <textarea id="trigger-description" class="form-control" type="text"
+                                              placeholder="Describe this condition if you like..." rows="4"></textarea>
+                            </div>
+                            <span class="help-block"></span>
+                        </div>
+                    </section>
+                    <h1>Condition pattern</h1>
+                    <section>
+                        <cep-query-editor api="ctrl.queryEditorApi"
+                                          component-list="ctrl.componentList"></cep-query-editor>
+                    </section>
+                    <h1>Refinement</h1>
+                    <section>
+                        <div id="create-errors" class="alert alert-danger alert-dismissible">
+                            <button type="button" class="close"><span aria-hidden="true">&times;</span></button>
+                            <p><strong>Errors occurred:</strong></p>
+                            <ul class="minus-list"></ul>
+                        </div>
+                        <div class="form-group">
+                            <div class="form-line">
+                                <textarea id="trigger-query" class="form-control" type="text" rows="4"></textarea>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

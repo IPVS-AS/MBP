@@ -1,17 +1,18 @@
 package org.citopt.connde.web.rest;
 
+import io.swagger.annotations.*;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.component.Sensor;
-import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
-import org.citopt.connde.repository.*;
+import org.citopt.connde.repository.ActuatorRepository;
+import org.citopt.connde.repository.SensorRepository;
+import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.stats.ValueLogStatsService;
 import org.citopt.connde.service.stats.model.ValueLogStats;
+import org.citopt.connde.web.rest.helper.MonitoringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +21,12 @@ import javax.measure.unit.Unit;
 
 /**
  * REST Controller for requests related to the value log stats of components.
- *
- * @author Jan
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
+@Api(tags = {"Value logs statistics"}, description = "Retrieval of statistics for recorded value logs")
 public class RestValueLogStatsController {
+
     @Autowired
     private ActuatorRepository actuatorRepository;
 
@@ -33,13 +34,13 @@ public class RestValueLogStatsController {
     private SensorRepository sensorRepository;
 
     @Autowired
-    private DeviceRepository deviceRepository;
-
-    @Autowired
-    private MonitoringAdapterRepository monitoringAdapterRepository;
-
-    @Autowired
     private ValueLogStatsService valueLogStatsService;
+
+    @Autowired
+    private UserEntityService userEntityService;
+
+    @Autowired
+    private MonitoringHelper monitoringHelper;
 
     /**
      * Responds with the value log stats for a certain actuator.
@@ -48,11 +49,25 @@ public class RestValueLogStatsController {
      * @param unit       A string specifying the desired unit of the value log stats
      * @return The value log stats of the actuator
      */
-    @GetMapping("/actuators/stats/{id}")
-    public ResponseEntity<ValueLogStats> getActuatorValueLogStats(@PathVariable(value = "id") String actuatorId,
+    @GetMapping("/actuators/{id}/stats")
+    @ApiOperation(value = "Retrieves a list of statistics for recorded actuator value logs in a certain unit", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access statistics for value logs of this actuator"), @ApiResponse(code = 404, message = "Actuator not found or not authorized to access the actuator")})
+    public ResponseEntity<ValueLogStats> getActuatorValueLogStats(@PathVariable(value = "id") @ApiParam(value = "ID of the actuator to retrieve value log statistics for", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId,
                                                                   @RequestParam(value = "unit", required = false) String unit) {
-        //Get actuator object
-        Actuator actuator = (Actuator) getComponentById(actuatorId, actuatorRepository);
+        //Get actuator
+        Actuator actuator = (Actuator) userEntityService.getUserEntityFromRepository(actuatorRepository, actuatorId);
+
+        //Validity check
+        if (actuator == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Check if user is permitted
+        if (!userEntityService.isUserPermitted(actuator, "deploy")) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        //Retrieve value log statistics
         return calculateValueLogStats(actuator, unit);
     }
 
@@ -63,11 +78,25 @@ public class RestValueLogStatsController {
      * @param unit     A string specifying the desired unit of the value log stats
      * @return The value log stats of the sensor
      */
-    @GetMapping("/sensors/stats/{id}")
-    public ResponseEntity<ValueLogStats> getSensorValueLogStats(@PathVariable(value = "id") String sensorId,
+    @GetMapping("/sensors/{id}/stats")
+    @ApiOperation(value = "Retrieves a list of statistics for recorded sensor value logs in a certain unit", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access statistics for value logs of this sensor"), @ApiResponse(code = 404, message = "Sensor not found or not authorized to access the sensor")})
+    public ResponseEntity<ValueLogStats> getSensorValueLogStats(@PathVariable(value = "id") @ApiParam(value = "ID of the sensor to retrieve value log statistics for", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId,
                                                                 @RequestParam(value = "unit", required = false) String unit) {
         //Get sensor object
-        Sensor sensor = (Sensor) getComponentById(sensorId, sensorRepository);
+        Sensor sensor = (Sensor) userEntityService.getUserEntityFromRepository(sensorRepository, sensorId);
+
+        //Validity check
+        if (sensor == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Check if user is permitted
+        if (!userEntityService.isUserPermitted(sensor, "deploy")) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        //Retrieve value log statistics
         return calculateValueLogStats(sensor, unit);
     }
 
@@ -79,12 +108,26 @@ public class RestValueLogStatsController {
      * @param unit                A string specifying the desired unit of the value log stats
      * @return The value log stats of the sensor
      */
-    @GetMapping("/monitoring/stats/{deviceId}")
-    public ResponseEntity<ValueLogStats> getMonitoringValueLogStats(@PathVariable(value = "deviceId") String deviceId,
-                                                                    @RequestParam("adapter") String monitoringAdapterId,
-                                                                    @RequestParam(value = "unit", required = false) String unit) {
-        //Get monitoring component object
-        MonitoringComponent monitoringComponent = getMonitoringComponent(deviceId, monitoringAdapterId);
+    @GetMapping("/monitoring/{deviceId}/stats")
+    @ApiOperation(value = "Retrieves a list of statistics for recorded monitoring value logs in a certain unit", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access statistics for value logs of this monitoring"), @ApiResponse(code = 404, message = "Device or monitoring adapter not found or not authorized to access them")})
+    public ResponseEntity<ValueLogStats> getMonitoringValueLogStats(@PathVariable(value = "deviceId") @ApiParam(value = "ID of the device to retrieve value log statistics for", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
+                                                                    @RequestParam("adapter") @ApiParam(value = "ID of the monitoring adapter to retrieve value log statistics for", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringAdapterId,
+                                                                    @RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the monitoring value log statistics", example = "°C", required = false) String unit) {
+        //Create new monitoring component from parameters
+        MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
+
+        //Validity check
+        if (monitoringComponent == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        //Check if user is permitted
+        if (!userEntityService.isUserPermitted(monitoringComponent.getDevice(), "monitor")) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        //Retrieve value log statistics
         return calculateValueLogStats(monitoringComponent, unit);
     }
 
@@ -96,11 +139,6 @@ public class RestValueLogStatsController {
      * @return The server response containing an object that holds the calculated data
      */
     private ResponseEntity<ValueLogStats> calculateValueLogStats(Component component, String unit) {
-        //Validity check
-        if (component == null) {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
-        }
-
         //Convert given unit to object (if possible)
         Unit convertUnit = null;
         if ((unit != null) && (!unit.isEmpty())) {
@@ -116,37 +154,5 @@ public class RestValueLogStatsController {
         ValueLogStats stats = valueLogStatsService.calculateValueLogStats(component, convertUnit);
 
         return new ResponseEntity<>(stats, HttpStatus.OK);
-    }
-
-    /**
-     * Fetches a component with a certain id from its repository.
-     *
-     * @param componentId The id of the component that is supposed to be retrieved
-     * @param repository  The repository in which the component is contained
-     * @return The corresponding component object
-     */
-    private Component getComponentById(String componentId, ComponentRepository repository) {
-        return (Component) repository.findOne(componentId);
-    }
-
-
-    /**
-     * Retrieves a monitoring component object for a device and a monitoring adapter, given by their ids.
-     *
-     * @param deviceId            The id of the device that is supposed to be part of the component
-     * @param monitoringAdapterId The id of the monitoring adapter that is supposed to be part of the component
-     * @return The resulting monitoring component
-     */
-    private MonitoringComponent getMonitoringComponent(String deviceId, String monitoringAdapterId) {
-        //Find device and monitoring adapter in their repositories
-        Device device = deviceRepository.findOne(deviceId);
-        MonitoringAdapter monitoringAdapter = monitoringAdapterRepository.findOne(monitoringAdapterId);
-
-        //Ensure that both objects could be found
-        if ((device == null) || (monitoringAdapter == null)) {
-            return null;
-        }
-
-        return new MonitoringComponent(monitoringAdapter, device);
     }
 }

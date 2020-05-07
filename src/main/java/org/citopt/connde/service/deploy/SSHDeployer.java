@@ -41,7 +41,8 @@ public class SSHDeployer {
     private static final String START_SCRIPT_NAME = "start.sh";
     private static final String RUN_SCRIPT_NAME = "running.sh";
     private static final String STOP_SCRIPT_NAME = "stop.sh";
-
+    private static final String MBP_CLIENT_PROPERTIES_FILE_NAME = "mbp.properties";
+    
     //Prefix for base64 encoded files
     private static final String REGEX_BASE64_PREFIX = "^data:[a-zA-Z0-9/,\\-]*;base64,";
 
@@ -118,6 +119,7 @@ public class SSHDeployer {
      * @return The current state of the device
      */
     public DeviceState determineDeviceState(Device device) {
+        //Sanity check
         if (device == null) {
             throw new IllegalArgumentException("Device must not be null.");
         }
@@ -125,17 +127,12 @@ public class SSHDeployer {
         //Get ip address
         String ipAddress = device.getIpAddress();
 
-        //Check if device is reachable
-        boolean reachable;
+        //Check if remote device can be pinged
+        boolean pingable = false;
         try {
-            reachable = InetAddress.getByName(ipAddress).isReachable(AVAILABILITY_CHECK_TIMEOUT);
-        } catch (IOException e) {
-            return DeviceState.OFFLINE;
-        }
-
-        //Check if device was not reachable
-        if (!reachable) {
-            return DeviceState.OFFLINE;
+            pingable = InetAddress.getByName(ipAddress).isReachable(AVAILABILITY_CHECK_TIMEOUT);
+        } catch (IOException ignored) {
+            //No abort, because pings could be just disabled in the network --> check SSH
         }
 
         //Check if it is possible to establish a SSH connection
@@ -144,19 +141,21 @@ public class SSHDeployer {
             //Get new SSH session from pool
             sshSession = sshSessionPool.getNewSSHSession(device);
         } catch (IOException e) {
-            return DeviceState.ONLINE;
+            sshSession = null;
         }
 
-        //Sanity check
+        //Check for valid SSH session object
         if (sshSession == null) {
-            return DeviceState.ONLINE;
+            //Invalid, device is either online with no SSH or offline
+            return pingable ? DeviceState.ONLINE : DeviceState.OFFLINE;
         }
 
         //Check if it is possible to execute a basic command
         if (sshSession.isCommandExecutable()) {
             return DeviceState.SSH_AVAILABLE;
         } else {
-            return DeviceState.ONLINE;
+            //No commands can be executed via SSH, device is either online with no SSH or offline
+            return pingable ? DeviceState.ONLINE : DeviceState.OFFLINE;
         }
     }
 
@@ -309,6 +308,11 @@ public class SSHDeployer {
         //Get topic name for the component
         String topicName = component.getTopicName();
 
+        // Create .properties file on device
+        String mbpProperties = createMBPProperties(component, brokerIP);
+        sshSession.createFile(deploymentPath, MBP_CLIENT_PROPERTIES_FILE_NAME, mbpProperties);
+        LOGGER.log(Level.FINE, "Creation of .properties file was successful");
+        
         //Execute install script
         sshSession.changeFilePermissions(deploymentPath + "/" + INSTALL_SCRIPT_NAME, "+x");
         sshSession.executeShellScript(deploymentPath + "/" + INSTALL_SCRIPT_NAME, topicName, brokerIP, deploymentPath);
@@ -516,4 +520,26 @@ public class SSHDeployer {
 
         return parameterArray;
     }
+
+    /**
+     * Creates the content of a properties that is created onto devices upon operator deployment.
+     * 
+     * @param component The component to create the content
+     * @param brokerHost The MQTT broker IP of the MBP
+     * @return
+     */
+    private String createMBPProperties(Component component, String brokerHost) {
+    	String separator = System.lineSeparator();
+    	StringBuilder sb = new StringBuilder("[MBP]" + separator);
+    	sb.append("brokerHost=" + brokerHost + separator);
+    	sb.append("brokerPort=1883" + separator);
+    	sb.append("brokerTopic=" + component.getComponentTypeName() +"/" + component.getId() + separator);
+    	sb.append("brokerActionTopic=action/" + component.getId() + "/#" + separator);
+    	sb.append(separator);
+    	sb.append("[Component]" + separator);
+    	sb.append("componentId=" + component.getId() + separator);
+    	
+    	return sb.toString();
+    }
+    
 }

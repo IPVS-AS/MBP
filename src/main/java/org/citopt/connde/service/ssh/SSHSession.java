@@ -2,6 +2,7 @@ package org.citopt.connde.service.ssh;
 
 import com.jcabi.ssh.SSH;
 import com.jcabi.ssh.Shell;
+import com.jcabi.ssh.SSHByPassword;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -253,8 +254,12 @@ public class SSHSession {
      */
     protected synchronized void connect() throws IOException {
         //Create new safe shell instance
-        shell = new Shell.Safe(new SSH(url, port, username, key));
-
+        if (key != null){
+          shell = new Shell.Safe(new SSH(url, port, username, key));
+        }
+        else{
+          shell = new SSHByPassword(url, port, username, password);
+        }
         //Create corresponding streams for further usage
         stdOutStream = new ByteArrayOutputStream();
         stdErrStream = new ByteArrayOutputStream();

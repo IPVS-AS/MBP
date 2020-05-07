@@ -6,7 +6,8 @@ import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.MonitoringAdapterRepository;
-import org.citopt.connde.repository.projection.MonitoringAdapterListProjection;
+import org.citopt.connde.repository.projection.MonitoringAdapterExcerpt;
+import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,9 @@ import java.util.List;
  */
 @Component
 public class MonitoringHelper {
+
+    @Autowired
+    private UserEntityService userEntityService;
 
     @Autowired
     private DeviceRepository deviceRepository;
@@ -32,12 +36,12 @@ public class MonitoringHelper {
      * @param deviceId            The id of the device to wrap
      * @param monitoringAdapterId The id of the monitoring adapter to wrap
      * @return Null, if either the device or the monitoring adapter could not be found
-     * in their repositories; otherwise the deployable monitoring component
+     * in their repositories or the user is not authorized for them; otherwise the deployable monitoring component
      */
     public MonitoringComponent createMonitoringComponent(String deviceId, String monitoringAdapterId) {
         //Retrieve corresponding device and adapter from their repositories
-        Device device = deviceRepository.findOne(deviceId);
-        MonitoringAdapter monitoringAdapter = monitoringAdapterRepository.findOne(monitoringAdapterId);
+        Device device = (Device) userEntityService.getUserEntityFromRepository(deviceRepository, deviceId);
+        MonitoringAdapter monitoringAdapter = (MonitoringAdapter) userEntityService.getUserEntityFromRepository(monitoringAdapterRepository, monitoringAdapterId);
 
         //Check if both objects were found
         if ((device == null) || (monitoringAdapter == null)) {
@@ -46,6 +50,10 @@ public class MonitoringHelper {
 
         //Create new monitoring component (wrapper)
         MonitoringComponent monitoringComponent = new MonitoringComponent(monitoringAdapter, device);
+
+        //Copy owner and approved users from device to void failing generic security checks
+        monitoringComponent.setOwner(device.getOwner());
+        monitoringComponent.getApprovedUsers().addAll(device.getApprovedUsers());
 
         return monitoringComponent;
     }
@@ -124,7 +132,7 @@ public class MonitoringHelper {
      * @param monitoringAdapters The Iterable of monitoring adapters to convert
      * @return The converted list of monitoring adapter projections
      */
-    public List<MonitoringAdapterListProjection> convertToListProjections(
+    public List<MonitoringAdapterExcerpt> convertToListProjections(
             Iterable<MonitoringAdapter> monitoringAdapters) {
         //Sanity check
         if (monitoringAdapters == null) {
@@ -132,11 +140,11 @@ public class MonitoringHelper {
         }
 
         //Create a list for the resulting adapter projections
-        List<MonitoringAdapterListProjection> adapterProjectionList = new ArrayList<>();
+        List<MonitoringAdapterExcerpt> adapterProjectionList = new ArrayList<>();
 
         //Get projection for each monitoring adapter of the iterable
         for (MonitoringAdapter adapter : monitoringAdapters) {
-            MonitoringAdapterListProjection projection = monitoringAdapterRepository.findById(adapter.getId());
+            MonitoringAdapterExcerpt projection = monitoringAdapterRepository.findById(adapter.getId());
             adapterProjectionList.add(projection);
         }
 
