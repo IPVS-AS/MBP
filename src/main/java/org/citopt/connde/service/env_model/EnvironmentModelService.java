@@ -278,6 +278,11 @@ public class EnvironmentModelService {
         model.setEntityMap(registeredEntities);
         environmentModelRepository.save(model);
 
+        //Check if something was registered
+        if (registeredEntities.isEmpty()) {
+            return new ActionResponse(false, "There are no valid components to register.");
+        }
+
         //Success
         return new ActionResponse(true);
     }
@@ -335,7 +340,7 @@ public class EnvironmentModelService {
                     publishEntityState(model, nodeId, component, EntityState.REGISTERED);
 
                     //Update deployment error map
-                    deploymentErrors.put(nodeId, "Impossible to deploy.");
+                    deploymentErrors.put(nodeId, "Impossible to deploy, device is not available.");
                     continue;
             }
 
@@ -480,7 +485,7 @@ public class EnvironmentModelService {
                     publishEntityState(model, nodeId, component, EntityState.REGISTERED);
 
                     //Update deployment error map
-                    startErrors.put(nodeId, "Impossible to start.");
+                    startErrors.put(nodeId, "Impossible to start, device is not available.");
                     continue;
             }
 

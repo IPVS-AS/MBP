@@ -109,7 +109,7 @@
                         <div id="model-error-message" class="alert alert-danger">
                             <strong>Errors occurred:</strong>
                             <ul>
-                                <li ng-repeat="error in ctrl.errorMessageList">- {{error}}</li>
+                                <li ng-repeat="error in ctrl.errorMessageList track by $index">- {{error}}</li>
                             </ul>
                         </div>
                     </div>

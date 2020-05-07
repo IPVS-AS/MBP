@@ -126,6 +126,7 @@ public class EnvironmentModelParseResult {
 
     /**
      * Returns the node ID for a device that is part of the parse result.
+     *
      * @param device The device to get the node id for
      * @return The node ID of the device or null if the device could not be found
      */
@@ -148,6 +149,8 @@ public class EnvironmentModelParseResult {
 
     /**
      * Returns the node ID for a component that is part of the parse result.
+     *
+     *
      * @param component The component to get the node id for
      * @return The node ID of the component or null if the component could not be found
      */

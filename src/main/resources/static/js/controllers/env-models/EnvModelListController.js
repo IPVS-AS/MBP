@@ -237,6 +237,35 @@ app.controller('EnvModelListController',
             }
 
             /**
+             * Handles failures of environment model related action requests by processing the response object.
+             *
+             * @param response The response of the failed request
+             * @param defaultMessage A default message to display as notification
+             */
+            function handleActionRequestFailure(response, defaultMessage) {
+                //Get field errors
+                let fieldErrors = response.data.fieldErrors;
+
+                //Check if there are field errors
+                if (fieldErrors && (!$.isEmptyObject(fieldErrors))) {
+                    showErrorList(fieldErrors);
+                } else {
+                    hideErrorMessage();
+                }
+
+                //Check if global error message was provided
+                if (response.data.globalMessage) {
+                    NotificationService.notify(response.data.globalMessage, "error");
+                } else {
+                    //Failure
+                    NotificationService.notify(defaultMessage, "error");
+                }
+
+                //Hide progress bar
+                hideProgress();
+            }
+
+            /**
              * [Public]
              * Called when the components of the current model are supposed to be registered.
              */
@@ -251,14 +280,8 @@ app.controller('EnvModelListController',
                     hideProgress();
                     hideErrorMessage();
                 }, function (response) {
-                    //Display errors if available
-                    if (response.data.fieldErrors) {
-                        showErrorList(response.data.fieldErrors);
-                    }
-
-                    //Failure
-                    NotificationService.notify("Component registration failed.", "error");
-                    hideProgress();
+                    //Handle failure
+                    handleActionRequestFailure(response, "Component registration failed.");
                 });
             }
 
@@ -275,10 +298,10 @@ app.controller('EnvModelListController',
                     //Success
                     NotificationService.notify("Deployment succeeded.", "success");
                     hideProgress();
+                    hideErrorMessage();
                 }, function (response) {
-                    //Failure
-                    NotificationService.notify("Deployment failed.", "error");
-                    hideProgress();
+                    //Handle failure
+                    handleActionRequestFailure(response, "Deployment failed.");
                 });
             }
 
@@ -296,10 +319,10 @@ app.controller('EnvModelListController',
                     //Success
                     NotificationService.notify("Undeployment succeeded.", "success");
                     hideProgress();
+                    hideErrorMessage();
                 }, function (response) {
-                    //Failure
-                    NotificationService.notify("Undeployment failed.", "error");
-                    hideProgress();
+                    //Handle failure
+                    handleActionRequestFailure(response, "Undeployment failed.");
                 });
             }
 
@@ -317,10 +340,10 @@ app.controller('EnvModelListController',
                     //Success
                     NotificationService.notify("Components were starteds.", "success");
                     hideProgress();
+                    hideErrorMessage();
                 }, function (response) {
-                    //Failure
-                    NotificationService.notify("Failed to start components.", "error");
-                    hideProgress();
+                    //Handle failure
+                    handleActionRequestFailure(response, "Failed to start components.");
                 });
             }
 
@@ -337,10 +360,10 @@ app.controller('EnvModelListController',
                     //Success
                     NotificationService.notify("Components were stopped.", "success");
                     hideProgress();
+                    hideErrorMessage();
                 }, function (response) {
-                    //Failure
-                    NotificationService.notify("Failed to stop components.", "error");
-                    hideProgress();
+                    //Handle failure
+                    handleActionRequestFailure(response, "Failed to stop components.");
                 });
             }
 
