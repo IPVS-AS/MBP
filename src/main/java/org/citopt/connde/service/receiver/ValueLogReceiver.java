@@ -40,15 +40,16 @@ public class ValueLogReceiver {
 
     @EventListener({ContextStartedEvent.class, ApplicationReadyEvent.class})
     public void initializeMqtt() {
+        System.out.println("############################ Initializing...");
         //Create MQTT callback handler
         ValueLogReceiverArrivalHandler handler = new ValueLogReceiverArrivalHandler(observerSet);
 
         try {
-            mqttService.initializeWithOAuth2Token();
+            mqttService.initialize();
 
             //Register callback handler at MQTT service
             mqttService.setMqttCallback(handler);
-            
+
             //Subscribe all topics that are relevant for receiving value logs
             for (String topic : SUBSCRIBE_TOPICS) {
                 mqttService.subscribe(topic);

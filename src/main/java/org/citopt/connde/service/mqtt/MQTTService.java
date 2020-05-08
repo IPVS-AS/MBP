@@ -103,6 +103,7 @@ public class MQTTService {
      * @throws IOException   In case of an I/O issue
      */
     public void initialize() throws MqttException, IOException {
+
         //Disconnect the old mqtt client if already connected
         if ((mqttClient != null) && (mqttClient.isConnected())) {
             mqttClient.disconnectForcibly();
@@ -120,44 +121,8 @@ public class MQTTService {
 
         //Instantiate memory persistence
         MemoryPersistence persistence = new MemoryPersistence();
-
-        //Create new mqtt client with the full broker URL
-        mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
-
-        //Connect and subscribe to the topics
-        mqttClient.connect();
-        //Subscribe all topics in the topic set
-        for (String topic : subscribedTopics) {
-            mqttClient.subscribe(topic);
-        }
-
-        //Set MQTT callback object if available
-        if (mqttCallback != null) {
-            mqttClient.setCallback(mqttCallback);
-        }
-    }
-
-    public void initializeWithOAuth2Token()  throws MqttException, IOException{
 
         System.out.println("###################### Request Oauth2 Token for MBP");
-
-        //Disconnect the old mqtt client if already connected
-        if ((mqttClient != null) && (mqttClient.isConnected())) {
-            mqttClient.disconnectForcibly();
-        }
-
-        //Stores the address of the desired mqtt broker
-        String brokerAddress = "localhost";
-
-        //Determine from settings if a remote broker should be used instead
-        Settings settings = settingsService.getSettings();
-        if (settings.getBrokerLocation().equals(BrokerLocation.REMOTE)) {
-            //Retrieve IP address of external broker from settings
-            brokerAddress = settings.getBrokerIPAddress();
-        }
-
-        //Instantiate memory persistence
-        MemoryPersistence persistence = new MemoryPersistence();
 
         requestOAuth2Token();
 
