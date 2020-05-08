@@ -20,13 +20,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -87,15 +89,28 @@ public class MQTTService {
     public MQTTService(SettingsService settingsService) {
         this.settingsService = settingsService;
 
-        //Setup and start the MQTT client
+//        //Setup and start the MQTT client
+//        try {
+//            initialize();
+//        } catch (MqttException e) {
+//            System.err.println("MqttException: " + e.getMessage());
+//        } catch (IOException e) {
+//            System.err.println("IOException: " + e.getMessage());
+//        }
+    }
+
+    @EventListener({ContextStartedEvent.class, ApplicationReadyEvent.class})
+    public void initializeMqtt() {
+        //Setup the mqtt client
         try {
-            initialize();
+            initializeWithOAuth2Token();
         } catch (MqttException e) {
-            System.err.println("MqttException: " + e.getMessage());
+            e.printStackTrace();
         } catch (IOException e) {
-            System.err.println("IOException: " + e.getMessage());
+            e.printStackTrace();
         }
     }
+
 
     /**
      * Initializes, configures and starts the MQTT client that belongs to this service.
@@ -140,7 +155,6 @@ public class MQTTService {
         }
     }
 
-    @Scheduled(fixedRate = 31536000, initialDelay = 10000)
     public void initializeWithOAuth2Token()  throws MqttException, IOException{
 
         System.out.println("###################### Request Oauth2 Token for MBP");
