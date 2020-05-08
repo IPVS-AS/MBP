@@ -1,12 +1,16 @@
 
 package org.citopt.connde.service.receiver;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.citopt.connde.service.mqtt.MQTTService;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 /**
@@ -21,24 +25,39 @@ public class ValueLogReceiver {
 
     //Set ob observers which want to be notified about incoming value logs
     private Set<ValueLogReceiverObserver> observerSet;
+    private final MQTTService mqttService;
 
     /**
      * Initializes the value logger service.
      */
     @Autowired
     public ValueLogReceiver(MQTTService mqttService) throws MqttException {
+        this.mqttService = mqttService;
+
         //Initialize set of observers
         observerSet = new HashSet<>();
 
-        //Create MQTT callback handler
-        ValueLogReceiverArrivalHandler handler = new ValueLogReceiverArrivalHandler(observerSet);
 
-        //Register callback handler at MQTT service
-        mqttService.setMqttCallback(handler);
 
         //Subscribe all topics that are relevant for receiving value logs
         for (String topic : SUBSCRIBE_TOPICS) {
             mqttService.subscribe(topic);
+        }
+    }
+
+    @EventListener({ContextStartedEvent.class, ApplicationReadyEvent.class})
+    public void initializeMqtt() {
+        //Create MQTT callback handler
+        ValueLogReceiverArrivalHandler handler = new ValueLogReceiverArrivalHandler(observerSet);
+
+        try {
+            mqttService.initializeWithOAuth2Token();
+
+            //Register callback handler at MQTT service
+            mqttService.setMqttCallback(handler);
+
+        } catch (MqttException | IOException e) {
+            e.printStackTrace();
         }
     }
 

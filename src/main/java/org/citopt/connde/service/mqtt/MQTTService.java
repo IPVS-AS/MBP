@@ -20,15 +20,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.event.ContextStartedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -39,7 +35,6 @@ import org.springframework.web.util.UriComponentsBuilder;
  * topics
  */
 @Service
-@EnableScheduling
 @PropertySource(value = "classpath:application.properties")
 public class MQTTService {
     //URL frame of the broker to use (protocol and port, address will be filled in)
@@ -66,7 +61,7 @@ public class MQTTService {
     private String httpPassword;
 
     @Value("${security.oauth2.client.access-token-uri}")
-    private String oauth2TokenUri = "http://192.168.2.133:8080/MBP/oauth/token";
+    private String oauth2TokenUri;
 
     @Value("${security.oauth2.client.grant-type}")
     private String oauth2GrantType;
@@ -98,19 +93,6 @@ public class MQTTService {
 //            System.err.println("IOException: " + e.getMessage());
 //        }
     }
-
-    @EventListener({ContextStartedEvent.class, ApplicationReadyEvent.class})
-    public void initializeMqtt() {
-        //Setup the mqtt client
-        try {
-            initializeWithOAuth2Token();
-        } catch (MqttException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 
     /**
      * Initializes, configures and starts the MQTT client that belongs to this service.
@@ -179,6 +161,7 @@ public class MQTTService {
 
         requestOAuth2Token();
 
+        System.out.println("################################# Token " + accessToken);
         //Create new mqtt client with the full broker URL
         mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
         MqttConnectOptions connectOptions = new MqttConnectOptions();
