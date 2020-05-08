@@ -36,13 +36,6 @@ public class ValueLogReceiver {
 
         //Initialize set of observers
         observerSet = new HashSet<>();
-
-
-
-        //Subscribe all topics that are relevant for receiving value logs
-        for (String topic : SUBSCRIBE_TOPICS) {
-            mqttService.subscribe(topic);
-        }
     }
 
     @EventListener({ContextStartedEvent.class, ApplicationReadyEvent.class})
@@ -55,6 +48,11 @@ public class ValueLogReceiver {
 
             //Register callback handler at MQTT service
             mqttService.setMqttCallback(handler);
+            
+            //Subscribe all topics that are relevant for receiving value logs
+            for (String topic : SUBSCRIBE_TOPICS) {
+                mqttService.subscribe(topic);
+            }
 
         } catch (MqttException | IOException e) {
             e.printStackTrace();
