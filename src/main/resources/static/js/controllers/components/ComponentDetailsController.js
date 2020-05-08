@@ -485,8 +485,8 @@ app.controller('ComponentDetailsController',
             function getDeviceCode() {
                 fetch(location.origin + '/MBP/oauth/authorize?client_id=device-client&response_type=code&scope=write', {
                     headers: {
-                        // Basic http authentication with username "device" and the according password from MBP
-                        'Authorization': 'Basic ZGV2aWNlOmlvdC1kZXZpY2U='
+                        // Basic http authentication with username "device-client" and the according password from MBP
+                        'Authorization': 'Basic ZGV2aWNlLWNsaWVudDpkZXZpY2U='
                     }
                 }).then(function (response) {
                     let chars = response.url.split('?');
