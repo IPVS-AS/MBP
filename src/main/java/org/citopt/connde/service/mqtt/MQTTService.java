@@ -20,10 +20,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -34,6 +37,8 @@ import org.springframework.web.util.UriComponentsBuilder;
  * topics
  */
 @Service
+@EnableScheduling
+@PropertySource(value = "classpath:application.properties")
 public class MQTTService {
     //URL frame of the broker to use (protocol and port, address will be filled in)
     private static final String BROKER_URL = "tcp://%s:1883";
@@ -59,7 +64,7 @@ public class MQTTService {
     private String httpPassword;
 
     @Value("${security.oauth2.client.access-token-uri}")
-    private String oauth2TokenUri;
+    private String oauth2TokenUri = "http://192.168.2.133:8080/MBP/oauth/token";
 
     @Value("${security.oauth2.client.grant-type}")
     private String oauth2GrantType;
@@ -119,6 +124,42 @@ public class MQTTService {
         //Instantiate memory persistence
         MemoryPersistence persistence = new MemoryPersistence();
 
+        //Create new mqtt client with the full broker URL
+        mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
+
+        //Connect and subscribe to the topics
+        mqttClient.connect();
+        //Subscribe all topics in the topic set
+        for (String topic : subscribedTopics) {
+            mqttClient.subscribe(topic);
+        }
+
+        //Set MQTT callback object if available
+        if (mqttCallback != null) {
+            mqttClient.setCallback(mqttCallback);
+        }
+    }
+
+    @Scheduled(fixedRate = 31536000, initialDelay = 10000)
+    public void initializeWithOAuth2Token()  throws MqttException, IOException{
+        //Disconnect the old mqtt client if already connected
+        if ((mqttClient != null) && (mqttClient.isConnected())) {
+            mqttClient.disconnectForcibly();
+        }
+
+        //Stores the address of the desired mqtt broker
+        String brokerAddress = "localhost";
+
+        //Determine from settings if a remote broker should be used instead
+        Settings settings = settingsService.getSettings();
+        if (settings.getBrokerLocation().equals(BrokerLocation.REMOTE)) {
+            //Retrieve IP address of external broker from settings
+            brokerAddress = settings.getBrokerIPAddress();
+        }
+
+        //Instantiate memory persistence
+        MemoryPersistence persistence = new MemoryPersistence();
+
         requestOAuth2Token();
 
         //Create new mqtt client with the full broker URL
@@ -129,7 +170,7 @@ public class MQTTService {
         connectOptions.setPassword("any".toCharArray());
 
         //Connect and subscribe to the topics
-        mqttClient.connect(connectOptions);
+        mqttClient.connect();
         //Subscribe all topics in the topic set
         for (String topic : subscribedTopics) {
             mqttClient.subscribe(topic);

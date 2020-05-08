@@ -1,15 +1,14 @@
 package org.citopt.connde;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.MongoClient;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.MongoClient;
 import org.citopt.connde.constants.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -110,14 +109,15 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 
 			Set<BasicDBObject> deviceAuthorities = new HashSet<>();
 			deviceAuthorities.add(authorityDevice);
+			deviceAuthorities.add(authorityUser);
 
 			// A user which is used by IoT devices for http authentication
 			BasicDBObject deviceUser = new BasicDBObject();
 			deviceUser.put("_class", "org.citopt.connde.domain.user.User");
-			deviceUser.put("first_name", "IoT");
-			deviceUser.put("last_name", "Device");
-			deviceUser.put("username", "device");
-			deviceUser.put("password", passwordEncoder.encode("iot-device"));
+			deviceUser.put("first_name", "Device");
+			deviceUser.put("last_name", "Client");
+			deviceUser.put("username", "device-client");
+			deviceUser.put("password", passwordEncoder.encode("device"));
 			deviceUser.put("authorities", deviceAuthorities);
 
 			documents.add(deviceUser);

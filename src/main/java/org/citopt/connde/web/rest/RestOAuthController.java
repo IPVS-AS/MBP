@@ -27,7 +27,7 @@ public class RestOAuthController {
 	@Value("${security.oauth2.authorization.check-token-access}")
 	private String checkTokenUri;
 
-	@RequestMapping(value = "/getAccessCode", method = RequestMethod.GET)
+	@RequestMapping(value = "/auth_code", method = RequestMethod.GET)
 	public String getDeviceCode(@RequestParam("code") String code) {
 		return code;
 	}

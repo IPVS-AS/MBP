@@ -3,12 +3,12 @@ package org.citopt.connde.security.oauth2.authorization;
 import java.util.Arrays;
 
 import org.citopt.connde.constants.Constants;
-import org.citopt.connde.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -32,9 +32,9 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
     @Value("${security.oauth2.client.pre-established-redirect-uri}")
     private String redirectUri;
 
-    private final UserDetailsServiceImpl userDetailsService;
+    private final UserDetailsService userDetailsService;
 
-    public OAuth2AuthorizationServerConfiguration(@Qualifier("mongoUserDetails") UserDetailsServiceImpl userDetailsService) {
+    public OAuth2AuthorizationServerConfiguration(@Qualifier("mongoUserDetails") UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
@@ -45,7 +45,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .secret("device")
                 .authorizedGrantTypes("authorization_code", "refresh_token")
                 .scopes("write")
-                .authorities(Constants.DEVICE)
+                .authorities(Constants.USER, Constants.DEVICE)
                 .autoApprove(true)
                 .accessTokenValiditySeconds(600) //  5 minutes
                 .refreshTokenValiditySeconds(1200) // 10 minutes
