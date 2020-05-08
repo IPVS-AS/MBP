@@ -34,8 +34,11 @@ public class RestOAuthController {
 
 	@RequestMapping(value = "/checkOauthTokenUser", method = RequestMethod.POST)
 	public ResponseEntity<?> checkOauthTokenUser(@RequestHeader("authorization") String authorizationHeader) {
-		LOGGER.log(Level.INFO, "Check OAuth Token User");
-		return checkToken(authorizationHeader);
+		if (!authorizationHeader.isEmpty())  {
+			LOGGER.log(Level.INFO, "Check OAuth Token User");
+			return checkToken(authorizationHeader);
+		}
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST);
 	}
 
 	@RequestMapping(value = "/checkOauthTokenSuperuser", method = RequestMethod.POST)

@@ -9,7 +9,6 @@ import org.citopt.connde.service.mqtt.MQTTService;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.ContextStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
@@ -40,7 +39,7 @@ public class ValueLogReceiver {
         observerSet = new HashSet<>();
     }
 
-    @EventListener({ContextStartedEvent.class, ApplicationReadyEvent.class})
+    @EventListener(ApplicationReadyEvent.class)
     public void initializeMqtt() {
         System.out.println("############################ Initializing...");
         //Create MQTT callback handler

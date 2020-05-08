@@ -75,7 +75,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         	.antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)
         	.antMatchers(HttpMethod.DELETE, "/api/users/:username").hasAuthority(Constants.ADMIN)
         	.antMatchers("/api/**").authenticated()
-		.and()
+	        .antMatchers("/api/checkOauthTokenUser").permitAll()
+	        .antMatchers("/api/checkOauthTokenSuperuser").permitAll()
+	        .antMatchers("/api/checkOauthTokenAcl").permitAll()
+
+		        .and()
 			.httpBasic()
         	.authenticationEntryPoint(restAuthenticationEntryPoint())
         .and()
