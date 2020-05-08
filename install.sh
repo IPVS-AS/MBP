@@ -23,8 +23,8 @@ sudo apt-get install -qy maven;
 
 echo "\nInstalling Mosquitto Broker, MongoDB, InfluxDB, Tomcat8, git and maven...\n"
 # Install Mosquitto Broker
-sudo apt-get install -qy mosquitto;
-sudo systemctl start mosquitto;
+#sudo apt-get install -qy mosquitto;
+#sudo systemctl start mosquitto;
 
 # Install and start MongoDB 
 sudo apt-get -qy install mongodb-server;
