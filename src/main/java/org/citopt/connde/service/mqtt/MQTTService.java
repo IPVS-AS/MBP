@@ -142,6 +142,9 @@ public class MQTTService {
 
     @Scheduled(fixedRate = 31536000, initialDelay = 10000)
     public void initializeWithOAuth2Token()  throws MqttException, IOException{
+
+        System.out.println("###################### Request Oauth2 Token for MBP");
+
         //Disconnect the old mqtt client if already connected
         if ((mqttClient != null) && (mqttClient.isConnected())) {
             mqttClient.disconnectForcibly();

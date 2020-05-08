@@ -28,12 +28,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-//	@Override
-//	@Bean
-//	public AuthenticationManager authenticationManagerBean() throws Exception {
-//		return super.authenticationManagerBean();
-//	}
-
 	@Bean
 	public RestAuthenticationEntryPoint restAuthenticationEntryPoint() {
 		return new RestAuthenticationEntryPoint();
