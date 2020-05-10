@@ -86,11 +86,12 @@ public class MQTTService {
 
         //Setup and start the MQTT client
         try {
-            initialize();
+//            initialize();
+            String brokerAddress = "localhost";
+            MemoryPersistence persistence = new MemoryPersistence();
+            mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
         } catch (MqttException e) {
             System.err.println("MqttException: " + e.getMessage());
-        } catch (IOException e) {
-            System.err.println("IOException: " + e.getMessage());
         }
     }
 
