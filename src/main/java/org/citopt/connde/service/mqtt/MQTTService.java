@@ -121,6 +121,8 @@ public class MQTTService {
         if (settings.getBrokerLocation().equals(BrokerLocation.REMOTE)) {
             //Retrieve IP address of external broker from settings
             brokerAddress = settings.getBrokerIPAddress();
+
+            System.out.println("######################### Remote Broker selected ");
         } else if (settings.getBrokerLocation().equals(BrokerLocation.SECURE)) {
             //Retrieve IP address of external broker from settings
             brokerAddress = settings.getBrokerIPAddress();
