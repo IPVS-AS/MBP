@@ -63,7 +63,7 @@ public class RestOAuthController {
 		ResponseEntity<Json> response = restTemplate.getForEntity(checkTokenUri +  "?token=" + authorizationHeader, Json.class);
 		if (response.getStatusCode().equals(HttpStatus.OK)) {
 			LOGGER.log(Level.INFO, HttpStatus.OK.toString());
-			return ResponseEntity.ok().build();
+			return ResponseEntity.ok("200 OK");
 		}
 		LOGGER.log(Level.INFO, HttpStatus.UNAUTHORIZED.toString());
 		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
