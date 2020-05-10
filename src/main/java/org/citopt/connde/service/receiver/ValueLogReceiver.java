@@ -1,7 +1,6 @@
 
 package org.citopt.connde.service.receiver;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,28 +33,23 @@ public class ValueLogReceiver {
         this.mqttService = mqttService;
         //Initialize set of observers
         observerSet = new HashSet<>();
+
+        //Create MQTT callback handler
+        ValueLogReceiverArrivalHandler handler = new ValueLogReceiverArrivalHandler(observerSet);
+
+        //Register callback handler at MQTT service
+        mqttService.setMqttCallback(handler);
+
+        //Subscribe all topics that are relevant for receiving value logs
+        for (String topic : SUBSCRIBE_TOPICS) {
+            mqttService.subscribe(topic);
+        }
     }
 
     @EventListener(ApplicationEnvironmentPreparedEvent.class)
     public void initializeMqtt() {
-        System.out.println("############################ Initializing...");
-        //Create MQTT callback handler
-        ValueLogReceiverArrivalHandler handler = new ValueLogReceiverArrivalHandler(observerSet);
+        System.out.println("############################################################# Initializing...");
 
-        try {
-            mqttService.initialize();
-
-            //Register callback handler at MQTT service
-            mqttService.setMqttCallback(handler);
-
-            //Subscribe all topics that are relevant for receiving value logs
-            for (String topic : SUBSCRIBE_TOPICS) {
-                mqttService.subscribe(topic);
-            }
-
-        } catch (MqttException | IOException e) {
-            e.printStackTrace();
-        }
     }
 
     /**

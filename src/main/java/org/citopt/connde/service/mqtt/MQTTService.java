@@ -84,14 +84,14 @@ public class MQTTService {
     public MQTTService(SettingsService settingsService) {
         this.settingsService = settingsService;
 
-//        //Setup and start the MQTT client
-//        try {
-//            initialize();
-//        } catch (MqttException e) {
-//            System.err.println("MqttException: " + e.getMessage());
-//        } catch (IOException e) {
-//            System.err.println("IOException: " + e.getMessage());
-//        }
+        //Setup and start the MQTT client
+        try {
+            initialize();
+        } catch (MqttException e) {
+            System.err.println("MqttException: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("IOException: " + e.getMessage());
+        }
     }
 
     /**
@@ -114,25 +114,43 @@ public class MQTTService {
 
         //Determine from settings if a remote broker should be used instead
         Settings settings = settingsService.getSettings();
-        if (settings.getBrokerLocation().equals(BrokerLocation.REMOTE)) {
-            //Retrieve IP address of external broker from settings
-            brokerAddress = settings.getBrokerIPAddress();
-        }
 
         //Instantiate memory persistence
         MemoryPersistence persistence = new MemoryPersistence();
 
-        System.out.println("###################### Request Oauth2 Token for MBP");
+        if (settings.getBrokerLocation().equals(BrokerLocation.REMOTE)) {
+            //Retrieve IP address of external broker from settings
+            brokerAddress = settings.getBrokerIPAddress();
+        } else if (settings.getBrokerLocation().equals(BrokerLocation.SECURE)) {
+            //Retrieve IP address of external broker from settings
+            brokerAddress = settings.getBrokerIPAddress();
 
-        requestOAuth2Token();
+            System.out.println("###################### Secure Broker selected");
+            requestOAuth2Token();
+            System.out.println("################################# Token " + accessToken);
 
-        System.out.println("################################# Token " + accessToken);
+            //Create new mqtt client with the full broker URL
+            mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
+            MqttConnectOptions connectOptions = new MqttConnectOptions();
+            connectOptions.setCleanSession(true);
+            connectOptions.setUserName(accessToken);
+            connectOptions.setPassword("any".toCharArray());
+
+            //Connect and subscribe to the topics
+            mqttClient.connect();
+            //Subscribe all topics in the topic set
+            for (String topic : subscribedTopics) {
+                mqttClient.subscribe(topic);
+            }
+
+            //Set MQTT callback object if available
+            if (mqttCallback != null) {
+                mqttClient.setCallback(mqttCallback);
+            }
+        }
+
         //Create new mqtt client with the full broker URL
         mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
-        MqttConnectOptions connectOptions = new MqttConnectOptions();
-        connectOptions.setCleanSession(true);
-        connectOptions.setUserName(accessToken);
-        connectOptions.setPassword("any".toCharArray());
 
         //Connect and subscribe to the topics
         mqttClient.connect();
