@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -41,20 +40,19 @@ public class RestOAuthController {
 			LOGGER.log(Level.INFO, "Check OAuth Token User");
 			return checkToken(authorizationHeader);
 		}
-		return new ResponseEntity<>(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
 
 	@RequestMapping(value = "/checkOauthTokenSuperuser", method = RequestMethod.POST)
-	@ResponseStatus(value = HttpStatus.OK)
 	public ResponseEntity<?> checkOauthTokenSuperuser(@RequestHeader("authorization") String authorizationHeader) {
 		LOGGER.log(Level.INFO, "Check OAuth Token Superuser");
-		return new ResponseEntity<>(HttpStatus.OK, HttpStatus.OK);
+		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	}
 
 	@RequestMapping(value = "/checkOauthTokenAcl", method = RequestMethod.POST)
 	public ResponseEntity<?> checkOauthTokenAcl(@RequestHeader("authorization") String authorizationHeader) {
 		LOGGER.log(Level.INFO, "Check OAuth Token Acl");
-		return new ResponseEntity<>(HttpStatus.OK, HttpStatus.OK);
+		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	}
 
 	private ResponseEntity<?> checkToken(String authorizationHeader) {
@@ -63,9 +61,9 @@ public class RestOAuthController {
 		ResponseEntity<Json> response = restTemplate.getForEntity(checkTokenUri +  "?token=" + authorizationHeader, Json.class);
 		if (response.getStatusCode().equals(HttpStatus.OK)) {
 			LOGGER.log(Level.INFO, HttpStatus.OK.toString());
-			return ResponseEntity.ok("200 OK");
+			return new ResponseEntity<>(HttpStatus.OK);
 		}
 		LOGGER.log(Level.INFO, HttpStatus.UNAUTHORIZED.toString());
-		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
+		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	}
 }
