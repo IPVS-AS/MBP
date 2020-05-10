@@ -52,7 +52,8 @@ public class RestOAuthController {
 	@RequestMapping(value = "/checkOauthTokenAcl", method = RequestMethod.POST)
 	public ResponseEntity<?> checkOauthTokenAcl(@RequestHeader("authorization") String authorizationHeader) {
 		LOGGER.log(Level.INFO, "Check OAuth Token Acl");
-		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		//TODO check access
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	private ResponseEntity<?> checkToken(String authorizationHeader) {
