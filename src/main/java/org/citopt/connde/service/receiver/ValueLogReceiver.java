@@ -8,9 +8,8 @@ import java.util.Set;
 import org.citopt.connde.service.mqtt.MQTTService;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 
 /**
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
  * and get notified in case a new value message arrives.
  */
 @Service
-@EnableScheduling
 public class ValueLogReceiver {
     //Set of MQTT topics to subscribe to
     private static final String[] SUBSCRIBE_TOPICS = {"device/#", "sensor/#", "actuator/#", "monitoring/#"};
@@ -34,12 +32,11 @@ public class ValueLogReceiver {
     @Autowired
     public ValueLogReceiver(MQTTService mqttService) throws MqttException {
         this.mqttService = mqttService;
-        System.out.println("############################ Initializing ValueLogReceiver...");
         //Initialize set of observers
         observerSet = new HashSet<>();
     }
 
-    @EventListener(ApplicationReadyEvent.class)
+    @EventListener(ContextRefreshedEvent.class)
     public void initializeMqtt() {
         System.out.println("############################ Initializing...");
         //Create MQTT callback handler
