@@ -7,8 +7,9 @@ import java.util.Set;
 import org.citopt.connde.service.mqtt.MQTTService;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
  * and get notified in case a new value message arrives.
  */
 @Service
+@EnableScheduling
 public class ValueLogReceiver {
     //Set of MQTT topics to subscribe to
     private static final String[] SUBSCRIBE_TOPICS = {"device/#", "sensor/#", "actuator/#", "monitoring/#"};
@@ -29,10 +31,15 @@ public class ValueLogReceiver {
      * Initializes the value logger service.
      */
     @Autowired
-    public ValueLogReceiver(MQTTService mqttService) throws MqttException {
+    public ValueLogReceiver(MQTTService mqttService) {
         this.mqttService = mqttService;
         //Initialize set of observers
         observerSet = new HashSet<>();
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void initializeMqtt() {
+        System.out.println("############################################################# Initializing now");
 
         //Create MQTT callback handler
         ValueLogReceiverArrivalHandler handler = new ValueLogReceiverArrivalHandler(observerSet);
@@ -42,13 +49,12 @@ public class ValueLogReceiver {
 
         //Subscribe all topics that are relevant for receiving value logs
         for (String topic : SUBSCRIBE_TOPICS) {
-            mqttService.subscribe(topic);
+            try {
+                mqttService.subscribe(topic);
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
         }
-    }
-
-    @EventListener(ApplicationEnvironmentPreparedEvent.class)
-    public void initializeMqtt() {
-        System.out.println("############################################################# Initializing...");
 
     }
 
