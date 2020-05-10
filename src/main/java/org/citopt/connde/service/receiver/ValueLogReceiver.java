@@ -8,7 +8,7 @@ import java.util.Set;
 import org.citopt.connde.service.mqtt.MQTTService;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.boot.context.event.ApplicationEnvironmentPreparedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +36,7 @@ public class ValueLogReceiver {
         observerSet = new HashSet<>();
     }
 
-    @EventListener(ContextRefreshedEvent.class)
+    @EventListener(ApplicationEnvironmentPreparedEvent.class)
     public void initializeMqtt() {
         System.out.println("############################ Initializing...");
         //Create MQTT callback handler
