@@ -15,7 +15,7 @@ from threading import Timer
 # MQTT Client
 ############################
 class mqttClient(object):
-   hostname = '192.168.209.207'
+   hostname = '193.196.54.147'
    port = 1883
    
    # Enter client id here:
@@ -75,7 +75,7 @@ class mqttClient(object):
 ############################
 def main(argv):
 
-   hostname = '192.168.209.207'
+   hostname = '193.196.54.147'
    topic_pub = 'sensor/test'
    paramArray = json.loads(argv[0])
    

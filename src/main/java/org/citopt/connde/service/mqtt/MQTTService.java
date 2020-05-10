@@ -122,14 +122,11 @@ public class MQTTService {
             //Retrieve IP address of external broker from settings
             brokerAddress = settings.getBrokerIPAddress();
 
-            System.out.println("######################### Remote Broker selected ");
         } else if (settings.getBrokerLocation().equals(BrokerLocation.SECURE)) {
             //Retrieve IP address of external broker from settings
             brokerAddress = settings.getBrokerIPAddress();
 
-            System.out.println("###################### Secure Broker selected");
             requestOAuth2Token();
-            System.out.println("################################# Token " + accessToken);
 
             //Create new mqtt client with the full broker URL
             mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
@@ -139,7 +136,7 @@ public class MQTTService {
             connectOptions.setPassword("any".toCharArray());
 
             //Connect and subscribe to the topics
-            mqttClient.connect();
+            mqttClient.connect(connectOptions);
             //Subscribe all topics in the topic set
             for (String topic : subscribedTopics) {
                 mqttClient.subscribe(topic);
@@ -149,6 +146,7 @@ public class MQTTService {
             if (mqttCallback != null) {
                 mqttClient.setCallback(mqttCallback);
             }
+            return;
         }
 
         //Create new mqtt client with the full broker URL

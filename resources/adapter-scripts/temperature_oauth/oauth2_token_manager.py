@@ -7,7 +7,7 @@ import json
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 # Adapt to production url
-token_url = 'http://192.168.209.207:8080/MBP/oauth/token'
+token_url = 'http://193.196.54.147:8080/MBP/oauth/token'
 
 def get_access_token(client_id, client_secret, authorization_code):
     auth = HTTPBasicAuth(client_id, client_secret)

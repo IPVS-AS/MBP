@@ -1,6 +1,5 @@
 package org.citopt.connde.web.rest;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.json.Json;
@@ -37,7 +36,6 @@ public class RestOAuthController {
 	@RequestMapping(value = "/checkOauthTokenUser", method = RequestMethod.POST)
 	public ResponseEntity<?> checkOauthTokenUser(@RequestHeader("authorization") String authorizationHeader) {
 		if (!authorizationHeader.isEmpty())  {
-			LOGGER.log(Level.INFO, "Check OAuth Token User");
 			return checkToken(authorizationHeader);
 		}
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -45,26 +43,23 @@ public class RestOAuthController {
 
 	@RequestMapping(value = "/checkOauthTokenSuperuser", method = RequestMethod.POST)
 	public ResponseEntity<?> checkOauthTokenSuperuser(@RequestHeader("authorization") String authorizationHeader) {
-		LOGGER.log(Level.INFO, "Check OAuth Token Superuser");
 		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	}
 
 	@RequestMapping(value = "/checkOauthTokenAcl", method = RequestMethod.POST)
 	public ResponseEntity<?> checkOauthTokenAcl(@RequestHeader("authorization") String authorizationHeader) {
-		LOGGER.log(Level.INFO, "Check OAuth Token Acl");
-		//TODO check access
-		return new ResponseEntity<>(HttpStatus.OK);
+		if (!authorizationHeader.isEmpty()) {
+			return checkToken(authorizationHeader);
+		}
+		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	}
 
 	private ResponseEntity<?> checkToken(String authorizationHeader) {
 		RestTemplate restTemplate = new RestTemplate();
-		LOGGER.log(Level.INFO, "Checking with token uri " + checkTokenUri + " and " + authorizationHeader);
 		ResponseEntity<Json> response = restTemplate.getForEntity(checkTokenUri +  "?token=" + authorizationHeader, Json.class);
 		if (response.getStatusCode().equals(HttpStatus.OK)) {
-			LOGGER.log(Level.INFO, HttpStatus.OK.toString());
 			return new ResponseEntity<>(HttpStatus.OK);
 		}
-		LOGGER.log(Level.INFO, HttpStatus.UNAUTHORIZED.toString());
 		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	}
 }
