@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import javax.json.Json;
 
+import groovy.util.logging.Slf4j;
 import org.citopt.connde.RestConfiguration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -14,12 +15,14 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
 @PropertySource(value = "classpath:application.properties")
+@Slf4j
 public class RestOAuthController {
 
 	private static final Logger LOGGER = Logger.getLogger(RestOAuthController.class.getName());
@@ -42,6 +45,7 @@ public class RestOAuthController {
 	}
 
 	@RequestMapping(value = "/checkOauthTokenSuperuser", method = RequestMethod.POST)
+	@ResponseStatus(value = HttpStatus.OK)
 	public ResponseEntity<?> checkOauthTokenSuperuser(@RequestHeader("authorization") String authorizationHeader) {
 		LOGGER.log(Level.INFO, "Check OAuth Token Superuser");
 		return new ResponseEntity<>(HttpStatus.OK, HttpStatus.OK);
@@ -59,7 +63,7 @@ public class RestOAuthController {
 		ResponseEntity<Json> response = restTemplate.getForEntity(checkTokenUri +  "?token=" + authorizationHeader, Json.class);
 		if (response.getStatusCode().equals(HttpStatus.OK)) {
 			LOGGER.log(Level.INFO, HttpStatus.OK.toString());
-			return new ResponseEntity<>(HttpStatus.OK, HttpStatus.OK);
+			return ResponseEntity.ok().build();
 		}
 		LOGGER.log(Level.INFO, HttpStatus.UNAUTHORIZED.toString());
 		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED, HttpStatus.UNAUTHORIZED);
