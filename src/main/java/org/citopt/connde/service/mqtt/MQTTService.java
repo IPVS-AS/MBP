@@ -25,6 +25,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -36,6 +38,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @Service
 @PropertySource(value = "classpath:application.properties")
+@EnableScheduling
 public class MQTTService {
     //URL frame of the broker to use (protocol and port, address will be filled in)
     private static final String BROKER_URL = "tcp://%s:1883";
@@ -86,17 +89,14 @@ public class MQTTService {
 
         //Setup and start the MQTT client
         try {
-            initialize();
+//            initialize();
             String brokerAddress = "localhost";
             MemoryPersistence persistence = new MemoryPersistence();
             mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
         } catch (MqttException e) {
             System.err.println("MqttException: " + e.getMessage());
-            if (e.getReasonCode() == MqttException.REASON_CODE_FAILED_AUTHENTICATION) {
-                System.err.println("Reason Code is " + MqttException.REASON_CODE_FAILED_AUTHENTICATION);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
         }
     }
 
@@ -108,7 +108,10 @@ public class MQTTService {
      * @throws MqttException In case of an error during execution of mqtt operations
      * @throws IOException   In case of an I/O issue
      */
+    @Scheduled(initialDelay = 30000, fixedRate = 86400)
     public void initialize() throws MqttException, IOException {
+
+        System.out.println("Refreshing MQTT client for MBP");
 
         //Disconnect the old mqtt client if already connected
         if ((mqttClient != null) && (mqttClient.isConnected())) {
