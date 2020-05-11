@@ -86,12 +86,17 @@ public class MQTTService {
 
         //Setup and start the MQTT client
         try {
-//            initialize();
+            initialize();
             String brokerAddress = "localhost";
             MemoryPersistence persistence = new MemoryPersistence();
             mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
         } catch (MqttException e) {
             System.err.println("MqttException: " + e.getMessage());
+            if (e.getReasonCode() == MqttException.REASON_CODE_FAILED_AUTHENTICATION) {
+                System.err.println("Reason Code is " + MqttException.REASON_CODE_FAILED_AUTHENTICATION);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

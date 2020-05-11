@@ -34,7 +34,7 @@ public class RestOAuthController {
 	}
 
 	@RequestMapping(value = "/checkOauthTokenUser", method = RequestMethod.POST)
-	public ResponseEntity<?> checkOauthTokenUser(@RequestHeader("authorization") String authorizationHeader) {
+	public ResponseEntity<Void> checkOauthTokenUser(@RequestHeader("authorization") String authorizationHeader) {
 		if (!authorizationHeader.isEmpty())  {
 			return checkToken(authorizationHeader);
 		}
@@ -42,23 +42,23 @@ public class RestOAuthController {
 	}
 
 	@RequestMapping(value = "/checkOauthTokenSuperuser", method = RequestMethod.POST)
-	public ResponseEntity<?> checkOauthTokenSuperuser(@RequestHeader("authorization") String authorizationHeader) {
+	public ResponseEntity<Void> checkOauthTokenSuperuser(@RequestHeader("authorization") String authorizationHeader) {
 		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	}
 
 	@RequestMapping(value = "/checkOauthTokenAcl", method = RequestMethod.POST)
-	public ResponseEntity<?> checkOauthTokenAcl(@RequestHeader("authorization") String authorizationHeader) {
+	public ResponseEntity<Void> checkOauthTokenAcl(@RequestHeader("authorization") String authorizationHeader) {
 		if (!authorizationHeader.isEmpty()) {
 			return checkToken(authorizationHeader);
 		}
 		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	}
 
-	private ResponseEntity<?> checkToken(String authorizationHeader) {
+	private ResponseEntity<Void> checkToken(String authorizationHeader) {
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<Json> response = restTemplate.getForEntity(checkTokenUri +  "?token=" + authorizationHeader, Json.class);
 		if (response.getStatusCode().equals(HttpStatus.OK)) {
-			return ResponseEntity.ok("200 OK");
+			return ResponseEntity.ok().build();
 		}
 		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	}

@@ -45,6 +45,7 @@ public class ValueLogReceiver {
             try {
                 mqttService.subscribe(topic);
             } catch (MqttException e) {
+                System.out.println("Error in ValueLogReceiver");
                 e.printStackTrace();
             }
         }
