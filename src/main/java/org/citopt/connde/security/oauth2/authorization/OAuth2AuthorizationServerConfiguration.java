@@ -47,8 +47,8 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .scopes("write")
                 .authorities(Constants.USER, Constants.DEVICE)
                 .autoApprove(true)
-                .accessTokenValiditySeconds(600) //  5 minutes
-                .refreshTokenValiditySeconds(1200) // 10 minutes
+                .accessTokenValiditySeconds(300) //  5 minutes
+                .refreshTokenValiditySeconds(600) // 10 minutes
                 .redirectUris(redirectUri)
                 .and()
                 .withClient("mbp")
