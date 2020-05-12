@@ -154,13 +154,6 @@ li {
     width: 50px;
     height: 50px;
     line-height: 40px;
-}
-
-.modeling-tool .window:not(.custom) {
-    cursor: pointer;
-}
-
-.modeling-tool .window.custom {
     cursor: move;
 }
 
@@ -214,10 +207,6 @@ li {
 
 .modeling-tool .window.clicked-element {
     outline: 2px dashed #2196f3;
-}
-
-.custom {
-    position: absolute;
 }
 
 .modeling-tool .jtk-connector {
@@ -341,7 +330,6 @@ li {
         box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
     }
 }
-
 
 /* --- Floorplans --------------------------------------------------------------------------------------- */
 .floorplan {

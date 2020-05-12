@@ -137,6 +137,16 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         return ComponentTypeService.GetByComponent('DEVICE').then(function (response) {
                             return response.data || [];
                         });
+                    }],
+                    actuatorTypesList: ['ComponentTypeService', function (ComponentTypeService) {
+                        return ComponentTypeService.GetByComponent('ACTUATOR').then(function (response) {
+                            return response.data || [];
+                        });
+                    }],
+                    sensorTypesList: ['ComponentTypeService', function (ComponentTypeService) {
+                        return ComponentTypeService.GetByComponent('SENSOR').then(function (response) {
+                            return response.data || [];
+                        });
                     }]
                 }
             })

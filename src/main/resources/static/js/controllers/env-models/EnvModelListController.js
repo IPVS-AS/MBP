@@ -5,9 +5,9 @@
  */
 app.controller('EnvModelListController',
     ['$scope', '$controller', '$timeout', 'envModelList', 'addEnvModel', 'updateEnvModel', 'deleteEnvModel',
-        'adapterList', 'deviceTypesList', 'EnvModelService', 'NotificationService',
+        'adapterList', 'deviceTypesList', 'actuatorTypesList', 'sensorTypesList', 'EnvModelService', 'NotificationService',
         function ($scope, $controller, $timeout, envModelList, addEnvModel, updateEnvModel, deleteEnvModel,
-                  adapterList, deviceTypesList, EnvModelService, NotificationService) {
+                  adapterList, deviceTypesList, actuatorTypesList, sensorTypesList, EnvModelService, NotificationService) {
             //Get required DOM elements
             const MODEL_EDIT_ENVIRONMENT = $("#model-edit-card");
             const MODEL_PROGRESS_BAR = $("#model-progress");
@@ -549,6 +549,8 @@ app.controller('EnvModelListController',
                 }),
                 adapterList: adapterList,
                 deviceTypesList: deviceTypesList,
+                actuatorTypesList: actuatorTypesList,
+                sensorTypesList: sensorTypesList,
                 registerComponents: registerComponents,
                 deployComponents: deployComponents,
                 undeployComponents: undeployComponents,

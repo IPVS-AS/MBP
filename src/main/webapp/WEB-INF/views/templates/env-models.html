@@ -183,7 +183,10 @@
                 </div>
                 <env-model-tool api="ctrl.envModelToolApi"
                                 can-undo="canUndo" can-redo="canRedo" can-paste="canPaste" is-focused="isFocused"
-                                adapter-list="ctrl.adapterList" device-types="ctrl.deviceTypesList"
+                                adapter-list="ctrl.adapterList"
+                                device-types="ctrl.deviceTypesList"
+                                actuator-types="ctrl.actuatorTypesList"
+                                sensor-types="ctrl.sensorTypesList"
                                 on-changed="ctrl.onModelChanged()">
                 </env-model-tool>
             </div>

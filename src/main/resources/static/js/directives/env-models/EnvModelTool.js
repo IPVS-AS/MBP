@@ -9,18 +9,46 @@ app.directive('envModelTool',
     ['ENDPOINT_URI', '$timeout', '$q', '$controller',
         function (ENDPOINT_URI, $timeout, $q, $controller) {
 
-            function initialize(scope) {
-                const DIAGRAM_CONTAINER = $("#toolCanvasContainer");
-                const CANVAS = $("#canvas");
-                const DEVICE_DETAILS_MODAL = $("#deviceDetailsModal");
-                const COMPONENT_DETAILS_MODAL = $("#componentDetailsModal");
-                const EXPORT_MODAL = $("#exportModelModal");
-                const IMPORT_MODAL = $("#importModelModal");
+            //Class for elements of the palette
+            const PaletteElement = function (name, classes, freeResize) {
+                this.name = name;
+                this.classes = classes;
+                this.freeResize = (typeof freeResize === 'undefined') ? false : freeResize;
+            };
+
+            //Default floorplan elements to offer in the palette
+            const FLOORPLAN_ELEMENTS = [new PaletteElement('Room', 'room-floorplan', true),
+                new PaletteElement('Wall', 'wall-floorplan', true),
+                new PaletteElement('Door', 'door-floorplan'),
+                new PaletteElement('Window', 'window-floorplan'),
+                new PaletteElement('Stairs', 'stairs-floorplan'),
+                new PaletteElement('Table', 'table-floorplan'),
+                new PaletteElement('Chair', 'chair-floorplan'),
+                new PaletteElement('Couch', 'couch-floorplan'),
+                new PaletteElement('Bed', 'bed-floorplan'),
+                new PaletteElement('Kitchen sink', 'kitchen-sink-floorplan'),
+                new PaletteElement('Bathtub', 'bathtub-floorplan'),
+                new PaletteElement('Bath sink', 'bath-sink-floorplan'),
+                new PaletteElement('Toilet', 'toilet-floorplan')];
+
+            function initialize(scope, elements) {
+                const DIAGRAM_CONTAINER = $("#toolCanvasContainer", elements);
+                const CANVAS = $("#canvas", elements);
+                const DEVICE_DETAILS_MODAL = $("#deviceDetailsModal", elements);
+                const COMPONENT_DETAILS_MODAL = $("#componentDetailsModal", elements);
+                const EXPORT_MODAL = $("#exportModelModal", elements);
+                const IMPORT_MODAL = $("#importModelModal", elements);
+                const PALETTE_FLOORPLANS = $(".floorplan-palette", elements);
+                const PALETTE_DEVICES = $(".floorplan-palette", elements);
+                const PALETTE_ACTUATORS = $(".floorplan-palette", elements);
+                const PALETTE_SENSORS = $(".floorplan-palette", elements);
                 let markingRectContainer = $(null);
                 let markingRect = $(null);
                 let jsPlumbInstance = null;
+                let sourceEndpoint = null; //Look-and-feel of source endpoints
+                let targetEndpoint = null; //Look-and-feel of target endpoints
                 let elementIdCount = 0; //Used for canvas ID uniqueness
-                let properties = {}; //Keeps the properties of each element to draw on canvas
+                let createElementProperties = {}; //Properties of elements that are supposed to be created
                 let currentDetailsElement = $(null); //The element for which the details modal is opened
                 let isMoving = false; //Remembers if the user is currently moving or modifying an element
                 let markingRectPos = { //Remembers the position of the marking rect
@@ -85,59 +113,123 @@ app.directive('envModelTool',
                 Initialization
                  */
                 (function initController() {
+                    initPalette();
+                    initCanvas();
+                    initJSPlumb();
                     initMarkingRect();
+
+                    //Save empty model state
+                    lastModelState = exportToJSON();
                 })();
 
-
-                /*
-                 * Define the types and look of the nodes and connections
+                /**
+                 * Initializes the element palette.
                  */
-                jsPlumbInstance = window.jsp = jsPlumb.getInstance({
-                    Endpoint: ["Dot", {
-                        radius: 2
-                    }],
-                    Connector: "StateMachine",
-                    HoverPaintStyle: {
-                        strokeWidth: 3
-                    },
-                    ConnectionOverlays: [
-                        ["Label", {
-                            label: "NAME",
-                            id: "label",
-                            cssClass: "aLabel",
-                            visible: false
-                        }]
-                    ],
-                    Container: "canvas"
-                });
+                function initPalette() {
+                    //Initialize floorplans
+                    $.each(FLOORPLAN_ELEMENTS, function (index, elementObject) {
+                        //Create element
+                        let element = $('<div>').addClass('window floorplan').addClass(elementObject.classes);
 
-                let basicType = {
-                    anchor: "Continuous",
-                    connector: "StateMachine"
-                };
+                        //Check for free resizability
+                        if (elementObject.freeResize) {
+                            element.addClass('free-resize')
+                        }
 
-                jsPlumbInstance.registerConnectionType("basic", basicType);
+                        //Create list item
+                        let listItem = $('<li>');
+                        listItem.append(element);
+                        listItem.append($('<p>').append($('<strong>').text(elementObject.name)));
 
-                let sourceEndpoint = {
-                    filter: ".ep",
-                    anchor: "Continuous",
-                    connectorStyle: {
-                        stroke: "#000000",
-                        strokeWidth: 2
-                    },
-                    connectionType: "basic"
-                };
+                        //Add element to palette
+                        PALETTE_FLOORPLANS.append(listItem);
 
-                let targetEndpoint = {
-                    dropOptions: {
-                        hoverClass: "dragHover"
-                    },
-                    anchor: "Continuous",
-                    allowLoopback: false
-                };
+                        //Make element draggable
+                        makePaletteElementDraggable(element, undefined);
+                    });
+                }
 
-                //Save empty model state
-                lastModelState = exportToJSON();
+                /**
+                 * Initializes the canvas.
+                 */
+                function initCanvas() {
+                    //Make the canvas droppable
+                    CANVAS.droppable({
+                        accept: ".window",
+                        drop: function (event, ui) {
+                            //Get helper element
+                            let helperElement = $(this);
+
+                            //Get and store the drop position
+                            createElementProperties.left = ui.offset.left - helperElement.offset().left;
+                            createElementProperties.top = ui.offset.top - helperElement.offset().top;
+
+                            //Generate element ID
+                            elementIdCount++;
+                            let id = "node" + elementIdCount;
+
+                            //Create and draw the element in the canvas
+                            let element = createElement(id);
+                            drawElement(element);
+
+                            //Write model to history stack if its not a room (because of its animation)
+                            if (!element.hasClass("room-floorplan")) {
+                                //Indicate that the model has changed
+                                onModelChanged();
+                            }
+                        }
+                    });
+                }
+
+                /**
+                 * Initializes the JSPlumb library on the canvas amd defines relevant types and the
+                 * look-and-fell of nodes and connections.
+                 */
+                function initJSPlumb() {
+                    jsPlumbInstance = window.jsp = jsPlumb.getInstance({
+                        Endpoint: ["Dot", {
+                            radius: 2
+                        }],
+                        Connector: "StateMachine",
+                        HoverPaintStyle: {
+                            strokeWidth: 3
+                        },
+                        ConnectionOverlays: [
+                            ["Label", {
+                                label: "NAME",
+                                id: "label",
+                                cssClass: "aLabel",
+                                visible: false
+                            }]
+                        ],
+                        Container: "canvas"
+                    });
+
+                    let basicType = {
+                        anchor: "Continuous",
+                        connector: "StateMachine"
+                    };
+
+                    jsPlumbInstance.registerConnectionType("basic", basicType);
+
+                    sourceEndpoint = {
+                        filter: ".ep",
+                        anchor: "Continuous",
+                        connectorStyle: {
+                            stroke: "#000000",
+                            strokeWidth: 2
+                        },
+                        connectionType: "basic"
+                    };
+
+                    targetEndpoint = {
+                        dropOptions: {
+                            hoverClass: "dragHover"
+                        },
+                        anchor: "Continuous",
+                        allowLoopback: false
+                    };
+                }
 
                 /**
                  * Initializes the marking rectangle.
@@ -149,6 +241,28 @@ app.directive('envModelTool',
 
                     //Append elements to canvas
                     CANVAS.append(markingRectContainer.append(markingRect));
+                }
+
+                /**
+                 * Makes an palette element draggable and passes the required element data to the
+                 * createElementProperties object when dragging begins.
+                 * @param element The element that is supposed to become draggable
+                 * @param type The type of the element to pass
+                 */
+                function makePaletteElementDraggable(element, type) {
+                    element.draggable({
+                        start: (event, ui) => {
+                            createElementProperties.classes = element.attr('class');
+                            createElementProperties.type = type;
+                        },
+                        helper: () => {
+                            //Create helper element
+                            return $("<div/>", {
+                                class: element.attr('class')
+                            })
+                        },
+                        revert: false
+                    });
                 }
 
                 /**
@@ -225,304 +339,6 @@ app.directive('envModelTool',
                     });
                 }
 
-                /*
-                 * jQuery makes the element draggable
-                 */
-                function makeDraggable(id, className) {
-
-                    $(id).draggable({
-                        helper: () => {
-                            return $("<div/>", {
-                                class: className
-                            })
-                        },
-                        revert: false
-                    });
-                }
-
-
-                /*
-                 * Make all the elements from the palette draggable
-                 */
-                makeDraggable("#roomFloorplan", "window floorplan room-floorplan custom");
-                makeDraggable("#wallFloorplan", "window floorplan wall-floorplan custom");
-                makeDraggable("#doorFloorplan", "window floorplan door-floorplan custom");
-                makeDraggable("#windowFloorplan", "window floorplan window-floorplan custom");
-                makeDraggable("#stairsFloorplan", "window floorplan stairs-floorplan custom");
-                makeDraggable("#tableFloorplan", "window floorplan table-floorplan custom");
-                makeDraggable("#chairFloorplan", "window floorplan chair-floorplan custom");
-                makeDraggable("#couchFloorplan", "window floorplan couch-floorplan custom");
-                makeDraggable("#bedFloorplan", "window floorplan bed-floorplan custom");
-                makeDraggable("#kitchenSinkFloorplan", "window floorplan kitchen-sink-floorplan custom");
-                makeDraggable("#bathtubFloorplan", "window floorplan bathtub-floorplan custom");
-                makeDraggable("#bathSinkFloorplan", "window floorplan bath-sink-floorplan custom");
-                makeDraggable("#toiletFloorplan", "window floorplan toilet-floorplan custom");
-
-                makeDraggable("#raspberryPiDevice", "window device raspberry-pi-device custom");
-                makeDraggable("#arduinoDevice", "window device arduino-device custom");
-                makeDraggable("#computerDevice", "window device computer-device custom");
-                makeDraggable("#laptopDevice", "window device laptop-device custom");
-                makeDraggable("#tvDevice", "window device tv-device custom");
-                makeDraggable("#smartphoneDevice", "window device smartphone-device custom");
-                makeDraggable("#smartwatchDevice", "window device smartwatch-device custom");
-                makeDraggable("#audioSystemDevice", "window device audio-system-device custom");
-                makeDraggable("#voiceControllerDevice", "window device voice-controller-device custom");
-                makeDraggable("#cameraDevice", "window device camera-device custom");
-                makeDraggable("#defaultDevice", "window device default-device custom");
-
-                makeDraggable("#lightActuator", "window actuator light-actuator custom");
-                makeDraggable("#ledActuator", "window actuator led-actuator custom");
-                makeDraggable("#speakerActuator", "window actuator speaker-actuator custom");
-                makeDraggable("#buzzerActuator", "window actuator buzzer-actuator custom");
-                makeDraggable("#vibrationActuator", "window actuator vibration-actuator custom");
-                makeDraggable("#heaterActuator", "window actuator heater-actuator custom");
-                makeDraggable("#airConditionerActuator", "window actuator air-conditioner-actuator custom");
-                makeDraggable("#switchActuator", "window actuator switch-actuator custom");
-                makeDraggable("#motorActuator", "window actuator motor-actuator custom");
-                makeDraggable("#defaultActuator", "window actuator default-actuator custom");
-
-                makeDraggable("#cameraSensor", "window sensor camera-sensor custom");
-                makeDraggable("#soundSensor", "window sensor sound-sensor custom");
-                makeDraggable("#temperatureSensor", "window sensor temperature-sensor custom");
-                makeDraggable("#humiditySensor", "window sensor humidity-sensor custom");
-                makeDraggable("#gasSensor", "window sensor gas-sensor custom");
-                makeDraggable("#lightSensor", "window sensor light-sensor custom");
-                makeDraggable("#motionSensor", "window sensor motion-sensor custom");
-                makeDraggable("#locationSensor", "window sensor location-sensor custom");
-                makeDraggable("#gyroscopeSensor", "window sensor gyroscope-sensor custom");
-                makeDraggable("#proximitySensor", "window sensor proximity-sensor custom");
-                makeDraggable("#touchSensor", "window sensor touch-sensor custom");
-                makeDraggable("#vibrationSensor", "window sensor vibration-sensor custom");
-                makeDraggable("#defaultSensor", "window sensor default-sensor custom");
-
-                //Make the canvas droppable
-                CANVAS.droppable({
-                    accept: ".window",
-                    drop: function (event, ui) {
-                        // Get the drop position
-                        properties.left = ui.offset.left - $(this).offset().left;
-                        properties.top = ui.offset.top - $(this).offset().top;
-                        elementIdCount++;
-                        let id = "node" + elementIdCount;
-                        // Create and draw the element in the canvas
-                        let element = createElement(id);
-                        drawElement(element);
-
-                        //Write model to history stack if its not a room (because of its animation)
-                        if (!element.hasClass("room-floorplan")) {
-                            //Indicate that the model has changed
-                            onModelChanged();
-                        }
-                    }
-                });
-
-                /*
-                 * Temporary saved properties of clicked element in palette
-                 * The data is used to create the element on drop
-                 */
-                function loadProperties(clsName, type) {
-                    properties = {};
-                    properties.clsName = clsName;
-                    properties.type = type;
-                }
-
-
-                /*
-                 * Load properties of an element once the element in the palette is clicked
-                 */
-
-                // Floorplan
-                $('#roomFloorplan').mousedown(function () {
-                    loadProperties("window floorplan room-floorplan custom free-resize jtk-node", undefined);
-                });
-
-                $('#wallFloorplan').mousedown(function () {
-                    loadProperties("window floorplan wall-floorplan custom free-resize jtk-node", undefined);
-                });
-
-                $('#doorFloorplan').mousedown(function () {
-                    loadProperties("window floorplan door-floorplan custom jtk-node", undefined);
-                });
-
-                $('#windowFloorplan').mousedown(function () {
-                    loadProperties("window floorplan window-floorplan custom jtk-node", undefined);
-                });
-
-                $('#stairsFloorplan').mousedown(function () {
-                    loadProperties("window floorplan stairs-floorplan custom jtk-node", undefined);
-                });
-
-                $('#tableFloorplan').mousedown(function () {
-                    loadProperties("window floorplan table-floorplan custom jtk-node", undefined);
-                });
-
-                $('#chairFloorplan').mousedown(function () {
-                    loadProperties("window floorplan chair-floorplan custom jtk-node", undefined);
-                });
-
-                $('#couchFloorplan').mousedown(function () {
-                    loadProperties("window floorplan couch-floorplan custom jtk-node", undefined);
-                });
-
-                $('#bedFloorplan').mousedown(function () {
-                    loadProperties("window floorplan bed-floorplan custom jtk-node", undefined);
-                });
-
-                $('#kitchenSinkFloorplan').mousedown(function () {
-                    loadProperties("window floorplan kitchen-sink-floorplan custom jtk-node", undefined);
-                });
-
-                $('#bathtubFloorplan').mousedown(function () {
-                    loadProperties("window floorplan bathtub-floorplan custom jtk-node", undefined);
-                });
-
-                $('#bathSinkFloorplan').mousedown(function () {
-                    loadProperties("window floorplan bath-sink-floorplan custom jtk-node", undefined);
-                });
-
-                $('#toiletFloorplan').mousedown(function () {
-                    loadProperties("window floorplan toilet-floorplan custom jtk-node", undefined);
-                });
-
-                // Devices
-                $('#raspberryPiDevice').mousedown(function () {
-                    loadProperties("window device raspberry-pi-device custom jtk-node", "Raspberry Pi");
-                });
-
-                $('#arduinoDevice').mousedown(function () {
-                    loadProperties("window device arduino-device custom jtk-node", "Arduino");
-                });
-
-                $('#computerDevice').mousedown(function () {
-                    loadProperties("window device computer-device custom jtk-node", "Computer");
-                });
-
-                $('#laptopDevice').mousedown(function () {
-                    loadProperties("window device laptop-device custom jtk-node", "Laptop");
-                });
-
-                $('#tvDevice').mousedown(function () {
-                    loadProperties("window device tv-device custom jtk-node", "TV");
-                });
-
-                $('#smartphoneDevice').mousedown(function () {
-                    loadProperties("window device smartphone-device custom jtk-node", "Smartphone");
-                });
-
-                $('#smartwatchDevice').mousedown(function () {
-                    loadProperties("window device smartwatch-device custom jtk-node", "Smartwatch");
-                });
-
-                $('#audioSystemDevice').mousedown(function () {
-                    loadProperties("window device audio-system-device custom jtk-node", "Audio System");
-                });
-
-                $('#voiceControllerDevice').mousedown(function () {
-                    loadProperties("window device voice-controller-device custom jtk-node", "Voice Controller");
-                });
-
-                $('#cameraDevice').mousedown(function () {
-                    loadProperties("window device camera-device custom jtk-node", "Camera");
-                });
-
-                $('#defaultDevice').mousedown(function () {
-                    loadProperties("window device default-device custom jtk-node", undefined);
-                });
-
-                // Actuators
-                $('#lightActuator').mousedown(function () {
-                    loadProperties("window actuator light-actuator custom jtk-node", "Light");
-                });
-
-                $('#ledActuator').mousedown(function () {
-                    loadProperties("window actuator led-actuator custom jtk-node", "LED");
-                });
-
-                $('#speakerActuator').mousedown(function () {
-                    loadProperties("window actuator speaker-actuator custom jtk-node", "Speaker");
-                });
-
-                $('#buzzerActuator').mousedown(function () {
-                    loadProperties("window actuator buzzer-actuator custom jtk-node", "Buzzer");
-                });
-
-                $('#vibrationActuator').mousedown(function () {
-                    loadProperties("window actuator vibration-actuator custom jtk-node", "Vibration");
-                });
-
-                $('#heaterActuator').mousedown(function () {
-                    loadProperties("window actuator heater-actuator custom jtk-node", "Heater");
-                });
-
-                $('#airConditionerActuator').mousedown(function () {
-                    loadProperties("window actuator air-conditioner-actuator custom jtk-node", "Air Conditioner");
-                });
-
-                $('#switchActuator').mousedown(function () {
-                    loadProperties("window actuator switch-actuator custom jtk-node", "Switch");
-                });
-
-                $('#motorActuator').mousedown(function () {
-                    loadProperties("window actuator motor-actuator custom jtk-node", "Motor");
-                });
-
-                $('#defaultActuator').mousedown(function () {
-                    loadProperties("window actuator default-actuator custom jtk-node", undefined);
-                });
-
-                // Sensors
-                $('#cameraSensor').mousedown(function () {
-                    loadProperties("window sensor camera-sensor custom jtk-node", "Camera");
-                });
-
-                $('#soundSensor').mousedown(function () {
-                    loadProperties("window sensor sound-sensor custom jtk-node", "Sound");
-                });
-
-                $('#temperatureSensor').mousedown(function () {
-                    loadProperties("window sensor temperature-sensor custom jtk-node", "Temperature");
-                });
-
-                $('#humiditySensor').mousedown(function () {
-                    loadProperties("window sensor humidity-sensor custom jtk-node", "Humidity");
-                });
-
-                $('#gasSensor').mousedown(function () {
-                    loadProperties("window sensor gas-sensor custom jtk-node", "Gas");
-                });
-
-                $('#lightSensor').mousedown(function () {
-                    loadProperties("window sensor light-sensor custom jtk-node", "Light");
-                });
-
-                $('#motionSensor').mousedown(function () {
-                    loadProperties("window sensor motion-sensor custom jtk-node", "Motion");
-                });
-
-                $('#locationSensor').mousedown(function () {
-                    loadProperties("window sensor location-sensor custom jtk-node", "Location");
-                });
-
-                $('#gyroscopeSensor').mousedown(function () {
-                    loadProperties("window sensor gyroscope-sensor custom jtk-node", "Gyroscope");
-                });
-
-                $('#proximitySensor').mousedown(function () {
-                    loadProperties("window sensor proximity-sensor custom jtk-node", "Proximity");
-                });
-
-                $('#touchSensor').mousedown(function () {
-                    loadProperties("window sensor touch-sensor custom jtk-node", "Touch");
-                });
-
-                $('#vibrationSensor').mousedown(function () {
-                    loadProperties("window sensor vibration-sensor custom jtk-node", "Vibration");
-                });
-
-                $('#defaultSensor').mousedown(function () {
-                    loadProperties("window sensor default-sensor custom jtk-node", undefined);
-                });
-
                 /**
                  * Normalizes an angle in radians to an element of [0, 2 * PI[
                  * @param radians
@@ -543,16 +359,23 @@ app.directive('envModelTool',
                 }
 
                 /**
-                 * Create an element to be drawn on the canvas with a certain id.
+                 * Creates an element that is supposed to be drawn to the canvas with a certain ID.
+                 * The createElementProperties object is used in order to get the required classes, the element
+                 * type and the element position on the canvas.
+                 *
+                 * @param id The ID of the element
+                 * @returns {jQuery}
                  */
                 function createElement(id) {
                     //Create element
-                    let element = $('<div>').attr('id', id).addClass(properties.clsName);
+                    let element = $('<div>').attr('id', id)
+                        .addClass(createElementProperties.classes)
+                        .addClass('jtk-node');
 
                     // The position to create the dropped element
                     element.css({
-                        'top': properties.top,
-                        'left': properties.left,
+                        'top': createElementProperties.top,
+                        'left': createElementProperties.left,
                         'width': '50px',
                         'height': '50px'
                     });
@@ -568,8 +391,8 @@ app.directive('envModelTool',
                         });
                     }
 
-                    if (properties.type) {
-                        element.data("type", properties.type);
+                    if (createElementProperties.type) {
+                        element.data("type", createElementProperties.type);
                     }
 
                     //Add connection endpoint and status indicator if required
@@ -938,7 +761,6 @@ app.directive('envModelTool',
                 /*
                  * Bind listeners to the connections
                  */
-
                 // The connection is deleted on double click
                 jsPlumbInstance.bind("dblclick", jsPlumbInstance.deleteConnection);
 
@@ -979,8 +801,9 @@ app.directive('envModelTool',
                     }
                 }
 
-                /*
-                 * Load the data from the element to show it in the tool and input fields
+                /**
+                 * Load the data from the element to show it in the tool and input fields.
+                 * @param element The element to load the data from
                  */
                 function loadData(element) {
                     $timeout(function () {
@@ -996,15 +819,6 @@ app.directive('envModelTool',
                             scope.clickedComponent.rsaKey = element.data("rsaKey");
                             scope.clickedComponent.regError = element.data("regError");
                             scope.clickedComponent.element = element;
-                            // If device is registered then disable the input fields
-                            if (element.data("id")) {
-                                $("#deviceInfo *").attr("disabled", true).off('click');
-                            } else {
-                                $("#deviceInfo *").attr("disabled", false).on('click');
-                                if (element.attr("class").indexOf("default") === -1) {
-                                    $("#deviceTypeInput").attr("disabled", true);
-                                }
-                            }
                         } else if (element.attr("class").indexOf("actuator") > -1) {
                             scope.clickedComponent.category = "ACTUATOR";
                             scope.clickedComponent.id = element.data("id");
@@ -1016,16 +830,6 @@ app.directive('envModelTool',
                             scope.clickedComponent.depError = element.data("depError");
                             scope.clickedComponent.deployed = element.data("deployed");
                             scope.clickedComponent.element = element;
-                            // Disable the input fields if registered
-                            if (element.data("id")) {
-                                $("#actuatorInfo *").attr("disabled", true).off('click');
-                            } else {
-                                $("#actuatorInfo *").attr("disabled", false).on('click');
-                                $("#actuatorDeviceInput").attr("disabled", true);
-                                if (element.attr("class").indexOf("default") == -1) {
-                                    $("#actuatorTypeInput").attr("disabled", true);
-                                }
-                            }
                         } else if (element.attr("class").indexOf("sensor") > -1) {
                             scope.clickedComponent.category = "SENSOR";
                             scope.clickedComponent.id = element.data("id");
@@ -1037,16 +841,6 @@ app.directive('envModelTool',
                             scope.clickedComponent.depError = element.data("depError");
                             scope.clickedComponent.deployed = element.data("deployed");
                             scope.clickedComponent.element = element;
-                            // Disable the input fields if registered
-                            if (element.data("id")) {
-                                $("#sensorInfo *").attr("disabled", true).off('click');
-                            } else {
-                                $("#sensorInfo *").attr("disabled", false).on('click');
-                                $("#sensorDeviceInput").attr("disabled", true);
-                                if (element.attr("class").indexOf("default") == -1) {
-                                    $("#sensorTypeInput").attr("disabled", true);
-                                }
-                            }
                         }
                     });
                 }
@@ -1558,20 +1352,6 @@ app.directive('envModelTool',
 
                     //Animate the value container (appearance and disappearance)
                     valueContainer.fadeIn().delay(2000).fadeOut();
-
-                    /*
-                    valueContainer.animate({
-                        'opacity': 1,
-                        'top': '+=30'
-                    }, 1000, () => {
-                        valueContainer.delay(2000).animate({
-                            'opacity': 0,
-                            'top': '-=80'
-                        }, 1000, () => {
-                            //Animation finished, remove container
-                            valueContainer.remove();
-                        });
-                    });*/
                 }
 
                 /**
@@ -1635,7 +1415,7 @@ app.directive('envModelTool',
                 scope.api = {};
 
                 //Initialize modelling tool
-                let initFunction = initialize.bind(this, scope);
+                let initFunction = initialize.bind(this, scope, element);
                 jsPlumb.ready(initFunction);
             };
 
@@ -1657,59 +1437,7 @@ app.directive('envModelTool',
                     '</div>' +
                     '<div id="collapseFloorplans" class="panel-collapse collapse in">' +
                     '<div class="panel-body canvas-wide modeling-tool canvasPalette">' +
-                    '<ul class="dragList">' +
-                    '<li>' +
-                    '<div class="window floorplan room-floorplan" id="roomFloorplan"></div>' +
-                    '<p><strong>Room</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window floorplan wall-floorplan" id="wallFloorplan"></div>' +
-                    '<p><strong>Wall</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window floorplan door-floorplan" id="doorFloorplan"></div>' +
-                    '<p><strong>Door</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window floorplan window-floorplan" id="windowFloorplan"></div>' +
-                    '<p><strong>Window</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window floorplan stairs-floorplan" id="stairsFloorplan"></div>' +
-                    '<p><strong>Stairs</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window floorplan table-floorplan" id="tableFloorplan"></div>' +
-                    '<p><strong>Table</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window floorplan chair-floorplan" id="chairFloorplan"></div>' +
-                    '<p><strong>Chair</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window floorplan couch-floorplan" id="couchFloorplan"></div>' +
-                    '<p><strong>Couch</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window floorplan bed-floorplan" id="bedFloorplan"></div>' +
-                    '<p><strong>Bed</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window floorplan kitchen-sink-floorplan" id="kitchenSinkFloorplan"></div>' +
-                    '<p><strong>Kitchen sink</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window floorplan bathtub-floorplan" id="bathtubFloorplan"></div>' +
-                    '<p><strong>Bathtub</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window floorplan bath-sink-floorplan" id="bathSinkFloorplan"></div>' +
-                    '<p><strong>Bath sink</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window floorplan toilet-floorplan" id="toiletFloorplan"></div>' +
-                    '<p><strong>Toilet</strong></p>' +
-                    '</li>' +
+                    '<ul class="dragList floorplan-palette">' +
                     '</ul>' +
                     '</div>' +
                     '</div>' +
@@ -2000,6 +1728,8 @@ app.directive('envModelTool',
                     //Input
                     adapterList: '=adapterList',
                     deviceTypes: '=deviceTypes',
+                    actuatorTypes: '=actuatorTypes',
+                    sensorTypes: '=sensorTypes',
 
                     //Callbacks
                     onModelChanged: '&onChanged'
