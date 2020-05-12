@@ -31,7 +31,7 @@
                         <td>
                             <div ng-if="item.description">
                                 <a class="clickable" data-toggle="collapse" data-target="#description-{{item.id}}">
-                                    Toggle
+                                    Show Description
                                 </a>
                                 <div id="description-{{item.id}}" class="collapse">
                                     <span>{{item.description}}</span>
@@ -44,7 +44,7 @@
                         <td>
                             <div>
                                 <a class="clickable" data-toggle="collapse" data-target="#query-{{item.id}}">
-                                    Toggle
+                                    Show Query
                                 </a>
                                 <div id="query-{{item.id}}" class="collapse">
                                     <code>{{item.query}}</code>

@@ -23,4 +23,8 @@ The name convention for subfolders is `<sensor-type>_<IoT_device-type>`.
 
 ## Content
 
+- [bosch-xdk_mqtt-gateway](bosch-xdk_mqtt-gateway): operator scripts to extract sensor data from Bosch XDK devices.
+- [LK-light_raspberry-pi](LK-light_raspberry-pi): operator scripts to extract sensor data from a LK light sensor.
 - [LK-temperature_raspberry-pi](LK-temperature_raspberry-pi): operator scripts to extract sensor data from a LK temperature sensor. 
+- [temperature_stub](temperature_stub): operator scripts to simulate the extraction of temperature sensor data. 
+- [temperature_stub_param](temperature_stub_param): operator scripts to simulate the extraction of temperature sensor data, which take input parameters upon their deployment. 

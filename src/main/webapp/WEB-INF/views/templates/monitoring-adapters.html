@@ -62,7 +62,7 @@
                                 </td>
                             </tr>
                             <tr ng-show="adapterListCtrl.items.length === 0">
-                                <td>No adapters registered.</td>
+                                <td>No operators registered.</td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
@@ -120,7 +120,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Register a new monitoring adapter
+                    <h5 class="modal-title">Register a new monitoring operator
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -160,7 +160,7 @@
                                  ng-class="{'has-error' : addAdapterCtrl.item.errors.description }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addAdapterCtrl.item.errors.description }">
-                                    <input class="form-control no-resize" placeholder="Describe this adapter..."
+                                    <input class="form-control no-resize" placeholder="Describe this operator..."
                                            ng-model="addAdapterCtrl.item.description">
                                 </div>
                                 <span class="help-block" ng-show="addAdapterCtrl.item.errors.description">{{addAdapterCtrl.item.errors.description.message}}</span>
@@ -175,13 +175,25 @@
                                 <span class="help-block" ng-show="addAdapterCtrl.item.errors.unit">{{addAdapterCtrl.item.errors.unit.message}}</span>
                             </div>
                             <!-- item.routine group -->
-                            <label>Adapter scripts:</label>
+                            <label>Operator scripts:</label>
                             <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.routines }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addAdapterCtrl.item.errors.routines }">
-                                    <div class="dropzone" options="ctrl.dzRoutinesOptions"
+                                    <div class="dropzone row" options="ctrl.dzRoutinesOptions"
                                          callbacks="ctrl.dzRoutinesCallbacks" methods="ctrl.dzMethods"
                                          ng-dropzone></div>
+                                    <div style="display:none;">
+                                      <div id='tpl' class="dz-preview dz-file-preview ">
+                                        <div class="dz-details col-lg-4 col-sm-6 col-12">
+                                            <div class="dz-filename"><span data-dz-name></span></div>
+                                            <img data-dz-thumbnail />
+                                        </div>
+                                        <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
+                                        <div class="dz-success-mark"><span>✔</span></div>
+                                        <div class="dz-error-mark"><span>✘</span></div>
+                                        <div class="dz-error-message"><span data-dz-errormessage></span></div>
+                                       </div>
+                                     </div>
                                 </div>
                                 <span class="help-block" ng-show="addAdapterCtrl.item.errors.routines">{{addAdapterCtrl.item.errors.routines.message}}</span>
                             </div>

@@ -20,5 +20,11 @@ The name convention for subfolders is `<actuator-type>_<IoT-device-type>`.
 
 ## Content
 
+- [actuator_stub](actuator_stub): operator scripts to simulate an actuator.
+- [camera_raspberry-pi](camera_raspberry-pi): operator scripts to control a wide angle fish-eye camera.
+- [joyit-lcd-display_raspberry-pi](joyit-lcd-display_raspberry-pi): operator scripts to control a joy-it lcd display actuator. 
+- [LK-buzzer_raspberry-pi](LK-buzzer_raspberry-pi): operator scripts to trigger a LK buzzer actuator.
+- [LK-led-rgb_raspberry-pi](LK-led-rgb_raspberry-pi): operator scripts to control a LK LED RGB actuator.
+- [loudspeaker_computer](loudspeaker_computer): operator scripts to control a loudspeaker actuator.
 - [relay_raspberry-pi](relay_raspberry-pi): operator scripts to control a relay.
 - [switch_raspberry-pi](switch_raspberry-pi): operator scripts to control a radio frequency (RF), Arduino-based switch.

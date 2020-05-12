@@ -120,7 +120,7 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
         String data = parameters.get(PARAM_KEY_DATA);
 
         //Get actuator from repository
-        Actuator actuator = actuatorRepository.findOne(actuatorId);
+        Actuator actuator = actuatorRepository.get(actuatorId);
 
         //Sanity check
         if (actuator == null) {

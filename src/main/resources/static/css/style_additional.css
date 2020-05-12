@@ -71,3 +71,27 @@ ul.minus-list li:before {
 .easy-autocomplete input {
     width: 100%;
 }
+
+.dropzone{
+  overflow-y:auto;
+  max-height:250px;
+  margin:auto;
+  max-width:100%;
+  display:list-item;
+}
+
+.dz-details{
+   padding:5px;
+}
+
+.dz-filename{
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  display: block;
+}
+
+:hover.dz-details{
+  background: #9e9e9e7d;
+  color: black;
+}

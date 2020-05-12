@@ -811,15 +811,10 @@ app.directive('cepQueryEditor', [function () {
             } else if (ui.helper.hasClass(CLASS_OPERATOR)) {
                 ui.placeholder.addClass(CLASS_OPERATOR);
             }
-
-            if (!ui.helper.hasClass('ui-draggable-dragging')) {
-                deletionArea.show();
-            }
         }
 
         function sortingStop(event, ui) {
             isDragging = false;
-            deletionArea.hide();
         }
 
         function updatePattern(event, ui) {
@@ -1020,7 +1015,7 @@ app.directive('cepQueryEditor', [function () {
         }
 
         function initDeletionArea() {
-            deletionArea.hide().droppable({
+            deletionArea.droppable({
                 accept: '.' + CLASS_PATTERN_CONTAINER + ' > .' + CLASS_PATTERN_ELEMENT,
                 hoverClass: CLASS_DELETION_AREA_ACCEPTING,
                 drop: removeElement

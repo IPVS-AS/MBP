@@ -66,9 +66,16 @@ public class DeviceValidator implements Validator {
                 "The user name must not be empty.");
 
         //Check if rsa key was provided (mandatory)
-        ValidationUtils.rejectIfEmptyOrWhitespace(
-                errors, "rsaKey", "device.rsaKey.empty",
-                "The RSA key must not be empty!");
+        if (!(device.hasRSAKey() || device.hasPassword())) {
+
+            ValidationUtils.rejectIfEmptyOrWhitespace(
+                    errors, "password", "device.password.empty",
+                    "You must inform a password or a RSA key.");
+
+            ValidationUtils.rejectIfEmptyOrWhitespace(
+                    errors, "rsaKey", "device.rsaKey.empty",
+                    "You must inform a password or a RSA key.");
+        }
 
         //Retrieve fields that need to be of a certain format
         String ipAddress = device.getIpAddress();

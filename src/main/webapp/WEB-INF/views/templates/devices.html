@@ -171,8 +171,8 @@
                             <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.password }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addDeviceCtrl.item.errors.password }">
-                                    <input class="form-control" id="device-form-input-password" type="text"
-                                           placeholder="Password" ng-model="addDeviceCtrl.item.password"/>
+                                    <input class="form-control" id="device-form-input-password" type="password"
+                                           placeholder="Password" autocomplete="no" ng-model="addDeviceCtrl.item.password"/>
                                 </div>
                                 <span class="help-block" ng-show="addDeviceCtrl.item.errors.password">{{addDeviceCtrl.item.errors.password.message}}</span>
                             </div>

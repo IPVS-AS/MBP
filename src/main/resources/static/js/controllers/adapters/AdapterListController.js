@@ -16,9 +16,11 @@ app.controller('AdapterListController',
                     vm.addAdapterCtrl.item.serviceFile = file;
                 }
             };
-
             vm.dzRoutinesOptions = {
                 paramName: 'routinesFile',
+                addRemoveLinks: true,
+                previewTemplate:document.querySelector('#tpl').innerHTML,
+                createImageThumbnails: false,
                 maxFilesize: '100',
                 maxFiles: 99
             };
@@ -29,7 +31,11 @@ app.controller('AdapterListController',
                         vm.addAdapterCtrl.item.routineFiles = [];
                     }
                     vm.addAdapterCtrl.item.routineFiles.push(file);
-                }
+                },
+                'removedfile': function(file){
+                  vm.addAdapterCtrl.item.routineFiles.splice(vm.addAdapterCtrl.item.routineFiles.indexOf(file),1);
+                },
+
             };
 
             vm.dzMethods = {};
