@@ -10,26 +10,25 @@ app.directive('envModelTool',
         function (ENDPOINT_URI, $timeout, $q, $controller) {
 
             //Class for elements of the palette
-            const PaletteElement = function (name, classes, freeResize) {
+            const PaletteElement = function (name, freeResize) {
                 this.name = name;
-                this.classes = classes;
                 this.freeResize = (typeof freeResize === 'undefined') ? false : freeResize;
             };
 
             //Default floorplan elements to offer in the palette
-            const FLOORPLAN_ELEMENTS = [new PaletteElement('Room', 'room-floorplan', true),
-                new PaletteElement('Wall', 'wall-floorplan', true),
-                new PaletteElement('Door', 'door-floorplan'),
-                new PaletteElement('Window', 'window-floorplan'),
-                new PaletteElement('Stairs', 'stairs-floorplan'),
-                new PaletteElement('Table', 'table-floorplan'),
-                new PaletteElement('Chair', 'chair-floorplan'),
-                new PaletteElement('Couch', 'couch-floorplan'),
-                new PaletteElement('Bed', 'bed-floorplan'),
-                new PaletteElement('Kitchen sink', 'kitchen-sink-floorplan'),
-                new PaletteElement('Bathtub', 'bathtub-floorplan'),
-                new PaletteElement('Bath sink', 'bath-sink-floorplan'),
-                new PaletteElement('Toilet', 'toilet-floorplan')];
+            const FLOORPLAN_ELEMENTS = [new PaletteElement('Room', true),
+                new PaletteElement('Wall', true),
+                new PaletteElement('Door'),
+                new PaletteElement('Window'),
+                new PaletteElement('Stairs'),
+                new PaletteElement('Table'),
+                new PaletteElement('Chair'),
+                new PaletteElement('Couch'),
+                new PaletteElement('Bed'),
+                new PaletteElement('Kitchen sink'),
+                new PaletteElement('Bathtub'),
+                new PaletteElement('Bath sink'),
+                new PaletteElement('Toilet')];
 
             function initialize(scope, elements) {
                 const DIAGRAM_CONTAINER = $("#toolCanvasContainer", elements);
@@ -39,9 +38,9 @@ app.directive('envModelTool',
                 const EXPORT_MODAL = $("#exportModelModal", elements);
                 const IMPORT_MODAL = $("#importModelModal", elements);
                 const PALETTE_FLOORPLANS = $(".floorplan-palette", elements);
-                const PALETTE_DEVICES = $(".floorplan-palette", elements);
-                const PALETTE_ACTUATORS = $(".floorplan-palette", elements);
-                const PALETTE_SENSORS = $(".floorplan-palette", elements);
+                const PALETTE_DEVICES = $(".device-palette", elements);
+                const PALETTE_ACTUATORS = $(".actuator-palette", elements);
+                const PALETTE_SENSORS = $(".sensor-palette", elements);
                 let markingRectContainer = $(null);
                 let markingRect = $(null);
                 let jsPlumbInstance = null;
@@ -126,27 +125,51 @@ app.directive('envModelTool',
                  * Initializes the element palette.
                  */
                 function initPalette() {
-                    //Initialize floorplans
-                    $.each(FLOORPLAN_ELEMENTS, function (index, elementObject) {
-                        //Create element
-                        let element = $('<div>').addClass('window floorplan').addClass(elementObject.classes);
 
-                        //Check for free resizability
-                        if (elementObject.freeResize) {
-                            element.addClass('free-resize')
-                        }
+                    /**
+                     * Adds a list of component elements of a certain type to a given palette.
+                     * @param elements The array of elements to add
+                     * @param palette The palette to which the elements are supposed to be added
+                     * @param className A CSS class name representing the component type
+                     */
+                    function addElementsToPalette(elements, palette, className) {
+                        $.each(elements, function (index, elementObject) {
+                            //Create DOM element
+                            let element = $('<div>').addClass('window').addClass(className);
 
-                        //Create list item
-                        let listItem = $('<li>');
-                        listItem.append(element);
-                        listItem.append($('<p>').append($('<strong>').text(elementObject.name)));
+                            //Convert the element name to a CSS class with suffix
+                            let elementClassName = convertNameToClass(elementObject.name) + '-' + className;
+                            element.addClass(elementClassName);
 
-                        //Add element to palette
-                        PALETTE_FLOORPLANS.append(listItem);
+                            //Check if element specifies free resizability
+                            if (((typeof elementObject.freeResize) !== 'undefined') && elementObject.freeResize) {
+                                element.addClass('free-resize');
+                            }
 
-                        //Make element draggable
-                        makePaletteElementDraggable(element, undefined);
-                    });
+                            //Create list item
+                            let listItem = $('<li>');
+                            listItem.append(element);
+                            listItem.append($('<p>').append($('<strong>').text(elementObject.name)));
+
+                            //Add element to palette
+                            palette.append(listItem);
+
+                            //Make element draggable
+                            makePaletteElementDraggable(element, elementObject.name);
+                        });
+                    }
+
+                    //Add floorplan types to palette
+                    addElementsToPalette(FLOORPLAN_ELEMENTS, PALETTE_FLOORPLANS, 'floorplan');
+
+                    //Add device types to palette
+                    addElementsToPalette(scope.deviceTypes, PALETTE_DEVICES, 'device');
+
+                    //Add actuator types to palette
+                    addElementsToPalette(scope.actuatorTypes, PALETTE_ACTUATORS, 'actuator');
+
+                    //Add sensor types to palette
+                    addElementsToPalette(scope.sensorTypes, PALETTE_SENSORS, 'sensor');
                 }
 
                 /**
@@ -337,6 +360,23 @@ app.directive('envModelTool',
                         },
                         handles: "all"
                     });
+                }
+
+                /**
+                 * Converts a name (e.g. the name of a component type) to a valid CSS class name.
+                 * @param name The name to convert
+                 */
+                function convertNameToClass(name) {
+                    //Replace whitespaces with hyphens
+                    name = name.replace(/\s+/g, "-");
+
+                    //Remove non-alphabetical and non-hyphen characters
+                    name = name.replace(/[^A-Za-z-]/g, "");
+
+                    //Convert to lower case
+                    name = name.toLowerCase();
+
+                    return name;
                 }
 
                 /**
@@ -1452,51 +1492,7 @@ app.directive('envModelTool',
                     '</div>' +
                     '<div id="collapseDevices" class="panel-collapse collapse">' +
                     '<div class="panel-body canvas-wide modeling-tool canvasPalette">' +
-                    '<ul class="dragList">' +
-                    '<li>' +
-                    '<div class="window device raspberry-pi-device" id="raspberryPiDevice"></div>' +
-                    '<p><strong>Raspberry Pi</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window device arduino-device" id="arduinoDevice"></div>' +
-                    '<p><strong>Arduino</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window device computer-device" id="computerDevice"></div>' +
-                    '<p><strong>Computer</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window device laptop-device" id="laptopDevice"></div>' +
-                    '<p><strong>Laptop</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window device tv-device" id="tvDevice"></div>' +
-                    '<p><strong>TV</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window device smartphone-device" id="smartphoneDevice"></div>' +
-                    '<p><strong>Smartphone</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window device smartwatch-device" id="smartwatchDevice"></div>' +
-                    '<p><strong>Smartwatch</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window device audio-system-device" id="audioSystemDevice"></div>' +
-                    '<p><strong>Audio System</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window device voice-controller-device" id="voiceControllerDevice"></div>' +
-                    '<p><strong>Voice Controller</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window device camera-device" id="cameraDevice"></div>' +
-                    '<p><strong>Camera</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window device default-device" id="defaultDevice"></div>' +
-                    '<p><strong>Default device</strong></p>' +
-                    '</li>' +
+                    '<ul class="dragList device-palette">' +
                     '</ul>' +
                     '</div>' +
                     '</div>' +
@@ -1511,47 +1507,7 @@ app.directive('envModelTool',
                     '</div>' +
                     '<div id="collapseActuators" class="panel-collapse collapse">' +
                     '<div class="panel-body canvas-wide modeling-tool canvasPalette">' +
-                    '<ul class="dragList">' +
-                    '<li>' +
-                    '<div class="window actuator light-actuator" id="lightActuator"></div>' +
-                    '<p><strong>Light</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window actuator led-actuator" id="ledActuator"></div>' +
-                    '<p><strong>LED</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window actuator speaker-actuator" id="speakerActuator"></div>' +
-                    '<p><strong>Speaker</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window actuator buzzer-actuator" id="buzzerActuator"></div>' +
-                    '<p><strong>Buzzer</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window actuator vibration-actuator" id="vibrationActuator"></div>' +
-                    '<p><strong>Vibration</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window actuator heater-actuator" id="heaterActuator"></div>' +
-                    '<p><strong>Heater</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window actuator air-conditioner-actuator" id="airConditionerActuator"></div>' +
-                    '<p><strong>Air Conditioner</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window actuator switch-actuator" id="switchActuator"></div>' +
-                    '<p><strong>Switch</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window actuator motor-actuator" id="motorActuator"></div>' +
-                    '<p><strong>Motor</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window actuator default-actuator" id="defaultActuator"></div>' +
-                    '<p><strong>Default actuator</strong></p>' +
-                    '</li>' +
+                    '<ul class="dragList actuator-palette">' +
                     '</ul>' +
                     '</div>' +
                     '</div>' +
@@ -1566,59 +1522,7 @@ app.directive('envModelTool',
                     '</div>' +
                     '<div id="collapseSensors" class="panel-collapse collapse">' +
                     '<div class="panel-body canvas-wide modeling-tool canvasPalette">' +
-                    '<ul class="dragList">' +
-                    '<li>' +
-                    '<div class="window sensor camera-sensor" id="cameraSensor"></div>' +
-                    '<p><strong>Camera</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window sensor sound-sensor" id="soundSensor"></div>' +
-                    '<p><strong>Sound</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window sensor temperature-sensor" id="temperatureSensor"></div>' +
-                    '<p><strong>Temperature</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window sensor humidity-sensor" id="humiditySensor"></div>' +
-                    '<p><strong>Humidity</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window sensor gas-sensor" id="gasSensor"></div>' +
-                    '<p><strong>Gas</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window sensor light-sensor" id="lightSensor"></div>' +
-                    '<p><strong>Light</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window sensor motion-sensor" id="motionSensor"></div>' +
-                    '<p><strong>Motion</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window sensor location-sensor" id="locationSensor"></div>' +
-                    '<p><strong>Location</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window sensor gyroscope-sensor" id="gyroscopeSensor"></div>' +
-                    '<p><strong>Gyroscope</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window sensor proximity-sensor" id="proximitySensor"></div>' +
-                    '<p><strong>Proximity</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window sensor touch-sensor" id="touchSensor"></div>' +
-                    '<p><strong>Touch</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window sensor vibration-sensor" id="vibrationSensor"></div>' +
-                    '<p><strong>Vibration</strong></p>' +
-                    '</li>' +
-                    '<li>' +
-                    '<div class="window sensor default-sensor" id="defaultSensor"></div>' +
-                    '<p><strong>Default sensor</strong></p>' +
-                    '</li>' +
+                    '<ul class="dragList sensor-palette">' +
                     '</ul>' +
                     '</div>' +
                     '</div>' +

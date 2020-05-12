@@ -106,7 +106,14 @@ public abstract class Component extends UserEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Component component = (Component) o;
-        return id.equals(component.id);
+
+        //Check if IDs are available
+        if((this.id == null || component.id == null)){
+            return false;
+        }
+
+        //Compare IDs
+        return this.id.equals(component.id);
     }
 
     @Override
