@@ -25,6 +25,9 @@ echo "\nInstalling Mosquitto Broker, MongoDB, InfluxDB, Tomcat8, git and maven..
 # Install Mosquitto Broker
 #sudo apt-get install -qy mosquitto;
 #sudo systemctl start mosquitto;
+cd mosquitto/
+docker build -t mosquitto .
+docker run mosquitto -d -p 1883:1883 -p 1884:1884
 
 # Install and start MongoDB 
 sudo apt-get -qy install mongodb-server;

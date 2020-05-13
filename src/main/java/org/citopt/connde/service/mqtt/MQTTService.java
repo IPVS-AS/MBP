@@ -108,7 +108,7 @@ public class MQTTService {
      * @throws MqttException In case of an error during execution of mqtt operations
      * @throws IOException   In case of an I/O issue
      */
-    @Scheduled(initialDelay = 30000, fixedRate = 86400)
+    @Scheduled(initialDelay = 60000, fixedRate = 86400)
     public void initialize() throws MqttException, IOException {
 
         System.out.println("Refreshing MQTT client for MBP");
