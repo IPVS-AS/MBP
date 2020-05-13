@@ -14,7 +14,7 @@ echo "write hostname\n"
 sudo sh -c "echo '127.0.0.1' $(hostname) >> /etc/hosts";
 echo "\nupdate package repositories\n"
 sudo apt-get -qy update;
-#sudo apt-get -qy upgrade;
+sudo apt-get -qy upgrade;
 
 #Installing Java8
 echo "\nInstalling Java...\n"
@@ -25,9 +25,12 @@ echo "\nInstalling Mosquitto Broker, MongoDB, InfluxDB, Tomcat8, git and maven..
 # Install Mosquitto Broker
 #sudo apt-get install -qy mosquitto;
 #sudo systemctl start mosquitto;
+
+echo "\nBuilding mosquitto with go-auth plugin...\n"
 cd mosquitto/
 docker build -t mosquitto .
-docker run mosquitto -d -p 1883:1883 -p 1884:1884
+docker run -d --network="host" -p 1883:1883 -p 1884:1884 mosquitto-go-auth
+cd ..
 
 # Install and start MongoDB 
 sudo apt-get -qy install mongodb-server;

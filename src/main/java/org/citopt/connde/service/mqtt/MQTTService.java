@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import org.apache.commons.codec.binary.Base64;
 import org.citopt.connde.service.settings.SettingsService;
-import org.citopt.connde.service.settings.model.BrokerLocation;
 import org.citopt.connde.service.settings.model.Settings;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -108,10 +107,10 @@ public class MQTTService {
      * @throws MqttException In case of an error during execution of mqtt operations
      * @throws IOException   In case of an I/O issue
      */
-    @Scheduled(initialDelay = 60000, fixedRate = 86400)
+    @Scheduled(initialDelay = 60000, fixedDelay = 600000)
     public void initialize() throws MqttException, IOException {
 
-        System.out.println("Refreshing MQTT client for MBP");
+        System.out.println("Refreshing MQTT client for the MBP...");
 
         //Disconnect the old mqtt client if already connected
         if ((mqttClient != null) && (mqttClient.isConnected())) {
@@ -127,42 +126,46 @@ public class MQTTService {
         //Instantiate memory persistence
         MemoryPersistence persistence = new MemoryPersistence();
 
-        if (settings.getBrokerLocation().equals(BrokerLocation.REMOTE)) {
-            //Retrieve IP address of external broker from settings
-            brokerAddress = settings.getBrokerIPAddress();
+        MqttConnectOptions connectOptions = null;
 
-        } else if (settings.getBrokerLocation().equals(BrokerLocation.SECURE)) {
-            //Retrieve IP address of external broker from settings
-            brokerAddress = settings.getBrokerIPAddress();
+        switch(settings.getBrokerLocation()) {
+            case LOCAL_SECURE:
+                requestOAuth2Token();
 
-            requestOAuth2Token();
+                connectOptions = new MqttConnectOptions();
+                connectOptions.setCleanSession(true);
+                connectOptions.setUserName(accessToken);
+                connectOptions.setPassword("any".toCharArray());
+                break;
+            case REMOTE_SECURE:
+                //Retrieve IP address of external broker from settings
+                brokerAddress = settings.getBrokerIPAddress();
 
-            //Create new mqtt client with the full broker URL
-            mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
-            MqttConnectOptions connectOptions = new MqttConnectOptions();
-            connectOptions.setCleanSession(true);
-            connectOptions.setUserName(accessToken);
-            connectOptions.setPassword("any".toCharArray());
+                requestOAuth2Token();
 
-            //Connect and subscribe to the topics
-            mqttClient.connect(connectOptions);
-            //Subscribe all topics in the topic set
-            for (String topic : subscribedTopics) {
-                mqttClient.subscribe(topic);
-            }
+                connectOptions = new MqttConnectOptions();
+                connectOptions.setCleanSession(true);
+                connectOptions.setUserName(accessToken);
+                connectOptions.setPassword("any".toCharArray());
+                break;
+            case REMOTE:
+                //Retrieve IP address of external broker from settings
+                brokerAddress = settings.getBrokerIPAddress();
+                break;
+            default:
+                break;
 
-            //Set MQTT callback object if available
-            if (mqttCallback != null) {
-                mqttClient.setCallback(mqttCallback);
-            }
-            return;
         }
 
         //Create new mqtt client with the full broker URL
         mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
+        if (connectOptions != null) {
+            //Connect and subscribe to the topics
+            mqttClient.connect(connectOptions);
+        } else {
+            mqttClient.connect();
+        }
 
-        //Connect and subscribe to the topics
-        mqttClient.connect();
         //Subscribe all topics in the topic set
         for (String topic : subscribedTopics) {
             mqttClient.subscribe(topic);

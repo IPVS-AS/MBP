@@ -57,7 +57,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .scopes("read")
                 .authorities(Constants.ADMIN)
                 .autoApprove(true)
-                .accessTokenValiditySeconds(60); // 365 days = 31536000
+                .accessTokenValiditySeconds(600); // 10 minutes
     }
 
     @Override
