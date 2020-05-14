@@ -88,9 +88,8 @@ app.controller('TestingController',
              *
              * @param testID
              */
-            function openPDF(testID) {
-                $http.get(ENDPOINT_URI + '/test-details/openPDF/' + testID).then(function (response) {
-                });
+            function downloadPDF(testID) {
+                window.open('api/test-details/downloadPDF/' + testID,'_blank');
             }
 
 
@@ -494,7 +493,7 @@ app.controller('TestingController',
                 executeTest: executeTest,
                 editConfig: editConfig,
                 stopTest: stopTest,
-                openPDF: openPDF,
+                downloadPDF: downloadPDF,
                 refreshTestEntry: refreshTestEntry
 
             });

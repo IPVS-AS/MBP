@@ -1,6 +1,7 @@
 package org.citopt.connde.service.testing;
 
 
+import org.apache.commons.lang3.SystemUtils;
 import org.aspectj.lang.annotation.Before;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Actuator;
@@ -17,6 +18,7 @@ import org.citopt.connde.web.rest.RestDeploymentController;
 import org.citopt.connde.web.rest.RestRuleController;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -24,7 +26,9 @@ import org.springframework.stereotype.Component;
 
 import java.awt.*;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.List;
 
@@ -419,30 +423,32 @@ public class TestEngine implements ValueLogReceiverObserver {
 
 
     /**
-     * Opens the Test-Report
+     * Download/Open Testreport.
      *
      * @param testId ID of the specific test
      */
-    public String openPDF(String testId) throws IOException {
+    public ResponseEntity<String> downloadPDF(String testId) throws IOException {
         TestDetails test = testDetailsRepository.findById(testId);
-        File testRepo = new File(test.getPathPDF());
-        String response = testRepo.exists()+" "+ test.getPathPDF() + " ";
-        Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + testRepo);
+        File result = new File(test.getPathPDF());
 
-        /***
-         try {
-         TestDetails test = testDetailsRepository.findById(testId);
-         File testRepo = new File("/var/lib/tomcat8/5ebd09242caa5f0be19c0738.pdf");
-         response = test.getPath() + " " + String.valueOf(testRepo.exists());
-         //Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + testRepo);
-         //response = new ResponseEntity<>(HttpStatus.OK);
+        ResponseEntity respEntity;
 
-         } catch (IOException e) {
-         e.printStackTrace();
-         response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-         }
-         **/
-        return response;
+        if (result.exists()) {
+            InputStream inputStream = new FileInputStream(test.getPathPDF());
+
+            byte[] out = org.apache.commons.io.IOUtils.toByteArray(inputStream);
+
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.add("content-disposition", "attachment; filename=" + testId + ".pdf");
+
+            respEntity = new ResponseEntity(out, responseHeaders, HttpStatus.OK);
+
+        } else {
+            respEntity = new ResponseEntity("File Not Found", HttpStatus.OK);
+        }
+
+
+        return respEntity;
     }
 
 

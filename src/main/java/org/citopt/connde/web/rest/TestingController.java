@@ -83,9 +83,9 @@ public class TestingController {
      * @param testId ID of the test to be opened
      * @return HttpStatus
      */
-    @GetMapping(value = "/test-details/openPDF/{testId}")
-    public String openPDF(@PathVariable(value = "testId") String testId) throws IOException {
-        return testEngine.openPDF(testId);
+    @GetMapping(value = "/test-details/downloadPDF/{testId}")
+    public ResponseEntity<String> openPDF(@PathVariable(value = "testId") String testId) throws IOException {
+        return testEngine.downloadPDF(testId);
     }
 
     /**
