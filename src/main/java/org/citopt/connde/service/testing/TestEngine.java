@@ -426,7 +426,7 @@ public class TestEngine implements ValueLogReceiverObserver {
         ResponseEntity<String> response;
         try {
             TestDetails test = testDetailsRepository.findById(testId);
-            File testRepo = new File(test.getPathPDF());
+            File testRepo = new File("/var/lib/tomcat8/5ebd09242caa5f0be19c0738.pdf");
             Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + testRepo);
             response = new ResponseEntity<>(HttpStatus.OK);
 
