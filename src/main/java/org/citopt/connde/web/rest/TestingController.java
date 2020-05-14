@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.*;
 
 
@@ -83,7 +84,7 @@ public class TestingController {
      * @return HttpStatus
      */
     @GetMapping(value = "/test-details/openPDF/{testId}")
-    public ResponseEntity<String> openPDF(@PathVariable(value = "testId") String testId) {
+    public String openPDF(@PathVariable(value = "testId") String testId) throws IOException {
         return testEngine.openPDF(testId);
     }
 

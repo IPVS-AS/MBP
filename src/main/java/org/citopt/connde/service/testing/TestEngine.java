@@ -417,26 +417,34 @@ public class TestEngine implements ValueLogReceiverObserver {
         return executedRules;
     }
 
+
     /**
      * Opens the Test-Report
      *
      * @param testId ID of the specific test
      */
-    public ResponseEntity<String> openPDF(String testId) {
-        ResponseEntity<String> response;
-        try {
-            TestDetails test = testDetailsRepository.findById(testId);
-            File testRepo = new File("/var/lib/tomcat8/5ebd09242caa5f0be19c0738.pdf");
-            Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + testRepo);
-            response = new ResponseEntity<>(HttpStatus.OK);
+    public String openPDF(String testId) throws IOException {
+        TestDetails test = testDetailsRepository.findById(testId);
+        File testRepo = new File(test.getPathPDF());
+        String response = testRepo.exists()+" "+ test.getPathPDF() + " ";
+        Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + testRepo);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-            response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        /***
+         try {
+         TestDetails test = testDetailsRepository.findById(testId);
+         File testRepo = new File("/var/lib/tomcat8/5ebd09242caa5f0be19c0738.pdf");
+         response = test.getPath() + " " + String.valueOf(testRepo.exists());
+         //Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + testRepo);
+         //response = new ResponseEntity<>(HttpStatus.OK);
 
+         } catch (IOException e) {
+         e.printStackTrace();
+         response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+         }
+         **/
         return response;
     }
+
 
 }
 
