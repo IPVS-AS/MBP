@@ -71,7 +71,14 @@ app.controller('TestingController',
              */
             function refreshTestEntry(testId, testName) {
                 $http.get(ENDPOINT_URI + '/test-details/pdfExists/' + testId).success(function (response) {
-                    document.getElementById(testName).disabled = !response;
+                    console.log("response: "+ response);
+                    if(response === true){
+                        document.getElementById(testName).disabled = false;
+                        console.log(document.getElementById(testName).disabled);
+                    }else {
+                        document.getElementById(testName).disabled = true;
+                        console.log(document.getElementById(testName).disabled);
+                    }
                 });
             }
 

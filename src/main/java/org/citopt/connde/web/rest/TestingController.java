@@ -20,7 +20,6 @@ import java.util.*;
 @RestController
 @RequestMapping(value = RestConfiguration.BASE_PATH)
 public class TestingController {
-
     @Autowired
     private RestDeploymentController restDeploymentController;
 
@@ -45,7 +44,7 @@ public class TestingController {
      * @throws Exception
      */
     @PostMapping(value = "/test-details/test/{testId}")
-    public ResponseEntity<Map<String, List<Double>>> executeTest(@PathVariable(value = "testId") String testId) throws Exception {
+    public String executeTest(@PathVariable(value = "testId") String testId) throws Exception {
 
         TestDetails testDetails = testDetailsRepository.findOne(testId);
 
@@ -72,8 +71,8 @@ public class TestingController {
         // save success and path of test report to database
         testDetailsRepository.save(testDetails3);
 
-
-        return new ResponseEntity<>(valueListTest, HttpStatus.OK);
+        //return new ResponseEntity<>(valueListTest, HttpStatus.OK); Map<String, List<Double>>
+        return pdfPath;
     }
 
 
