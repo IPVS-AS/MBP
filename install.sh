@@ -23,31 +23,32 @@ sudo apt-get install -qy maven;
 
 echo "\nInstalling Mosquitto Broker, MongoDB, InfluxDB, Tomcat8, git and maven...\n"
 
-echo "Please select your local broker configuration:\n"
-select broker in Normal Secured
+while true
 do
-    case $broker in
-        "Normal")
-            echo "Normal mosquitto configuration selected"
-            echo -e "\nLOCAL" >> /src/main/resources/config.properties
-            sudo apt-get install -qy mosquitto;
-            sudo systemctl start mosquitto;
-            break
-            ;;
-        "Secured")
-            echo "Secured mosquitto with OAuth2 mechanism configuration selected"
-            echo -e "\nLOCAL_SECURE" >> /src/main/resources/config.properties
-            echo "\nBuilding mosquitto with go-auth plugin...\n"
-            cd mosquitto/
-            docker build -t mosquitto .
-            echo "\nStarting docker container for mosquitto with go-auth plugin...\n"
-            docker run -d --network="host" -p 1883:1883 -p 1884:1884 mosquitto-go-auth
-            cd ..
-            break
-            ;;
-        *) echo "Invalid entry"
+    echo "Please select your local broker configuration and enter the number:\n"
+    echo "1) Normal\n"
+    echo "2) Secured\n"
+    read selection
+    case $selection in
+    1)
+        echo "Normal mosquitto configuration selected"
+        echo -e "\nLOCAL" >> /src/main/resources/config.properties
+        sudo apt-get install -qy mosquitto;
+        sudo systemctl start mosquitto;
         break
         ;;
+    2)
+        echo "Secured mosquitto with OAuth2 mechanism configuration selected"
+        echo -e "\nLOCAL_SECURE" >> /src/main/resources/config.properties
+        echo "\nBuilding mosquitto with go-auth plugin...\n"
+        cd mosquitto/
+        docker build -t mosquitto .
+        echo "\nStarting docker container for mosquitto with go-auth plugin...\n"
+        docker run -d --network="host" -p 1883:1883 -p 1884:1884 mosquitto-go-auth
+        cd ..
+        break
+        ;;
+    *) echo "Invalid number. Type 1 or 2.";;
     esac
 done
 
