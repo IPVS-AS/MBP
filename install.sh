@@ -32,14 +32,14 @@ do
     case $selection in
     1)
         echo "Normal mosquitto configuration selected"
-        echo -e "\nLOCAL" >> /src/main/resources/config.properties
+        echo "\nLOCAL" >> src/main/resources/config.properties
         sudo apt-get install -qy mosquitto;
         sudo systemctl start mosquitto;
         break
         ;;
     2)
         echo "Secured mosquitto with OAuth2 mechanism configuration selected"
-        echo -e "\nLOCAL_SECURE" >> /src/main/resources/config.properties
+        echo "\nLOCAL_SECURE" >> src/main/resources/config.properties
         echo "\nBuilding mosquitto with go-auth plugin...\n"
         cd mosquitto/
         docker build -t mosquitto-go-auth .
