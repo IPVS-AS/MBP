@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.apache.commons.codec.binary.Base64;
 import org.citopt.connde.service.settings.SettingsService;
+import org.citopt.connde.service.settings.model.BrokerLocation;
 import org.citopt.connde.service.settings.model.Settings;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -71,11 +72,7 @@ public class MQTTService {
     @Value("${security.oauth2.client.client-id}")
     private String oauth2ClientId;
 
-    @Value("${security.oauth2.client.client-secret}")
-    private String oauth2ClientSecret;
-
     private String accessToken;
-    private long expiresIn;
 
     /**
      * Initializes the value logger service.
@@ -88,14 +85,18 @@ public class MQTTService {
 
         //Setup and start the MQTT client
         try {
-//            initialize();
             String brokerAddress = "localhost";
             MemoryPersistence persistence = new MemoryPersistence();
-            mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
+            if (settingsService.getSettings().getBrokerLocation().equals(BrokerLocation.LOCAL)) {
+                mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
+                initialize();
+            } else {
+                mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
+            }
         } catch (MqttException e) {
             System.err.println("MqttException: " + e.getMessage());
-//        } catch (IOException e) {
-//            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -104,14 +105,11 @@ public class MQTTService {
      * The required parameters are derived from the settings service. If the MQTT client is already running, it will
      * be terminated, disconnected and restarted with new settings.
      * According to the broker location, the mqtt client is initiated with or without OAuth2  authentication.
-     * The OAuth2 access token for the MBP is only valid for 10 minutes, the scheduled task ensures to refresh this token every 10 minutes.
      *
      * @throws MqttException In case of an error during execution of mqtt operations
      * @throws IOException   In case of an I/O issue
      */
-    @Scheduled(initialDelay = 60000, fixedDelay = 600000)
     public void initialize() throws MqttException, IOException {
-
         //Disconnect the old mqtt client if already connected
         if ((mqttClient != null) && (mqttClient.isConnected())) {
             mqttClient.disconnectForcibly();
@@ -131,7 +129,6 @@ public class MQTTService {
         switch(settings.getBrokerLocation()) {
             case LOCAL_SECURE:
                 requestOAuth2Token();
-
                 connectOptions = new MqttConnectOptions();
                 connectOptions.setCleanSession(true);
                 connectOptions.setUserName(accessToken);
@@ -140,9 +137,7 @@ public class MQTTService {
             case REMOTE_SECURE:
                 //Retrieve IP address of external broker from settings
                 brokerAddress = settings.getBrokerIPAddress();
-
                 requestOAuth2Token();
-
                 connectOptions = new MqttConnectOptions();
                 connectOptions.setCleanSession(true);
                 connectOptions.setUserName(accessToken);
@@ -156,7 +151,6 @@ public class MQTTService {
                 break;
 
         }
-
         //Create new mqtt client with the full broker URL
         mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
         if (connectOptions != null) {
@@ -176,6 +170,64 @@ public class MQTTService {
             mqttClient.setCallback(mqttCallback);
         }
     }
+
+
+    /**
+     * If a secured broker is used, the initialization is delayed for 60 seconds (because the authorization server is integrated and needs to startup as well).
+     * The OAuth2 access token for the MBP is only valid for 10 minutes, the scheduled task ensures to refresh this token every 10 minutes,
+     * if the {@link BrokerLocation} is LOCAL_SECURE or REMOTE_SECURE.
+     *
+     */
+    @Scheduled(initialDelay = 60000, fixedDelay = 600000)
+    private void refreshOAuth2Token() throws MqttException, IOException {
+        //Determine from settings if a remote broker should be used instead
+        Settings settings = settingsService.getSettings();
+
+        if (settings.getBrokerLocation().equals(BrokerLocation.REMOTE_SECURE) || settings.getBrokerLocation().equals(BrokerLocation.LOCAL_SECURE)) {
+            //Disconnect the old mqtt client if already connected
+            if ((mqttClient != null) && (mqttClient.isConnected())) {
+                mqttClient.disconnectForcibly();
+            }
+
+            //Stores the address of the desired mqtt broker
+            String brokerAddress = "localhost";
+
+            //Instantiate memory persistence
+            MemoryPersistence persistence = new MemoryPersistence();
+
+            switch(settings.getBrokerLocation()) {
+                case LOCAL_SECURE:
+                    requestOAuth2Token();
+                    break;
+                case REMOTE_SECURE:
+                    //Retrieve IP address of external broker from settings
+                    brokerAddress = settings.getBrokerIPAddress();
+                    requestOAuth2Token();
+                    break;
+                default:
+                    break;
+            }
+            MqttConnectOptions connectOptions = new MqttConnectOptions();
+            connectOptions.setCleanSession(true);
+            connectOptions.setUserName(accessToken);
+            connectOptions.setPassword("any".toCharArray());
+
+            //Create new mqtt client with the full broker URL
+            mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
+            mqttClient.connect(connectOptions);
+
+            //Subscribe all topics in the topic set
+            for (String topic : subscribedTopics) {
+                mqttClient.subscribe(topic);
+            }
+
+            //Set MQTT callback object if available
+            if (mqttCallback != null) {
+                mqttClient.setCallback(mqttCallback);
+            }
+        }
+    }
+
 
     /**
      * Lets the MQTT service subscribe a certain MQTT topic.
@@ -282,7 +334,6 @@ public class MQTTService {
         try {
             JSONObject body = new JSONObject(response.getBody());
             accessToken = body.getString("access_token");
-            expiresIn = body.getLong("expires_in");
         } catch (JSONException e) {
             e.printStackTrace();
         }
