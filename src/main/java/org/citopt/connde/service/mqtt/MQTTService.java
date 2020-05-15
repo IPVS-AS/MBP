@@ -103,14 +103,14 @@ public class MQTTService {
      * Initializes, configures and starts the MQTT client that belongs to this service.
      * The required parameters are derived from the settings service. If the MQTT client is already running, it will
      * be terminated, disconnected and restarted with new settings.
+     * According to the broker location, the mqtt client is initiated with or without OAuth2  authentication.
+     * The OAuth2 access token for the MBP is only valid for 10 minutes, the scheduled task ensures to refresh this token every 10 minutes.
      *
      * @throws MqttException In case of an error during execution of mqtt operations
      * @throws IOException   In case of an I/O issue
      */
     @Scheduled(initialDelay = 60000, fixedDelay = 600000)
     public void initialize() throws MqttException, IOException {
-
-        System.out.println("Refreshing MQTT client for the MBP...");
 
         //Disconnect the old mqtt client if already connected
         if ((mqttClient != null) && (mqttClient.isConnected())) {

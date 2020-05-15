@@ -60,7 +60,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	    web.ignoring()
 	    .antMatchers(HttpMethod.OPTIONS, "/**")
 	    .antMatchers("/resources/**")
-	    .antMatchers("/webapp/**");
+	    .antMatchers("/webapp/**")
+	    .antMatchers(HttpMethod.POST,"/api/checkOauthTokenUser")
+	    .antMatchers(HttpMethod.POST,"/api/checkOauthTokenSuperuser")
+        .antMatchers(HttpMethod.POST,"/api/checkOauthTokenAcl");
 	}
 
     @Override
@@ -74,18 +77,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	            .antMatchers(HttpMethod.GET, "/api/users").hasAuthority(Constants.ADMIN)
 	            .antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)
 	            .antMatchers(HttpMethod.DELETE, "/api/users/:username").hasAuthority(Constants.ADMIN)
-//	            .antMatchers("/api/**").authenticated()
-//		        .antMatchers("/api/checkOauthTokenUser").permitAll()
-//		        .antMatchers("/api/checkOauthTokenSuperuser").permitAll()
-//		        .antMatchers("/api/checkOauthTokenAcl").permitAll()
-	        .and()
-			.httpBasic()
-        	.authenticationEntryPoint(restAuthenticationEntryPoint())
-        .and()
-        	.logout()
-        	.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-        	.logoutSuccessUrl("/login")
-        	.invalidateHttpSession(true)
-        	.deleteCookies("JSESSIONID");
+	            .antMatchers("/api/**").authenticated()
+            .and()
+				.httpBasic()
+        	    .authenticationEntryPoint(restAuthenticationEntryPoint())
+            .and()
+	            .logout()
+	            .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+	            .logoutSuccessUrl("/login")
+	            .invalidateHttpSession(true)
+	            .deleteCookies("JSESSIONID");
     }
 }

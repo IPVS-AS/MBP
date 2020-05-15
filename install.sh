@@ -22,15 +22,34 @@ sudo apt-get install -qy openjdk-8-jdk;
 sudo apt-get install -qy maven;
 
 echo "\nInstalling Mosquitto Broker, MongoDB, InfluxDB, Tomcat8, git and maven...\n"
-# Install Mosquitto Broker
-#sudo apt-get install -qy mosquitto;
-#sudo systemctl start mosquitto;
 
-echo "\nBuilding mosquitto with go-auth plugin...\n"
-cd mosquitto/
-docker build -t mosquitto .
-docker run -d --network="host" -p 1883:1883 -p 1884:1884 mosquitto-go-auth
-cd ..
+PS2='Please select your broker configuration: '
+options=("Normal" "Secured with OAuth2" "Quit")
+select opt in "${options[@]}"
+do
+    case $opt in
+        "Normal")
+            echo "Normal mosquitto configuration selected"
+            sudo apt-get install -qy mosquitto;
+            sudo systemctl start mosquitto;
+            break
+            ;;
+        "Option 2")
+            echo "Secured mosquitto with OAuth2 mechanism configuration selected"
+            echo "\nBuilding mosquitto with go-auth plugin...\n"
+            cd mosquitto/
+            docker build -t mosquitto .
+            echo "\nStarting docker container for mosquitto with go-auth plugin...\n"
+            docker run -d --network="host" -p 1883:1883 -p 1884:1884 mosquitto-go-auth
+            cd ..
+            break
+            ;;
+        "Quit")
+            break
+            ;;
+        *) echo "invalid option $REPLY";;
+    esac
+done
 
 # Install and start MongoDB 
 sudo apt-get -qy install mongodb-server;

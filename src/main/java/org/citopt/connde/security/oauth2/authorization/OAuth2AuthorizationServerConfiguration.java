@@ -1,6 +1,6 @@
 package org.citopt.connde.security.oauth2.authorization;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 import org.citopt.connde.constants.Constants;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,7 +15,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
-import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
@@ -42,7 +41,6 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
         clients.inMemory()
                 .withClient("device-client")
-                .secret("device")
                 .authorizedGrantTypes("authorization_code", "refresh_token")
                 .scopes("write")
                 .authorities(Constants.USER, Constants.DEVICE)
@@ -52,7 +50,6 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .redirectUris(redirectUri)
                 .and()
                 .withClient("mbp")
-                .secret("mbp-platform")
                 .authorizedGrantTypes("client_credentials")
                 .scopes("read")
                 .authorities(Constants.ADMIN)
@@ -68,7 +65,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) {
         TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
-        tokenEnhancerChain.setTokenEnhancers(Arrays.asList(tokenEnhancer(), accessTokenConverter()));
+        tokenEnhancerChain.setTokenEnhancers(Collections.singletonList(accessTokenConverter()));
         endpoints
                 .tokenStore(tokenStore())
                 .accessTokenConverter(accessTokenConverter())
@@ -93,10 +90,5 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
         JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
         converter.setSigningKey(signingKey);
         return converter;
-    }
-
-    @Bean
-    public TokenEnhancer tokenEnhancer() {
-        return new CustomTokenEnhancer();
     }
 }

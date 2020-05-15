@@ -15,7 +15,7 @@ from threading import Timer
 # MQTT Client
 ############################
 class mqttClient(object):
-   hostname = '193.196.54.147'
+   hostname = ''
    port = 1883
    
    # Enter client id here:
@@ -26,6 +26,8 @@ class mqttClient(object):
 
    authorization_code = ''
    refresh_token = ''
+   token_url = ''
+   token_url_port = 8080
 
 
    def __init__(self, hostname, port, clientid, token, refresh):
@@ -33,15 +35,17 @@ class mqttClient(object):
       self.port = port
       self.clientid = clientid
       self.token = token
+      self.token_url = 'http://' + str(hostname) + ':' + str(self.token_url_port) + '/MBP/oauth/token'
 
       # create MQTT client and set user name and password 
       self.client = mqtt.Client(client_id=self.clientid, clean_session=True, userdata=None, protocol=mqtt.MQTTv31)
       if (not refresh):
-         access_token, refresh_token = oauth2_token_manager.get_access_token(self.client_id, self.client_secret, self.token)
+         print(self.token_url)
+         access_token, refresh_token = oauth2_token_manager.get_access_token(self.token_url, self.client_id, self.client_secret, self.token)
          mqttClient.refresh_token = refresh_token
          self.username = access_token
       else:
-         access_token, refresh_token = oauth2_token_manager.get_access_token_with_refresh_token(self.client_id, self.client_secret, self.token)
+         access_token, refresh_token = oauth2_token_manager.get_access_token_with_refresh_token(self.token_url, self.client_id, self.client_secret, self.token)
          mqttClient.refresh_token = refresh_token
          self.username = access_token
       self.client.username_pw_set(username=self.username, password="any")
@@ -75,7 +79,7 @@ class mqttClient(object):
 ############################
 def main(argv):
 
-   hostname = '193.196.54.147'
+   hostname = '192.168.2.133'
    topic_pub = 'sensor/test'
    paramArray = json.loads(argv[0])
    
@@ -135,7 +139,8 @@ def main(argv):
             print("Refreshing token...")
             publisher.stop()
             publisher = mqttClient(hostname, 1883, id, refresh_token, True)
-            refresh_token = mqttClient.refresh_token
+            refresh_token = publisher.refresh_token
+            print ("Refresh token " + refresh_token)
             publisher.start()
             counter = 0
          # messages in json format
