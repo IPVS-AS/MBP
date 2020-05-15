@@ -42,7 +42,7 @@ do
         echo -e "\nLOCAL_SECURE" >> /src/main/resources/config.properties
         echo "\nBuilding mosquitto with go-auth plugin...\n"
         cd mosquitto/
-        docker build -t mosquitto .
+        docker build -t mosquitto-go-auth .
         echo "\nStarting docker container for mosquitto with go-auth plugin...\n"
         docker run -d --network="host" -p 1883:1883 -p 1884:1884 mosquitto-go-auth
         cd ..
