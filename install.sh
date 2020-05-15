@@ -23,19 +23,21 @@ sudo apt-get install -qy maven;
 
 echo "\nInstalling Mosquitto Broker, MongoDB, InfluxDB, Tomcat8, git and maven...\n"
 
-PS2='Please select your broker configuration: '
+PS2='Please select your local broker configuration: '
 options=("Normal" "Secured with OAuth2" "Quit")
 select opt in "${options[@]}"
 do
     case $opt in
         "Normal")
             echo "Normal mosquitto configuration selected"
+            echo -e "\nLOCAL" >> /src/main/resources/config.properties
             sudo apt-get install -qy mosquitto;
             sudo systemctl start mosquitto;
             break
             ;;
         "Option 2")
             echo "Secured mosquitto with OAuth2 mechanism configuration selected"
+            echo -e "\nLOCAL_SECURE" >> /src/main/resources/config.properties
             echo "\nBuilding mosquitto with go-auth plugin...\n"
             cd mosquitto/
             docker build -t mosquitto .
