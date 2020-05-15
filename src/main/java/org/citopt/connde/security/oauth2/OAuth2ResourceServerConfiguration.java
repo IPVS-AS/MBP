@@ -1,4 +1,4 @@
-package org.citopt.connde.security.oauth2.authorization;
+package org.citopt.connde.security.oauth2;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

@@ -1,4 +1,4 @@
-package org.citopt.connde.security.oauth2.authorization;
+package org.citopt.connde.security.oauth2;
 
 import java.util.Collections;
 
