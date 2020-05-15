@@ -1,20 +1,34 @@
 package org.citopt.connde.service.mqtt;
 
-import org.citopt.connde.service.settings.SettingsService;
-import org.citopt.connde.service.settings.model.BrokerLocation;
-import org.citopt.connde.service.settings.model.Settings;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+
+import org.apache.commons.codec.binary.Base64;
+import org.citopt.connde.service.settings.SettingsService;
+import org.citopt.connde.service.settings.model.Settings;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * This services provides means and support for MQTT-related tasks. It allows to publish and receive MQTT messages at
@@ -22,6 +36,8 @@ import java.util.UUID;
  * topics
  */
 @Service
+@PropertySource(value = "classpath:application.properties")
+@EnableScheduling
 public class MQTTService {
     //URL frame of the broker to use (protocol and port, address will be filled in)
     private static final String BROKER_URL = "tcp://%s:1883";
@@ -40,6 +56,27 @@ public class MQTTService {
     //Callback object to use for incoming MQTT messages
     private MqttCallback mqttCallback = null;
 
+    @Value("${security.user.name}")
+    private String httpUser;
+
+    @Value("${security.user.password}")
+    private String httpPassword;
+
+    @Value("${security.oauth2.client.access-token-uri}")
+    private String oauth2TokenUri;
+
+    @Value("${security.oauth2.client.grant-type}")
+    private String oauth2GrantType;
+
+    @Value("${security.oauth2.client.client-id}")
+    private String oauth2ClientId;
+
+    @Value("${security.oauth2.client.client-secret}")
+    private String oauth2ClientSecret;
+
+    private String accessToken;
+    private long expiresIn;
+
     /**
      * Initializes the value logger service.
      *
@@ -51,11 +88,14 @@ public class MQTTService {
 
         //Setup and start the MQTT client
         try {
-            initialize();
+//            initialize();
+            String brokerAddress = "localhost";
+            MemoryPersistence persistence = new MemoryPersistence();
+            mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
         } catch (MqttException e) {
             System.err.println("MqttException: " + e.getMessage());
-        } catch (IOException e) {
-            System.err.println("IOException: " + e.getMessage());
+//        } catch (IOException e) {
+//            e.printStackTrace();
         }
     }
 
@@ -63,11 +103,15 @@ public class MQTTService {
      * Initializes, configures and starts the MQTT client that belongs to this service.
      * The required parameters are derived from the settings service. If the MQTT client is already running, it will
      * be terminated, disconnected and restarted with new settings.
+     * According to the broker location, the mqtt client is initiated with or without OAuth2  authentication.
+     * The OAuth2 access token for the MBP is only valid for 10 minutes, the scheduled task ensures to refresh this token every 10 minutes.
      *
      * @throws MqttException In case of an error during execution of mqtt operations
      * @throws IOException   In case of an I/O issue
      */
+    @Scheduled(initialDelay = 60000, fixedDelay = 600000)
     public void initialize() throws MqttException, IOException {
+
         //Disconnect the old mqtt client if already connected
         if ((mqttClient != null) && (mqttClient.isConnected())) {
             mqttClient.disconnectForcibly();
@@ -78,19 +122,49 @@ public class MQTTService {
 
         //Determine from settings if a remote broker should be used instead
         Settings settings = settingsService.getSettings();
-        if (settings.getBrokerLocation().equals(BrokerLocation.REMOTE)) {
-            //Retrieve IP address of external broker from settings
-            brokerAddress = settings.getBrokerIPAddress();
-        }
 
         //Instantiate memory persistence
         MemoryPersistence persistence = new MemoryPersistence();
 
+        MqttConnectOptions connectOptions = null;
+
+        switch(settings.getBrokerLocation()) {
+            case LOCAL_SECURE:
+                requestOAuth2Token();
+
+                connectOptions = new MqttConnectOptions();
+                connectOptions.setCleanSession(true);
+                connectOptions.setUserName(accessToken);
+                connectOptions.setPassword("any".toCharArray());
+                break;
+            case REMOTE_SECURE:
+                //Retrieve IP address of external broker from settings
+                brokerAddress = settings.getBrokerIPAddress();
+
+                requestOAuth2Token();
+
+                connectOptions = new MqttConnectOptions();
+                connectOptions.setCleanSession(true);
+                connectOptions.setUserName(accessToken);
+                connectOptions.setPassword("any".toCharArray());
+                break;
+            case REMOTE:
+                //Retrieve IP address of external broker from settings
+                brokerAddress = settings.getBrokerIPAddress();
+                break;
+            default:
+                break;
+
+        }
+
         //Create new mqtt client with the full broker URL
         mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
-
-        //Connect and subscribe to the topics
-        mqttClient.connect();
+        if (connectOptions != null) {
+            //Connect and subscribe to the topics
+            mqttClient.connect(connectOptions);
+        } else {
+            mqttClient.connect();
+        }
 
         //Subscribe all topics in the topic set
         for (String topic : subscribedTopics) {
@@ -191,5 +265,43 @@ public class MQTTService {
      */
     private static String getUniqueClientSuffix() {
         return UUID.randomUUID().toString().replace("-", "");
+    }
+
+    /**
+     * Request an OAuth2 Access Token with client credentials of the MBP.
+     */
+    public void requestOAuth2Token() {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders httpHeaders = createHeaders(httpUser, httpPassword);
+        HttpEntity<String> request = new HttpEntity<>(httpHeaders);
+        UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(oauth2TokenUri)
+                .queryParam("grant_type", oauth2GrantType)
+                .queryParam("client-id", oauth2ClientId)
+                .queryParam("scope", "read");
+        ResponseEntity<String> response = restTemplate.exchange(uriComponentsBuilder.toUriString(), HttpMethod.POST, request, String.class);
+        try {
+            JSONObject body = new JSONObject(response.getBody());
+            accessToken = body.getString("access_token");
+            expiresIn = body.getLong("expires_in");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Create a header for basic http authentication (base64 encoded).
+     *
+     * @param username is the name of the OAuth client
+     * @param password is the secrect of the OAuth client
+     * @return an instance of {@link HttpHeaders}
+     */
+    private HttpHeaders createHeaders(String username, String password) {
+        return new HttpHeaders() {{
+            String auth = username + ":" + password;
+            byte[] encodedAuth = Base64.encodeBase64(
+                    auth.getBytes(StandardCharsets.US_ASCII));
+            String authHeader = "Basic " + new String(encodedAuth);
+            set("Authorization", authHeader);
+        }};
     }
 }

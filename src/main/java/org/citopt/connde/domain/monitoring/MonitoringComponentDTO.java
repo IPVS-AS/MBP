@@ -1,8 +1,5 @@
 package org.citopt.connde.domain.monitoring;
 
-import org.citopt.connde.domain.component.Component;
-import org.citopt.connde.domain.device.Device;
-
 public class MonitoringComponentDTO {
     private String id;
     private String name;
