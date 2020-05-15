@@ -23,11 +23,10 @@ sudo apt-get install -qy maven;
 
 echo "\nInstalling Mosquitto Broker, MongoDB, InfluxDB, Tomcat8, git and maven...\n"
 
-PS2='Please select your local broker configuration: '
-options=("Normal" "Secured with OAuth2" "Quit")
-select opt in "${options[@]}"
+echo "Please select your local broker configuration:\n"
+select broker in Normal Secured
 do
-    case $opt in
+    case $broker in
         "Normal")
             echo "Normal mosquitto configuration selected"
             echo -e "\nLOCAL" >> /src/main/resources/config.properties
@@ -35,7 +34,7 @@ do
             sudo systemctl start mosquitto;
             break
             ;;
-        "Option 2")
+        "Secured")
             echo "Secured mosquitto with OAuth2 mechanism configuration selected"
             echo -e "\nLOCAL_SECURE" >> /src/main/resources/config.properties
             echo "\nBuilding mosquitto with go-auth plugin...\n"
@@ -46,10 +45,9 @@ do
             cd ..
             break
             ;;
-        "Quit")
-            break
-            ;;
-        *) echo "invalid option $REPLY";;
+        *) echo "Invalid entry"
+        break
+        ;;
     esac
 done
 
