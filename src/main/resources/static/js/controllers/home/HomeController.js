@@ -1,8 +1,8 @@
 /* global app */
 
 app.controller('HomeController',
-        ['$scope', '$timeout', 'CrudService', 'ComponentService', 'DeviceService', 'countActuators', 'countSensors', 'countDevices', 'countAdapters', 'countMonitoringAdapters',
-            function ($scope, $timeout, CrudService, ComponentService, DeviceService, countActuators, countSensors, countDevices, countAdapters, countMonitoringAdapters) {
+        ['$scope', '$timeout', 'CrudService', 'ComponentService', 'DeviceService', 'countActuators', 'countSensors', 'countDevices', 'countAdapters', 'countMonitoringAdapters','countTests',
+            function ($scope, $timeout, CrudService, ComponentService, DeviceService, countActuators, countSensors, countDevices, countAdapters, countMonitoringAdapters, countTests) {
                 var vm = this;
                 vm.loader = {};
 
@@ -12,7 +12,8 @@ app.controller('HomeController',
                     countSensors: countSensors,
                     countDevices: countDevices,
                     countAdapters: countAdapters,
-                    countMonitoringAdapters: countMonitoringAdapters
+                    countMonitoringAdapters: countMonitoringAdapters,
+                    countTests: countTests
                 });
             }]);
 
