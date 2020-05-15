@@ -1,10 +1,7 @@
 package org.citopt.connde.web.rest;
 
-import java.util.logging.Logger;
-
 import javax.json.Json;
 
-import groovy.util.logging.Slf4j;
 import org.citopt.connde.RestConfiguration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -20,10 +17,7 @@ import org.springframework.web.client.RestTemplate;
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
 @PropertySource(value = "classpath:application.properties")
-@Slf4j
 public class RestOAuthController {
-
-	private static final Logger LOGGER = Logger.getLogger(RestOAuthController.class.getName());
 
 	@Value("${security.oauth2.authorization.check-token-access}")
 	private String checkTokenUri;
