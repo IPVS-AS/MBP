@@ -493,7 +493,7 @@ app.controller('EnvModelListController',
             function onModelChanged() {
                 //Model has been changed and needs to be saved
                 vm.saveNecessary = true;
-                $scope.$digest();
+                //$scope.$digest();
             }
 
             /**
