@@ -24,10 +24,10 @@ public class EnvironmentModelEventService {
     private static long EVENT_ID_COUNTER = 0L;
 
     //Tread pool for asynchronous processing
-    private static ExecutorService threadPool = Executors.newCachedThreadPool();
+    private static final ExecutorService threadPool = Executors.newCachedThreadPool();
 
     //Subscription map (model id -> set of subscribers)
-    private Map<String, Set<SseEmitter>> subscriptions;
+    private final Map<String, Set<SseEmitter>> subscriptions;
 
     /**
      * Initializes the environment model event service.

@@ -61,8 +61,9 @@ app.directive('envModelTool',
                     limit: 50,
                     debug: true
                 });
+                let isUnReDoing = false; //Remembers if there is currently a undo/redo action processed
                 let lastModelState = ""; //Remembers the last state of the model
-                let copyClipboard = [];
+                let copyClipboard = []; //Clipboard for copied elements
 
                 //Class for data of the device details modal
                 const DeviceDetails = function () {
@@ -1084,10 +1085,16 @@ app.directive('envModelTool',
                  * Writes the model in its current state to the undo manager.
                  */
                 function saveForUndo() {
+                    //Abort if there is an undo/redo processed at the moment
+                    if (isUnReDoing) {
+                        return;
+                    }
+
                     let undoModelState = lastModelState;
                     lastModelState = exportToJSON();
                     let redoModelState = lastModelState;
 
+                    //Record the model in its current state for undo and redo
                     UNDO_MANAGER.record({
                         undo: function () {
                             importFromJSON(undoModelState);
@@ -1170,10 +1177,17 @@ app.directive('envModelTool',
                  * Undoes the most recent action.
                  */
                 function undoAction() {
+                    //Undo is processed
+                    isUnReDoing = true;
+
+                    //Perform undo
                     UNDO_MANAGER.undo();
 
                     //Update exposed states
                     updateExposedStates();
+
+                    //Undo is finished
+                    isUnReDoing = false;
                 }
 
                 /**
@@ -1181,10 +1195,17 @@ app.directive('envModelTool',
                  * Redoes the most recent undone action.
                  */
                 function redoAction() {
+                    //Redo is processed
+                    isUnReDoing = true;
+
+                    //Perform redo
                     UNDO_MANAGER.redo();
 
                     //Update exposed states
                     updateExposedStates();
+
+                    //Redo is finished
+                    isUnReDoing = false;
                 }
 
                 /**
