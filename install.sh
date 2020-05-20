@@ -25,7 +25,7 @@ echo "\nInstalling Mosquitto Broker, MongoDB, InfluxDB, Tomcat8, git and maven..
 
 if [ -n "$1" ]
 then
-    if [ "$1" == "secure" ] 
+    if [ "$1" = "secure" ] 
     then
         echo "Installing secured Mosquitto with OAuth2 authentication as Docker container..."
         echo "\nbroker_location=LOCAL_SECURE" >> src/main/resources/config.properties
