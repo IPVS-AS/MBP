@@ -13,6 +13,8 @@ import org.citopt.connde.domain.env_model.EnvironmentModel;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringAdapterValidator;
 import org.citopt.connde.domain.rules.*;
+import org.citopt.connde.domain.testing.TestDetails;
+import org.citopt.connde.domain.testing.TestDetailsValidator;
 import org.citopt.connde.domain.user.Authority;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.web.rest.RestDeploymentController;
@@ -58,6 +60,7 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
 
         System.out.println("load RepositoryRestMvcConfiguration");
 
+        //Set base path
         config.setBasePath(BASE_PATH);
 
         //Include entity IDs of the following entity types into REST request responses
@@ -66,7 +69,8 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
                 User.class, Authority.class,
                 ComponentType.class,
                 EnvironmentModel.class,
-                Rule.class, RuleTrigger.class, RuleAction.class);
+                Rule.class, RuleTrigger.class, RuleAction.class,
+                TestDetails.class);
     }
 
     /**
@@ -108,6 +112,10 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
         //Rule triggers
         v.addValidator("beforeSave", new RuleTriggerValidator());
         v.addValidator("beforeCreate", new RuleTriggerValidator());
+
+        //TestDetails
+        v.addValidator("beforeSave", new TestDetailsValidator());
+        v.addValidator("beforeCreate", new TestDetailsValidator());
     }
 
     /**

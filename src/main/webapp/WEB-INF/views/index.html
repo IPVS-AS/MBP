@@ -54,6 +54,9 @@
     <!-- Angular UI Bootstrap href fix -->
     <link th:href="@{/plugins/angular-ui/bootstrap/css/angular-ui-fix.css}" rel="stylesheet"/>
 
+    <!-- Angular UI Select Plugin -->
+    <!--<link th:href="@{/plugins/angular-ui-select/css/select.min.css}" rel="stylesheet"/>-->
+
     <!-- Angular Dropzone Plugin -->
     <link th:href="@{/plugins/angular-dropzone/css/ng-dropzone.min.css}" rel="stylesheet"/>
 
@@ -212,6 +215,12 @@
             <a href="view/monitoring-adapters">
               <i class="material-icons">timeline</i>
               <span>Monitoring Operators</span>
+            </a>
+          </li>
+          <li href="view/testing-tool" menu-item="menu-item">
+            <a href="view/testing-tool">
+              <i class="material-icons">bug_report</i>
+              <span>Testing-Tool</span>
             </a>
           </li>
           <li href="view/settings" menu-item="menu-item" ng-show="userData.isAdmin">
@@ -375,6 +384,7 @@
 <script th:src="@{/js/controllers/home/HomeController.js}"></script>
 <script th:src="@{/js/controllers/actuators/ActuatorListController.js}"></script>
 <script th:src="@{/js/controllers/sensors/SensorListController.js}"></script>
+<script th:src="@{/js/controllers/testing/TestingController.js}"></script>
 <script th:src="@{/js/controllers/devices/DeviceListController.js}"></script>
 <script th:src="@{/js/controllers/devices/DeviceDetailsController.js}"></script>
 <script th:src="@{/js/controllers/adapters/AdapterListController.js}"></script>

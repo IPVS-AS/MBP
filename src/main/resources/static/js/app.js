@@ -81,6 +81,16 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                             }
                         );
                     }],
+                    countTests: ['CrudService', function (CrudService) {
+                        return CrudService.countItems('test-details').then(
+                            function (count) {
+                                return count;
+                            },
+                            function (response) {
+                                return 0;
+                            }
+                        );
+                    }],
                     countMonitoringAdapters: ['CrudService', function (CrudService) {
                         return CrudService.countItems('monitoring-adapters').then(
                             function (count) {
@@ -455,6 +465,30 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         return SettingsService.getDocumentationMetaData().then(function (response) {
                             return response.data;
                         });
+                    }]
+                }
+            })
+            
+            // Testing-Tool
+            .when(viewPrefix + '/testing-tool',{
+                category: 'test-details',
+                templateUrl: 'templates/testing-tool',
+                controller: 'TestingController as ctrl',
+                resolve: {
+                    testList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('test-details');
+                    }],
+                    addTest: ['CrudService', function (CrudService) {
+                        // bind category parameter
+                        return angular.bind(this, CrudService.addItem, 'test-details');
+                    }],
+                    ruleList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rules');
+                    }],
+                    deleteTest: ['CrudService', function (CrudService) {
+                        // bind category parameter
+                        return angular.bind(this, CrudService.deleteItem, 'test-details');
+
                     }]
                 }
             })
