@@ -23,34 +23,26 @@ sudo apt-get install -qy maven;
 
 echo "\nInstalling Mosquitto Broker, MongoDB, InfluxDB, Tomcat8, git and maven...\n"
 
-while true
-do
-    echo "Please select your local broker configuration and enter the number:\n"
-    echo "1) Normal\n"
-    echo "2) Secured\n"
-    read selection
-    case $selection in
-    1)
-        echo "Normal mosquitto configuration selected"
-        echo "\nbroker_location=LOCAL" >> src/main/resources/config.properties
-        sudo apt-get install -qy mosquitto;
-        sudo systemctl start mosquitto;
-        break
-        ;;
-    2)
-        echo "Secured mosquitto with OAuth2 mechanism configuration selected"
+if [ -n "$1" ]
+then
+    if [ "$1" == "secure" ] 
+    then
+        echo "Installing secured Mosquitto with OAuth2 authentication as Docker container..."
         echo "\nbroker_location=LOCAL_SECURE" >> src/main/resources/config.properties
         echo "\nBuilding mosquitto with go-auth plugin...\n"
-        cd mosquitto/
+        cd mosquitto/  
         docker build -t mosquitto-go-auth .
         echo "\nStarting docker container for mosquitto with go-auth plugin...\n"
         docker run -d --network="host" -p 1883:1883 -p 1884:1884 mosquitto-go-auth
         cd ..
-        break
-        ;;
-    *) echo "Invalid number. Type 1 or 2.";;
-    esac
-done
+    else
+        echo "Invalid command-line argument(s)."
+    fi
+else
+    echo "Installing normal Mosquitto..."
+    sudo apt-get install -qy mosquitto;
+    sudo systemctl start mosquitto;
+fi
 
 # Install and start MongoDB 
 sudo apt-get -qy install mongodb-server;

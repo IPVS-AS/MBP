@@ -83,15 +83,15 @@ public class MQTTService {
     public MQTTService(SettingsService settingsService) {
         this.settingsService = settingsService;
 
-        //Setup and start the MQTT client
+        //Setup and start the MQTT client if a local, normal broker is used. Otherwise: only setup MQTT client.
         try {
             String brokerAddress = "localhost";
             MemoryPersistence persistence = new MemoryPersistence();
-            if (settingsService.getSettings().getBrokerLocation().equals(BrokerLocation.LOCAL)) {
+            if (settingsService.getSettings().getBrokerLocation().equals(BrokerLocation.LOCAL_SECURE)) {
                 mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
-                initialize();
             } else {
                 mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
+                initialize();
             }
         } catch (MqttException e) {
             System.err.println("MqttException: " + e.getMessage());
