@@ -429,12 +429,12 @@ public class TestEngine implements ValueLogReceiverObserver {
      */
     public ResponseEntity<String> downloadPDF(String testId) throws IOException {
         TestDetails test = testDetailsRepository.findById(testId);
-        File result = new File(test.getPathPDF());
+        File result = new File(String.valueOf(test.getPathPDF()));
 
         ResponseEntity respEntity;
 
         if (result.exists()) {
-            InputStream inputStream = new FileInputStream(test.getPathPDF());
+            InputStream inputStream = new FileInputStream(String.valueOf(test.getPathPDF()));
 
             byte[] out = org.apache.commons.io.IOUtils.toByteArray(inputStream);
 
@@ -442,7 +442,7 @@ public class TestEngine implements ValueLogReceiverObserver {
             responseHeaders.add("content-disposition", "attachment; filename=" + testId + ".pdf");
 
             respEntity = new ResponseEntity(out, responseHeaders, HttpStatus.OK);
-
+            inputStream.close();
         } else {
             respEntity = new ResponseEntity("File Not Found", HttpStatus.OK);
         }
