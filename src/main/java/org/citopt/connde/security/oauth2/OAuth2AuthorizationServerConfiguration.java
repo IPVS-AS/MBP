@@ -46,7 +46,7 @@ public class OAuth2AuthorizationServerConfiguration extends AuthorizationServerC
                 .authorities(Constants.USER, Constants.DEVICE)
                 .autoApprove(true)
                 .accessTokenValiditySeconds(300) //  5 minutes
-                .refreshTokenValiditySeconds(540)// 9 minutes
+                .refreshTokenValiditySeconds(-1)// Never expires
                 .redirectUris(redirectUri)
                 .and()
                 .withClient("mbp")
