@@ -1,13 +1,12 @@
 package org.citopt.connde.domain.component;
 
+import org.citopt.connde.repository.SensorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
-import org.citopt.connde.repository.SensorRepository;
 
 /**
- *
  * @author rafaelkperes
  */
 @org.springframework.stereotype.Component
@@ -41,23 +40,14 @@ public class SensorValidator implements Validator {
         ValidationUtils.rejectIfEmptyOrWhitespace(
                 errors, "componentType", "component.componentType.empty",
                 "The component type cannot be empty!");
-        
+
         ValidationUtils.rejectIfEmptyOrWhitespace(
                 errors, "device", "component.device.empty",
                 "The device cannot be empty!");
-        
+
         ValidationUtils.rejectIfEmptyOrWhitespace(
                 errors, "adapter", "component.adapter.empty",
                 "The adapter cannot be empty!");
-        
-        Component another;
-        if ((another = repository.findByName(component.getName())) != null) {
-            if (component.getId() == null
-                    || !component.getId().equals(another.getId())) {
-                errors.rejectValue("name", "component.name.duplicate",
-                        "The name is already registered");
-            }
-        }
     }
 
 }

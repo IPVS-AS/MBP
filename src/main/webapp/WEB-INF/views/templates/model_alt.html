@@ -1,0 +1,651 @@
+<div id="modelingToolView" class="card">
+    <div class="header">
+        <div class="row align-center">
+            <div class="navbar-brand tool-header-right" ng-show="vm.processing.status">
+                <div class="col-xs-12 align-center">
+                    <div class="preloader pl-size-xs">
+                        <div class="spinner-layer pl-blue">
+                            <div class="circle-clipper left">
+                                <div class="circle"></div>
+                            </div>
+                            <div class="circle-clipper right">
+                                <div class="circle"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="navbar-brand tool-header-right" ng-show="vm.processing.finished">
+                <div ng-show="vm.processing.success">
+          <span style="color: green; font-size: 12px">
+            {{vm.processing.message}}
+          </span>
+                    <i class="fas fa-check-circle" style="color: green"></i>
+                </div>
+                <div ng-show="!vm.processing.success">
+          <span style="color: red; font-size: 12px">
+            {{vm.processing.message}}
+          </span>
+                    <i class="fas fa-times-circle" style="color: red"></i>
+                </div>
+            </div>
+            <span class="tool-header-navbar-brand" style="color: black">IoT Environment Modeling Tool</span>
+        </div>
+        <div class="row" style="margin-left: 0px; margin-right: 0px; padding: 5px">
+            <div class="col-lg-5 focused" style="padding: 5px">
+                <select class="form-control show-tick" id="select-models" ng-change="vm.drawModel(model)"
+                        ng-model="model" style="display: inline-block; width: 50%">
+                    <option disabled="disabled" value="">
+                        -- Select IoT model --
+                    </option>
+                    <option ng-repeat="model in vm.loadedModels" value="{{model}}"
+                            ng-selected="model.name === vm.selectedOptionName">{{model.name}}
+                    </option>
+                </select>
+                <input id="modelNameInput" type="text" name="name" ng-model="vm.currentModel.name" autocomplete="off"
+                       placeholder="Enter IoT model name" style="display: inline-block; width: 50%"/>
+            </div>
+            <div class="col-lg-5 align-right" style="padding: 2px">
+                <button id="newModelBtn" class="btn bg-blue btn-circle waves-effect waves-circle waves-float"
+                        title="New model" ng-click="vm.newModel()">
+                    <i class="material-icons">add</i>
+                </button>
+                <button id="saveModelBtn" class="btn bg-blue btn-circle waves-effect waves-circle waves-float"
+                        title="Save" ng-click="vm.saveModel()"
+                        ng-disabled="!vm.currentModel.name || vm.currentModel.name === ''">
+                    <i class="material-icons">save</i>
+                </button>
+                <button id="deleteModelBtn" class="btn bg-blue btn-circle waves-effect waves-circle waves-float"
+                        title="Delete" ng-click="vm.deleteModel()"
+                        ng-disabled="!vm.currentModel.name || vm.currentModel.name === ''">
+                    <i class="material-icons">delete</i>
+                </button>
+                &nbsp;&nbsp;
+                <button id="registerComponentsBtn" class="btn bg-green btn-circle waves-effect waves-circle waves-float"
+                        title="Register components" ng-click="vm.registerComponents()"
+                        ng-disabled="!vm.currentModel.name || vm.currentModel.name === ''">
+                    <i class="material-icons">backup</i>
+                </button>
+                <button id="deployComponentsBtn" class="btn bg-green btn-circle waves-effect waves-circle waves-float"
+                        title="Deploy model" ng-click="vm.deployComponents()"
+                        ng-disabled="!vm.currentModel.name || vm.currentModel.name === ''">
+                    <i class="material-icons">sync</i>
+                </button>
+                <button id="undeployComponentsBtn" class="btn bg-green btn-circle waves-effect waves-circle waves-float"
+                        title="Undeploy model" ng-click="vm.undeployComponents()"
+                        ng-disabled="!vm.currentModel.name || vm.currentModel.name === ''">
+                    <i class="material-icons">sync_disabled</i>
+
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="body">
+        <!-- Palette -->
+        <div id="toolPalette" style="display: inline-block; vertical-align: top; width:20%; height: 100%">
+
+            <div class="panel-group" id="accordion">
+                <div class="panel panel-default">
+
+                    <div class="panel-heading" style="overflow-x: hidden;">
+                        <h4 class="panel-title">
+                            <a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion"
+                               href="#collapseFloorplans">
+                                <i class="material-icons" style="font-size: 20px;">weekend</i>
+                                <span class="glyphicon glyphicon-chevron-down pull-right"></span>Floorplans</a>
+                        </h4>
+                    </div>
+
+                    <div id="collapseFloorplans" class="panel-collapse collapse in">
+                        <div class="panel-body canvas-wide modeling-tool" id="canvasPalette">
+                            <ul id="dragList">
+                                <li>
+                                    <div class="window floorplan room-floorplan" id="roomFloorplan"></div>
+                                    <strong>
+                                        <p>Room</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window floorplan wall-floorplan" id="wallFloorplan"></div>
+                                    <strong>
+                                        <p>Wall</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window floorplan door-floorplan" id="doorFloorplan"></div>
+                                    <strong>
+                                        <p>Door</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window floorplan window-floorplan" id="windowFloorplan"></div>
+                                    <strong>
+                                        <p>Window</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window floorplan stairs-floorplan" id="stairsFloorplan"></div>
+                                    <strong>
+                                        <p>Stairs</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window floorplan table-floorplan" id="tableFloorplan"></div>
+                                    <strong>
+                                        <p>Table</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window floorplan chair-floorplan" id="chairFloorplan"></div>
+                                    <strong>
+                                        <p>Chair</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window floorplan couch-floorplan" id="couchFloorplan"></div>
+                                    <strong>
+                                        <p>Couch</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window floorplan bed-floorplan" id="bedFloorplan"></div>
+                                    <strong>
+                                        <p>Bed</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window floorplan kitchen-sink-floorplan"
+                                         id="kitchenSinkFloorplan"></div>
+                                    <strong>
+                                        <p>Kitchen sink</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window floorplan bathtub-floorplan" id="bathtubFloorplan"></div>
+                                    <strong>
+                                        <p>Bathtub</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window floorplan bath-sink-floorplan" id="bathSinkFloorplan"></div>
+                                    <strong>
+                                        <p>Bath sink</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window floorplan toilet-floorplan" id="toiletFloorplan"></div>
+                                    <strong>
+                                        <p>Toilet</p>
+                                    </strong>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading" style="overflow-x: hidden;">
+                        <h4 class="panel-title">
+                            <a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion"
+                               href="#collapseDevices">
+                                <i class="material-icons" style="font-size: 20px;">devices</i>
+                                <span class="glyphicon glyphicon-chevron-down pull-right"></span>Device types</a>
+                        </h4>
+                    </div>
+                    <div id="collapseDevices" class="panel-collapse collapse">
+                        <div class="panel-body canvas-wide modeling-tool" id="canvasPalette">
+                            <ul id="dragList">
+                                <li>
+                                    <div class="window device raspberry-pi-device" id="raspberryPiDevice"></div>
+                                    <strong>
+                                        <p>Raspberry Pi</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window device arduino-device" id="arduinoDevice"></div>
+                                    <strong>
+                                        <p>Arduino</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window device computer-device" id="computerDevice"></div>
+                                    <strong>
+                                        <p>Computer</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window device laptop-device" id="laptopDevice"></div>
+                                    <strong>
+                                        <p>Laptop</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window device tv-device" id="tvDevice"></div>
+                                    <strong>
+                                        <p>TV</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window device smartphone-device" id="smartphoneDevice"></div>
+                                    <strong>
+                                        <p>Smartphone</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window device smartwatch-device" id="smartwatchDevice"></div>
+                                    <strong>
+                                        <p>Smartwatch</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window device audio-system-device" id="audioSystemDevice"></div>
+                                    <strong>
+                                        <p>Audio System</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window device voice-controller-device" id="voiceControllerDevice"></div>
+                                    <strong>
+                                        <p>Voice Controller</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window device camera-device" id="cameraDevice"></div>
+                                    <strong>
+                                        <p>Camera</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window device default-device" id="defaultDevice"></div>
+                                    <strong>
+                                        <p>Default device</p>
+                                    </strong>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading" style="overflow-x: hidden;">
+                        <h4 class="panel-title">
+                            <a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion"
+                               href="#collapseActuators">
+                                <i class="material-icons" style="font-size: 20px;">wb_incandescent</i>
+                                <span class="glyphicon glyphicon-chevron-down pull-right"></span>Actuator types</a>
+                        </h4>
+                    </div>
+                    <div id="collapseActuators" class="panel-collapse collapse">
+                        <div class="panel-body canvas-wide modeling-tool" id="canvasPalette">
+                            <ul id="dragList">
+                                <li>
+                                    <div class="window actuator light-actuator" id="lightActuator"></div>
+                                    <strong>
+                                        <p>Light</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window actuator led-actuator" id="ledActuator"></div>
+                                    <strong>
+                                        <p>LED</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window actuator speaker-actuator" id="speakerActuator"></div>
+                                    <strong>
+                                        <p>Speaker</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window actuator buzzer-actuator" id="buzzerActuator"></div>
+                                    <strong>
+                                        <p>Buzzer</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window actuator vibration-actuator" id="vibrationActuator"></div>
+                                    <strong>
+                                        <p>Vibration</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window actuator heater-actuator" id="heaterActuator"></div>
+                                    <strong>
+                                        <p>Heater</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window actuator air-conditioner-actuator"
+                                         id="airConditionerActuator"></div>
+                                    <strong>
+                                        <p>Air Conditioner</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window actuator switch-actuator" id="switchActuator"></div>
+                                    <strong>
+                                        <p>Switch</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window actuator motor-actuator" id="motorActuator"></div>
+                                    <strong>
+                                        <p>Motor</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window actuator default-actuator" id="defaultActuator"></div>
+                                    <strong>
+                                        <p>Default actuator</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window as-container" id="aContainer"></div>
+                                    <strong>
+                                        <p>Container</p>
+                                    </strong>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading" style="overflow-x: hidden;">
+                        <h4 class="panel-title">
+                            <a data-toggle="collapse" onclick="event.preventDefault();" data-parent="#accordion"
+                               href="#collapseSensors">
+                                <i class="material-icons" style="font-size: 20px;">settings_remote</i>
+                                <span class="glyphicon glyphicon-chevron-down pull-right"></span>Sensor types</a>
+                        </h4>
+                    </div>
+                    <div id="collapseSensors" class="panel-collapse collapse">
+                        <div class="panel-body canvas-wide modeling-tool" id="canvasPalette">
+                            <ul id="dragList">
+                                <li>
+                                    <div class="window sensor camera-sensor" id="cameraSensor"></div>
+                                    <strong>
+                                        <p>Camera</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window sensor sound-sensor" id="soundSensor"></div>
+                                    <strong>
+                                        <p>Sound</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window sensor temperature-sensor" id="temperatureSensor"></div>
+                                    <strong>
+                                        <p>Temperature</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window sensor humidity-sensor" id="humiditySensor"></div>
+                                    <strong>
+                                        <p>Humidity</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window sensor gas-sensor" id="gasSensor"></div>
+                                    <strong>
+                                        <p>Gas</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window sensor light-sensor" id="lightSensor"></div>
+                                    <strong>
+                                        <p>Light</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window sensor motion-sensor" id="motionSensor"></div>
+                                    <strong>
+                                        <p>Motion</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window sensor location-sensor" id="locationSensor"></div>
+                                    <strong>
+                                        <p>Location</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window sensor gyroscope-sensor" id="gyroscopeSensor"></div>
+                                    <strong>
+                                        <p>Gyroscope</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window sensor proximity-sensor" id="proximitySensor"></div>
+                                    <strong>
+                                        <p>Proximity</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window sensor touch-sensor" id="touchSensor"></div>
+                                    <strong>
+                                        <p>Touch</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window sensor vibration-sensor" id="vibrationSensor"></div>
+                                    <strong>
+                                        <p>Vibration</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window sensor default-sensor" id="defaultSensor"></div>
+                                    <strong>
+                                        <p>Default sensor</p>
+                                    </strong>
+                                </li>
+                                <li>
+                                    <div class="window as-container" id="sContainer"></div>
+                                    <strong>
+                                        <p>Container</p>
+                                    </strong>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Canvas - Modeling Area -->
+        <div id="myDiagram" style="display: inline-block; vertical-align: top; width:64%; height: 100%">
+            <div class="jtk-main">
+                <div class="jtk-canvas canvas-wide modeling-tool jtk-surface jtk-surface-nopan" id="canvas"></div>
+            </div>
+        </div>
+
+        <!-- Info sidebar -->
+        <div id="infoSidebar" style="display: inline-block; vertical-align: top; width:17%; height: 100%">
+            <div class="panel panel-default" style="margin: 5px;" ng-show="vm.clickedComponent.category == 'DEVICE'">
+                <div class="panel-heading" style="text-align: center; overflow-x: hidden;">
+                    <h4 class="panel-title">Device</h4>
+                </div>
+                <div id="deviceInfo" class="input-list">
+                    <ul>
+                        <li>
+                            <label for="name">Name</label>
+                            <input id="deviceNameInput" type="text" name="name" ng-model="vm.clickedComponent.name"
+                                   autocomplete="off">
+                            <!-- <span>Enter your full name here</span> -->
+                        </li>
+                        <li>
+                            <label for="type">Device type</label>
+                            <input id="deviceTypeInput" type="text" name="type" ng-model="vm.clickedComponent.type"
+                                   autocomplete="off">
+                        </li>
+                        <li>
+                            <label for="mac">MAC address</label>
+                            <input id="deviceMacInput" type="text" name="mac" ng-model="vm.clickedComponent.mac"
+                                   autocomplete="off" placeholder="HH-HH-HH-HH-HH-HH">
+                        </li>
+                        <li>
+                            <label for="ip">IP address</label>
+                            <input id="deviceIpInput" type="text" name="ip" ng-model="vm.clickedComponent.ip"
+                                   autocomplete="off">
+                        </li>
+                        <li>
+                            <label for="username">User name</label>
+                            <input id="deviceUsernameInput" type="text" name="username"
+                                   ng-model="vm.clickedComponent.username" autocomplete="off">
+                        </li>
+                        <li>
+                            <label for="password">Password</label>
+                            <input id="devicePasswordInput" type="password" name="password"
+                                   ng-model="vm.clickedComponent.password" autocomplete="off">
+                        </li>
+                        <li>
+                            <label for="rsaKey">RSA Key</label>
+                            <textarea id="deviceRsaKeyInput" type="text" name="rsaKey" placeholder="Private RSA key"
+                                      ng-model="vm.clickedComponent.rsaKey" rows="4"></textarea>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="panel-footer" style="height: 100%; overflow-x: scroll">
+	        <span>
+	          <b>Status</b>
+	        </span>
+                    <br>
+                    <span>
+	          <i class="fas fa-check-circle" ng-show="vm.clickedComponent.id"></i>
+	          <i class="fas fa-times-circle" ng-show="!vm.clickedComponent.id"></i>
+	          Registered
+	          <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.regError">
+	            <br>
+	            {{vm.clickedComponent.regError}}
+	          </span>
+	        </span>
+                </div>
+            </div>
+
+            <div class="panel panel-default" style="margin: 5px;" ng-show="vm.clickedComponent.category == 'ACTUATOR'">
+                <div class="panel-heading" style="text-align: center;overflow-x: hidden;">
+                    <h4 class="panel-title">Actuator</h4>
+                </div>
+
+                <div id="actuatorInfo" class="input-list">
+                    <ul>
+                        <li>
+                            <label for="name">Name</label>
+                            <input id="actuatorNameInput" type="text" name="name" ng-model="vm.clickedComponent.name"
+                                   autocomplete="off">
+                        </li>
+                        <li>
+                            <label for="type">Type</label>
+                            <input id="actuatorTypeInput" type="text" name="type" ng-model="vm.clickedComponent.type"
+                                   autocomplete="off">
+                        </li>
+                        <li>
+                            <label for="adapter">Adapter</label>
+                            <select class="form-control show-tick" id="actuatorAdapterInput"
+                                    ng-model="vm.clickedComponent.adapter"
+                                    ng-options="t.id as (t.name) for t in adapterListCtrl.items">
+                                <option value="">Select adapter</option>
+                            </select>
+                        </li>
+                        <li>
+                            <label for="device">Device</label>
+                            <input id="actuatorDeviceInput" type="text" name="device"
+                                   ng-model="vm.clickedComponent.device" autocomplete="off" disabled="disabled">
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="panel-footer" style="height: 100%; overflow-x: scroll">
+	        <span>
+	          <b>Status</b>
+	        </span>
+                    <br>
+                    <span>
+	          <i class="fas fa-check-circle" ng-show="vm.clickedComponent.id"></i>
+	          <i class="fas fa-times-circle" ng-show="!vm.clickedComponent.id"></i>
+	          Registered
+	          <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.regError">
+	            <br>
+	            {{vm.clickedComponent.regError}}
+	          </span>
+	        </span>
+                    <br>
+                    <span>
+	          <i class="fas fa-check-circle" ng-show="vm.clickedComponent.deployed"></i>
+	          <i class="fas fa-times-circle" ng-show="!vm.clickedComponent.deployed"></i>
+	          Deployed
+	          <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.depError">
+	            <br>
+	            {{vm.clickedComponent.depError}}
+	          </span>
+	        </span>
+                </div>
+            </div>
+
+            <div class="panel panel-default" style="margin: 5px;" ng-show="vm.clickedComponent.category == 'SENSOR'">
+                <div class="panel-heading" style="text-align: center;overflow-x: hidden;">
+                    <h4 class="panel-title">Sensor</h4>
+                </div>
+
+                <div id="sensorInfo" class="input-list">
+                    <ul>
+                        <li>
+                            <label for="name">Name</label>
+                            <input id="sensorNameInput" type="text" name="name" ng-model="vm.clickedComponent.name"
+                                   autocomplete="off">
+                        </li>
+                        <li>
+                            <label for="type">Type</label>
+                            <input id="sensorTypeInput" type="text" name="type" ng-model="vm.clickedComponent.type"
+                                   autocomplete="off">
+                        </li>
+                        <li>
+                            <label for="adapter">Adapter</label>
+                            <select class="form-control show-tick" id="sensorAdapterInput"
+                                    ng-model="vm.clickedComponent.adapter"
+                                    ng-options="t.id as (t.name) for t in adapterListCtrl.items">
+                                <option value="">Select adapter</option>
+                            </select>
+                        </li>
+                        <li>
+                            <label for="device">Device</label>
+                            <input id="sensorDeviceInput" type="text" name="device"
+                                   ng-model="vm.clickedComponent.device" autocomplete="off" disabled="disabled">
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="panel-footer" style="height: 100%; overflow-x: scroll">
+	        <span>
+	          <b>Status</b>
+	        </span>
+                    <br>
+                    <span>
+	          <i class="fas fa-check-circle" ng-show="vm.clickedComponent.id"></i>
+	          <i class="fas fa-times-circle" ng-show="!vm.clickedComponent.id"></i>
+	          Registered
+	          <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.regError">
+	            <br>
+	            {{vm.clickedComponent.regError}}
+	          </span>
+	        </span>
+                    <br>
+                    <span>
+	          <i class="fas fa-check-circle" ng-show="vm.clickedComponent.deployed"></i>
+	          <i class="fas fa-times-circle" ng-show="!vm.clickedComponent.deployed"></i>
+	          Deployed
+	          <span style="color: red; font-size: 12px" ng-show="vm.clickedComponent.depError">
+	            <br>
+	            {{vm.clickedComponent.depError}}
+	          </span>
+	        </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
