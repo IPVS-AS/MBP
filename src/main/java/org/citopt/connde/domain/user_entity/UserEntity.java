@@ -4,13 +4,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import org.citopt.connde.DynamicBeanProvider;
+import org.citopt.connde.domain.env_model.EnvironmentModel;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.repository.projection.UserExcerpt;
 import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.UserService;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.projection.ProjectionFactory;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,6 +41,11 @@ public abstract class UserEntity {
             .addPermission(PERMISSION_NAME_DISAPPROVE).addRole(ENTITY_OWNER).addRole(ADMIN)
             .lock();
 
+    //The environment model for which the entity was created (null if none)
+    @JsonIgnore
+    @DBRef
+    private EnvironmentModel environmentModel = null;
+
     //Owner of the entity
     @JsonIgnore
     @DBRef
@@ -46,6 +55,36 @@ public abstract class UserEntity {
     @JsonIgnore
     @DBRef
     private Set<User> approvedUsers = new HashSet<>();
+
+    //Creation date, managed by Mongo Auditing
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @CreatedDate
+    private Date created;
+
+    //Date of the last modification, managed by Mongo Auditing
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @LastModifiedDate
+    private Date lastModified;
+
+    /**
+     * Returns the environment model for which the entity was created. If it has not been created
+     * for an environment model, null is returned.
+     *
+     * @return The environment model
+     */
+    public EnvironmentModel getEnvironmentModel() {
+        return environmentModel;
+    }
+
+    /**
+     * Sets the environment model for which the entity was created. If null is passed,
+     * the entity was not created for an environment model.
+     *
+     * @param environmentModel The environment model to set
+     */
+    public void setEnvironmentModel(EnvironmentModel environmentModel) {
+        this.environmentModel = environmentModel;
+    }
 
     /**
      * Returns the owner of this entity.
@@ -81,6 +120,42 @@ public abstract class UserEntity {
      */
     public void setApprovedUsers(Set<User> approvedUsers) {
         this.approvedUsers = approvedUsers;
+    }
+
+    /**
+     * Returns the creation date of the entity.
+     *
+     * @return The creation date
+     */
+    public Date getCreated() {
+        return created;
+    }
+
+    /**
+     * Sets the creation date of the entity.
+     *
+     * @param created The creation date to set
+     */
+    public void setCreated(Date created) {
+        this.created = created;
+    }
+
+    /**
+     * Returns the date of the last modification of the entity.
+     *
+     * @return The modification date
+     */
+    public Date getLastModified() {
+        return lastModified;
+    }
+
+    /**
+     * Sets the date of the last modification of the entity.
+     *
+     * @param lastModified The modification date to set
+     */
+    public void setLastModified(Date lastModified) {
+        this.lastModified = lastModified;
     }
 
     /**
@@ -148,6 +223,17 @@ public abstract class UserEntity {
 
         //Do check
         return user.equals(this.owner) || this.approvedUsers.contains(user);
+    }
+
+    /**
+     * Returns whether the entity was modelled as part of an environment model.
+     *
+     * @return True, if it was modelled; false otherwise
+     */
+    @JsonProperty("wasModelled")
+    @ApiModelProperty(notes = "Whether the entity was modelled as part of an environment model", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    public boolean wasModelled() {
+        return (environmentModel != null);
     }
 
     @JsonProperty("isOwning")

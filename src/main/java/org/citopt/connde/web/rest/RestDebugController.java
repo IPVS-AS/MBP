@@ -24,7 +24,6 @@ public class RestDebugController {
      */
     @RequestMapping(value = "/debug", method = RequestMethod.GET)
     public ResponseEntity<String> debug() {
-        //Do your own debugging stuff here, but clean up before committing
-        return new ResponseEntity<String>("debug", HttpStatus.OK);
+        return new ResponseEntity<>("debug", HttpStatus.OK);
     }
 }

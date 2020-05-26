@@ -1,6 +1,7 @@
 # MBP Operators Repository
 
-This folder contains examplary operator scripts that can be deployed onto IoT devices by the MBP. These operators are divided into four categories: 
+This folder contains examplary operator scripts that can be deployed onto IoT devices by the MBP. 
+These operators are divided into four categories: 
 
  - [extraction](extraction) operators: this folder contains operator scripts to bind sensors to the MBP. 
 
@@ -9,6 +10,8 @@ This folder contains examplary operator scripts that can be deployed onto IoT de
  - [monitoring](monitoring) operators: this folder contains operator scripts to monitor IoT devices. 
 
  - [processing](processing) operators: this folder contains operator scripts to execute operations onto IoT devices. 
+
+In order to facilitate the development of such operators, we provide the [mbp_client](mbp_client), a python-based library, which provide functions to connect and communicate to the MBP in a simple manner.  
 
 The MBP enables users to provide their own operators, which can be implemented in any programming language.
 The MBP requires, however, to be provided with specific lifecycle management scripts for the operator (i.e., `install.sh`, `start.sh`, `running.sh`, and `stop.sh`), in order to be able to automate the deployment of the user-defined operators.
