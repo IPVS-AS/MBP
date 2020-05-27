@@ -14,14 +14,14 @@ app.controller('AddItemController', ['addItem', 'NotificationService', function 
                         vm.result = data;
                         vm.success = 'Registered successfully!';
 
-                        //Clean the form
+                        //Clean the item object
                         vm.item = {};
 
                         //Notify the user
                         NotificationService.notify('Entity successfully created.', 'success')
                     },
                     function (errors) {
-                        //Failure, add the received errors to the form
+                        //Failure, add the received errors to the item object
                         vm.item.errors = errors;
 
                         //Notify the user

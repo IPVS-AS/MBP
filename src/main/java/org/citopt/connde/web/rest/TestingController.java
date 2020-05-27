@@ -9,12 +9,15 @@ import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.service.testing.GraphPlotter;
 import org.citopt.connde.service.testing.TestEngine;
 import org.citopt.connde.service.testing.TestReport;
+import org.json.HTTP;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.*;
 import java.util.*;
 
 
@@ -122,7 +125,7 @@ public class TestingController {
     /**
      * Changes the value "UseNewData", changed with the switch button, in the database.
      *
-     * @param testId ID of the test in which the configuration is to be changed.
+     * @param testId     ID of the test in which the configuration is to be changed.
      * @param useNewData boolean, wether a new data set should be used or not
      * @return edited configuration
      */
@@ -145,6 +148,36 @@ public class TestingController {
         testDetailsRepository.save(testDetails);
 
         return new ResponseEntity<>(config, HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/test-details/deleteTestreport/{testId}")
+    public ResponseEntity<String> deleteTestReport(@PathVariable(value = "testId") String testId) {
+        ResponseEntity response;
+
+        TestDetails testDetails = testDetailsRepository.findById(testId);
+
+        if(testDetails.isPdfExists()){
+            Path pathTestReport = Paths.get(testDetails.getPathPDF());
+            Path pathDiagram = Paths.get(pathTestReport.getParent().toString() , testId + ".gif");
+
+            try {
+                Files.delete(pathTestReport);
+                Files.delete(pathDiagram);
+                response = new ResponseEntity<>("Testreport successfully deleted", HttpStatus.OK);
+            } catch (NoSuchFileException x) {
+                response = new ResponseEntity<>("Testreport doesn't extist.", HttpStatus.NOT_FOUND);
+            } catch (IOException x) {
+                response = new ResponseEntity<>(x, HttpStatus.CONFLICT);
+            }
+        } else {
+            response = new ResponseEntity<>("No available Testreport for this Test.", HttpStatus.NOT_FOUND);
+        }
+
+
+
+        return response;
+
+
     }
 
 }

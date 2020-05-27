@@ -4,6 +4,7 @@ package org.citopt.connde.service.testing;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.citopt.connde.domain.rules.Rule;
+import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.domain.testing.TestDetails;
 import org.citopt.connde.repository.RuleRepository;
 import org.citopt.connde.repository.TestDetailsRepository;
@@ -36,26 +37,22 @@ public class TestReport {
     @Autowired
     RuleRepository ruleRepository;
 
+
     // Date formatter
     final String datePattern = "dd-MM-yyyy HH:mm:ss";
     final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(datePattern);
+    final Font white = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
+
 
     /**
      * Generates the Test-Report with the Chart of the simulated Values and other important informations for the user.
      *
-     * @param testId id of the specific test
+     * @param testId      id of the specific test
      * @param rulesBefore detail information of the selected rules before the test
      * @return path where the TestReport can be found
-     * @throws Exception
      */
     public String generateTestreport(String testId, java.util.List<Rule> rulesBefore) throws Exception {
         TestDetails test = testDetailsRepository.findById(testId);
-        String amountEvents;
-        String amountOutliers;
-        String simTime;
-        String startTestTime;
-        String endTestTime;
-
         Document doc = new Document();
 
         // Create a new pdf, which is named with the ID of the specific test
@@ -82,7 +79,59 @@ public class TestReport {
         Image graphSensorVal = Image.getInstance(testId + ".gif");
         graphSensorVal.setAlignment(Element.ALIGN_CENTER);
 
-        // Test-Success
+        // get information about the success of the test and the start/end times
+        PdfPTable successInfo = getSucessInfo(test);
+
+        // Test-Details
+        Font testDetails = new Font(Font.FontFamily.HELVETICA, 17, Font.BOLD | Font.UNDERLINE, BaseColor.BLACK);
+        Paragraph para3 = new Paragraph("Test-Details: ", testDetails);
+        para3.setAlignment(Element.ALIGN_CENTER);
+
+        PdfPTable table = getTestDefinitions(test);
+
+        // Actuator informations
+        PdfPTable actuatorInfos = getActuatorInfos();
+
+
+        // add all components to the test report pdf
+        doc.add(titel);
+        doc.add(Chunk.NEWLINE);
+        doc.add(successInfo);
+        doc.add(Chunk.NEWLINE);
+        doc.add(Chunk.NEWLINE);
+        doc.add(graphSensorVal);
+        doc.newPage();
+        doc.add(para3);
+        doc.add(Chunk.NEWLINE);
+        doc.add(table);
+        doc.add(Chunk.NEWLINE);
+        doc.add(actuatorInfos);
+        doc.add(Chunk.NEWLINE);
+        // Rule-Informations
+        PdfPTable ruleInfos = getRuleInfos(test);
+        ruleInfos.setSpacingAfter(14f);
+        doc.add(ruleInfos);
+
+
+        for (Rule rule : rulesBefore) {
+            PdfPTable ruleDetails = getRuleDetails(test, rule);
+            ruleDetails.setSpacingAfter(15f);
+            doc.add(ruleDetails);
+        }
+
+        doc.close();
+        return path;
+    }
+
+    /**
+     *  Return a table with the success information of the test and the start/end time.
+     *
+     * @param test test for which the test report is created
+     * @return table with success and time informations
+     */
+    private PdfPTable getSucessInfo(TestDetails test) {
+        String startTestTime;
+        String endTestTime;// Test-Success
         Font fontConfig = new Font();
         Chunk bullet = new Chunk("\u2022", fontConfig);
         List successful = new List(List.UNORDERED);
@@ -140,19 +189,28 @@ public class TestReport {
         c2.setHorizontalAlignment(Element.ALIGN_CENTER);
         c2.setColspan(2);
         successInfo.addCell(c2);
+        return successInfo;
+    }
 
-
-        // Test-Details
-        Font testDetails = new Font(Font.FontFamily.HELVETICA, 17, Font.BOLD | Font.UNDERLINE, BaseColor.BLACK);
-        Paragraph para3 = new Paragraph("Test-Details: ", testDetails);
-        para3.setAlignment(Element.ALIGN_CENTER);
-
+    /**
+     * Returns a table with the user defined configurations of the test
+     *
+     * @param test test for which the test report is created
+     * @return table with user configurations of the test
+     */
+    private PdfPTable getTestDefinitions(TestDetails test) {
+        PdfPCell c1;
+        PdfPCell c2;
+        String simTime;
+        String amountEvents;
+        String amountOutliers;
         PdfPTable table = new PdfPTable(4);
         table.setWidthPercentage(100f);
-        PdfPCell c0 = new PdfPCell(new Phrase("Simulated Sensor"));
+        Chunk text = new Chunk("Simulated Sensor", white);
+        PdfPCell c0 = new PdfPCell(new Phrase(text));
         c0.setHorizontalAlignment(Element.ALIGN_CENTER);
         c0.setColspan(4);
-        c0.setBackgroundColor(new BaseColor(157, 213, 227));
+        c0.setBackgroundColor(new BaseColor(117, 117, 117));
         table.addCell(c0);
         ArrayList<String> simDet = getSensorTypePDF(test);
 
@@ -235,71 +293,224 @@ public class TestReport {
 
             }
         }
+        return table;
+    }
 
+    /**
+     * Retruns a table with the Actuator informations of the Test.
+     *
+     * @return table with the actuator information
+     */
+    private PdfPTable getActuatorInfos() {
         // Dummy-Actuator
         PdfPTable actuatorInfos = new PdfPTable(4);
         actuatorInfos.setWidthPercentage(100f);
-        PdfPCell actuatorInf = new PdfPCell(new Phrase("Simulated actuator"));
+
+        Chunk chunkActuatorInf = new Chunk("Simulated actuator", white);
+        PdfPCell actuatorInf = new PdfPCell(new Phrase(chunkActuatorInf));
         actuatorInf.setHorizontalAlignment(Element.ALIGN_CENTER);
         actuatorInf.setColspan(4);
-        actuatorInf.setBackgroundColor(new BaseColor(157, 213, 227));
+        actuatorInf.setBackgroundColor(new BaseColor(117, 117, 117));
         actuatorInfos.addCell(actuatorInf);
         PdfPCell actuatorInf2 = new PdfPCell(new Phrase("The actuator used for the tests does not trigger any actions if the corresponding rule is triggered. It functions as a dummy."));
         actuatorInf2.setColspan(4);
         actuatorInf2.setHorizontalAlignment(Element.ALIGN_CENTER);
         actuatorInfos.addCell(actuatorInf2);
-        PdfPTable ruleInfos = getRuleInfos(test, rulesBefore);
-
-
-        // add all components to the test report pdf
-        doc.add(titel);
-        doc.add(Chunk.NEWLINE);
-        doc.add(successInfo);
-        doc.add(Chunk.NEWLINE);
-        doc.add(Chunk.NEWLINE);
-        doc.add(graphSensorVal);
-        doc.newPage();
-        doc.add(para3);
-        doc.add(Chunk.NEWLINE);
-        doc.add(table);
-        doc.add(Chunk.NEWLINE);
-        doc.add(actuatorInfos);
-        doc.add(Chunk.NEWLINE);
-        doc.add(ruleInfos);
-
-
-        doc.close();
-        return path;
+        return actuatorInfos;
     }
 
 
     /**
      * Creates a table with all important informations about the rules of the application which was tested
      *
-     * @param test test for which the test report is created
-     * @param rulesBefore  detail information of the selected rules before the test
+     * @param test       test for which the test report is created
+     * @param rule       detail information of the selected rules before the test
      * @return PDFTable with all important informations about the rules in the test of a specific application
      */
-    private PdfPTable getRuleInfos(TestDetails test, java.util.List<Rule> rulesBefore) {
-        ArrayList rules = new ArrayList();
-        StringBuilder rulesUser = new StringBuilder();
-        String rulesExecuted;
-        String triggerRules;
+    private PdfPTable getRuleDetails(TestDetails test, Rule rule) {
 
+        // get executed Rules
+        String rulesExecuted = test.getRulesExecuted().toString().replace("[", "")  //remove the right bracket
+                .replace("]", "");  //remove the left bracket
 
         PdfPTable ruleInfos = new PdfPTable(4);
         ruleInfos.setWidthPercentage(100f);
-        PdfPCell c0 = new PdfPCell(new Phrase("Rule-Informations"));
+        PdfPCell c0;
+
+        Rule ruleAfter = ruleRepository.findByName(rule.getName());
+        c0 = new PdfPCell(new Phrase(rule.getName()));
         c0.setHorizontalAlignment(Element.ALIGN_CENTER);
         c0.setColspan(4);
         c0.setBackgroundColor(new BaseColor(157, 213, 227));
         ruleInfos.addCell(c0);
 
 
+
+
+
+
+        // Rule: Condition (Trigger Querey)
+        PdfPCell c1 = new PdfPCell(new Phrase("Rule: Condition"));
+        c1.setColspan(4);
+        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+        c1.setBackgroundColor(new BaseColor(191, 220, 227));
+        ruleInfos.addCell(c1);
+
+        c1 = new PdfPCell(new Phrase(ruleAfter.getTrigger().getQuery()));
+        c1.setColspan(4);
+        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+        ruleInfos.addCell(c1);
+
+        // Rule: Action (Actuator)
+        c1 = new PdfPCell(new Phrase("Rule: Action"));
+        c1.setColspan(4);
+        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+        c1.setBackgroundColor(new BaseColor(191, 220, 227));
+        ruleInfos.addCell(c1);
+
+
+        ArrayList ruleActions = new ArrayList();
+        for (RuleAction action : ruleAfter.getActions()) {
+            ruleActions.add(action.getName());
+        }
+
+
+        // get executed Rules
+        String ruleAction = ruleActions.toString().replace("[", "")  //remove the right bracket
+                .replace("]", "");  //remove the left bracket
+
+
+        c1 = new PdfPCell(Phrase.getInstance(ruleAction));
+        c1.setColspan(4);
+        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+        ruleInfos.addCell(c1);
+
+
+        // # Rule Executions before/after
+        c1 = new PdfPCell(new Phrase("Number of executions before the test"));
+        c1.setColspan(2);
+        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+        c1.setBackgroundColor(new BaseColor(191, 220, 227));
+        ruleInfos.addCell(c1);
+
+        c1 = new PdfPCell(new Phrase("Number of executions after the test"));
+        c1.setColspan(2);
+        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+        c1.setBackgroundColor(new BaseColor(191, 220, 227));
+        ruleInfos.addCell(c1);
+
+        int executionsBefore = rule.getExecutions();
+        PdfPCell c2 = new PdfPCell(new Phrase(Integer.toString(executionsBefore)));
+        c2.setColspan(2);
+        c2.setHorizontalAlignment(Element.ALIGN_CENTER);
+        ruleInfos.addCell(c2);
+        if (!rulesExecuted.contains(rule.getName())) {
+            int executionsAfter = rule.getExecutions();
+            c2 = new PdfPCell(new Phrase(Integer.toString(executionsAfter)));
+            c2.setColspan(2);
+            c2.setHorizontalAlignment(Element.ALIGN_CENTER);
+            ruleInfos.addCell(c2);
+        } else {
+            int executionsAfter = ruleAfter.getExecutions();
+            c2 = new PdfPCell(new Phrase(Integer.toString(executionsAfter)));
+            c2.setColspan(2);
+            c2.setHorizontalAlignment(Element.ALIGN_CENTER);
+            ruleInfos.addCell(c2);
+        }
+
+
+        // Last Execution time before/after
+        c1 = new PdfPCell(new Phrase("Last execution before the test"));
+        c1.setColspan(2);
+        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+        c1.setBackgroundColor(new BaseColor(191, 220, 227));
+        ruleInfos.addCell(c1);
+
+        c1 = new PdfPCell(new Phrase("Last execution after the test"));
+        c1.setColspan(2);
+        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+        c1.setBackgroundColor(new BaseColor(191, 220, 227));
+        ruleInfos.addCell(c1);
+
+
+        if (rule.getLastExecution() == null) {
+            c2 = new PdfPCell(new Phrase("NEVER"));
+        } else {
+            c2 = new PdfPCell(new Phrase(simpleDateFormat.format(rule.getLastExecution())));
+        }
+
+        c2.setColspan(2);
+        c2.setHorizontalAlignment(Element.ALIGN_CENTER);
+        ruleInfos.addCell(c2);
+
+
+        if (ruleAfter.getLastExecution() == null) {
+            c2 = new PdfPCell(new Phrase("NEVER"));
+        } else {
+            c2 = new PdfPCell(new Phrase(simpleDateFormat.format(ruleAfter.getLastExecution())));
+        }
+        c2.setColspan(2);
+        c2.setHorizontalAlignment(Element.ALIGN_CENTER);
+        ruleInfos.addCell(c2);
+
+        // Trigger-Values of the Rule
+        c1 = new PdfPCell(new Phrase("Trigger-Values"));
+        c1.setColspan(4);
+        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+        c1.setBackgroundColor(new BaseColor(191, 220, 227));
+        ruleInfos.addCell(c1);
+
+        // get Trigger Values for specific rules
+        if (test.getTriggerValues().containsKey(ruleAfter.getName())) {
+            if (test.getTriggerValues().get(ruleAfter.getName()).size() == 0) {
+                c1 = new PdfPCell(new Phrase("Rule not triggered"));
+            } else {
+                String tiggerValues = test.getTriggerValues().get(ruleAfter.getName()).toString().replace("[", "")  //remove the right bracket
+                        .replace("]", "");  //remove the left bracket
+                c1 = new PdfPCell(new Phrase(tiggerValues));
+            }
+        } else {
+            c1 = new PdfPCell(new Phrase("Rule not triggered"));
+        }
+        c1.setColspan(4);
+        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+        ruleInfos.addCell(c1);
+
+
+        return ruleInfos;
+
+}
+
+    /**
+     * Returns a table with detailed informations of the rules belonging to the IoT-Application of the Test
+     *
+     * @param test test for which the test report is created
+     * @return table with detailed rule informations
+     */
+    public PdfPTable getRuleInfos(TestDetails test) {
+        //noinspection MismatchedQueryAndUpdateOfCollection
+        ArrayList rules = new ArrayList();
+        StringBuilder rulesUser = new StringBuilder();
+        String rulesExecuted;
+        String triggerRules;
+        String infoSelectedRules;
+
+        PdfPTable ruleInfos = new PdfPTable(4);
+        ruleInfos.setWidthPercentage(100f);
+        Chunk text = new Chunk("Rule-Informations", white);
+        PdfPCell c0 = new PdfPCell(new Phrase(text));
+        c0.setHorizontalAlignment(Element.ALIGN_CENTER);
+        c0.setColspan(4);
+        c0.setBackgroundColor(new BaseColor(117, 117, 117));
+        ruleInfos.addCell(c0);
+
+
         if (test.isTriggerRules()) {
             triggerRules = "The selected rules should be executed by the test";
+            infoSelectedRules = "Rules, which should be triggered";
         } else {
             triggerRules = "The selected rules shouldn't be executed by the test";
+            infoSelectedRules = "Rules which shouldn't be triggered";
         }
 
         c0 = new PdfPCell(new Phrase(triggerRules));
@@ -309,7 +520,7 @@ public class TestReport {
 
 
         // Rules which should be triggered by the values of the sensor simulation
-        PdfPCell c1 = new PdfPCell(new Phrase("Rules, which should be triggered"));
+        PdfPCell c1 = new PdfPCell(new Phrase(infoSelectedRules));
         c1.setColspan(2);
         c1.setHorizontalAlignment(Element.ALIGN_CENTER);
         c1.setBackgroundColor(new BaseColor(191, 220, 227));
@@ -347,114 +558,13 @@ public class TestReport {
         c2.setHorizontalAlignment(Element.ALIGN_CENTER);
         ruleInfos.addCell(c2);
 
-        for (Rule rule : rulesBefore) {
-            Rule ruleAfter = ruleRepository.findByName(rule.getName());
-            c0 = new PdfPCell(new Phrase(rule.getName()));
-            c0.setHorizontalAlignment(Element.ALIGN_CENTER);
-            c0.setColspan(4);
-            c0.setBackgroundColor(new BaseColor(157, 213, 227));
-            ruleInfos.addCell(c0);
-
-            // # Rule Executions before/after
-            c1 = new PdfPCell(new Phrase("Number of executions before the test"));
-            c1.setColspan(2);
-            c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-            c1.setBackgroundColor(new BaseColor(191, 220, 227));
-            ruleInfos.addCell(c1);
-
-            c1 = new PdfPCell(new Phrase("Number of executions after the test"));
-            c1.setColspan(2);
-            c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-            c1.setBackgroundColor(new BaseColor(191, 220, 227));
-            ruleInfos.addCell(c1);
-
-            int executionsBefore = rule.getExecutions();
-            c2 = new PdfPCell(new Phrase(Integer.toString(executionsBefore)));
-            c2.setColspan(2);
-            c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-            ruleInfos.addCell(c2);
-            if (!rulesExecuted.contains(rule.getName())) {
-                int executionsAfter = rule.getExecutions();
-                c2 = new PdfPCell(new Phrase(Integer.toString(executionsAfter)));
-                c2.setColspan(2);
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                ruleInfos.addCell(c2);
-            } else {
-                int executionsAfter = ruleAfter.getExecutions();
-                c2 = new PdfPCell(new Phrase(Integer.toString(executionsAfter)));
-                c2.setColspan(2);
-                c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-                ruleInfos.addCell(c2);
-            }
-
-
-            // Last Execution time before/after
-            c1 = new PdfPCell(new Phrase("Last execution before the test"));
-            c1.setColspan(2);
-            c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-            c1.setBackgroundColor(new BaseColor(191, 220, 227));
-            ruleInfos.addCell(c1);
-
-            c1 = new PdfPCell(new Phrase("Last execution after the test"));
-            c1.setColspan(2);
-            c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-            c1.setBackgroundColor(new BaseColor(191, 220, 227));
-            ruleInfos.addCell(c1);
-
-
-            if (rule.getLastExecution() == null) {
-                c2 = new PdfPCell(new Phrase("NEVER"));
-            } else {
-                c2 = new PdfPCell(new Phrase(simpleDateFormat.format(rule.getLastExecution())));
-            }
-
-            c2.setColspan(2);
-            c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-            ruleInfos.addCell(c2);
-
-
-            if (ruleAfter.getLastExecution() == null) {
-                c2 = new PdfPCell(new Phrase("NEVER"));
-            } else {
-                c2 = new PdfPCell(new Phrase(simpleDateFormat.format(ruleAfter.getLastExecution())));
-            }
-            c2.setColspan(2);
-            c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-            ruleInfos.addCell(c2);
-
-            // Trigger-Values of the Rule
-            c1 = new PdfPCell(new Phrase("Trigger-Values"));
-            c1.setColspan(4);
-            c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-            c1.setBackgroundColor(new BaseColor(191, 220, 227));
-            ruleInfos.addCell(c1);
-
-            // get Trigger Values for specific rules
-            if (test.getTriggerValues().containsKey(ruleAfter.getName())) {
-                if (test.getTriggerValues().get(ruleAfter.getName()).size() == 0) {
-                    c1 = new PdfPCell(new Phrase("Rule not triggered"));
-                } else {
-                    String tiggerValues = test.getTriggerValues().get(ruleAfter.getName()).toString().replace("[", "")  //remove the right bracket
-                            .replace("]", "");  //remove the left bracket
-                    c1 = new PdfPCell(new Phrase(tiggerValues));
-                }
-            } else {
-                c1 = new PdfPCell(new Phrase("Rule not triggered"));
-            }
-            c1.setColspan(4);
-            c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-            ruleInfos.addCell(c1);
-        }
-
         return ruleInfos;
-
     }
-
 
     /**
      * Converts the configuration of the Test Sensor into a readable output for the test report
      *
-     * @param test  test for which the test report is created
+     * @param test test for which the test report is created
      * @return List of configurations readable for the test report
      */
     public ArrayList<String> getSensorTypePDF(TestDetails test) {
@@ -574,7 +684,7 @@ public class TestReport {
                     testCaseStr = "-";
                     combiStr = "Missing values";
                 } else if (testCase == 5 || combination == 5) {
-                   testCaseStr = "-";
+                    testCaseStr = "-";
                     combiStr = "Wrong value type";
                 }
 

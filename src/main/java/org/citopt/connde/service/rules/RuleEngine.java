@@ -94,6 +94,7 @@ public class RuleEngine {
             triggerMap.put(trigger, rulesOfTrigger);
         }
 
+        //Enable rule and save it
         rule.setEnabled(true);
         ruleRepository.save(rule);
 

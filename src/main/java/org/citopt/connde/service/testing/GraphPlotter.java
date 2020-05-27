@@ -49,7 +49,9 @@ public class GraphPlotter {
 
 
         bufferedImage = chart.createBufferedImage(400, 400);
-        ImageIO.write(bufferedImage, "gif", new FileOutputStream(test.getId() + ".gif"));
+        FileOutputStream outputStream = new FileOutputStream(test.getId() + ".gif");
+        ImageIO.write(bufferedImage, "gif", outputStream);
+        outputStream.close();
 
 
     }

@@ -66,6 +66,7 @@ app.controller('TestingController',
              */
             function refreshTestEntry(testId, testName) {
                 $http.get(ENDPOINT_URI + '/test-details/pdfExists/' + testId).then(function (response) {
+
                     if(response.data === "true"){
                         document.getElementById(testName).disabled = false;
                     } else if (response.data === "false"){
@@ -81,9 +82,8 @@ app.controller('TestingController',
              * @param testID
              */
             function downloadPDF(testID) {
-                window.open('api/test-details/downloadPDF/' + testID,'_blank');
+                window.open('api/test-details/downloadPDF/' + testID, '_blank');
             }
-
 
             /**
              * [Public]
@@ -117,6 +117,7 @@ app.controller('TestingController',
                     cancelButtonText: 'Cancel'
                 });
             }
+
 
             /**
              * Sends a server request in order to edit the configurations of the test "useNewData",
@@ -372,7 +373,7 @@ app.controller('TestingController',
                                     vm.parameterValues.push({"name": "sensitivityClass", "value": 0});
                                     vm.parameterValues.push({"name": "reactionMeters", "value": 3});
                                 }
-                            }else if (vm.data.singleSelect === 'TestingBeschleunigungsSensorPl') {
+                            } else if (vm.data.singleSelect === 'TestingBeschleunigungsSensorPl') {
                                 if (vm.testCase.singleSelect === '3' || vm.testCase.singleSelect === '4' || vm.testCase.singleSelect === '5') {
                                     vm.parameterValues.push({
                                         "name": "event",
@@ -477,7 +478,7 @@ app.controller('TestingController',
 
                         }
                     }),
-                deleteTestCtrl: $controller('DeleteItemController as deleteTestCtrl', {
+                deleteTestCtrl: $controller('DeleteTestController as deleteTestCtrl', {
                     $scope: $scope,
                     deleteItem: deleteTest,
                     confirmDeletion: confirmDelete

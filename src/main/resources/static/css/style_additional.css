@@ -1,4 +1,16 @@
-﻿/* Rotate collapse icons */
+﻿/* Editable card header */
+.card .header h2.editable {
+    width: max-content;
+    padding: 3px;
+    cursor: pointer;
+}
+
+/* Hover for editable card header */
+.card .header h2.editable:hover {
+    background-color: #EEEEEE;
+}
+
+/* Rotate collapse icons */
 li a.collapsed i.material-icons, .panel .panel-heading .panel-title a.collapsed i.material-icons {
     transform: rotate(90deg);
 }

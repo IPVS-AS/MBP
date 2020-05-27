@@ -66,21 +66,15 @@ public class DeviceValidator implements Validator {
                 "The user name must not be empty.");
 
         //Check if rsa key was provided (mandatory)
-        if (!(device.hasRSAKey() || device.hasPassword()))  {
+        if (!(device.hasRSAKey() || device.hasPassword())) {
 
-          ValidationUtils.rejectIfEmptyOrWhitespace(
-                  errors, "password", "device.password.empty",
-                  "You must inform a password or a RSA key.");
+            ValidationUtils.rejectIfEmptyOrWhitespace(
+                    errors, "password", "device.password.empty",
+                    "You must inform a password or a RSA key.");
 
-          ValidationUtils.rejectIfEmptyOrWhitespace(
-                  errors, "rsaKey", "device.rsaKey.empty",
-                  "You must inform a password or a RSA key.");
-        }
-        //Check if name is unique
-        Device anotherDevice = deviceRepository.findByName(device.getName());
-        if (anotherDevice != null) {
-            errors.rejectValue("name", "device.name.duplicate",
-                    "The name is already registered.");
+            ValidationUtils.rejectIfEmptyOrWhitespace(
+                    errors, "rsaKey", "device.rsaKey.empty",
+                    "You must inform a password or a RSA key.");
         }
 
         //Retrieve fields that need to be of a certain format

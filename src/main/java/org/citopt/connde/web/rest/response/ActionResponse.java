@@ -95,8 +95,18 @@ public class ActionResponse {
     }
 
     /**
+     * Sets a map (field name --> error message) that contains error messages which describe the issue
+     * that occurred because of certain fields while executing the action (e.g. validation issues).
+     *
+     * @param fieldErrors The map of field errors to set
+     */
+    public void setFieldErrors(Map<String, String> fieldErrors) {
+        this.fieldErrors = fieldErrors;
+    }
+
+    /**
      * Returns a map (field name --> error message) that contains error messages which describe the issue
-     * that occured because of certain fields while executing the action (e.g. validation issues).
+     * that occurred because of certain fields while executing the action (e.g. validation issues).
      *
      * @return The map of field errors
      */
