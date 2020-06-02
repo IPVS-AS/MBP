@@ -32,6 +32,15 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 templateUrl: 'templates/home',
                 controller: 'HomeController as ctrl',
                 resolve: {
+                    countEnvModels: ['CrudService', function (CrudService) {
+                        return CrudService.countItems('env-models').then(
+                            (count) => {
+                                return count;
+                            }, (response) => {
+                                return 0;
+                            }
+                        );
+                    }],
                     countActuators: ['CrudService', function (CrudService) {
                         return CrudService.countItems('actuators').then(
                             function (count) {
@@ -72,6 +81,16 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                             }
                         );
                     }],
+                    countTests: ['CrudService', function (CrudService) {
+                        return CrudService.countItems('test-details').then(
+                            function (count) {
+                                return count;
+                            },
+                            function (response) {
+                                return 0;
+                            }
+                        );
+                    }],
                     countMonitoringAdapters: ['CrudService', function (CrudService) {
                         return CrudService.countItems('monitoring-adapters').then(
                             function (count) {
@@ -103,13 +122,41 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 controller: 'UsersController as vm'
             })
 
-            // Model
-            .when(viewPrefix + '/model', {
-                templateUrl: 'templates/model',
-                controller: 'ModelController as vm',
+            // Environment Model
+            .when(viewPrefix + '/env-models', {
+                category: 'env-models',
+                templateUrl: 'templates/env-models',
+                controller: 'EnvModelListController as ctrl',
                 resolve: {
+                    envModelList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('env-models');
+                    }],
+                    addEnvModel: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'env-models');
+                    }],
+                    updateEnvModel: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.updateItem, 'env-models');
+                    }],
+                    deleteEnvModel: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'env-models');
+                    }],
                     adapterList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('adapters');
+                    }],
+                    deviceTypesList: ['ComponentTypeService', function (ComponentTypeService) {
+                        return ComponentTypeService.GetByComponent('DEVICE').then(function (response) {
+                            return response.data || [];
+                        });
+                    }],
+                    actuatorTypesList: ['ComponentTypeService', function (ComponentTypeService) {
+                        return ComponentTypeService.GetByComponent('ACTUATOR').then(function (response) {
+                            return response.data || [];
+                        });
+                    }],
+                    sensorTypesList: ['ComponentTypeService', function (ComponentTypeService) {
+                        return ComponentTypeService.GetByComponent('SENSOR').then(function (response) {
+                            return response.data || [];
+                        });
                     }]
                 }
             })
@@ -158,7 +205,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            //Rule actions list
+            // Rule actions list
             .when(viewPrefix + '/rule-actions', {
                 category: 'rule-actions',
                 templateUrl: 'templates/rule-actions',
@@ -187,7 +234,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            //Rule triggers list
+            // Rule triggers list
             .when(viewPrefix + '/rule-triggers', {
                 category: 'rule-triggers',
                 templateUrl: 'templates/rule-triggers',
@@ -438,6 +485,30 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         return SettingsService.getDocumentationMetaData().then(function (response) {
                             return response.data;
                         });
+                    }]
+                }
+            })
+            
+            // Testing-Tool
+            .when(viewPrefix + '/testing-tool',{
+                category: 'test-details',
+                templateUrl: 'templates/testing-tool',
+                controller: 'TestingController as ctrl',
+                resolve: {
+                    testList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('test-details');
+                    }],
+                    addTest: ['CrudService', function (CrudService) {
+                        // bind category parameter
+                        return angular.bind(this, CrudService.addItem, 'test-details');
+                    }],
+                    ruleList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rules');
+                    }],
+                    deleteTest: ['CrudService', function (CrudService) {
+                        // bind category parameter
+                        return angular.bind(this, CrudService.deleteItem, 'test-details');
+
                     }]
                 }
             })

@@ -2,7 +2,6 @@ package org.citopt.connde.web.rest;
 
 import com.jcraft.jsch.JSchException;
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.domain.key.KeyPair;
 import org.citopt.connde.service.crypto.SSHKeyPairGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,9 +28,7 @@ public class RestDebugController {
      * @return Debugging output specified by the developer
      */
     @RequestMapping(value = "/debug", method = RequestMethod.GET)
-    public ResponseEntity<KeyPair> debug() throws JSchException {
-        //Do your own debugging stuff here, but clean up before committing
-        KeyPair keyPair = keyPairGenerator.generateKeyPair("phrase", "kommentar");
-        return new ResponseEntity<KeyPair>(keyPair, HttpStatus.OK);
+    public ResponseEntity<String> debug() throws JSchException {
+        return new ResponseEntity<>("debug", HttpStatus.OK);
     }
 }

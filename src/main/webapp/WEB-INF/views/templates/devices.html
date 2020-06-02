@@ -29,7 +29,8 @@
                     <tbody>
                     <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
                         <td>
-                            <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>
+                            <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>&nbsp;
+                            <i ng-show="item.wasModelled" class="material-icons" style="vertical-align: bottom;">view_quilt</i>
                         </td>
                         <td class="align-center">
                             <div ng-switch="item.state" ng-click="item.reloadState()" class="clickable">

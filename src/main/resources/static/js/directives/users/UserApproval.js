@@ -162,7 +162,8 @@ app.directive('userApproval', ['$timeout', 'UserApprovalService', 'CrudService',
                 '<button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">Close</button>' +
                 '</div></div></div></div>' +
                 '<button type="submit" class="btn btn-warning m-t-0 waves-effect" data-toggle="modal" ' +
-                'data-target="#approval-model-{{entityId}}" data-backdrop="static" data-keyboard="false">Manage users' +
+                'data-target="#approval-model-{{entityId}}" data-backdrop="static" data-keyboard="false">' +
+                '<i class="material-icons" style="font-size:14px;">share</i>' +
                 '</button>',
             link: link,
             scope: {

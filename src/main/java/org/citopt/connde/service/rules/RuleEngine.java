@@ -2,7 +2,9 @@ package org.citopt.connde.service.rules;
 
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleTrigger;
+import org.citopt.connde.domain.testing.Testing;
 import org.citopt.connde.repository.RuleRepository;
+import org.citopt.connde.repository.TestRepository;
 import org.citopt.connde.service.cep.engine.core.output.CEPOutput;
 import org.citopt.connde.service.cep.engine.core.queries.CEPQueryValidation;
 import org.citopt.connde.service.cep.trigger.CEPTriggerService;
@@ -26,6 +28,8 @@ public class RuleEngine {
 
     private Map<RuleTrigger, Set<Rule>> triggerMap;
 
+    private TestRepository testRepo;
+
     /**
      * Initializes the rule engine component and activates all already enabled rules.
      *
@@ -34,10 +38,11 @@ public class RuleEngine {
      * @param ruleExecutor   The rule executor to use (autowired)
      */
     @Autowired
-    private RuleEngine(RuleRepository ruleRepository, CEPTriggerService triggerService, RuleExecutor ruleExecutor) {
+    private RuleEngine(RuleRepository ruleRepository, CEPTriggerService triggerService, RuleExecutor ruleExecutor, TestRepository testRepo) {
         this.ruleRepository = ruleRepository;
         this.triggerService = triggerService;
         this.ruleExecutor = ruleExecutor;
+        this.testRepo = testRepo;
 
         //Initialize trigger map
         triggerMap = new HashMap<>();
@@ -89,6 +94,7 @@ public class RuleEngine {
             triggerMap.put(trigger, rulesOfTrigger);
         }
 
+        //Enable rule and save it
         rule.setEnabled(true);
         ruleRepository.save(rule);
 
@@ -140,7 +146,7 @@ public class RuleEngine {
      * @param ruleTrigger The rule trigger
      * @param output      The CEP output to pass
      */
-    private void induceRuleExecution(RuleTrigger ruleTrigger, CEPOutput output) {
+    public void induceRuleExecution(RuleTrigger ruleTrigger, CEPOutput output) {
         //Sanity check
         if (ruleTrigger == null) {
             throw new IllegalArgumentException("Rule object most not be null.");
@@ -148,11 +154,21 @@ public class RuleEngine {
 
         //Get all rules from the map that use the given trigger
         Set<Rule> ruleSet = triggerMap.get(ruleTrigger);
+        Set<String> ruleNames = new HashSet<>();
 
         //Iterate over all rules and execute them
         for (Rule rule : ruleSet) {
             ruleExecutor.executeRule(rule, output);
+            ruleNames.add(rule.getName());
         }
+
+        Testing testing = new Testing();
+        testing.setTrigger(ruleTrigger);
+        testing.setOutput(output);
+        testing.setRule(ruleNames);
+
+
+        testRepo.insert(testing);
     }
 
     /**

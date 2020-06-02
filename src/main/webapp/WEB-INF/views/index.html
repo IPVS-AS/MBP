@@ -54,6 +54,9 @@
     <!-- Angular UI Bootstrap href fix -->
     <link th:href="@{/plugins/angular-ui/bootstrap/css/angular-ui-fix.css}" rel="stylesheet"/>
 
+    <!-- Angular UI Select Plugin -->
+    <!--<link th:href="@{/plugins/angular-ui-select/css/select.min.css}" rel="stylesheet"/>-->
+
     <!-- Angular Dropzone Plugin -->
     <link th:href="@{/plugins/angular-dropzone/css/ng-dropzone.min.css}" rel="stylesheet"/>
 
@@ -92,6 +95,9 @@
 
     <!-- Easy Autocomplete -->
     <link th:href="@{/plugins/easy-autocomplete/autocomplete.min.css}" rel="stylesheet"/>
+
+    <!-- jQuery-UI-Rotatable -->
+    <link th:href="@{/plugins/jquery-ui-rotatable/jquery.ui.rotatable.css}" rel="stylesheet"/>
 </head>
 
 <body class="theme-blue" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
@@ -158,10 +164,10 @@
               <span>Home</span>
             </a>
           </li>
-          <li href="view/model" menu-item="menu-item">
-            <a href="view/model">
+          <li href="view/env-models" menu-item="menu-item">
+            <a href="view/env-models">
               <i class="material-icons">view_quilt</i>
-              <span>IoT Models</span>
+              <span>Environment Models</span>
             </a>
           </li>
           <li menu-item="menu-item">
@@ -215,6 +221,12 @@
             <a href="view/monitoring-adapters">
               <i class="material-icons">timeline</i>
               <span>Monitoring Operators</span>
+            </a>
+          </li>
+          <li href="view/testing-tool" menu-item="menu-item">
+            <a href="view/testing-tool">
+              <i class="material-icons">bug_report</i>
+              <span>Testing-Tool</span>
             </a>
           </li>
           <li href="view/settings" menu-item="menu-item" ng-show="userData.isAdmin">
@@ -326,6 +338,12 @@
 <!-- Easy Autocomplete -->
 <script th:src="@{/plugins/easy-autocomplete/autocomplete.min.js}"></script>
 
+<!-- jQuery-UI-Rotatable-->
+<script th:src="@{/plugins/jquery-ui-rotatable/jquery.ui.rotatable.js}"></script>
+
+<!-- Undo Manager -->
+<script th:src="@{/plugins/undo-manager/undo-manager.min.js}"></script>
+
 <!-- Filesaver -->
 <script th:src="@{/plugins/filesaver/filesaver.min.js}"></script>
 
@@ -343,7 +361,7 @@
 <script th:src="@{/js/services/FlashService.js}"></script>
 <script th:src="@{/js/services/UserService.js}"></script>
 <script th:src="@{/js/services/ComponentTypeService.js}"></script>
-<script th:src="@{/js/services/ModelService.js}"></script>
+<script th:src="@{/js/services/EnvModelService.js}"></script>
 <script th:src="@{/js/services/ParameterTypeService.js}"></script>
 <script th:src="@{/js/services/UnitService.js}"></script>
 <script th:src="@{/js/services/NotificationService.js}"></script>
@@ -361,6 +379,7 @@
 <script th:src="@{/js/directives/units/UnitInput.js}"></script>
 <script th:src="@{/js/directives/charts/LiveChart.js}"></script>
 <script th:src="@{/js/directives/charts/HistoricalChart.js}"></script>
+<script th:src="@{/js/directives/env-models/EnvModelTool.js}"></script>
 <script th:src="@{/js/directives/stats/ValueLogStats.js}"></script>
 <script th:src="@{/js/directives/triggers/CEPQueryEditor.js}"></script>
 <script th:src="@{/js/directives/users/UserApproval.js}"></script>
@@ -369,12 +388,15 @@
 <script th:src="@{/js/controllers/ItemListController.js}"></script>
 <script th:src="@{/js/controllers/ItemDetailsController.js}"></script>
 <script th:src="@{/js/controllers/AddItemController.js}"></script>
+<script th:src="@{/js/controllers/UpdateItemController.js}"></script>
 <script th:src="@{/js/controllers/DeleteItemController.js}"></script>
+<script th:src="@{/js/controllers/DeleteTestController.js}"></script>
 
 <script th:src="@{/js/controllers/home/HomeController.js}"></script>
 <script th:src="@{/js/controllers/keys/KeyPairListController.js}"></script>
 <script th:src="@{/js/controllers/actuators/ActuatorListController.js}"></script>
 <script th:src="@{/js/controllers/sensors/SensorListController.js}"></script>
+<script th:src="@{/js/controllers/testing/TestingController.js}"></script>
 <script th:src="@{/js/controllers/devices/DeviceListController.js}"></script>
 <script th:src="@{/js/controllers/devices/DeviceDetailsController.js}"></script>
 <script th:src="@{/js/controllers/adapters/AdapterListController.js}"></script>
@@ -389,6 +411,6 @@
 <script th:src="@{/js/controllers/user/LoginController.js}"></script>
 <script th:src="@{/js/controllers/user/RegisterController.js}"></script>
 <script th:src="@{/js/controllers/user/UsersController.js}"></script>
-<script th:src="@{/js/controllers/model/ModelController.js}"></script>
+<script th:src="@{/js/controllers/env-models/EnvModelListController.js}"></script>
 </body>
 </html>

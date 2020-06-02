@@ -1,0 +1,241 @@
+<div>
+    <!-- List Card -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <h2>Environment Models</h2>
+                <div class="align-right">
+                    <button type="button" class="btn bg-blue btn-circle waves-effect waves-circle waves-float"
+                            ng-click="ctrl.createNewModel()">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
+            </div>
+            <div class="body">
+                <table class="table table-hover" st-table="displayedCollection" st-safe-src="envModelListCtrl.items">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Owner</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                        <td>
+                            {{item.name}}
+                        </td>
+                        <td>
+                            <div ng-if="item.description">
+                                <a class="clickable" data-toggle="collapse" data-target="#description-{{item.id}}">
+                                    Toggle
+                                </a>
+                                <div id="description-{{item.id}}" class="collapse">
+                                    <span>{{item.description}}</span>
+                                </div>
+                            </div>
+                            <div ng-if="!item.description">
+                                <span>None</span>
+                            </div>
+                        </td>
+                        <td>{{item.ownerName ? item.ownerName : "None"}}</td>
+                        <td>
+                            <form ng-submit="ctrl.editModel(item.id)" style="display:inline-block;">
+                                <button type="submit" class="btn btn-default m-t-0 waves-effect">
+                                    <i class="material-icons" style="font-size:14px;">mode_edit</i>
+                                </button>
+                            </form>
+                            <div ng-show="item.isApprovable" style="display:inline-block">
+                                <user-approval entity-id="{{item.id}}" category-name="env-models"></user-approval>
+                            </div>&nbsp;&nbsp;
+                            <form ng-submit="deleteEnvModelCtrl.deleteItem()" ng-show="item.isDeletable"
+                                  style="display:inline-block;">
+                                <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                        ng-click="deleteEnvModelCtrl.item.id = item.id">
+                                    <i class="material-icons" style="font-size:14px;">delete</i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr ng-show="envModelListCtrl.items.length === 0">
+                        <td colspan="3">No environment models registered.</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add model card -->
+    <div class="col-lg-12">
+        <div id="model-edit-card" class="card collapse">
+            <div class="header">
+                <h2 class="editable" data-toggle="modal" data-target="#modelPropertiesModal" data-backdrop="static"
+                    data-keyboard="false">
+                    {{ctrl.modelProperties.name}}
+                    <i class="material-icons" style="font-size: 16px;margin-left: 5px;line-height: 15px;">mode_edit</i>
+                    <small>{{ctrl.modelProperties.description}}</small>
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                           aria-haspopup="true" aria-expanded="false">
+                            <i class="material-icons">more_vert</i>
+                        </a>
+                        <ul class="dropdown-menu pull-right">
+                            <li><a href="javascript:void(0);" class=" waves-effect waves-block">Export</a></li>
+                            <li><a href="javascript:void(0);" class=" waves-effect waves-block">Import</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="body">
+                <!-- Progress bar -->
+                <div id="model-progress" class="progress progress-striped active"
+                     style="margin-left: -20px; margin-top: -20px; margin-right: -20px;">
+                    <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="100"
+                         aria-valuemin="0"
+                         aria-valuemax="100" style="width: 100%;">{{ctrl.progressBarText}}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div id="model-error-message" class="alert alert-danger">
+                            <strong>Errors occurred:</strong>
+                            <ul>
+                                <li ng-repeat="error in ctrl.errorMessageList track by $index">- {{error}}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-12 align-right" style="padding: 2px">
+                        <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
+                                title="Register components" ng-click="ctrl.registerComponents()">
+                            <i class="material-icons">backup</i>
+                        </button>
+                        <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
+                                title="Deploy components" ng-click="ctrl.deployComponents()">
+                            <i class="material-icons">sync</i>
+                        </button>
+                        <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
+                                title="Undeploy components" ng-click="ctrl.undeployComponents()">
+                            <i class="material-icons">sync_disabled</i>
+                        </button>
+                        <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
+                                title="Start components" ng-click="ctrl.startComponents()">
+                            <i class="material-icons">play_arrow</i>
+                        </button>
+                        <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
+                                title="Stop components" ng-click="ctrl.stopComponents()">
+                            <i class="material-icons">pause</i>
+                        </button>
+                    </div>
+                </div>
+
+
+                <div class="btn-group" role="group" style="margin-left: 221px; width: calc(100% - 220px - 2px)">
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.saveModel()"
+                            ng-disabled="!ctrl.saveNecessary" data-toggle="tooltip" title="Save model">
+                        <i class="material-icons" ng-style="{'color': (ctrl.saveNecessary ? 'red' : '')}">save</i>
+                    </button>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.undo()"
+                            ng-disabled="!canUndo" data-toggle="tooltip" title="Undo action">
+                        <i class="material-icons">undo</i>
+                    </button>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.redo()"
+                            ng-disabled="!canRedo" data-toggle="tooltip" title="Redo action">
+                        <i class="material-icons">redo</i>
+                    </button>
+                    <button type="button" class="btn btn-default waves-effect"
+                            ng-click="ctrl.envModelToolApi.openDetails()"
+                            ng-disabled="!isFocused" data-toggle="tooltip" title="Open details">
+                        <i class="material-icons">info_outline</i>
+                    </button>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.copy()"
+                            ng-disabled="!isFocused" data-toggle="tooltip" title="Copy selected">
+                        <i class="material-icons">content_copy</i>
+                    </button>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.cut()"
+                            ng-disabled="!isFocused" data-toggle="tooltip" title="Cut selected">
+                        <i class="material-icons">content_cut</i>
+                    </button>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.paste()"
+                            ng-disabled="!canPaste" data-toggle="tooltip" title="Paste">
+                        <i class="material-icons">content_paste</i>
+                    </button>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.delete()"
+                            ng-disabled="!isFocused" data-toggle="tooltip" title="Delete selected">
+                        <i class="material-icons">delete</i>
+                    </button>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.export()"
+                            data-toggle="tooltip" title="Export model">
+                        <i class="material-icons">file_upload</i>
+                    </button>
+                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.import()"
+                            data-toggle="tooltip" title="Import model">
+                        <i class="material-icons">file_download</i>
+                    </button>
+                </div>
+                <env-model-tool api="ctrl.envModelToolApi"
+                                can-undo="canUndo" can-redo="canRedo" can-paste="canPaste" is-focused="isFocused"
+                                adapter-list="ctrl.adapterList"
+                                device-types="ctrl.deviceTypesList"
+                                actuator-types="ctrl.actuatorTypesList"
+                                sensor-types="ctrl.sensorTypesList"
+                                on-changed="ctrl.onModelChanged()">
+                </env-model-tool>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model properties modal -->
+    <div class="modal fade" id="modelPropertiesModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change model properties
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form>
+                    <fieldset>
+                        <div class="modal-body">
+                            <!-- Model name -->
+                            <div class="form-group" ng-class="{'has-error' : ctrl.modelProperties.errors.name }">
+                                <div class="form-line" ng-class="{'focused error' : ctrl.modelProperties.errors.name }">
+                                    <label for="modelNameInput">Name:</label>
+                                    <input id="modelNameInput" class="form-control" type="text" placeholder="Model name"
+                                           ng-model="ctrl.modelProperties.name"/>
+                                </div>
+                                <span class="help-block" ng-show="ctrl.modelProperties.errors.name">{{ctrl.modelProperties.errors.name}}</span>
+                            </div>
+                            <!-- Model description -->
+                            <div class="form-group" ng-class="{'has-error' : ctrl.modelProperties.errors.description }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : ctrl.modelProperties.errors.description }">
+                                    <label for="modelDescriptionInput">Description:</label>
+                                    <input id="modelDescriptionInput" class="form-control" type="text"
+                                           placeholder="Describe this model..."
+                                           ng-model="ctrl.modelProperties.description"/>
+                                </div>
+                                <span class="help-block" ng-show="ctrl.modelProperties.errors.description">{{ctrl.modelProperties.errors.description}}</span>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

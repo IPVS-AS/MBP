@@ -2,6 +2,7 @@ package org.citopt.connde.repository;
 
 import io.swagger.annotations.*;
 import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.repository.projection.RuleTriggerExcerpt;
 import org.springframework.data.domain.Page;
@@ -13,6 +14,8 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
+
+import java.util.List;
 
 /**
  * Repository for rule triggers that were created by the user and are supposed to be able to trigger the execution
@@ -32,6 +35,7 @@ public interface RuleTriggerRepository extends UserEntityRepository<RuleTrigger>
     @RestResource(exported = false)
     RuleTrigger findByName(@Param("name") String name);
 
+	
     @Override
     @PreAuthorize("@repositorySecurityGuard.checkPermission(#ruleTrigger, 'delete')")
     @ApiOperation(value = "Deletes a rule trigger entity", produces = "application/hal+json")
