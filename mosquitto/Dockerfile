@@ -4,7 +4,7 @@ FROM debian:stable-slim as builder
 #Set mosquitto and plugin versions.
 #Change them for your needs.
 ENV MOSQUITTO_VERSION=1.6.9
-ENV PLUGIN_VERSION=0.6.4
+ENV PLUGIN_VERSION=0.7.0
 ENV GO_VERSION=1.13.8
 
 WORKDIR /app
@@ -24,7 +24,7 @@ RUN wget https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz && tar -C /
 RUN export PATH=$PATH:/usr/local/go/bin && go version && rm go${GO_VERSION}.linux-amd64.tar.gz
 
 #Get the plugin.
-RUN wget https://github.com/marvin21/mosquitto-go-auth/archive/${PLUGIN_VERSION}.tar.gz \
+RUN wget https://github.com/iegomez/mosquitto-go-auth/archive/${PLUGIN_VERSION}.tar.gz \
     && ls -l \
     && tar xvf *.tar.gz --strip-components=1 \
     && rm -Rf go*.tar.gz \
