@@ -38,9 +38,9 @@ public class RestOAuthController {
 	@RequestMapping(value = "/checkOauthTokenUser", method = RequestMethod.POST)
 	@ApiOperation("Check an access token if it is valid and if the client is authorized to connect.")
 	@ApiResponses({@ApiResponse(code = 200, message = "Access token is valid."), @ApiResponse(code = 401, message = "Access token is invalid/expired.")})
-	public ResponseEntity<Void> checkOauthTokenUser(@RequestHeader("authorization") @ApiParam(value = "OAuth2 Access Token", required = true) String authorizationHeader) {
-		if (!authorizationHeader.isEmpty())  {
-			return oAuth2AuthenticationService.checkToken(authorizationHeader);
+	public ResponseEntity<Void> checkOauthTokenUser(@RequestHeader("authorization") @ApiParam(value = "OAuth2 Access Token", required = true) String accessToken) {
+		if (!accessToken.isEmpty())  {
+			return oAuth2AuthenticationService.checkToken(accessToken);
 		}
 		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
@@ -55,13 +55,13 @@ public class RestOAuthController {
 	@ApiOperation("Check an access token if it is valid and if the client is authorized to publish/subscribe.")
 	@ApiResponses({@ApiResponse(code = 200, message = "Access token is valid."), @ApiResponse(code = 401, message = "Access token is invalid/expired.")})
 	public ResponseEntity<Void> checkOauthTokenAcl(
-			@RequestHeader("authorization") @ApiParam(value = "OAuth2 Access Token", required = true) String authorizationHeader,
+			@RequestHeader("authorization") @ApiParam(value = "OAuth2 Access Token", required = true) String accessToken,
 			@RequestParam("clientid") String clientid,
 			@RequestParam("topic") String topic,
 			@RequestParam("acc") String acc) {
 		LOGGER.info("Access request from " + clientid + " | Topic: " + topic + " | Level " + acc);
-		if (!authorizationHeader.isEmpty()) {
-			return oAuth2AuthenticationService.checkAccess(authorizationHeader, clientid, topic, acc);
+		if (!accessToken.isEmpty()) {
+			return oAuth2AuthenticationService.checkAccess(accessToken, clientid, topic, acc);
 		}
 		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 	}

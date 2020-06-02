@@ -25,15 +25,16 @@ public class OAuth2AuthenticationService {
 	private String signingKey;
 
 	/**
-	 * Check an access token for its validity. Validity = it must not be expired!
-	 * @param authorizationHeader is the oauth2 access token (jwt)
+	 * Check an access token for its validity. Validity = it must not be expired and the signature must be verified.
+	 * @param accessToken is the oauth2 access token (jwt)
 	 * @return @{@link ResponseEntity} with @{@link HttpStatus}. 200 (OK) if token is valid, 401 (Unauthorized) otherwise.
 	 */
-	public ResponseEntity<Void> checkToken(String authorizationHeader) {
+	public ResponseEntity<Void> checkToken(String accessToken) {
+		accessToken = accessToken.split(" ")[1];
 		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<Json> response = restTemplate.getForEntity(checkTokenUri +  "?token=" + authorizationHeader, Json.class);
+		ResponseEntity<Json> response = restTemplate.getForEntity(checkTokenUri +  "?token=" + accessToken, Json.class);
 		if (response.getStatusCode().equals(HttpStatus.OK)) {
-			JwtHelper.decodeAndVerify(authorizationHeader, new MacSigner(signingKey));
+			JwtHelper.decodeAndVerify(accessToken, new MacSigner(signingKey));
 			return ResponseEntity.ok().build();
 		}
 		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
@@ -41,16 +42,17 @@ public class OAuth2AuthenticationService {
 
 	/**
 	 * Check the request of a client (for publish/subscribe). The MBP client has only read (subscribe) access.
-	 * @param token is the OAuth2 access token.
+	 * @param accessToken is the OAuth2 access accessToken.
 	 * @param clientId is the Id of the requesting client.
 	 * @param topic is the Id of the topic, for which the client is requesting access.
 	 * @param acc is the access level identifier: 0 = NONE, 1 = READ, 2 = WRITE, 4 = SUBSCRIBE
-	 * @return @{@link ResponseEntity} with @{@link HttpStatus}. 200 (OK) if access is granted for the given token, client ID, topic, and access level. 401 (Unauthorized) otherwise.
+	 * @return @{@link ResponseEntity} with @{@link HttpStatus}. 200 (OK) if access is granted for the given accessToken, client ID, topic, and access level. 401 (Unauthorized) otherwise.
 	 */
-	public ResponseEntity<Void> checkAccess(String token, String clientId, String topic, String acc) {
+	public ResponseEntity<Void> checkAccess(String accessToken, String clientId, String topic, String acc) {
+		accessToken = accessToken.split(" ")[1];
 		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<Json> response = restTemplate.getForEntity(checkTokenUri +  "?token=" + token, Json.class);
-		Jwt jwt = JwtHelper.decodeAndVerify(token, new MacSigner(signingKey));
+		ResponseEntity<Json> response = restTemplate.getForEntity(checkTokenUri +  "?token=" + accessToken, Json.class);
+		Jwt jwt = JwtHelper.decodeAndVerify(accessToken, new MacSigner(signingKey));
 		if (response.getStatusCode().equals(HttpStatus.OK)) {
 			if (clientId.contains("mbp") && (acc.equals("4") || acc.equals("1"))) {
 				LOGGER.info("Authorized MBP for Level " + acc);
