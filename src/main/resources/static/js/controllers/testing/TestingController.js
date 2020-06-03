@@ -12,7 +12,6 @@ app.controller('TestingController',
             vm.ruleList = ruleList;
             //Stores the parameters and their values as assigned by the user
             vm.parameterValues = [];
-
             //Settings objects that contains application settings for this page
             vm.useNewData = true;
             vm.testName = "";
@@ -31,6 +30,10 @@ app.controller('TestingController',
                 $('.modal').on('shown.bs.modal', function () {
                     $('.selectpicker').selectpicker('refresh');
                 });
+
+
+
+
             })();
 
             /**
@@ -71,11 +74,10 @@ app.controller('TestingController',
              */
             function refreshTestEntry(testId, testName) {
                 $http.get(ENDPOINT_URI + '/test-details/pdfExists/' + testId).success(function (response) {
-                    console.log("response: "+ response);
-                    if(response === true){
+                    if (response === true) {
                         document.getElementById(testName).disabled = false;
                         console.log(document.getElementById(testName).disabled);
-                    }else {
+                    } else {
                         document.getElementById(testName).disabled = true;
                         console.log(document.getElementById(testName).disabled);
                     }
@@ -89,9 +91,42 @@ app.controller('TestingController',
              * @param testID
              */
             function downloadPDF(testID) {
-                window.open('api/test-details/downloadPDF/' + testID,'_blank');
+                window.open('api/test-details/downloadPDF/' + testID, '_blank');
             }
 
+
+
+
+
+
+            function getDevice() {
+                $http.get(ENDPOINT_URI + '/devices/search/findAll').success(function (response) {
+
+                    $scope.device= 'LOADING';
+
+
+                    console.log(response._embedded.devices);
+                    $scope.device = "NOT_REGISTERED";
+                    angular.forEach(response._embedded.devices, function (value) {
+                        console.log(value.name);
+                        if (value.name === "TestingDevice") {
+                            $scope.device = "REGISTERED";
+                        }
+
+                    });
+
+                });
+
+            }
+
+
+
+            function registerTestDevice(){
+                param = {"username":"ubuntu","password":"","name":"TestingDevice","componentType":"Computer","ipAddress":"192.168.221.167","rsaKey":"-----BEGIN RSA PRIVATE KEY-----\nMIIEqgIBAAKCAQEA4zzAJS+xXz00YLyO8lvsSfY+6XX1mQs6pz7yioA6lO30mWMx\n95FP3rZiX2stId3VfEPKdPgLot7CoTMcSnQzDBR8bi1ej8c/FXzELb2kTQzZE7dX\nYaONvNfKGL27EMjhqRpL+rQeTGeyGqmr0WH7BeQ9nE6ylfxXzXAMWkTW6dv7go+j\n52xAS6dM5TZER/A2KvCgXisiQFzwqEHuXnoy9lpWHcSZzQL8Xkd9ZbGAr3ex0pEc\n8220d4KT8oATLBDZo/fJyGiQNR5sab8RlpecbGJoh0QJIdnU3Eq02HYSzAQ7a8cB\nYGEm1xtOQOxV2a4+8f/g9FSC3hjobwmSoNu/nQIDAQABAoIBACy3ytRGk3A7mjAj\nSzo0jsZrWCwXU5KfnBZHk/FflKe0QDtjQvUGOqKIX8mJTONqRVXj/VaRbbDKh6Cz\nbzDTtyv8aBRCh2Zh/m8bE3ww4sFq8tknbmG/jugHyzSdOc/uyEG/9A3NHl1I1sra\ncv6MeprJNLqq3ggYFatPDo9BFs4EZoaIxEMD3plHfENfJOu7IS0xRoe5foXYbnM3\nji7n243OBGPAdCZXJkhYNgRoZmwMeMOJWK7EmiiM60ZKpHl8C4jSuzQ132aK/NDH\n3xgr+1nI8i8CfAWBlP8hfCXJJ8EiS5lE94jnP7u49BhjbPgULaNPDDYpVh5/uTlP\nYV5iAcECggCBAO7y4xBuMc8G57lqepoZHtCjSPpXTEC6hE7+pmnwvi6gUZPV7Tx/\nC7JecekilTy3Z+MjU1jwy7Bu0L3EJsJBn2N5aGYVxGFHGqrfA/qhPeyJsIU2w2UZ\nm1BEgNjP7bMZSMCSYd2CU9mP5dt3vGpEU6oZgwe9jm5QghYVjHaB6NUNAoIAgQDz\nc+sqdCn+rIpE6uovtqXJ9l3psaz+egRLcWS0ZVtrdhmMPBz/rZ16KhqmA+aszjiP\n8JqO3uXiB1LR+ACc6tRzeCWXNWipgzJGvLfgZBwGHeFje+uMyd1nYUq3qd0zP81j\ntpZpIAlHlPc+UREqiUhJJkjP+tEwwznP4zaC4wkQ0QKCAIEA3bMRpf73y8P2X/xB\nQJSqGJ5Haa5xm2TyuXBf6s9pRU2OIwJLmOOvcJFcUxi5Kppok0AFZvITquFGX6uM\n4pOMVPkiOgVcLX2RapR81p+gGsUtuIu1AyqdBf5pJcDWJGQDMlke4Cy5q5RtihEw\nCdDXZ21AO4BOlF+yMtdPeezSoEkCggCBAIBzsiolPp8sRIxWcpgYQ+OLBUQvxjpD\nAQ8ZVmxEancJyjMO6LIS1dtGaeccedLFwFxaNAKcIykeehllRFWHJe+C/jqJKJ8A\nJT/jhRV1XL/xdiG6ma8gN5y7XeQIUTkgOeuZxETVbXACbm3H8knCQ4ytEZADI+sZ\npuBEX1eyGO9xAoIAgQCwh2QkYnGPQkY4d9ra+WcrUz8sb7CEu4IS42XNt8SFkyU4\nfkE7aE4bHufPnnTEZ4jIGk0/E1b8AhLh1suRpg3tltYEj5CJfF1UywoUGuHhQkzP\n7jZaNQ1xdB+0woK3IenLVpDjxWGZbZTxviim1v1lpLSJxfr/HfvW1DJc4x/iug==\n-----END RSA PRIVATE KEY-----","errors":{}};
+                $http.post(ENDPOINT_URI + '/devices/', param).then(function success(response) {
+                });
+                getDevice();
+            }
 
             /**
              * [Public]
@@ -380,7 +415,7 @@ app.controller('TestingController',
                                     vm.parameterValues.push({"name": "sensitivityClass", "value": 0});
                                     vm.parameterValues.push({"name": "reactionMeters", "value": 3});
                                 }
-                            }else if (vm.data.singleSelect === 'TestingBeschleunigungsSensorPl') {
+                            } else if (vm.data.singleSelect === 'TestingBeschleunigungsSensorPl') {
                                 if (vm.testCase.singleSelect === '3' || vm.testCase.singleSelect === '4' || vm.testCase.singleSelect === '5') {
                                     vm.parameterValues.push({
                                         "name": "event",
@@ -494,7 +529,9 @@ app.controller('TestingController',
                 editConfig: editConfig,
                 stopTest: stopTest,
                 downloadPDF: downloadPDF,
-                refreshTestEntry: refreshTestEntry
+                refreshTestEntry: refreshTestEntry,
+                getDevice: getDevice,
+                registerTestDevice: registerTestDevice
 
             });
             // $watch 'addTest' result and add to 'testList'
@@ -509,13 +546,15 @@ app.controller('TestingController',
 
                     if (test) {
                         //Close modal on success
-                        $("#addSensorModal").modal('toggle');
+                        $("#addTestingModal").modal('toggle');
                         //Add sensor to sensor list
                         vm.testListCtrl.pushItem(test);
 
                     }
                 }
             );
+
+
 
             //Watch deletion of tests and remove them from the list
             $scope.$watch(
