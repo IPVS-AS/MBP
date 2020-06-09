@@ -36,6 +36,12 @@
                     <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
                         <td>{{item.name}}</td>
                         <td>
+                            <form ng-submit="ctrl.showPublicKey(item.id)" style="display: inline-block">
+                                <button type="submit" class="btn btn-default m-t-0 waves-effect">
+                                    <i class="material-icons" style="font-size: 15px;">remove_red_eye</i>
+                                </button>
+                            </form>
+                            &nbsp;
                             <form ng-submit="ctrl.downloadPublicKey(item.id)" style="display: inline-block">
                                 <button type="submit" class="btn btn-default m-t-0 waves-effect">
                                     <i class="material-icons" style="font-size: 15px;">file_download</i>
@@ -164,6 +170,46 @@
                                 Close
                             </button>
                             <button type="submit" class="btn btn-primary m-t-0 waves-effect">Generate</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- #END# Modal -->
+
+    <!-- Modal -->
+    <div class="modal fade" id="showPublicKeyModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Public key
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form>
+                    <fieldset>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <textarea class="form-control" type="text" ng-model="ctrl.publicKeyDisplay" rows="4"
+                                              onclick="this.select()"></textarea>
+                                </div>
+                            </div>
+                            <span class="text-success" ng-show="ctrl.copiedPublicKey">
+                                <i class="material-icons" style="vertical-align:bottom;">done</i>&nbsp;
+                                Copied public key to clipboard.
+                            </span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="button" class="btn btn-primary m-t-0 waves-effect"
+                                    ng-click="ctrl.copyPublicKeyToClipboard()">Copy to Clipboard
+                            </button>
                         </div>
                     </fieldset>
                 </form>

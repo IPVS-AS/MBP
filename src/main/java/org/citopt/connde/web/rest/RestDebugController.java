@@ -18,8 +18,6 @@ import springfox.documentation.annotations.ApiIgnore;
 @RequestMapping(RestConfiguration.BASE_PATH)
 @ApiIgnore("Controller exists only for debugging purposes")
 public class RestDebugController {
-    @Autowired
-    private SSHKeyPairGenerator keyPairGenerator;
 
     /**
      * REST interface for debugging purposes. Feel free to implement your own debugging and testing stuff here,

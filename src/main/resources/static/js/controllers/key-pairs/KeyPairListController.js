@@ -3,12 +3,17 @@
 app.controller('KeyPairListController',
     ['$scope', '$controller', '$q', 'keyPairList', 'addKeyPair', 'deleteKeyPair', 'KeyPairService', 'NotificationService',
         function ($scope, $controller, $q, keyPairList, addKeyPair, deleteKeyPair, KeyPairService, NotificationService) {
+            const SHOW_PUBLIC_KEY_MODAL = $('#showPublicKeyModal');
+
             let vm = this;
 
             vm.generation = {
                 name: "",
                 error: false
             };
+
+            vm.publicKeyDisplay = "";
+            vm.copiedPublicKey = false;
 
             /**
              * Initializing function, sets up basic things.
@@ -46,6 +51,53 @@ app.controller('KeyPairListController',
 
                 //Initiate download
                 saveAs(blob, filename);
+            }
+
+            /**
+             * [Public]
+             * Displays the public key of a key pair with a certain ID in a modal dialog.
+             * @param keyPairId the ID of the key pair
+             */
+            function showPublicKey(keyPairId) {
+                //Unset copy flag
+                vm.copiedPublicKey = false;
+
+                //Search for key pair with matching ID
+                let keyPair = null;
+                for (let i = 0; i < keyPairList.length; i++) {
+                    //Check for matching ID
+                    if (keyPairList[i].id === keyPairId) {
+                        keyPair = keyPairList[i];
+                        break;
+                    }
+                }
+
+                //Check if key pair could be found
+                if (keyPair == null) {
+                    return;
+                }
+
+                //Set public key to display
+                vm.publicKeyDisplay = keyPair.publicKey;
+
+                //Show modal
+                SHOW_PUBLIC_KEY_MODAL.modal('show');
+            }
+
+            /**
+             * [Public]
+             * Copies the currently displayed public key to the clipboard.
+             */
+            function copyPublicKeyToClipboard(){
+                //Find textarea of the modal and select it
+                let textArea = SHOW_PUBLIC_KEY_MODAL.find('textarea');
+                textArea.select();
+
+                //Copy content of the textarea to clipboard
+                document.execCommand('copy');
+
+                //Set copy flag
+                vm.copiedPublicKey = true;
             }
 
             /**
@@ -127,6 +179,8 @@ app.controller('KeyPairListController',
                         confirmDeletion: confirmDelete
                     }),
                 generateKeyPair: generateKeyPair,
+                showPublicKey: showPublicKey,
+                copyPublicKeyToClipboard: copyPublicKeyToClipboard,
                 downloadPublicKey: downloadPublicKey
             });
 
