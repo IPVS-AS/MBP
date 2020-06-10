@@ -373,7 +373,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     deleteDevice: ['CrudService', function (CrudService) {
                         // bind category parameter
                         return angular.bind(this, CrudService.deleteItem, 'devices');
-                        //return CrudService.deleteItem('devices', this);
+                    }],
+                    keyPairList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('key-pairs');
                     }]
                 }
             })

@@ -5,6 +5,7 @@ import org.citopt.connde.domain.component.*;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.env_model.EnvironmentModel;
+import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.repository.*;
@@ -849,7 +850,10 @@ public class EnvironmentModelService {
         device.setIpAddress(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_IP, ""));
         device.setUsername(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_USERNAME, ""));
         device.setPassword(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_PASSWORD, ""));
-        device.setRsaKey(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_RSAKEY, ""));
+
+        //TODO
+        //device.setKeyPair(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_RSAKEY, ""));
+        device.setKeyPair(new KeyPair());
 
         //Return final device object
         return device;

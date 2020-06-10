@@ -2,9 +2,7 @@ package org.citopt.connde.service.crypto;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
-import org.citopt.connde.domain.key.KeyPair;
-import org.citopt.connde.domain.key.KeyPairValidator;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.citopt.connde.domain.key_pair.KeyPair;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -31,14 +29,11 @@ public class SSHKeyPairGenerator {
     }
 
     /**
-     * Generates a new RSA key pair that may be used for establishing SSH connections. Optionally, a passphrase may
-     * be passed for the private key and a comment for the public key.
+     * Generates a new RSA key pair that may be used for establishing SSH connections.
      *
-     * @param passphrase The passphrase for the private key
-     * @param comment    The comment for the public key
      * @return The generated key pair
      */
-    public KeyPair generateKeyPair(String passphrase, String comment) {
+    public KeyPair generateKeyPair() {
         //Generate key pair
         com.jcraft.jsch.KeyPair keyPair = null;
         try {
@@ -55,9 +50,9 @@ public class SSHKeyPairGenerator {
         ByteArrayOutputStream privateKeyOutput = new ByteArrayOutputStream();
         ByteArrayOutputStream publicKeyOutput = new ByteArrayOutputStream();
 
-        //Write keys to streams
-        keyPair.writePrivateKey(privateKeyOutput, passphrase.getBytes());
-        keyPair.writePublicKey(publicKeyOutput, comment);
+        //Write keys to streams (with empty comment for public key)
+        keyPair.writePrivateKey(privateKeyOutput);
+        keyPair.writePublicKey(publicKeyOutput, "");
 
         //Read converted keys from streams
         String privateKey = new String(privateKeyOutput.toByteArray());

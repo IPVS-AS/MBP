@@ -1,7 +1,7 @@
 package org.citopt.connde.repository;
 
 import io.swagger.annotations.*;
-import org.citopt.connde.domain.key.KeyPair;
+import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.repository.projection.KeyPairExcerpt;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -1,4 +1,4 @@
-package org.citopt.connde.domain.key;
+package org.citopt.connde.domain.key_pair;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
@@ -99,5 +99,25 @@ public class KeyPair extends UserEntity {
      */
     public void setPrivateKey(String privateKey) {
         this.privateKey = privateKey;
+    }
+
+    /**
+     * Checks whether a public key is available within this key pair.
+     * @return True, if a public key is available; false otherwise
+     */
+    @JsonProperty("hasPublicKey")
+    @ApiModelProperty(notes = "Whether the key pair has a public RSA key", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    public boolean hasPublicKey() {
+        return (publicKey != null) && (!publicKey.isEmpty());
+    }
+
+    /**
+     * Checks whether a private key is available within this key pair.
+     * @return True, if a private key is available; false otherwise
+     */
+    @JsonProperty("hasPrivateKey")
+    @ApiModelProperty(notes = "Whether the key pair has a private RSA key", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    public boolean hasPrivateKey() {
+        return (privateKey != null) && (!privateKey.isEmpty());
     }
 }

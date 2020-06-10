@@ -1,4 +1,4 @@
-package org.citopt.connde.domain.key;
+package org.citopt.connde.domain.key_pair;
 
 import org.citopt.connde.repository.KeyPairRepository;
 import org.springframework.beans.factory.annotation.Autowired;

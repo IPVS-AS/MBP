@@ -4,12 +4,12 @@
  * Controller for the device list page.
  */
 app.controller('DeviceListController',
-    ['$scope', '$controller', '$interval', 'DeviceService', 'deviceList', 'addDevice', 'deleteDevice',
+    ['$scope', '$controller', '$interval', 'DeviceService', 'deviceList', 'addDevice', 'deleteDevice', 'keyPairList',
         'ComponentTypeService', 'NotificationService',
-        function ($scope, $controller, $interval, DeviceService, deviceList, addDevice, deleteDevice,
+        function ($scope, $controller, $interval, DeviceService, deviceList, addDevice, deleteDevice, keyPairList,
                   ComponentTypeService, NotificationService) {
             var vm = this;
-
+            
             /**
              * Initializing function, sets up basic things.
              */
