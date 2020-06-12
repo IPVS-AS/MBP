@@ -48,6 +48,9 @@ public class EnvironmentModelService {
     private EnvironmentModelRepository environmentModelRepository;
 
     @Autowired
+    private KeyPairRepository keyPairRepository;
+
+    @Autowired
     private AdapterRepository adapterRepository;
 
     @Autowired
@@ -78,7 +81,7 @@ public class EnvironmentModelService {
     private static final String MODEL_JSON_KEY_DEVICE_IP = "ipAddress";
     private static final String MODEL_JSON_KEY_DEVICE_USERNAME = "username";
     private static final String MODEL_JSON_KEY_DEVICE_PASSWORD = "password";
-    private static final String MODEL_JSON_KEY_DEVICE_RSAKEY = "rsaKey";
+    private static final String MODEL_JSON_KEY_DEVICE_KEYPAIR = "keyPair";
     private static final String MODEL_JSON_KEY_COMPONENT_ADAPTER = "adapter";
     private static final String MODEL_JSON_KEY_CONNECTIONS = "connections";
     private static final String MODEL_JSON_KEY_CONNECTION_SOURCE = "sourceId";
@@ -697,10 +700,10 @@ public class EnvironmentModelService {
             String nodeType = nodeObject.optString(MODEL_JSON_KEY_NODE_TYPE, "");
 
             //Unmarshalled user entity
-            UserEntity entity = null;
+            UserEntity entity;
 
             //Validation errors
-            Errors errors = null;
+            Errors errors;
 
             //Differentiate between node types
             if (nodeType.equals(MODEL_NODE_TYPE_DEVICE)) {
@@ -757,9 +760,6 @@ public class EnvironmentModelService {
         if (result.hasErrors()) {
             return result;
         }
-
-        //Stores all connections (source id -> target id)
-        Map<String, String> connectionsMap = new HashMap<>();
 
         //Get all connections
         JSONArray connections = jsonObject.optJSONArray(MODEL_JSON_KEY_CONNECTIONS);
@@ -851,9 +851,9 @@ public class EnvironmentModelService {
         device.setUsername(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_USERNAME, ""));
         device.setPassword(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_PASSWORD, ""));
 
-        //TODO
-        //device.setKeyPair(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_RSAKEY, ""));
-        device.setKeyPair(new KeyPair());
+        //Find key pair from repository and set it
+        KeyPair keyPair = keyPairRepository.findOne(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_KEYPAIR));
+        device.setKeyPair(keyPair);
 
         //Return final device object
         return device;
@@ -882,7 +882,7 @@ public class EnvironmentModelService {
         Adapter adapter = adapterRepository.findOne(componentDetails.optString(MODEL_JSON_KEY_COMPONENT_ADAPTER));
         component.setAdapter(adapter);
 
-        //Set a fake device for passing validation TODO
+        //Set a fake device for passing validation
         component.setDevice(new Device());
 
         return component;

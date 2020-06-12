@@ -140,6 +140,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     deleteEnvModel: ['CrudService', function (CrudService) {
                         return angular.bind(this, CrudService.deleteItem, 'env-models');
                     }],
+                    keyPairList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('key-pairs');
+                    }],
                     adapterList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('adapters');
                     }],

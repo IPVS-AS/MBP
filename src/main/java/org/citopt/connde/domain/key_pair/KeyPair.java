@@ -25,7 +25,6 @@ public class KeyPair extends UserEntity {
     @ApiModelProperty(notes = "Public RSA key for SSH connections, stored on the device", example = "", required = true)
     private String publicKey;
 
-
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ApiModelProperty(notes = "Private RSA key for SSH connections", example = "-----BEGIN RSA PRIVATE KEY-----\\nMIIEowIBAAKCAQEA0enPVikCPvsyhKd317r08RPtbkMG0zRhIqJ/ZHIDV8TpRhoR\\n...\\n-----END RSA PRIVATE KEY-----", required = true)
     private String privateKey;
