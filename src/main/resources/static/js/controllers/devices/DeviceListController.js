@@ -192,7 +192,8 @@ app.controller('DeviceListController',
                     $scope: $scope,
                     deleteItem: deleteDevice,
                     confirmDeletion: confirmDelete
-                })
+                }),
+                keyPairList: keyPairList
             });
 
             // $watch 'addItem' result and add to 'itemList'

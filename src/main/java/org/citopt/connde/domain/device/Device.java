@@ -8,6 +8,7 @@ import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.domain.user_entity.UserEntityPolicy;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import javax.persistence.GeneratedValue;
 
@@ -53,6 +54,7 @@ public class Device extends UserEntity {
     @ApiModelProperty(notes = "OS user password to use on the device", example = "secret")
     private String password;
 
+    @DBRef
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ApiModelProperty(notes = "Key pair for SSH connections to the device", required = false)
     private KeyPair keyPair;

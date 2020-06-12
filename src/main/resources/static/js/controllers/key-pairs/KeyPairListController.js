@@ -136,7 +136,6 @@ app.controller('KeyPairListController',
             function confirmDelete(data) {
                 let keyPairID = data.id;
                 let keyPairName = "";
-                let affectedWarning = "";
 
                 //Determines the key pair's name by checking all key pairs in the list
                 for (let i = 0; i < keyPairList.length; i++) {
@@ -146,17 +145,36 @@ app.controller('KeyPairListController',
                     }
                 }
 
-                //Show the alert to the user and return the resulting promise
-                return Swal.fire({
-                    title: 'Delete key pair',
-                    type: 'warning',
-                    html: "Are you sure you want to delete the key pair \"" +
-                        keyPairName + "\"?" + affectedWarning,
-                    showCancelButton: true,
-                    confirmButtonText: 'Delete',
-                    confirmButtonClass: 'bg-red',
-                    focusConfirm: false,
-                    cancelButtonText: 'Cancel'
+
+                //Ask the server for all devices that use this key pair
+                return KeyPairService.getUsingDevices(keyPairID).then(function (result) {
+                    let affectedWarning = "";
+
+                    //If the list is not empty, create a message that contains the names of all affected devices
+                    if (result.data.length > 0) {
+                        affectedWarning = "<br/><br/><strong>The following devices are currently " +
+                            "using this key pair and will be deleted as well:</strong><br/>";
+
+                        //Iterate over all affected components
+                        for (var i = 0; i < result.data.length; i++) {
+                            affectedWarning += "- ";
+                            affectedWarning += result.data[i].name;
+                            affectedWarning += "<br/>";
+                        }
+                    }
+
+                    //Show the alert to the user and return the resulting promise
+                    return Swal.fire({
+                        title: 'Delete adapter',
+                        type: 'warning',
+                        html: "Are you sure you want to delete the key pair \"" +
+                            keyPairName + "\"?" + affectedWarning,
+                        showCancelButton: true,
+                        confirmButtonText: 'Delete',
+                        confirmButtonClass: 'bg-red',
+                        focusConfirm: false,
+                        cancelButtonText: 'Cancel'
+                    });
                 });
             }
 
