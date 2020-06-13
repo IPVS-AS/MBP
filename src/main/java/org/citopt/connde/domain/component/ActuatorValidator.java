@@ -49,14 +49,5 @@ public class ActuatorValidator implements Validator {
         ValidationUtils.rejectIfEmptyOrWhitespace(
                 errors, "adapter", "component.adapter.empty",
                 "The adapter cannot be empty!");
-
-        Component another;
-        if ((another = repository.findByName(component.getName())) != null) {
-            if (component.getId() == null
-                    || !component.getId().equals(another.getId())) {
-                errors.rejectValue("name", "component.name.duplicate",
-                        "The name is already registered");
-            }
-        }
     }
 }

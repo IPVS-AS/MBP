@@ -11,6 +11,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
 
+import java.util.Objects;
+
 import static org.citopt.connde.domain.user_entity.UserEntityRole.ADMIN;
 import static org.citopt.connde.domain.user_entity.UserEntityRole.APPROVED_USER;
 
@@ -97,5 +99,25 @@ public abstract class Component extends UserEntity {
     @Override
     public UserEntityPolicy getUserEntityPolicy() {
         return COMPONENT_POLICY;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Component component = (Component) o;
+
+        //Check if IDs are available
+        if((this.id == null || component.id == null)){
+            return false;
+        }
+
+        //Compare IDs
+        return this.id.equals(component.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

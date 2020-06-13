@@ -43,8 +43,6 @@ app.controller('TestingController',
             function executeTest(testId, item) {
                 $http.post(ENDPOINT_URI + '/test-details/test/' + testId, testId.toString()).success(function successCallback(responseTest) {
                 }, function (response) {
-                    //Server request failed
-                    console.log("Not successful");
                 });
             }
 
@@ -56,8 +54,6 @@ app.controller('TestingController',
             function stopTest(testId) {
                 vm.http = $http.post(ENDPOINT_URI + '/test-details/test/stop/' + testId, testId.toString()).then(function (response) {
                 }, function (response) {
-                    //Server request failed
-                    console.log("Not successful");
                 });
 
             }
@@ -70,10 +66,13 @@ app.controller('TestingController',
              * @param testName
              */
             function refreshTestEntry(testId, testName) {
-                $http.get(ENDPOINT_URI + '/test-details/pdfExists/' + testId).success(function (response) {
-                    if (response === true) {
+
+                $http.get(ENDPOINT_URI + '/test-details/pdfExists/' + testId).then(function (response) {
+
+                    if(response.data === "true"){
                         document.getElementById(testName).disabled = false;
-                    } else {
+                    } else if (response.data === "false"){
+
                         document.getElementById(testName).disabled = true;
                     }
                 });
@@ -87,6 +86,7 @@ app.controller('TestingController',
              */
             function downloadPDF(testID) {
                 window.open('api/test-details/downloadPDF/' + testID, '_blank');
+
             }
 
 
@@ -359,7 +359,6 @@ app.controller('TestingController',
 
             }
 
-
             /**
              * [Public]
              * Shows an alert that asks the user if he is sure that he wants to delete a certain test.
@@ -392,6 +391,7 @@ app.controller('TestingController',
                     cancelButtonText: 'Cancel'
                 });
             }
+
 
             /**
              * Sends a server request in order to edit the configurations of the test "useNewData",
@@ -752,7 +752,7 @@ app.controller('TestingController',
 
                         }
                     }),
-                deleteTestCtrl: $controller('DeleteItemController as deleteTestCtrl', {
+                deleteTestCtrl: $controller('DeleteTestController as deleteTestCtrl', {
                     $scope: $scope,
                     deleteItem: deleteTest,
                     confirmDeletion: confirmDelete
