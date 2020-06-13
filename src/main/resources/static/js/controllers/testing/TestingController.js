@@ -32,8 +32,6 @@ app.controller('TestingController',
                 });
 
 
-
-
             })();
 
             /**
@@ -43,7 +41,6 @@ app.controller('TestingController',
              * @param item
              */
             function executeTest(testId, item) {
-                console.log(testList);
                 $http.post(ENDPOINT_URI + '/test-details/test/' + testId, testId.toString()).success(function successCallback(responseTest) {
                 }, function (response) {
                     //Server request failed
@@ -76,10 +73,8 @@ app.controller('TestingController',
                 $http.get(ENDPOINT_URI + '/test-details/pdfExists/' + testId).success(function (response) {
                     if (response === true) {
                         document.getElementById(testName).disabled = false;
-                        console.log(document.getElementById(testName).disabled);
                     } else {
                         document.getElementById(testName).disabled = true;
-                        console.log(document.getElementById(testName).disabled);
                     }
                 });
             }
@@ -95,38 +90,275 @@ app.controller('TestingController',
             }
 
 
-
-
-
-
+            /**
+             * Check if Test-Device is already registered or not.
+             */
             function getDevice() {
                 $http.get(ENDPOINT_URI + '/devices/search/findAll').success(function (response) {
 
-                    $scope.device= 'LOADING';
+                    $scope.device = 'LOADING';
 
-
-                    console.log(response._embedded.devices);
                     $scope.device = "NOT_REGISTERED";
                     angular.forEach(response._embedded.devices, function (value) {
-                        console.log(value.name);
                         if (value.name === "TestingDevice") {
                             $scope.device = "REGISTERED";
+                        }
+                    });
+                });
+            }
+
+            /**
+             * Register Test Device and update the registered status.
+             */
+            function registerTestDevice() {
+                param = {
+                    "username": "ubuntu",
+                    "password": "",
+                    "name": "TestingDevice",
+                    "componentType": "Computer",
+                    "ipAddress": "192.168.221.167",
+                    "rsaKey": "-----BEGIN RSA PRIVATE KEY-----\nMIIEqgIBAAKCAQEA4zzAJS+xXz00YLyO8lvsSfY+6XX1mQs6pz7yioA6lO30mWMx\n95FP3rZiX2stId3VfEPKdPgLot7CoTMcSnQzDBR8bi1ej8c/FXzELb2kTQzZE7dX\nYaONvNfKGL27EMjhqRpL+rQeTGeyGqmr0WH7BeQ9nE6ylfxXzXAMWkTW6dv7go+j\n52xAS6dM5TZER/A2KvCgXisiQFzwqEHuXnoy9lpWHcSZzQL8Xkd9ZbGAr3ex0pEc\n8220d4KT8oATLBDZo/fJyGiQNR5sab8RlpecbGJoh0QJIdnU3Eq02HYSzAQ7a8cB\nYGEm1xtOQOxV2a4+8f/g9FSC3hjobwmSoNu/nQIDAQABAoIBACy3ytRGk3A7mjAj\nSzo0jsZrWCwXU5KfnBZHk/FflKe0QDtjQvUGOqKIX8mJTONqRVXj/VaRbbDKh6Cz\nbzDTtyv8aBRCh2Zh/m8bE3ww4sFq8tknbmG/jugHyzSdOc/uyEG/9A3NHl1I1sra\ncv6MeprJNLqq3ggYFatPDo9BFs4EZoaIxEMD3plHfENfJOu7IS0xRoe5foXYbnM3\nji7n243OBGPAdCZXJkhYNgRoZmwMeMOJWK7EmiiM60ZKpHl8C4jSuzQ132aK/NDH\n3xgr+1nI8i8CfAWBlP8hfCXJJ8EiS5lE94jnP7u49BhjbPgULaNPDDYpVh5/uTlP\nYV5iAcECggCBAO7y4xBuMc8G57lqepoZHtCjSPpXTEC6hE7+pmnwvi6gUZPV7Tx/\nC7JecekilTy3Z+MjU1jwy7Bu0L3EJsJBn2N5aGYVxGFHGqrfA/qhPeyJsIU2w2UZ\nm1BEgNjP7bMZSMCSYd2CU9mP5dt3vGpEU6oZgwe9jm5QghYVjHaB6NUNAoIAgQDz\nc+sqdCn+rIpE6uovtqXJ9l3psaz+egRLcWS0ZVtrdhmMPBz/rZ16KhqmA+aszjiP\n8JqO3uXiB1LR+ACc6tRzeCWXNWipgzJGvLfgZBwGHeFje+uMyd1nYUq3qd0zP81j\ntpZpIAlHlPc+UREqiUhJJkjP+tEwwznP4zaC4wkQ0QKCAIEA3bMRpf73y8P2X/xB\nQJSqGJ5Haa5xm2TyuXBf6s9pRU2OIwJLmOOvcJFcUxi5Kppok0AFZvITquFGX6uM\n4pOMVPkiOgVcLX2RapR81p+gGsUtuIu1AyqdBf5pJcDWJGQDMlke4Cy5q5RtihEw\nCdDXZ21AO4BOlF+yMtdPeezSoEkCggCBAIBzsiolPp8sRIxWcpgYQ+OLBUQvxjpD\nAQ8ZVmxEancJyjMO6LIS1dtGaeccedLFwFxaNAKcIykeehllRFWHJe+C/jqJKJ8A\nJT/jhRV1XL/xdiG6ma8gN5y7XeQIUTkgOeuZxETVbXACbm3H8knCQ4ytEZADI+sZ\npuBEX1eyGO9xAoIAgQCwh2QkYnGPQkY4d9ra+WcrUz8sb7CEu4IS42XNt8SFkyU4\nfkE7aE4bHufPnnTEZ4jIGk0/E1b8AhLh1suRpg3tltYEj5CJfF1UywoUGuHhQkzP\n7jZaNQ1xdB+0woK3IenLVpDjxWGZbZTxviim1v1lpLSJxfr/HfvW1DJc4x/iug==\n-----END RSA PRIVATE KEY-----",
+                    "errors": {}
+                };
+                $http.post(ENDPOINT_URI + '/devices/', param).then(function success(response) {
+                    getDevice();
+                });
+
+            }
+
+            /**
+             * Check if the Sensor-Simulator for the Test is registered.
+             *
+             * @param sensor
+             */
+            function checkSensorReg(sensor) {
+                $http.get(ENDPOINT_URI + '/sensors/search/findAll').success(function (response) {
+                    sensorX = false;
+                    sensorY = false;
+                    sensorZ = false;
+                    registered = "NOT_REGISTERED";
+                    angular.forEach(response._embedded.sensors, function (value) {
+                        if (sensor === 'TestingTemperaturSensor' || sensor === 'TestingTemperaturSensorPl' || sensor === 'TestingFeuchtigkeitsSensorPl' || sensor === 'TestingFeuchtigkeitsSensor') {
+                            if (value.name === sensor) {
+                                registered = "REGISTERED";
+                            }
+                        } else if (sensor === 'TestingBeschleunigungsSensor') {
+                            if (value.name === "TestingAccelerationX") {
+                                sensorX = true;
+                            } else if (value.name === "TestingAccelerationY") {
+                                sensorY = true;
+                            } else if (value.name === "TestingAccelerationZ") {
+                                sensorZ = true;
+                            }
+
+                        } else if (sensor === 'TestingBeschleunigungsSensorPl') {
+                            if (value.name === "TestingAccelerationPlX") {
+                                sensorX = true;
+                            } else if (value.name === "TestingAccelerationPlY") {
+                                sensorY = true;
+                            } else if (value.name === "TestingAccelerationPlZ") {
+                                sensorZ = true;
+                            }
+
+                        } else if (sensor === "TestingGPSSensor") {
+                            if (value.name === "TestingGPSLatitude") {
+                                sensorX = true;
+                            } else if (value.name === "TestingGPSLongitude") {
+                                sensorY = true;
+                            } else if (value.name === "TestingGPSHight") {
+                                sensorZ = true;
+                            }
+                        } else if (sensor === "TestingGPSSensor") {
+                            if (value.name === "TestingGPSLatitudePl") {
+                                sensorX = true;
+                            } else if (value.name === "TestingGPSLongitudePl") {
+                                sensorY = true;
+                            } else if (value.name === "TestingGPSHightPl") {
+                                sensorZ = true;
+                            }
                         }
 
                     });
 
+                    if (sensor === 'TestingTemperaturSensor') {
+                        $scope.temp = registered;
+                    } else if (sensor === 'TestingTemperaturSensorPl') {
+                        $scope.tempPl = registered;
+                    } else if (sensor === 'TestingFeuchtigkeitsSensor') {
+                        $scope.hum = registered;
+                    } else if (sensor === 'TestingFeuchtigkeitsSensorPl') {
+                        $scope.humPl = registered;
+                    } else if (sensor === 'TestingBeschleunigungsSensor') {
+                        if (sensorX && sensorY && sensorZ) {
+                            $scope.acc = "REGISTERED";
+                        } else {
+                            $scope.acc = "NOT_REGISTERED";
+                        }
+                    } else if (sensor === 'TestingBeschleunigungsSensorPl') {
+                        if (sensorX && sensorY && sensorZ) {
+                            $scope.accPl = "REGISTERED";
+                        } else {
+                            $scope.accPl = "NOT_REGISTERED";
+                        }
+                    } else if (sensor === 'TestingGPSSensor') {
+                        if (sensorX && sensorY && sensorZ) {
+                            $scope.gps = "REGISTERED";
+                        } else {
+                            $scope.gps = "NOT_REGISTERED";
+                        }
+                    } else if (sensor === 'TestingGPSSensorPl') {
+                        if (sensorX && sensorY && sensorZ) {
+                            $scope.gpsPl = "REGISTERED";
+                        }else {
+                            $scope.gpsPl = "NOT_REGISTERED";
+                        }
+                    }
+
                 });
 
             }
 
+            /**
+             * Register the one dimensional Sensor-Simulator for the Test of IoT-Applications.
+             */
+            function registerOneDimSensor(sensor) {
+                $http.get(ENDPOINT_URI + '/adapters/search/findAll').success(function (response) {
+                    angular.forEach(response._embedded.adapters, function (value) {
+                        if (value.name === sensor) {
+                            sensorName = sensor;
+                            adapterLink = value._links.self.href;
+                            adaptersExists = true;
+                        }
+                    });
+                    $http.get(ENDPOINT_URI + '/devices/search/findAll').success(function (response) {
+                            angular.forEach(response._embedded.devices, function (value) {
+                                if (value.name === "TestingDevice") {
+                                    deviceLink = value._links.self.href;
+                                    deviceExists = true;
+                                }
+                            });
+                            if (deviceExists && adaptersExists) {
 
+                                if (sensor === "TestingTemperaturSensor" || sensor === "TestingTemperaturSensorPl") {
+                                    componentType = "Temperature";
+                                } else if (sensor === "TestingFeuchtigkeitsSensor" || sensor === "TestingFeuchtigkeitsSensorPl") {
+                                    componentType = "Humidity";
+                                }
 
-            function registerTestDevice(){
-                param = {"username":"ubuntu","password":"","name":"TestingDevice","componentType":"Computer","ipAddress":"192.168.221.167","rsaKey":"-----BEGIN RSA PRIVATE KEY-----\nMIIEqgIBAAKCAQEA4zzAJS+xXz00YLyO8lvsSfY+6XX1mQs6pz7yioA6lO30mWMx\n95FP3rZiX2stId3VfEPKdPgLot7CoTMcSnQzDBR8bi1ej8c/FXzELb2kTQzZE7dX\nYaONvNfKGL27EMjhqRpL+rQeTGeyGqmr0WH7BeQ9nE6ylfxXzXAMWkTW6dv7go+j\n52xAS6dM5TZER/A2KvCgXisiQFzwqEHuXnoy9lpWHcSZzQL8Xkd9ZbGAr3ex0pEc\n8220d4KT8oATLBDZo/fJyGiQNR5sab8RlpecbGJoh0QJIdnU3Eq02HYSzAQ7a8cB\nYGEm1xtOQOxV2a4+8f/g9FSC3hjobwmSoNu/nQIDAQABAoIBACy3ytRGk3A7mjAj\nSzo0jsZrWCwXU5KfnBZHk/FflKe0QDtjQvUGOqKIX8mJTONqRVXj/VaRbbDKh6Cz\nbzDTtyv8aBRCh2Zh/m8bE3ww4sFq8tknbmG/jugHyzSdOc/uyEG/9A3NHl1I1sra\ncv6MeprJNLqq3ggYFatPDo9BFs4EZoaIxEMD3plHfENfJOu7IS0xRoe5foXYbnM3\nji7n243OBGPAdCZXJkhYNgRoZmwMeMOJWK7EmiiM60ZKpHl8C4jSuzQ132aK/NDH\n3xgr+1nI8i8CfAWBlP8hfCXJJ8EiS5lE94jnP7u49BhjbPgULaNPDDYpVh5/uTlP\nYV5iAcECggCBAO7y4xBuMc8G57lqepoZHtCjSPpXTEC6hE7+pmnwvi6gUZPV7Tx/\nC7JecekilTy3Z+MjU1jwy7Bu0L3EJsJBn2N5aGYVxGFHGqrfA/qhPeyJsIU2w2UZ\nm1BEgNjP7bMZSMCSYd2CU9mP5dt3vGpEU6oZgwe9jm5QghYVjHaB6NUNAoIAgQDz\nc+sqdCn+rIpE6uovtqXJ9l3psaz+egRLcWS0ZVtrdhmMPBz/rZ16KhqmA+aszjiP\n8JqO3uXiB1LR+ACc6tRzeCWXNWipgzJGvLfgZBwGHeFje+uMyd1nYUq3qd0zP81j\ntpZpIAlHlPc+UREqiUhJJkjP+tEwwznP4zaC4wkQ0QKCAIEA3bMRpf73y8P2X/xB\nQJSqGJ5Haa5xm2TyuXBf6s9pRU2OIwJLmOOvcJFcUxi5Kppok0AFZvITquFGX6uM\n4pOMVPkiOgVcLX2RapR81p+gGsUtuIu1AyqdBf5pJcDWJGQDMlke4Cy5q5RtihEw\nCdDXZ21AO4BOlF+yMtdPeezSoEkCggCBAIBzsiolPp8sRIxWcpgYQ+OLBUQvxjpD\nAQ8ZVmxEancJyjMO6LIS1dtGaeccedLFwFxaNAKcIykeehllRFWHJe+C/jqJKJ8A\nJT/jhRV1XL/xdiG6ma8gN5y7XeQIUTkgOeuZxETVbXACbm3H8knCQ4ytEZADI+sZ\npuBEX1eyGO9xAoIAgQCwh2QkYnGPQkY4d9ra+WcrUz8sb7CEu4IS42XNt8SFkyU4\nfkE7aE4bHufPnnTEZ4jIGk0/E1b8AhLh1suRpg3tltYEj5CJfF1UywoUGuHhQkzP\n7jZaNQ1xdB+0woK3IenLVpDjxWGZbZTxviim1v1lpLSJxfr/HfvW1DJc4x/iug==\n-----END RSA PRIVATE KEY-----","errors":{}};
-                $http.post(ENDPOINT_URI + '/devices/', param).then(function success(response) {
+                                param = {
+                                    "name": sensorName,
+                                    "componentType": componentType,
+                                    "adapter": adapterLink,
+                                    "device": deviceLink,
+                                    "errors": {}
+                                };
+                                $http.post(ENDPOINT_URI + '/sensors/', param).then(function success(response) {
+                                    checkSensorReg(sensor);
+                                });
+
+                            }
+                        }
+                    );
                 });
-                getDevice();
             }
+
+            /**
+             * Register the three dimensional Sensor-Simulators for the Test of IoT-Applications.
+             */
+            function registerThreeDimSensor(sensor) {
+                adaptersExistsX = false;
+                adaptersExistsY = false;
+                adaptersExistsZ = false;
+                if (sensor === "TestingBeschleunigungsSensor") {
+                    sensorX = "TestingAccelerationX";
+                    sensorY = "TestingAccelerationY";
+                    sensorZ = "TestingAccelerationZ";
+                    componentType = "Motion";
+                } else if (sensor === "TestingBeschleunigungsSensorPl") {
+                    sensorX = "TestingAccelerationPlX";
+                    sensorY = "TestingAccelerationPlY";
+                    sensorZ = "TestingAccelerationPlZ";
+                    componentType = "Motion";
+                } else if (sensor === "TestingGPSSensor") {
+                    sensorX = "TestingGPSLatitude";
+                    sensorY = "TestingGPSLongitude";
+                    sensorZ = "TestingGPSHight";
+                    componentType = "Location";
+                } else if (sensor === "TestingGPSSensorPl") {
+                    sensorX = "TestingGPSLatitudePl";
+                    sensorY = "TestingGPSLongitudePl";
+                    sensorZ = "TestingGPSHightPl";
+                    componentType = "Location";
+                }
+
+                $http.get(ENDPOINT_URI + '/adapters/search/findAll').success(function (response) {
+                    angular.forEach(response._embedded.adapters, function (value) {
+                        if (value.name === sensorX) {
+                            adapterLinkX = value._links.self.href;
+                            adaptersExistsX = true;
+                        } else if (value.name === sensorY) {
+                            adapterLinkY = value._links.self.href;
+                            adaptersExistsY = true;
+                        } else if (value.name === sensorZ) {
+                            adapterLinkZ = value._links.self.href;
+                            adaptersExistsZ = true;
+                        }
+                    });
+
+                    $http.get(ENDPOINT_URI + '/devices/search/findAll').success(function (response) {
+                            angular.forEach(response._embedded.devices, function (value) {
+                                if (value.name === "TestingDevice") {
+                                    deviceLink = value._links.self.href;
+                                    deviceExists = true;
+                                }
+                            });
+                            if (deviceExists && adaptersExistsX) {
+                                param = {
+                                    "name": sensorX,
+                                    "componentType": componentType,
+                                    "adapter": adapterLinkX,
+                                    "device": deviceLink,
+                                    "errors": {}
+                                };
+                                $http.post(ENDPOINT_URI + '/sensors/', param).then(function success(response) {
+                                    checkSensorReg(sensor);
+                                });
+                            }
+                            if (deviceExists && adaptersExistsY) {
+                                param = {
+                                    "name": sensorY,
+                                    "componentType": componentType,
+                                    "adapter": adapterLinkY,
+                                    "device": deviceLink,
+                                    "errors": {}
+                                };
+                                $http.post(ENDPOINT_URI + '/sensors/', param).then(function success(response) {
+                                    checkSensorReg(sensor);
+                                });
+                            }
+                            if (deviceExists && adaptersExistsZ) {
+                                param = {
+                                    "name": sensorZ,
+                                    "componentType": componentType,
+                                    "adapter": adapterLinkZ,
+                                    "device": deviceLink,
+                                    "errors": {}
+                                };
+
+                                $http.post(ENDPOINT_URI + '/sensors/', param).then(function success(response) {
+                                    checkSensorReg(sensor);
+                                });
+
+                            }
+
+                        }
+                    );
+
+                });
+
+
+            }
+
 
             /**
              * [Public]
@@ -531,7 +763,10 @@ app.controller('TestingController',
                 downloadPDF: downloadPDF,
                 refreshTestEntry: refreshTestEntry,
                 getDevice: getDevice,
-                registerTestDevice: registerTestDevice
+                registerTestDevice: registerTestDevice,
+                checkSensorReg: checkSensorReg,
+                registerOneDimSensor: registerOneDimSensor,
+                registerThreeDimSensor: registerThreeDimSensor
 
             });
             // $watch 'addTest' result and add to 'testList'
@@ -553,7 +788,6 @@ app.controller('TestingController',
                     }
                 }
             );
-
 
 
             //Watch deletion of tests and remove them from the list
