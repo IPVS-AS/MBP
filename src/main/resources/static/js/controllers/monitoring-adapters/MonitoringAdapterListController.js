@@ -77,7 +77,7 @@ app.controller('MonitoringAdapterListController',
                     $scope: $scope,
                     adapterList: monitoringAdapterList,
                     adapterPreprocessing: monitoringAdapterPreprocessing,
-                    addAdapter: addMonitoringAdapter,
+                    addKeyPair: addMonitoringAdapter,
                     deleteAdapter: deleteMonitoringAdapter,
                     parameterTypesList: parameterTypesList
                 })

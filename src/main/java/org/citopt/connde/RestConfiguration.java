@@ -10,6 +10,8 @@ import org.citopt.connde.domain.componentType.ComponentType;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.env_model.EnvironmentModel;
+import org.citopt.connde.domain.key_pair.KeyPair;
+import org.citopt.connde.domain.key_pair.KeyPairValidator;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringAdapterValidator;
 import org.citopt.connde.domain.rules.*;
@@ -64,7 +66,9 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
         config.setBasePath(BASE_PATH);
 
         //Include entity IDs of the following entity types into REST request responses
-        config.exposeIdsFor(Device.class, Adapter.class, MonitoringAdapter.class,
+        config.exposeIdsFor(KeyPair.class,
+                Device.class,
+                Adapter.class, MonitoringAdapter.class,
                 Actuator.class, Sensor.class,
                 User.class, Authority.class,
                 ComponentType.class,
@@ -96,6 +100,10 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
         //Actuators
         v.addValidator("beforeSave", new ActuatorValidator());
         v.addValidator("beforeCreate", new ActuatorValidator());
+
+        //Key pairs
+        v.addValidator("beforeSave", new KeyPairValidator());
+        v.addValidator("beforeCreate", new KeyPairValidator());
 
         //Devices
         v.addValidator("beforeSave", new DeviceValidator());
