@@ -14,7 +14,7 @@ echo "write hostname\n"
 sudo sh -c "echo '127.0.0.1' $(hostname) >> /etc/hosts";
 echo "\nupdate package repositories\n"
 sudo apt-get -qy update;
-#sudo apt-get -qy upgrade;
+sudo apt-get -qy upgrade;
 
 #Installing Java8
 echo "\nInstalling Java...\n"
@@ -22,9 +22,27 @@ sudo apt-get install -qy openjdk-8-jdk;
 sudo apt-get install -qy maven;
 
 echo "\nInstalling Mosquitto Broker, MongoDB, InfluxDB, Tomcat8, git and maven...\n"
-# Install Mosquitto Broker
-sudo apt-get install -qy mosquitto;
-sudo systemctl start mosquitto;
+
+if [ -n "$1" ]
+then
+    if [ "$1" = "secure" ] 
+    then
+        echo "Installing secured Mosquitto with OAuth2 authentication as Docker container..."
+        echo "\nbroker_location=LOCAL_SECURE" >> src/main/resources/config.properties
+        echo "\nBuilding mosquitto with go-auth plugin...\n"
+        cd mosquitto/  
+        docker build -t mosquitto-go-auth .
+        echo "\nStarting docker container for mosquitto with go-auth plugin...\n"
+        docker run -d --network="host" -p 1883:1883 -p 1884:1884 mosquitto-go-auth
+        cd ..
+    else
+        echo "Invalid command-line argument(s)."
+    fi
+else
+    echo "Installing normal Mosquitto..."
+    sudo apt-get install -qy mosquitto;
+    sudo systemctl start mosquitto;
+fi
 
 # Install and start MongoDB 
 sudo apt-get -qy install mongodb-server;

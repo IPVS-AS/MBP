@@ -1,13 +1,14 @@
 
 package org.citopt.connde.service.receiver;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.citopt.connde.service.mqtt.MQTTService;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Background service that receives incoming MQTT value log messages that comply to certain topics. The service
@@ -15,18 +16,21 @@ import java.util.Set;
  * and get notified in case a new value message arrives.
  */
 @Service
+@EnableScheduling
 public class ValueLogReceiver {
     //Set of MQTT topics to subscribe to
     private static final String[] SUBSCRIBE_TOPICS = {"device/#", "sensor/#", "actuator/#", "monitoring/#"};
 
     //Set ob observers which want to be notified about incoming value logs
     private Set<ValueLogReceiverObserver> observerSet;
+    private final MQTTService mqttService;
 
     /**
      * Initializes the value logger service.
      */
     @Autowired
-    public ValueLogReceiver(MQTTService mqttService) throws MqttException {
+    public ValueLogReceiver(MQTTService mqttService) {
+        this.mqttService = mqttService;
         //Initialize set of observers
         observerSet = new HashSet<>();
 
@@ -38,8 +42,13 @@ public class ValueLogReceiver {
 
         //Subscribe all topics that are relevant for receiving value logs
         for (String topic : SUBSCRIBE_TOPICS) {
-            mqttService.subscribe(topic);
+            try {
+                mqttService.subscribe(topic);
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
         }
+
     }
 
     /**

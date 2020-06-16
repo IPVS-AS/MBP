@@ -40,7 +40,17 @@ app.controller('AdapterListController',
 
             vm.dzMethods = {};
 
-            vm.parameters = [];
+            /**
+             * The device code parameter is necessary for every adapter.
+             * @type {{unit: string, name: string, type: string, mandatory: boolean}}
+             */
+            var deviceCodeParameter = {
+                name: "device_code",
+                type: "Text",
+                unit: "",
+                mandatory: true
+            };
+            vm.parameters = [deviceCodeParameter];
             vm.parameterTypes = parameterTypesList;
 
             /**
@@ -213,7 +223,7 @@ app.controller('AdapterListController',
             );
 
             //Enable popovers
-            $(document).ready(function(){
+            $(document).ready(function () {
                 $('[data-toggle="popover"]').popover();
             });
         }
