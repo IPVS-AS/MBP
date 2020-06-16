@@ -77,6 +77,7 @@ Make sure that [Cross-Origin Resource Sharing (CORS)](https://developer.mozilla.
 <filter>
   <filter-name>CorsFilter</filter-name>
   <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+  <async-supported>true</async-supported>
 </filter>
 <filter-mapping>
   <filter-name>CorsFilter</filter-name>
