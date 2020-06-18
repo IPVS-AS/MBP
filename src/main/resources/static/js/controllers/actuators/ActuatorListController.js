@@ -161,7 +161,7 @@ app.controller('ActuatorListController',
             $scope: $scope,
             list: actuatorList
           }),
-          addActuatorCtrl: $controller('AddItemController as addActuatorCtrl', {
+          addActuatorCtrl: $controller('a as addActuatorCtrl', {
             $scope: $scope,
             addItem: addActuator
           }),

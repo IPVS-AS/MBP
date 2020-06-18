@@ -168,6 +168,7 @@ public class TestDetailsEventHandler {
                 sensorArray.add(sensorZ);
                 break;
             default:
+                /**
                 Sensor sensor = sensorRepository.findByName(testDetails.getType());
                 if (sensor == null) {
                     sensor = new Sensor();
@@ -176,7 +177,7 @@ public class TestDetailsEventHandler {
                     sensor.setAdapter(adapterRepository.findByName(testDetails.getType()));
                     sensorRepository.insert(sensor);
                 }
-                sensorArray.add(sensor);
+                sensorArray.add(sensor);**/
                 break;
         }
 
@@ -184,6 +185,7 @@ public class TestDetailsEventHandler {
         // checks if the testing actuator is registered
         Actuator actuator = actuatorRepository.findByName("TestingActuator");
 
+        /**
         // if not the actuator will be registered in the following
         if (actuator == null) {
             actuator = new Actuator();
@@ -194,7 +196,7 @@ public class TestDetailsEventHandler {
 
             actuatorRepository.insert(actuator);
         }
-
+**/
         testDetails.setSensor(sensorArray);
     }
 
