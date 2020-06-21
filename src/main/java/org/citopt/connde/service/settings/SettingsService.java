@@ -1,18 +1,17 @@
 package org.citopt.connde.service.settings;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import org.citopt.connde.service.settings.model.BrokerLocation;
+import org.citopt.connde.service.settings.model.Settings;
+import org.citopt.connde.web.rest.response.ActionResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.ServletContext;
+import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Properties;
-
-import org.citopt.connde.service.settings.model.BrokerLocation;
-import org.citopt.connde.service.settings.model.Settings;
-import org.springframework.stereotype.Service;
 
 /**
  * This service provides features for the management of application-wide settings that may be changed by the users.
@@ -22,6 +21,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class SettingsService {
+
+    @Autowired
+    private ServletContext servletContext;
+
     //The name of the file in which the settings are supposed to be stored
     private static final String SETTINGS_FILE_NAME = "config.properties";
 
@@ -46,7 +49,25 @@ public class SettingsService {
     }
 
     /**
+     * Loads default operators from the resources directory and adds them to the operator repository so that they
+     * can be used in actuators and sensors by all users.
+     *
+     * @return An action response containing the result of this operation
+     */
+    public ActionResponse addDefaultOperators() {
+        try {
+            URL path = servletContext.getResource("/operators");
+            System.out.println("Hier");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return new ActionResponse(true);
+    }
+
+    /**
      * Returns the application settings that are currently applied.
+     *
      * @return The settings wrapped in a DTO
      * @throws IOException In case of an I/O issue while reading the settings file
      */
@@ -103,6 +124,7 @@ public class SettingsService {
 
     /**
      * Writes the settings file with the settings stored in the internal property object.
+     *
      * @throws IOException In case of an I/O issue while writing the settings file
      */
     private void writeSettingsFile() throws IOException {
@@ -119,6 +141,7 @@ public class SettingsService {
 
     /**
      * Loads the settings file and stores the settings in the internal property object.
+     *
      * @throws IOException In case of an I/O issue while reading the settings file
      */
     private void loadSettingsFile() throws IOException {

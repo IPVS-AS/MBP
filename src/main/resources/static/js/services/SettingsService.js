@@ -7,7 +7,17 @@ app.factory('SettingsService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
     function ($http, $resource, $q, ENDPOINT_URI) {
         //URLs for server requests
         const URL_SETTINGS = ENDPOINT_URI + '/settings';
+        const URL_DEFAULT_OPERATORS = ENDPOINT_URI + '/settings/default-operators';
         const URL_DOCUMENTATION_META_DATA = ENDPOINT_URI + '/docs';
+
+        /**
+         * [Public]
+         * Performs a server request in order to add default operators.
+         * @returns {*}
+         */
+        function addDefaultOperators() {
+            return $.post(URL_DEFAULT_OPERATORS);
+        }
 
         /**
          * [Public]
@@ -46,6 +56,7 @@ app.factory('SettingsService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
 
         //Expose public methods
         return {
+            addDefaultOperators: addDefaultOperators,
             getSettings: getSettings,
             saveSettings: saveSettings,
             getDocumentationMetaData: getDocumentationMetaData

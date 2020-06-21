@@ -9,16 +9,30 @@
                 </h2>
             </div>
             <div class="body">
-                <form ng-submit="ctrl.saveSettings()">
-                    <fieldset id="settings-form">
-                        <h2 class="card-inside-title">MQTT Broker</h2>
-                        <div class="row clearfix">
-                            <div class="col-xs-12">
-                                <div class="form-group">
-                                    <span class="help-block">Please specify whether you want to use a local or a remote
-                                        MQTT broker. If you change the settings, the MBP will adjust itself at runtime.
-                                        However, already deployed sensors need to be redeployed.</span>
-                                </div>
+                <h2 class="card-inside-title">Default operators</h2>
+                <div class="row clearfix">
+                    <div class="col-xs-12">
+                        <span class="help-block">This will load some default operators from the <code>resources</code>
+                            directory of the MBP's repository and make them available for usage in sensors.
+                        </span>
+                        <form ng-submit="ctrl.addDefaultOperators()">
+                            <div class="form-group align-left">
+                                <button type="submit" class="btn btn-primary m-t-15 waves-effect">
+                                    Add operators
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <h2 class="card-inside-title">MQTT Broker</h2>
+                <div class="row clearfix">
+                    <div class="col-xs-12">
+                        <span class="help-block">Please specify whether you want to use a local or a remote
+                            MQTT broker. If you change the settings, the MBP will adjust itself at runtime.
+                            However, already deployed sensors need to be redeployed.
+                        </span>
+                        <form ng-submit="ctrl.saveSettings()">
+                            <fieldset id="settings-form">
                                 <div class="form-group">
                                     <div class="radio">
                                         <input type="radio" class="with-gap" id="broker_location_local"
@@ -45,22 +59,23 @@
                                         <label for="broker_location_remote_secure">Use remote broker with OAuth2</label>
                                     </div>
                                 </div>
-                                <div class="form-group" ng-show="ctrl.settings.brokerLocation=='REMOTE' || ctrl.settings.brokerLocation=='REMOTE_SECURE'">
+                                <div class="form-group"
+                                     ng-show="ctrl.settings.brokerLocation=='REMOTE' || ctrl.settings.brokerLocation=='REMOTE_SECURE'">
                                     <div class="form-line">
                                         <input class="form-control" type="text" placeholder="Mqtt broker IP address"
                                                ng-model="ctrl.settings.brokerIPAddress"/>
                                     </div>
                                     <span class="help-block">IP address of the MQTT broker to use</span>
                                 </div>
-                                <div class="form-group align-right">
+                                <div class="form-group align-left">
                                     <button type="submit" class="btn btn-primary m-t-15 waves-effect">
                                         Save
                                     </button>
                                 </div>
-                            </div>
-                        </div>
-                    </fieldset>
-                </form>
+                            </fieldset>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -281,6 +281,16 @@
                 <version>2.3</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <webResources>
+                        <resource>
+                            <directory>resources/operators</directory>
+                            <targetPath>operators</targetPath>
+                            <!--
+                            <includes>
+                                <include>release.txt</include>
+                            </includes>-->
+                        </resource>
+                    </webResources>
                 </configuration>
             </plugin>
             <plugin>
