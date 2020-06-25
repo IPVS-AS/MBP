@@ -3,10 +3,12 @@ package org.citopt.connde.domain.device;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.domain.user_entity.UserEntityPolicy;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import javax.persistence.GeneratedValue;
 
@@ -52,26 +54,10 @@ public class Device extends UserEntity {
     @ApiModelProperty(notes = "OS user password to use on the device", example = "secret")
     private String password;
 
+    @DBRef
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @ApiModelProperty(notes = "RSA key for SSH connections to the device", example = "-----BEGIN RSA PRIVATE KEY-----\\nMIIEowIBAAKCAQEA0enPVikCPvsyhKd317r08RPtbkMG0zRhIqJ/ZHIDV8TpRhoR\\n...\\n-----END RSA PRIVATE KEY-----", required = false)
-    private String rsaKey;
-
-    public static String formatMAC(String raw) {
-        if (raw != null) {
-            String formatted = raw.replaceAll("(.{2})", "$1" + "-").substring(0, 17);
-            return formatted.toUpperCase();
-        } else {
-            return raw;
-        }
-    }
-
-    public static String rawMAC(String formatted) {
-        String raw = formatted.replace(":", "");
-        raw = raw.replace("-", "");
-        raw = raw.replace(" ", "");
-        raw = raw.toLowerCase();
-        return raw;
-    }
+    @ApiModelProperty(notes = "Key pair for SSH connections to the device", required = false)
+    private KeyPair keyPair;
 
     public String getId() {
         return this.id;
@@ -137,12 +123,12 @@ public class Device extends UserEntity {
         this.password = password;
     }
 
-    public String getRsaKey() {
-        return rsaKey;
+    public KeyPair getKeyPair() {
+        return keyPair;
     }
 
-    public void setRsaKey(String rsaKey) {
-        this.rsaKey = rsaKey;
+    public void setKeyPair(KeyPair keyPair) {
+        this.keyPair = keyPair;
     }
 
     @JsonProperty("usesPassword")
@@ -154,7 +140,7 @@ public class Device extends UserEntity {
     @JsonProperty("usesRSAKey")
     @ApiModelProperty(notes = "Whether the device uses a RSA key", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     public boolean hasRSAKey() {
-        return (rsaKey != null) && (!rsaKey.isEmpty());
+        return (keyPair != null) && (keyPair.hasPrivateKey());
     }
 
     @Override

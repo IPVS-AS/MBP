@@ -35,7 +35,7 @@ app.controller('AddItemController', ['addItem', 'NotificationService', function 
         angular.extend(vm,
                 {
                     item: {},
-                    addItem: addItemPromise
-                });
+                    addItem: addItemPromise,
+        });
     }]);
 

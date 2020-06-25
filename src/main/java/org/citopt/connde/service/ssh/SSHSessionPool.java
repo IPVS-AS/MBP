@@ -105,11 +105,11 @@ public class SSHSessionPool {
         }
 
         //Retrieve private rsa key
-        String rsaKey = device.getRsaKey();
+        String privateKey = device.getKeyPair().getPrivateKey();
         String password = device.getPassword();
 
         //Check key for validity
-        if (((rsaKey == null) || (rsaKey.isEmpty())) && ((password == null) || (password.isEmpty()))) {
+        if (((privateKey == null) || (privateKey.isEmpty())) && ((password == null) || (password.isEmpty()))) {
             throw new IllegalArgumentException("No private RSA key or Password for SSH connection provided.");
         }
 
@@ -118,7 +118,7 @@ public class SSHSessionPool {
         String username = device.getUsername();
 
         //Create new ssh session and connect
-        SSHSession sshSession = new SSHSession(url, SSH_PORT, username, password, rsaKey);
+        SSHSession sshSession = new SSHSession(url, SSH_PORT, username, password, privateKey);
         sshSession.connect();
 
         return sshSession;

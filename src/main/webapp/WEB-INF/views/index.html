@@ -187,6 +187,12 @@
                   </li>
               </ul>
           </li>
+            <li href="view/key-pairs" menu-item="menu-item">
+                <a href="view/key-pairs">
+                    <i class="material-icons">vpn_key</i>
+                    <span>Key Pairs</span>
+                </a>
+            </li>
           <li href="view/devices" menu-item="menu-item">
             <a href="view/devices">
               <i class="material-icons">devices</i>
@@ -338,11 +344,15 @@
 <!-- Undo Manager -->
 <script th:src="@{/plugins/undo-manager/undo-manager.min.js}"></script>
 
+<!-- Filesaver -->
+<script th:src="@{/plugins/filesaver/filesaver.min.js}"></script>
+
 <!-- Angular -->
 <script th:src="@{/js/app.js}"></script>
 <script th:src="@{/js/services/SessionService.js}"></script>
 <script th:src="@{/js/services/CrudService.js}"></script>
 <script th:src="@{/js/services/FileReader.js}"></script>
+<script th:src="@{/js/services/KeyPairService.js}"></script>
 <script th:src="@{/js/services/DeviceService.js}"></script>
 <script th:src="@{/js/services/ComponentService.js}"></script>
 <script th:src="@{/js/services/AdapterService.js}"></script>
@@ -383,6 +393,7 @@
 <script th:src="@{/js/controllers/DeleteTestController.js}"></script>
 
 <script th:src="@{/js/controllers/home/HomeController.js}"></script>
+<script th:src="@{/js/controllers/key-pairs/KeyPairListController.js}"></script>
 <script th:src="@{/js/controllers/actuators/ActuatorListController.js}"></script>
 <script th:src="@{/js/controllers/sensors/SensorListController.js}"></script>
 <script th:src="@{/js/controllers/testing/TestingController.js}"></script>

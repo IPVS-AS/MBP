@@ -140,6 +140,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     deleteEnvModel: ['CrudService', function (CrudService) {
                         return angular.bind(this, CrudService.deleteItem, 'env-models');
                     }],
+                    keyPairList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('key-pairs');
+                    }],
                     adapterList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('adapters');
                     }],
@@ -161,7 +164,27 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            // Rules list
+            // Key pairs list
+            .when(viewPrefix + '/key-pairs', {
+                category: 'key-pairs',
+                templateUrl: 'templates/key-pairs',
+                controller: 'KeyPairListController as ctrl',
+                resolve: {
+                    keyPairList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('key-pairs');
+                    }],
+                    addKeyPair: ['CrudService', function (CrudService) {
+                        // bind category parameter
+                        return angular.bind(this, CrudService.addItem, 'key-pairs');
+                    }],
+                    deleteKeyPair: ['CrudService', function (CrudService) {
+                        // bind category parameter
+                        return angular.bind(this, CrudService.deleteItem, 'key-pairs');
+                    }]
+                }
+            })
+
+            //Rules list
             .when(viewPrefix + '/rules', {
                 category: 'rules',
                 templateUrl: 'templates/rules',
@@ -353,7 +376,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     deleteDevice: ['CrudService', function (CrudService) {
                         // bind category parameter
                         return angular.bind(this, CrudService.deleteItem, 'devices');
-                        //return CrudService.deleteItem('devices', this);
+                    }],
+                    keyPairList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('key-pairs');
                     }]
                 }
             })
