@@ -8,22 +8,18 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.ServletContext;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * This service provides features for the management of application-wide settings that may be changed by the users.
  * It implicitly stores the settings persistently in a properties file on disk and enables changes of the settings.
- *
- * @author Jan
  */
 @Service
 public class SettingsService {
-
-    @Autowired
-    private ServletContext servletContext;
 
     //The name of the file in which the settings are supposed to be stored
     private static final String SETTINGS_FILE_NAME = "config.properties";
@@ -46,23 +42,6 @@ public class SettingsService {
         } catch (URISyntaxException e) {
             System.err.println("Error while reading the properties file.");
         }
-    }
-
-    /**
-     * Loads default operators from the resources directory and adds them to the operator repository so that they
-     * can be used in actuators and sensors by all users.
-     *
-     * @return An action response containing the result of this operation
-     */
-    public ActionResponse addDefaultOperators() {
-        try {
-            URL path = servletContext.getResource("/operators");
-            System.out.println("Hier");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        return new ActionResponse(true);
     }
 
     /**

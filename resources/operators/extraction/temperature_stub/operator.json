@@ -1,0 +1,13 @@
+{
+  "name": "Temperature Stub",
+  "description": "Stub operator which simulates a temperature sensor",
+  "unit": "°C",
+  "files": [
+    "temperature_stub.py",
+    "../../mbp_client/install.sh",
+    "../../mbp_client/start.sh",
+    "../../mbp_client/stop.sh",
+    "../../mbp_client/running.sh"
+  ],
+  "parameters": []
+}

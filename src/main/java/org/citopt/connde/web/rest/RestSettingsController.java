@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiResponses;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.constants.Constants;
 import org.citopt.connde.service.mqtt.MQTTService;
+import org.citopt.connde.service.settings.DefaultOperatorService;
 import org.citopt.connde.service.settings.SettingsService;
 import org.citopt.connde.service.settings.model.Settings;
 import org.citopt.connde.web.rest.response.ActionResponse;
@@ -30,6 +31,9 @@ import java.io.IOException;
 public class RestSettingsController {
 
     @Autowired
+    private DefaultOperatorService defaultOperatorService;
+
+    @Autowired
     private SettingsService settingsService;
 
     @Autowired
@@ -47,7 +51,7 @@ public class RestSettingsController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
     public ResponseEntity<ActionResponse> addDefaultOperators() {
         //Call corresponding service function
-        ActionResponse response = settingsService.addDefaultOperators();
+        ActionResponse response = defaultOperatorService.addDefaultOperators();
 
         //Check for success
         if (response.isSuccess()) {
