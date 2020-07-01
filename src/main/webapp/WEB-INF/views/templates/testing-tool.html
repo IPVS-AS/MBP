@@ -5,20 +5,17 @@
                 <h2>Welcome!</h2>
                 <p>Through this Testing-Tool you have the possibility to test your IoT-Applications!<br/></p>
                 <p>Follow the given steps to create different tests:</p>
-                <p> &ensp; &ensp; Step 1 - Register the <a href="view/devices"
-                                                           target="_blank"><span>Test Device</span></a> you need for
-                    the simulation of the sensors and actuators.</p>
-                <p> &ensp; &ensp; Step 2 - Register the <a href="view/adapters"
+                <p> &ensp; &ensp; Step 1 - Register the <a href="view/adapters"
                                                            target="_blank"><span>extraction/control operators</span></a>
                     for
-                    the simulation of the sensors and actuators.</p>
-                <p> &ensp; &ensp; Step 3 - Register the neccessary <a href="view/sensors" target="_blank"><span>simulation sensor</span></a>
-                    and <a href="view/actuators" target="_blank"><span>dummy actuator</span></a>.</p>
-                <p> &ensp; &ensp; Step 4 - Define the <a href="view/rules" target="_blank"><span>rules</span></a> that
+                    the simulation of the Sensors and Actuators.</p>
+                <p> &ensp; &ensp; Step 2 -   <a href="#addDevice" data-toggle="modal" data-target="#addDevice"><span>Register</span> </a> the Testing Device, Testing Actuator and the necessary Sensor-Simulators you need for the test of your IoT-Application.
+
+                <p> &ensp; &ensp; Step 3 - Define the <a href="view/rules" target="_blank"><span>rules</span></a> that
                     are necessary for the your IoT-Applikation.</p>
-                <p>&ensp; &ensp; Step 5 - Register the new test.</p>
-                <p> &ensp; &ensp; Step 6 - Start the test and wait until the simulation is finished.</p>
-                <p> &ensp; &ensp; Step 7 - Download the test report to find out the result of the test.</p>
+                <p>&ensp; &ensp; Step 4 - Register the new test.</p>
+                <p> &ensp; &ensp; Step 5 - Start the test and wait until the simulation is finished.</p>
+                <p> &ensp; &ensp; Step 6 - Download the test report to find out the result of the test.</p>
             </div>
         </div>
     </div>
@@ -533,7 +530,7 @@
                                         </thead>
                                         <tbody>
                                         <tr>
-                                            <td>Test-Device</td>
+                                            <td>Testing-Device</td>
                                             <td>
                                                 <div style="padding: 0px;  display: inline-block;" ng-switch="device"
                                                      ng-click="ctrl.getDevice()" class="clickable">
@@ -569,6 +566,43 @@
                                                     </div>
                                                 </div>
                                             </td>
+                                        </tr>
+                                        <td>Testing-Actuator</td>
+                                        <td>
+                                            <div style="padding: 0px;  display: inline-block;" ng-switch="testingActuator"
+                                                 ng-click="ctrl.checkActuatorReg()" class="clickable">
+                                                <div ng-switch-when="LOADING">
+                                                    <div class="preloader pl-size-xs">
+                                                        <div class="spinner-layer pl-blue">
+                                                            <div class="circle-clipper left">
+                                                                <div class="circle"></div>
+                                                            </div>
+                                                            <div class="circle-clipper right">
+                                                                <div class="circle"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div ng-switch-when="NOT_REGISTERED">
+                                                    <span class="label label-danger">Not Registered</span>
+                                                </div>
+                                                <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
+                                                    <form ng-submit="ctrl.registerTestingActuator()">
+                                                        <button type="submit"
+                                                                class="btn bg-blue m-t-0 waves-effect"
+                                                                ng-click="ctrl.registerTestingActuator()">
+                                                            Register Testing-Actuator
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                                <div ng-switch-when="REGISTERED">
+                                                    <span class="label label-success">Registered</span>
+                                                </div>
+                                                <div ng-switch-default>
+                                                    <span class="label label-default">Unknown</span>
+                                                </div>
+                                            </div>
+                                        </td>
                                         </tr>
                                         <tr>
                                             <td>Temperature Sensor Simulator</td>
