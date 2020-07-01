@@ -79,18 +79,11 @@ public class DeviceValidator implements Validator {
 
         //Retrieve fields that need to be of a certain format
         String ipAddress = device.getIpAddress();
-        String rsaKey = device.getRsaKey();
 
         //Validate format of the IP address
         if ((ipAddress != null) && (!Validation.isValidIPAddress(ipAddress))) {
             errors.rejectValue("ipAddress", "device.ipAddress.illegal_format",
                     "Illegal IP address provided.");
-        }
-
-        //Validate format of the private RSA key
-        if ((rsaKey != null) && (!Validation.isValidPrivateRSAKey(rsaKey))) {
-            errors.rejectValue("rsaKey", "device.rsaKey.illegal_format",
-                    "The provided string does not seem to be a valid private RSA key.");
         }
     }
 }

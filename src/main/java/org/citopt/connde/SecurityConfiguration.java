@@ -60,7 +60,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	    web.ignoring()
 	    .antMatchers(HttpMethod.OPTIONS, "/**")
 	    .antMatchers("/resources/**")
-	    .antMatchers("/webapp/**");
+	    .antMatchers("/webapp/**")
+	    .antMatchers(HttpMethod.POST,"/api/checkOauthTokenUser")
+	    .antMatchers(HttpMethod.POST,"/api/checkOauthTokenSuperuser")
+        .antMatchers(HttpMethod.POST,"/api/checkOauthTokenAcl");
 	}
 
     @Override
@@ -68,21 +71,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http
         	.csrf().disable()
         	.authorizeRequests()
-        	.antMatchers("/api/authenticate").permitAll()
-        	.antMatchers(HttpMethod.POST, "/api/users").permitAll()
-        	.antMatchers(HttpMethod.PUT, "/api/users").hasAuthority(Constants.ADMIN)
-        	.antMatchers(HttpMethod.GET, "/api/users").hasAuthority(Constants.ADMIN)
-        	.antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)
-        	.antMatchers(HttpMethod.DELETE, "/api/users/:username").hasAuthority(Constants.ADMIN)
-        	.antMatchers("/api/**").authenticated()
-		.and()
-			.httpBasic()
-        	.authenticationEntryPoint(restAuthenticationEntryPoint())
-        .and()
-        	.logout()
-        	.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-        	.logoutSuccessUrl("/login")
-        	.invalidateHttpSession(true)
-        	.deleteCookies("JSESSIONID");
+	            .antMatchers("/api/authenticate").permitAll()
+	            .antMatchers(HttpMethod.POST, "/api/users").permitAll()
+	            .antMatchers(HttpMethod.PUT, "/api/users").hasAuthority(Constants.ADMIN)
+	            .antMatchers(HttpMethod.GET, "/api/users").hasAuthority(Constants.ADMIN)
+	            .antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)
+	            .antMatchers(HttpMethod.DELETE, "/api/users/:username").hasAuthority(Constants.ADMIN)
+	            .antMatchers("/api/**").authenticated()
+            .and()
+				.httpBasic()
+        	    .authenticationEntryPoint(restAuthenticationEntryPoint())
+            .and()
+	            .logout()
+	            .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+	            .logoutSuccessUrl("/login")
+	            .invalidateHttpSession(true)
+	            .deleteCookies("JSESSIONID");
     }
 }

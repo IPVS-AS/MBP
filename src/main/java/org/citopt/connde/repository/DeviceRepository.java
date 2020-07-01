@@ -2,6 +2,7 @@ package org.citopt.connde.repository;
 
 import io.swagger.annotations.*;
 import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.repository.projection.ComponentExcerpt;
 import org.citopt.connde.repository.projection.DeviceExcerpt;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,8 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
+
+import java.util.List;
 
 @RepositoryRestResource(collectionResourceRel = "devices", path = "devices", excerptProjection = DeviceExcerpt.class)
 @Api(tags = {"Device entities"}, description = "CRUD for device entities")
@@ -30,4 +33,7 @@ public interface DeviceRepository extends UserEntityRepository<Device> {
     @ApiOperation(value = "Retrieves all device entities for which the user is authorized and which fit onto a given page", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success")})
     Page<Device> findAll(@ApiParam(value = "The page configuration", required = true) Pageable pageable);
+
+    @RestResource(exported = false)
+    List<Device> findAllByKeyPairId(@Param("keyPair.id") String keyPairId);
 }

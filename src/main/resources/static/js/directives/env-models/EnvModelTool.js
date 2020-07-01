@@ -1613,8 +1613,9 @@ app.directive('envModelTool',
                     '<input class="form-control" type="text" placeholder="Password" ng-model="modalElementDetails.password"/>' +
                     '</div></div>' +
                     '<div class="form-group"><div class="form-line">' +
-                    '<textarea class="form-control" type="text" placeholder="Private RSA key" ng-model="modalElementDetails.rsaKey" rows="4"></textarea>' +
-                    '</div></div></div>' +
+                    '<select class="form-control show-tick" ng-model="modalElementDetails.keyPair" ng-options="t.id as (t.name) for t in keyPairList">' +
+                    '<option value="">Select SSH key pair<option/>' +
+                    '</select></div></div></div>' +
                     '<div class="modal-footer">' +
                     '<button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">Close</button>' +
                     '<button type="submit" class="btn btn-primary m-t-0 waves-effect">Save</button>' +
@@ -1651,6 +1652,7 @@ app.directive('envModelTool',
                     isFocused: '=isFocused',
 
                     //Input
+                    keyPairList: '=keyPairList',
                     adapterList: '=adapterList',
                     deviceTypes: '=deviceTypes',
                     actuatorTypes: '=actuatorTypes',

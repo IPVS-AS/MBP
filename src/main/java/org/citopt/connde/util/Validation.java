@@ -6,8 +6,6 @@ import javax.measure.unit.Unit;
 
 /**
  * This class provides methods for validating input data.
- *
- * @author Jan
  */
 public class Validation {
     //Regular expression for valid formatted MAC addresses (including separators)

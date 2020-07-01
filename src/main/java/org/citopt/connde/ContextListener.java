@@ -3,7 +3,6 @@ package org.citopt.connde;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
-import java.io.IOException;
 
 /**
  * Provides context listeners that can be used to schedule tasks which need to be executed on startup or shutdown
