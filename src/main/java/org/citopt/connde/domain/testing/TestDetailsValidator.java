@@ -39,12 +39,11 @@ public class TestDetailsValidator implements Validator {
                 "The name cannot be empty!");
 
 
+        ValidationUtils.rejectIfEmptyOrWhitespace(
+                errors, "componentType", "componentType.empty",
+                "The component type cannot be empty!");
 
-        // Check if sensor choice is empty
-        if (test.getType().isEmpty()) {
-            errors.rejectValue( "sensor","component.type.empty",
-                    "A Sensor must be selected!");
-        }
+
 
         // Check if rule choice is empty
         if (test.getRules() == null) {

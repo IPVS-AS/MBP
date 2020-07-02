@@ -518,6 +518,25 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
+            // Testing Details
+            .when(viewPrefix + '/testing-tool/:id', {
+                category: 'test-details',
+                templateUrl: 'templates/testing-tool-id.html',
+                controller: 'TestingDetailsController as ctrl',
+                resolve: {
+                    sensorDetails: ['$route', '$location', 'CrudService', function ($route, $location, CrudService) {
+                        return CrudService.fetchSpecificItem('test-details', $route.current.params.id).then(
+                            function (data) {
+                                return data;
+                            },
+                            function () {
+                                console.log('404');
+                                $location.url(viewPrefix + '/404');
+                            });
+                    }]
+                }
+            })
+
             // Error 404
             .when(viewPrefix + '/404', {
                 templateUrl: 'templates/404'

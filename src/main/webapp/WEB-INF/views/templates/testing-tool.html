@@ -59,7 +59,8 @@
                     <tbody>
                     <tr id="{{item._id}}" ng-repeat="item in displayedCollection">
                         <td>
-                            {{item.name}}
+                            <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>&nbsp;
+                            <i ng-show="item.wasModelled" class="material-icons" style="vertical-align: bottom;">view_quilt</i>
                         </td>
                         <td>{{item.type}}</td>
                         <td>
@@ -128,8 +129,6 @@
         </div>
     </div>
     <!-- #END# List of Tests Card -->
-
-
     <!-- Modal -->
     <div class="modal fade" id="addTestingModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -158,10 +157,10 @@
                                 </div>
                                 <span class="help-block" ng-show="addTestCtrl.item.errors.name">{{addTestCtrl.item.errors.name.message}}</span>
                             </div>
-                            <div class="form-group" ng-class="{'has-error' : addTestCtrl.item.errors.type }">
-                                <div class="form-line" ng-class="{'focused error' : addTestCtrl.item.errors.type }">
+                            <div class="form-group" ng-class="{'has-error' : addTestCtrl.item.errors.componentType }">
+                                <div class="form-line" ng-class="{'focused error' : addTestCtrl.item.errors.componentType }">
                                     <select class="form-control show-tick" id="select-sensor-test" name="singleSelect"
-                                            ng-model="ctrl.type.singleSelect">
+                                            ng-model="ctrl.componentType">
                                         <option value="">Select sensor type to be simulated</option>
                                         <option ng-option class="ng-binding ng-scope" value="TestingTemperaturSensor">
                                             Temperature Sensor
@@ -193,10 +192,10 @@
                                         </option>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addTestCtrl.item.errors.type">{{addTestCtrl.item.errors.type.message}}</span>
+                                <span class="help-block" ng-show="addTestCtrl.item.errors.componentType">{{addTestCtrl.item.errors.componentType.message}}</span>
                             </div>
 
-                            <div ng-if="ctrl.type.singleSelect == 'TestingTemperaturSensor'||ctrl.type.singleSelect =='TestingTemperaturSensorPl'">
+                            <div ng-if="ctrl.componentType == 'TestingTemperaturSensor'||ctrl.componentType =='TestingTemperaturSensorPl'">
                                 <div class="form-line">
                                     <h4> Type of simulation </h4>
                                     <select class="form-control show-tick" id="select-temp-testCase" name="testCase1"
@@ -245,7 +244,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div ng-if="ctrl.type.singleSelect == 'TestingFeuchtigkeitsSensor'||ctrl.type.singleSelect=='TestingFeuchtigkeitsSensorPl'">
+                            <div ng-if="ctrl.componentType == 'TestingFeuchtigkeitsSensor'||ctrl.componentType=='TestingFeuchtigkeitsSensorPl'">
                                 <h4> Type of simulation: </h4>
                                 <div class="form-line">
                                     <select class="form-control show-tick" id="select-hum-testCase" name="testCase1"
@@ -300,7 +299,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div ng-if="ctrl.type.singleSelect == 'TestingGPSSensor'||ctrl.type.singleSelect =='TestingGPSSensorPl'">
+                            <div ng-if="ctrl.componentType == 'TestingGPSSensor'||ctrl.componentType =='TestingGPSSensorPl'">
                                 <div class="form-line">
                                     <h4> Specify whether the GPS data should be tracked for a human or a cat: </h4>
                                     <select class="form-control show-tick" id="select-gps-cathum"
@@ -358,7 +357,7 @@
                                            ng-model="ctrl.ractionMeters.singleSelect">
                                 </div>
                             </div>
-                            <div ng-if="ctrl.type.singleSelect == 'TestingBeschleunigungsSensor'||ctrl.type.singleSelect =='TestingBeschleunigungsSensorPl'">
+                            <div ng-if="ctrl.componentType == 'TestingBeschleunigungsSensor'||ctrl.componentType =='TestingBeschleunigungsSensorPl'">
                                 <div class="form-line">
                                     <h4> Type of simulation: </h4>
                                     <select class="form-control show-tick" id="select-acc-testCase" name="testCase1"
@@ -435,7 +434,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div ng-if="ctrl.type.singleSelect =='TestingFeuchtigkeitsSensorPl'||ctrl.type.singleSelect == 'TestingTemperaturSensorPl'|| ctrl.type.singleSelect == 'TestingGPSSensorPl'|| ctrl.type.singleSelect == 'TestingBeschleunigungsSensorPl'">
+                            <div ng-if="ctrl.componentType =='TestingFeuchtigkeitsSensorPl'||ctrl.componentType == 'TestingTemperaturSensorPl'|| ctrl.componentType == 'TestingGPSSensorPl'|| ctrl.componentType == 'TestingBeschleunigungsSensorPl'">
                                 <h4> How long should the sensor be simulated? (specified in hours)</h4>
                                 <div class="form-line">
                                     <input type="text" id="simTime" name="simTime" ng-model="ctrl.simTime.singleSelect">

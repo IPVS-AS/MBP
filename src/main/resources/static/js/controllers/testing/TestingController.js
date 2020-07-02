@@ -86,6 +86,21 @@ app.controller('TestingController',
                 window.open('api/test-details/downloadPDF/' + testID, '_blank');
             }
 
+
+            /**
+             * [Public]
+             * @param test
+             * @returns {*}
+             */
+            $scope.detailsLink = function (test) {
+                if (test.id) {
+                    return "view/testing-tool/" + test.id;
+                }
+                return "#";
+            };
+
+
+
             /**
              * [Public]
              * Shows an alert that asks the user if he is sure that he wants to delete a certain test.
@@ -161,12 +176,14 @@ app.controller('TestingController',
                                 var randomAngle = Math.floor((Math.random() * 361));
                                 var randomAxis = Math.floor((Math.random() * 3));
 
+
+
                                 // random values for the direction of the outlier and movement for the acceleration Sensor
                                 var directionOutlier = Math.floor(Math.random() * 6);
                                 var directionMovement = Math.floor(Math.random() * 6);
 
 
-                                    if (vm.type.singleSelect === 'TestingTemperaturSensor' || vm.type.singleSelect === 'TestingFeuchtigkeitsSensor') {
+                                    if (vm.componentType.singleSelect === 'TestingTemperaturSensor' || vm.componentType.singleSelect === 'TestingFeuchtigkeitsSensor') {
                                         if (vm.testCase.singleSelect === '3' || vm.testCase.singleSelect === '4' || vm.testCase.singleSelect === '5' || vm.testCase.singleSelect === '6') {
                                             vm.parameterValues.push({
                                                 "name": "event",
@@ -186,7 +203,7 @@ app.controller('TestingController',
                                                 "value": parseInt(vm.combination.singleSelect)
                                             });
                                         }
-                                    } else if (vm.type.singleSelect === 'TestingTemperaturSensorPl' || vm.type.singleSelect === 'TestingFeuchtigkeitsSensorPl') {
+                                    } else if (vm.componentType.singleSelect === 'TestingTemperaturSensorPl' || vm.componentType.singleSelect === 'TestingFeuchtigkeitsSensorPl') {
 
                                         if (vm.testCase.singleSelect === '3' || vm.testCase.singleSelect === '4' || vm.testCase.singleSelect === '5' || vm.testCase.singleSelect === '6') {
                                             vm.parameterValues.push({
@@ -226,7 +243,7 @@ app.controller('TestingController',
                                             });
 
                                         }
-                                    } else if (vm.type.singleSelect === 'TestingGPSSensor') {
+                                    } else if (vm.componentType.singleSelect === 'TestingGPSSensor') {
                                         if (vm.testCase.singleSelect === '3' || vm.testCase.singleSelect === '4' || vm.testCase.singleSelect === '5') {
                                             vm.parameterValues.push({"name": "who", "value": vm.humCat.singleSelect});
                                             vm.parameterValues.push({
@@ -265,7 +282,7 @@ app.controller('TestingController',
                                                 "value": parseInt(vm.combination.singleSelect)
                                             });
                                         }
-                                    } else if (vm.type.singleSelect === 'TestingGPSSensorPl') {
+                                    } else if (vm.componentType.singleSelect === 'TestingGPSSensorPl') {
                                         if (vm.testCase.singleSelect === '3' || vm.testCase.singleSelect === '4' || vm.testCase.singleSelect === '5') {
 
                                             vm.parameterValues.push({"name": "who", "value": vm.humCat.singleSelect});
@@ -324,7 +341,7 @@ app.controller('TestingController',
                                             });
                                         }
 
-                                    } else if (vm.type.singleSelect === 'TestingBeschleunigungsSensor') {
+                                    } else if (vm.componentType.singleSelect === 'TestingBeschleunigungsSensor') {
                                         if (vm.testCase.singleSelect === '3' || vm.testCase.singleSelect === '4' || vm.testCase.singleSelect === '5') {
                                             vm.parameterValues.push({
                                                 "name": "event",
@@ -379,7 +396,7 @@ app.controller('TestingController',
                                             vm.parameterValues.push({"name": "sensitivityClass", "value": 0});
                                             vm.parameterValues.push({"name": "reactionMeters", "value": 3});
                                         }
-                                    } else if (vm.type.singleSelect === 'TestingBeschleunigungsSensorPl') {
+                                    } else if (vm.componentType.singleSelect === 'TestingBeschleunigungsSensorPl') {
                                         if (vm.testCase.singleSelect === '3' || vm.testCase.singleSelect === '4' || vm.testCase.singleSelect === '5') {
                                             vm.parameterValues.push({
                                                 "name": "event",
@@ -469,7 +486,7 @@ app.controller('TestingController',
                                     }
                                 }
 
-                                newTestObject.type = vm.type.singleSelect;
+                                newTestObject.type = vm.componentType.singleSelect;
                                 newTestObject.config = vm.parameterValues;
                             }catch (e) {
                                 newTestObject.type = "";
@@ -489,7 +506,6 @@ app.controller('TestingController',
 
 
                             newTestObject.rules = vm.rules;
-                            console.log(vm.rules);
                             var radios = document.getElementsByName('executeRules');
                             for (var i = 0, length = radios.length; i < length; i++) {
                                 if (radios[i].checked) {
