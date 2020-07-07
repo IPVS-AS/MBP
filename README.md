@@ -38,17 +38,17 @@ Please execute the following steps:
 - Install [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), [InfluxDB](https://portal.influxdata.com/downloads/), [Tomcat8](https://tomcat.apache.org/download-80.cgi) and [Maven](https://maven.apache.org/).
 
     `$ brew install mosquitto`  
-    `$ brew install mongodb-community`  
+    `$ brew install mongodb-community@4.2`   
     `$ brew install influxdb`  
-    `$ brew install tomcat@8`  
-    `$ brew install maven`  
-
+    `$ brew install tomcat`  
+    `$ brew install maven3.6.3_1`(verify Maven Version: $ mvn -version)
+    
 - Start Mosquitto, MongoDB, InfluxDB and Tomcat8.
 
     `$ brew services start mosquitto`  
     `$ brew services start mongodb-community`  
     `$ brew services start influxdb`  
-    `$ brew services start tomcat@8`  
+    `$ brew services start tomcat`  
     
     You can check if all of them have started correctly with:
    
