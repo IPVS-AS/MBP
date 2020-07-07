@@ -168,8 +168,9 @@ public class TestDetailsEventHandler {
                 sensorArray.add(sensorZ);
                 break;
             default:
-                /**
+
                 Sensor sensor = sensorRepository.findByName(testDetails.getType());
+                /**
                 if (sensor == null) {
                     sensor = new Sensor();
                     sensor.setName(testDetails.getType());
@@ -177,7 +178,8 @@ public class TestDetailsEventHandler {
                     sensor.setAdapter(adapterRepository.findByName(testDetails.getType()));
                     sensorRepository.insert(sensor);
                 }
-                sensorArray.add(sensor);**/
+                 **/
+                sensorArray.add(sensor);
                 break;
         }
 

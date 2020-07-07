@@ -39,10 +39,6 @@ public class TestDetailsValidator implements Validator {
                 "The name cannot be empty!");
 
 
-        ValidationUtils.rejectIfEmptyOrWhitespace(
-                errors, "componentType", "componentType.empty",
-                "The component type cannot be empty!");
-
 
 
         // Check if rule choice is empty

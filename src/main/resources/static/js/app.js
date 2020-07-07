@@ -521,10 +521,10 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
             // Testing Details
             .when(viewPrefix + '/testing-tool/:id', {
                 category: 'test-details',
-                templateUrl: 'templates/testing-tool-id.html',
+                templateUrl: 'templates/testing-tool-id',
                 controller: 'TestingDetailsController as ctrl',
                 resolve: {
-                    sensorDetails: ['$route', '$location', 'CrudService', function ($route, $location, CrudService) {
+                    testingDetails: ['$route', '$location', 'CrudService', function ($route, $location, CrudService) {
                         return CrudService.fetchSpecificItem('test-details', $route.current.params.id).then(
                             function (data) {
                                 return data;

@@ -6,7 +6,7 @@
                  ng-class="{'bg-red': componentDetailsCtrl.deploymentState=='NOT_READY', 'bg-green': componentDetailsCtrl.deploymentState=='READY', 'bg-teal': componentDetailsCtrl.deploymentState=='DEPLOYED', 'bg-cyan': componentDetailsCtrl.deploymentState=='RUNNING', 'bg-grey': componentDetailsCtrl.deploymentState=='UNKNOWN'}">
                 <i class="material-icons" style="position: absolute; margin-top: 4px">bug_report</i>
                 <h2 style="margin-left: 35px;">
-                    Test Name
+                    {{ctrl.test.name}}
                 </h2>
                 <ul class="header-dropdown m-r--5">
                     <li>
@@ -20,27 +20,27 @@
                 <h4>Properties</h4>
                 <table class="table table-hover">
                     <tbody>
-                    <tr id="{{componentDetailsCtrl.component.id}}">
+                    <tr id="{{ctrl.test.name}}">
                         <th>Name:</th>
-                        <td>TestingTest
+                        <td>{{ctrl.test.name}}
                         </td>
                     </tr>
-                    <tr>
+                    <tr id="{{ctrl.test.type}}">
                         <th>Sensor type:</th>
-                        <td>TestingTemperaturSensor</td>
+                        <td>{{ctrl.test.type}}</td>
                     </tr>
-                    <tr>
-                        <th>Actuator type:</th>
-                        <td>TestingActuator</td>
+                    <tr id="{{ctrl.actionNames}}">
+                        <th>Action types:</th>
+                        <td>{{ctrl.actionNames}}</td>
                     </tr>
                     <tr>
                         <th>Testing Device:</th>
                         <td> TestingDevice
                         </td>
                     </tr>
-                    <tr>
+                    <tr id="{{ctrl.ruleNames}}">
                         <th>Rules:</th>
-                        <td> Temp>20&deg;C
+                        <td> {{ctrl.ruleNames}}
                         </td>
                     </tr>
                     <tr>
@@ -78,11 +78,8 @@
                     </tbody>
                 </table>
                 <br/>
-
                 <br/>
-
                 <div>
-
                     <span ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
                         <button class="btn bg-cyan waves-effect">
                             <i class="material-icons">play_arrow</i>
@@ -130,9 +127,7 @@
                             2020-07-01 16:44:03
                         </td>
                         <td>TestTest.pdf</td>
-
                     </tr>
-
                     </tbody>
                     <tfoot>
                     <tr>
@@ -156,14 +151,8 @@
                 </h2>
             </div>
             <div class="body">
-                <live-chart loading-start="componentDetailsCtrl.liveChart.loadingStart()"
-                            loading-finish="componentDetailsCtrl.liveChart.loadingFinish()"
-                            get-data="componentDetailsCtrl.liveChart.getData(numberLogs, descending, unit)"
-                            is-updateable="componentDetailsCtrl.liveChart.isUpdateable()"
-                            unit="{{componentDetailsCtrl.displayUnit}}">
-                </live-chart>
+
             </div>
         </div>
     </div>
-</div>
 
