@@ -124,9 +124,16 @@
                     <tbody>
                     <tr>
                         <td>
-                            2020-07-01 16:44:03
+                            <p id="pdfExists">No Existing Test Report!</p>
                         </td>
-                        <td>TestTest.pdf</td>
+                        <td>
+                            <form ng-submit="ctrl.downloadPDF()">
+                                <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect" id="downloadReport"
+                                        ng-disabled="downloadReport">
+                                    DownloadPDF
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                     </tbody>
                     <tfoot>

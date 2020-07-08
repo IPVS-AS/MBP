@@ -33,6 +33,8 @@ app.controller('TestingDetailsController',
             vm.actionNames = "";
             vm.deviceNames = "";
 
+
+
             $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
 
                 console.log(responseRules);
@@ -54,7 +56,6 @@ app.controller('TestingDetailsController',
 
             });
 
-            console.log(testingDetails._links.sensor.href);
 
             $http.get(testingDetails._links.sensor.href).success(function successCallback(responseSensors) {
                 for (let i = 0; i < responseSensors._embedded.sensors.length; i++) {
@@ -80,6 +81,7 @@ app.controller('TestingDetailsController',
 
                 //Initialize parameters and retrieve states and stats
                 initParameters();
+                showPDF();
                 /**
                  updateDeploymentState();
                  updateDeviceState();
@@ -363,6 +365,25 @@ app.controller('TestingDetailsController',
             }
 
 
+            function showPDF() {
+
+                console.log("showPDF Methode")
+                if(testingDetails.pdfExists == true){
+                    document.getElementById("pdfExists").innerHTML = testingDetails.endTestTime;
+                    document.getElementById("downloadReport").disabled = false;
+                }
+            }
+
+            /**
+             * Sends a server request to open the test report of a specific test fiven by its id.
+             *
+             * @param testID
+             */
+            function downloadPDF() {
+                window.open('api/test-details/downloadPDF/' + testingDetails.id, '_blank');
+            }
+
+
 
             /**
              * [Private]
@@ -371,7 +392,10 @@ app.controller('TestingDetailsController',
             function initParameters() {
                 //Retrieve all formal parameters for this component
                 var requiredParams = testingDetails._embedded;
-                console.log(requiredParams);
+
+
+
+                console.log(testingDetails._embedded);
 
             }
 
@@ -392,7 +416,9 @@ app.controller('TestingDetailsController',
                 updateDeviceState: updateDeviceState,
                 startComponent: startComponent,
                 stopComponent: stopComponent,
-                deleteValueLogs: deleteValueLogs
+                deleteValueLogs: deleteValueLogs,
+                showPDF: showPDF,
+                downloadPDF: downloadPDF
             });
         }]
 );
