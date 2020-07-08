@@ -115,7 +115,7 @@ public class UserEntityService {
         //Iterate over all entities in repository
         for (UserEntity entity : entities) {
             //Check user permission
-            if (entity.isReadable()) {
+            if (entity.isReadable() || (entity.getOwner() == null)) {
                 resultList.add(entity);
             }
         }
