@@ -1,6 +1,7 @@
 package org.citopt.connde.service.ssh;
 
 import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.domain.key_pair.KeyPair;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -82,7 +83,7 @@ public class SSHSessionPool {
         }
 
         //Check if a session is registered for this device
-        if(sessionsMap.containsKey(device.getId())){
+        if (sessionsMap.containsKey(device.getId())) {
             //Unregister session from map
             sessionsMap.remove(device.getId());
         }
@@ -104,8 +105,16 @@ public class SSHSessionPool {
             throw new IllegalArgumentException("Device must not be null.");
         }
 
-        //Retrieve private rsa key
-        String privateKey = device.getKeyPair().getPrivateKey();
+        //Retrieve private RSA key if existing
+        String privateKey = null;
+        KeyPair keypair = device.getKeyPair();
+
+        //Check if a key pair was provided for this device
+        if (keypair != null) {
+            privateKey = keypair.getPrivateKey();
+        }
+
+        //Retrieve password
         String password = device.getPassword();
 
         //Check key for validity
