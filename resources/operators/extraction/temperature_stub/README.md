@@ -13,4 +13,5 @@ This folder contains operator scripts to simulate the extraction of temperature 
  - `install.sh`: This file installs the necessary libraries to run the `mbp_client` and the main python script.  
  - `start.sh`: This file starts the execution of the main python script, the one indicated in the `entry-file-name`.  
  - `running.sh`: This file checks if the main python script is running.  
- - `stop.sh`: This file stops the execution of the main python script.  
+ - `stop.sh`: This file stops the execution of the main python script.
+ 

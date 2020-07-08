@@ -46,9 +46,9 @@ public enum ParameterType {
             return null;
         }
 
-        //Compare every available parameter type to the provided name
+        //Compare every available parameter type to the provided name (case-insensitive)
         for (ParameterType type : values()) {
-            if (name.equals(type.toString())) {
+            if (name.toLowerCase().equals(type.toString().toLowerCase())) {
                 //Parameter found
                 return type;
             }
