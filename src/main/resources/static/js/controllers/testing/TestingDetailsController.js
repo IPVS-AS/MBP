@@ -4,8 +4,8 @@
  * Controller for the component details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('TestingDetailsController',
-    ['$scope', '$controller', 'testingDetails', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http',
-        function ($scope, controller, testingDetails, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http) {
+    ['$scope', '$controller', 'testingDetails', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI',
+        function ($scope, controller, testingDetails, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, ENDPOINT_URI) {
             //Selectors that allow the selection of different ui cards
             const LIVE_CHART_CARD_SELECTOR = ".live-chart-card";
             const HISTORICAL_CHART_CARD_SELECTOR = ".historical-chart-card";
@@ -34,10 +34,9 @@ app.controller('TestingDetailsController',
             vm.deviceNames = "";
 
 
-
             $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
 
-                console.log(responseRules);
+
                 for (let i = 0; i < responseRules._embedded.rules.length; i++) {
                     if (i === 0) {
                         vm.ruleNames = vm.ruleNames + responseRules._embedded.rules[i].name;
@@ -58,19 +57,18 @@ app.controller('TestingDetailsController',
 
 
             $http.get(testingDetails._links.sensor.href).success(function successCallback(responseSensors) {
+
                 for (let i = 0; i < responseSensors._embedded.sensors.length; i++) {
                     if (i === 0) {
-                        vm.deviceNames = vm.deviceNames + responseSensors._embedded.sensors[i]._embedded.device.name;
 
+                        vm.deviceNames = vm.deviceNames + responseSensors._embedded.sensors[i]._embedded.device.name;
                     } else {
                         vm.deviceNames = vm.deviceNames + ", " + responseSensors._embedded.sensors[i]._embedded.device.name;
                     }
                 }
 
-
             });
 
-            console.log(testingDetails, '\n', COMPONENT_ADAPTER_UNIT, '\n', COMPONENT_ID);
 
             /**
              * Initializing function, sets up basic things.
@@ -365,10 +363,31 @@ app.controller('TestingDetailsController',
             }
 
 
+            /**
+             * Performs a server request in order to start a test given by its id.
+             */
+            function executeTest() {
+                $http.post(ENDPOINT_URI + '/test-details/test/' + COMPONENT_ID, COMPONENT_ID.toString()).success(function successCallback(responseTest) {
+
+                });
+            }
+
+            /**
+             * Performs a server request in order to stop a test given by its id.
+             *
+             * @param testId
+             */
+            function stopTest() {
+                vm.http = $http.post(ENDPOINT_URI + '/test-details/test/stop/' + COMPONENT_ID, COMPONENT_ID.toString()).then(function (response) {
+                }, function (response) {
+                });
+
+            }
+
+
             function showPDF() {
 
-                console.log("showPDF Methode")
-                if(testingDetails.pdfExists == true){
+                if (testingDetails.pdfExists == true) {
                     document.getElementById("pdfExists").innerHTML = testingDetails.endTestTime;
                     document.getElementById("downloadReport").disabled = false;
                 }
@@ -384,7 +403,6 @@ app.controller('TestingDetailsController',
             }
 
 
-
             /**
              * [Private]
              * Initializes the data structures that are required for the deployment parameters.
@@ -394,12 +412,7 @@ app.controller('TestingDetailsController',
                 var requiredParams = testingDetails._embedded;
 
 
-
-                console.log(testingDetails._embedded);
-
             }
-
-
 
 
             /**
@@ -418,7 +431,9 @@ app.controller('TestingDetailsController',
                 stopComponent: stopComponent,
                 deleteValueLogs: deleteValueLogs,
                 showPDF: showPDF,
-                downloadPDF: downloadPDF
+                downloadPDF: downloadPDF,
+                executeTest: executeTest,
+                stopTest: stopTest
             });
         }]
 );

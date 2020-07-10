@@ -80,14 +80,14 @@
                 <br/>
                 <br/>
                 <div>
-                    <span ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
-                        <button class="btn bg-cyan waves-effect">
+                    <span>
+                        <button class="btn bg-cyan waves-effect" ng-click="ctrl.executeTest()">
                             <i class="material-icons">play_arrow</i>
                             <span>Start Test</span>
                         </button>
                     </span>
-                    <span ng-show="componentDetailsCtrl.deploymentState=='RUNNING'">
-                        <button class="btn bg-orange waves-effect" ng-click="componentDetailsCtrl.stopComponent()">
+                    <span>
+                        <button class="btn bg-orange waves-effect" ng-click="ctrl.stopTest()">
                             <i class="material-icons">pause</i>
                             <span>Stop Test</span>
                         </button>
