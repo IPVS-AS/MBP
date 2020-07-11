@@ -9,13 +9,11 @@ import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.service.testing.GraphPlotter;
 import org.citopt.connde.service.testing.TestEngine;
 import org.citopt.connde.service.testing.TestReport;
-import org.json.HTTP;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;

@@ -127,9 +127,8 @@
                             <p id="pdfExists">No Existing Test Report!</p>
                         </td>
                         <td>
-                            <form ng-submit="ctrl.downloadPDF()">
-                                <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect" id="downloadReport"
-                                        ng-disabled="downloadReport">
+                            <form ng-submit="ctrl.downloadPDF()" >
+                                <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect" id="downloadReport" style="display: none">
                                     DownloadPDF
                                 </button>
                             </form>
