@@ -15,6 +15,8 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
@@ -56,12 +58,14 @@ public class TestReport {
         Document doc = new Document();
 
         // Create a new pdf, which is named with the ID of the specific test
-        File tempFile = new File(testId + ".pdf");
+        File tempFile = new File(testId + "_"+ test.getEndTimeUnix() + ".pdf");
         if (tempFile.exists() && tempFile.isFile()) {
             tempFile.delete();
         }
-        File testReport = new File(testId + ".pdf");
-        String path = testReport.getAbsolutePath();
+        File testReport = new File(testId + "_"+ test.getEndTimeUnix() + ".pdf");
+        Path wholePath = Paths.get(testReport.getAbsolutePath());
+        String path = wholePath.getParent().toString();
+
 
         FileOutputStream pdfFileout = new FileOutputStream(testReport);
         PdfWriter.getInstance(doc, pdfFileout);

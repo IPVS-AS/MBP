@@ -27,6 +27,8 @@ app.controller('TestingDetailsController',
             vm.ruleNames = "";
             vm.actionNames = "";
             vm.deviceNames = "";
+            vm.parameterValues = [];
+
 
 
             $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
@@ -71,6 +73,20 @@ app.controller('TestingDetailsController',
                 }
             });
 
+
+            $http.get(ENDPOINT_URI + '/test-details/pdfList/' + COMPONENT_ID).then(function (response) {
+                var newTestObject = {};
+                angular.forEach(response.data, function(value, key) {
+                    vm.parameterValues.push({
+                        "link": value,
+                        "date": key
+                    });
+                });
+
+                newTestObject.pdfTable = vm.parameterValues;
+                $scope.pdfTable = newTestObject.pdfTable;
+                console.log(newTestObject);
+            });
 
             /**
              * Initializing function, sets up basic things.
@@ -215,8 +231,9 @@ app.controller('TestingDetailsController',
              * Sends a server request to open the test report of a specific test fiven by its id.
              *
              */
-            function downloadPDF() {
-                window.open('api/test-details/downloadPDF/' + testingDetails.id, '_blank');
+            function downloadPDF(path) {
+                console.log(path);
+                window.open('api/test-details/downloadPDF/' + path, '_blank');
             }
 
 

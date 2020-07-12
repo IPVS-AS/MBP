@@ -118,17 +118,15 @@
                     <thead>
                     <tr>
                         <th>Date and Time</th>
-                        <th>Test Report</th>
+                        <th>Test <Report></Report></th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
+                    <tr ng-repeat="pdf in pdfTable">
+                        <td>{{pdf.date}}</td>
                         <td>
-                            <p id="pdfExists">No Existing Test Report!</p>
-                        </td>
-                        <td>
-                            <form ng-submit="ctrl.downloadPDF()" >
-                                <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect" id="downloadReport" style="display: none">
+                            <form ng-submit="ctrl.downloadPDF(pdf.link)" >
+                                <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect" id="downloadReport">
                                     DownloadPDF
                                 </button>
                             </form>
@@ -138,6 +136,11 @@
                     <tfoot>
                     <tr>
                         <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                    </tr>
+                    <tr ng-show="pdf.length === 0">
+                        <td>No pdf available.</td>
+                        <td></td>
+                        <td></td>
                     </tr>
                     </tfoot>
                 </table>

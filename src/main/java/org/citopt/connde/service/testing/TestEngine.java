@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 public class TestEngine implements ValueLogReceiverObserver {
@@ -425,21 +427,27 @@ public class TestEngine implements ValueLogReceiverObserver {
     /**
      * Download/Open Testreport.
      *
-     * @param testId ID of the specific test
      */
-    public ResponseEntity<String> downloadPDF(String testId) throws IOException {
-        TestDetails test = testDetailsRepository.findById(testId);
-        File result = new File(String.valueOf(test.getPathPDF()));
+    public ResponseEntity<String> downloadPDF(String path) throws IOException {
+        TestDetails test = null;
+        Pattern pattern = Pattern.compile( "(.*?)_" );
+        Matcher m = pattern.matcher(path);
+        if (m.find()) {
+             test = testDetailsRepository.findById(m.group(1));
+        }
+
+
+        File result = new File(String.valueOf(test.getPathPDF()+"/"+path+".pdf"));
 
         ResponseEntity respEntity;
 
         if (result.exists()) {
-            InputStream inputStream = new FileInputStream(String.valueOf(test.getPathPDF()));
+            InputStream inputStream = new FileInputStream(result);
 
             byte[] out = org.apache.commons.io.IOUtils.toByteArray(inputStream);
 
             HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.add("content-disposition", "attachment; filename=" + testId + ".pdf");
+            responseHeaders.add("content-disposition", "attachment; filename=" + path+".pdf");
 
             respEntity = new ResponseEntity(out, responseHeaders, HttpStatus.OK);
             inputStream.close();

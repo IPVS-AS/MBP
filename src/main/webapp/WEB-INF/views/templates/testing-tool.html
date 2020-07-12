@@ -87,7 +87,7 @@
                             </form>
                         </td>
                         <td>
-                            <form ng-submit="ctrl.downloadPDF(item.id)">
+                            <form ng-submit="ctrl.downloadPDF(item.id, item.endTimeUnix)">
                                 <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect" id="{{item.name}}"
                                         ng-disabled="!item.pdfExists">
                                     DownloadPDF
