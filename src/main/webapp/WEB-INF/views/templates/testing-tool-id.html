@@ -107,61 +107,146 @@
                 </h2>
                 <ul class="header-dropdown m-r--5">
                     <li>
-                        <a ng-click="valueLogStatsApi.updateStats()" class="clickable">
+                        <a ng-click="ctrl.getPDFList()" class="clickable">
                             <i class="material-icons">refresh</i>
                         </a>
                     </li>
                 </ul>
             </div>
             <div class="body">
-                <table class="table table-hover">
-                    <thead>
-                    <tr>
-                        <th>Date and Time</th>
-                        <th>Test <Report></Report></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr ng-repeat="pdf in pdfTable">
-                        <td>{{pdf.date}}</td>
-                        <td>
-                            <form ng-submit="ctrl.downloadPDF(pdf.link)" >
-                                <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect" id="downloadReport">
-                                    DownloadPDF
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    </tbody>
-                    <tfoot>
-                    <tr>
-                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
-                    </tr>
-                    <tr ng-show="pdf.length === 0">
-                        <td>No pdf available.</td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    </tfoot>
-                </table>
+                <div id="pdfTable" style="height:363px;overflow:auto;">
+                    <table class="table table-hover">
+                        <thead>
+                        <tr>
+                            <th>Date and Time</th>
+                            <th>Test
+                                <Report></Report>
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="pdf in pdfTable">
+                            <td>{{pdf.date}}</td>
+                            <td>
+                                <form ng-submit="ctrl.downloadPDF(pdf.path)">
+                                    <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect"
+                                            id="downloadReport">
+                                        DownloadPDF
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr ng-show="pdfTable.length === 0">
+                            <td>No pdf available.</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                        </tr>
 
+                        </tfoot>
+                    </table>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12">
+        <div class="card deployment-card">
+            <div class="header">
+                <i class="material-icons" style="position: absolute">call_split</i>
+                <h2 style="margin-left: 35px;">
+                    Rule Informations of the tested IoT-Application
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a ng-click="componentDetailsCtrl.updateDeploymentState()" class="clickable">
+                            <i class="material-icons">refresh</i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="body">
+                    <table class="table table-hover" st-table="displayedCollection" st-safe-src="ruleListCtrl.items">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th class="align-center">Condition</th>
+                            <th class="align-center">Actions</th>
+                            <th class="align-center">Times Triggered</th>
+                            <th class="align-center">Last</th>
+                            <th class="align-center">Result</th>
+                            <th class="align-center">Active</th>
+                            <th class="align-center">Owner</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr id="{{rule.id}}" ng-repeat="rule in ruleList">
+                            <td>
+                                {{rule.name}}
+                            </td>
+                            <td class="align-center">
+                                {{rule.triggerName}}
+                            </td>
+                            <td class="align-center">
+                                {{rule.actionNames.join(", ")}}
+                            </td>
+                            <td class="align-center">
+                                {{rule.executions}}
+                            </td>
+                            <td class="align-center">
+                                {{rule.lastExecution ? rule.lastExecution : "Never"}}
+                            </td>
+                            <td class="align-center">
+                                <div ng-switch="rule.lastExecutionResult">
+                                    <div ng-switch-when="SUCCESS">
+                                        <span class="label label-success">Success</span>
+                                    </div>
+                                    <div ng-switch-when="FAILURE">
+                                        <span class="label label-danger">Failure</span>
+                                    </div>
+                                    <div ng-switch-default>
+                                        <span class="label label-default">None</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="align-center">
+                                <div class="switch">
+                                    <label>
+                                        <input type="checkbox" ng-model="rule.enabled" ng-change="rule.onToggle()">
+                                        <span class="lever"></span>
+                                    </label>
+                                </div>
+                            </td>
+                            <td class="align-center">{{rule.ownerName ? rule.ownerName : "None"}}</td>
+                            <td>
+                                <div ng-show="rule.isApprovable" style="display:inline-block">
+                                    <user-approval entity-id="{{rule.id}}" category-name="rules"></user-approval>
+                                </div>
+                                <form ng-submit="deleteRuleCtrl.deleteItem()" ng-show="rule.isDeletable"
+                                      style="display: inline-block">
+                                    <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                            ng-click="deleteRuleCtrl.item.id = rule.id">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr ng-show="ruleListCtrl.items.length === 0">
+                            <td>No rules registered.</td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                        </tr>
+                        </tfoot>
+                    </table>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Live Values Card -->
-<div class="row clearfix">
-    <div class="col-lg-12">
-        <div class="card live-chart-card animate-show-hide" ng-show="componentDetailsCtrl.deploymentState=='RUNNING'">
-            <div class="header">
-                <h2>
-                    Live Sensor-Simulator values&nbsp;<i class="material-icons" style="color: red;">live_tv</i>
-                </h2>
-            </div>
-            <div class="body">
-
-            </div>
-        </div>
-    </div>
-

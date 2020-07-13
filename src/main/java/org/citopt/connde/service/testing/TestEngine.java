@@ -1,8 +1,6 @@
 package org.citopt.connde.service.testing;
 
 
-import org.apache.commons.lang3.SystemUtils;
-import org.aspectj.lang.annotation.Before;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
@@ -16,7 +14,6 @@ import org.citopt.connde.service.receiver.ValueLogReceiver;
 import org.citopt.connde.service.receiver.ValueLogReceiverObserver;
 import org.citopt.connde.web.rest.RestDeploymentController;
 import org.citopt.connde.web.rest.RestRuleController;
-import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,15 +21,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 
-import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class TestEngine implements ValueLogReceiverObserver {
@@ -48,8 +50,6 @@ public class TestEngine implements ValueLogReceiverObserver {
     @Autowired
     private ActuatorRepository actuatorRepository;
 
-    @Autowired
-    private ValueLogReceiver valueLogReceiver;
 
     @Autowired
     private TestRepository testRepo;
@@ -423,21 +423,21 @@ public class TestEngine implements ValueLogReceiverObserver {
         return executedRules;
     }
 
-
     /**
-     * Download/Open Testreport.
+     * Method to download a specific Test Report
      *
-     */
+     * @param path to the specific Test Report to download
+    */
     public ResponseEntity<String> downloadPDF(String path) throws IOException {
         TestDetails test = null;
-        Pattern pattern = Pattern.compile( "(.*?)_" );
+        Pattern pattern = Pattern.compile("(.*?)_");
         Matcher m = pattern.matcher(path);
         if (m.find()) {
-             test = testDetailsRepository.findById(m.group(1));
+            test = testDetailsRepository.findById(m.group(1));
         }
 
 
-        File result = new File(String.valueOf(test.getPathPDF()+"/"+path+".pdf"));
+        File result = new File(test.getPathPDF() + "/" + path + ".pdf");
 
         ResponseEntity respEntity;
 
@@ -447,19 +447,78 @@ public class TestEngine implements ValueLogReceiverObserver {
             byte[] out = org.apache.commons.io.IOUtils.toByteArray(inputStream);
 
             HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.add("content-disposition", "attachment; filename=" + path+".pdf");
+            responseHeaders.add("content-disposition", "attachment; filename=" + path + ".pdf");
 
             respEntity = new ResponseEntity(out, responseHeaders, HttpStatus.OK);
             inputStream.close();
         } else {
-            respEntity = new ResponseEntity("File Not Found", HttpStatus.OK);
+            respEntity = new ResponseEntity("File Not Found", HttpStatus.NOT_FOUND);
         }
 
 
         return respEntity;
     }
 
+    /**
+     * Returns a Hashmap with date and path to of all Test Reports regarding to a specific test.
+     *
+     * @param testId ID of the test from which all reports are to be found
+     * @return hashmap with the date and path to every report regarding to the specific test
+     */
+    public ResponseEntity<Map<String, String>> getPDFList(String testId) {
+        ResponseEntity pdfList;
+        TestDetails testDetails = testDetailsRepository.findOne(testId);
+        try {
+            Stream<Path> pathStream = Files.find(Paths.get(testDetails.getPathPDF()), 10, (path, basicFileAttributes) -> {
+                File file = path.toFile();
+                return !file.isDirectory() &&
+                        file.getName().contains(testId + "_");
+            });
 
+            pdfList = new ResponseEntity(generateReportList(pathStream), HttpStatus.OK);
+
+        } catch (IOException e) {
+            pdfList = new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+
+        return pdfList;
+    }
+
+
+    /**
+     * Generates a Hashmap where the entries consist of the creation date of the report and the path to it.
+     *
+     * @param pathStream Stream of the matching reports regarding to to the specific test
+     * @return Map out of the creation dates and paths to the report
+     */
+    public Map<String, String> generateReportList(Stream<Path> pathStream) {
+        Map<String, String> pdfEntry = new HashMap<>();
+
+        // Pattern to find the PDF-Files for a specific test with the specific ID in the Filename
+        Pattern pattern = Pattern.compile("_(.*?).pdf");
+
+        // Date Formatter
+        String patternDate = "dd.MM.yyyy HH:mm:ss";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(patternDate);
+        String date = "";
+
+        // Put every path out of the stream into a list
+        List<Path> files = pathStream.collect(Collectors.toList());
+
+        for (Path singlePath : files) {
+            // get  date in milliseconds out of the filename and convert this into the specified date format
+            Matcher machter = pattern.matcher(singlePath.toString());
+            if (machter.find()) {
+                Long dateMilliseconds = Long.valueOf(machter.group(1));
+                date = simpleDateFormat.format(new Date(dateMilliseconds * 1000));
+            }
+            //Add properties to object
+            pdfEntry.put(date, singlePath.getFileName().toString());
+
+        }
+
+        return pdfEntry;
+    }
 }
 
     

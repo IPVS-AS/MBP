@@ -82,8 +82,9 @@ app.controller('TestingController',
              *
              * @param testID
              */
-            function downloadPDF(testID) {
-                window.open('api/test-details/downloadPDF/' + testID, '_blank');
+            function downloadPDF(testID, endtimeUnix) {
+                console.log(endtimeUnix);
+                window.open('api/test-details/downloadPDF/' + testID + "_"+endtimeUnix, '_blank');
             }
 
 
