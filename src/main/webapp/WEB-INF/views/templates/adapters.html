@@ -99,7 +99,7 @@
                                 <div class="form-line"
                                      ng-class="{'focused error' : addAdapterCtrl.item.errors.name }">
                                     <input class="form-control" id="adapter-form-input-name" type="text"
-                                           placeholder="Name" ng-model="addAdapterCtrl.item.name"/>
+                                           placeholder="Name *" ng-model="addAdapterCtrl.item.name"/>
                                 </div>
                                 <span class="help-block" ng-show="addAdapterCtrl.item.errors.name">{{addAdapterCtrl.item.errors.name.message}}</span>
                             </div>
@@ -123,7 +123,7 @@
                                 <span class="help-block" ng-show="addAdapterCtrl.item.errors.unit">{{addAdapterCtrl.item.errors.unit.message}}</span>
                             </div>
                             <!-- item.routine group -->
-                            <label>Operator scripts:</label>
+                            <label>Operator scripts: *</label>
                             <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.routines }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addAdapterCtrl.item.errors.routines }">
@@ -211,6 +211,7 @@
                                     </button>
                                 </div>
                             </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
