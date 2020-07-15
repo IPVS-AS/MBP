@@ -167,6 +167,7 @@ app.controller('AdapterListController',
                             //Extend request parameters for routines and parameters
                             return readRoutines(data.routineFiles)
                                 .then(function (response) {
+                                    data.unit = data.unit || "";
                                     data.routines = response;
                                     data.parameters = vm.parameters;
                                     return addAdapter(data);
