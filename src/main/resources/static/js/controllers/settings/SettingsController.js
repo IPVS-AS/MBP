@@ -27,9 +27,29 @@ app.controller('SettingsController',
             })();
 
             /**
+             * [Public]
+             * Issues a REST request in order to load default operators from the resources directory of the
+             * MBP repository and add them to the operator overview so that they are available for all users.
+             *
+             * @returns A promise of the created REST request
+             */
+            function addDefaultOperators() {
+                //Perform request
+                return SettingsService.addDefaultOperators().then(function (response) {
+                    //Success callback
+                    NotificationService.notify('The default operators were added successfully.', 'success');
+                }, function (response) {
+                    //Error callback
+                    NotificationService.notify('The default operators could not be added.', 'error');
+                    return $q.reject(response);
+                });
+            }
+
+            /**
+             * [Public]
              * Issues a REST request in order to save the settings.
              *
-             * @returns The created REST request
+             * @returns A promise of the created REST request
              */
             function saveSettings() {
                 //Perform request
@@ -45,6 +65,7 @@ app.controller('SettingsController',
 
             //Expose functions that are triggered externally
             angular.extend(vm, {
+                addDefaultOperators: addDefaultOperators,
                 saveSettings: saveSettings
             });
         }
