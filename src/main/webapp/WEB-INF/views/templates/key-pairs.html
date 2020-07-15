@@ -102,7 +102,7 @@
                                 <div class="form-line"
                                      ng-class="{'focused error' : addKeyPairCtrl.item.errors.name }">
                                     <input class="form-control" type="text"
-                                           placeholder="Name" ng-model="addKeyPairCtrl.item.name"/>
+                                           placeholder="Name *" ng-model="addKeyPairCtrl.item.name"/>
                                 </div>
                                 <span class="help-block" ng-show="addKeyPairCtrl.item.errors.name">{{addKeyPairCtrl.item.errors.name.message}}</span>
                             </div>
@@ -121,11 +121,12 @@
                                 <div class="form-line"
                                      ng-class="{'focused error' : addKeyPairCtrl.item.errors.privateKey }">
                                    <textarea class="form-control" type="text"
-                                             placeholder="Private RSA key" ng-model="addKeyPairCtrl.item.privateKey"
+                                             placeholder="Private RSA key *" ng-model="addKeyPairCtrl.item.privateKey"
                                              rows="4"></textarea>
                                 </div>
                                 <span class="help-block" ng-show="addKeyPairCtrl.item.errors.privateKey">{{addKeyPairCtrl.item.errors.privateKey.message}}</span>
                             </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
@@ -159,11 +160,12 @@
                                 <div class="form-line"
                                      ng-class="{'focused error' : ctrl.generation.error }">
                                     <input class="form-control" type="text"
-                                           placeholder="Name" ng-model="ctrl.generation.name"/>
+                                           placeholder="Name *" ng-model="ctrl.generation.name"/>
                                 </div>
                                 <span class="help-block"
                                       ng-show="ctrl.generation.error">{{ctrl.generation.error}}</span>
                             </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
