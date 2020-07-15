@@ -62,7 +62,7 @@ app.controller('MonitoringAdapterListController',
                     //Find and add matching color for this device type
                     adapter.deviceTypes[i].color = 'label-default';
                     for (var j = 0; j < deviceTypesList.length; j++) {
-                        if (deviceTypesList[j].id == adapter.deviceTypes[i].id) {
+                        if (deviceTypesList[j].id === adapter.deviceTypes[i].id) {
                             adapter.deviceTypes[i].color = deviceTypesList[j].color;
                             break;
                         }
@@ -77,7 +77,7 @@ app.controller('MonitoringAdapterListController',
                     $scope: $scope,
                     adapterList: monitoringAdapterList,
                     adapterPreprocessing: monitoringAdapterPreprocessing,
-                    addKeyPair: addMonitoringAdapter,
+                    addAdapter: addMonitoringAdapter,
                     deleteAdapter: deleteMonitoringAdapter,
                     parameterTypesList: parameterTypesList
                 })
