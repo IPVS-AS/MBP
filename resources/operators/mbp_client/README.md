@@ -37,3 +37,4 @@ In summary, your operator should contain the following files:
  - `start.sh`: This file starts the execution of the main python script, the one indicated in the `entry-file-name`.  
  - `running.sh`: This file checks if the main python script is running.  
  - `stop.sh`: This file stops the execution of the main python script.  
+ 

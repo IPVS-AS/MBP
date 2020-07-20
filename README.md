@@ -30,7 +30,7 @@ Please execute the following steps:
     
 - Deploy the MBP application on Tomcat by moving the `MBP.war` to the Tomcat `webapps` folder  
 
-Once the installation is completed, the MBP will be available on the URL `http://[MBP-Host]:8080/MBP`.
+Once the installation is completed, the MBP will be available on the URL `http://[MBP-Host]:8080/MBP-0.1`.
 
 ### 1.3 Installation on Mac Os
 Please execute the following steps:
