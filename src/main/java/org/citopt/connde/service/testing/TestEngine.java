@@ -485,6 +485,8 @@ public class TestEngine implements ValueLogReceiverObserver {
     }
 
 
+
+
     /**
      * Generates a Hashmap where the entries consist of the creation date of the report and the path to it.
      *
@@ -492,32 +494,51 @@ public class TestEngine implements ValueLogReceiverObserver {
      * @return Map out of the creation dates and paths to the report
      */
     public Map<String, String> generateReportList(Stream<Path> pathStream) {
-        Map<String, String> pdfEntry = new HashMap<>();
+        Map<Long, String> pdfEntry = new TreeMap<>();
 
         // Pattern to find the PDF-Files for a specific test with the specific ID in the Filename
         Pattern pattern = Pattern.compile("_(.*?).pdf");
 
+
+        Long dateMilliseconds = null;
+
+        // Put every path out of the stream into a list
+        List<Path> files = pathStream.sorted(Comparator.comparing(Path::toString)).collect(Collectors.toList());
+
+        files.forEach(System.out::println);
+        for (Path singlePath : files) {
+            // get  date in milliseconds out of the filename and convert this into the specified date format
+            Matcher machter = pattern.matcher(singlePath.toString());
+            if (machter.find()) {
+                 dateMilliseconds = Long.valueOf(machter.group(1));
+            }
+            //Add properties to object
+            pdfEntry.put(dateMilliseconds, singlePath.getFileName().toString());
+
+        }
+
+        return convertMap(pdfEntry);
+    }
+
+
+    /**
+     * Converts the key timestamp to a Date in String format for the Map combined of timestamp and path to PDF (Test-Report).
+     *
+     * @param sortTedMap Sorted map with the timestamp as Long in the key
+     * @return sorted Map with the key as Date in String format
+     */
+    private Map<String, String> convertMap(Map<Long, String> sortTedMap){
         // Date Formatter
         String patternDate = "dd.MM.yyyy HH:mm:ss";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(patternDate);
         String date = "";
 
-        // Put every path out of the stream into a list
-        List<Path> files = pathStream.collect(Collectors.toList());
-
-        for (Path singlePath : files) {
-            // get  date in milliseconds out of the filename and convert this into the specified date format
-            Matcher machter = pattern.matcher(singlePath.toString());
-            if (machter.find()) {
-                Long dateMilliseconds = Long.valueOf(machter.group(1));
-                date = simpleDateFormat.format(new Date(dateMilliseconds * 1000));
-            }
-            //Add properties to object
-            pdfEntry.put(date, singlePath.getFileName().toString());
-
+        Map<String, String> sortedMapStr = new TreeMap<>();
+        for (Map.Entry<Long, String> entry : sortTedMap.entrySet()) {
+            date = simpleDateFormat.format(new Date(entry.getKey() * 1000));
+            sortedMapStr.put(date, entry.getValue());
         }
-
-        return pdfEntry;
+        return sortedMapStr;
     }
 }
 

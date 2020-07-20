@@ -64,7 +64,7 @@
                         </td>
                         <td>{{item.type}}</td>
                         <td>
-                            <div class="switch">
+                            <div class="switch" style="margin-top: 7px;">
                                 <label>
                                     <input type="checkbox" ng-model="useNewData.singleSelect"
                                            ng-click="ctrl.editConfig(item.id, useNewData.singleSelect)">
@@ -73,21 +73,19 @@
                             </div>
                         </td>
                         <td>
-                            <form ng-submit="ctrl.executeTest(item.id, item)">
-                                <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect">
-                                    Start Test
-                                </button>
-                            </form>
+                        <button class="btn bg-cyan waves-effect" ng-click="ctrl.executeTest(item.id, item)">
+                            <i class="material-icons">play_arrow</i>
+                            <span>Start Test</span>
+                        </button>
                         </td>
                         <td>
-                            <form ng-submit="ctrl.stopTest(item.id)">
-                                <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect">
-                                    Stop Test
-                                </button>
-                            </form>
+                        <button class="btn bg-orange waves-effect" ng-click="ctrl.stopTest(item.id)">
+                            <i class="material-icons">stop</i>
+                            <span>Stop Test</span>
+                        </button>
                         </td>
                         <td>
-                            <form ng-submit="ctrl.downloadPDF(item.id, item.endTimeUnix)">
+                            <form ng-submit="ctrl.downloadPDF(item.id, item.endTimeUnix)" style="margin-top: 3px;">
                                 <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect" id="{{item.name}}"
                                         ng-disabled="!item.pdfExists">
                                     DownloadPDF
@@ -95,17 +93,16 @@
                             </form>
                         </td>
                         <td>
-                            <form ng-submit="ctrl.refreshTestEntry(item.id, item.name)">
+                            <form ng-submit="ctrl.refreshTestEntry(item.id, item.name)" style="margin-top: 5px;">
                                 <li>
                                     <a ng-click="ctrl.refreshTestEntry(item.id, item.name)" class="clickable">
                                         <i class="material-icons">refresh</i>
                                     </a>
                                 </li>
                             </form>
-
                         </td>
                         <td>
-                            <form ng-submit="deleteTestCtrl.deleteItem()">
+                            <form ng-submit="deleteTestCtrl.deleteItem()" style="margin-top: 3px;">
                                 <button type="submit" class="btn btn-danger m-t-0 waves-effect"
                                         ng-click="deleteTestCtrl.item.id = item.id">
                                     Delete

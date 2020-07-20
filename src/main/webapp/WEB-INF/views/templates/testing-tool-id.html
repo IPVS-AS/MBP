@@ -2,9 +2,8 @@
     <!-- Actuator Properties Card -->
     <div class="col-lg-6">
         <div class="card deployment-card">
-            <div class="header"
-                 ng-class="{'bg-red': componentDetailsCtrl.deploymentState=='NOT_READY', 'bg-green': componentDetailsCtrl.deploymentState=='READY', 'bg-teal': componentDetailsCtrl.deploymentState=='DEPLOYED', 'bg-cyan': componentDetailsCtrl.deploymentState=='RUNNING', 'bg-grey': componentDetailsCtrl.deploymentState=='UNKNOWN'}">
-                <i class="material-icons" style="position: absolute; margin-top: 4px">bug_report</i>
+            <div class="header">
+                      <i class="material-icons" style="position: absolute">bug_report</i>
                 <h2 style="margin-left: 35px;">
                     {{ctrl.test.name}}
                 </h2>
@@ -88,7 +87,7 @@
                     </span>
                     <span>
                         <button class="btn bg-orange waves-effect" ng-click="ctrl.stopTest()">
-                            <i class="material-icons">pause</i>
+                            <i class="material-icons">stop</i>
                             <span>Stop Test</span>
                         </button>
                     </span>
