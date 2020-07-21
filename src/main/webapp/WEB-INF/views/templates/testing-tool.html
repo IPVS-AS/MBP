@@ -9,7 +9,9 @@
                                                            target="_blank"><span>extraction/control operators</span></a>
                     for
                     the simulation of the Sensors and Actuators.</p>
-                <p> &ensp; &ensp; Step 2 -   <a href="#addDevice" data-toggle="modal" data-target="#addDevice"><span>Register</span> </a> the Testing Device, Testing Actuator and the necessary Sensor-Simulators you need for the test of your IoT-Application.
+                <p> &ensp; &ensp; Step 2 - <a href="#addDevice" data-toggle="modal" data-target="#addDevice"><span>Register</span>
+                </a> the Testing Device, Testing Actuator and the necessary Sensor-Simulators you need for the test of
+                    your IoT-Application.
 
                 <p> &ensp; &ensp; Step 3 - Define the <a href="view/rules" target="_blank"><span>rules</span></a> that
                     are necessary for the your IoT-Applikation.</p>
@@ -77,16 +79,16 @@
                             </div>
                         </td>
                         <td>
-                        <button class="btn bg-cyan waves-effect" ng-click="ctrl.executeTest(item.id, item)">
-                            <i class="material-icons">play_arrow</i>
-                            <span>Start Test</span>
-                        </button>
+                            <button class="btn bg-cyan waves-effect" ng-click="ctrl.executeTest(item.id, item)">
+                                <i class="material-icons">play_arrow</i>
+                                <span>Start Test</span>
+                            </button>
                         </td>
                         <td>
-                        <button class="btn bg-orange waves-effect" ng-click="ctrl.stopTest(item.id)">
-                            <i class="material-icons">stop</i>
-                            <span>Stop Test</span>
-                        </button>
+                            <button class="btn bg-orange waves-effect" ng-click="ctrl.stopTest(item.id)">
+                                <i class="material-icons">stop</i>
+                                <span>Stop Test</span>
+                            </button>
                         </td>
                         <td>
                             <form ng-submit="ctrl.downloadPDF(item.id, item.endTimeUnix)" style="margin-top: 3px;">
@@ -130,22 +132,22 @@
         </div>
         <!-- #END# List of Tests Card -->
 
-    <!-- Modal -->
-    <div class="modal fade" id="addTestingModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Register a new test
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </h5>
-                </div>
-                <form id="addTestingForm" ng-submit="addTestCtrl.addItem()">
-                    <fieldset id="testing-form">
-                        <div class="modal-body">
-                            <!-- "global" error for addItem -->
-                            <div class="form-group" ng-class="{'has-error' : addTestCtrl.item.errors.global}">
+        <!-- Modal -->
+        <div class="modal fade" id="addTestingModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Register a new test
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </h5>
+                    </div>
+                    <form id="addTestingForm" ng-submit="addTestCtrl.addItem()">
+                        <fieldset id="testing-form">
+                            <div class="modal-body">
+                                <!-- "global" error for addItem -->
+                                <div class="form-group" ng-class="{'has-error' : addTestCtrl.item.errors.global}">
 			                    <span class="alert alert-danger" ng-show="addTestCtrl.item.errors.global">
 			                      {{addTestCtrl.item.errors.global}}
 			                    </span>
@@ -566,7 +568,8 @@
                                         </tr>
                                         <td>Testing-Actuator</td>
                                         <td>
-                                            <div style="padding: 0px;  display: inline-block;" ng-switch="testingActuator"
+                                            <div style="padding: 0px;  display: inline-block;"
+                                                 ng-switch="testingActuator"
                                                  ng-click="ctrl.checkActuatorReg()" class="clickable">
                                                 <div ng-switch-when="LOADING">
                                                     <div class="preloader pl-size-xs">
@@ -765,7 +768,8 @@
                                             <td>GPS Sensor Simulator</td>
                                             <td>
                                                 <div ng-switch="gps"
-                                                     ng-click="ctrl.checkSensorReg('TestingGPSSensor')" class="clickable">
+                                                     ng-click="ctrl.checkSensorReg('TestingGPSSensor')"
+                                                     class="clickable">
                                                     <div ng-switch-when="LOADING">
                                                         <div class="preloader pl-size-xs">
                                                             <div class="spinner-layer pl-blue">
@@ -804,7 +808,8 @@
                                             <td>GPS Sensor Simulator (Planned)</td>
                                             <td>
                                                 <div ng-switch="gpsPl"
-                                                     ng-click="ctrl.checkSensorReg('TestingGPSSensorPl')" class="clickable">
+                                                     ng-click="ctrl.checkSensorReg('TestingGPSSensorPl')"
+                                                     class="clickable">
                                                     <div ng-switch-when="LOADING">
                                                         <div class="preloader pl-size-xs">
                                                             <div class="spinner-layer pl-blue">
@@ -923,29 +928,11 @@
                                     </table>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <div class="radio">
-                                    <input type="radio" class="form-control" id="trigger_rules"
-                                           value="true" name="executeRules">
-                                    <label for="trigger_rules">The selected rules should be triggered.</label><br>
-                                    <input type="radio" class="form-control" id="not_trigger_rules"
-                                           value="false" name="executeRules" checked="checked">
-                                    <label for="not_trigger_rules">The selected rules shouldn't be triggered.</label>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
-                                    Close
-                                </button>
-                                <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
-                            </div>
-                        </div>
-                    </fieldset>
-                </form>
+                        </fieldset>
+                    </form>
+                </div>
             </div>
+            <!-- #END# Modal -->
         </div>
-        <!-- #END# Modal -->
-
-
     </div>
 </div>

@@ -516,7 +516,7 @@ app.controller('TestingController',
 
                 });
 
-
+            }
             function downloadPDF(testID, endtimeUnix) {
                 console.log(endtimeUnix);
                 window.open('api/test-details/downloadPDF/' + testID + "_"+endtimeUnix, '_blank');

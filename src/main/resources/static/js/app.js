@@ -533,6 +533,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                                 console.log('404');
                                 $location.url(viewPrefix + '/404');
                             });
+                    }],
+                    ruleList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('rules');
                     }]
                 }
             })

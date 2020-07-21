@@ -231,21 +231,21 @@ public class TestDetailsEventHandler {
 
                 Sensor sensor = sensorRepository.findByName(testDetails.getType());
                 /**
-                if (sensor == null) {
-                    sensor = new Sensor();
-                    sensor.setName(testDetails.getType());
-                    sensor.setDevice(deviceRepository.findByName("TestingDevice"));
-                    if (adapterRepository.findByName(testDetails.getType()) != null) {
-                        sensor.setAdapter(adapterRepository.findByName(testDetails.getType()));
-                        sensorRepository.insert(sensor);
-                        sensorArray.add(sensor);
-                        testDetails.setSensor(sensorArray);
-                    }
+                 if (sensor == null) {
+                 sensor = new Sensor();
+                 sensor.setName(testDetails.getType());
+                 sensor.setDevice(deviceRepository.findByName("TestingDevice"));
+                 if (adapterRepository.findByName(testDetails.getType()) != null) {
+                 sensor.setAdapter(adapterRepository.findByName(testDetails.getType()));
+                 sensorRepository.insert(sensor);
+                 sensorArray.add(sensor);
+                 testDetails.setSensor(sensorArray);
+                 }
 
-                } else {
-                    sensorArray.add(sensor);
-                    testDetails.setSensor(sensorArray);
-                }
+                 } else {
+                 sensorArray.add(sensor);
+                 testDetails.setSensor(sensorArray);
+                 }
                  **/
                 sensorArray.add(sensor);
                 break;
@@ -256,22 +256,22 @@ public class TestDetailsEventHandler {
         Actuator actuator = actuatorRepository.findByName("TestingActuator");
 
         /**
-        // if not the actuator will be registered in the following
-        if (actuator == null) {
-            actuator = new Actuator();
-            actuator.setName("TestingActuator");
-            if (adapterRepository.findByName("TestingAdapterAcutator") != null) {
-                actuator.setAdapter(adapterRepository.findByName("TestingAdapterAcutator"));
-                actuator.setComponentType("Speaker");
-                actuator.setDevice(deviceRepository.findByName("TestingDevice"));
-                actuatorRepository.insert(actuator);
-            }
+         // if not the actuator will be registered in the following
+         if (actuator == null) {
+         actuator = new Actuator();
+         actuator.setName("TestingActuator");
+         if (adapterRepository.findByName("TestingAdapterAcutator") != null) {
+         actuator.setAdapter(adapterRepository.findByName("TestingAdapterAcutator"));
+         actuator.setComponentType("Speaker");
+         actuator.setDevice(deviceRepository.findByName("TestingDevice"));
+         actuatorRepository.insert(actuator);
+         }
 
-        }
-**/
+         }
+         **/
         testDetails.setSensor(sensorArray);
     }
 
 
-    }
 }
+

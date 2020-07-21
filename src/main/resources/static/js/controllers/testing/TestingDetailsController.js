@@ -4,8 +4,8 @@
  * Controller for the test details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('TestingDetailsController',
-    ['$scope', '$controller', 'testingDetails', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI',
-        function ($scope, controller, testingDetails, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, ENDPOINT_URI) {
+    ['$scope', '$controller', 'testingDetails', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI', 'ruleList',
+        function ($scope, controller, testingDetails, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, ENDPOINT_URI, ruleList) {
 
             //Test ID
             const COMPONENT_ID = $routeParams.id;
@@ -13,18 +13,71 @@ app.controller('TestingDetailsController',
 
             //Initialization of variables that are used in the frontend by angular
             var vm = this;
+            vm.ruleList = ruleList;
             vm.test = testingDetails;
             vm.ruleNames = "";
             vm.actionNames = "";
             vm.deviceNames = "";
+            vm.rules = [];
+            vm.executeRules = true;
+
+            vm.sensorType = testingDetails.type;
+
+
             /**
              * Initializing function, sets up basic things.
              */
             (function initController() {
+
                 getPDFList();
                 getTestSensors();
                 getTestRules();
+                getConfig();
+
+                //Refresh test select picker when the modal is opened
+                $('.modal').on('shown.bs.modal', function () {
+                    $('.selectpicker').selectpicker('refresh');
+                });
+
             })();
+
+
+            /**
+             * Get the Configuration of the test to display them on the edit Test Modal
+             */
+            function getConfig() {
+                var event;
+                var anomaly;
+                vm.rules = [];
+
+                //TODO: Get further informations like room, coordinates, etc. 
+                for (let i = 0; i < testingDetails.config.length; i++) {
+                    if (testingDetails.config[i].name === "event") {
+                        event = testingDetails.config[i].value;
+                    } else if (testingDetails.config[i].name === "anomaly") {
+                        anomaly = testingDetails.config[i].value;
+                    }
+                }
+                $rootScope.config = {
+                    event: event,
+                    anomaly: anomaly
+                };
+
+                $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
+                    for (let i = 0; i < responseRules._embedded.rules.length; i++) {
+                        vm.rules.push(responseRules._embedded.rules[i]._links.self.href);
+                    }
+                    $rootScope.selectedRules = {rules: vm.rules};
+                });
+
+
+                if (testingDetails.triggerRules === true) {
+                    vm.executeRules = "true";
+                } else {
+                    vm.executeRules = "false";
+                }
+
+            }
 
 
             /**
@@ -32,10 +85,14 @@ app.controller('TestingDetailsController',
              * Creates a server request to get all rules to be observed during the Test of the IoT-Application.
              */
             function getTestRules() {
+                $http.get(ENDPOINT_URI + "/test-details/ruleList/" + COMPONENT_ID).success(function (response) {
+                    $scope.ruleList = response;
+
+                });
+
                 $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
-                    console.log(responseRules);
-                    $scope.ruleList = responseRules._embedded.rules;
-                    console.log(vm.ruleList);
+
+
                     for (let i = 0; i < responseRules._embedded.rules.length; i++) {
                         if (i === 0) {
                             vm.ruleNames = vm.ruleNames + responseRules._embedded.rules[i].name;

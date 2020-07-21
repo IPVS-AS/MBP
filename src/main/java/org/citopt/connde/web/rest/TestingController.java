@@ -81,12 +81,21 @@ public class TestingController {
     /**
      * Returns a Hashmap with date and path to of all Test Reports regarding to a specific test.
      *
-     * @param testId  ID of the test from which all reports are to be found
+     * @param testId ID of the test from which all reports are to be found
      * @return HttpsStatus and Hashmap with all Reports regarding to the specific test
      */
     @GetMapping(value = "/test-details/pdfList/{testId}")
     public ResponseEntity<Map<String, String>> getPDFList(@PathVariable(value = "testId") String testId) throws IOException {
-          return  testEngine.getPDFList(testId);
+        return testEngine.getPDFList(testId);
+    }
+
+    @GetMapping(value = "/test-details/ruleList/{testId}")
+    public List<Rule> ruleList(@PathVariable(value = "testId") String testId) throws IOException {
+        TestDetails testDetails = testDetailsRepository.findOne(testId);
+
+        // get  informations about the status of the rules before the execution of the test
+        List<Rule> rulesbefore = testEngine.getStatRulesBefore(testDetails);
+        return rulesbefore;
     }
 
 
@@ -97,7 +106,7 @@ public class TestingController {
      */
     @GetMapping(value = "/test-details/downloadPDF/{path}")
     public ResponseEntity<String> openPDF(@PathVariable(value = "path") String path) throws IOException {
-        return testEngine.downloadPDF( path );
+        return testEngine.downloadPDF(path);
     }
 
     /**
@@ -165,9 +174,9 @@ public class TestingController {
 
         TestDetails testDetails = testDetailsRepository.findById(testId);
 
-        if(testDetails.isPdfExists()){
+        if (testDetails.isPdfExists()) {
             Path pathTestReport = Paths.get(testDetails.getPathPDF());
-            Path pathDiagram = Paths.get(pathTestReport.getParent().toString() , testId + ".gif");
+            Path pathDiagram = Paths.get(pathTestReport.getParent().toString(), testId + ".gif");
 
             try {
                 Files.delete(pathTestReport);
@@ -181,7 +190,6 @@ public class TestingController {
         } else {
             response = new ResponseEntity<>("No available Testreport for this Test.", HttpStatus.NOT_FOUND);
         }
-
 
 
         return response;
