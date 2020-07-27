@@ -1,32 +1,35 @@
 package org.citopt.connde.domain.user;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import org.citopt.connde.constants.Constants;
-import org.citopt.connde.domain.user_entity.UserEntityRole;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 
-import javax.persistence.GeneratedValue;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
+import javax.persistence.GeneratedValue;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+
+import org.citopt.connde.constants.Constants;
+import org.citopt.connde.domain.access_control.IACRequestingEntity;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * User entity.
  */
 @Document
 @ApiModel(description = "Model for user entities")
-public class User implements Serializable {
+public class User implements Serializable, IACRequestingEntity {
 
     private static final long serialVersionUID = 1L;
 

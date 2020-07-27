@@ -1,19 +1,20 @@
 package org.citopt.connde.domain.adapter;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.measure.unit.Unit;
+import javax.persistence.GeneratedValue;
+
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.exception.InsertFailureException;
 import org.citopt.connde.exception.NotFoundException;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import javax.measure.unit.Unit;
-import javax.persistence.GeneratedValue;
-import java.util.ArrayList;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Document class for Adapters.

@@ -22,7 +22,7 @@ import static org.citopt.connde.domain.user_entity.UserEntityRole.*;
 @Service
 public class UserEntityService {
 
-    private static final Sort DEFAULT_SORT = new Sort(Sort.Direction.ASC, "name");
+    private static final Sort DEFAULT_SORT = Sort.by(Sort.Direction.ASC, "name");
 
     @Autowired
     private UserService userService;
@@ -59,7 +59,7 @@ public class UserEntityService {
         }
 
         //Get user entity from repository
-        UserEntity entity = (UserEntity) repository.findOne(entityId);
+        UserEntity entity = (UserEntity) repository.findById(entityId).get();
 
         //Check for null (not found)
         if (entity == null) {

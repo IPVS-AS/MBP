@@ -59,7 +59,7 @@ public class RestComponentFilterController {
         List<Rule> rules = ruleRepository.findAll();
 
         // Making sure user has access to the rule trigger whose id is parameter
-        RuleTrigger ruleTrigger = ruleTriggerRepository.findOne(ruleTriggerId);
+        RuleTrigger ruleTrigger = ruleTriggerRepository.findById(ruleTriggerId).get();
         List<Rule> dependentRules = new ArrayList<>();
 
         for (Rule rule : rules) {
@@ -84,7 +84,7 @@ public class RestComponentFilterController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success")})
     public ResponseEntity<List<Rule>> getRulesByRuleActionID(@PathVariable(value = "id") @ApiParam(value = "ID of the rule action", example = "5c97dc2583aeb6078c5ab672", required = true) String ruleActionId) {
 
-        RuleAction ruleAction = ruleActionRepository.findOne(ruleActionId);
+        RuleAction ruleAction = ruleActionRepository.findById(ruleActionId).get();
         List<Rule> rules = ruleRepository.findAll();
 
         List<Rule> dependentRules = new ArrayList<>();

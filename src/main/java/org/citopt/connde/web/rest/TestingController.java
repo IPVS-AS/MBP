@@ -50,7 +50,7 @@ public class TestingController {
     @PostMapping(value = "/test-details/test/{testId}")
     public String executeTest(@PathVariable(value = "testId") String testId) throws Exception {
 
-        TestDetails testDetails = testDetailsRepository.findOne(testId);
+        TestDetails testDetails = testDetailsRepository.findById(testId);
 
         // Set the exact start time of the test
         testDetails.setStartTestTimeNow();
@@ -64,7 +64,7 @@ public class TestingController {
 
         // Check the test for success
         testEngine.testSuccess(testId);
-        TestDetails testDetails3 = testDetailsRepository.findOne(testId);
+        TestDetails testDetails3 = testDetailsRepository.findById(testId);
 
         // Create test report with graph of sensor values and pdf
         graphPlotter.createTestReport(testDetails3);

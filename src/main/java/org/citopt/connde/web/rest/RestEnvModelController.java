@@ -1,6 +1,7 @@
 package org.citopt.connde.web.rest;
 
-import io.swagger.annotations.*;
+import java.util.Map;
+
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.env_model.EnvironmentModel;
 import org.citopt.connde.repository.EnvironmentModelRepository;
@@ -10,9 +11,17 @@ import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * REST Controller for deployment related REST requests.
@@ -33,7 +42,7 @@ public class RestEnvModelController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access the entities of this environment model"), @ApiResponse(code = 404, message = "Environment model not found"), @ApiResponse(code = 500, message = "State retrieval failed")})
     public ResponseEntity<Map<String, EntityState>> getEntityStates(@PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String modelID) {
         //Get environment model
-        EnvironmentModel model = environmentModelRepository.findOne(modelID);
+        EnvironmentModel model = environmentModelRepository.findById(modelID).get();
 
         //Check if model could be found
         if (model == null) {
@@ -52,7 +61,7 @@ public class RestEnvModelController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to register the entities of this environment model"), @ApiResponse(code = 404, message = "Environment model not found"), @ApiResponse(code = 500, message = "Registration failed")})
     public ResponseEntity<ActionResponse> registerEntities(@PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String modelID) {
         //Get environment model
-        EnvironmentModel model = environmentModelRepository.findOne(modelID);
+        EnvironmentModel model = environmentModelRepository.findById(modelID).get();
 
         //Check if model could be found
         if (model == null) {
@@ -75,7 +84,7 @@ public class RestEnvModelController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to deploy the components of this environment model"), @ApiResponse(code = 404, message = "Environment model not found"), @ApiResponse(code = 500, message = "Deployment failed")})
     public ResponseEntity<ActionResponse> deployComponents(@PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String modelID) {
         //Get environment model
-        EnvironmentModel model = environmentModelRepository.findOne(modelID);
+        EnvironmentModel model = environmentModelRepository.findById(modelID).get();
 
         //Check if model could be found
         if (model == null) {
@@ -98,7 +107,7 @@ public class RestEnvModelController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to undeploy the components of this environment model"), @ApiResponse(code = 404, message = "Environment model not found"), @ApiResponse(code = 500, message = "Undeployment failed")})
     public ResponseEntity<ActionResponse> undeployComponents(@PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String modelID) {
         //Get environment model
-        EnvironmentModel model = environmentModelRepository.findOne(modelID);
+        EnvironmentModel model = environmentModelRepository.findById(modelID).get();
 
         //Check if model could be found
         if (model == null) {
@@ -121,7 +130,7 @@ public class RestEnvModelController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to start the components of this environment model"), @ApiResponse(code = 404, message = "Environment model not found"), @ApiResponse(code = 500, message = "Starting failed")})
     public ResponseEntity<ActionResponse> startComponents(@PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String modelID) {
         //Get environment model
-        EnvironmentModel model = environmentModelRepository.findOne(modelID);
+        EnvironmentModel model = environmentModelRepository.findById(modelID).get();
 
         //Check if model could be found
         if (model == null) {
@@ -144,7 +153,7 @@ public class RestEnvModelController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to stop the components of this environment model"), @ApiResponse(code = 404, message = "Environment model not found"), @ApiResponse(code = 500, message = "Stopping failed")})
     public ResponseEntity<ActionResponse> stopComponents(@PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String modelID) {
         //Get environment model
-        EnvironmentModel model = environmentModelRepository.findOne(modelID);
+        EnvironmentModel model = environmentModelRepository.findById(modelID).get();
 
         //Check if model could be found
         if (model == null) {

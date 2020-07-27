@@ -77,7 +77,7 @@ public class RestKeyPairController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Key pair not found or not authorized to access the key pair")})
     public ResponseEntity<List<Device>> getDevicesByKeyPair(@PathVariable(value = "id") @ApiParam(value = "ID of the key pair", example = "5c97dc2583aeb6078c5ab672", required = true) String keyPairId) {
         // Get key pair object by its ID
-        KeyPair keyPair = keyPairRepository.findOne(keyPairId);
+        KeyPair keyPair = keyPairRepository.findById(keyPairId);
 
         //Check if key pair could be found
         if (keyPair == null) {

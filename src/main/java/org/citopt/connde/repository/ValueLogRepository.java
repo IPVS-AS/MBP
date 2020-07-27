@@ -89,7 +89,7 @@ public class ValueLogRepository {
 
         //Get limit and offset from pageable
         int limit = pageable.getPageSize();
-        int offset = pageable.getOffset();
+        long offset = pageable.getOffset();
 
         //Build query
         SelectQueryImpl selectQuery = select().all().from(InfluxDBConfiguration.DATABASE_NAME, getMeasurementReference());

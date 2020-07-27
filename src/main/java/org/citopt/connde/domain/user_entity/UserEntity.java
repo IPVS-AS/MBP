@@ -1,9 +1,18 @@
 package org.citopt.connde.domain.user_entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModelProperty;
+import static org.citopt.connde.domain.user_entity.UserEntityRole.ADMIN;
+import static org.citopt.connde.domain.user_entity.UserEntityRole.APPROVED_USER;
+import static org.citopt.connde.domain.user_entity.UserEntityRole.ENTITY_OWNER;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.citopt.connde.DynamicBeanProvider;
+import org.citopt.connde.domain.access_control.ACPolicy;
+import org.citopt.connde.domain.access_control.IACRequestedEntity;
 import org.citopt.connde.domain.env_model.EnvironmentModel;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.repository.projection.UserExcerpt;
@@ -14,20 +23,18 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.projection.ProjectionFactory;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import static org.citopt.connde.domain.user_entity.UserEntityRole.*;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Base class for entity classes that require user management. It adds support for
  * an owner user that owns a certain entity and is allowed to do everything with it
  * and a set of approved users that are allowed to access this entity as well.
  */
-public abstract class UserEntity {
+public abstract class UserEntity implements IACRequestedEntity {
     //Default permission names
-    private static final String PERMISSION_NAME_CREATE = "create";
     private static final String PERMISSION_NAME_READ = "read";
     private static final String PERMISSION_NAME_DELETE = "delete";
     private static final String PERMISSION_NAME_APPROVE = "approve";
@@ -55,6 +62,16 @@ public abstract class UserEntity {
     @JsonIgnore
     @DBRef
     private Set<User> approvedUsers = new HashSet<>();
+    
+    // - - -
+    /**
+     * The list of access-control {@link ACPolicy policies} evaluated
+     * before allowing access to this user entity.
+     */
+    @JsonIgnore
+    @DBRef
+    private List<ACPolicy<?>> accessControlPolicies = new ArrayList<>();
+    // - - -
 
     //Creation date, managed by Mongo Auditing
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -112,6 +129,15 @@ public abstract class UserEntity {
     public Set<User> getApprovedUsers() {
         return approvedUsers;
     }
+    
+    @Override
+    public List<ACPolicy<?>> getAccessControlPolicies() {
+    	return accessControlPolicies;
+    }
+    
+    public void setAccessControlPolicies(List<ACPolicy<?>> accessControlPolicies) {
+		this.accessControlPolicies = accessControlPolicies;
+	}
 
     /**
      * Sets the approved users set.

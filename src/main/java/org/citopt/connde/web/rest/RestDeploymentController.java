@@ -1,6 +1,11 @@
 package org.citopt.connde.web.rest;
 
-import io.swagger.annotations.*;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.adapter.parameters.ParameterType;
@@ -11,17 +16,22 @@ import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.web.rest.helper.DeploymentWrapper;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.webmvc.RepositoryLinksResource;
 import org.springframework.hateoas.ResourceProcessor;
+import org.springframework.hateoas.ResourceSupport;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * REST Controller for deployment related REST requests.
@@ -29,7 +39,7 @@ import java.util.List;
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
 @Api(tags = {"Deployment"}, description = "Deployment management for actuators and sensors")
-public class RestDeploymentController implements ResourceProcessor<RepositoryLinksResource> {
+public class RestDeploymentController implements ResourceProcessor<ResourceSupport> {
 
     @Autowired
     private DeploymentWrapper deploymentWrapper;
@@ -115,7 +125,7 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
 
     private ResponseEntity<Boolean> isRunningComponent(String id, ComponentRepository repository) {
         //Retrieve component from repository
-        Component component = (Component) repository.findOne(id);
+        Component component = (Component) repository.findById(id).get();
 
         //Check if running
         return deploymentWrapper.isComponentRunning(component);
@@ -123,7 +133,7 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
 
     private ResponseEntity<ActionResponse> startComponent(String id, ComponentRepository repository, List<ParameterInstance> parameterInstances) {
         //Retrieve component from repository
-        Component component = (Component) repository.findOne(id);
+        Component component = (Component) repository.findById(id).get();
 
         //Sanitize parameters list
         if (parameterInstances == null) {
@@ -136,7 +146,7 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
 
     private ResponseEntity<ActionResponse> stopComponent(String id, ComponentRepository repository) {
         //Retrieve component from repository
-        Component component = (Component) repository.findOne(id);
+        Component component = (Component) repository.findById(id).get();
 
         //Stop component
         return deploymentWrapper.stopComponent(component);
@@ -144,7 +154,7 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
 
     private ResponseEntity<ActionResponse> deployComponent(String id, ComponentRepository repository) {
         //Retrieve component from repository
-        Component component = (Component) repository.findOne(id);
+        Component component = (Component) repository.findById(id).get();
 
         //Do deployment
         return deploymentWrapper.deployComponent(component);
@@ -152,7 +162,7 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
 
     private ResponseEntity<ActionResponse> undeployComponent(String id, ComponentRepository repository) {
         //Retrieve component from repository
-        Component component = (Component) repository.findOne(id);
+        Component component = (Component) repository.findById(id).get();
 
         //Do undeployment
         return deploymentWrapper.undeployComponent(component);
@@ -177,8 +187,9 @@ public class RestDeploymentController implements ResourceProcessor<RepositoryLin
         return new ResponseEntity<>(strDate, HttpStatus.OK);
     }
 
-    @Override
-    public RepositoryLinksResource process(RepositoryLinksResource resource) {
-        return resource;
-    }
+	@Override
+	public ResourceSupport process(ResourceSupport resource) {
+		return resource;
+	}
+	
 }

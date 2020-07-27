@@ -1,5 +1,8 @@
 package org.citopt.connde.web.rest.event_handler;
 
+import java.io.IOException;
+import java.util.List;
+
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
@@ -12,9 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.util.List;
 
 /**
  * Event handler for operations that are performed on adapters.
@@ -55,7 +55,7 @@ public class AdapterEventHandler {
             //TODO Delete value logs with idref actuator.getId()
 
             //Delete actuator
-            actuatorRepository.delete(projection.getId());
+            actuatorRepository.deleteById(projection.getId());
         }
 
         //Find sensors that use this adapter and iterate over them
@@ -69,7 +69,7 @@ public class AdapterEventHandler {
             //TODO Delete value logs with idref sensor.getId()
 
             //Delete sensor
-            sensorRepository.delete(projection.getId());
+            sensorRepository.deleteById(projection.getId());
         }
     }
 }

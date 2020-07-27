@@ -43,7 +43,7 @@ public class RestRuleController {
     @PostMapping(value = "/rules/enable/{id}")
     public ResponseEntity<ActionResponse> enableRule(@PathVariable(value = "id") String ruleId) {
         //Get rule from repository
-        Rule rule = ruleRepository.findOne(ruleId);
+        Rule rule = ruleRepository.findById(ruleId);
 
         //Check if rule was found
         if (rule == null) {
@@ -76,7 +76,7 @@ public class RestRuleController {
     @PostMapping(value = "/rules/disable/{id}")
     public ResponseEntity<ActionResponse> disableRule(@PathVariable(value = "id") String ruleId) {
         //Get rule from repository
-        Rule rule = ruleRepository.findOne(ruleId);
+        Rule rule = ruleRepository.findById(ruleId);
 
         //Check if rule was found
         if (rule == null) {
@@ -98,7 +98,7 @@ public class RestRuleController {
     @PostMapping(value = "/rule-actions/test/{id}")
     public ResponseEntity<ActionResponse> testRuleAction(@PathVariable(value = "id") String actionId) {
         //Get rule action from repository
-        RuleAction ruleAction = ruleActionRepository.findOne(actionId);
+        RuleAction ruleAction = ruleActionRepository.findById(actionId);
 
         //Check if rule was found
         if (ruleAction == null) {

@@ -5,16 +5,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.MongoClient;
 import org.citopt.connde.constants.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.MongoClient;
 
 @Configuration
 @EnableMongoRepositories
@@ -124,4 +125,5 @@ public class MongoConfiguration extends AbstractMongoConfiguration {
 			collection.insert(documents);
 		}
 	}
+	
 }

@@ -34,7 +34,7 @@ public class RestEnvModelSSEController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Environment model not found or not authorized"), @ApiResponse(code = 500, message = "Registration failed")})
     public ResponseEntity<SseEmitter> subscribe(@PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String modelID) {
         //Get environment model
-        EnvironmentModel model = environmentModelRepository.findOne(modelID);
+        EnvironmentModel model = environmentModelRepository.findById(modelID);
 
         //Check if model could be found
         if (model == null) {

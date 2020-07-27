@@ -1,5 +1,7 @@
 package org.citopt.connde.security;
 
+import java.util.List;
+
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.repository.UserEntityRepository;
@@ -8,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * Provides methods for checking user permissions and retrieving permissible user entities for incoming REST requests
@@ -99,7 +99,7 @@ public class RepositorySecurityGuard {
         }
 
         //Calculate start and end of page from pageable
-        int start = pageable.getOffset();
+        int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), userEntities.size());
 
         //Replace elements of content list with the new page elements

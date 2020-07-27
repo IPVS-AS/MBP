@@ -81,7 +81,7 @@ public class DeviceEventHandler {
         //Find actuators that use this device and iterate over them
         List<ComponentExcerpt> affectedActuators = actuatorRepository.findAllByDeviceId(deviceId);
         for (ComponentExcerpt projection : affectedActuators) {
-            Actuator actuator = actuatorRepository.findOne(projection.getId());
+            Actuator actuator = actuatorRepository.findById(projection.getId()).get();
 
             //Undeploy actuator if running
             sshDeployer.undeployIfRunning(actuator);
@@ -89,13 +89,13 @@ public class DeviceEventHandler {
             //TODO Delete value logs with idref monitoringComponent.getId()
 
             //Delete actuator
-            actuatorRepository.delete(projection.getId());
+            actuatorRepository.deleteById(projection.getId());
         }
 
         //Find sensors that use the device and delete them after undeployment
         List<ComponentExcerpt> affectedSensors = sensorRepository.findAllByDeviceId(deviceId);
         for (ComponentExcerpt projection : affectedSensors) {
-            Sensor sensor = sensorRepository.findOne(projection.getId());
+            Sensor sensor = sensorRepository.findById(projection.getId()).get();
 
             //Undeploy sensor if running
             sshDeployer.undeployIfRunning(sensor);
@@ -103,7 +103,7 @@ public class DeviceEventHandler {
             //TODO Delete value logs with idref sensor.getId()
 
             //Delete sensor
-            sensorRepository.delete(projection.getId());
+            sensorRepository.deleteById(projection.getId());
         }
 
         //Get all monitoring adapters that are compatible to the device

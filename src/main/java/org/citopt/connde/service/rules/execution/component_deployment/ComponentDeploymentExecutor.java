@@ -215,9 +215,9 @@ public class ComponentDeploymentExecutor implements RuleActionExecutor {
         //Get component by doing a case differentiation for component types
         org.citopt.connde.domain.component.Component component = null;
         if (componentType.equals(new Actuator().getComponentTypeName())) {
-            return actuatorRepository.findOne(componentId);
+            return actuatorRepository.findById(componentId).get();
         } else if (componentType.equals(new Sensor().getComponentTypeName())) {
-            return sensorRepository.findOne(componentId);
+            return sensorRepository.findById(componentId).get();
         }
 
         //No matching component type found

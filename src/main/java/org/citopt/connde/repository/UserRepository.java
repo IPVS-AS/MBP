@@ -13,6 +13,7 @@ import java.util.Optional;
  */
 @RepositoryRestResource(exported = false, excerptProjection = UserExcerpt.class) //Annotation could be removed
 public interface UserRepository extends MongoRepository<User, String> {
+	
     Optional<User> findOneByUsername(String username);
 
     List<UserExcerpt> findByUsernameContains(String username);
