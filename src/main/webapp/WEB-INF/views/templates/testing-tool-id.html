@@ -75,6 +75,18 @@
                             </div>
                         </td>
                     </tr>
+                    <tr id=" ">
+                        <th>Reuse Data:</th>
+                        <td>
+                            <div class="switch" style="margin-left: -13px;">
+                                <label>
+                                    <input type="checkbox" ng-model="config.useNewData"
+                                           ng-click="ctrl.editConfig(config.useNewData)">
+                                    <span class="lever"></span>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
                 <br/>
@@ -567,7 +579,6 @@
                                         triggered.</label>
                                 </div>
                             </div>
-                            {{ctrl.executeRules}}
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">

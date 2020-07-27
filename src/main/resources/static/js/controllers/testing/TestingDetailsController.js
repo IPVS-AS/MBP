@@ -34,6 +34,7 @@ app.controller('TestingDetailsController',
                 getTestRules();
                 getConfig();
 
+
                 //Refresh test select picker when the modal is opened
                 $('.modal').on('shown.bs.modal', function () {
                     $('.selectpicker').selectpicker('refresh');
@@ -48,6 +49,7 @@ app.controller('TestingDetailsController',
             function getConfig() {
                 var event;
                 var anomaly;
+                var useNewData;
                 vm.rules = [];
 
                 //TODO: Get further informations like room, coordinates, etc. 
@@ -56,11 +58,17 @@ app.controller('TestingDetailsController',
                         event = testingDetails.config[i].value;
                     } else if (testingDetails.config[i].name === "anomaly") {
                         anomaly = testingDetails.config[i].value;
+                    }else if (testingDetails.config[i].name === "useNewData") {
+                        useNewData = !testingDetails.config[i].value;
+                        console.log(testingDetails.config[i].value + " "+  !testingDetails.config[i].value);
+
                     }
                 }
+
                 $rootScope.config = {
                     event: event,
-                    anomaly: anomaly
+                    anomaly: anomaly,
+                    useNewData: useNewData
                 };
 
                 $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
@@ -76,6 +84,11 @@ app.controller('TestingDetailsController',
                 } else {
                     vm.executeRules = "false";
                 }
+
+
+
+
+
 
             }
 
@@ -181,12 +194,33 @@ app.controller('TestingDetailsController',
             }
 
 
+            /**
+             * Sends a server request in order to edit the configurations of the test "useNewData",
+             * so that the latest values of a specific test are reused in the new execution or not
+             *
+             * @param testId
+             * @param useNewData
+             */
+            function editConfig(useNewData) {
+                if (useNewData === true) {
+                    $http.post(ENDPOINT_URI + '/test-details/editConfig/' + COMPONENT_ID, "false").then(function success(response) {
+                        $scope.erfolgreich = response.success;
+                    });
+                } else if (useNewData === false) {
+                    $http.post(ENDPOINT_URI + '/test-details/editConfig/' + COMPONENT_ID, "true").then(function success(response) {
+                        $scope.erfolgreich = response.success;
+                    });
+                }
+            }
+
+
             //Extend the controller object for the public functions to make them available from outside
             angular.extend(vm, {
                 downloadPDF: downloadPDF,
                 executeTest: executeTest,
                 stopTest: stopTest,
-                getPDFList: getPDFList
+                getPDFList: getPDFList,
+                editConfig: editConfig
             });
         }]
 );

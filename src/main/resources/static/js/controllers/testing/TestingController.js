@@ -4,8 +4,8 @@
  * Controller for the sensor list page.
  */
 app.controller('TestingController',
-    ['$scope', '$controller', '$interval', '$http', 'testList', 'addTest', 'deleteTest', 'ruleList', '$q', 'ComponentService', 'FileReader', 'ENDPOINT_URI', 'NotificationService',
-        function ($scope, $controller, $interval, $http, testList, addTest, deleteTest, ruleList, $q, ComponentService, FileReader, ENDPOINT_URI, NotificationService) {
+    ['$scope', '$controller', '$interval', '$http', 'testList', '$rootScope', 'addTest', 'deleteTest', 'ruleList', '$q', 'ComponentService', 'FileReader', 'ENDPOINT_URI', 'NotificationService',
+        function ($scope, $controller, $interval, $http, testList, $rootScope, addTest, deleteTest, ruleList, $q, ComponentService, FileReader, ENDPOINT_URI, NotificationService) {
 
             var vm = this;
             vm.ruleList = ruleList;
@@ -34,7 +34,7 @@ app.controller('TestingController',
                 for (let i = 0; i < sensorList.length; i++) {
                     checkSensorReg(sensorList[i]);
                 }
-                ;
+
 
                 //Interval for updating sensor states on a regular basis
                 var interval = $interval(function () {
@@ -104,10 +104,10 @@ app.controller('TestingController',
              *
              * @param testID
              */
-             function downloadPDF(testID, endtimeUnix) {
+            function downloadPDF(testID, endtimeUnix) {
                 console.log(endtimeUnix);
-                window.open('api/test-details/downloadPDF/' + testID + "_"+endtimeUnix, '_blank');
-                }
+                window.open('api/test-details/downloadPDF/' + testID + "_" + endtimeUnix, '_blank');
+            }
 
 
             /**
@@ -517,9 +517,10 @@ app.controller('TestingController',
                 });
 
             }
+
             function downloadPDF(testID, endtimeUnix) {
                 console.log(endtimeUnix);
-                window.open('api/test-details/downloadPDF/' + testID + "_"+endtimeUnix, '_blank');
+                window.open('api/test-details/downloadPDF/' + testID + "_" + endtimeUnix, '_blank');
             }
 
 
