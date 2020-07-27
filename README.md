@@ -23,7 +23,7 @@ Please run the [installation script](install.sh), which automatically installs t
 
 ### 1.2 Installation on Windows
 Please execute the following steps:  
-- Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), [InfluxDB](https://portal.influxdata.com/downloads/) and [Tomcat8](https://tomcat.apache.org/download-80.cgi)   
+- Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), [InfluxDB](https://portal.influxdata.com/downloads/), [Tomcat8](https://tomcat.apache.org/download-80.cgi) and [Maven](https://maven.apache.org/).
 - Create the `MBP.war` file by building the provided maven project
     
     `$ mvn clean install`  
