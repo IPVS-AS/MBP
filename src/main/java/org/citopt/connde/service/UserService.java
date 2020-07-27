@@ -1,5 +1,9 @@
 package org.citopt.connde.service;
 
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
 import org.citopt.connde.constants.Constants;
 import org.citopt.connde.domain.user.Authority;
 import org.citopt.connde.domain.user.User;
@@ -9,10 +13,6 @@ import org.citopt.connde.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * Service class for managing users.
@@ -31,7 +31,7 @@ public class UserService {
 
     public User createUser(String username, String password, String firstName, String lastName) {
         User newUser = new User();
-        Authority authority = authorityRepository.findOne(Constants.USER);
+        Authority authority = authorityRepository.findByName(Constants.USER).get();
         Set<Authority> authorities = new HashSet<>();
         String encryptedPassword = passwordEncoder.encode(password);
         newUser.setUsername(username);
@@ -49,7 +49,7 @@ public class UserService {
     }
 
     public User createUser(User user) {
-        Authority authority = authorityRepository.findOne(Constants.USER);
+        Authority authority = authorityRepository.findByName(Constants.USER).get();
         Set<Authority> authorities = new HashSet<>();
         authorities.add(authority);
         user.setAuthorities(authorities);
@@ -67,8 +67,8 @@ public class UserService {
     }
 
     public void updateUser(String id, String username, String password, String firstName, String lastName, Set<Authority> authorities) {
-        Optional.of(userRepository
-                .findOne(id))
+        userRepository
+                .findById(id)
                 .ifPresent(user -> {
                     user.setUsername(username);
                     user.setPassword(passwordEncoder.encode(password));
@@ -77,7 +77,7 @@ public class UserService {
                     Set<Authority> managedAuthorities = user.getAuthorities();
                     managedAuthorities.clear();
                     authorities.forEach(
-                            authority -> managedAuthorities.add(authorityRepository.findOne(authority.getName()))
+                            authority -> managedAuthorities.add(authorityRepository.findByName(authority.getName()).get())
                     );
                     userRepository.save(user);
                 });
@@ -102,7 +102,7 @@ public class UserService {
     }
 
     public User getUserWithAuthorities(String id) {
-        return userRepository.findOne(id);
+        return userRepository.findById(id).get();
     }
 
     public User getUserWithAuthorities() {

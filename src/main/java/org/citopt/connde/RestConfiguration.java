@@ -14,7 +14,12 @@ import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.domain.key_pair.KeyPairValidator;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringAdapterValidator;
-import org.citopt.connde.domain.rules.*;
+import org.citopt.connde.domain.rules.Rule;
+import org.citopt.connde.domain.rules.RuleAction;
+import org.citopt.connde.domain.rules.RuleActionValidator;
+import org.citopt.connde.domain.rules.RuleTrigger;
+import org.citopt.connde.domain.rules.RuleTriggerValidator;
+import org.citopt.connde.domain.rules.RuleValidator;
 import org.citopt.connde.domain.testing.TestDetails;
 import org.citopt.connde.domain.testing.TestDetailsValidator;
 import org.citopt.connde.domain.user.Authority;
@@ -25,11 +30,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
-import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurerAdapter;
+import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.hateoas.mvc.ControllerLinkBuilder;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 
 /**
  * Contains crucial rest configurations for the application.
@@ -37,7 +42,7 @@ import org.springframework.hateoas.mvc.ControllerLinkBuilder;
  * @author rafaelkperes, Jan
  */
 @Configuration
-public class RestConfiguration extends RepositoryRestConfigurerAdapter {
+public class RestConfiguration implements RepositoryRestConfigurer {
 	//Base path for REST calls (URL prefix)
 	public static final String BASE_PATH = "/api";
 
@@ -58,8 +63,6 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
      */
     @Override
     public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config) {
-        super.configureRepositoryRestConfiguration(config);
-
         System.out.println("load RepositoryRestMvcConfiguration");
 
         //Set base path
@@ -132,9 +135,9 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
 	 * @return The resource processor
 	 */
 	@Bean
-	public ResourceProcessor<Resource<Sensor>> sensorProcessor() {
+	public RepresentationModelProcessor<EntityModel<Sensor>> sensorProcessor() {
 
-		return new ResourceProcessor<Resource<Sensor>>() {
+		return new RepresentationModelProcessor<EntityModel<Sensor>>() {
 
 			/**
 			 * Processing method for sensor resources.
@@ -142,11 +145,11 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
 			 * @return The processed sensor resource
 			 */
 			@Override
-			public Resource<Sensor> process(Resource<Sensor> resource) {
+			public EntityModel<Sensor> process(EntityModel<Sensor> resource) {
 				//Get sensor id
 				String id = resource.getContent().getId();
 				//Link sensor with deployment
-				Link link = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.
+				Link link = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.
 						methodOn(RestDeploymentController.class).deploySensor(id))
 						.withRel("deploy");
 				resource.add(link);
@@ -161,9 +164,9 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
 	 * @return The resource processor
 	 */
 	@Bean
-	public ResourceProcessor<Resource<Actuator>> actuatorProcessor() {
+	public RepresentationModelProcessor<EntityModel<Actuator>> actuatorProcessor() {
 
-		return new ResourceProcessor<Resource<Actuator>>() {
+		return new RepresentationModelProcessor<EntityModel<Actuator>>() {
 
 			/**
 			 * Processing method for actuator resources.
@@ -171,11 +174,11 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
 			 * @return The processed actuator resource
 			 */
 			@Override
-			public Resource<Actuator> process(Resource<Actuator> resource) {
+			public EntityModel<Actuator> process(EntityModel<Actuator> resource) {
 				//Get actuator id
 				String id = resource.getContent().getId();
 				//Link actuator with deployment
-				Link link = ControllerLinkBuilder.linkTo(ControllerLinkBuilder.
+				Link link = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.
 						methodOn(RestDeploymentController.class).deployActuator(id))
 						.withRel("deploy");
 				resource.add(link);

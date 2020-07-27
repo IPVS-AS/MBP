@@ -28,7 +28,7 @@ class EsperCEPQueryDispatcher {
      *
      * @param resultMap The result of the CEP query
      */
-    public void update(Map resultMap) {
+    public void update(Map<Object, Object> resultMap) {
         //Create object from result
         CEPOutput result = new CEPOutput(resultMap);
 

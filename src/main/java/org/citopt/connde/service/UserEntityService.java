@@ -1,5 +1,16 @@
 package org.citopt.connde.service;
 
+import static org.citopt.connde.domain.user_entity.UserEntityRole.ADMIN;
+import static org.citopt.connde.domain.user_entity.UserEntityRole.ANONYMOUS;
+import static org.citopt.connde.domain.user_entity.UserEntityRole.APPROVED_USER;
+import static org.citopt.connde.domain.user_entity.UserEntityRole.ENTITY_OWNER;
+import static org.citopt.connde.domain.user_entity.UserEntityRole.USER;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.domain.user_entity.UserEntityPolicy;
@@ -9,20 +20,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.citopt.connde.domain.user_entity.UserEntityRole.*;
-
 /**
  * Service that supports managing of user entities.
  */
 @Service
 public class UserEntityService {
 
-    private static final Sort DEFAULT_SORT = new Sort(Sort.Direction.ASC, "name");
+    private static final Sort DEFAULT_SORT = Sort.by(Sort.Direction.ASC, "name");
 
     @Autowired
     private UserService userService;
@@ -59,7 +63,7 @@ public class UserEntityService {
         }
 
         //Get user entity from repository
-        UserEntity entity = (UserEntity) repository.findOne(entityId);
+        UserEntity entity = (UserEntity) repository.findById(entityId).get();
 
         //Check for null (not found)
         if (entity == null) {

@@ -1,10 +1,11 @@
 package org.citopt.connde.web.rest.event_handler;
 
-import com.mongodb.util.JSON;
-import org.apache.commons.codec.binary.Base64;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
-import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.testing.TestDetails;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.AdapterRepository;
@@ -14,14 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;
-
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**

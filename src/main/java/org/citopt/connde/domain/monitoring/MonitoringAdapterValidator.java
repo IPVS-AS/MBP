@@ -1,16 +1,10 @@
 package org.citopt.connde.domain.monitoring;
 
-import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.AdapterValidator;
-import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.repository.MonitoringAdapterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-import org.springframework.validation.ValidationUtils;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Objects of this class work as validators for monitoring adapter objects.

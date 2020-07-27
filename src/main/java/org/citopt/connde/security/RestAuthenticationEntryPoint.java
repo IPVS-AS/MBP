@@ -30,7 +30,7 @@ public class RestAuthenticationEntryPoint extends BasicAuthenticationEntryPoint 
     }
     
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         setRealmName("MBP");
         super.afterPropertiesSet();
     }

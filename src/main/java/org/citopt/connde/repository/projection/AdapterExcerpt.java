@@ -1,6 +1,7 @@
 package org.citopt.connde.repository.projection;
 
 import org.citopt.connde.domain.adapter.Adapter;
+import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.springframework.data.rest.core.config.Projection;
 
 import java.util.List;
@@ -16,5 +17,5 @@ public interface AdapterExcerpt extends UserEntityExcerpt {
 
     String getUnit();
 
-    List getParameters();
+    List<Parameter> getParameters();
 }

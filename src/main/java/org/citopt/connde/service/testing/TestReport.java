@@ -52,7 +52,7 @@ public class TestReport {
      * @return path where the TestReport can be found
      */
     public String generateTestreport(String testId, java.util.List<Rule> rulesBefore) throws Exception {
-        TestDetails test = testDetailsRepository.findById(testId);
+        TestDetails test = testDetailsRepository.findById(testId).get();
         Document doc = new Document();
 
         // Create a new pdf, which is named with the ID of the specific test

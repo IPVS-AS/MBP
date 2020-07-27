@@ -1,8 +1,16 @@
 package org.citopt.connde.service.testing;
 
 
-import org.apache.commons.lang3.SystemUtils;
-import org.aspectj.lang.annotation.Before;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
@@ -11,26 +19,20 @@ import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.domain.testing.TestDetails;
 import org.citopt.connde.domain.testing.Testing;
 import org.citopt.connde.domain.valueLog.ValueLog;
-import org.citopt.connde.repository.*;
+import org.citopt.connde.repository.ActuatorRepository;
+import org.citopt.connde.repository.RuleRepository;
+import org.citopt.connde.repository.RuleTriggerRepository;
+import org.citopt.connde.repository.TestDetailsRepository;
+import org.citopt.connde.repository.TestRepository;
 import org.citopt.connde.service.receiver.ValueLogReceiver;
 import org.citopt.connde.service.receiver.ValueLogReceiverObserver;
 import org.citopt.connde.web.rest.RestDeploymentController;
 import org.citopt.connde.web.rest.RestRuleController;
-import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-
-import java.awt.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.List;
 
 @Component
 public class TestEngine implements ValueLogReceiverObserver {
@@ -45,9 +47,6 @@ public class TestEngine implements ValueLogReceiverObserver {
 
     @Autowired
     private ActuatorRepository actuatorRepository;
-
-    @Autowired
-    private ValueLogReceiver valueLogReceiver;
 
     @Autowired
     private TestRepository testRepo;
@@ -158,7 +157,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      */
     public Map<String, List<Double>> isFinished(String testId) {
         boolean response = true;
-        TestDetails testDetails = testDetailsRepository.findById(testId);
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
         while (response) {
             response = testEngine.testRunning(testDetails);
         }
@@ -220,7 +219,7 @@ public class TestEngine implements ValueLogReceiverObserver {
         }
 
         //check if test exists
-        if (!testDetailsRepository.exists(testDetails.getId())) {
+        if (!testDetailsRepository.existsById(testDetails.getId())) {
 
             return new ResponseEntity<>("Test does not exists.", HttpStatus.NOT_FOUND);
         }
@@ -259,7 +258,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      * @param testId ID of the executed test
      */
     public void testSuccess(String testId) {
-        TestDetails testDetails = testDetailsRepository.findById(testId);
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
         List<String> ruleNames = new ArrayList<>();
 
         List<Rule> ruleList = testDetails.getRules();
@@ -290,7 +289,7 @@ public class TestEngine implements ValueLogReceiverObserver {
         Map<String, List<Double>> testValues = new HashMap<>();
 
 
-        TestDetails testDetails = testDetailsRepository.findById(testId);
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
         List<String> ruleNames = new ArrayList<>();
         List<String> triggerID = new ArrayList<>();
 
@@ -384,14 +383,14 @@ public class TestEngine implements ValueLogReceiverObserver {
         }
         testEngine.setActiveTests(activeTests);
         testEngine.setTestValues(list);
-        testEngine.startTest(testDetailsRepository.findById(test.getId()));
+        testEngine.startTest(testDetailsRepository.findById(test.getId()).get());
 
         Map<String, List<Double>> valueList;
         Map<String, List<Double>> valueListTest = new HashMap<>();
 
         // Get List of all simulated Values
         valueList = testEngine.isFinished(test.getId());
-        TestDetails testDetails2 = testDetailsRepository.findOne(test.getId());
+        TestDetails testDetails2 = testDetailsRepository.findById(test.getId()).get();
         for (Sensor sensor : test.getSensor()) {
             List<Double> temp = valueList.get(sensor.getId());
             valueList.put(sensor.getName(), temp);
@@ -428,7 +427,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      * @param testId ID of the specific test
      */
     public ResponseEntity<String> downloadPDF(String testId) throws IOException {
-        TestDetails test = testDetailsRepository.findById(testId);
+        TestDetails test = testDetailsRepository.findById(testId).get();
         File result = new File(String.valueOf(test.getPathPDF()));
 
         ResponseEntity respEntity;

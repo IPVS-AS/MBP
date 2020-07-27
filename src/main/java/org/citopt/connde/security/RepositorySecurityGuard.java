@@ -99,7 +99,7 @@ public class RepositorySecurityGuard {
         }
 
         //Calculate start and end of page from pageable
-        int start = pageable.getOffset();
+        int start = (int) pageable.getOffset();
         int end = Math.min((start + pageable.getPageSize()), userEntities.size());
 
         //Replace elements of content list with the new page elements

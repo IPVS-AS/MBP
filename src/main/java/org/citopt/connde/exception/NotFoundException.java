@@ -1,12 +1,13 @@
 package org.citopt.connde.exception;
 
 /**
- *
  * @author rafaelkperes
  */
 public class NotFoundException extends Exception {
 
-    public NotFoundException() {
+	private static final long serialVersionUID = -6515008730641081914L;
+
+	public NotFoundException() {
     }
 
     public NotFoundException(String message) {

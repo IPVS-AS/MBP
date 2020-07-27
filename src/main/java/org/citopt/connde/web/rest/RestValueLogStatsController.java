@@ -1,6 +1,8 @@
 package org.citopt.connde.web.rest;
 
-import io.swagger.annotations.*;
+import javax.measure.quantity.Quantity;
+import javax.measure.unit.Unit;
+
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Component;
@@ -15,9 +17,17 @@ import org.citopt.connde.web.rest.helper.MonitoringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.measure.unit.Unit;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * REST Controller for requests related to the value log stats of components.
@@ -140,7 +150,7 @@ public class RestValueLogStatsController {
      */
     private ResponseEntity<ValueLogStats> calculateValueLogStats(Component component, String unit) {
         //Convert given unit to object (if possible)
-        Unit convertUnit = null;
+        Unit<? extends Quantity> convertUnit = null;
         if ((unit != null) && (!unit.isEmpty())) {
             //Try to parse unit
             try {

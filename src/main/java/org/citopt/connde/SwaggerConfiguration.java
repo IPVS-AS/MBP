@@ -1,14 +1,17 @@
 package org.citopt.connde;
 
-import com.fasterxml.classmate.TypeResolver;
-import com.google.common.base.Predicates;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiOperation;
+import java.util.Collections;
+
 import org.citopt.connde.util.ValidationErrorCollection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+
+import com.fasterxml.classmate.TypeResolver;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiOperation;
 import springfox.documentation.annotations.ApiIgnore;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -17,10 +20,13 @@ import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.data.rest.configuration.SpringDataRestConfiguration;
 import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger.web.*;
+import springfox.documentation.swagger.web.DocExpansion;
+import springfox.documentation.swagger.web.ModelRendering;
+import springfox.documentation.swagger.web.OperationsSorter;
+import springfox.documentation.swagger.web.TagsSorter;
+import springfox.documentation.swagger.web.UiConfiguration;
+import springfox.documentation.swagger.web.UiConfigurationBuilder;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
-
-import java.util.Collections;
 
 /**
  * Configuration for the swagger documentation generator.
@@ -38,20 +44,23 @@ public class SwaggerConfiguration {
      * @return The docket bean
      */
     @Bean
-    @SuppressWarnings("unchecked")
     public Docket docket() {
         //Type resolver for working with types
         TypeResolver typeResolver = new TypeResolver();
-
+        
         //Create bean
         return new Docket(DocumentationType.SWAGGER_2)
                 .useDefaultResponseMessages(false)
                 .additionalModels(typeResolver.resolve(ValidationErrorCollection.class))
                 .select()
-                .apis(Predicates.and(Predicates.or(RequestHandlerSelectors.withClassAnnotation(Api.class),
-                        RequestHandlerSelectors.withClassAnnotation(ApiModel.class),
-                        RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class)),
-                        Predicates.not(RequestHandlerSelectors.withClassAnnotation(ApiIgnore.class))))
+				.apis(RequestHandlerSelectors.withClassAnnotation(Api.class)
+							.or(RequestHandlerSelectors.withClassAnnotation(ApiModel.class)
+							.or(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class)))
+						.and(RequestHandlerSelectors.withClassAnnotation(ApiIgnore.class).negate()))
+//                .apis(Predicates.and(Predicates.or(RequestHandlerSelectors.withClassAnnotation(Api.class),
+//                        RequestHandlerSelectors.withClassAnnotation(ApiModel.class),
+//                        RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class)),
+//                        Predicates.not(RequestHandlerSelectors.withClassAnnotation(ApiIgnore.class))))
                 .paths(PathSelectors.any())
                 .build()
                 .apiInfo(apiInfo());

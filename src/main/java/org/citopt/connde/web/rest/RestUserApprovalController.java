@@ -1,6 +1,10 @@
 package org.citopt.connde.web.rest;
 
-import io.swagger.annotations.*;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
@@ -10,7 +14,16 @@ import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
-import org.citopt.connde.repository.*;
+import org.citopt.connde.repository.ActuatorRepository;
+import org.citopt.connde.repository.AdapterRepository;
+import org.citopt.connde.repository.DeviceRepository;
+import org.citopt.connde.repository.EnvironmentModelRepository;
+import org.citopt.connde.repository.MonitoringAdapterRepository;
+import org.citopt.connde.repository.RuleActionRepository;
+import org.citopt.connde.repository.RuleRepository;
+import org.citopt.connde.repository.RuleTriggerRepository;
+import org.citopt.connde.repository.SensorRepository;
+import org.citopt.connde.repository.UserEntityRepository;
 import org.citopt.connde.repository.projection.ComponentExcerpt;
 import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.UserService;
@@ -20,12 +33,17 @@ import org.citopt.connde.web.rest.helper.MonitoringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * REST Controller for approval and disapproval of users for user entities.
@@ -126,7 +144,7 @@ public class RestUserApprovalController {
                 sshDeployer.undeployIfRunning(actuator);
 
                 //Delete actuator
-                actuatorRepository.delete(actuatorExcerpt.getId());
+                actuatorRepository.deleteById(actuatorExcerpt.getId());
             }
         }
 
@@ -144,7 +162,7 @@ public class RestUserApprovalController {
                 sshDeployer.undeployIfRunning(sensor);
 
                 //Delete actuator
-                sensorRepository.delete(sensorExcerpt.getId());
+                sensorRepository.deleteById(sensorExcerpt.getId());
             }
         }
 
@@ -186,7 +204,7 @@ public class RestUserApprovalController {
                 sshDeployer.undeployIfRunning(actuator);
 
                 //Delete actuator
-                actuatorRepository.delete(actuatorExcerpt.getId());
+                actuatorRepository.deleteById(actuatorExcerpt.getId());
             }
         }
 
@@ -205,7 +223,7 @@ public class RestUserApprovalController {
                 sshDeployer.undeployIfRunning(sensor);
 
                 //Delete actuator
-                sensorRepository.delete(sensorExcerpt.getId());
+                sensorRepository.deleteById(sensorExcerpt.getId());
             }
         }
 
@@ -402,9 +420,9 @@ public class RestUserApprovalController {
      * @param userEntityRepository The repository where the user entity can be found
      * @return A response containing the result of the approval attempt
      */
-    private ResponseEntity<Void> approveUserEntity(String userEntityId, String username, UserEntityRepository userEntityRepository) {
+    private <E extends UserEntity> ResponseEntity<Void> approveUserEntity(String userEntityId, String username, UserEntityRepository<E> userEntityRepository) {
         //Get user entity from repository by id
-        UserEntity userEntity = userEntityRepository.get(userEntityId);
+        E userEntity = userEntityRepository.get(userEntityId);
 
         //Check if entity could be found
         if (userEntity == null) {
@@ -448,18 +466,18 @@ public class RestUserApprovalController {
      * @param userEntityRepository The repository where the user entity can be found
      * @return A response containing the result of the disapproval attempt
      */
-    private ResponseEntity<Void> disapproveUserEntity(String userEntityId, String username, UserEntityRepository userEntityRepository) {
+    private <E extends UserEntity> ResponseEntity<Void> disapproveUserEntity(String userEntityId, String username, UserEntityRepository<E> userEntityRepository) {
         //Get user entity from repository by id
-        UserEntity userEntity = userEntityRepository.get(userEntityId);
+        E userEntity = userEntityRepository.get(userEntityId);
 
         //Check if entity could be found
         if (userEntity == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        	return ResponseEntity.notFound().build();
         }
 
         //Check if user is permitted to disapprove
         if (!userEntityService.isUserPermitted(userEntity, "disapprove")) {
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         //Get user by ID
@@ -467,7 +485,7 @@ public class RestUserApprovalController {
 
         //Check if user could be found
         if (!userOptional.isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        	return ResponseEntity.notFound().build();
         }
 
         //Get user from optional
@@ -475,13 +493,13 @@ public class RestUserApprovalController {
 
         //Only non-admin users, non-owners and already approved users may be disapproved
         if (candidateUser.isAdmin() || (userEntity.isUserOwner(candidateUser)) || (!userEntity.isUserApproved(candidateUser))) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        	return ResponseEntity.badRequest().build();
         }
 
         //Disapprove user
         userEntity.disapproveUser(candidateUser);
         userEntityRepository.save(userEntity);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 }

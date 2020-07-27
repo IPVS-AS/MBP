@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.measure.quantity.Quantity;
 import javax.measure.unit.Unit;
 import java.util.Arrays;
 import java.util.List;
@@ -78,7 +79,7 @@ public class RestUnitController {
     public ResponseEntity<Boolean> checkUnitsForCompatibility(@RequestParam("first") @ApiParam(value = "Specifies the first unit to compare", example = "m", required = true) String firstUnitString,
                                                               @RequestParam("second") @ApiParam(value = "Specifies the second unit to compare", example = "mm", required = true) String secondUnitString) {
         //Objects to hold the parsed units
-        Unit firstUnit, secondUnit;
+        Unit<? extends Quantity> firstUnit, secondUnit;
 
         //Try to convert both strings to units
         try {

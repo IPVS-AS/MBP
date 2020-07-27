@@ -12,7 +12,11 @@ import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * REST Controller that exposes methods for the purpose of managing rules.
@@ -43,7 +47,7 @@ public class RestRuleController {
     @PostMapping(value = "/rules/enable/{id}")
     public ResponseEntity<ActionResponse> enableRule(@PathVariable(value = "id") String ruleId) {
         //Get rule from repository
-        Rule rule = ruleRepository.findOne(ruleId);
+        Rule rule = ruleRepository.findById(ruleId).get();
 
         //Check if rule was found
         if (rule == null) {
@@ -76,7 +80,7 @@ public class RestRuleController {
     @PostMapping(value = "/rules/disable/{id}")
     public ResponseEntity<ActionResponse> disableRule(@PathVariable(value = "id") String ruleId) {
         //Get rule from repository
-        Rule rule = ruleRepository.findOne(ruleId);
+        Rule rule = ruleRepository.findById(ruleId).get();
 
         //Check if rule was found
         if (rule == null) {
@@ -98,7 +102,7 @@ public class RestRuleController {
     @PostMapping(value = "/rule-actions/test/{id}")
     public ResponseEntity<ActionResponse> testRuleAction(@PathVariable(value = "id") String actionId) {
         //Get rule action from repository
-        RuleAction ruleAction = ruleActionRepository.findOne(actionId);
+        RuleAction ruleAction = ruleActionRepository.findById(actionId).get();
 
         //Check if rule was found
         if (ruleAction == null) {

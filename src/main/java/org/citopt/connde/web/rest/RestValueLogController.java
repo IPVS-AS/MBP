@@ -1,13 +1,18 @@
 package org.citopt.connde.web.rest;
 
-import io.swagger.annotations.*;
+import javax.measure.converter.UnitConverter;
+import javax.measure.quantity.Quantity;
+import javax.measure.unit.Unit;
+
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.domain.valueLog.ValueLog;
-import org.citopt.connde.repository.*;
+import org.citopt.connde.repository.ActuatorRepository;
+import org.citopt.connde.repository.SensorRepository;
+import org.citopt.connde.repository.ValueLogRepository;
 import org.citopt.connde.service.UnitConverterService;
 import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.web.rest.helper.MonitoringHelper;
@@ -16,11 +21,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.measure.converter.UnitConverter;
-import javax.measure.unit.Unit;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * REST Controller for retrieving value logs for certain components. Furthermore, it provides
@@ -153,7 +166,7 @@ public class RestValueLogController {
      */
     @DeleteMapping("/actuators/{id}/valueLogs")
     @ApiIgnore("Currently not working")
-    public ResponseEntity deleteActuatorValueLogs(@PathVariable(value = "id") String actuatorId) {
+    public ResponseEntity<Void> deleteActuatorValueLogs(@PathVariable(value = "id") String actuatorId) {
         //Get actuator
         Actuator actuator = (Actuator) userEntityService.getUserEntityFromRepository(actuatorRepository, actuatorId);
 
@@ -179,7 +192,7 @@ public class RestValueLogController {
      */
     @DeleteMapping("/sensors/{id}/valueLogs")
     @ApiIgnore("Currently not working")
-    public ResponseEntity deleteSensorValueLogs(@PathVariable(value = "id") String sensorId) {
+    public ResponseEntity<Void> deleteSensorValueLogs(@PathVariable(value = "id") String sensorId) {
         //Get sensor
         Sensor sensor = (Sensor) userEntityService.getUserEntityFromRepository(sensorRepository, sensorId);
 
@@ -206,7 +219,7 @@ public class RestValueLogController {
      */
     @DeleteMapping("/monitoring/{deviceId}/valueLogs")
     @ApiIgnore("Currently not working")
-    public ResponseEntity deleteMonitoringValueLogs(@PathVariable(value = "deviceId") String deviceId,
+    public ResponseEntity<Void> deleteMonitoringValueLogs(@PathVariable(value = "deviceId") String deviceId,
                                                     @RequestParam("adapter") String monitoringAdapterId) {
 
         //Create new monitoring component from parameters
@@ -244,7 +257,7 @@ public class RestValueLogController {
         }
 
         //Try to get unit object from string
-        Unit targetUnit;
+        Unit<? extends Quantity> targetUnit;
         try {
             targetUnit = Unit.valueOf(unit);
         } catch (Exception e) {
@@ -252,7 +265,7 @@ public class RestValueLogController {
         }
 
         //Get unit object from adapter
-        Unit startUnit = component.getAdapter().getUnitObject();
+        Unit<? extends Quantity> startUnit = component.getAdapter().getUnitObject();
 
         //Get corresponding unit converter
         UnitConverter converter = startUnit.getConverterTo(targetUnit);
@@ -264,7 +277,7 @@ public class RestValueLogController {
         }
 
         //All values converted, now return
-        return new ResponseEntity<>(page, HttpStatus.OK);
+        return ResponseEntity.ok(page);
     }
 
     /**
@@ -273,10 +286,10 @@ public class RestValueLogController {
      * @param component The component whose data is supposed to be deleted
      * @return A response entity that may be returned to the client
      */
-    private ResponseEntity deleteValueLogs(Component component) {
+    private ResponseEntity<Void> deleteValueLogs(Component component) {
         valueLogRepository.deleteByIdRef(component.getId());
 
         //Return success response
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 }

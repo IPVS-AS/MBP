@@ -1,12 +1,11 @@
 package org.citopt.connde.repository;
 
-import io.swagger.annotations.*;
-import org.citopt.connde.domain.adapter.Adapter;
+import java.util.Optional;
+
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.repository.projection.MonitoringAdapterExcerpt;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
@@ -14,18 +13,24 @@ import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  * Repository definition interface for monitoring adapters.
  */
 @RepositoryRestResource(collectionResourceRel = "monitoring-adapters", path = "monitoring-adapters",
         excerptProjection = MonitoringAdapterExcerpt.class)
 @Api(tags = {"Monitoring adapter entities"}, description = "CRUD for monitoring adapter entities")
-public interface MonitoringAdapterRepository extends UserEntityRepository<MonitoringAdapter> {
+public interface MonitoringAdapterRepository extends UserEntityRepository<MonitoringAdapter> { // onitoringAdapterRepository.findById
     @RestResource(exported = false)
     MonitoringAdapter findByName(@Param("name") String name);
 
     @RestResource(exported = false)
-    MonitoringAdapterExcerpt findById(@Param("id") String id);
+    Optional<MonitoringAdapterExcerpt> findExcerptById(@Param("id") String id);
 
     @Override
     @PreAuthorize("@repositorySecurityGuard.checkPermission(#adapter, 'delete')")

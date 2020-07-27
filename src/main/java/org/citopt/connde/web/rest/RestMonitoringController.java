@@ -1,6 +1,10 @@
 package org.citopt.connde.web.rest;
 
-import io.swagger.annotations.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Component;
@@ -18,15 +22,23 @@ import org.citopt.connde.web.rest.helper.DeploymentWrapper;
 import org.citopt.connde.web.rest.helper.MonitoringHelper;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * REST Controller that exposes methods for the purpose of device monitoring.
@@ -209,7 +221,7 @@ public class RestMonitoringController {
     @GetMapping(value = "/monitoring/state/{deviceId}", params = {"adapter"})
     @ApiOperation(value = "Retrieves the monitoring state for a given device and monitoring adapter", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to monitor the device"), @ApiResponse(code = 404, message = "Device or monitoring adapter not found or not authorized to access them")})
-    public ResponseEntity<Resource<ComponentState>> getMonitoringState(@PathVariable(value = "deviceId") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
+    public ResponseEntity<EntityModel<ComponentState>> getMonitoringState(@PathVariable(value = "deviceId") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
                                                                        @RequestParam("adapter") @ApiParam(value = "ID of the monitoring adapter", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringAdapterId) {
         //Create new monitoring component
         MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
@@ -259,7 +271,7 @@ public class RestMonitoringController {
         List<MonitoringAdapterExcerpt> compatibleAdapters = monitoringHelper.getCompatibleAdapters(device)
                 .stream()
                 .filter(UserEntity::isReadable) //Filter for adapters which can be accessed by the current user
-                .map(adapter -> monitoringAdapterRepository.findById(adapter.getId())) //Convert to projection
+                .map(adapter -> monitoringAdapterRepository.findExcerptById(adapter.getId()).get()) //Convert to projection
                 .collect(Collectors.toList());
 
         return new ResponseEntity<>(compatibleAdapters, HttpStatus.OK);

@@ -1,14 +1,29 @@
 package org.citopt.connde.service.env_model;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.citopt.connde.domain.adapter.Adapter;
-import org.citopt.connde.domain.component.*;
+import org.citopt.connde.domain.component.Actuator;
+import org.citopt.connde.domain.component.ActuatorValidator;
+import org.citopt.connde.domain.component.Component;
+import org.citopt.connde.domain.component.Sensor;
+import org.citopt.connde.domain.component.SensorValidator;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.env_model.EnvironmentModel;
 import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
-import org.citopt.connde.repository.*;
+import org.citopt.connde.repository.ActuatorRepository;
+import org.citopt.connde.repository.AdapterRepository;
+import org.citopt.connde.repository.DeviceRepository;
+import org.citopt.connde.repository.EnvironmentModelRepository;
+import org.citopt.connde.repository.KeyPairRepository;
+import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.UserService;
 import org.citopt.connde.service.deploy.ComponentState;
 import org.citopt.connde.service.deploy.SSHDeployer;
@@ -22,12 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Service for tasks related to environment models.
@@ -173,11 +182,11 @@ public class EnvironmentModelService {
 
             //Check entity type
             if (entity instanceof Device) {
-                deviceRepository.delete(((Device) entity).getId());
+                deviceRepository.deleteById(((Device) entity).getId());
             } else if (entity instanceof Actuator) {
-                actuatorRepository.delete(((Actuator) entity).getId());
+                actuatorRepository.deleteById(((Actuator) entity).getId());
             } else if (entity instanceof Sensor) {
-                sensorRepository.delete(((Sensor) entity).getId());
+                sensorRepository.deleteById(((Sensor) entity).getId());
             }
         }
     }
@@ -852,7 +861,7 @@ public class EnvironmentModelService {
         device.setPassword(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_PASSWORD, ""));
 
         //Find key pair from repository and set it
-        KeyPair keyPair = keyPairRepository.findOne(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_KEYPAIR));
+        KeyPair keyPair = keyPairRepository.findById(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_KEYPAIR)).get();
         device.setKeyPair(keyPair);
 
         //Return final device object
@@ -879,7 +888,7 @@ public class EnvironmentModelService {
         component.setComponentType(nodeObject.getString(MODEL_JSON_KEY_NODE_COMPONENT_TYPE));
 
         //Find adapter from repository and set it
-        Adapter adapter = adapterRepository.findOne(componentDetails.optString(MODEL_JSON_KEY_COMPONENT_ADAPTER));
+        Adapter adapter = adapterRepository.findById(componentDetails.optString(MODEL_JSON_KEY_COMPONENT_ADAPTER)).get();
         component.setAdapter(adapter);
 
         //Set a fake device for passing validation
