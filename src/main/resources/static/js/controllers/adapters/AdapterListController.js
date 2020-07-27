@@ -173,12 +173,8 @@ app.controller('AdapterListController',
                             //Extend request parameters for routines, their hashes and parameters
                             return readFiles(data.routineFiles)
                                 .then(function (response) {
-                                    //TODO
-                                    console.log("Response:");
-                                    console.log(response);
-
                                     data.unit = data.unit || "";
-                                    data.routines = response[0];
+                                    data.routines = response;
                                     data.parameters = vm.parameters;
                                     return addAdapter(data);
                                 }, function (response) {

@@ -66,11 +66,7 @@ app.factory("FileReader",
             let reader = getReader(deferred, scope, file);
             reader.readAsDataURL(file);
 
-            return $q.all([deferred.promise, readAsMD5Hash(file, scope)]).then(function (result) {
-                //Extend file reading result for MD5 hash
-                result[0].hash = result[1];
-                return result[0];
-            });
+            return deferred.promise;
         };
 
         let readMultipleAsDataURL = function (files, scope) {
