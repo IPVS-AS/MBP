@@ -291,7 +291,7 @@ public class RestMonitoringController {
         List<MonitoringComponentDTO> monitoringComponents = new ArrayList<>();
 
         //Get all devices the current user has access to
-        List<UserEntity> deviceList = userEntityService.getUserEntitiesFromRepository(deviceRepository);
+        List<? extends UserEntity> deviceList = userEntityService.getUserEntitiesFromRepository(deviceRepository);
 
         //Iterate over all devices
         for (UserEntity userEntity : deviceList) {

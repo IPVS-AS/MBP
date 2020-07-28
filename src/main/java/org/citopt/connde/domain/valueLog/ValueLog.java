@@ -3,11 +3,12 @@ package org.citopt.connde.domain.valueLog;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import org.citopt.connde.InfluxDBConfiguration;
 import org.influxdb.annotation.Column;
-import org.influxdb.annotation.Measurement;import java.text.SimpleDateFormat;import java.util.Date;
+import org.influxdb.annotation.Measurement;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Objects of this class represent value logs that were received by the MQTT broker and
@@ -19,8 +20,6 @@ import org.influxdb.annotation.Measurement;import java.text.SimpleDateFormat;imp
         timeUnit = TimeUnit.SECONDS)
 @ApiModel(description = "Model for value logs of components")
 public class ValueLog {
-    //Format that is used for the date
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Column(name = "time")
     @ApiModelProperty(notes = "Receive time", example = "{\"nano\":0,\"epochSecond\":1570635657}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)

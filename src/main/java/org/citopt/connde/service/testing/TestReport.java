@@ -1,8 +1,11 @@
 package org.citopt.connde.service.testing;
 
 
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.PdfWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.domain.testing.TestDetails;
@@ -11,12 +14,19 @@ import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.service.receiver.ValueLogReceiver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.List;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
-
-import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import com.itextpdf.text.pdf.PdfWriter;
 
 /**
  * The component TestReport is used for the creation of test reports for tests of applications using the testing-tool
@@ -369,7 +379,7 @@ public class TestReport {
         ruleInfos.addCell(c1);
 
 
-        ArrayList ruleActions = new ArrayList();
+        ArrayList<String> ruleActions = new ArrayList<>();
         for (RuleAction action : ruleAfter.getActions()) {
             ruleActions.add(action.getName());
         }
@@ -489,7 +499,7 @@ public class TestReport {
      */
     public PdfPTable getRuleInfos(TestDetails test) {
         //noinspection MismatchedQueryAndUpdateOfCollection
-        ArrayList rules = new ArrayList();
+        ArrayList<String> rules = new ArrayList<>();
         StringBuilder rulesUser = new StringBuilder();
         String rulesExecuted;
         String triggerRules;

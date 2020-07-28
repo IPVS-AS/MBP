@@ -355,6 +355,11 @@ public class EnvironmentModelService {
                     //Update deployment error map
                     deploymentErrors.put(nodeId, "Impossible to deploy, device is not available.");
                     continue;
+                case READY:
+                	// TODO: Something to do here?
+                	break;
+                default:
+                	break;
             }
 
             //Try to deploy component
@@ -424,6 +429,14 @@ public class EnvironmentModelService {
                     //Impossible to undeploy component
                     publishEntityState(model, nodeId, component, EntityState.REGISTERED);
                     continue;
+                case DEPLOYED:
+                	// TODO: Something to do here?
+                	break;
+                case RUNNING:
+                	// TODO: Something to do here?
+                	break;
+                default:
+                	break;
             }
 
             //Try to undeploy component
@@ -500,6 +513,11 @@ public class EnvironmentModelService {
                     //Update deployment error map
                     startErrors.put(nodeId, "Impossible to start, device is not available.");
                     continue;
+                case DEPLOYED:
+                	// TODO: Something to do here?
+                	break;
+                default:
+                	break;
             }
 
             //Try to start component
@@ -573,6 +591,11 @@ public class EnvironmentModelService {
                     //Impossible to undeploy component
                     publishEntityState(model, nodeId, component, EntityState.REGISTERED);
                     continue;
+                case RUNNING:	
+                	// TODO: Something to do here?
+                	break;
+                default:
+                	break;
             }
 
             //Try to stop component

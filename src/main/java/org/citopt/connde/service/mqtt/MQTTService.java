@@ -347,7 +347,9 @@ public class MQTTService {
      * @return an instance of {@link HttpHeaders}
      */
     private HttpHeaders createHeaders(String username, String password) {
-        return new HttpHeaders() {{
+        return new HttpHeaders() {
+			private static final long serialVersionUID = 5554119924235604741L;
+		{
             String auth = username + ":" + password;
             byte[] encodedAuth = Base64.encodeBase64(
                     auth.getBytes(StandardCharsets.US_ASCII));

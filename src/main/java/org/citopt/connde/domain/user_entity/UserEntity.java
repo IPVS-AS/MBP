@@ -27,7 +27,6 @@ import static org.citopt.connde.domain.user_entity.UserEntityRole.*;
  */
 public abstract class UserEntity {
     //Default permission names
-    private static final String PERMISSION_NAME_CREATE = "create";
     private static final String PERMISSION_NAME_READ = "read";
     private static final String PERMISSION_NAME_DELETE = "delete";
     private static final String PERMISSION_NAME_APPROVE = "approve";

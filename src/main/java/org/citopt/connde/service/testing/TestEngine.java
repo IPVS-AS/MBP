@@ -285,7 +285,8 @@ public class TestEngine implements ValueLogReceiverObserver {
      * @param testId ID of the executed test
      * @return List of trigger-values
      */
-    public Map<String, List<Double>> getTriggerValues(String testId) {
+    @SuppressWarnings("unchecked")
+	public Map<String, List<Double>> getTriggerValues(String testId) {
         Map<String, List<Double>> testValues = new HashMap<>();
 
 
@@ -419,8 +420,7 @@ public class TestEngine implements ValueLogReceiverObserver {
 
         return executedRules;
     }
-
-
+    
     /**
      * Download/Open Testreport.
      *
@@ -443,6 +443,7 @@ public class TestEngine implements ValueLogReceiverObserver {
             respEntity = new ResponseEntity(out, responseHeaders, HttpStatus.OK);
             inputStream.close();
         } else {
+        	// Note that HTTP OK (200) is confusing here, NOT_FOUND (404) would be appropriate
             respEntity = new ResponseEntity("File Not Found", HttpStatus.OK);
         }
 

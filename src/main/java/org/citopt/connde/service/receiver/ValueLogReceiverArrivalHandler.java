@@ -1,5 +1,9 @@
 package org.citopt.connde.service.receiver;
 
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.Set;
+
 import org.citopt.connde.domain.valueLog.ValueLog;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -8,21 +12,12 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.util.Set;
-import java.util.Set;
-
 /**
  * then added to the value log repository.
  * Provides methods for handling incoming Mqtt events and parsing incoming value messages to value logs
  * which are then passed to the observers of the ValueLogReceiver.
  */
 class ValueLogReceiverArrivalHandler implements MqttCallback {
-
-    //Format in which dates are stores
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     //JSON key names
     private static final String JSON_KEY_COMPONENT_TYPE = "component";

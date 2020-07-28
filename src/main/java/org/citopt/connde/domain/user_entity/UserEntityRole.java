@@ -1,12 +1,5 @@
 package org.citopt.connde.domain.user_entity;
 
-import org.citopt.connde.DynamicBeanProvider;
-import org.citopt.connde.domain.user.User;
-import org.citopt.connde.service.UserService;
-
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Enumeration of possible user roles in terms of user entities. Each user role may hold a set of implications which
  * represent a "is-a" relationship. For example, the approved user role is derived from the user role,

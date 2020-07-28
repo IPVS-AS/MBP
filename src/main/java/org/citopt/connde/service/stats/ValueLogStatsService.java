@@ -38,7 +38,7 @@ public class ValueLogStatsService {
      * @param unit      The unit to which the values are supposed to be converted (null for default)
      * @return ValueLogStats object that holds the calculated data
      */
-    public ValueLogStats calculateValueLogStats(Component component, Unit unit) {
+    public ValueLogStats calculateValueLogStats(Component component, Unit<?> unit) {
         //Create empty stats object
         ValueLogStats stats = new ValueLogStats();
 
@@ -53,7 +53,7 @@ public class ValueLogStatsService {
 
 
         //Get adapter unit object
-        Unit adapterUnit = component.getAdapter().getUnitObject();
+        Unit<?> adapterUnit = component.getAdapter().getUnitObject();
 
         //Check if value conversion is desired and possible
         if ((unit != null) && adapterUnit.isCompatible(unit)) {

@@ -46,7 +46,7 @@ public class RepositorySecurityGuard {
      * @param permission The permission to check
      * @return True, if the user has the permission; false otherwise
      */
-    public boolean checkPermissionById(String entityId, UserEntityRepository repository, String permission) {
+    public <E extends UserEntity> boolean checkPermissionById(String entityId, UserEntityRepository<E> repository, String permission) {
         //Sanity check
         if ((entityId == null) || (entityId.isEmpty()) || (repository == null)) {
             return false;
@@ -82,14 +82,14 @@ public class RepositorySecurityGuard {
      * @return False, in case the page could not be modified using reflections; otherwise always true
      */
     @SuppressWarnings("unchecked")
-    public boolean retrieveUserEntities(Page<UserEntity> page, Pageable pageable, UserEntityRepository repository) {
+    public <E extends UserEntity> boolean retrieveUserEntities(Page<E> page, Pageable pageable, UserEntityRepository<E> repository) {
         //Get all device user entities the current user has access to
-        List<UserEntity> userEntities = userEntityService.getUserEntitiesFromRepository(repository);
+        List<E> userEntities = userEntityService.getUserEntitiesFromRepository(repository);
 
         //Extract the content of the passed page using reflection
-        List content = null;
+        List<E> content = null;
         try {
-            content = (List) FieldUtils.readField(page, "content", true);
+            content = (List<E>) FieldUtils.readField(page, "content", true);
         } catch (IllegalAccessException ignored) {
         }
 
