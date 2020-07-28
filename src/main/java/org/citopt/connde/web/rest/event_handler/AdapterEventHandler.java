@@ -43,7 +43,7 @@ public class AdapterEventHandler {
         //Find actuators that use this adapter and iterate over them
         List<ComponentExcerpt> affectedActuators = actuatorRepository.findAllByAdapterId(adapterId);
         for (ComponentExcerpt projection : affectedActuators) {
-            Actuator actuator = actuatorRepository.get(projection.getId());
+            Actuator actuator = actuatorRepository.get(projection.getId()).get();
 
             //Undeploy actuator if running
             sshDeployer.undeployIfRunning(actuator);
@@ -57,7 +57,7 @@ public class AdapterEventHandler {
         //Find sensors that use this adapter and iterate over them
         List<ComponentExcerpt> affectedSensors = sensorRepository.findAllByAdapterId(adapterId);
         for (ComponentExcerpt projection : affectedSensors) {
-            Sensor sensor = sensorRepository.get(projection.getId());
+            Sensor sensor = sensorRepository.get(projection.getId()).get();
 
             //Undeploy sensor if running
             sshDeployer.undeployIfRunning(sensor);

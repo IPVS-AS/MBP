@@ -160,7 +160,7 @@ public class RestComponentFilterController {
         //Filter actuator excerpts
         for (ComponentExcerpt actuatorExcerpt : actuatorExcerpts) {
             //Perform permission check
-            if (actuatorRepository.get(actuatorExcerpt.getId()).isReadable()) {
+            if (actuatorRepository.get(actuatorExcerpt.getId()).get().isReadable()) {
                 componentList.add(actuatorExcerpt);
             }
         }
@@ -168,7 +168,7 @@ public class RestComponentFilterController {
         //Filter sensor excerpts
         for (ComponentExcerpt sensorExcerpt : sensorExcerpts) {
             //Perform permission check
-            if (sensorRepository.get(sensorExcerpt.getId()).isReadable()) {
+            if (sensorRepository.get(sensorExcerpt.getId()).get().isReadable()) {
                 componentList.add(sensorExcerpt);
             }
         }

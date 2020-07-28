@@ -136,7 +136,7 @@ public class RestUserApprovalController {
         //Check actuators
         for (ComponentExcerpt actuatorExcerpt : affectedActuators) {
             //Get actuator entity
-            Actuator actuator = actuatorRepository.get(actuatorExcerpt.getId());
+            Actuator actuator = actuatorRepository.get(actuatorExcerpt.getId()).get();
 
             //Check if actuator is owned by the affected user
             if (username.equals(actuator.getOwnerName())) {
@@ -154,7 +154,7 @@ public class RestUserApprovalController {
         //Check actuators
         for (ComponentExcerpt sensorExcerpt : affectedSensors) {
             //Get sensor entity
-            Sensor sensor = sensorRepository.get(sensorExcerpt.getId());
+            Sensor sensor = sensorRepository.get(sensorExcerpt.getId()).get();
 
             //Check if sensor is owned by the affected user
             if (username.equals(sensor.getOwnerName())) {
@@ -196,7 +196,7 @@ public class RestUserApprovalController {
         //Check actuators
         for (ComponentExcerpt actuatorExcerpt : affectedActuators) {
             //Get actuator entity
-            Actuator actuator = actuatorRepository.get(actuatorExcerpt.getId());
+            Actuator actuator = actuatorRepository.get(actuatorExcerpt.getId()).get();
 
             //Check if actuator is owned by the affected user
             if (username.equals(actuator.getOwnerName())) {
@@ -214,7 +214,7 @@ public class RestUserApprovalController {
         //Check actuators
         for (ComponentExcerpt sensorExcerpt : affectedSensors) {
             //Get sensor entity
-            Sensor sensor = sensorRepository.get(sensorExcerpt.getId());
+            Sensor sensor = sensorRepository.get(sensorExcerpt.getId()).get();
 
             //Check if sensor is owned by the affected user
             if (username.equals(sensor.getOwnerName())) {
@@ -228,7 +228,7 @@ public class RestUserApprovalController {
         }
 
         //Get device from repository
-        Device device = deviceRepository.get(deviceId);
+        Device device = deviceRepository.get(deviceId).get();
 
         //Get all monitoring adapters that are compatible to the device
         List<MonitoringAdapter> compatibleMonitoringAdapters = monitoringHelper.getCompatibleAdapters(device);
@@ -271,7 +271,7 @@ public class RestUserApprovalController {
         }
 
         //Get monitoring adapter
-        MonitoringAdapter monitoringAdapter = monitoringAdapterRepository.get(adapterId);
+        MonitoringAdapter monitoringAdapter = monitoringAdapterRepository.get(adapterId).get();
 
         //Get all devices that are compatible to the monitoring adapter
         List<Device> compatibleDevices = monitoringHelper.getCompatibleDevices(monitoringAdapter);
@@ -422,7 +422,7 @@ public class RestUserApprovalController {
      */
     private <E extends UserEntity> ResponseEntity<Void> approveUserEntity(String userEntityId, String username, UserEntityRepository<E> userEntityRepository) {
         //Get user entity from repository by id
-        E userEntity = userEntityRepository.get(userEntityId);
+        E userEntity = userEntityRepository.get(userEntityId).get();
 
         //Check if entity could be found
         if (userEntity == null) {
@@ -468,7 +468,7 @@ public class RestUserApprovalController {
      */
     private <E extends UserEntity> ResponseEntity<Void> disapproveUserEntity(String userEntityId, String username, UserEntityRepository<E> userEntityRepository) {
         //Get user entity from repository by id
-        E userEntity = userEntityRepository.get(userEntityId);
+        E userEntity = userEntityRepository.get(userEntityId).get();
 
         //Check if entity could be found
         if (userEntity == null) {

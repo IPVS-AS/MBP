@@ -180,7 +180,7 @@ public class RestMonitoringController {
     public ResponseEntity<Map<String, ComponentState>> getDeviceMonitoringState(
             @PathVariable(value = "deviceId") String deviceId) {
         //Fetch device object
-        Device device = deviceRepository.get(deviceId);
+        Device device = deviceRepository.get(deviceId).get();
 
         //Check if device could be found
         if (device == null) {

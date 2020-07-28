@@ -1,5 +1,8 @@
 package org.citopt.connde.security;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.repository.UserEntityRepository;
@@ -8,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 /**
  * Provides methods for checking user permissions and retrieving permissible user entities for incoming REST requests
@@ -20,6 +21,17 @@ public class RepositorySecurityGuard {
 
     @Autowired
     private UserEntityService userEntityService;
+    
+    /**
+     * Checks whether the current user has a certain permissions for a given user entity.
+     *
+     * @param userEntity The user entity to check wrapped in an {@link Optional}
+     * @param permission The permission to check
+     * @return True, if the user has the permission; false otherwise
+     */
+    public boolean checkPermission(Optional<UserEntity> userEntity, String permission) {
+    	return userEntity.map(e -> checkPermission(e, permission)).orElse(false);
+    }
 
     /**
      * Checks whether the current user has a certain permissions for a given user entity.
@@ -53,7 +65,7 @@ public class RepositorySecurityGuard {
         }
 
         //Get entity from repository by id
-        UserEntity userEntity = repository.get(entityId);
+        UserEntity userEntity = repository.get(entityId).get();
 
         //Perform permission check
         return checkPermission(userEntity, permission);

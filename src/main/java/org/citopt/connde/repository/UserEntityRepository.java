@@ -26,7 +26,7 @@ public interface UserEntityRepository<T extends UserEntity> extends MongoReposit
 
     @RestResource(exported = false)
     @Query("{'_id': ?0}")
-    T get(String id);
+    Optional<T> get(String id);
 
     @Override
     @PostAuthorize("@repositorySecurityGuard.checkPermission(returnObject, 'read')")

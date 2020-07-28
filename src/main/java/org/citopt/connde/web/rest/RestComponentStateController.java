@@ -106,7 +106,7 @@ public class RestComponentStateController {
 
     private <C extends Component> ResponseEntity<EntityModel<ComponentState>> getComponentState(String componentId, ComponentRepository<C> repository) {
         //Retrieve component from repository
-        Component component = (Component) repository.get(componentId);
+        Component component = (Component) repository.get(componentId).get();
 
         //Get component state
         return deploymentWrapper.getComponentState(component);
