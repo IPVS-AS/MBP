@@ -27,13 +27,6 @@
 	</repositories>
 	<dependencies>
 
-		<!-- JSON -->
-		<!-- <dependency> -->
-		<!-- <groupId>javax.json</groupId> -->
-		<!-- <artifactId>javax.json-api</artifactId> -->
-		<!-- <version>1.0</version> -->
-		<!-- </dependency> -->
-
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
