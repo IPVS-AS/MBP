@@ -1,15 +1,17 @@
 package org.citopt.connde.web.rest;
 
-import io.swagger.annotations.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.domain.rules.RuleTrigger;
-import org.citopt.connde.repository.ActuatorRepository;
-import org.citopt.connde.repository.SensorRepository;
-import org.citopt.connde.repository.RuleRepository;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
+import org.citopt.connde.domain.rules.RuleTrigger;
+import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.RuleActionRepository;
+import org.citopt.connde.repository.RuleRepository;
 import org.citopt.connde.repository.RuleTriggerRepository;
+import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.projection.ComponentExcerpt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,8 +21,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.List;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * REST Controller that exposes methods that allow the filtering for certain components, e.g. by adapter/device id.
@@ -155,7 +160,7 @@ public class RestComponentFilterController {
         //Filter actuator excerpts
         for (ComponentExcerpt actuatorExcerpt : actuatorExcerpts) {
             //Perform permission check
-            if (actuatorRepository.get(actuatorExcerpt.getId()).isReadable()) {
+            if (actuatorRepository.get(actuatorExcerpt.getId()).get().isReadable()) {
                 componentList.add(actuatorExcerpt);
             }
         }
@@ -163,7 +168,7 @@ public class RestComponentFilterController {
         //Filter sensor excerpts
         for (ComponentExcerpt sensorExcerpt : sensorExcerpts) {
             //Perform permission check
-            if (sensorRepository.get(sensorExcerpt.getId()).isReadable()) {
+            if (sensorRepository.get(sensorExcerpt.getId()).get().isReadable()) {
                 componentList.add(sensorExcerpt);
             }
         }

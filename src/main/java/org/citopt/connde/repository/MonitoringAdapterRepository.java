@@ -25,12 +25,12 @@ import io.swagger.annotations.ApiResponses;
 @RepositoryRestResource(collectionResourceRel = "monitoring-adapters", path = "monitoring-adapters",
         excerptProjection = MonitoringAdapterExcerpt.class)
 @Api(tags = {"Monitoring adapter entities"}, description = "CRUD for monitoring adapter entities")
-public interface MonitoringAdapterRepository extends UserEntityRepository<MonitoringAdapter> {
+public interface MonitoringAdapterRepository extends UserEntityRepository<MonitoringAdapter> { // onitoringAdapterRepository.findById
     @RestResource(exported = false)
     MonitoringAdapter findByName(@Param("name") String name);
 
     @RestResource(exported = false)
-    Optional<MonitoringAdapter> findById(@Param("id") String id);
+    Optional<MonitoringAdapterExcerpt> findExcerptById(@Param("id") String id);
 
     @Override
     @PreAuthorize("@repositorySecurityGuard.checkPermission(#adapter, 'delete')")

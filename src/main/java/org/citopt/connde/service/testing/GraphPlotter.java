@@ -1,5 +1,18 @@
 package org.citopt.connde.service.testing;
 
+import java.awt.GraphicsEnvironment;
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.imageio.ImageIO;
+
 import org.citopt.connde.domain.testing.TestDetails;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -7,15 +20,6 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.springframework.stereotype.Component;
-
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * The GraphPlotter component is used to create graphs of the simulated sensor values used for testing applications within the testing tool
@@ -66,10 +70,10 @@ public class GraphPlotter {
         XYSeriesCollection dataSet = new XYSeriesCollection();
 
         Map<String, List<Double>> simulationLists = test.getSimulationList();
-        Iterator it = simulationLists.entrySet().iterator();
+        Iterator<Entry<String, List<Double>>> it = simulationLists.entrySet().iterator();
 
         while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
+            Map.Entry<String, List<Double>> pair = it.next();
             String object = String.valueOf(pair.getKey());
             XYSeries series = new XYSeries(object);
             List<Double> simulationVal = (List<Double>) pair.getValue();

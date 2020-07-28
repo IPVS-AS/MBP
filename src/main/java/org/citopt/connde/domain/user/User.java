@@ -13,7 +13,6 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 import org.citopt.connde.constants.Constants;
-import org.citopt.connde.domain.access_control.IACRequestingEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -29,7 +28,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @Document
 @ApiModel(description = "Model for user entities")
-public class User implements Serializable, IACRequestingEntity {
+public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

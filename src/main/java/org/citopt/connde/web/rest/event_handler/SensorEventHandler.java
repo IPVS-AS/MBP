@@ -1,8 +1,8 @@
 package org.citopt.connde.web.rest.event_handler;
 
+import java.io.IOException;
+
 import org.citopt.connde.domain.component.Sensor;
-import org.citopt.connde.domain.valueLog.ValueLog;
-import org.citopt.connde.repository.ValueLogRepository;
 import org.citopt.connde.service.cep.trigger.CEPTriggerService;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,17 +12,12 @@ import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.util.List;
-
 /**
  * Event handler for operations that are performed on sensors.
  */
 @Component
 @RepositoryEventHandler
 public class SensorEventHandler {
-    @Autowired
-    private ValueLogRepository valueLogRepository;
 
     @Autowired
     private CEPTriggerService triggerService;

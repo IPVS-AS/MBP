@@ -456,7 +456,7 @@ public class SSHDeployer {
      * @param jsonArray The JSON array to convert
      * @return The corresponding JSON string (command line compatible)
      */
-    private String convertJSONToCmdLineString(JSONArray jsonArray) {
+    private String convertJSONToCmdLineString(JSONArray jsonArray) { // Resource<
         String jsonString = jsonArray.toString();
         //Escape backslashes
         jsonString = jsonString.replace("\"", "\\\"");

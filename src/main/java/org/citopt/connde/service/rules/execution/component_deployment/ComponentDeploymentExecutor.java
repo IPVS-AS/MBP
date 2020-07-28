@@ -1,5 +1,9 @@
 package org.citopt.connde.service.rules.execution.component_deployment;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Map;
+
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.rules.Rule;
@@ -13,10 +17,6 @@ import org.citopt.connde.service.rules.execution.RuleActionExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * Executor for component deployment actions including the deployment and undeployment of actuators and sensors.
@@ -213,7 +213,6 @@ public class ComponentDeploymentExecutor implements RuleActionExecutor {
         String componentId = splits[1];
 
         //Get component by doing a case differentiation for component types
-        org.citopt.connde.domain.component.Component component = null;
         if (componentType.equals(new Actuator().getComponentTypeName())) {
             return actuatorRepository.findById(componentId).get();
         } else if (componentType.equals(new Sensor().getComponentTypeName())) {

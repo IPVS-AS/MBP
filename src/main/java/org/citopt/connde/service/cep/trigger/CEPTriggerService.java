@@ -1,5 +1,9 @@
 package org.citopt.connde.service.cep.trigger;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
@@ -20,11 +24,6 @@ import org.citopt.connde.service.receiver.ValueLogReceiver;
 import org.citopt.connde.service.receiver.ValueLogReceiverObserver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * This service provides means for registering rule triggers with callbacks at the CEP engine. Furthermore,

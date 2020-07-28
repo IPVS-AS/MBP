@@ -8,7 +8,6 @@ import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
-import org.citopt.connde.repository.ValueLogRepository;
 import org.citopt.connde.repository.projection.ComponentExcerpt;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +28,6 @@ public class AdapterEventHandler {
     private SensorRepository sensorRepository;
 
     @Autowired
-    private ValueLogRepository valueLogRepository;
-
-    @Autowired
     private SSHDeployer sshDeployer;
 
     /**
@@ -47,7 +43,7 @@ public class AdapterEventHandler {
         //Find actuators that use this adapter and iterate over them
         List<ComponentExcerpt> affectedActuators = actuatorRepository.findAllByAdapterId(adapterId);
         for (ComponentExcerpt projection : affectedActuators) {
-            Actuator actuator = actuatorRepository.get(projection.getId());
+            Actuator actuator = actuatorRepository.get(projection.getId()).get();
 
             //Undeploy actuator if running
             sshDeployer.undeployIfRunning(actuator);
@@ -61,7 +57,7 @@ public class AdapterEventHandler {
         //Find sensors that use this adapter and iterate over them
         List<ComponentExcerpt> affectedSensors = sensorRepository.findAllByAdapterId(adapterId);
         for (ComponentExcerpt projection : affectedSensors) {
-            Sensor sensor = sensorRepository.get(projection.getId());
+            Sensor sensor = sensorRepository.get(projection.getId()).get();
 
             //Undeploy sensor if running
             sshDeployer.undeployIfRunning(sensor);

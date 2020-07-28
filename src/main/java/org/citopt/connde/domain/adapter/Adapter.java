@@ -3,6 +3,7 @@ package org.citopt.connde.domain.adapter;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.measure.quantity.Quantity;
 import javax.measure.unit.Unit;
 import javax.persistence.GeneratedValue;
 
@@ -114,7 +115,7 @@ public class Adapter extends UserEntity {
     }
 
     @JsonIgnore
-    public Unit getUnitObject() {
+    public Unit<? extends Quantity> getUnitObject() {
         try {
             return Unit.valueOf(this.unit);
         } catch (Exception e) {

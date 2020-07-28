@@ -23,14 +23,12 @@ public class ValueLogReceiver {
 
     //Set ob observers which want to be notified about incoming value logs
     private Set<ValueLogReceiverObserver> observerSet;
-    private final MQTTService mqttService;
 
     /**
      * Initializes the value logger service.
      */
     @Autowired
     public ValueLogReceiver(MQTTService mqttService) {
-        this.mqttService = mqttService;
         //Initialize set of observers
         observerSet = new HashSet<>();
 

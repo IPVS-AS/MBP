@@ -1,7 +1,5 @@
 package org.citopt.connde.service.deploy;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 /**
  * Enumerates all possible availability states of devices.
  * <p>

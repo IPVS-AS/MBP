@@ -1,5 +1,8 @@
 package org.citopt.connde.domain.adapter;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.repository.AdapterRepository;
 import org.citopt.connde.util.Validation;
@@ -8,11 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * @author rafaelkperes

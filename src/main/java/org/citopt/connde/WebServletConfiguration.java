@@ -2,9 +2,8 @@ package org.citopt.connde;
 
 import java.util.List;
 
-import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -18,11 +17,10 @@ import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.spring4.SpringTemplateEngine;
-import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver;
-import org.thymeleaf.spring4.view.ThymeleafViewResolver;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
+import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
@@ -38,9 +36,10 @@ import org.thymeleaf.templateresolver.ITemplateResolver;
 })
 @EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
 public class WebServletConfiguration
-        extends WebMvcConfigurerAdapter
-        implements ApplicationContextAware {
+//        extends WebMvcConfigurerAdapter
+        implements WebMvcConfigurer {
 
+	@Autowired
     private ApplicationContext applicationContext;
 
     private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {
@@ -53,11 +52,11 @@ public class WebServletConfiguration
         configurer.defaultContentType(MediaTypes.HAL_JSON);
     }
 
-    @Override
-    public void setApplicationContext(ApplicationContext ac)
-            throws BeansException {
-        this.applicationContext = ac;
-    }
+//    @Override
+//    public void setApplicationContext(ApplicationContext ac)
+//            throws BeansException {
+//        this.applicationContext = ac;
+//    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -75,9 +74,8 @@ public class WebServletConfiguration
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers){
         PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
-        resolver.setFallbackPageable(new PageRequest(0, Integer.MAX_VALUE));
+        resolver.setFallbackPageable(PageRequest.of(0, Integer.MAX_VALUE));
         argumentResolvers.add(resolver);
-        super.addArgumentResolvers(argumentResolvers);
     }
 
     /* start Thymeleaf */
@@ -90,7 +88,7 @@ public class WebServletConfiguration
     }
 
     @Bean
-    public TemplateEngine templateEngine() {
+    public SpringTemplateEngine templateEngine() {
         SpringTemplateEngine engine = new SpringTemplateEngine();
         engine.setEnableSpringELCompiler(true);
         engine.setTemplateResolver(templateResolver());

@@ -1,6 +1,5 @@
 package org.citopt.connde.web.rest;
 
-import io.swagger.annotations.*;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.env_model.EnvironmentModel;
 import org.citopt.connde.repository.EnvironmentModelRepository;
@@ -13,6 +12,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * REST Controller for server-sent events regarding environment models.
@@ -34,7 +39,7 @@ public class RestEnvModelSSEController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 404, message = "Environment model not found or not authorized"), @ApiResponse(code = 500, message = "Registration failed")})
     public ResponseEntity<SseEmitter> subscribe(@PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String modelID) {
         //Get environment model
-        EnvironmentModel model = environmentModelRepository.findById(modelID);
+        EnvironmentModel model = environmentModelRepository.findById(modelID).get();
 
         //Check if model could be found
         if (model == null) {

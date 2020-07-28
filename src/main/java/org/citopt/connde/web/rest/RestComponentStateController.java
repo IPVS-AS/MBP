@@ -1,6 +1,9 @@
 package org.citopt.connde.web.rest;
 
-import io.swagger.annotations.*;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.repository.ActuatorRepository;
@@ -10,16 +13,18 @@ import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.deploy.ComponentState;
 import org.citopt.connde.web.rest.helper.DeploymentWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * REST Controller for requests related to the deployment state of components.
@@ -73,7 +78,7 @@ public class RestComponentStateController {
     @GetMapping("/actuators/state/{id}")
     @ApiOperation(value = "Retrieves the component state for an actuator", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access the actuator"), @ApiResponse(code = 404, message = "Actuator not found")})
-    public ResponseEntity<Resource<ComponentState>> getActuatorState(@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId) {
+    public ResponseEntity<EntityModel<ComponentState>> getActuatorState(@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId) {
         return getComponentState(actuatorId, actuatorRepository);
     }
 
@@ -86,11 +91,11 @@ public class RestComponentStateController {
     @GetMapping("/sensors/state/{id}")
     @ApiOperation(value = "Retrieves the component state for a sensor", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access the sensor"), @ApiResponse(code = 404, message = "Sensor not found")})
-    public ResponseEntity<Resource<ComponentState>> getSensorState(@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId) {
+    public ResponseEntity<EntityModel<ComponentState>> getSensorState(@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId) {
         return getComponentState(sensorId, sensorRepository);
     }
 
-    private ResponseEntity<Map<String, ComponentState>> getStatesAllComponents(ComponentRepository repository) {
+    private <C extends Component> ResponseEntity<Map<String, ComponentState>> getStatesAllComponents(ComponentRepository<C> repository) {
         //Get all components
         List<Component> componentList = userEntityService.getUserEntitiesFromRepository(repository)
                 .stream().map(entity -> (Component) entity).collect(Collectors.toList());
@@ -99,9 +104,9 @@ public class RestComponentStateController {
         return deploymentWrapper.getStatesAllComponents(componentList);
     }
 
-    private ResponseEntity<Resource<ComponentState>> getComponentState(String componentId, ComponentRepository repository) {
+    private <C extends Component> ResponseEntity<EntityModel<ComponentState>> getComponentState(String componentId, ComponentRepository<C> repository) {
         //Retrieve component from repository
-        Component component = (Component) repository.get(componentId);
+        Component component = (Component) repository.get(componentId).get();
 
         //Get component state
         return deploymentWrapper.getComponentState(component);

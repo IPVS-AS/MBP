@@ -1,6 +1,7 @@
 package org.citopt.connde.security;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.citopt.connde.domain.user_entity.UserEntity;
@@ -20,6 +21,17 @@ public class RepositorySecurityGuard {
 
     @Autowired
     private UserEntityService userEntityService;
+    
+    /**
+     * Checks whether the current user has a certain permissions for a given user entity.
+     *
+     * @param userEntity The user entity to check wrapped in an {@link Optional}
+     * @param permission The permission to check
+     * @return True, if the user has the permission; false otherwise
+     */
+    public boolean checkPermission(Optional<UserEntity> userEntity, String permission) {
+    	return userEntity.map(e -> checkPermission(e, permission)).orElse(false);
+    }
 
     /**
      * Checks whether the current user has a certain permissions for a given user entity.
@@ -46,14 +58,14 @@ public class RepositorySecurityGuard {
      * @param permission The permission to check
      * @return True, if the user has the permission; false otherwise
      */
-    public boolean checkPermissionById(String entityId, UserEntityRepository repository, String permission) {
+    public <E extends UserEntity> boolean checkPermissionById(String entityId, UserEntityRepository<E> repository, String permission) {
         //Sanity check
         if ((entityId == null) || (entityId.isEmpty()) || (repository == null)) {
             return false;
         }
 
         //Get entity from repository by id
-        UserEntity userEntity = repository.get(entityId);
+        UserEntity userEntity = repository.get(entityId).get();
 
         //Perform permission check
         return checkPermission(userEntity, permission);
@@ -82,14 +94,14 @@ public class RepositorySecurityGuard {
      * @return False, in case the page could not be modified using reflections; otherwise always true
      */
     @SuppressWarnings("unchecked")
-    public boolean retrieveUserEntities(Page<UserEntity> page, Pageable pageable, UserEntityRepository repository) {
+    public <E extends UserEntity> boolean retrieveUserEntities(Page<E> page, Pageable pageable, UserEntityRepository<E> repository) {
         //Get all device user entities the current user has access to
-        List<UserEntity> userEntities = userEntityService.getUserEntitiesFromRepository(repository);
+        List<E> userEntities = userEntityService.getUserEntitiesFromRepository(repository);
 
         //Extract the content of the passed page using reflection
-        List content = null;
+        List<E> content = null;
         try {
-            content = (List) FieldUtils.readField(page, "content", true);
+            content = (List<E>) FieldUtils.readField(page, "content", true);
         } catch (IllegalAccessException ignored) {
         }
 

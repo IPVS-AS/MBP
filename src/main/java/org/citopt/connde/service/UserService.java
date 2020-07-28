@@ -31,7 +31,7 @@ public class UserService {
 
     public User createUser(String username, String password, String firstName, String lastName) {
         User newUser = new User();
-        Authority authority = authorityRepository.findById(Constants.USER).get();
+        Authority authority = authorityRepository.findByName(Constants.USER).get();
         Set<Authority> authorities = new HashSet<>();
         String encryptedPassword = passwordEncoder.encode(password);
         newUser.setUsername(username);
@@ -49,7 +49,7 @@ public class UserService {
     }
 
     public User createUser(User user) {
-        Authority authority = authorityRepository.findById(Constants.USER).get();
+        Authority authority = authorityRepository.findByName(Constants.USER).get();
         Set<Authority> authorities = new HashSet<>();
         authorities.add(authority);
         user.setAuthorities(authorities);
@@ -67,7 +67,7 @@ public class UserService {
     }
 
     public void updateUser(String id, String username, String password, String firstName, String lastName, Set<Authority> authorities) {
-    	userRepository
+        userRepository
                 .findById(id)
                 .ifPresent(user -> {
                     user.setUsername(username);
@@ -77,7 +77,7 @@ public class UserService {
                     Set<Authority> managedAuthorities = user.getAuthorities();
                     managedAuthorities.clear();
                     authorities.forEach(
-                            authority -> managedAuthorities.add(authorityRepository.findById(authority.getName()).get())
+                            authority -> managedAuthorities.add(authorityRepository.findByName(authority.getName()).get())
                     );
                     userRepository.save(user);
                 });

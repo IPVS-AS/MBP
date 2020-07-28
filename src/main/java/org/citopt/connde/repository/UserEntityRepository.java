@@ -1,16 +1,11 @@
 package org.citopt.connde.repository;
 
-import java.util.List;
 import java.util.Optional;
 
-import org.citopt.connde.domain.access_control.ACAccessType;
-import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.repository.NoRepositoryBean;
-import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RestResource;
 import org.springframework.security.access.prepost.PostAuthorize;
 
@@ -28,69 +23,10 @@ import springfox.documentation.annotations.ApiIgnore;
 @NoRepositoryBean
 @ApiIgnore("Not an actual repository, only used as super interface")
 public interface UserEntityRepository<T extends UserEntity> extends MongoRepository<T, String> {
-	
-	/**
-	 * Retrieves all entities that are owned by the given user.
-	 * 
-	 * @param ownerId the id of the {@link User} that owns the entity.
-	 * @param pageable the {@link Pageable} to configure the result set.
-	 * @return a list holding all matching entities.
-	 * @author Jakob Benz
-	 */
-	@Query("{ 'owner.id' : :#{#ownerId} }")
-	List<T> findByOwner(@Param("ownerId") String ownerId, Pageable pageable);
-	
-	/**
-	 * Retrieves all entities with at least one policy that matches all given access types.
-	 * 
-	 * @param accessTypes the list of access {@link ACAccessType types} as {@code String}.
-	 * @param pageable the {@link Pageable} to configure the result set.
-	 * @return a list holding all matching entities.
-	 * @author Jakob Benz
-	 */
-	@Query("{ 'policies' : { $elemMatch: { accessTypes: { $all: :#{#accessTypes} } } } }")
-	List<T> findByPolicyAccessTypeMatchAll(@Param("accessTypes") List<String> accessTypes, Pageable pageable);
-	
-	/**
-	 * Retrieves all entities with at least one policy that matches any of the given access types.
-	 * 
-	 * @param accessTypes the list of access {@link ACAccessType types} as {@code String}.
-	 * @param pageable the {@link Pageable} to configure the result set.
-	 * @return a list holding all matching entities.
-	 * @author Jakob Benz
-	 */
-	@Query("{ 'policies' : { $elemMatch: { accessTypes: { $in: :#{#accessTypes} } } } }")
-	List<T> findByPolicyAccessTypeMatchAny(@Param("accessTypes") List<String> accessTypes, Pageable pageable);
-	
-	/**
-	 * Retrieves all entities that either are owned by the given user or
-	 * have at least one policy that matches all given access types.
-	 * 
-	 * @param ownerId the id of the {@link User} that owns the entity.
-	 * @param accessTypes the list of access {@link ACAccessType types} as {@code String}.
-	 * @param pageable the {@link Pageable} to configure the result set.
-	 * @return a list holding all matching entities.
-	 * @author Jakob Benz
-	 */
-	@Query("{ $or: [ { 'owner.id' : :#{#ownerId} }, { 'policies' : { $elemMatch: { accessTypes: { $all: :#{#accessTypes} } } } } ] }")
-	List<T> findByOwnerOrPolicyAccessTypeMatchAll(@Param("ownerId") String ownerId, @Param("accessTypes") List<String> accessTypes, Pageable pageable);
-	
-	/**
-	 * Retrieves all entities that either are owned by the given user or
-	 * have at least one policy that matches any of the given access types.
-	 * 
-	 * @param ownerId the id of the {@link User} that owns the entity.
-	 * @param accessTypes the list of access {@link ACAccessType types} as {@code String}.
-	 * @param pageable the {@link Pageable} to configure the result set.
-	 * @return a list holding all matching entities.
-	 * @author Jakob Benz
-	 */
-	@Query("{ $or: [ { 'owner.id' : :#{#ownerId} }, { 'policies' : { $elemMatch: { accessTypes: { $in: :#{#accessTypes} } } } } ] }")
-	List<T> findByOwnerOrPolicyAccessTypeMatchAny(@Param("ownerId") String ownerId, @Param("accessTypes") List<String> accessTypes, Pageable pageable);
 
-	@RestResource(exported = false)
+    @RestResource(exported = false)
     @Query("{'_id': ?0}")
-    T get(String id);
+    Optional<T> get(String id);
 
     @Override
     @PostAuthorize("@repositorySecurityGuard.checkPermission(returnObject, 'read')")

@@ -1,5 +1,12 @@
 package org.citopt.connde.web.rest;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Sensor;
@@ -9,16 +16,15 @@ import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.service.testing.GraphPlotter;
 import org.citopt.connde.service.testing.TestEngine;
 import org.citopt.connde.service.testing.TestReport;
-import org.json.HTTP;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
@@ -50,7 +56,7 @@ public class TestingController {
     @PostMapping(value = "/test-details/test/{testId}")
     public String executeTest(@PathVariable(value = "testId") String testId) throws Exception {
 
-        TestDetails testDetails = testDetailsRepository.findById(testId);
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
 
         // Set the exact start time of the test
         testDetails.setStartTestTimeNow();
@@ -59,12 +65,9 @@ public class TestingController {
         // get  informations about the status of the rules before the execution of the test
         List<Rule> rulesbefore = testEngine.getStatRulesBefore(testDetails);
 
-        // Start the test and get Map of sensor values
-        Map<String, List<Double>> valueListTest = testEngine.executeTest(testDetails);
-
         // Check the test for success
         testEngine.testSuccess(testId);
-        TestDetails testDetails3 = testDetailsRepository.findById(testId);
+        TestDetails testDetails3 = testDetailsRepository.findById(testId).get();
 
         // Create test report with graph of sensor values and pdf
         graphPlotter.createTestReport(testDetails3);
@@ -99,7 +102,7 @@ public class TestingController {
      */
     @GetMapping(value = "/test-details/pdfExists/{testId}")
     public boolean pdfExists(@PathVariable(value = "testId") String testId) {
-        TestDetails test = testDetailsRepository.findById(testId);
+        TestDetails test = testDetailsRepository.findById(testId).get();
         return test.isPdfExists();
     }
 
@@ -112,7 +115,7 @@ public class TestingController {
      */
     @PostMapping(value = "/test-details/test/stop/{testId}")
     public ResponseEntity<Boolean> stopTest(@PathVariable(value = "testId") String testId) {
-        TestDetails test = testDetailsRepository.findById(testId);
+        TestDetails test = testDetailsRepository.findById(testId).get();
         // Stop every sensor running for the specific test
         for (Sensor sensor : test.getSensor()) {
             restDeploymentController.stopSensor(sensor.getId());
@@ -134,7 +137,7 @@ public class TestingController {
                                                               @RequestBody String useNewData) {
 
 
-        TestDetails testDetails = testDetailsRepository.findById(testId);
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
         List<ParameterInstance> config = testDetails.getConfig();
 
         for (ParameterInstance parameterInstance : config) {
@@ -152,9 +155,9 @@ public class TestingController {
 
     @PostMapping(value = "/test-details/deleteTestreport/{testId}")
     public ResponseEntity<String> deleteTestReport(@PathVariable(value = "testId") String testId) {
-        ResponseEntity response;
+        ResponseEntity<String> response;
 
-        TestDetails testDetails = testDetailsRepository.findById(testId);
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
 
         if(testDetails.isPdfExists()){
             Path pathTestReport = Paths.get(testDetails.getPathPDF());
@@ -167,7 +170,7 @@ public class TestingController {
             } catch (NoSuchFileException x) {
                 response = new ResponseEntity<>("Testreport doesn't extist.", HttpStatus.NOT_FOUND);
             } catch (IOException x) {
-                response = new ResponseEntity<>(x, HttpStatus.CONFLICT);
+                response = new ResponseEntity<>(x.getMessage(), HttpStatus.CONFLICT);
             }
         } else {
             response = new ResponseEntity<>("No available Testreport for this Test.", HttpStatus.NOT_FOUND);

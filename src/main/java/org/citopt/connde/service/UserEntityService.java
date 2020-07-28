@@ -1,5 +1,16 @@
 package org.citopt.connde.service;
 
+import static org.citopt.connde.domain.user_entity.UserEntityRole.ADMIN;
+import static org.citopt.connde.domain.user_entity.UserEntityRole.ANONYMOUS;
+import static org.citopt.connde.domain.user_entity.UserEntityRole.APPROVED_USER;
+import static org.citopt.connde.domain.user_entity.UserEntityRole.ENTITY_OWNER;
+import static org.citopt.connde.domain.user_entity.UserEntityRole.USER;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.domain.user_entity.UserEntityPolicy;
@@ -8,13 +19,6 @@ import org.citopt.connde.repository.UserEntityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.citopt.connde.domain.user_entity.UserEntityRole.*;
 
 /**
  * Service that supports managing of user entities.
@@ -35,7 +39,7 @@ public class UserEntityService {
      * @param entityId   The id of the entity to retrieve
      * @return The user entity or null if it could not be found or if the user has no permission to access it
      */
-    public UserEntity getUserEntityFromRepository(UserEntityRepository repository, String entityId) {
+    public <E extends UserEntity> E getUserEntityFromRepository(UserEntityRepository<E> repository, String entityId) {
         //Get current user
         User user = userService.getUserWithAuthorities();
 
@@ -52,14 +56,14 @@ public class UserEntityService {
      * @param user       The user for which the user entity is supposed to be retrieved
      * @return The user entity or null if it could not be found or if the user has no permission to access it
      */
-    public UserEntity getUserEntityFromRepository(UserEntityRepository repository, String entityId, User user) {
+    public <E extends UserEntity> E getUserEntityFromRepository(UserEntityRepository<E> repository, String entityId, User user) {
         //Sanity check
         if (user == null) {
             throw new IllegalArgumentException("User must not be null.");
         }
 
         //Get user entity from repository
-        UserEntity entity = (UserEntity) repository.findById(entityId).get();
+        E entity = repository.findById(entityId).get();
 
         //Check for null (not found)
         if (entity == null) {
@@ -82,7 +86,7 @@ public class UserEntityService {
      * @param repository The repository to retrieve the user entities from
      * @return List of user entities
      */
-    public List<UserEntity> getUserEntitiesFromRepository(UserEntityRepository repository) {
+    public <E extends UserEntity> List<E> getUserEntitiesFromRepository(UserEntityRepository<E> repository) {
         //Get current user
         User user = userService.getUserWithAuthorities();
 
@@ -99,21 +103,20 @@ public class UserEntityService {
      * @param user       The user for which the user entities are supposed to be retrieved
      * @return List of user entities
      */
-    @SuppressWarnings("unchecked")
-    public List<UserEntity> getUserEntitiesFromRepository(UserEntityRepository repository, User user) {
+    public <E extends UserEntity> List<E> getUserEntitiesFromRepository(UserEntityRepository<E> repository, User user) {
         //Sanity check
         if (user == null) {
             throw new IllegalArgumentException("User must not be null.");
         }
 
         //Get all user entities from repository
-        List<UserEntity> entities = repository.findAll(DEFAULT_SORT);
+        List<E> entities = repository.findAll(DEFAULT_SORT);
 
         //Create result list
-        List<UserEntity> resultList = new ArrayList<>();
+        List<E> resultList = new ArrayList<>();
 
         //Iterate over all entities in repository
-        for (UserEntity entity : entities) {
+        for (E entity : entities) {
             //Check user permission
             if (entity.isReadable() || (entity.getOwner() == null)) {
                 resultList.add(entity);

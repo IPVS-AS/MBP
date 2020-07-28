@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
 
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.component.Actuator;
@@ -356,6 +355,11 @@ public class EnvironmentModelService {
                     //Update deployment error map
                     deploymentErrors.put(nodeId, "Impossible to deploy, device is not available.");
                     continue;
+                case READY:
+                	// TODO: Something to do here?
+                	break;
+                default:
+                	break;
             }
 
             //Try to deploy component
@@ -425,6 +429,14 @@ public class EnvironmentModelService {
                     //Impossible to undeploy component
                     publishEntityState(model, nodeId, component, EntityState.REGISTERED);
                     continue;
+                case DEPLOYED:
+                	// TODO: Something to do here?
+                	break;
+                case RUNNING:
+                	// TODO: Something to do here?
+                	break;
+                default:
+                	break;
             }
 
             //Try to undeploy component
@@ -501,6 +513,11 @@ public class EnvironmentModelService {
                     //Update deployment error map
                     startErrors.put(nodeId, "Impossible to start, device is not available.");
                     continue;
+                case DEPLOYED:
+                	// TODO: Something to do here?
+                	break;
+                default:
+                	break;
             }
 
             //Try to start component
@@ -574,6 +591,11 @@ public class EnvironmentModelService {
                     //Impossible to undeploy component
                     publishEntityState(model, nodeId, component, EntityState.REGISTERED);
                     continue;
+                case RUNNING:	
+                	// TODO: Something to do here?
+                	break;
+                default:
+                	break;
             }
 
             //Try to stop component
@@ -862,8 +884,8 @@ public class EnvironmentModelService {
         device.setPassword(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_PASSWORD, ""));
 
         //Find key pair from repository and set it
-        Optional<KeyPair> keyPair = keyPairRepository.findById(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_KEYPAIR));
-        device.setKeyPair(keyPair.get()); // NOTE: It should be checked whether the adapter is actually available (or whether the Optional is empty)!
+        KeyPair keyPair = keyPairRepository.findById(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_KEYPAIR)).get();
+        device.setKeyPair(keyPair);
 
         //Return final device object
         return device;
@@ -889,8 +911,8 @@ public class EnvironmentModelService {
         component.setComponentType(nodeObject.getString(MODEL_JSON_KEY_NODE_COMPONENT_TYPE));
 
         //Find adapter from repository and set it
-        Optional<Adapter> adapter = adapterRepository.findById(componentDetails.optString(MODEL_JSON_KEY_COMPONENT_ADAPTER));
-        component.setAdapter(adapter.get()); // NOTE: It should be checked whether the adapter is actually available (or whether the Optional is empty)!
+        Adapter adapter = adapterRepository.findById(componentDetails.optString(MODEL_JSON_KEY_COMPONENT_ADAPTER)).get();
+        component.setAdapter(adapter);
 
         //Set a fake device for passing validation
         component.setDevice(new Device());

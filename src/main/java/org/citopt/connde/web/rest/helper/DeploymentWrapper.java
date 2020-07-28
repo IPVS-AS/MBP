@@ -1,5 +1,10 @@
 package org.citopt.connde.web.rest.helper;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
@@ -9,14 +14,9 @@ import org.citopt.connde.service.deploy.ComponentState;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Component that wraps the methods provided by the SSHDeployer in order to offer consistent deployment features
@@ -238,7 +238,7 @@ public class DeploymentWrapper {
      * @param component The component for which the state is supposed to be determined
      * @return A ResponseEntity object that holds the component state of the component
      */
-    public ResponseEntity<Resource<ComponentState>> getComponentState(Component component) {
+    public ResponseEntity<EntityModel<ComponentState>> getComponentState(Component component) {
         //Validity check
         if (component == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -253,7 +253,7 @@ public class DeploymentWrapper {
         ComponentState componentState = sshDeployer.determineComponentState(component);
 
         //Wrap component state into resource
-        Resource<ComponentState> stateResource = new Resource<>(componentState);
+        EntityModel<ComponentState> stateResource = EntityModel.of(componentState);
 
         return new ResponseEntity<>(stateResource, HttpStatus.OK);
     }

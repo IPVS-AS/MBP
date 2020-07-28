@@ -1,9 +1,7 @@
 package org.citopt.connde.web.rest;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import java.io.IOException;
+
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.constants.Constants;
 import org.citopt.connde.service.mqtt.MQTTService;
@@ -16,9 +14,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * REST Controller for settings related REST requests.
@@ -92,18 +97,18 @@ public class RestSettingsController {
     @Secured({Constants.ADMIN})
     @ApiOperation(value = "Modifies the current settings of the platform", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to modify the settings")})
-    public ResponseEntity saveSettings(@RequestBody Settings settings) {
+    public ResponseEntity<Void> saveSettings(@RequestBody Settings settings) {
         //Save settings and re-initialize MQTT service, since it needs to use a different IP address now
         try {
             settingsService.saveSettings(settings);
             mqttService.initialize();
         } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         } catch (MqttException e) {
-            System.err.print("MqttException: " + e.getMessage());
+            e.printStackTrace();
         }
 
         //Everything fine
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 }

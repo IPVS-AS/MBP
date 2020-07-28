@@ -1,6 +1,8 @@
 package org.citopt.connde.web.rest.helper;
 
-import org.citopt.connde.domain.componentType.ComponentType;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
@@ -10,9 +12,6 @@ import org.citopt.connde.repository.projection.MonitoringAdapterExcerpt;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Helper component that provides a bundle of methods for working with monitoring components.
@@ -103,9 +102,6 @@ public class MonitoringHelper {
             throw new IllegalArgumentException("Device must not be null.");
         }
 
-        //Get device types of the adapter
-        List<ComponentType> adapterDeviceTypes = adapter.getDeviceTypes();
-
         //Get all devices
         List<Device> allDevices = deviceRepository.findAll();
 
@@ -144,7 +140,7 @@ public class MonitoringHelper {
 
         //Get projection for each monitoring adapter of the iterable
         for (MonitoringAdapter adapter : monitoringAdapters) {
-            MonitoringAdapterExcerpt projection = monitoringAdapterRepository.findById(adapter.getId());
+            MonitoringAdapterExcerpt projection = monitoringAdapterRepository.findExcerptById(adapter.getId()).get();
             adapterProjectionList.add(projection);
         }
 

@@ -16,8 +16,8 @@ import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.web.rest.helper.DeploymentWrapper;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.ResourceProcessor;
-import org.springframework.hateoas.ResourceSupport;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.RepresentationModelProcessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,7 +39,7 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
 @Api(tags = {"Deployment"}, description = "Deployment management for actuators and sensors")
-public class RestDeploymentController implements ResourceProcessor<ResourceSupport> {
+public class RestDeploymentController implements RepresentationModelProcessor<EntityModel<?>> {
 
     @Autowired
     private DeploymentWrapper deploymentWrapper;
@@ -123,7 +123,7 @@ public class RestDeploymentController implements ResourceProcessor<ResourceSuppo
         return undeployComponent(id, sensorRepository);
     }
 
-    private ResponseEntity<Boolean> isRunningComponent(String id, ComponentRepository repository) {
+    private <C extends Component> ResponseEntity<Boolean> isRunningComponent(String id, ComponentRepository<C> repository) {
         //Retrieve component from repository
         Component component = (Component) repository.findById(id).get();
 
@@ -131,7 +131,7 @@ public class RestDeploymentController implements ResourceProcessor<ResourceSuppo
         return deploymentWrapper.isComponentRunning(component);
     }
 
-    private ResponseEntity<ActionResponse> startComponent(String id, ComponentRepository repository, List<ParameterInstance> parameterInstances) {
+    private <C extends Component> ResponseEntity<ActionResponse> startComponent(String id, ComponentRepository<C> repository, List<ParameterInstance> parameterInstances) {
         //Retrieve component from repository
         Component component = (Component) repository.findById(id).get();
 
@@ -144,7 +144,7 @@ public class RestDeploymentController implements ResourceProcessor<ResourceSuppo
         return deploymentWrapper.startComponent(component, parameterInstances);
     }
 
-    private ResponseEntity<ActionResponse> stopComponent(String id, ComponentRepository repository) {
+    private <C extends Component> ResponseEntity<ActionResponse> stopComponent(String id, ComponentRepository<C> repository) {
         //Retrieve component from repository
         Component component = (Component) repository.findById(id).get();
 
@@ -152,7 +152,7 @@ public class RestDeploymentController implements ResourceProcessor<ResourceSuppo
         return deploymentWrapper.stopComponent(component);
     }
 
-    private ResponseEntity<ActionResponse> deployComponent(String id, ComponentRepository repository) {
+    private <C extends Component> ResponseEntity<ActionResponse> deployComponent(String id, ComponentRepository<C> repository) {
         //Retrieve component from repository
         Component component = (Component) repository.findById(id).get();
 
@@ -160,7 +160,7 @@ public class RestDeploymentController implements ResourceProcessor<ResourceSuppo
         return deploymentWrapper.deployComponent(component);
     }
 
-    private ResponseEntity<ActionResponse> undeployComponent(String id, ComponentRepository repository) {
+    private <C extends Component> ResponseEntity<ActionResponse> undeployComponent(String id, ComponentRepository<C> repository) {
         //Retrieve component from repository
         Component component = (Component) repository.findById(id).get();
 
@@ -188,8 +188,7 @@ public class RestDeploymentController implements ResourceProcessor<ResourceSuppo
     }
 
 	@Override
-	public ResourceSupport process(ResourceSupport resource) {
-		return resource;
+	public EntityModel<?> process(EntityModel<?> model) {
+		return model;
 	}
-	
 }

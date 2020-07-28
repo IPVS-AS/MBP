@@ -15,7 +15,7 @@ public enum CEPPrimitiveDataTypes {
 
     //Name of the data type and reference class for type-checking
     private String name;
-    private Class referenceClass;
+    private Class<?> referenceClass;
 
     /**
      * Creates a new primitive data type as part of the enumeration.
@@ -23,7 +23,7 @@ public enum CEPPrimitiveDataTypes {
      * @param name           The name of the data type
      * @param referenceClass A reference class of the data type for type-checking
      */
-    CEPPrimitiveDataTypes(String name, Class referenceClass) {
+    CEPPrimitiveDataTypes(String name, Class<?> referenceClass) {
         setName(name);
         setReferenceClass(referenceClass);
     }
@@ -55,7 +55,7 @@ public enum CEPPrimitiveDataTypes {
      *
      * @return The reference class
      */
-    public Class getReferenceClass() {
+    public Class<?> getReferenceClass() {
         return referenceClass;
     }
 
@@ -64,7 +64,7 @@ public enum CEPPrimitiveDataTypes {
      *
      * @param referenceClass The reference class
      */
-    private void setReferenceClass(Class referenceClass) {
+    private void setReferenceClass(Class<?> referenceClass) {
         //Sanity check
         if (referenceClass == null) {
             throw new IllegalArgumentException("Reference class must not be null.");

@@ -379,7 +379,7 @@ public class TestReport {
         ruleInfos.addCell(c1);
 
 
-        ArrayList ruleActions = new ArrayList();
+        ArrayList<String> ruleActions = new ArrayList<>();
         for (RuleAction action : ruleAfter.getActions()) {
             ruleActions.add(action.getName());
         }
@@ -499,7 +499,7 @@ public class TestReport {
      */
     public PdfPTable getRuleInfos(TestDetails test) {
         //noinspection MismatchedQueryAndUpdateOfCollection
-        ArrayList rules = new ArrayList();
+        ArrayList<String> rules = new ArrayList<>();
         StringBuilder rulesUser = new StringBuilder();
         String rulesExecuted;
         String triggerRules;

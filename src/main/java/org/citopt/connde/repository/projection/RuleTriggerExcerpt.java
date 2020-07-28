@@ -1,10 +1,7 @@
 package org.citopt.connde.repository.projection;
 
-import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.rules.RuleTrigger;
 import org.springframework.data.rest.core.config.Projection;
-
-import java.util.List;
 
 /**
  * Excerpt projection for rule trigger entities.

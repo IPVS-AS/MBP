@@ -84,7 +84,7 @@ public class CEPEventType {
             Object fieldValue = fieldValues.get(fieldName);
 
             //Get reference class of the field as defined in the corresponding event type
-            Class referenceClass = fields.get(fieldName).getReferenceClass();
+            Class<?> referenceClass = fields.get(fieldName).getReferenceClass();
 
             //The value that is set in the event object must match the type as defined in the event type
             if (!referenceClass.isInstance(fieldValue)) {
