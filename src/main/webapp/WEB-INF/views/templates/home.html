@@ -1,121 +1,160 @@
 <div class="row clearfix">
-	<div class="col-lg-12">
-		<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="row clearfix">
 
-			<!-- MODELS COUNT -->
-			<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
-				<div class="info-box">
-					<div class="icon bg-blue">
-						<i class="material-icons">view_quilt</i>
-					</div>
-					<div class="content">
-						<div class="text">IoT Models</div>
-						<div class="number count-to" data-from="0" data-to="125"
-							data-speed="1000" data-fresh-interval="20">{{ctrl.countEnvModels}}</div>
-					</div>
-				</div>
-			</div>
+            <!-- MODELS COUNT -->
+            <a href="view/env-models">
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="info-box" style="cursor: pointer;">
+                        <div class="icon bg-blue">
+                            <i class="material-icons">view_quilt</i>
+                        </div>
+                        <div class="content">
+                            <div class="text">IoT Models</div>
+                            <div class="number count-to" data-from="0" data-to="125"
+                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countEnvModels}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
 
-			<!-- DEVICES COUNT -->
-			<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
-				<div class="info-box">
-					<div class="icon bg-amber">
-						<i class="material-icons">devices</i>
-					</div>
-					<div class="content">
-						<div class="text">Devices</div>
-						<div class="number count-to" data-from="0" data-to="125"
-							data-speed="1000" data-fresh-interval="20">{{ctrl.countDevices}}</div>
-					</div>
-				</div>
-			</div>
+            <!-- DEVICES COUNT -->
+            <a href="view/devices">
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="info-box" style="cursor: pointer;">
+                        <div class="icon bg-amber">
+                            <i class="material-icons">devices</i>
+                        </div>
+                        <div class="content">
+                            <div class="text">Devices</div>
+                            <div class="number count-to" data-from="0" data-to="125"
+                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countDevices}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
 
-			<!-- ACTUATORS COUNT -->
-			<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
-				<div class="info-box">
-					<div class="icon bg-lime">
-						<i class="material-icons">wb_incandescent</i>
-					</div>
-					<div class="content">
-						<div class="text">Actuators</div>
-						<div class="number count-to" data-from="0" data-to="125"
-							data-speed="1000" data-fresh-interval="20">{{ctrl.countActuators}}</div>
-					</div>
-				</div>
-			</div>
+            <!-- ACTUATORS COUNT -->
+            <a href="view/actuators">
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="info-box" style="cursor: pointer;">
+                        <div class="icon bg-lime">
+                            <i class="material-icons">wb_incandescent</i>
+                        </div>
+                        <div class="content">
+                            <div class="text">Actuators</div>
+                            <div class="number count-to" data-from="0" data-to="125"
+                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countActuators}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
 
-			<!-- SENSORS COUNT -->
-			<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
-				<div class="info-box">
-					<div class="icon bg-yellow">
-						<i class="material-icons">settings_remote</i>
-					</div>
-					<div class="content">
-						<div class="text">Sensors</div>
-						<div class="number count-to" data-from="0" data-to="125"
-							data-speed="1000" data-fresh-interval="20">{{ctrl.countSensors}}</div>
-					</div>
-				</div>
-			</div>
+            <!-- SENSORS COUNT -->
+            <a href="view/sensors">
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="info-box" style="cursor: pointer;">
+                        <div class="icon bg-yellow">
+                            <i class="material-icons">settings_remote</i>
+                        </div>
+                        <div class="content">
+                            <div class="text">Sensors</div>
+                            <div class="number count-to" data-from="0" data-to="125"
+                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countSensors}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
 
-			<!-- ADAPTERS COUNT -->
-			<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
-				<div class="info-box">
-					<div class="icon bg-orange">
-						<i class="material-icons">description</i>
-					</div>
-					<div class="content">
-						<div class="text">Extraction/Control Operators</div>
-						<div class="number count-to" data-from="0" data-to="125"
-							data-speed="1000" data-fresh-interval="20">{{ctrl.countAdapters}}</div>
-					</div>
-				</div>
-			</div>
+            <!-- ADAPTERS COUNT -->
+            <a href="view/adapters">
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="info-box" style="cursor: pointer;">
+                        <div class="icon bg-orange">
+                            <i class="material-icons">description</i>
+                        </div>
+                        <div class="content">
+                            <div class="text">Extraction/Control Operators</div>
+                            <div class="number count-to" data-from="0" data-to="125"
+                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countAdapters}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
 
-			<!-- MONITORING ADAPTERS COUNT -->
-			<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
-				<div class="info-box">
-					<div class="icon bg-pink">
-						<i class="material-icons">timeline</i>
-					</div>
-					<div class="content">
-						<div class="text">Monitoring Operators</div>
-						<div class="number count-to" data-from="0" data-to="125"
-							 data-speed="1000" data-fresh-interval="20">{{ctrl.countMonitoringAdapters}}</div>
-					</div>
-				</div>
-			</div>
+            <!-- MONITORING ADAPTERS COUNT -->
+            <a href="view/monitoring-adapters">
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="info-box" style="cursor: pointer;">
+                        <div class="icon bg-pink">
+                            <i class="material-icons">timeline</i>
+                        </div>
+                        <div class="content">
+                            <div class="text">Monitoring Operators</div>
+                            <div class="number count-to" data-from="0" data-to="125"
+                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countMonitoringAdapters}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
 
-			<!-- TEST COUNT -->
-			<div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
-				<div class="info-box">
-					<div class="icon bg-amber">
-						<i class="material-icons">bug_report</i>
-					</div>
-					<div class="content">
-						<div class="text">Tests</div>
-						<div class="number count-to" data-from="0" data-to="125"
-							 data-speed="1000" data-fresh-interval="20">{{ctrl.countTests}}</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<!-- TEST COUNT -->
+            <!-- TEST COUNT -->
+            <a href="view/testing-tool">
+                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                    <div class="info-box" style="cursor: pointer;">
+                        <div class="icon bg-amber">
+                            <i class="material-icons">bug_report</i>
+                        </div>
+                        <div class="content">
+                            <div class="text">Tests</div>
+                            <div class="number count-to" data-from="0" data-to="125"
+                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countTests}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
 
-
-		<div class="jumbotron" style="background-color:white">
-			<h2>Welcome!</h2>
-			<p>The MPB is here to help you manage your IoT environments!<br/></p>
-			<p>You can set up your IoT environment in four steps: </p>
-			<p> &ensp;Step 1 - <a href="view/adapters" target="_blank"><span>Create extraction/control operators</span></a> for your sensors and actuators.</p>
-			<p> &ensp;Step 2 - <a href="view/model" target="_blank"><span>Start modeling</span></a> your IoT environment with the MBP modeling tool.</p>
-			<p> &ensp;Step 3 - Register <i class="material-icons">backup</i> your modeled IoT environment.</p>
-			<p> &ensp;Step 4 - Deploy <i class="material-icons">sync</i> your modeled IoT environment.</p>
-			<p> Now you can access your <a href="view/devices" target="_blank"><span>devices</span></a>, <a href="view/sensors" target="_blank"><span>sensors</span></a> and <a href="view/actuators" target="_blank"><span>actuators!</span></a></p>
-								
-			<br/>
-			<p><a class="btn btn-primary btn-lg" href="https://github.com/IPVS-AS/MBP/wiki" target="_blank" role="button">Learn more about the MBP</a></p>
-		</div>
-		
-	</div>
+        <div class="card">
+            <div class="header">
+                <h2 class="ng-binding" style="font-size:26px;">
+                    Welcome!
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <a class="clickable" data-toggle="collapse" data-target="#welcome-card-body">
+                            <i class="material-icons">keyboard_arrow_down</i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div id="welcome-card-body" class="body collapse in">
+                <div style="background-color:white;font-size: 18px;">
+                    <p>The MPB is here to help you manage your IoT environments!<br/></p>
+                    <p>You can set up your IoT environment in four steps: </p>
+                    <p> &ensp;Step 1 - <a href="view/adapters"
+                                          target="_blank"><span>Create extraction/control operators</span></a>
+                        for your sensors and actuators.</p>
+                    <p> &ensp;Step 2 - <a href="view/env-models" target="_blank"><span>Start modeling</span></a> your
+                        IoT
+                        environment with the MBP modeling tool.</p>
+                    <p> &ensp;Step 3 - Register <i class="material-icons">backup</i> your modeled IoT environment.</p>
+                    <p> &ensp;Step 4 - Deploy <i class="material-icons">sync</i> your modeled IoT environment.</p>
+                    <p> Now you can access your <a href="view/devices" target="_blank"><span>devices</span></a>, <a
+                            href="view/sensors" target="_blank"><span>sensors</span></a> and <a href="view/actuators"
+                                                                                                target="_blank"><span>actuators!</span></a>
+                    </p>
+                    <p><a class="btn btn-primary btn-lg" href="https://github.com/IPVS-AS/MBP/wiki" target="_blank"
+                          role="button">Learn more about the MBP</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
