@@ -72,10 +72,10 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 		authorityAnonymous.put("_id", Constants.ANONYMOUS);
 		if(!collectionExists(database, "authority")) {
 			database.createCollection("authority", null);
-			database.getCollection("componentType").insertOne(authorityAdmin);
-			database.getCollection("componentType").insertOne(authorityUser);
-			database.getCollection("componentType").insertOne(authorityDevice);
-			database.getCollection("componentType").insertOne(authorityAnonymous);
+			database.getCollection("authority").insertOne(authorityAdmin);
+			database.getCollection("authority").insertOne(authorityUser);
+			database.getCollection("authority").insertOne(authorityDevice);
+			database.getCollection("authority").insertOne(authorityAnonymous);
 		}
 		
 		if(!collectionExists(database, "user")) {
