@@ -1,5 +1,7 @@
 package org.citopt.connde;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.AdapterValidator;
 import org.citopt.connde.domain.component.Actuator;
@@ -136,9 +138,7 @@ public class RestConfiguration implements RepositoryRestConfigurer {
 	 */
 	@Bean
 	public RepresentationModelProcessor<EntityModel<Sensor>> sensorProcessor() {
-
 		return new RepresentationModelProcessor<EntityModel<Sensor>>() {
-
 			/**
 			 * Processing method for sensor resources.
 			 * @param resource The sensor resource to process
@@ -149,7 +149,7 @@ public class RestConfiguration implements RepositoryRestConfigurer {
 				//Get sensor id
 				String id = resource.getContent().getId();
 				//Link sensor with deployment
-				Link link = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.
+				Link link = linkTo(WebMvcLinkBuilder.
 						methodOn(RestDeploymentController.class).deploySensor(id))
 						.withRel("deploy");
 				resource.add(link);
@@ -165,9 +165,7 @@ public class RestConfiguration implements RepositoryRestConfigurer {
 	 */
 	@Bean
 	public RepresentationModelProcessor<EntityModel<Actuator>> actuatorProcessor() {
-
 		return new RepresentationModelProcessor<EntityModel<Actuator>>() {
-
 			/**
 			 * Processing method for actuator resources.
 			 * @param resource The actuator resource to process
@@ -178,7 +176,7 @@ public class RestConfiguration implements RepositoryRestConfigurer {
 				//Get actuator id
 				String id = resource.getContent().getId();
 				//Link actuator with deployment
-				Link link = WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.
+				Link link = linkTo(WebMvcLinkBuilder.
 						methodOn(RestDeploymentController.class).deployActuator(id))
 						.withRel("deploy");
 				resource.add(link);
@@ -186,4 +184,5 @@ public class RestConfiguration implements RepositoryRestConfigurer {
 			}
 		};
 	}
+	
 }

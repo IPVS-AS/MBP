@@ -2,6 +2,9 @@ package org.citopt.connde.domain.access_control;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Abstraction for access requests. Contains the context of the requesting entity
  * as a list of {@link ACAttribute attributes}. The purpose of this wrapper is to
@@ -21,11 +24,17 @@ public class ACAccessRequest {
 	// - - -
 	
 	/**
+	 * No-args constructor.
+	 */
+	public ACAccessRequest() {}
+	
+	/**
 	 * All-args constructor.
 	 * 
 	 * @param context the context of the requesting entity as list of {@link ACAttribute attributes}.
 	 */
-	public ACAccessRequest(List<ACAttribute<? extends Comparable<?>>> context) {
+	@JsonCreator
+	public ACAccessRequest(@JsonProperty("context") List<ACAttribute<? extends Comparable<?>>> context) {
 		this.context = context;
 	}
 	

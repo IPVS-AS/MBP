@@ -1,8 +1,10 @@
 package org.citopt.connde.domain.device;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import static org.citopt.connde.domain.user_entity.UserEntityRole.ADMIN;
+import static org.citopt.connde.domain.user_entity.UserEntityRole.APPROVED_USER;
+
+import javax.persistence.GeneratedValue;
+
 import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.domain.user_entity.UserEntityPolicy;
@@ -10,10 +12,10 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
-import javax.persistence.GeneratedValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import static org.citopt.connde.domain.user_entity.UserEntityRole.ADMIN;
-import static org.citopt.connde.domain.user_entity.UserEntityRole.APPROVED_USER;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel(description = "Model for device entities")
 public class Device extends UserEntity {

@@ -17,6 +17,13 @@ public class ACDataAccessDecision<T> extends ACAccessDecision {
 	// - - -
 	
 	/**
+	 * No-args constructor.
+	 */
+	public ACDataAccessDecision() {
+		super();
+	}
+	
+	/**
 	 * Required-args constructor.
 	 * 
 	 * @param result

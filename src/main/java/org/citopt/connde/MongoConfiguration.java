@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
 import org.bson.Document;
 import org.citopt.connde.constants.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,46 +23,40 @@ import com.mongodb.client.MongoDatabase;
 @EnableMongoRepositories
 public class MongoConfiguration extends AbstractMongoClientConfiguration {
 	
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    
-    public static String DB_NAME = "connde";
-    
-    private static MongoClient mongoClient;
-    
-    @Override
-    protected String getDatabaseName() {
-        return DB_NAME;
-    }
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
-    @Override
-    public MongoClient mongoClient() {
-        if(mongoClient == null) {
-            mongoClient = MongoClients.create("mongodb://localhost:27017");
-        }
-		addValuesInDatabase(mongoClient);
-        return mongoClient;
-    }
+	@Override
+	public MongoClient mongoClient() {
+		MongoClient mc = MongoClients.create("mongodb://localhost:27017");
+		return mc;
+	}
 
-    @Override
-    protected String getMappingBasePackage() {
-        return "org.citopt.connde.repository";
-    }
-    
-	private void addValuesInDatabase(MongoClient mongoClient) {
-		MongoDatabase database = mongoClient.getDatabase(DB_NAME);
+	@Override
+	protected String getDatabaseName() {
+		return "connde";
+	}
+
+	@Override
+	protected String getMappingBasePackage() {
+		return "org.citopt.connde.repository";
+	}
+
+	@PostConstruct
+	private void addValuesInDatabase() {
+		MongoDatabase database = mongoClient().getDatabase(getDatabaseName());
 
 		// Add component types
-		if (!collectionExists(database, "componentType")){
-			database.createCollection("componentType", null);
+		if (!collectionExists(database, "componentType")) {
+			database.createCollection("componentType");
 			for (int i = 0; i < Constants.componentTypes.length; i++) {
 				Document document = new Document();
 				document.put("name", Constants.componentTypes[i][0]);
 				document.put("component", Constants.componentTypes[i][1]);
 				database.getCollection("componentType").insertOne(document);
-			}	
+			}
 		}
-		
+
 		// Add authorities
 		Document authorityAdmin = new Document();
 		authorityAdmin.put("_id", Constants.ADMIN);
@@ -70,16 +66,17 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 		authorityDevice.put("_id", Constants.DEVICE);
 		Document authorityAnonymous = new Document();
 		authorityAnonymous.put("_id", Constants.ANONYMOUS);
-		if(!collectionExists(database, "authority")) {
-			database.createCollection("authority", null);
-			database.getCollection("componentType").insertOne(authorityAdmin);
-			database.getCollection("componentType").insertOne(authorityUser);
-			database.getCollection("componentType").insertOne(authorityDevice);
-			database.getCollection("componentType").insertOne(authorityAnonymous);
+
+		if (!collectionExists(database, "authority")) {
+			database.createCollection("authority");
+			database.getCollection("authority").insertOne(authorityAdmin);
+			database.getCollection("authority").insertOne(authorityUser);
+			database.getCollection("authority").insertOne(authorityDevice);
+			database.getCollection("authority").insertOne(authorityAnonymous);
 		}
-		
-		if(!collectionExists(database, "user")) {
-			database.createCollection("user", null);
+
+		if (!collectionExists(database, "user")) {
+			database.createCollection("user");
 			List<Document> documents = new ArrayList<>();
 			Set<Document> authorities = new HashSet<>();
 			authorities.add(authorityAdmin);
@@ -96,7 +93,8 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 
 			documents.add(adminUser);
 
-			// A user for the MBP platform to authenticate itself over http to retrieve an OAuth token
+			// A user for the MBP platform to authenticate itself over http to retrieve an
+			// OAuth token
 			Document mbpUser = new Document();
 			mbpUser.put("_class", "org.citopt.connde.domain.user.User");
 			mbpUser.put("first_name", "MBP");
@@ -124,14 +122,14 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 			database.getCollection("user").insertMany(documents);
 		}
 	}
-	
+
 	private boolean collectionExists(MongoDatabase database, String collectionName) {
-	    for (final String name : database.listCollectionNames()) {
-	        if (name.equalsIgnoreCase(collectionName)) {
-	            return true;
-	        }
-	    }
-	    return false;
+		for (final String name : database.listCollectionNames()) {
+			if (name.equalsIgnoreCase(collectionName)) {
+				return true;
+			}
+		}
+		return false;
 	}
-	
+
 }

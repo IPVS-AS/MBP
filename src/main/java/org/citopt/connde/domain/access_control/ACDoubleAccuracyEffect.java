@@ -20,7 +20,7 @@ public class ACDoubleAccuracyEffect implements IACModifyingEffect<Double> {
 	 * an accuracy of 10 with an input of 87.5 would result in 90.
 	 */
 	@Nonnull
-	private final double accuracy;
+	private double accuracy; // implicitly final due to omitted setter
 	
 	
 	/**
@@ -30,9 +30,14 @@ public class ACDoubleAccuracyEffect implements IACModifyingEffect<Double> {
 	@Nonnull
 	@Min(-1)
 	@Max(10)
-	private final int precision;
+	private int precision; // implicitly final due to omitted setter
 	
 	// - - -
+	
+	/**
+	 * No-args constructor.
+	 */
+	public ACDoubleAccuracyEffect() {}
 	
 	/**
 	 * All-args constructor.

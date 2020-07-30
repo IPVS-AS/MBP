@@ -21,6 +21,11 @@ public class ACConditionSimpleAttributeArgument<T extends Comparable<T>> impleme
 	private String key;
 	
 	// - - -
+
+	/**
+	 * No-args constructor.
+	 */
+	public ACConditionSimpleAttributeArgument() {}
 	
 	/**
 	 * All-args constructor.

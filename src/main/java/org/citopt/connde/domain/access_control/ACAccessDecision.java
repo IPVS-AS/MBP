@@ -14,9 +14,14 @@ public class ACAccessDecision {
 	 * The {@link ACAccessDecisionResult result} of the decision.
 	 */
 	@Nonnull
-	private final ACAccessDecisionResult result;
+	private ACAccessDecisionResult result; // implicitly final due to omitted setter
 	
 	// - - -
+	
+	/**
+	 * No-args constructor.
+	 */
+	public ACAccessDecision() {}
 	
 	/**
 	 * All-args constructor.

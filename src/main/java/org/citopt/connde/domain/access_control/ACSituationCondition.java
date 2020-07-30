@@ -17,6 +17,11 @@ public class ACSituationCondition implements IACCondition {
 	// - - -
 	
 	/**
+	 * No-args constructor.
+	 */
+	public ACSituationCondition() {}
+	
+	/**
 	 * All-args constructor.
 	 * 
 	 * @param query the {@link CEPQuery query} used to evaluate this condition.

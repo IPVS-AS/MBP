@@ -16,6 +16,11 @@ public class ACConditionSimpleValueArgument<T extends Comparable<T>> implements 
 	// - - -
 	
 	/**
+	 * No-args constructor.
+	 */
+	public ACConditionSimpleValueArgument() {}
+	
+	/**
 	 * All-args constructor.
 	 * 
 	 * @param value the value of this argument.

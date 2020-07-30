@@ -22,6 +22,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.projection.ProjectionFactory;
+import org.springframework.hateoas.RepresentationModel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +34,7 @@ import io.swagger.annotations.ApiModelProperty;
  * an owner user that owns a certain entity and is allowed to do everything with it
  * and a set of approved users that are allowed to access this entity as well.
  */
-public abstract class UserEntity implements IACRequestedEntity {
+public abstract class UserEntity extends RepresentationModel<UserEntity> implements IACRequestedEntity {
     //Default permission names
     private static final String PERMISSION_NAME_READ = "read";
     private static final String PERMISSION_NAME_DELETE = "delete";

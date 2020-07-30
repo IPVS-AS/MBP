@@ -1,7 +1,6 @@
 package org.citopt.connde.domain.access_control;
 
 import org.citopt.connde.service.access_control.ACAbstractConditionEvaluator;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Interface implemented by all policy condition classes.

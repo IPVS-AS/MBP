@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.lang3.reflect.FieldUtils;
+import org.assertj.core.util.Strings;
 import org.citopt.connde.domain.access_control.ACAccess;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
+import org.citopt.connde.domain.access_control.ACAttributeKey;
 import org.citopt.connde.domain.access_control.ACAttributeNotAvailableException;
 import org.citopt.connde.domain.access_control.ACAttributeValue;
 import org.citopt.connde.domain.access_control.ACConditionSimpleAttributeArgument;
@@ -88,16 +90,30 @@ public class ACSimpleConditionEvaluator<T extends Comparable<T>> extends ACAbstr
 			// Get all attribute value candidate fields
 			List<Field> fieldsWithAttributeAnnotation = FieldUtils.getFieldsListWithAnnotation(associatedEntity.getClass(), ACAttributeValue.class);
 			for (Field field : fieldsWithAttributeAnnotation) {
+				// Get the ACAttributeValue annotation from the field
+				ACAttributeValue attribute = field.getAnnotation(ACAttributeValue.class);
 				// Get attribute key (defaults to the field name)
-//				String key = field.getAnnotation(ACAttributeValue.class).key();
-				String key = "";
-				// FIXME: Add extended ACAttributeVAlue evaluation
-				key = key.isEmpty() ? field.getName() : key;
+				String key = !Strings.isNullOrEmpty(attribute.keyString()) ? attribute.keyString() : (attribute.key() == null ? field.getName() : attribute.key().getKey());
 				
 				// Check whether the current field is the attribute we are looking for
 				if (attributeArgument.getKey().equals(key)) {
-					// Return the field value
-					return Optional.of((T) field.get(associatedEntity));
+					// Get the lookup path for attribute value (could be a property of a nested object)
+					String valuePath = !Strings.isNullOrEmpty(attribute.valueLookupPath()) ? attribute.valueLookupPath() : (attribute.key() == null ? field.getName() : attribute.key().getValueLookupPath());
+					String[] valuePathSteps = valuePath.split(".");
+					
+					if (Strings.isNullOrEmpty(valuePath)) {						
+						// Return the field value
+						return Optional.of((T) field.get(associatedEntity));
+					} else {
+						// Lookup the field via the lookup path
+						Field currentField = field;
+						for (String valuePathStep : valuePathSteps) {
+							Object tempValue = currentField.get(associatedEntity);
+							currentField = tempValue.getClass().getField(valuePathStep);
+						}
+						return Optional.of((T) currentField.get(associatedEntity));
+						// TODO: TEST TEST TEST !!!
+					}
 				}
 			}
 			

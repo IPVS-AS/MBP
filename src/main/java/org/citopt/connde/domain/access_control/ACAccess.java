@@ -31,6 +31,11 @@ public class ACAccess {
 	// - - -
 	
 	/**
+	 * No-args constructor.
+	 */
+	public ACAccess() {}
+	
+	/**
 	 * All-args constructor.
 	 * 
 	 * @param type the {@link ACAccessType type} of this access.

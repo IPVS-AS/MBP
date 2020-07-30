@@ -70,6 +70,11 @@ public class ACPolicy<T> {
 	// - - -
 	
 	/**
+	 * No-args constructor.
+	 */
+	public ACPolicy() {}
+	
+	/**
 	 * All-args constructor.
 	 * 
 	 * @param name the name of this policy.

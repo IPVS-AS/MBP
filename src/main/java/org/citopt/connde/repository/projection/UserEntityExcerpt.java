@@ -1,8 +1,9 @@
 package org.citopt.connde.repository.projection;
 
-import org.springframework.beans.factory.annotation.Value;
-
 import java.util.Set;
+
+import org.citopt.connde.domain.access_control.ACPolicy;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Basic list projection for user entities. To be extended by more concrete projections for the individual
@@ -17,6 +18,9 @@ public interface UserEntityExcerpt {
 
     @Value("#{target.getApprovedUsersProjection()}")
     Set<UserExcerpt> getApprovedUsers();
+    
+    @Value("#{target.getAccessControlPolicies()}")
+    Set<ACPolicy<?>> getAccessControlPolicies();
 
     @Value("#{target.isOwning()}")
     boolean getIsOwning();

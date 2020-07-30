@@ -19,7 +19,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
-@RepositoryRestResource(collectionResourceRel = "devices", path = "devices", excerptProjection = DeviceExcerpt.class)
+@RepositoryRestResource(collectionResourceRel = "device", path = "devices", excerptProjection = DeviceExcerpt.class)
 @Api(tags = { "Device entities" }, description = "CRUD for device entities")
 public interface DeviceRepository extends UserEntityRepository<Device> {
 	
@@ -32,8 +32,7 @@ public interface DeviceRepository extends UserEntityRepository<Device> {
 	@ApiResponses({ @ApiResponse(code = 204, message = "Success"),
 			@ApiResponse(code = 403, message = "Not authorized to delete the device entity"),
 			@ApiResponse(code = 404, message = "Device entity not found") })
-	void delete(
-			@Param("device") @ApiParam(value = "The ID of the device entity to delete", example = "5c97dc2583aeb6078c5ab672", required = true) Device device);
+	void delete(@Param("device") @ApiParam(value = "The ID of the device entity to delete", example = "5c97dc2583aeb6078c5ab672", required = true) Device device);
 
 	@Override
 	@Query("{_id: null}") // Fail fast
@@ -44,5 +43,5 @@ public interface DeviceRepository extends UserEntityRepository<Device> {
 
 	@RestResource(exported = false)
 	List<Device> findAllByKeyPairId(@Param("keyPair.id") String keyPairId);
-	
+
 }

@@ -32,6 +32,11 @@ public class ACCompositeCondition implements IACCondition {
 	// - - -
 	
 	/**
+	 * No-args constructor.
+	 */
+	public ACCompositeCondition() {}
+	
+	/**
 	 * All-args constructor.
 	 * 
 	 * @param operator the {@link ACLogicalOperator operator} that combines the conditions.

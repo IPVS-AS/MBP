@@ -1,10 +1,13 @@
 package org.citopt.connde.repository;
 
 import org.citopt.connde.domain.access_control.TestObj;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface TestObjRepository extends UserEntityRepository<TestObj> {
+public interface TestObjRepository extends MongoRepository<TestObj, String>
+//extends UserEntityRepository<?> 
+{
 	
 //	@Query("{ 'owner.id' : :#{#ownerId} }")
 //	List<TestObj> findByOwner(@Param("ownerId") String ownerId, Pageable pageable);

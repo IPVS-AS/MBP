@@ -34,6 +34,11 @@ public class ACSimpleCondition<T extends Comparable<T>> implements IACCondition 
 	// - - -
 	
 	/**
+	 * No-args constructor.
+	 */
+	public ACSimpleCondition() {}
+	
+	/**
 	 * All-args constructor.
 	 * 
 	 * @param function the {@link ACArgumentFunction function}.
