@@ -611,7 +611,7 @@ app.controller('TestingController',
                         $scope: $scope,
                         addItem: function (data) {
                             console.log(data);
-                            console.log($scope.config.event );
+                            console.log(vm.config.event);
                             var newTestObject = {};
                             try {
                                 //Extend request parameters for routines and parameters

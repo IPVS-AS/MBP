@@ -156,7 +156,7 @@
                                 <div class="form-group" ng-class="{'has-error' : addTestCtrl.item.errors.name }">
                                     <div class="form-line" ng-class="{'focused error' : addTestCtrl.item.errors.name }">
                                         <input class="form-control" type="text"
-                                               placeholder="Name" ng-model="addTestCtrl.item.name"/>
+                                               placeholder="Name *" ng-model="addTestCtrl.item.name"/>
                                     </div>
                                     <span class="help-block" ng-show="addTestCtrl.item.errors.name">{{addTestCtrl.item.errors.name.message}}</span>
                                 </div>
@@ -166,7 +166,9 @@
                                                 title="Select sensor type to be simulated" ng-model="ctrl.availableSensors"
                                                 ng-options="sensor for sensor in availableSensors"
                                                 >
+                                            <option value="">Select sensor type to be simulated * </option>
                                         </select>
+
                                     </div>
                                 </div>
                                 <div ng-if="ctrl.availableSensors== 'TestingTemperaturSensor'|| ctrl.availableSensors =='TestingTemperaturSensorPl'">
@@ -174,8 +176,8 @@
                                         <h4> Type of simulation </h4>
                                         <select class="form-control show-tick" id="select-event"
                                                 name="event"
-                                                ng-model="config.event">
-                                            <option value="">Select the TestCase to be simulated</option>
+                                                ng-model="ctrl.config.event">
+                                            <option value="">Select the event to be simulated *</option>
                                             <option ng-option class="ng-binding ng-scope" value="1">Temperature rise
                                             </option>
                                             <option ng-option class="ng-binding ng-scope" value="2"> Temperature drop
@@ -188,11 +190,11 @@
                                         </select>
                                     </div>
                                     <div class="form-line"
-                                         ng-if="config.event == '1' ||config.event== '2'">
-                                        <h4> Combination with a outlier:</h4>
+                                         ng-if="ctrl.config.event == '1' ||ctrl.config.event== '2'">
+                                        <h4> Combination with an anomaly: </h4>
                                         <select class="form-control show-tick" id="select-temp-Anomaly"
                                                 name="anomaly" ng-model="config.anomaly">
-                                            <option value="">Select the combination with a outlier</option>
+                                            <option value="">Select the combination with an anomaly: *</option>
                                             <option ng-option class="ng-binding ng-scope" value="3">Outliers</option>
                                             <option ng-option class="ng-binding ng-scope" value="4">Missing values
                                             </option>
@@ -204,11 +206,11 @@
                                         </select>
                                     </div>
                                     <div class="form-line"
-                                         ng-if="config.event == '1' ||config.event == '2'">
+                                         ng-if="ctrl.config.event == '1' ||ctrl.config.event == '2'">
                                         <h4> For which room should the temperature rise/fall be simulated: </h4>
                                         <select class="form-control show-tick" id="select-temp-room"
                                                 name="room" ng-model="ctrl.room.singleSelect">
-                                            <option value="">Select a room</option>
+                                            <option value="">Select a room *</option>
                                             <option ng-option class="ng-binding ng-scope" value="a">Living room</option>
                                             <option ng-option class="ng-binding ng-scope" value="b">Office
                                             </option>
@@ -227,8 +229,8 @@
                                     <h4> Type of simulation: </h4>
                                     <div class="form-line">
                                         <select class="form-control show-tick" id="select-hum-testCase" name="event"
-                                                ng-model="config.event">
-                                            <option value="">Select the TestCase to be simulated</option>
+                                                ng-model="ctrl.config.event">
+                                            <option value="">Select the event to be simulated *</option>
                                             <option ng-option class="ng-binding ng-scope" value="1">
                                                 Humidity rise
                                             </option>
@@ -243,11 +245,11 @@
                                         </select>
                                     </div>
                                     <div class="form-line"
-                                         ng-if="config.event == '1' ||config.event == '2'">
-                                        <h4> Combination with a outlier:</h4>
+                                         ng-if="ctrl.config.event == '1' ||ctrl.config.event == '2'">
+                                        <h4> Combination with an anomaly: </h4>
                                         <select class="form-control show-tick" id="select-hum-Anomaly"
                                                 name="anomaly" ng-model="config.anomaly">
-                                            <option value="">Select the combination with a outlier</option>
+                                            <option value="">Select the combination with an anomaly *</option>
                                             <option ng-option class="ng-binding ng-scope" value="3">Outliers
                                             </option>
                                             <option ng-option class="ng-binding ng-scope" value="4">Missing values
@@ -259,11 +261,11 @@
                                         </select>
                                     </div>
                                     <div class="form-line"
-                                         ng-if="config.event == '1' ||config.event == '2'">
-                                        <h4> For which room should the humidity rise/fall be simulated:</h4>
+                                         ng-if="ctrl.config.event == '1' ||ctrl.config.event == '2'">
+                                        <h4> For which room should the humidity rise/fall be simulated: </h4>
                                         <select class="form-control show-tick" id="select-hum-room"
                                                 name="room" ng-model="config.room">
-                                            <option value="">Select a room</option>
+                                            <option value="">Select a room *</option>
                                             <option ng-option class="ng-binding ng-scope" value="a">Living room</option>
                                             <option ng-option class="ng-binding ng-scope" value="b">Office
                                             </option>
@@ -284,7 +286,7 @@
                                         <select class="form-control show-tick" id="select-gps-cathum"
                                                 name="select-gps-cathum"
                                                 ng-model="config.who">
-                                            <option value="">GPS tracking of a...</option>
+                                            <option value="">GPS tracking of a... *</option>
                                             <option ng-option class="ng-binding ng-scope" value="a">Person</option>
                                             <option ng-option class="ng-binding ng-scope" value="b">Cat</option>
                                         </select>
@@ -292,8 +294,8 @@
                                     <div class="form-line">
                                         <h4> Type of simulation: </h4>
                                         <select class="form-control show-tick" id="select-gps-event" name="event"
-                                                ng-model="config.event">
-                                            <option value="">Select the TestCase to be simulated</option>
+                                                ng-model="ctrl.ctrl.config.event">
+                                            <option value="">Select the event to be simulated *</option>
                                             <option ng-option class="ng-binding ng-scope" value="1">Approach
                                             </option>
                                             <option ng-option class="ng-binding ng-scope" value="2">Moving away
@@ -306,11 +308,11 @@
                                         </select>
                                     </div>
                                     <div class="form-line"
-                                         ng-if="config.event == '1' ||config.event == '2'">
-                                        <h4> Combination with a outlier:</h4>
+                                         ng-if="ctrl.ctrl.config.event == '1' ||ctrl.ctrl.config.event == '2'">
+                                        <h4> Combination with an anomaly: </h4>
                                         <select class="form-control show-tick" id="select-gps-Anomaly"
                                                 name="anomaly" ng-model="config.anomaly">
-                                            <option value="">Select the combination with a outlier</option>
+                                            <option value="">Select the combination with an anomaly *</option>
                                             <option ng-option class="ng-binding ng-scope" value="3">Outliers
                                             </option>
                                             <option ng-option class="ng-binding ng-scope" value="4">Missing values
@@ -323,26 +325,26 @@
                                     </div>
                                     <div class="form-line">
                                         <h4> Enter the coordinates of your smart home: </h4>
-                                        <input type="text" id="gpsLat" name="gpsLat" placeholder="Latitude"
+                                        <input type="text" id="gpsLat" name="gpsLat" placeholder="Latitude *"
                                                ng-model="config.latitude"> <br> <br>
-                                        <input type="text" id="gpsLong" name="gpsLat" placeholder="Longitude"
+                                        <input type="text" id="gpsLong" name="gpsLat" placeholder="Longitude *"
                                                ng-model="config.longitude"> <br><br>
-                                        <input type="text" id="gpsHight" name="gpsHight" placeholder="Hight"
+                                        <input type="text" id="gpsHight" name="gpsHight" placeholder="Hight *"
                                                ng-model="config.hight">
                                     </div>
                                     <div class="form-line">
                                         <h4> Enter the radius at which a reaction should take place: </h4>
                                         <input type="text" id="gpsReactionM" name="gpsReactionM"
-                                               placeholder="Reaction in m"
+                                               placeholder="Reaction in m *"
                                                ng-model="config.reactionMeters">
                                     </div>
                                 </div>
                                 <div ng-if="ctrl.availableSensors == 'TestingBeschleunigungsSensor'||ctrl.availableSensors=='TestingBeschleunigungsSensorPl'">
                                     <div class="form-line">
-                                        <h4> Type of simulation: </h4>
+                                        <h4> Type of simulation:</h4>
                                         <select class="form-control show-tick" id="select-acc-testCase" name="event"
-                                                ng-model="config.event">
-                                            <option value="">Select the TestCase to be simulated</option>
+                                                ng-model="ctrl.ctrl.config.event">
+                                            <option value="">Select the Event to be simulated *</option>
                                             <option ng-option class="ng-binding ng-scope" value="1">Object is not moving
                                             </option>
                                             <option ng-option class="ng-binding ng-scope" value="2">Object is moved
@@ -355,13 +357,13 @@
                                             </option>
                                         </select>
                                     </div>
-                                    <div ng-if="config.event == '1' ||config.event == '2'"
+                                    <div ng-if="ctrl.config.event == '1' ||ctrl.config.event == '2'"
                                          class="form-group">
                                         <div class="form-line">
                                             <h4> Combination with a outlier:</h4>
                                             <select class="form-control show-tick" id="select-acc-Anomaly"
                                                     name="anomaly" ng-model="config.anomaly">
-                                                <option value="">Select the combination with a outlier</option>
+                                                <option value="">Select the combination with an anomaly *</option>
                                                 <option ng-option class="ng-binding ng-scope" value="3">Fly bumps into
                                                     the
                                                     Object
@@ -374,10 +376,10 @@
                                                 </option>
                                             </select>
                                         </div>
-                                        <div ng-if="config.event == '2'" class="form-group">
+                                        <div ng-if="ctrl.config.event == '2'" class="form-group">
                                             <div class="form-line">
                                                 <h4> Enter the weight of the object to be protected in kilograms:</h4>
-                                                <input type="text" id="accKg" name="accKg" placeholder="kg"
+                                                <input type="text" id="accKg" name="accKg" placeholder="Object weight in kg *"
                                                        ng-model="config.weightObject">
                                             </div>
                                             <div class="form-line">
@@ -391,7 +393,7 @@
                                                 <select class="form-control show-tick" id="select-acc-sensitivity"
                                                         name="sensitivity"
                                                         ng-model="config.sensitivity">
-                                                    <option value="">Select the Sensitivity:</option>
+                                                    <option value="">Select the Sensitivity: *</option>
                                                     <option ng-option class="ng-binding ng-scope" value="0">Immediate
                                                         reaction
                                                         (0,0g)
@@ -409,10 +411,9 @@
                                             </div>
                                             <div class="form-line">
                                                 <h4> Specify after how many meters at constant speed a reaction should
-                                                    be
-                                                    triggered: </h4>
+                                                    be triggered: </h4>
                                                 <input type="text" id="accReactionMeter" name="accReactionMeter"
-                                                       placeholder="reaction-meter"
+                                                       placeholder="reaction-meters *"
                                                        ng-model="config.reactionMeters">
                                             </div>
                                         </div>
@@ -423,15 +424,15 @@
                                     <div class="form-line">
                                         <input type="text" id="simTime" name="simTime"
                                                ng-model="config.simTime">
-                                        hours
+                                        simulation time in hours *
                                     </div>
                                     <div class="form-line">
-                                        <h4> How many events should be simulated?</h4>
+                                        <h4> How many events should be simulated? *</h4>
                                         <input type="number" id="amountEvents" name="amountEvents"
                                                ng-model="config.amountEvents">
                                     </div>
                                     <div class="form-line">
-                                        <h4> How many outliers should be simulated?</h4>
+                                        <h4> How many outliers should be simulated? *</h4>
                                         <input type="number" id="amountAnomalies" name="amountAnomalies"
                                                ng-model="config.amountAnomalies">
                                     </div>
@@ -439,8 +440,8 @@
                                 <div class="form-group">
                                     <div class="form-line">
                                         <h4> Which rules should be observed?</h4>
-                                        <select class="form-control selectpicker" title="Rules"
-                                                data-header="Rules"
+                                        <select class="form-control selectpicker" title="Rules *"
+                                                data-header="Rules to be observed *"
                                                 ng-options="rule._links.self.href as (rule.name) for rule in ctrl.ruleList"
                                                 ng-model="ctrl.rules" multiple>
                                         </select>
@@ -451,16 +452,17 @@
                                         <input type="radio" class="with-gap" id="trigger_rules"
                                                ng-model="ctrl.executeRules.singleSelect"
                                                value="true"/>
-                                        <label for="trigger_rules">The selected rules should be triggered.</label>
+                                        <label for="trigger_rules">The selected rules should be triggered. *</label>
                                     </div>
                                     <div class="radio">
                                         <input type="radio" class="with-gap" id="not_trigger_rules"
                                                ng-model="ctrl.executeRules.singleSelect"
                                                value="false"/>
                                         <label for="not_trigger_rules">The selected rules shouldn't be
-                                            triggered.</label>
+                                            triggered. *</label>
                                     </div>
                                 </div>
+                                <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
