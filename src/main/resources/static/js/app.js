@@ -536,7 +536,10 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }],
                     ruleList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('rules');
-                    }]
+                    }],
+                    updateTest: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.updateItem, 'test-details');
+                    }],
                 }
             })
 

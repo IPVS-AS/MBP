@@ -2,6 +2,7 @@ package org.citopt.connde.repository;
 
 import io.swagger.annotations.*;
 import org.citopt.connde.domain.rules.Rule;
+import org.citopt.connde.domain.testing.TestDetails;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.Query;
@@ -20,6 +21,17 @@ import java.util.List;
 @RepositoryRestResource(collectionResourceRel = "rules", path = "rules")
 @Api(tags = {"Rule entities"}, description = "CRUD for rule entities")
 public interface RuleRepository extends UserEntityRepository<Rule> {
+
+
+    /**
+     * Retrieves a rule with certain id from the repository.
+     *
+     * @param id The name of the rule
+     * @return The rule
+     */
+    @RestResource(exported = false)
+    Rule findById(@Param("id") String id);
+
 
     /**
      * Retrieves a rule that is of a certain name from the repository.
