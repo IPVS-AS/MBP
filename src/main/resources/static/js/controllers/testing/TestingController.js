@@ -15,6 +15,7 @@ app.controller('TestingController',
             vm.useNewData = true;
             vm.testName = "";
             vm.rulesPDF = [];
+            vm.availableSensors = [];
             var sensorList = ['TestingTemperaturSensor', 'TestingTemperaturSensorPl', 'TestingFeuchtigkeitsSensor', 'TestingFeuchtigkeitsSensorPl', 'TestingBeschleunigungsSensor', 'TestingBeschleunigungsSensorPl', 'TestingGPSSensor', 'TestingGPSSensorPl'];
 
             vm.test = "";
@@ -24,6 +25,7 @@ app.controller('TestingController',
              * Initializing function, sets up basic things.
              */
             (function initController() {
+                vm.availableSensors=[];
                 //Check if the test list was retrieved successfully
                 if (testList == null) {
                     NotificationService.notify("Could not retrieve test list.", "error");
@@ -35,6 +37,7 @@ app.controller('TestingController',
                     checkSensorReg(sensorList[i]);
                 }
 
+                $scope.availableSensors = vm.availableSensors;
 
                 //Interval for updating sensor states on a regular basis
                 var interval = $interval(function () {
@@ -105,7 +108,6 @@ app.controller('TestingController',
              * @param testID
              */
             function downloadPDF(testID, endtimeUnix) {
-                console.log(endtimeUnix);
                 window.open('api/test-details/downloadPDF/' + testID + "_" + endtimeUnix, '_blank');
             }
 
@@ -241,6 +243,7 @@ app.controller('TestingController',
                         if (sensor === 'TestingTemperaturSensor' || sensor === 'TestingTemperaturSensorPl' || sensor === 'TestingFeuchtigkeitsSensorPl' || sensor === 'TestingFeuchtigkeitsSensor') {
                             if (value.name === sensor) {
                                 registered = "REGISTERED";
+                                vm.availableSensors.push(sensor);
                             }
                         } else if (sensor === 'TestingBeschleunigungsSensor') {
                             if (value.name === "TestingAccelerationX") {
@@ -291,24 +294,28 @@ app.controller('TestingController',
                     } else if (sensor === 'TestingBeschleunigungsSensor') {
                         if (sensorX && sensorY && sensorZ) {
                             $scope.acc = "REGISTERED";
+                            vm.availableSensors.push(sensor);
                         } else {
                             $scope.acc = "NOT_REGISTERED";
                         }
                     } else if (sensor === 'TestingBeschleunigungsSensorPl') {
                         if (sensorX && sensorY && sensorZ) {
                             $scope.accPl = "REGISTERED";
+                            vm.availableSensors.push(sensor);
                         } else {
                             $scope.accPl = "NOT_REGISTERED";
                         }
                     } else if (sensor === 'TestingGPSSensor') {
                         if (sensorX && sensorY && sensorZ) {
                             $scope.gps = "REGISTERED";
+                            vm.availableSensors.push(sensor);
                         } else {
                             $scope.gps = "NOT_REGISTERED";
                         }
                     } else if (sensor === 'TestingGPSSensorPl') {
                         if (sensorX && sensorY && sensorZ) {
                             $scope.gpsPl = "REGISTERED";
+                            vm.availableSensors.push(sensor);
                         } else {
                             $scope.gpsPl = "NOT_REGISTERED";
                         }
@@ -519,7 +526,6 @@ app.controller('TestingController',
             }
 
             function downloadPDF(testID, endtimeUnix) {
-                console.log(endtimeUnix);
                 window.open('api/test-details/downloadPDF/' + testID + "_" + endtimeUnix, '_blank');
             }
 
@@ -605,7 +611,7 @@ app.controller('TestingController',
                         $scope: $scope,
                         addItem: function (data) {
                             console.log(data);
-                            console.log(vm.simOutlier);
+                            console.log($scope.config.event );
                             var newTestObject = {};
                             try {
                                 //Extend request parameters for routines and parameters
@@ -620,193 +626,193 @@ app.controller('TestingController',
                                 var directionMovement = Math.floor(Math.random() * 6);
 
 
-                                if (vm.data.singleSelect === 'TestingTemperaturSensor' || vm.data.singleSelect === 'TestingFeuchtigkeitsSensor') {
-                                    if (vm.testCase.singleSelect === '3' || vm.testCase.singleSelect === '4' || vm.testCase.singleSelect === '5' || vm.testCase.singleSelect === '6') {
+                                if (vm.availableSensors === 'TestingTemperaturSensor' || vm.availableSensors === 'TestingFeuchtigkeitsSensor') {
+                                    if ($rootScope.config.event === '3' || $rootScope.config.event === '4' || $rootScope.config.event === '5' || $rootScope.config.event === '6') {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.testCase.singleSelect)
+                                            "value": parseInt($rootScope.config.event)
                                         });
                                         vm.parameterValues.push({"name": "anomaly", "value": 0});
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                     } else {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.testCase.singleSelect)
+                                            "value": parseInt($rootScope.config.event)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
-                                        vm.parameterValues.push({"name": "room", "value": vm.room.singleSelect});
+                                        vm.parameterValues.push({"name": "room", "value": $rootScope.config.room});
                                         vm.parameterValues.push({
                                             "name": "anomaly",
-                                            "value": parseInt(vm.combination.singleSelect)
+                                            "value": parseInt($rootScope.config.anomaly)
                                         });
                                     }
-                                } else if (vm.data.singleSelect === 'TestingTemperaturSensorPl' || vm.data.singleSelect === 'TestingFeuchtigkeitsSensorPl') {
+                                } else if (vm.availableSensors === 'TestingTemperaturSensorPl' || vm.availableSensors === 'TestingFeuchtigkeitsSensorPl') {
 
-                                    if (vm.testCase.singleSelect === '3' || vm.testCase.singleSelect === '4' || vm.testCase.singleSelect === '5' || vm.testCase.singleSelect === '6') {
+                                    if ($rootScope.config.event === '3' || $rootScope.config.event === '4' || $rootScope.config.event === '5' || $rootScope.config.event === '6') {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.testCase.singleSelect)
+                                            "value": parseInt($rootScope.config.event)
                                         });
                                         vm.parameterValues.push({"name": "anomaly", "value": 0});
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
-                                        vm.parameterValues.push({"name": "simTime", "value": vm.simTime.singleSelect});
+                                        vm.parameterValues.push({"name": "simTime", "value": $rootScope.config.simTime});
                                         vm.parameterValues.push({
                                             "name": "amountEvents",
-                                            "value": vm.simEvent.singleSelect
+                                            "value": $rootScope.config.amountEvents
                                         });
                                         vm.parameterValues.push({
                                             "name": "amountAnomalies",
-                                            "value": vm.simOutlier.singleSelect
+                                            "value":   $rootScope.config.amountAnomalies
                                         });
                                     } else {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.testCase.singleSelect)
+                                            "value": parseInt($rootScope.config.event)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
-                                        vm.parameterValues.push({"name": "simTime", "value": vm.simTime.singleSelect});
+                                        vm.parameterValues.push({"name": "simTime", "value": $rootScope.config.simTime});
                                         vm.parameterValues.push({
                                             "name": "amountEvents",
-                                            "value": vm.simEvent.singleSelect
+                                            "value":  $rootScope.config.amountEvents
                                         });
                                         vm.parameterValues.push({
                                             "name": "amountAnomalies",
-                                            "value": vm.simOutlier.singleSelect
+                                            "value":   $rootScope.config.amountAnomalies
                                         });
-                                        vm.parameterValues.push({"name": "room", "value": vm.room.singleSelect});
+                                        vm.parameterValues.push({"name": "room", "value": $rootScope.config.room});
                                         vm.parameterValues.push({
                                             "name": "anomaly",
-                                            "value": parseInt(vm.combination.singleSelect)
+                                            "value": parseInt($rootScope.config.anomaly)
                                         });
 
                                     }
-                                } else if (vm.data.singleSelect === 'TestingGPSSensor') {
-                                    if (vm.testCase.singleSelect === '3' || vm.testCase.singleSelect === '4' || vm.testCase.singleSelect === '5') {
-                                        vm.parameterValues.push({"name": "who", "value": vm.humCat.singleSelect});
+                                } else if (vm.availableSensors === 'TestingGPSSensor') {
+                                    if ($rootScope.config.event === '3' || $rootScope.config.event === '4' || $rootScope.config.event === '5') {
+                                        vm.parameterValues.push({"name": "who", "value":  $rootScope.config.who});
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.testCase.singleSelect)
-                                        });
-                                        vm.parameterValues.push({"name": "anomaly", "value": 0});
-                                        vm.parameterValues.push({"name": "useNewData", "value": true});
-                                        vm.parameterValues.push({
-                                            "name": "latitude",
-                                            "value": vm.latitude.singleSelect
-                                        });
-                                        vm.parameterValues.push({
-                                            "name": "longitude",
-                                            "value": vm.longitude.singleSelect
-                                        });
-                                        vm.parameterValues.push({"name": "hight", "value": vm.hight.singleSelect});
-                                        vm.parameterValues.push({
-                                            "name": "reactionMeters",
-                                            "value": vm.ractionMeters.singleSelect
-                                        });
-                                        vm.parameterValues.push({"name": "randomAngle", "value": randomAngle});
-                                        vm.parameterValues.push({"name": "axis", "value": randomAxis});
-                                    } else {
-                                        vm.parameterValues.push({"name": "who", "value": vm.humCat.singleSelect});
-                                        vm.parameterValues.push({
-                                            "name": "event",
-                                            "value": parseInt(vm.testCase.singleSelect)
-                                        });
-                                        vm.parameterValues.push({"name": "useNewData", "value": true});
-                                        vm.parameterValues.push({
-                                            "name": "latitude",
-                                            "value": vm.latitude.singleSelect
-                                        });
-                                        vm.parameterValues.push({
-                                            "name": "longitude",
-                                            "value": vm.longitude.singleSelect
-                                        });
-                                        vm.parameterValues.push({"name": "hight", "value": vm.hight.singleSelect});
-                                        vm.parameterValues.push({
-                                            "name": "reactionMeters",
-                                            "value": vm.ractionMeters.singleSelect
-                                        });
-                                        vm.parameterValues.push({"name": "randomAngle", "value": randomAngle});
-                                        vm.parameterValues.push({"name": "axis", "value": randomAxis});
-                                        vm.parameterValues.push({
-                                            "name": "anomaly",
-                                            "value": parseInt(vm.combination.singleSelect)
-                                        });
-                                    }
-                                } else if (vm.data.singleSelect === 'TestingGPSSensorPl') {
-                                    if (vm.testCase.singleSelect === '3' || vm.testCase.singleSelect === '4' || vm.testCase.singleSelect === '5') {
-
-                                        vm.parameterValues.push({"name": "who", "value": vm.humCat.singleSelect});
-                                        vm.parameterValues.push({
-                                            "name": "event",
-                                            "value": parseInt(vm.testCase.singleSelect)
+                                            "value": parseInt($rootScope.config.event)
                                         });
                                         vm.parameterValues.push({"name": "anomaly", "value": 0});
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
                                             "name": "latitude",
-                                            "value": vm.latitude.singleSelect
+                                            "value": $rootScope.config.latitude
                                         });
                                         vm.parameterValues.push({
                                             "name": "longitude",
-                                            "value": vm.longitude.singleSelect
+                                            "value": $rootScope.config.longitude
                                         });
-                                        vm.parameterValues.push({"name": "hight", "value": vm.hight.singleSelect});
+                                        vm.parameterValues.push({"name": "hight", "value": $rootScope.config.hight});
                                         vm.parameterValues.push({
                                             "name": "reactionMeters",
-                                            "value": vm.ractionMeters.singleSelect
+                                            "value": $rootScope.config.ractionMeters
                                         });
                                         vm.parameterValues.push({"name": "randomAngle", "value": randomAngle});
                                         vm.parameterValues.push({"name": "axis", "value": randomAxis});
-                                        vm.parameterValues.push({"name": "simTime", "value": vm.simTime.singleSelect});
-                                        vm.parameterValues.push({
-                                            "name": "amountEvents",
-                                            "value": vm.simEvent.singleSelect
-                                        });
-                                        vm.parameterValues.push({
-                                            "name": "amountAnomalies",
-                                            "value": vm.simOutlier.singleSelect
-                                        });
                                     } else {
-                                        vm.parameterValues.push({"name": "who", "value": vm.humCat.singleSelect});
+                                        vm.parameterValues.push({"name": "who", "value":   $rootScope.config.who});
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.testCase.singleSelect)
+                                            "value": parseInt($rootScope.config.event)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
                                             "name": "latitude",
-                                            "value": vm.latitude.singleSelect
+                                            "value": $rootScope.config.latitude
                                         });
                                         vm.parameterValues.push({
                                             "name": "longitude",
-                                            "value": vm.longitude.singleSelect
+                                            "value": $rootScope.config.longitude
                                         });
-                                        vm.parameterValues.push({"name": "hight", "value": vm.hight.singleSelect});
+                                        vm.parameterValues.push({"name": "hight", "value": $rootScope.config.hight});
                                         vm.parameterValues.push({
                                             "name": "reactionMeters",
-                                            "value": vm.ractionMeters.singleSelect
+                                            "value": $rootScope.config.reactionMeters
                                         });
                                         vm.parameterValues.push({"name": "randomAngle", "value": randomAngle});
                                         vm.parameterValues.push({"name": "axis", "value": randomAxis});
                                         vm.parameterValues.push({
                                             "name": "anomaly",
-                                            "value": parseInt(vm.combination.singleSelect)
+                                            "value": parseInt($rootScope.config.anomaly)
                                         });
-                                        vm.parameterValues.push({"name": "simTime", "value": vm.simTime.singleSelect});
+                                    }
+                                } else if (vm.availableSensors === 'TestingGPSSensorPl') {
+                                    if ($rootScope.config.event === '3' || $rootScope.config.event === '4' || $rootScope.config.event === '5') {
+
+                                        vm.parameterValues.push({"name": "who", "value":   $rootScope.config.who});
+                                        vm.parameterValues.push({
+                                            "name": "event",
+                                            "value": parseInt($rootScope.config.event)
+                                        });
+                                        vm.parameterValues.push({"name": "anomaly", "value": 0});
+                                        vm.parameterValues.push({"name": "useNewData", "value": true});
+                                        vm.parameterValues.push({
+                                            "name": "latitude",
+                                            "value": $rootScope.config.latitude
+                                        });
+                                        vm.parameterValues.push({
+                                            "name": "longitude",
+                                            "value": $rootScope.config.longitude
+                                        });
+                                        vm.parameterValues.push({"name": "hight", "value": $rootScope.config.hight});
+                                        vm.parameterValues.push({
+                                            "name": "reactionMeters",
+                                            "value": $rootScope.config.reactionMeters
+                                        });
+                                        vm.parameterValues.push({"name": "randomAngle", "value": randomAngle});
+                                        vm.parameterValues.push({"name": "axis", "value": randomAxis});
+                                        vm.parameterValues.push({"name": "simTime", "value": $rootScope.config.simTime});
                                         vm.parameterValues.push({
                                             "name": "amountEvents",
-                                            "value": vm.simEvent.singleSelect
+                                            "value":  $rootScope.config.amountEvents
                                         });
                                         vm.parameterValues.push({
                                             "name": "amountAnomalies",
-                                            "value": vm.simOutlier.singleSelect
+                                            "value":   $rootScope.config.amountAnomalies
+                                        });
+                                    } else {
+                                        vm.parameterValues.push({"name": "who", "value":   $rootScope.config.who});
+                                        vm.parameterValues.push({
+                                            "name": "event",
+                                            "value": parseInt($rootScope.config.event)
+                                        });
+                                        vm.parameterValues.push({"name": "useNewData", "value": true});
+                                        vm.parameterValues.push({
+                                            "name": "latitude",
+                                            "value": $rootScope.config.latitude
+                                        });
+                                        vm.parameterValues.push({
+                                            "name": "longitude",
+                                            "value": $rootScope.config.longitude
+                                        });
+                                        vm.parameterValues.push({"name": "hight", "value": $rootScope.config.hight});
+                                        vm.parameterValues.push({
+                                            "name": "reactionMeters",
+                                            "value": $rootScope.config.reactionMeters
+                                        });
+                                        vm.parameterValues.push({"name": "randomAngle", "value": randomAngle});
+                                        vm.parameterValues.push({"name": "axis", "value": randomAxis});
+                                        vm.parameterValues.push({
+                                            "name": "anomaly",
+                                            "value": parseInt($rootScope.config.anomaly)
+                                        });
+                                        vm.parameterValues.push({"name": "simTime", "value": $rootScope.config.simTime});
+                                        vm.parameterValues.push({
+                                            "name": "amountEvents",
+                                            "value": $rootScope.config.amountEvents
+                                        });
+                                        vm.parameterValues.push({
+                                            "name": "amountAnomalies",
+                                            "value":   $rootScope.config.amountAnomalies
                                         });
                                     }
 
-                                } else if (vm.data.singleSelect === 'TestingBeschleunigungsSensor') {
-                                    if (vm.testCase.singleSelect === '3' || vm.testCase.singleSelect === '4' || vm.testCase.singleSelect === '5') {
+                                } else if (vm.availableSensors === 'TestingBeschleunigungsSensor') {
+                                    if ($rootScope.config.event === '3' || $rootScope.config.event === '4' ||$rootScope.config.event=== '5') {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.testCase.singleSelect)
+                                            "value": parseInt($rootScope.config.event)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
@@ -822,27 +828,27 @@ app.controller('TestingController',
                                         vm.parameterValues.push({"name": "weightObject", "value": 0});
                                         vm.parameterValues.push({"name": "sensitivityClass", "value": 0});
                                         vm.parameterValues.push({"name": "reactionMeters", "value": 3});
-                                    } else if (vm.testCase.singleSelect === '2') {
+                                    } else if ($rootScope.config.event === '2') {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.testCase.singleSelect)
+                                            "value": parseInt($rootScope.config.event)
                                         });
                                         vm.parameterValues.push({
                                             "name": "anomaly",
-                                            "value": parseInt(vm.combination.singleSelect)
+                                            "value": parseInt($rootScope.config.anomaly)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
                                             "name": "weightObject",
-                                            "value": parseInt(vm.kg.singleSelect)
+                                            "value": parseInt($rootScope.config.weightObject)
                                         });
                                         vm.parameterValues.push({
                                             "name": "sensitivityClass",
-                                            "value": parseInt(vm.sensitivity.singleSelect)
+                                            "value": parseInt($rootScope.config.sensitivity)
                                         });
                                         vm.parameterValues.push({
                                             "name": "reactionMeters",
-                                            "value": parseInt(vm.reactionMeter.singleSelect)
+                                            "value": parseInt($rootScope.config.reactionMeters)
                                         });
                                         vm.parameterValues.push({
                                             "name": "directionAnomaly",
@@ -852,14 +858,14 @@ app.controller('TestingController',
                                             "name": "directionMovement",
                                             "value": directionMovement
                                         });
-                                    } else if (vm.testCase.singleSelect === '1') {
+                                    } else if ($rootScope.config.event === '1') {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.testCase.singleSelect)
+                                            "value": parseInt($rootScope.config.event)
                                         });
                                         vm.parameterValues.push({
                                             "name": "anomaly",
-                                            "value": parseInt(vm.combination.singleSelect)
+                                            "value": parseInt($rootScope.config.anomaly)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
@@ -875,11 +881,11 @@ app.controller('TestingController',
                                         vm.parameterValues.push({"name": "sensitivityClass", "value": 0});
                                         vm.parameterValues.push({"name": "reactionMeters", "value": 3});
                                     }
-                                } else if (vm.data.singleSelect === 'TestingBeschleunigungsSensorPl') {
-                                    if (vm.testCase.singleSelect === '3' || vm.testCase.singleSelect === '4' || vm.testCase.singleSelect === '5') {
+                                } else if (vm.availableSensors === 'TestingBeschleunigungsSensorPl') {
+                                    if ($rootScope.config.event === '3' || $rootScope.config.event === '4' || $rootScope.config.event === '5') {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.testCase.singleSelect)
+                                            "value": parseInt($rootScope.config.event)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
@@ -895,36 +901,36 @@ app.controller('TestingController',
                                         vm.parameterValues.push({"name": "weightObject", "value": 0});
                                         vm.parameterValues.push({"name": "sensitivityClass", "value": 0});
                                         vm.parameterValues.push({"name": "reactionMeters", "value": 3});
-                                        vm.parameterValues.push({"name": "simTime", "value": vm.simTime.singleSelect});
+                                        vm.parameterValues.push({"name": "simTime", "value": $rootScope.config.simTime});
                                         vm.parameterValues.push({
                                             "name": "amountEvents",
-                                            "value": vm.simEvent.singleSelect
+                                            "value":  $rootScope.config.amountEvents
                                         });
                                         vm.parameterValues.push({
                                             "name": "amountAnomalies",
-                                            "value": vm.simOutlier.singleSelect
+                                            "value":  $rootScope.config.amountAnomalies
                                         });
-                                    } else if (vm.testCase.singleSelect === '2') {
+                                    } else if ($rootScope.config.event === '2') {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.testCase.singleSelect)
+                                            "value": parseInt($rootScope.config.event)
                                         });
                                         vm.parameterValues.push({
                                             "name": "anomaly",
-                                            "value": parseInt(vm.combination.singleSelect)
+                                            "value": parseInt($rootScope.config.anomaly)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
                                             "name": "weightObject",
-                                            "value": parseInt(vm.kg.singleSelect)
+                                            "value": parseInt($rootScope.config.weightObject)
                                         });
                                         vm.parameterValues.push({
                                             "name": "sensitivityClass",
-                                            "value": parseInt(vm.sensitivity.singleSelect)
+                                            "value": parseInt($rootScope.config.sensitivity)
                                         });
                                         vm.parameterValues.push({
                                             "name": "reactionMeters",
-                                            "value": parseInt(vm.reactionMeter.singleSelect)
+                                            "value": parseInt($rootScope.configreactionMeters)
                                         });
                                         vm.parameterValues.push({
                                             "name": "directionAnomaly",
@@ -934,23 +940,23 @@ app.controller('TestingController',
                                             "name": "directionMovement",
                                             "value": directionMovement
                                         });
-                                        vm.parameterValues.push({"name": "simTime", "value": vm.simTime.singleSelect});
+                                        vm.parameterValues.push({"name": "simTime", "value": $rootScope.config.simTime});
                                         vm.parameterValues.push({
                                             "name": "amountEvents",
-                                            "value": vm.simEvent.singleSelect
+                                            "value":  $rootScope.config.amountEvents
                                         });
                                         vm.parameterValues.push({
                                             "name": "amountAnomalies",
-                                            "value": vm.simOutlier.singleSelect
+                                            "value":  $rootScope.config.amountAnomalies
                                         });
-                                    } else if (vm.testCase.singleSelect === '1') {
+                                    } else if ($rootScope.config.event === '1') {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.testCase.singleSelect)
+                                            "value": parseInt($rootScope.config.event)
                                         });
                                         vm.parameterValues.push({
                                             "name": "anomaly",
-                                            "value": parseInt(vm.combination.singleSelect)
+                                            "value": parseInt($rootScope.config.anomaly)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
@@ -965,14 +971,14 @@ app.controller('TestingController',
                                         vm.parameterValues.push({"name": "weightObject", "value": 0});
                                         vm.parameterValues.push({"name": "sensitivityClass", "value": 0});
                                         vm.parameterValues.push({"name": "reactionMeters", "value": 3});
-                                        vm.parameterValues.push({"name": "simTime", "value": vm.simTime.singleSelect});
+                                        vm.parameterValues.push({"name": "simTime", "value": $rootScope.config.simTime});
                                         vm.parameterValues.push({
                                             "name": "amountEvents",
-                                            "value": vm.simEvent.singleSelect
+                                            "value":  $rootScope.config.amountEvents
                                         });
                                         vm.parameterValues.push({
                                             "name": "amountAnomalies",
-                                            "value": vm.simOutlier.singleSelect
+                                            "value":  $rootScope.config.amountAnomalies
                                         });
                                     }
                                 }
@@ -984,8 +990,10 @@ app.controller('TestingController',
                                     }
                                 }
 
-                                console.log(vm.data.singleSelect);
-                                newTestObject.type = vm.data.singleSelect;
+                                console.log("sscjjcj000");
+                                console.log(vm.availableSensors);
+
+                                newTestObject.type = vm.availableSensors;
                                 newTestObject.config = vm.parameterValues;
                             } catch (e) {
                                 newTestObject.type = "";
@@ -1010,7 +1018,6 @@ app.controller('TestingController',
                                     break;
                                 }
                             }
-                            console.log(executeRulesTemp);
 
                             if (executeRulesTemp === 'undefined') {
                                 NotificationService.notify('A decision must be made.', 'error')
@@ -1018,7 +1025,6 @@ app.controller('TestingController',
 
                             vm.executeRules = executeRulesTemp === 'true';
                             newTestObject.triggerRules = vm.executeRules;
-                            console.log(newTestObject);
 
                             return addTest(newTestObject);
 
