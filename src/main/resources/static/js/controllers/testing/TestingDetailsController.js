@@ -52,25 +52,263 @@ app.controller('TestingDetailsController',
                 var event;
                 var anomaly;
                 var useNewData;
+                var room;
+                var simTime;
+                var amountEvents;
+                var amountAnomalies;
+                var who;
+                var latitude;
+                var longitude;
+                var hight;
+                var reactionMeters;
+                var weightObject;
+                var sensitivity;
+
                 vm.rules = [];
 
-                //TODO: Get further informations like room, coordinates, etc. 
-                for (let i = 0; i < testingDetails.config.length; i++) {
-                    if (testingDetails.config[i].name === "event") {
-                        event = testingDetails.config[i].value;
-                    } else if (testingDetails.config[i].name === "anomaly") {
-                        anomaly = testingDetails.config[i].value;
-                    } else if (testingDetails.config[i].name === "useNewData") {
-                        useNewData = !testingDetails.config[i].value;
+
+                let sensitivityClass;
+                if (testingDetails.type === 'TestingTemperaturSensor' || testingDetails.type === 'TestingFeuchtigkeitsSensor') {
+                    for (let i = 0; i < testingDetails.config.length; i++) {
+                        if ((testingDetails.config[i].name === "event" && testingDetails.config[i].value === '3') || (testingDetails.config[i].name === "event" && testingDetails.config[i].value === '4') || (testingDetails.config[i].name === "event" && testingDetails.config[i].value === '5') || (testingDetails.config[i].name === "event" && testingDetails.config[i].value === '6')) {
+                            for (let i = 0; i < testingDetails.config.length; i++) {
+                                if (testingDetails.config[i].name === "event") {
+                                    event = testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "anomaly") {
+                                    anomaly = testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "useNewData") {
+                                    useNewData = !testingDetails.config[i].value;
+                                }
+                            }
+                            $rootScope.config = {
+                                event: event,
+                                anomaly: anomaly,
+                                useNewData: useNewData
+                            };
+                        } else {
+                            for (let i = 0; i < testingDetails.config.length; i++) {
+                                if (testingDetails.config[i].name === "event") {
+                                    event = testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "anomaly") {
+                                    anomaly = testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "useNewData") {
+                                    useNewData = !testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "room") {
+                                    room = testingDetails.config[i].value;
+                                }
+                            }
+                            $rootScope.config = {
+                                event: event,
+                                anomaly: anomaly,
+                                useNewData: useNewData,
+                                room: room
+                            };
+                        }
+                    }
+                } else if (testingDetails.type === 'TestingTemperaturSensorPl' || testingDetails.type === 'TestingFeuchtigkeitsSensorPl') {
+                    for (let i = 0; i < testingDetails.config.length; i++) {
+                        if ((testingDetails.config[i].name === "event" && testingDetails.config[i].value === '3') || (testingDetails.config[i].name === "event" && testingDetails.config[i].value === '4') || (testingDetails.config[i].name === "event" && testingDetails.config[i].value === '5') || (testingDetails.config[i].name === "event" && testingDetails.config[i].value === '6')) {
+                            for (let i = 0; i < testingDetails.config.length; i++) {
+                                if (testingDetails.config[i].name === "event") {
+                                    event = testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "anomaly") {
+                                    anomaly = testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "useNewData") {
+                                    useNewData = !testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "simTime") {
+                                    simTime = testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "amountEvents") {
+                                    amountEvents = testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "amountAnomalies") {
+                                    amountAnomalies = testingDetails.config[i].value;
+                                }
+                            }
+
+                            $rootScope.config = {
+                                event: event,
+                                anomaly: anomaly,
+                                useNewData: useNewData,
+                                simTime: simTime,
+                                amountEvents: amountEvents,
+                                amountAnomalies: amountAnomalies
+                            };
+
+                        } else {
+                            for (let i = 0; i < testingDetails.config.length; i++) {
+                                if (testingDetails.config[i].name === "event") {
+                                    event = testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "anomaly") {
+                                    anomaly = testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "useNewData") {
+                                    useNewData = !testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "room") {
+                                    room = testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "simTime") {
+                                    simTime = testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "amountEvents") {
+                                    amountEvents = testingDetails.config[i].value;
+                                } else if (testingDetails.config[i].name === "amountAnomalies") {
+                                    amountAnomalies = testingDetails.config[i].value;
+                                }
+                            }
+                            $rootScope.config = {
+                                event: event,
+                                anomaly: anomaly,
+                                useNewData: useNewData,
+                                room: room,
+                                simTime: simTime,
+                                amountEvents: amountEvents,
+                                amountAnomalies: amountAnomalies
+                            };
+
+
+                        }
+                    }
+
+                } else if (testingDetails.type === 'TestingGPSSensor') {
+                    for (let i = 0; i < testingDetails.config.length; i++) {
+
+                        if (testingDetails.config[i].name === "event") {
+                            event = testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "anomaly") {
+                            anomaly = testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "useNewData") {
+                            useNewData = !testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "latitude") {
+                            latitude = testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "longitude") {
+                            longitude = testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "hight") {
+                            hight = testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "who") {
+                            who = testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "reactionMeters") {
+                            reactionMeters = testingDetails.config[i].value;
+                        }
 
                     }
-                }
+                    $rootScope.config = {
+                        event: event,
+                        anomaly: anomaly,
+                        useNewData: useNewData,
+                        latitude: latitude,
+                        longitude: longitude,
+                        hight: hight,
+                        who: who,
+                        reactionMeters: reactionMeters
+                    };
 
-                $rootScope.config = {
-                    event: event,
-                    anomaly: anomaly,
-                    useNewData: useNewData
-                };
+                } else if (testingDetails.type === 'TestingGPSSensorPl') {
+                    for (let i = 0; i < testingDetails.config.length; i++) {
+                        if (testingDetails.config[i].name === "event") {
+                            event = testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "anomaly") {
+                            anomaly = testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "useNewData") {
+                            useNewData = !testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "latitude") {
+                            latitude = testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "longitude") {
+                            longitude = testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "hight") {
+                            hight = testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "who") {
+                            who = testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "reactionMeters") {
+                            reactionMeters = testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "simTime") {
+                            simTime = testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "amountEvents") {
+                            amountEvents = testingDetails.config[i].value;
+                        } else if (testingDetails.config[i].name === "amountAnomalies") {
+                            amountAnomalies = testingDetails.config[i].value;
+
+                        }
+                    }
+                    $rootScope.config = {
+                        event: event,
+                        anomaly: anomaly,
+                        useNewData: useNewData,
+                        latitude: latitude,
+                        longitude: longitude,
+                        hight: hight,
+                        who: who,
+                        reactionMeters: reactionMeters,
+                        simTime: simTime,
+                        amountEvents: amountEvents,
+                        amountAnomalies: amountAnomalies
+                    };
+
+
+                } else if (testingDetails.type === 'TestingBeschleunigungsSensor') {
+                    for (let i = 0; i < testingDetails.config.length; i++) {
+                        for (let i = 0; i < testingDetails.config.length; i++) {
+
+                            if (testingDetails.config[i].name === "event") {
+                                event = testingDetails.config[i].value;
+                            } else if (testingDetails.config[i].name === "anomaly") {
+                                anomaly = testingDetails.config[i].value;
+                            } else if (testingDetails.config[i].name === "useNewData") {
+                                useNewData = !testingDetails.config[i].value;
+                            } else if (testingDetails.config[i].name === "weightObject") {
+                                weightObject = testingDetails.config[i].value;
+                            } else if (testingDetails.config[i].name === "sensitivityClass") {
+                                sensitivityClass = testingDetails.config[i].value;
+                            } else if (testingDetails.config[i].name === "reactionMeters") {
+                                reactionMeters = testingDetails.config[i].value;
+                            }
+
+
+                        }
+                    }
+                    $rootScope.config = {
+                        event: event,
+                        anomaly: anomaly,
+                        useNewData: useNewData,
+                        reactionMeters: reactionMeters,
+                        weightObject: weightObject,
+                        sensitivityClass: sensitivityClass,
+                    };
+                } else if (testingDetails.type === 'TestingBeschleunigungsSensorPl') {
+                    for (let i = 0; i < testingDetails.config.length; i++) {
+                        for (let i = 0; i < testingDetails.config.length; i++) {
+
+                            if (testingDetails.config[i].name === "event") {
+                                event = testingDetails.config[i].value;
+                            } else if (testingDetails.config[i].name === "anomaly") {
+                                anomaly = testingDetails.config[i].value;
+                            } else if (testingDetails.config[i].name === "useNewData") {
+                                useNewData = !testingDetails.config[i].value;
+                            } else if (testingDetails.config[i].name === "weightObject") {
+                                weightObject = testingDetails.config[i].value;
+                            } else if (testingDetails.config[i].name === "sensitivityClass") {
+                                sensitivityClass = testingDetails.config[i].value;
+                            } else if (testingDetails.config[i].name === "reactionMeters") {
+                                reactionMeters = testingDetails.config[i].value;
+                            } else if (testingDetails.config[i].name === "simTime") {
+                                simTime = testingDetails.config[i].value;
+                            } else if (testingDetails.config[i].name === "amountEvents") {
+                                amountEvents = testingDetails.config[i].value;
+                            } else if (testingDetails.config[i].name === "amountAnomalies") {
+                                amountAnomalies = testingDetails.config[i].value;
+
+                            }
+
+
+                        }
+                    }
+                    $rootScope.config = {
+                        event: event,
+                        anomaly: anomaly,
+                        useNewData: useNewData,
+                        reactionMeters: reactionMeters,
+                        weightObject: weightObject,
+                        sensitivityClass: sensitivityClass,
+                        simTime: simTime,
+                        amountAnomalies: amountAnomalies,
+                        amountEvents: amountEvents
+                    };
+                }
 
                 $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
                     for (let i = 0; i < responseRules._embedded.rules.length; i++) {
@@ -216,17 +454,18 @@ app.controller('TestingDetailsController',
 
 
                 getUpdateValues();
-                testingDetails.config =[];
+                testingDetails.config = [];
                 testingDetails.config = vm.configUpdate;
                 testingDetails.rules = vm.rulesUpdate;
-                if(vm.executeRules === "true"){
+                if (vm.executeRules === "true") {
                     testingDetails.triggerRules = true;
-                } else if(vm.executeRules ==="false"){
+                } else if (vm.executeRules === "false") {
                     testingDetails.triggerRules = false;
                 }
 
                 $http.post(ENDPOINT_URI + '/test-details/updateTest/' + COMPONENT_ID, JSON.stringify(testingDetails)).success(function successCallback(responseTest) {
-
+                    //Close modal on success
+                    $("#editTestModal").modal('toggle');
                 });
 
 
@@ -245,7 +484,7 @@ app.controller('TestingDetailsController',
 
 
                     // random values for the direction of the outlier and movement for the acceleration Sensor
-                    var directionOutlier = Math.floor(Math.random() * 6);
+                    var directionAnomaly = Math.floor(Math.random() * 6);
                     var directionMovement = Math.floor(Math.random() * 6);
                     var newTestObject = {};
 
@@ -266,7 +505,7 @@ app.controller('TestingDetailsController',
                                 "value": parseInt($rootScope.config.event)
                             });
                             vm.configUpdate.push({"name": "useNewData", "value": true});
-                            vm.configUpdate.push({"name": "room", "value": vm.room.singleSelect});
+                            vm.configUpdate.push({"name": "room", "value": $rootScope.config.room});
                             vm.configUpdate.push({
                                 "name": "anomaly",
                                 "value": parseInt($rootScope.config.anomaly)
@@ -281,14 +520,14 @@ app.controller('TestingDetailsController',
                             });
                             vm.configUpdate.push({"name": "anomaly", "value": 0});
                             vm.configUpdate.push({"name": "useNewData", "value": true});
-                            vm.configUpdate.push({"name": "simTime", "value": vm.simTime.singleSelect});
+                            vm.configUpdate.push({"name": "simTime", "value": $rootScope.config.simTime});
                             vm.configUpdate.push({
                                 "name": "amountEvents",
-                                "value": vm.simEvent.singleSelect
+                                "value": $rootScope.config.amountEvents
                             });
                             vm.configUpdate.push({
                                 "name": "amountAnomalies",
-                                "value": vm.simOutlier.singleSelect
+                                "value": $rootScope.config.amountAnomalies
                             });
                         } else {
                             vm.configUpdate.push({
@@ -296,16 +535,16 @@ app.controller('TestingDetailsController',
                                 "value": parseInt($rootScope.config.event)
                             });
                             vm.configUpdate.push({"name": "useNewData", "value": true});
-                            vm.configUpdate.push({"name": "simTime", "value": vm.simTime.singleSelect});
+                            vm.configUpdate.push({"name": "simTime", "value": $rootScope.config.simTime});
                             vm.configUpdate.push({
                                 "name": "amountEvents",
-                                "value": vm.simEvent.singleSelect
+                                "value": $rootScope.config.amountEvents
                             });
                             vm.configUpdate.push({
                                 "name": "amountAnomalies",
-                                "value": vm.simOutlier.singleSelect
+                                "value": $rootScope.config.amountAnomalies
                             });
-                            vm.configUpdate.push({"name": "room", "value": vm.room.singleSelect});
+                            vm.configUpdate.push({"name": "room", "value": $rootScope.config.room});
                             vm.configUpdate.push({
                                 "name": "anomaly",
                                 "value": parseInt($rootScope.config.anomaly)
@@ -314,7 +553,7 @@ app.controller('TestingDetailsController',
                         }
                     } else if (testingDetails.type === 'TestingGPSSensor') {
                         if ($rootScope.config.event === '3' || $rootScope.config.event === '4' || $rootScope.config.event === '5') {
-                            vm.configUpdate.push({"name": "who", "value": vm.humCat.singleSelect});
+                            vm.configUpdate.push({"name": "who", "value": $rootScope.config.who});
                             vm.configUpdate.push({
                                 "name": "event",
                                 "value": parseInt($rootScope.config.event)
@@ -323,21 +562,21 @@ app.controller('TestingDetailsController',
                             vm.configUpdate.push({"name": "useNewData", "value": true});
                             vm.configUpdate.push({
                                 "name": "latitude",
-                                "value": vm.latitude.singleSelect
+                                "value": $rootScope.config.latitude
                             });
                             vm.configUpdate.push({
                                 "name": "longitude",
-                                "value": vm.longitude.singleSelect
+                                "value": $rootScope.config.longitude
                             });
-                            vm.configUpdate.push({"name": "hight", "value": vm.hight.singleSelect});
+                            vm.configUpdate.push({"name": "hight", "value": $rootScope.config.hight});
                             vm.configUpdate.push({
                                 "name": "reactionMeters",
-                                "value": vm.reactionMeter.singleSelect
+                                "value": $rootScope.config.reactionMeters
                             });
                             vm.configUpdate.push({"name": "randomAngle", "value": randomAngle});
                             vm.configUpdate.push({"name": "axis", "value": randomAxis});
                         } else {
-                            vm.configUpdate.push({"name": "who", "value": vm.humCat.singleSelect});
+                            vm.configUpdate.push({"name": "who", "value": $rootScope.config.who});
                             vm.configUpdate.push({
                                 "name": "event",
                                 "value": parseInt($rootScope.config.event)
@@ -345,16 +584,16 @@ app.controller('TestingDetailsController',
                             vm.configUpdate.push({"name": "useNewData", "value": true});
                             vm.configUpdate.push({
                                 "name": "latitude",
-                                "value": vm.latitude.singleSelect
+                                "value": $rootScope.config.latitude
                             });
                             vm.configUpdate.push({
                                 "name": "longitude",
-                                "value": vm.longitude.singleSelect
+                                "value": $rootScope.config.longitude
                             });
-                            vm.configUpdate.push({"name": "hight", "value": vm.hight.singleSelect});
+                            vm.configUpdate.push({"name": "hight", "value": $rootScope.config.hight});
                             vm.configUpdate.push({
                                 "name": "reactionMeters",
-                                "value": vm.reactionMeter.singleSelect
+                                "value": $rootScope.config.reactionMeters
                             });
                             vm.configUpdate.push({"name": "randomAngle", "value": randomAngle});
                             vm.configUpdate.push({"name": "axis", "value": randomAxis});
@@ -366,7 +605,7 @@ app.controller('TestingDetailsController',
                     } else if (testingDetails.type === 'TestingGPSSensorPl') {
                         if ($rootScope.config.event === '3' || $rootScope.config.event === '4' || $rootScope.config.event === '5') {
 
-                            vm.configUpdate.push({"name": "who", "value": vm.humCat.singleSelect});
+                            vm.configUpdate.push({"name": "who", "value": $rootScope.config.who});
                             vm.configUpdate.push({
                                 "name": "event",
                                 "value": parseInt($rootScope.config.event)
@@ -375,30 +614,30 @@ app.controller('TestingDetailsController',
                             vm.configUpdate.push({"name": "useNewData", "value": true});
                             vm.configUpdate.push({
                                 "name": "latitude",
-                                "value": vm.latitude.singleSelect
+                                "value": $rootScope.config.latitude
                             });
                             vm.configUpdate.push({
                                 "name": "longitude",
-                                "value": vm.longitude.singleSelect
+                                "value": $rootScope.config.longitude
                             });
-                            vm.configUpdate.push({"name": "hight", "value": vm.hight.singleSelect});
+                            vm.configUpdate.push({"name": "hight", "value": $rootScope.config.hight});
                             vm.configUpdate.push({
                                 "name": "reactionMeters",
-                                "value": vm.reactionMeter.singleSelect
+                                "value": $rootScope.config.reactionMeters
                             });
                             vm.configUpdate.push({"name": "randomAngle", "value": randomAngle});
                             vm.configUpdate.push({"name": "axis", "value": randomAxis});
-                            vm.configUpdate.push({"name": "simTime", "value": vm.simTime.singleSelect});
+                            vm.configUpdate.push({"name": "simTime", "value": $rootScope.config.simTime});
                             vm.configUpdate.push({
                                 "name": "amountEvents",
-                                "value": vm.simEvent.singleSelect
+                                "value": $rootScope.config.amountEvents
                             });
                             vm.configUpdate.push({
                                 "name": "amountAnomalies",
-                                "value": vm.simOutlier.singleSelect
+                                "value": $rootScope.config.amountAnomalies
                             });
                         } else {
-                            vm.configUpdate.push({"name": "who", "value": vm.humCat.singleSelect});
+                            vm.configUpdate.push({"name": "who", "value": $rootScope.config.who});
                             vm.configUpdate.push({
                                 "name": "event",
                                 "value": parseInt($rootScope.config.event)
@@ -406,16 +645,16 @@ app.controller('TestingDetailsController',
                             vm.configUpdate.push({"name": "useNewData", "value": true});
                             vm.configUpdate.push({
                                 "name": "latitude",
-                                "value": vm.latitude.singleSelect
+                                "value": $rootScope.config.latitude
                             });
                             vm.configUpdate.push({
                                 "name": "longitude",
-                                "value": vm.longitude.singleSelect
+                                "value": $rootScope.config.longitude
                             });
-                            vm.configUpdate.push({"name": "hight", "value": vm.hight.singleSelect});
+                            vm.configUpdate.push({"name": "hight", "value": $rootScope.config.hight});
                             vm.configUpdate.push({
                                 "name": "reactionMeters",
-                                "value": vm.reactionMeter.singleSelect
+                                "value": $rootScope.config.reactionMeters
                             });
                             vm.configUpdate.push({"name": "randomAngle", "value": randomAngle});
                             vm.configUpdate.push({"name": "axis", "value": randomAxis});
@@ -423,14 +662,14 @@ app.controller('TestingDetailsController',
                                 "name": "anomaly",
                                 "value": parseInt($rootScope.config.anomaly)
                             });
-                            vm.configUpdate.push({"name": "simTime", "value": vm.simTime.singleSelect});
+                            vm.configUpdate.push({"name": "simTime", "value": $rootScope.config.simTime});
                             vm.configUpdate.push({
                                 "name": "amountEvents",
-                                "value": vm.simEvent.singleSelect
+                                "value": $rootScope.config.amountEvents
                             });
                             vm.configUpdate.push({
                                 "name": "amountAnomalies",
-                                "value": vm.simOutlier.singleSelect
+                                "value": $rootScope.config.amountAnomalies
                             });
                         }
 
@@ -443,7 +682,7 @@ app.controller('TestingDetailsController',
                             vm.configUpdate.push({"name": "useNewData", "value": true});
                             vm.configUpdate.push({
                                 "name": "directionAnomaly",
-                                "value": directionOutlier
+                                "value": directionAnomaly
                             });
                             vm.configUpdate.push({
                                 "name": "directionMovement",
@@ -466,19 +705,19 @@ app.controller('TestingDetailsController',
                             vm.configUpdate.push({"name": "useNewData", "value": true});
                             vm.configUpdate.push({
                                 "name": "weightObject",
-                                "value": parseInt(vm.kg.singleSelect)
+                                "value": parseInt($rootScope.config.weightObject)
                             });
                             vm.configUpdate.push({
                                 "name": "sensitivityClass",
-                                "value": parseInt(vm.sensitivity.singleSelect)
+                                "value": parseInt($rootScope.config.sensitivity)
                             });
                             vm.configUpdate.push({
                                 "name": "reactionMeters",
-                                "value": parseInt(vm.reactionMeter.singleSelect)
+                                "value": parseInt($rootScope.config.reactionMeters)
                             });
                             vm.configUpdate.push({
                                 "name": "directionAnomaly",
-                                "value": directionOutlier
+                                "value": directionAnomaly
                             });
                             vm.configUpdate.push({
                                 "name": "directionMovement",
@@ -496,7 +735,7 @@ app.controller('TestingDetailsController',
                             vm.configUpdate.push({"name": "useNewData", "value": true});
                             vm.configUpdate.push({
                                 "name": "directionAnomaly",
-                                "value": directionOutlier
+                                "value": directionAnomaly
                             });
                             vm.configUpdate.push({
                                 "name": "directionMovement",
@@ -516,7 +755,7 @@ app.controller('TestingDetailsController',
                             vm.configUpdate.push({"name": "useNewData", "value": true});
                             vm.configUpdate.push({
                                 "name": "directionAnomaly",
-                                "value": directionOutlier
+                                "value": directionAnomaly
                             });
                             vm.configUpdate.push({
                                 "name": "directionMovement",
@@ -527,14 +766,14 @@ app.controller('TestingDetailsController',
                             vm.configUpdate.push({"name": "weightObject", "value": 0});
                             vm.configUpdate.push({"name": "sensitivityClass", "value": 0});
                             vm.configUpdate.push({"name": "reactionMeters", "value": 3});
-                            vm.configUpdate.push({"name": "simTime", "value": vm.simTime.singleSelect});
+                            vm.configUpdate.push({"name": "simTime", "value": $rootScope.config.simTime});
                             vm.configUpdate.push({
                                 "name": "amountEvents",
-                                "value": vm.simEvent.singleSelect
+                                "value": $rootScope.config.amountEvents
                             });
                             vm.configUpdate.push({
                                 "name": "amountAnomalies",
-                                "value": vm.simOutlier.singleSelect
+                                "value": $rootScope.config.amountAnomalies
                             });
                         } else if ($rootScope.config.event === '2') {
                             vm.configUpdate.push({
@@ -548,32 +787,32 @@ app.controller('TestingDetailsController',
                             vm.configUpdate.push({"name": "useNewData", "value": true});
                             vm.configUpdate.push({
                                 "name": "weightObject",
-                                "value": parseInt(vm.kg.singleSelect)
+                                "value": parseInt($rootScope.config.weightObject)
                             });
                             vm.configUpdate.push({
                                 "name": "sensitivityClass",
-                                "value": parseInt(vm.sensitivity.singleSelect)
+                                "value": parseInt($rootScope.config.sensitivity)
                             });
                             vm.configUpdate.push({
                                 "name": "reactionMeters",
-                                "value": parseInt(vm.reactionMeter.singleSelect)
+                                "value": parseInt($rootScope.config.reactionMeters)
                             });
                             vm.configUpdate.push({
                                 "name": "directionAnomaly",
-                                "value": directionOutlier
+                                "value": directionAnomaly
                             });
                             vm.configUpdate.push({
                                 "name": "directionMovement",
                                 "value": directionMovement
                             });
-                            vm.configUpdate.push({"name": "simTime", "value": vm.simTime.singleSelect});
+                            vm.configUpdate.push({"name": "simTime", "value": $rootScope.config.simTime});
                             vm.configUpdate.push({
                                 "name": "amountEvents",
-                                "value": vm.simEvent.singleSelect
+                                "value": $rootScope.config.amountEvents
                             });
                             vm.configUpdate.push({
                                 "name": "amountAnomalies",
-                                "value": vm.simOutlier.singleSelect
+                                "value": $rootScope.config.amountAnomalies
                             });
                         } else if ($rootScope.config.event === '1') {
                             vm.configUpdate.push({
@@ -587,7 +826,7 @@ app.controller('TestingDetailsController',
                             vm.configUpdate.push({"name": "useNewData", "value": true});
                             vm.configUpdate.push({
                                 "name": "directionAnomaly",
-                                "value": directionOutlier
+                                "value": directionAnomaly
                             });
                             vm.configUpdate.push({
                                 "name": "directionMovement",
@@ -597,29 +836,19 @@ app.controller('TestingDetailsController',
                             vm.configUpdate.push({"name": "weightObject", "value": 0});
                             vm.configUpdate.push({"name": "sensitivityClass", "value": 0});
                             vm.configUpdate.push({"name": "reactionMeters", "value": 3});
-                            vm.configUpdate.push({"name": "simTime", "value": vm.simTime.singleSelect});
+                            vm.configUpdate.push({"name": "simTime", "value": $rootScope.config.simTime});
                             vm.configUpdate.push({
                                 "name": "amountEvents",
-                                "value": vm.simEvent.singleSelect
+                                "value": $rootScope.config.amountEvents
                             });
                             vm.configUpdate.push({
                                 "name": "amountAnomalies",
-                                "value": vm.simOutlier.singleSelect
+                                "value": $rootScope.config.amountAnomalies
                             });
                         }
                     }
 
-                    /**
-                     for (var property in data) {
-                        if (data.hasOwnProperty(property)) {
-                            newTestObject[property] = data[property];
-                        }
-                    }
 
-                     console.log(testingDetails.type);
-
-                     newTestObject.type = testingDetails.type;
-                     **/
                 } catch (e) {
                     newTestObject.type = "";
                     vm.configUpdate.push({
@@ -659,26 +888,7 @@ app.controller('TestingDetailsController',
                 updateTest2: updateTest2
             });
 
-            /**
-             // $watch 'addTest' result and add to 'testList'
-             $scope.$watch(
-             function () {
-                    //Value being watched
-                    return vm.editTestCtrl.result;
-                },
-             function () {
-                    //Callback
-                    var test = vm.editTestCtrl.result;
 
-                    if (test) {
-                        //Close modal on success
-                        $("#editTestingModal").modal('toggle');
-                        //Add sensor to sensor list
-                        //vm.testListCtrl.pushItem(test);
-
-                    }
-                }
-             );
-             **/
-        }]
+        }
+    ]
 );
