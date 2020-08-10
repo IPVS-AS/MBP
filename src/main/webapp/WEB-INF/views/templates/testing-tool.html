@@ -294,7 +294,7 @@
                                     <div class="form-line">
                                         <h4> Type of simulation: </h4>
                                         <select class="form-control show-tick" id="select-gps-event" name="event"
-                                                ng-model="ctrl.ctrl.config.event">
+                                                ng-model="ctrl.config.event">
                                             <option value="">Select the event to be simulated *</option>
                                             <option ng-option class="ng-binding ng-scope" value="1">Approach
                                             </option>
@@ -308,7 +308,7 @@
                                         </select>
                                     </div>
                                     <div class="form-line"
-                                         ng-if="ctrl.ctrl.config.event == '1' ||ctrl.ctrl.config.event == '2'">
+                                         ng-if="ctrl.config.event == '1' ||ctrl.config.event == '2'">
                                         <h4> Combination with an anomaly: </h4>
                                         <select class="form-control show-tick" id="select-gps-Anomaly"
                                                 name="anomaly" ng-model="config.anomaly">
@@ -343,7 +343,7 @@
                                     <div class="form-line">
                                         <h4> Type of simulation:</h4>
                                         <select class="form-control show-tick" id="select-acc-testCase" name="event"
-                                                ng-model="ctrl.ctrl.config.event">
+                                                ng-model="ctrl.config.event">
                                             <option value="">Select the Event to be simulated *</option>
                                             <option ng-option class="ng-binding ng-scope" value="1">Object is not moving
                                             </option>

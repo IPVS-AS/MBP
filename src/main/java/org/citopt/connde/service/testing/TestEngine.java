@@ -466,16 +466,22 @@ public class TestEngine implements ValueLogReceiverObserver {
      * @return hashmap with the date and path to every report regarding to the specific test
      */
     public ResponseEntity<Map<String, String>> getPDFList(String testId) {
-        ResponseEntity pdfList;
+        ResponseEntity pdfList = null;
+        Map<Long, String> nullList = new TreeMap<>();
         TestDetails testDetails = testDetailsRepository.findOne(testId);
         try {
-            Stream<Path> pathStream = Files.find(Paths.get(testDetails.getPathPDF()), 10, (path, basicFileAttributes) -> {
-                File file = path.toFile();
-                return !file.isDirectory() &&
-                        file.getName().contains(testId + "_");
-            });
+            if(testDetails.isPdfExists()){
+                Stream<Path> pathStream = Files.find(Paths.get(testDetails.getPathPDF()), 10, (path, basicFileAttributes) -> {
+                    File file = path.toFile();
+                    return !file.isDirectory() &&
+                            file.getName().contains(testId + "_");
+                });
 
-            pdfList = new ResponseEntity(generateReportList(pathStream), HttpStatus.OK);
+                pdfList = new ResponseEntity(generateReportList(pathStream), HttpStatus.OK);
+            } else {
+                pdfList = new ResponseEntity(nullList, HttpStatus.OK);
+            }
+
 
         } catch (IOException e) {
             pdfList = new ResponseEntity(HttpStatus.NOT_FOUND);
