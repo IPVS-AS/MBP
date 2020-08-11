@@ -540,6 +540,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     updateTest: ['CrudService', function (CrudService) {
                         return angular.bind(this, CrudService.updateItem, 'test-details');
                     }],
+                    sensorList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('sensors');
+                    }]
                 }
             })
 

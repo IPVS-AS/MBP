@@ -4,14 +4,21 @@
  * Controller for the test details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('TestingDetailsController',
-    ['$scope', '$controller', 'testingDetails', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI', 'ruleList', 'updateTest',
-        function ($scope, $controller, testingDetails, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, ENDPOINT_URI, ruleList, updateTest) {
-
+    ['$scope', '$controller', 'testingDetails', 'sensorList','$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI', 'ruleList', 'updateTest', 'CrudService',
+        function ($scope, $controller, testingDetails, sensorList ,$rootScope, $routeParams, $interval, UnitService, NotificationService, $http, ENDPOINT_URI, ruleList, updateTest, CrudService) {
+            //Initialization of variables that are used in the frontend by angular
+            var vm = this;
             //Test ID
             const COMPONENT_ID = $routeParams.id;
 
-            //Initialization of variables that are used in the frontend by angular
-            var vm = this;
+            //Extend each sensor in sensorList for a state and a reload function
+            for (var i in sensorList) {
+                if(sensorList[i].name === testingDetails.type){
+                    vm.sensorID = sensorList[i].id;
+                }
+
+            }
+
             vm.ruleList = ruleList;
             vm.test = testingDetails;
             vm.ruleNames = "";
@@ -26,23 +33,23 @@ app.controller('TestingDetailsController',
             vm.sensorType = testingDetails.type;
 
 
-            /**
-             * Initializing function, sets up basic things.
-             */
-            (function initController() {
+                /**
+                 * Initializing function, sets up basic things.
+                 */
+                (function initController() {
 
-                getPDFList();
-                getTestSensors();
-                getTestRules();
-                getConfig();
+                    getPDFList();
+                    getTestSensors();
+                    getTestRules();
+                    getConfig();
 
 
-                //Refresh test select picker when the modal is opened
-                $('.modal').on('shown.bs.modal', function () {
-                    $('.selectpicker').selectpicker('refresh');
-                });
+                    //Refresh test select picker when the modal is opened
+                    $('.modal').on('shown.bs.modal', function () {
+                        $('.selectpicker').selectpicker('refresh');
+                    });
 
-            })();
+                })();
 
 
             /**
@@ -313,6 +320,7 @@ app.controller('TestingDetailsController',
                 $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
                     for (let i = 0; i < responseRules._embedded.rules.length; i++) {
                         vm.rules.push(responseRules._embedded.rules[i]._links.self.href);
+
                     }
                     $rootScope.selectedRules = {rules: vm.rules};
                 });
@@ -448,10 +456,14 @@ app.controller('TestingDetailsController',
             }
 
 
-            function updateTest2() {
+            /**
+             * Sends a server request in order to update/edit the whole configurations of the test, if the user modifies the configuration via the edit Test Modal.
+             *
+             *
+             */
+            function editTestConfiguration() {
                 vm.configUpdate = [];
                 vm.rulesUpdate = [];
-
 
                 getUpdateValues();
                 testingDetails.config = [];
@@ -463,7 +475,7 @@ app.controller('TestingDetailsController',
                     testingDetails.triggerRules = false;
                 }
 
-                $http.post(ENDPOINT_URI + '/test-details/updateTest/' + COMPONENT_ID, JSON.stringify(testingDetails)).success(function successCallback(responseTest) {
+                $http.post(ENDPOINT_URI + '/test-details/updateTest/' + COMPONENT_ID, JSON.stringify(testingDetails)).success(function successCallback() {
                     //Close modal on success
                     $("#editTestModal").modal('toggle');
                 });
@@ -472,12 +484,16 @@ app.controller('TestingDetailsController',
             }
 
 
+            /**
+             * Gets all new configuration settings of the user from the edit test modal and puts them into the correct format.
+             *
+             */
             function getUpdateValues() {
                 try {
                     vm.configUpdate = [];
                     vm.rulesUpdate = [];
                     //Extend request parameters for routines and parameters
-                    var parameters;
+
                     // random values Angle and Axis for the GPS-Sensor
                     var randomAngle = Math.floor((Math.random() * 361));
                     var randomAxis = Math.floor((Math.random() * 3));
@@ -490,8 +506,6 @@ app.controller('TestingDetailsController',
 
 
                     if (testingDetails.type === 'TestingTemperaturSensor' || testingDetails.type === 'TestingFeuchtigkeitsSensor') {
-
-
                         if ($rootScope.config.event === '3' || $rootScope.config.event === '4' || $rootScope.config.event === '5' || $rootScope.config.event === '6') {
                             vm.configUpdate.push({
                                 "name": "event",
@@ -862,30 +876,39 @@ app.controller('TestingDetailsController',
 
                 }
 
+                // Get the new list of selected rules for the test
                 vm.rulesUpdate = $rootScope.selectedRules.rules;
 
                 if (vm.executeRules === 'undefined') {
                     NotificationService.notify('A decision must be made.', 'error')
                 }
 
+                // Get information whether the selected rules should be triggered through the Sensor simulation or not
                 vm.executeRulesNew = vm.executeRules === true;
 
 
             }
 
-
             //Extend the controller object for the public functions to make them available from outside
-            angular.extend(vm, {
+            angular.extend(vm, $controller('TestingChartController as testingChartCtrl',
+                {
+                    $scope: $scope,
+                    testingDetails: testingDetails,
+                    sensorList: sensorList,
+                    liveChartContainer: 'liveValues',
+                    historicalChartContainer: 'historicalValues',
+                    historicalChartSlider: 'historicalChartSlider'
+                }), {
                 updateTestCtrl: $controller('UpdateItemController as updateTestCtrl', {
                     $scope: $scope,
-                    updateItem: updateTest
+                    updateItem: editTestConfiguration
                 }),
                 downloadPDF: downloadPDF,
                 executeTest: executeTest,
                 stopTest: stopTest,
                 getPDFList: getPDFList,
                 editConfig: editConfig,
-                updateTest2: updateTest2
+                editTestConfiguration: editTestConfiguration
             });
 
 
