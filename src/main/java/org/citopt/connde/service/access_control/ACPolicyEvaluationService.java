@@ -25,7 +25,7 @@ public class ACPolicyEvaluationService {
 	 * @param request the {@link ACAccessRequest} holding the attributes of the requesting entity.
 	 * @return {@code true} if and only if the {@link IACCondition} of the policy holds; {@code false} otherwise.
 	 */
-	public boolean evaluate(ACPolicy<?> policy, ACAccess access, ACAccessRequest request) {
+	public boolean evaluate(ACPolicy policy, ACAccess access, ACAccessRequest request) {
 		try {
 			return policy.getCondition().evaluate(access, request);
 		} catch (ACConditionEvaluatorNotAvailableException e) {

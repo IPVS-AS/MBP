@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.citopt.connde.DynamicBeanProvider;
+import org.citopt.connde.domain.access_control.ACAttributeValue;
 import org.citopt.connde.domain.access_control.ACPolicy;
 import org.citopt.connde.domain.access_control.IACRequestedEntity;
 import org.citopt.connde.domain.env_model.EnvironmentModel;
@@ -22,7 +23,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.hateoas.RepresentationModel;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,14 +34,14 @@ import io.swagger.annotations.ApiModelProperty;
  * an owner user that owns a certain entity and is allowed to do everything with it
  * and a set of approved users that are allowed to access this entity as well.
  */
-public abstract class UserEntity extends RepresentationModel<UserEntity> implements IACRequestedEntity {
-    //Default permission names
+public abstract class UserEntity implements IACRequestedEntity {
+    // Default permission names
     private static final String PERMISSION_NAME_READ = "read";
     private static final String PERMISSION_NAME_DELETE = "delete";
     private static final String PERMISSION_NAME_APPROVE = "approve";
     private static final String PERMISSION_NAME_DISAPPROVE = "disapprove";
 
-    //Defines the default policy for user entities
+    // Defines the default policy for user entities
     protected static final UserEntityPolicy DEFAULT_POLICY = new UserEntityPolicy()
             .addPermission(PERMISSION_NAME_READ).addRole(APPROVED_USER).addRole(ADMIN)
             .addPermission(PERMISSION_NAME_DELETE).addRole(ENTITY_OWNER).addRole(ADMIN)
@@ -49,37 +49,36 @@ public abstract class UserEntity extends RepresentationModel<UserEntity> impleme
             .addPermission(PERMISSION_NAME_DISAPPROVE).addRole(ENTITY_OWNER).addRole(ADMIN)
             .lock();
 
-    //The environment model for which the entity was created (null if none)
+    // The environment model for which the entity was created (null if none)
     @JsonIgnore
     @DBRef
     private EnvironmentModel environmentModel = null;
 
-    //Owner of the entity
+    // Owner of the entity
+    @ACAttributeValue(valueLookupPath = "id")
     @JsonIgnore
     @DBRef
     private User owner = null;
 
-    //Approved users
+    // Approved users
     @JsonIgnore
     @DBRef
     private Set<User> approvedUsers = new HashSet<>();
     
-    // - - -
     /**
      * The list of access-control {@link ACPolicy policies} evaluated
      * before allowing access to this user entity.
      */
     @JsonIgnore
     @DBRef
-    private List<ACPolicy<?>> accessControlPolicies = new ArrayList<>();
-    // - - -
+    private List<ACPolicy> accessControlPolicies = new ArrayList<>();
 
-    //Creation date, managed by Mongo Auditing
+    // Creation date, managed by Mongo Auditing
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @CreatedDate
     private Date created;
 
-    //Date of the last modification, managed by Mongo Auditing
+    // Date of the last modification, managed by Mongo Auditing
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @LastModifiedDate
     private Date lastModified;
@@ -132,11 +131,11 @@ public abstract class UserEntity extends RepresentationModel<UserEntity> impleme
     }
     
     @Override
-    public List<ACPolicy<?>> getAccessControlPolicies() {
+    public List<ACPolicy> getAccessControlPolicies() {
     	return accessControlPolicies;
     }
     
-    public void setAccessControlPolicies(List<ACPolicy<?>> accessControlPolicies) {
+    public void setAccessControlPolicies(List<ACPolicy> accessControlPolicies) {
 		this.accessControlPolicies = accessControlPolicies;
 	}
 

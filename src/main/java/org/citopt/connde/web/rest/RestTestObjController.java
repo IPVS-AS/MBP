@@ -12,11 +12,9 @@ import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.TestObj;
 import org.citopt.connde.domain.device.Device;
 import org.springframework.data.rest.webmvc.BasePathAwareController;
-import org.springframework.data.rest.webmvc.RepositoryRestController;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -54,7 +52,7 @@ public class RestTestObjController {
 //    	return cm;
 //    }
 
-    @GetMapping(path = "/2", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+    @GetMapping(path = "/2", produces = "application/hal+json")
     @ApiOperation(value = "Retrieves all existing device entities available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success")})
     public CollectionModel<EntityModel<TestObj>> all2(ACAccessRequest accessRequest) {

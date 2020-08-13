@@ -2,12 +2,6 @@ package org.citopt.connde.domain.access_control;
 
 import javax.annotation.Nonnull;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * An attribute wraps a piece of information with a type as a key-value pair.
  * Within the MBP access-control framework it is used to store contextual information
@@ -16,8 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @param <T> the data type of this attribute.
  * @author Jakob Benz
  */
-//@JsonDeserialize(using = ACAttributeDeserializer.class)
-public class ACAttribute<T extends Comparable<T>> {
+public class ACAttribute {
 	
 	// User
 	public static final String KEY_USER_ID = "user.id";
@@ -48,7 +41,7 @@ public class ACAttribute<T extends Comparable<T>> {
 	 * The value of the attribute.. 
 	 */
 	@Nonnull
-	private T value;
+	private Object value;
 	
 	// - - -
 	
@@ -64,8 +57,7 @@ public class ACAttribute<T extends Comparable<T>> {
 	 * @param key the key of the attribute.
 	 * @param value the value of the attribute.
 	 */
-	@JsonCreator
-	public ACAttribute(@JsonProperty("type") ACDataType type, @JsonProperty("key") String key, @JsonProperty("value") T value) {
+	public ACAttribute(ACDataType type, String key, Object value) {
 		this.type = type;
 		this.key = key;
 		this.value = value;
@@ -77,7 +69,7 @@ public class ACAttribute<T extends Comparable<T>> {
 		return type;
 	}
 
-	public ACAttribute<T> setType(ACDataType type) {
+	public ACAttribute setType(ACDataType type) {
 		this.type = type;
 		return this;
 	}
@@ -86,26 +78,26 @@ public class ACAttribute<T extends Comparable<T>> {
 		return key;
 	}
 
-	public  ACAttribute<T> setKey(String key) {
+	public  ACAttribute setKey(String key) {
 		this.key = key;
 		return this;
 	}
 
-	public T getValue() {
+	public Object getValue() {
 		return value;
 	}
 
-	public  ACAttribute<T> setValue(T value) {
+	public  ACAttribute setValue(Object value) {
 		this.value = value;
 		return this;
 	}
 	
-	public static void main(String[] args) throws JsonProcessingException {
-		ACAttribute<String> a = new ACAttribute<String>(ACDataType.ALPHABETIC, "a1", "av1");
-		JsonNode jsonNode = new ObjectMapper().valueToTree(a);
-		System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode));
-		ACAttribute<? extends Comparable<?>> aa = new ObjectMapper().treeToValue(jsonNode, ACAttribute.class);
-		System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(aa));
-	}
+//	public static void main(String[] args) throws JsonProcessingException {
+//		ACAttribute<String> a = new ACAttribute<String>(ACDataType.ALPHABETIC, "a1", "av1");
+//		JsonNode jsonNode = new ObjectMapper().valueToTree(a);
+//		System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode));
+//		ACAttribute<? extends Comparable<?>> aa = new ObjectMapper().treeToValue(jsonNode, ACAttribute.class);
+//		System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(aa));
+//	}
 	
 }

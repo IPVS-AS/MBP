@@ -2,15 +2,30 @@ package access_control;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.citopt.connde.MBPApplication;
+import org.citopt.connde.domain.access_control.ACAccess;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
+import org.citopt.connde.domain.access_control.ACArgumentFunction;
 import org.citopt.connde.domain.access_control.ACAttribute;
+import org.citopt.connde.domain.access_control.ACConditionSimpleAttributeArgument;
+import org.citopt.connde.domain.access_control.ACConditionSimpleValueArgument;
 import org.citopt.connde.domain.access_control.ACDataType;
+import org.citopt.connde.domain.access_control.ACDoubleAccuracyEffect;
+import org.citopt.connde.domain.access_control.ACEntityType;
+import org.citopt.connde.domain.access_control.ACPolicy;
+import org.citopt.connde.domain.access_control.ACSimpleCondition;
+import org.citopt.connde.domain.access_control.IACCondition;
+import org.citopt.connde.domain.access_control.IACEffect;
+import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.domain.user.User;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.TestObjRepository;
 import org.citopt.connde.repository.UserRepository;
+import org.citopt.connde.service.access_control.ACPolicyEvaluationService;
+import org.citopt.connde.util.C;
 import org.citopt.connde.util.Pages;
 import org.citopt.connde.web.rest.RestDeviceController;
 import org.citopt.connde.web.rest.RestTestObjController;
@@ -25,8 +40,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * @author root
- *
+ * @author Jakob Benz
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -40,7 +54,7 @@ public class Test1 {
 	private UserRepository userRepository;
 	
 	@Autowired
-	private DeviceRepository dr;
+	private DeviceRepository deviceRepository;
 	
 	@Autowired
 	private RestDeviceController restDeviceController;
@@ -48,8 +62,42 @@ public class Test1 {
 	@Autowired
 	private RestTestObjController restTestObjController;
 	
+	@Autowired
+	private ACPolicyEvaluationService policyEvaluationService;
+	
+	
 	@Test
-	public void test() throws JsonProcessingException {
+	public void test0() throws JsonProcessingException {
+		Device device = deviceRepository.findById("5f32421db50095677bd137e4").get();
+		
+		List<ACAccessType> acs = new ArrayList<>();
+		acs.add(ACAccessType.READ);
+		IACCondition c = new ACSimpleCondition<String>("C1", ACArgumentFunction.EQUALS, new ACConditionSimpleAttributeArgument<>(ACEntityType.REQUESTING_ENTITY, "a1"), new ACConditionSimpleValueArgument<String>("v1"));
+		List<IACEffect<?>> effects = new ArrayList<>();
+		effects.add(new ACDoubleAccuracyEffect("Test Effect 1", 10, 5));
+		ACPolicy p = new ACPolicy("P1", 1, acs, c, effects, null);
+
+		device.getAccessControlPolicies().add(p);
+		device = deviceRepository.save(device);
+	}
+	
+	@Test
+	public void test1() throws JsonProcessingException {
+		ACAccessRequest request = new ACAccessRequest();
+		request.getContext().add(new ACAttribute(ACDataType.ALPHABETIC, "firstName", "Jakob"));
+		request.getContext().add(new ACAttribute(ACDataType.ALPHABETIC, "a1", "v1"));
+		
+		User user = userRepository.findOneByUsername("test1").get();
+		String adminUserId = "5f218c7822424828a8275037";
+		
+//		final ACAccess access = new ACAccess(ACAccessType.READ, user, device);
+//		device.getAccessControlPolicies().forEach(p -> {
+//			System.err.println(policyEvaluationService.evaluate(p, access, request));
+//		});
+	}
+	
+	@Test
+	public void test2() throws JsonProcessingException {
 //		List<ACAccessType> acs = new ArrayList<>();
 //		acs.add(ACAccessType.READ);
 //		acs.add(ACAccessType.UPDATE);
@@ -58,7 +106,6 @@ public class Test1 {
 //		List<IACEffect<Double>> effects = new ArrayList<IACEffect<Double>>();
 //		effects.add(e);
 		
-		int index = 104;
 //		TestObj t = new TestObj();
 //		t.i = index;
 //		t.s = "s" + index;
@@ -67,35 +114,7 @@ public class Test1 {
 //		t.policies.add(new ACPolicy<Double>("AC-" + index + "-3", 3, acs, c, effects));
 //		testObjRepository.save(t);
 		
-		List<ACAccessType> accessType = new ArrayList<>();
-//		accessType.add(ACAccessType.READ);
-		accessType.add(ACAccessType.UPDATE);
-//		testObjRepository.findX1(accessType).forEach(t -> System.out.println(t.i));
-		String ownerId = "5f1e7f8015ad9129b866ea8a";
-		List<String> ats = new ArrayList<>();
-		ats.add(ACAccessType.READ.toString());
-//		ats.add(ACAccessType.UPDATE.toString());
-//		List<TestObj> result = testObjRepository.findByOwnerOrPolicyAccessTypeMatchAll(ownerId, ats, new PageRequest(0, 10));
-//		List<TestObj> result = testObjRepository.findByPolicyAccessTypeMatchAll(ats);
-//		List<TestObj> result = testObjRepository.findByOwner(ownerId, PageRequest.of(1, 20));
-//		System.err.println(result.size());
-//		result.forEach(t -> System.out.println(t.i));
-		
-		
-		
-		
-		List<ACAttribute<? extends Comparable<?>>> attributes = new ArrayList<>();
-    	attributes.add(new ACAttribute<String>(ACDataType.ALPHABETIC, "firstName", "Jakob"));
-    	attributes.add(new ACAttribute<String>(ACDataType.ALPHABETIC, "lastName", "Benz"));
-		ACAccessRequest r = new ACAccessRequest(attributes);
-//		System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(r));
-//		System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(restTestObjController.all1()));
-//		System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(restTestObjController.all2(r)));
-		
-//		System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(dr.findAll(Pages.ALL)));
-		
-		System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(restDeviceController.all(Pages.ALL, r)));
-		
+		System.out.println("1111");
 	}
 	
 	public void print(Object o) {

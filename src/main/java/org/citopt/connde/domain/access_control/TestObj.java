@@ -22,13 +22,13 @@ public class TestObj extends RepresentationModel<TestObj> {
 	
 	public int i;
 	
-	public List<ACPolicy<?>> policies = new ArrayList<>();
+	public List<ACPolicy> policies = new ArrayList<>();
 	
 	public TestObj() {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public TestObj(String id, String s, int i, List<ACPolicy<?>> policies) {
+	public TestObj(String id, String s, int i, List<ACPolicy> policies) {
 		this.id = id;
 		this.i = i;
 		this.s = s;
@@ -62,11 +62,11 @@ public class TestObj extends RepresentationModel<TestObj> {
 		return this;
 	}
 	
-	public List<ACPolicy<?>> getPolicies() {
+	public List<ACPolicy> getPolicies() {
 		return policies;
 	}
 	
-	public TestObj setPolicies(List<ACPolicy<?>> policies) {
+	public TestObj setPolicies(List<ACPolicy> policies) {
 		this.policies = policies;
 		return this;
 	}

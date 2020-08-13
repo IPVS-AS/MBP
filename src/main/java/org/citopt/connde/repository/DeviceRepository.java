@@ -19,7 +19,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
-@RepositoryRestResource(collectionResourceRel = "device", path = "devices", excerptProjection = DeviceExcerpt.class)
+@RepositoryRestResource(collectionResourceRel = "devices", path = "devices", excerptProjection = DeviceExcerpt.class)
 @Api(tags = { "Device entities" }, description = "CRUD for device entities")
 public interface DeviceRepository extends UserEntityRepository<Device> {
 	

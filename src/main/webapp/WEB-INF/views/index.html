@@ -223,6 +223,23 @@
               <span>Monitoring Operators</span>
             </a>
           </li>
+          <li menu-item="menu-item">
+            <a class="menu-toggle">
+                <i class="material-icons">security</i>
+                <span>Policies</span>
+            </a>
+            <ul class="ml-menu">
+                <li>
+                    <a href="view/policies" menu-item="menu-item">Policy Definitions</a>
+                </li>
+                <li>
+                    <a href="view/policy-conditions" menu-item="menu-item">Conditions</a>
+                </li>
+                <li>
+                    <a href="view/policy-effects" menu-item="menu-item">Effects</a>
+                </li>
+            </ul>
+        </li>
           <li href="view/testing-tool" menu-item="menu-item">
             <a href="view/testing-tool">
               <i class="material-icons">bug_report</i>
@@ -407,6 +424,9 @@
 <script th:src="@{/js/controllers/rules/RuleListController.js}"></script>
 <script th:src="@{/js/controllers/rules/RuleActionListController.js}"></script>
 <script th:src="@{/js/controllers/rules/RuleTriggerListController.js}"></script>
+<script th:src="@{/js/controllers/policies/PolicyListController.js}"></script>
+<!-- <script th:src="@{/js/controllers/rules/PolicyConditionListController.js}"></script>
+<script th:src="@{/js/controllers/rules/PolicyEffectListController.js}"></script> -->
 <script th:src="@{/js/controllers/settings/SettingsController.js}"></script>
 <script th:src="@{/js/controllers/user/LoginController.js}"></script>
 <script th:src="@{/js/controllers/user/RegisterController.js}"></script>

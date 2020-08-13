@@ -7,13 +7,23 @@ import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * This {@link IACModifyingEffect effect} manipulates the accuracy of a {@link Double} value.
  * 
  * @author Jakob Benz
  */
+@Document
 public class ACDoubleAccuracyEffect implements IACModifyingEffect<Double> {
+	
+	/**
+	 * The name of this effect.
+	 */
+	@NotEmpty
+	private String name; // implicitly final due to omitted setter
 	
 	/**
 	 * The accuracy the application of this effect will result in. For example,
@@ -42,15 +52,22 @@ public class ACDoubleAccuracyEffect implements IACModifyingEffect<Double> {
 	/**
 	 * All-args constructor.
 	 * 
-	 * @param accuracy
-	 * @param precision
+	 * @param name the name of this effect.
+	 * @param accuracy the accuracy the application of this effect will result in.
+	 * @param precision the number of decimal digits to keep when rounding the result.
 	 */
-	public ACDoubleAccuracyEffect(double accuracy, int precision) {
+	public ACDoubleAccuracyEffect(String name, double accuracy, int precision) {
+		this.name = name;
 		this.accuracy = accuracy;
 		this.precision = precision;
 	}
 	
 	// - - -
+	
+	@Override
+	public String getName() {
+		return name;
+	}
 	
 	public double getAccuracy() {
 		return accuracy;

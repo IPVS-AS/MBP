@@ -11,6 +11,8 @@ import java.util.List;
  */
 public interface IACEffect<T> {
 	
+	public String getName();
+	
 	/**
 	 * Applies the effect to a given input value.
 	 * 

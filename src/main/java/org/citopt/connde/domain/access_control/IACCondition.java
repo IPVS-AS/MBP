@@ -9,6 +9,10 @@ import org.citopt.connde.service.access_control.ACAbstractConditionEvaluator;
  */
 public interface IACCondition {
 	
+	public String getId();
+	
+	public String getName();
+	
 	/**
 	 * TODO: Method comment (check params).
 	 * 

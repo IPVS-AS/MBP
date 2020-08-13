@@ -15,6 +15,7 @@ import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.ValueLogRepository;
 import org.citopt.connde.service.UnitConverterService;
 import org.citopt.connde.service.UserEntityService;
+import org.citopt.connde.service.access_control.AccessControlService;
 import org.citopt.connde.web.rest.helper.MonitoringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -61,6 +62,11 @@ public class RestValueLogController {
 
     @Autowired
     private MonitoringHelper monitoringHelper;
+    
+    // - - -
+    
+    @Autowired
+    private AccessControlService accessControlService;
 
 
     /**
@@ -77,6 +83,11 @@ public class RestValueLogController {
     public ResponseEntity<Page<ValueLog>> getActuatorValueLogs(@PathVariable(value = "id") @ApiParam(value = "ID of the actuator to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId,
                                                                @RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the actuator values", example = "°C", required = false) String unit,
                                                                @ApiParam(value = "The page configuration", required = true) Pageable pageable) {
+    	// Access-Control
+    	// - - -
+    	
+    	// - - -
+    	
         //Get actuator
         Actuator actuator = (Actuator) userEntityService.getUserEntityFromRepository(actuatorRepository, actuatorId);
 

@@ -20,7 +20,7 @@ public interface UserEntityExcerpt {
     Set<UserExcerpt> getApprovedUsers();
     
     @Value("#{target.getAccessControlPolicies()}")
-    Set<ACPolicy<?>> getAccessControlPolicies();
+    Set<ACPolicy> getAccessControlPolicies();
 
     @Value("#{target.isOwning()}")
     boolean getIsOwning();

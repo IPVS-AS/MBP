@@ -50,53 +50,54 @@ public interface UserEntityRepository<T extends UserEntity> extends MongoReposit
 	@Query("{ 'owner.id' : :#{#ownerId} }")
 	List<T> findByOwner(@Param("ownerId") String ownerId, Pageable pageable);
 	
-	/**
-	 * Retrieves all entities with at least one policy that matches all given access types.
-	 * 
-	 * @param accessTypes the list of access {@link ACAccessType types} as {@code String}.
-	 * @param pageable the {@link Pageable} to configure the result set.
-	 * @return a list holding all matching entities.
-	 * @author Jakob Benz
-	 */
-	@Query("{ 'policies' : { $elemMatch: { accessTypes: { $all: :#{#accessTypes} } } } }")
-	List<T> findByPolicyAccessTypeMatchAll(@Param("accessTypes") List<String> accessTypes, Pageable pageable);
-	
-	/**
-	 * Retrieves all entities with at least one policy that matches any of the given access types.
-	 * 
-	 * @param accessTypes the list of access {@link ACAccessType types} as {@code String}.
-	 * @param pageable the {@link Pageable} to configure the result set.
-	 * @return a list holding all matching entities.
-	 * @author Jakob Benz
-	 */
-	@Query("{ 'policies' : { $elemMatch: { accessTypes: { $in: :#{#accessTypes} } } } }")
-	List<T> findByPolicyAccessTypeMatchAny(@Param("accessTypes") List<String> accessTypes, Pageable pageable);
-	
-	/**
-	 * Retrieves all entities that either are owned by the given user or
-	 * have at least one policy that matches all given access types.
-	 * 
-	 * @param ownerId the id of the {@link User} that owns the entity.
-	 * @param accessTypes the list of access {@link ACAccessType types} as {@code String}.
-	 * @param pageable the {@link Pageable} to configure the result set.
-	 * @return a list holding all matching entities.
-	 * @author Jakob Benz
-	 */
-	@Query("{ $or: [ { 'owner.id' : :#{#ownerId} }, { 'policies' : { $elemMatch: { accessTypes: { $all: :#{#accessTypes} } } } } ] }")
-	List<T> findByOwnerOrPolicyAccessTypeMatchAll(@Param("ownerId") String ownerId, @Param("accessTypes") List<String> accessTypes, Pageable pageable);
-	
-	/**
-	 * Retrieves all entities that either are owned by the given user or
-	 * have at least one policy that matches any of the given access types.
-	 * 
-	 * @param ownerId the id of the {@link User} that owns the entity.
-	 * @param accessTypes the list of access {@link ACAccessType types} as {@code String}.
-	 * @param pageable the {@link Pageable} to configure the result set.
-	 * @return a list holding all matching entities.
-	 * @author Jakob Benz
-	 */
-	@Query("{ $or: [ { 'owner.id' : :#{#ownerId} }, { 'policies' : { $elemMatch: { accessTypes: { $in: :#{#accessTypes} } } } } ] }")
-	List<T> findByOwnerOrPolicyAccessTypeMatchAny(@Param("ownerId") String ownerId, @Param("accessTypes") List<String> accessTypes, Pageable pageable);
+//	/**
+//	 * Retrieves all entities with at least one policy that matches all given access types.
+//	 * 
+//	 * @param accessTypes the list of access {@link ACAccessType types} as {@code String}.
+//	 * @param pageable the {@link Pageable} to configure the result set.
+//	 * @return a list holding all matching entities.
+//	 * @author Jakob Benz
+//	 */
+//	@Query("{ 'accessControlPolicies' : { $elemMatch : { 'accessTypes' : { $all : :#{#accessTypes} } } } }")
+//	List<T> findByPolicyAccessTypeMatchAll(@Param("accessTypes") List<String> accessTypes, Pageable pageable);
+//	
+//	
+//	/**
+//	 * Retrieves all entities with at least one policy that matches any of the given access types.
+//	 * 
+//	 * @param accessTypes the list of access {@link ACAccessType types} as {@code String}.
+//	 * @param pageable the {@link Pageable} to configure the result set.
+//	 * @return a list holding all matching entities.
+//	 * @author Jakob Benz
+//	 */
+//	@Query("{ 'accessControlPolicies' : { $elemMatch : { 'accessTypes' : { $in : :#{#accessTypes} } } } }")
+//	List<T> findByPolicyAccessTypeMatchAny(@Param("accessTypes") List<String> accessTypes, Pageable pageable);
+//	
+//	/**
+//	 * Retrieves all entities that either are owned by the given user or
+//	 * have at least one policy that matches all given access types.
+//	 * 
+//	 * @param ownerId the id of the {@link User} that owns the entity.
+//	 * @param accessTypes the list of access {@link ACAccessType types} as {@code String}.
+//	 * @param pageable the {@link Pageable} to configure the result set.
+//	 * @return a list holding all matching entities.
+//	 * @author Jakob Benz
+//	 */
+//	@Query("{ $or : [ { 'owner.id' : :#{#ownerId} }, { 'accessControlPolicies' : { $elemMatch : { 'accessTypes' : { $all : :#{#accessTypes} } } } } ] }")
+//	List<T> findByOwnerOrPolicyAccessTypeMatchAll(@Param("ownerId") String ownerId, @Param("accessTypes") List<String> accessTypes, Pageable pageable);
+//	
+//	/**
+//	 * Retrieves all entities that either are owned by the given user or
+//	 * have at least one policy that matches any of the given access types.
+//	 * 
+//	 * @param ownerId the id of the {@link User} that owns the entity.
+//	 * @param accessTypes the list of access {@link ACAccessType types} as {@code String}.
+//	 * @param pageable the {@link Pageable} to configure the result set.
+//	 * @return a list holding all matching entities.
+//	 * @author Jakob Benz
+//	 */
+//	@Query("{ $or : [ { 'owner.id' : :#{#ownerId} }, { 'accessControlPolicies' : { $elemMatch : { 'accessTypes' : { $in : :#{#accessTypes} } } } } ] }")
+//	List<T> findByOwnerOrPolicyAccessTypeMatchAny(@Param("ownerId") String ownerId, @Param("accessTypes") List<String> accessTypes, Pageable pageable);
 
     @Override
     @ApiOperation(value = "Saves a new or modified entity", produces = "application/hal+json")

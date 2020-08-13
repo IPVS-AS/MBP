@@ -34,7 +34,8 @@ public @interface ACAttributeValue {
 	 * the attribute value is not the field value itself but rather
 	 * is a nested field somewhere in the object hierarchy.
 	 * <p>
-	 * The path must contain the field name (exactly) for each step.
+	 * The path must contain the field name (exactly) for each step
+	 * (the field this annotation is specified on must <b>not</b> be included).
 	 * If there are multiple steps, '.' must be used as separator.
 	 * <p>
 	 * If {@link #key()} is also specified, this path will be used preferable

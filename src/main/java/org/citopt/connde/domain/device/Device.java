@@ -5,6 +5,7 @@ import static org.citopt.connde.domain.user_entity.UserEntityRole.APPROVED_USER;
 
 import javax.persistence.GeneratedValue;
 
+import org.citopt.connde.domain.access_control.ACAttributeValue;
 import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.domain.user_entity.UserEntityPolicy;
@@ -32,6 +33,7 @@ public class Device extends UserEntity {
     @ApiModelProperty(notes = "Device ID", example = "5c8f7ad66f9e3c1bacb0fa99", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String id;
 
+    @ACAttributeValue
     @Indexed(unique = true)
     @ApiModelProperty(notes = "Device name", example = "My Device", required = true)
     private String name;

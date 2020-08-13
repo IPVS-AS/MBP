@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 import org.citopt.connde.InfluxDBConfiguration;
+import org.citopt.connde.domain.access_control.IACValueLog;
 import org.influxdb.annotation.Column;
 import org.influxdb.annotation.Measurement;
 
@@ -19,30 +20,34 @@ import io.swagger.annotations.ApiModelProperty;
         retentionPolicy = InfluxDBConfiguration.RETENTION_POLICY_NAME,
         timeUnit = TimeUnit.SECONDS)
 @ApiModel(description = "Model for value logs of components")
-public class ValueLog {
+public class ValueLog implements IACValueLog<Double> {
 
     @Column(name = "time")
     @ApiModelProperty(notes = "Receive time", example = "{\"nano\":0,\"epochSecond\":1570635657}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private Instant time;
 
-    //Default MQTT fields
+    // Default MQTT fields
     @Column(name = "qos")
     @ApiModelProperty(notes = "MQTT Quality of Service", example = "0", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private Integer qos;
+    
     @Column(name = "topic")
     @ApiModelProperty(notes = "MQTT topic", example = "sensor/5c97dc2583aeb6078c5ab672", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String topic;
+    
     @Column(name = "message")
     @ApiModelProperty(notes = "Full received MQTT message", example = "{ \"component\": \"SENSOR\", \"id\": \"5d9dfeafb1c4d32a86e5b73d\", \"value\": \"434880.000000\"}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String message;
 
-    //Fields parsed from the MQTT message
+    // Fields parsed from the MQTT message
     @Column(name = "idref")
     @ApiModelProperty(notes = "ID of the pertaining component", example = "5c97dc2583aeb6078c5ab672", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String idref;
+    
     @Column(name = "component")
     @ApiModelProperty(notes = "Type of the pertaining component", example = "SENSOR", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String component; //Component type
+    
     @Column(name = "value")
     @ApiModelProperty(notes = "Received value", example = "27.5", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private double value;
@@ -155,7 +160,7 @@ public class ValueLog {
      *
      * @return The value
      */
-    public double getValue() {
+    public Double getValue() {
         return value;
     }
 

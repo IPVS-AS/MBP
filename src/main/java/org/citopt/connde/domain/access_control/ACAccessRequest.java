@@ -1,5 +1,6 @@
 package org.citopt.connde.domain.access_control;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -19,7 +20,7 @@ public class ACAccessRequest {
 	/**
 	 * The context of the requesting entity as list of {@link ACAttribute attributes}.
 	 */
-	private List<ACAttribute<? extends Comparable<?>>> context;
+	private List<ACAttribute> context = new ArrayList<>();
 	
 	// - - -
 	
@@ -34,17 +35,17 @@ public class ACAccessRequest {
 	 * @param context the context of the requesting entity as list of {@link ACAttribute attributes}.
 	 */
 	@JsonCreator
-	public ACAccessRequest(@JsonProperty("context") List<ACAttribute<? extends Comparable<?>>> context) {
+	public ACAccessRequest(@JsonProperty("context") List<ACAttribute> context) {
 		this.context = context;
 	}
 	
 	// - - -
 
-	public List<ACAttribute<? extends Comparable<?>>> getContext() {
+	public List<ACAttribute> getContext() {
 		return context;
 	}
 
-	public ACAccessRequest setContext(List<ACAttribute<? extends Comparable<?>>> context) {
+	public ACAccessRequest setContext(List<ACAttribute> context) {
 		this.context = context;
 		return this;
 	}

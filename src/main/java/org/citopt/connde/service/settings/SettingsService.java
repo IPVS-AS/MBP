@@ -37,10 +37,13 @@ public class SettingsService {
     public SettingsService() {
         //Create a file object from the properties file
         URL fileURL = getClass().getClassLoader().getResource(SETTINGS_FILE_NAME);
+        System.err.println(fileURL);
         try {
             settingsFile = new File(fileURL.toURI());
         } catch (URISyntaxException e) {
             System.err.println("Error while reading the properties file.");
+        } catch (Exception e) {
+        	System.err.println("Error while reading the properties file: "  + e.getMessage() + ".");
         }
     }
 

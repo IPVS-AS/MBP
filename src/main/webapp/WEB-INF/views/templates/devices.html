@@ -177,6 +177,114 @@
                                 </div>
                                 <span class="help-block" ng-show="addDeviceCtrl.item.errors.keypair">{{addDeviceCtrl.item.errors.keypair.message}}</span>
                             </div>
+                            <!-- item.accessControlPolicies group -->
+                            <div class="align-right">
+                                <button id="add-policy-button" type="button" class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                                    data-toggle="modal" data-target="#addPolicyModal" data-backdrop="static"
+                                    data-keyboard="false">
+                                    <i class="material-icons">add</i>
+                                </button>
+                            </div>
+                            <label>Access Control Policies</label>
+                            <div class="form-group">
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th>Priority</th>
+                                        <th>Name</th>
+                                        <th>Access Types</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr ng-show="ctrl.parameters.length === 0">
+                                        <td colspan="3">No parameters specified.</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <div class="has-error" ng-show="addAdapterCtrl.item.errors.parameters">
+                                    <span class="help-block">{{addAdapterCtrl.item.errors.parameters.message}}</span>
+                                </div>
+                                <div class="align-right">
+                                    <button type="button"
+                                            class="btn bg-light-green btn-circle waves-effect waves-circle waves-float"
+                                            ng-click="ctrl.addParameter()">
+                                        <i class="material-icons">add</i>
+                                    </button>
+                                </div>
+                            </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- #END# Modal -->
+
+    <!-- Add Policy Modal -->
+    <div class="modal fade" id="addPolicyModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create a new Access Control Policy
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form id="addPolicyForm" ng-submit="addDeviceCtrl.addItem()">
+                    <fieldset id="device-policy-form">
+                        <div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.global}">
+			                 <span class="alert alert-danger" ng-show="addDeviceCtrl.item.errors.global">
+			                   {{addDeviceCtrl.item.errors.global}}
+			                 </span>
+                            </div>
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.name }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDeviceCtrl.item.errors.name }">
+                                    <input class="form-control" id="device-form-input-name" type="text"
+                                           placeholder="Name *" ng-model="addDeviceCtrl.item.name"/>
+                                </div>
+                                <span class="help-block" ng-show="addDeviceCtrl.item.errors.name">{{addDeviceCtrl.item.errors.name.message}}</span>
+                            </div>
+                            <!-- item.componentType group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDeviceCtrl.item.errors.componentType }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDeviceCtrl.item.errors.componentType }">
+                                    <select class="form-control show-tick" id="device-form-select-component-type"
+                                            ng-model="addDeviceCtrl.item.componentType">
+                                        <option value="">Select device type *</option>
+                                        <option ng-repeat="deviceType in ctrl.deviceTypesList"
+                                                value="{{deviceType.name}}">
+                                            {{deviceType.name}}
+                                        </option>
+                                    </select>
+                                </div>
+                                <span class="help-block" ng-show="addDeviceCtrl.item.errors.componentType">{{addDeviceCtrl.item.errors.componentType.message}}</span>
+                            </div>
+                            <!-- item.keyPair group -->
+                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.keypair }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDeviceCtrl.item.errors.keypair }">
+                                    <select class="form-control show-tick" ng-model="addDeviceCtrl.item.keyPair"
+                                            ng-options="t._links.self.href as (t.name) for t in ctrl.keyPairList">
+                                        <option value="">Select SSH key pair
+                                        <option/>
+                                    </select>
+                                </div>
+                                <span class="help-block" ng-show="addDeviceCtrl.item.errors.keypair">{{addDeviceCtrl.item.errors.keypair.message}}</span>
+                            </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>
                         <div class="modal-footer">

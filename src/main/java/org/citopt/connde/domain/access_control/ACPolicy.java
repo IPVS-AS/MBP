@@ -8,8 +8,12 @@ import javax.persistence.GeneratedValue;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 
+import org.citopt.connde.domain.user.User;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import io.swagger.annotations.ApiModel;
 
@@ -23,7 +27,7 @@ import io.swagger.annotations.ApiModel;
  */
 @Document
 @ApiModel("Model for Access Control Policies.")
-public class ACPolicy<T> {
+public class ACPolicy {
 	
 	/**
 	 * The id of this policy.
@@ -35,6 +39,7 @@ public class ACPolicy<T> {
 	/**
 	 * The name of this policy;
 	 */
+	@NotEmpty
 	private String name;
 	
 	/**
@@ -55,6 +60,7 @@ public class ACPolicy<T> {
 	 * The {@link IACCondition} of this policy.
 	 */
 	@Nonnull
+	@DBRef
 	private IACCondition condition;
 	
 	/**
@@ -65,8 +71,16 @@ public class ACPolicy<T> {
 	 * </ol>
 	 * Note that this list can be empty.
 	 */
-	private List<IACEffect<T>> effects = new ArrayList<>();
-
+	@DBRef
+	private List<IACEffect<?>> effects = new ArrayList<>();
+	
+	/**
+	 * The {@link User} that owns this policy.
+	 */
+	@JsonIgnore
+	@DBRef
+	private User owner;
+	
 	// - - -
 	
 	/**
@@ -82,8 +96,9 @@ public class ACPolicy<T> {
 	 * @param accessTypes the list of access {@link ACAccessType types} this policy is applicable for.
 	 * @param condition the {@link IACCondition} of this policy.
 	 * @param effects the list of {@link IACEffect effects} to apply if required.
+	 * @param owner the {@link User} that owns this policy.
 	 */
-	public ACPolicy(String name, int priority, List<ACAccessType> accessTypes, IACCondition condition, List<IACEffect<T>> effects) {
+	public ACPolicy(String name, int priority, List<ACAccessType> accessTypes, IACCondition condition, List<IACEffect<?>> effects, User owner) {
 		this.name = name;
 		this.priority = priority;
 		this.accessTypes = accessTypes;
@@ -101,7 +116,7 @@ public class ACPolicy<T> {
 		return name;
 	}
 	
-	public ACPolicy<T> setName(String name) {
+	public ACPolicy setName(String name) {
 		this.name = name;
 		return this;
 	}
@@ -110,7 +125,7 @@ public class ACPolicy<T> {
 		return priority;
 	}
 
-	public ACPolicy<T> setPriority(int priority) {
+	public ACPolicy setPriority(int priority) {
 		this.priority = priority;
 		return this;
 	}
@@ -119,7 +134,7 @@ public class ACPolicy<T> {
 		return accessTypes;
 	}
 	
-	public ACPolicy<T> setAccessTypes(List<ACAccessType> accessTypes) {
+	public ACPolicy setAccessTypes(List<ACAccessType> accessTypes) {
 		this.accessTypes = accessTypes;
 		return this;
 	}
@@ -128,17 +143,26 @@ public class ACPolicy<T> {
 		return condition;
 	}
 
-	public ACPolicy<T> setCondition(IACCondition condition) {
+	public ACPolicy setCondition(IACCondition condition) {
 		this.condition = condition;
 		return this;
 	}
 
-	public List<IACEffect<T>> getEffects() {
+	public List<IACEffect<?>> getEffects() {
 		return effects;
 	}
 
-	public ACPolicy<T> setEffects(List<IACEffect<T>> effects) {
+	public ACPolicy setEffects(List<IACEffect<?>> effects) {
 		this.effects = effects;
+		return this;
+	}
+	
+	public User getOwner() {
+		return owner;
+	}
+	
+	public ACPolicy setOwner(User owner) {
+		this.owner = owner;
 		return this;
 	}
 	

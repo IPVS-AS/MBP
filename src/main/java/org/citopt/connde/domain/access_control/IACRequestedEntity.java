@@ -34,6 +34,6 @@ public interface IACRequestedEntity extends IACEntity {
 	 * 
 	 * @return the list of {@link ACPolicy policies}.
 	 */
-	public List<ACPolicy<?>> getAccessControlPolicies();
+	public List<ACPolicy> getAccessControlPolicies();
 	
 }

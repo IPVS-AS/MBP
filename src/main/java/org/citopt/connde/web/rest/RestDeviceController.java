@@ -3,6 +3,7 @@ package org.citopt.connde.web.rest;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -14,8 +15,18 @@ import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccess;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
+import org.citopt.connde.domain.access_control.ACArgumentFunction;
+import org.citopt.connde.domain.access_control.ACConditionSimpleAttributeArgument;
+import org.citopt.connde.domain.access_control.ACConditionSimpleValueArgument;
+import org.citopt.connde.domain.access_control.ACDoubleAccuracyEffect;
+import org.citopt.connde.domain.access_control.ACEntityType;
+import org.citopt.connde.domain.access_control.ACPolicy;
+import org.citopt.connde.domain.access_control.ACSimpleCondition;
+import org.citopt.connde.domain.access_control.IACCondition;
+import org.citopt.connde.domain.access_control.IACEffect;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user.User;
+import org.citopt.connde.repository.ACPolicyRepository;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.UserRepository;
 import org.citopt.connde.security.SecurityUtils;
@@ -37,9 +48,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -63,6 +71,9 @@ public class RestDeviceController {
     private DeviceRepository deviceRepository;
     
     @Autowired
+    private ACPolicyRepository policyRepository;
+    
+    @Autowired
     private UserRepository userRepository;
     
     @Autowired
@@ -72,34 +83,34 @@ public class RestDeviceController {
 	@GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing device entities available for the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to access the entity!") })
-    public ResponseEntity<PagedModel<Device>> all(@ApiParam(value = "Page parameters", required = true) Pageable pageable, @Valid ACAccessRequest accessRequest) {
-    	// TODO: Outsource this functionality to separate service (maybe UserEntityService#getEntitiesForUser)
-    	
+    public ResponseEntity<PagedModel<EntityModel<Device>>> all(@ApiParam(value = "Page parameters", required = true) Pageable pageable, @Valid @RequestBody ACAccessRequest accessRequest) {
     	// Retrieve requesting user from the database (if it can be identified and is present)
-//    	User user = userRepository.findOneByUsername("admin").orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!")); // ONLY_DEV
     	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername())
     			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
     	
-    	// Retrieve all devices owned by the user or that have at least one policy for the access type 'READ' (no paging yet)
-    	List<Device> devicesForUserWithAnyReadPolicy = deviceRepository.findByOwnerOrPolicyAccessTypeMatchAll(user.getId(), C.listOf(ACAccessType.READ.toString()), Pages.ALL);
+    	// Retrieve all devices owned by the user (no paging yet)
+    	List<Device> devices = deviceRepository.findByOwner(user.getId(), Pages.ALL);
     	
-    	// Filter devices with non-matching policies (still no paging yet)
-    	devicesForUserWithAnyReadPolicy = devicesForUserWithAnyReadPolicy.stream().filter(d -> {
+    	// Filter policies with non-matching access-types -> less policies to actually evaluate (no paging yet)
+    	devices = devices.stream().filter(d -> d.getAccessControlPolicies().stream().anyMatch(p -> p.getAccessTypes().contains(ACAccessType.READ))).collect(Collectors.toList());
+    	
+    	// Filter devices the user is not permitted to access (still no paging yet)
+    	devices = devices.stream().filter(d -> {
     		ACAccess access = new ACAccess(ACAccessType.READ, user, d);
     		return d.getOwner().getId().equals(user.getId())
     				|| d.getAccessControlPolicies().stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest));
     	}).collect(Collectors.toList());
     	
+    	// Extract requested page from all devices
+    	List<Device> page = Pages.page(devices, pageable);
+    	
+    	// Add self link to every device
+    	List<EntityModel<Device>> deviceEntityModels = page.stream().map(this::deviceToEntityModel).collect(Collectors.toList());
+    	
     	// Create self link
     	Link link = linkTo(methodOn(getClass()).all(pageable, accessRequest)).withSelfRel();
     	
-    	// Extract requested page from all devices
-    	List<Device> page = Pages.page(devicesForUserWithAnyReadPolicy, pageable);
-    	
-    	// Add self link to every device
-    	page.forEach(this::addLinksToDevice);
-    	
-    	return ResponseEntity.ok(PagedModel.of(page, Pages.metaDataOf(pageable, devicesForUserWithAnyReadPolicy.size()), C.listOf(link)));
+    	return ResponseEntity.ok(PagedModel.of(deviceEntityModels, Pages.metaDataOf(pageable, devices.size()), C.listOf(link)));
     }
     
     @GetMapping(path = "/{deviceId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
@@ -123,28 +134,61 @@ public class RestDeviceController {
     	}
     			
     	// Add self link to device
-    	device = addLinksToDevice(device);
+    	EntityModel<Device> deviceEntityModel = deviceToEntityModel(device);
     	
-    	// Create self link
-    	Link link = linkTo(methodOn(getClass()).all(pageable, accessRequest)).withSelfRel();
-    	
-    	return ResponseEntity.ok(EntityModel.of(device, link));
+    	return ResponseEntity.ok(deviceEntityModel);
     }
     
-    @PostMapping(path = "/test1", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
-    public ResponseEntity<ACAccessRequest> test1(@Valid @RequestBody ACAccessRequest accessRequest) {
-    	try {
-			LOGGER.info(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(accessRequest));
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	return ResponseEntity.ok(accessRequest);
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+    @ApiOperation(value = "Retrieves an existing device entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
+    @ApiResponses({ @ApiResponse(code = 200, message = "Device created successfully!"), @ApiResponse(code = 409, message = "Device already exists!") })
+    public ResponseEntity<EntityModel<Device>> create(@PathVariable("deviceId") String deviceId, @ApiParam(value = "Page parameters", required = true) Pageable pageable, @Valid ACAccessRequest accessRequest, @RequestBody Device device) {
+    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername())
+    			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+    	
+//    	// Retrieve the requested device from the database (if it exists)
+//    	Optional<Device> deviceOptional = deviceRepository.findById(deviceId);
+//    	if (!deviceOptional.isPresent()) {
+//    		return ResponseEntity.notFound().build();
+//    	}
+//    	Device device = deviceOptional.get();
+//    	
+//    	// Check whether the requesting user is authorized to access the device
+//    	ACAccess access = new ACAccess(ACAccessType.READ, user, device);
+//    	if (!device.getOwner().getId().equals(user.getId()) && !device.getAccessControlPolicies().stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest))) {
+//    		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+//    	}
+    			
+    	// Add self link to device
+    	EntityModel<Device> deviceEntityModel = deviceToEntityModel(device);
+    	
+    	System.out.println(device.getName());
+    	System.err.println(accessRequest.getContext().size());
+    	
+    	
+    	return ResponseEntity.ok(deviceEntityModel);
     }
     
-    private Device addLinksToDevice(Device device) {
-    	device.add(linkTo(getClass()).slash(device.getId()).withSelfRel());
-    	return device;
+    @PostMapping(path = "/test1")
+    public ResponseEntity<EntityModel<Device>> test1() {
+    	Device device = deviceRepository.findById("5f30fe9f8bdd050a72e9f636").get();
+    	User user = userRepository.findOneByUsername("admin").get();
+		
+		List<ACAccessType> acs = new ArrayList<>();
+		acs.add(ACAccessType.READ);
+		IACCondition c = new ACSimpleCondition<String>("C1", ACArgumentFunction.EQUALS, new ACConditionSimpleAttributeArgument<>(ACEntityType.REQUESTING_ENTITY, "a1"), new ACConditionSimpleValueArgument<String>("v1"));
+		List<IACEffect<?>> effects = new ArrayList<>();
+		effects.add(new ACDoubleAccuracyEffect("Effect 1", 10, 5));
+		ACPolicy p = new ACPolicy("P1", 1, acs, c, effects, user);
+		p = policyRepository.save(p);
+		device.getAccessControlPolicies().add(p);
+		device = deviceRepository.save(device);
+    	
+    	return ResponseEntity.ok(deviceToEntityModel(device));
+    }
+    
+    private EntityModel<Device> deviceToEntityModel(Device device) {
+    	return EntityModel.of(device).add(linkTo(getClass()).slash(device.getId()).withSelfRel());
     }
 
     
