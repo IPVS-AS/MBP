@@ -1,18 +1,12 @@
 package org.citopt.connde.service.deploy;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.Code;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.exception.HashMismatch;
 import org.citopt.connde.service.NetworkService;
 import org.citopt.connde.service.settings.SettingsService;
 import org.citopt.connde.service.settings.model.BrokerLocation;
@@ -23,6 +17,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This component provides features for deploying components onto a remote device. Furthermore it is possible
@@ -42,9 +43,6 @@ public class SSHDeployer {
     private static final String RUN_SCRIPT_NAME = "running.sh";
     private static final String STOP_SCRIPT_NAME = "stop.sh";
     private static final String MBP_CLIENT_PROPERTIES_FILE_NAME = "mbp.properties";
-    
-    //Prefix for base64 encoded files
-    private static final String REGEX_BASE64_PREFIX = "^data:[a-zA-Z0-9/,\\-]*;base64,";
 
     //Timeout for availability checks (ms)
     private static final int AVAILABILITY_CHECK_TIMEOUT = 5000;
@@ -274,18 +272,22 @@ public class SSHDeployer {
 
         //Iterate over all adapter files and copy them
         for (Code file : adapter.getRoutines()) {
-            String fileContent = file.getContent();
-
             //Check whether content is encoded as base64
-            if (fileContent.matches(REGEX_BASE64_PREFIX + ".+")) {
-                //Remove base64 prefix
-                fileContent = fileContent.replaceAll(REGEX_BASE64_PREFIX, "");
-
+            if (file.isBase64Encoded()) {
                 //Create file from base64
-                sshSession.createFileFromBase64(deploymentPath, file.getName(), fileContent);
+                sshSession.createFileFromBase64(deploymentPath, file.getName(), file.getContent());
             } else {
                 // No base64 string, just copy file
-                sshSession.createFile(deploymentPath, file.getName(), fileContent);
+                sshSession.createFile(deploymentPath, file.getName(), file.getContent());
+            }
+
+            //Generate hash of the newly created file
+            String fileHash = sshSession.generateHashOfFile(deploymentPath + "/" + file.getName());
+
+            //Compare generated hash to the given one
+            String givenHash = file.getHash();
+            if ((fileHash != null) && (givenHash != null) && (!givenHash.isEmpty()) && (!fileHash.equals(givenHash))) {
+                throw new HashMismatch("Hash of copied file " + file.getName() + " does not match.");
             }
         }
         LOGGER.log(Level.FINE, "Copying adapter files was successful");
@@ -312,7 +314,7 @@ public class SSHDeployer {
         String mbpProperties = createMBPProperties(component, brokerIP);
         sshSession.createFile(deploymentPath, MBP_CLIENT_PROPERTIES_FILE_NAME, mbpProperties);
         LOGGER.log(Level.FINE, "Creation of .properties file was successful");
-        
+
         //Execute install script
         sshSession.changeFilePermissions(deploymentPath + "/" + INSTALL_SCRIPT_NAME, "+x");
         sshSession.executeShellScript(deploymentPath + "/" + INSTALL_SCRIPT_NAME, topicName, brokerIP, deploymentPath);
@@ -523,23 +525,23 @@ public class SSHDeployer {
 
     /**
      * Creates the content of a properties that is created onto devices upon operator deployment.
-     * 
-     * @param component The component to create the content
+     *
+     * @param component  The component to create the content
      * @param brokerHost The MQTT broker IP of the MBP
-     * @return
+     * @return The content of the properties file
      */
     private String createMBPProperties(Component component, String brokerHost) {
-    	String separator = System.lineSeparator();
-    	StringBuilder sb = new StringBuilder("[MBP]" + separator);
-    	sb.append("brokerHost=" + brokerHost + separator);
-    	sb.append("brokerPort=1883" + separator);
-    	sb.append("brokerTopic=" + component.getComponentTypeName() +"/" + component.getId() + separator);
-    	sb.append("brokerActionTopic=action/" + component.getId() + "/#" + separator);
-    	sb.append(separator);
-    	sb.append("[Component]" + separator);
-    	sb.append("componentId=" + component.getId() + separator);
-    	
-    	return sb.toString();
+        String separator = System.lineSeparator();
+        StringBuilder sb = new StringBuilder("[MBP]" + separator);
+        sb.append("brokerHost=" + brokerHost + separator);
+        sb.append("brokerPort=1883" + separator);
+        sb.append("brokerTopic=" + component.getComponentTypeName() + "/" + component.getId() + separator);
+        sb.append("brokerActionTopic=action/" + component.getId() + "/#" + separator);
+        sb.append(separator);
+        sb.append("[Component]" + separator);
+        sb.append("componentId=" + component.getId() + separator);
+
+        return sb.toString();
     }
-    
+
 }

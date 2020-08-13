@@ -3,6 +3,7 @@ package org.citopt.connde.repository;
 import org.citopt.connde.InfluxDBConfiguration;
 import org.citopt.connde.domain.valueLog.ValueLog;
 import org.influxdb.InfluxDB;
+import org.influxdb.dto.BatchPoints;
 import org.influxdb.dto.Query;
 import org.influxdb.impl.InfluxDBMapper;
 import org.influxdb.querybuilder.SelectQueryImpl;

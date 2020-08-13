@@ -1,15 +1,16 @@
 package org.citopt.connde.domain.adapter;
 
-/**
- *
- * @author rafaelkperes
- */
+import org.apache.commons.codec.binary.Base64;
+import org.citopt.connde.util.CryptoUtils;
+
 public class Code {
+
+    //Prefix for base64 encoded files
+    private static final String REGEX_BASE64_PREFIX = "^data:[a-zA-Z0-9/,\\-]*;base64,";
 
     private String name;
     private String content;
-
-    public static final String SERVICE_EXTENSION = ".conf";
+    private String hash;
 
     public Code() {
     }
@@ -23,15 +24,57 @@ public class Code {
     }
 
     public String getContent() {
+        //Check if content is base64 encoded
+        if (isBase64Encoded()) {
+            //Replace base64 prefix and return only the base64 content
+            return content.replaceAll(REGEX_BASE64_PREFIX, "");
+        }
+        //Otherwise just return the content as it is
         return content;
     }
 
     public void setContent(String content) {
         this.content = content;
+
+        //Update hash
+        updateContentHash();
     }
 
-    @Override
-    public String toString() {
-        return "ScriptFile{" + "name=" + name + ", content=" + content + '}';
+    public String getHash() {
+        return hash;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
+    }
+
+    public boolean isBase64Encoded() {
+        //Sanity check
+        if (content == null) {
+            return false;
+        }
+
+        //Check if content has the base64 prefix
+        return content.matches(REGEX_BASE64_PREFIX + ".+");
+    }
+
+    public void updateContentHash() {
+        //Sanity check
+        if ((content == null) || content.isEmpty()) {
+            hash = "";
+            return;
+        }
+
+        //Check if content is base64 encoded
+        if (isBase64Encoded()) {
+            //Decode from Base64
+            byte[] decodedBytes = Base64.decodeBase64(getContent());
+
+            //Hash the decoded content
+            hash = CryptoUtils.md5(decodedBytes);
+        } else {
+            //Not encoded, just hash the content
+            hash = CryptoUtils.md5(content);
+        }
     }
 }

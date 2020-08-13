@@ -45,6 +45,7 @@ public class AdapterValidator implements Validator {
                 errors, "name", "adapter.name.empty",
                 "The name cannot be empty!");
 
+        //Check whether routines were provided
         if (!adapter.hasRoutines()) {
             errors.rejectValue("routines", "adapter.routines.empty",
                     "Routine files must be provided.");
