@@ -507,7 +507,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            // Rule actions list TODO: Finish entries for conditions and effects
+            // Policy conditions list
             .when(viewPrefix + '/policy-conditions', {
                 category: 'policy-conditions',
                 templateUrl: 'templates/policy-conditions',
@@ -516,58 +516,47 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     policyConditionList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('policy-conditions');
                     }],
-                    ruleActionTypesList: ['RuleService', function (RuleService) {
-                        return RuleService.getRuleActionTypes().then(function (response) {
-                            return response.data || [];
-                        });
-                    }],
-                    actuatorList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('actuators');
-                    }],
-                    sensorList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('sensors');
-                    }],
-                    addRuleAction: ['CrudService', function (CrudService) {
+                    addPolicyCondition: ['CrudService', function (CrudService) {
                         return angular.bind(this, CrudService.addItem, 'policy-conditions');
                     }],
-                    deleteRuleAction: ['CrudService', function (CrudService) {
+                    deletePolicyCondition: ['CrudService', function (CrudService) {
                         return angular.bind(this, CrudService.deleteItem, 'policy-conditions');
                     }]
                 }
             })
 
             // Rule triggers list
-            .when(viewPrefix + '/rule-triggers', {
-                category: 'rule-triggers',
-                templateUrl: 'templates/rule-triggers',
-                controller: 'RuleTriggerListController as ctrl',
-                resolve: {
-                    ruleTriggerList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('rule-triggers');
-                    }],
-                    addRuleTrigger: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.addItem, 'rule-triggers');
-                    }],
-                    deleteRuleTrigger: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.deleteItem, 'rule-triggers');
-                    }],
-                    actuatorList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('actuators');
-                    }],
-                    sensorList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('sensors');
-                    }],
-                    monitoringComponentList: ['MonitoringService', function (MonitoringService) {
-                        return MonitoringService.getMonitoringComponents().then(function (response) {
-                            if (response.data) {
-                                return response.data;
-                            } else {
-                                return [];
-                            }
-                        });
-                    }]
-                }
-            })
+            // .when(viewPrefix + '/rule-triggers', {
+            //     category: 'rule-triggers',
+            //     templateUrl: 'templates/rule-triggers',
+            //     controller: 'RuleTriggerListController as ctrl',
+            //     resolve: {
+            //         ruleTriggerList: ['CrudService', function (CrudService) {
+            //             return CrudService.fetchAllItems('rule-triggers');
+            //         }],
+            //         addRuleTrigger: ['CrudService', function (CrudService) {
+            //             return angular.bind(this, CrudService.addItem, 'rule-triggers');
+            //         }],
+            //         deleteRuleTrigger: ['CrudService', function (CrudService) {
+            //             return angular.bind(this, CrudService.deleteItem, 'rule-triggers');
+            //         }],
+            //         actuatorList: ['CrudService', function (CrudService) {
+            //             return CrudService.fetchAllItems('actuators');
+            //         }],
+            //         sensorList: ['CrudService', function (CrudService) {
+            //             return CrudService.fetchAllItems('sensors');
+            //         }],
+            //         monitoringComponentList: ['MonitoringService', function (MonitoringService) {
+            //             return MonitoringService.getMonitoringComponents().then(function (response) {
+            //                 if (response.data) {
+            //                     return response.data;
+            //                 } else {
+            //                     return [];
+            //                 }
+            //             });
+            //         }]
+            //     }
+            // })
 
             // Settings
             .when(viewPrefix + '/settings', {

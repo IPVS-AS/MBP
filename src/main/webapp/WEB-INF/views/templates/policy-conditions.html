@@ -4,75 +4,66 @@
         <div class="card">
             <div class="header">
                 <div class="col-lg-6">
-                    <h2>Policy Conditions</h2>
+                    <h2>Access-Control Policy Conditions</h2>
                 </div>
                 <div class="align-right">
                     <button id="add-button" type="button" data-toggle="collapse" data-target="#add-condition-card"
-                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float">
+                        class="btn bg-blue btn-circle waves-effect waves-circle waves-float">
                         <i class="material-icons">add</i>
                     </button>
                 </div>
             </div>
             <div class="body">
-                <table class="table table-hover" st-table="displayedCollection" st-safe-src="policyConditionListCtrl.items">
+                <table class="table table-hover" st-table="displayedCollection"
+                    st-safe-src="policyConditionListCtrl.items">
                     <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Query</th>
-                        <th>Owner</th>
-                    </tr>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Owner</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
-                        <td>
-                            {{item.name}}
-                        </td>
-                        <td>
-                            <div ng-if="item.description">
-                                <a class="clickable" data-toggle="collapse" data-target="#description-{{item.id}}">
-                                    Show Description
-                                </a>
-                                <div id="description-{{item.id}}" class="collapse">
-                                    <span>{{item.description}}</span>
+                        <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                            <td>
+                                {{item.name}}
+                            </td>
+                            <td>
+                                <div ng-if="item.description">
+                                    <a class="clickable" data-toggle="collapse" data-target="#description-{{item.id}}">
+                                        Show Description
+                                    </a>
+                                    <div id="description-{{item.id}}" class="collapse">
+                                        <span>{{item.description}}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <div ng-if="!item.description">
-                                <span>None</span>
-                            </div>
-                        </td>
-                        <td>
-                            <div>
-                                <a class="clickable" data-toggle="collapse" data-target="#query-{{item.id}}">
-                                    Show Query
-                                </a>
-                                <div id="query-{{item.id}}" class="collapse">
-                                    <code>{{item.query}}</code>
+                                <div ng-if="!item.description">
+                                    <span>None</span>
                                 </div>
-                            </div>
-                        </td>
-                        <td>{{item.ownerName ? item.ownerName : "None"}}</td>
-                        <td>
-                            <div ng-show="item.isApprovable" style="display:inline-block">
-                                <user-approval entity-id="{{item.id}}" category-name="rule-triggers"></user-approval>
-                            </div>
-                            <form ng-submit="deleteRuleTriggerCtrl.deleteItem()" ng-show="item.isDeletable"
-                                  style="display: inline-block">
-                                <button type="submit" class="btn btn-danger m-t-0 waves-effect"
-                                        ng-click="deleteRuleTriggerCtrl.item.id = item.id">
-                                    Delete
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr ng-show="ruleTriggerListCtrl.items.length === 0">
-                        <td>No rule conditions registered.</td>
-                    </tr>
+                            </td>
+                            <td>{{item.ownerName ? item.ownerName : "None"}}</td>
+                            <td>
+                                <div ng-show="item.isApprovable" style="display:inline-block">
+                                    <user-approval entity-id="{{item.id}}" category-name="policy-conditions">
+                                    </user-approval>
+                                </div>
+                                <form ng-submit="deletePolicyConditionCtrl.deleteItem()" ng-show="item.isDeletable"
+                                    style="display: inline-block">
+                                    <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                        ng-click="deletePolicyConditionCtrl.item.id = item.id">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr ng-show="policyConditionListCtrl.items.length === 0">
+                            <td>No rule conditions registered.</td>
+                        </tr>
                     </tbody>
                     <tfoot>
-                    <tr>
-                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
-                    </tr>
+                        <tr>
+                            <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                        </tr>
                     </tfoot>
                 </table>
             </div>
@@ -89,28 +80,49 @@
             </div>
             <div class="body">
                 <div id="add-condition-wizard">
-                    <h1>Condition data</h1>
-                    <p>Please provide a name and an optional description for the new rule condition.</p><br/>
                     <!-- item.name group -->
                     <div class="form-group">
                         <div class="form-line">
-                            <input id="trigger-name" class="form-control" type="text" placeholder="Name"/>
+                            <input id="trigger-name" class="form-control" type="text" placeholder="Name" />
                         </div>
                         <span class="help-block"></span>
                     </div>
                     <!-- item.description group -->
                     <div class="form-group">
                         <div class="form-line">
-                            <textarea id="trigger-description" class="form-control" type="text" placeholder="Describe this condition if you like..." rows="4"></textarea>
+                            <textarea id="condition-description" class="form-control" type="text"
+                                placeholder="Provide an (optional) description of the condition." rows="4"></textarea>
                         </div>
                         <span class="help-block"></span>
                     </div>
-                    <!-- <div id="builder"></div>
+
+                    <div id="condition-builder"></div>
+                    <button id="get-query" class="btn">Get Query</button>
                     <script>
-                        $('#builder').queryBuilder({
-                            filters: [ ... ]
+                        $('#condition-builder').queryBuilder({
+                            filters: [{
+                                id: 'column1',
+                                label: 'Column 1',
+                                type: 'string'
+                            }, {
+                                id: 'column2',
+                                label: 'Column 2',
+                                type: 'double'
+                            }, {
+                                id: 'column3',
+                                label: 'Column 3',
+                                type: 'boolean'
+                            }]
                         });
-                    </script> -->
+
+                        $('#get-query').on('click', function () {
+                            var result = $('#condition-builder').queryBuilder('getRules');
+
+                            if (!$.isEmptyObject(result)) {
+                                alert(JSON.stringify(result, null, 2));
+                            }
+                        });
+                    </script>
                 </div>
             </div>
         </div>

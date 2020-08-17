@@ -22,30 +22,11 @@ app.controller('PolicyListController',
                     NotificationService.notify("Could not retrieve policy list.", "error");
                 }
 
-                // Prepare and extend policy list
-                preparePolicyList();
-
                 // Refresh policy action select picker when the modal is opened
                 $('.modal').on('shown.bs.modal', function () {
                     $('.selectpicker').selectpicker('refresh');
                 });
             })();
-
-            /**
-             * [Private]
-             * Prepares and extends each policy in the policy list by data and functions.
-             */
-            function preparePolicyList() {
-                // Extend policy list with further functions
-                for (var i = 0; i < policyList.length; i++) {
-                    // Get current policy
-                    var policy = policyList[i];
-
-                    // Extend policy for toggle function
-                    policy.onToggle = createOnToggleFunction(policy.id);
-                }
-            }
-
 
             /**
              * [Public]
