@@ -135,24 +135,29 @@
                     </li>
                 </ul>
             </div>
-            <div id="welcome-card-body" class="body collapse in">
+            <div id="welcome-card-body" class="body collapse" ng-class="{'in': ctrl.showWelcomeCard}">
                 <div style="background-color:white;font-size: 18px;">
                     <p>We are happy that you have chosen the MBP to manage and control your IoT
                         devices!</p><br/>
-                    <p>Let's start to set up your IoT environment in only six steps:</p>
-                    <p><a href="view/key-pairs" target="_blank"><i class="material-icons">vpn_key</i>&nbsp;Register RSA
-                        keys</a> that can be used by the MBP to access your IoT devices via SSH.</p>
-                    <p><a href="view/devices" target="_blank"><i class="material-icons">devices</i>&nbsp;Register the
+                    <p>Let's start to set up your IoT environment in only seven steps:</p>
+                    <p>1. <a href="view/key-pairs" target="_blank"><i class="material-icons">vpn_key</i>&nbsp;Register
+                        RSA
+                        keys</a> that can be used by the MBP to access your IoT devices via SSH. (optional)</p>
+                    <p>2. <a href="view/devices" target="_blank"><i class="material-icons">devices</i>&nbsp;Register the
                         IoT devices</a> of your environment.</p>
-                    <p><a href="view/adapters" target="_blank"><i class="material-icons">description</i>&nbsp;Create
-                        operators</a> to deploy on your sensors and actuators.</p>
-                    <p><a href="view/sensors" target="_blank"><i class="material-icons">settings_remote</i>&nbsp;Register
+                    <p>3. <a href="view/adapters" target="_blank"><i class="material-icons">description</i>&nbsp;Create
+                        extraction/control operators</a> for your your sensors and actuators. Control operators are
+                        optional and only
+                        required if there are actuators in your environment.</p>
+                    <p>4. <a href="view/sensors" target="_blank"><i class="material-icons">settings_remote</i>&nbsp;Register
                         sensors</a> and <a href="view/actuators" target="_blank"><i class="material-icons">settings_remote</i>&nbsp;actuators</a>
                         that are connected to your devices, by selecting a target device and an operator.</p>
-                    <p><a href="view/sensors" target="_blank"><i class="material-icons">play_arrow</i>&nbsp;Deploy
-                        sensors</a> and <a href="view/actuators" target="_blank">actuators</a> and put them into
-                        operation.</p>
-                    <p><a href="view/rules" target="_blank"><i class="material-icons">call_split</i>&nbsp;Define
+                    <p>5. <a href="view/sensors" target="_blank"><i class="material-icons">file_download</i>&nbsp;Install
+                        operators on your sensors</a> and <a href="view/actuators" target="_blank">actuators</a>.</p>
+                    <p>6. <a href="view/sensors" target="_blank"><i class="material-icons">play_arrow</i>&nbsp;Start
+                        your
+                        sensors</a> and <a href="view/actuators" target="_blank">actuators</a>.</p>
+                    <p>7. <a href="view/rules" target="_blank"><i class="material-icons">call_split</i>&nbsp;Define
                         rules</a> that make your environment smart and allow it to react to certain situations .</p>
                     <br/>
                     <p>As an alternative, you can also use the <a href="view/env-models" target="_blank"><i
