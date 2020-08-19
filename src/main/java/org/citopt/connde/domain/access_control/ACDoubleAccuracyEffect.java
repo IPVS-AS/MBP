@@ -1,13 +1,9 @@
 package org.citopt.connde.domain.access_control;
 
 import java.text.DecimalFormat;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import javax.annotation.Nonnull;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -16,69 +12,52 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * 
  * @author Jakob Benz
  */
+@ACEffect(type = ACEffectType.DOUBLE_ACCURACY_EFFECT)
 @Document
-public class ACDoubleAccuracyEffect implements IACModifyingEffect<Double> {
+public class ACDoubleAccuracyEffect extends ACAbstractEffect<Double> {
 	
-	/**
-	 * The name of this effect.
-	 */
-	@NotEmpty
-	private String name; // implicitly final due to omitted setter
+	public static final String PARAM_KEY_ACCURACY = "accuracy";
+	public static final String PARAM_KEY_PRECISION = "precision";
 	
-	/**
-	 * The accuracy the application of this effect will result in. For example,
-	 * an accuracy of 10 with an input of 87.5 would result in 90.
-	 */
-	@Nonnull
-	private double accuracy; // implicitly final due to omitted setter
-	
-	
-	/**
-	 * The number of decimal digits to keep when rounding the result.
-	 * If -1 is specified, the original (result) value will be used.
-	 */
-	@Nonnull
-	@Min(-1)
-	@Max(10)
-	private int precision; // implicitly final due to omitted setter
+//	/**
+//	 * The accuracy the application of this effect will result in. For example,
+//	 * an accuracy of 10 with an input of 87.5 would result in 90.
+//	 */
+//	@Nonnull
+//	private double accuracy; // implicitly final due to omitted setter
+//	
+//	
+//	/**
+//	 * The number of decimal digits to keep when rounding the result.
+//	 * If -1 is specified, the original (result) value will be used.
+//	 */
+//	@Nonnull
+//	@Min(-1)
+//	@Max(10)
+//	private int precision; // implicitly final due to omitted setter
 	
 	// - - -
 	
 	/**
 	 * No-args constructor.
 	 */
-	public ACDoubleAccuracyEffect() {}
+	public ACDoubleAccuracyEffect() {
+		super();
+	}
 	
 	/**
 	 * All-args constructor.
 	 * 
 	 * @param name the name of this effect.
-	 * @param accuracy the accuracy the application of this effect will result in.
-	 * @param precision the number of decimal digits to keep when rounding the result.
 	 */
-	public ACDoubleAccuracyEffect(String name, double accuracy, int precision) {
-		this.name = name;
-		this.accuracy = accuracy;
-		this.precision = precision;
+	public ACDoubleAccuracyEffect(String name, Map<String, String> parameters) {
+		super(name, parameters);
 	}
 	
 	// - - -
 	
-	@Override
-	public String getName() {
-		return name;
-	}
-	
-	public double getAccuracy() {
-		return accuracy;
-	}
-	
-	public int getPrecision() {
-		return precision;
-	}
-	
-	// - - -
 
+	
 	@Override
 	public Double applyToValue(Double inputValue) {
 		return apply(inputValue);
@@ -98,7 +77,7 @@ public class ACDoubleAccuracyEffect implements IACModifyingEffect<Double> {
 	 * @return the rounded and formatted value.
 	 */
 	private Double apply(Double inputValue) {
-		return round(Math.round(inputValue / accuracy) * accuracy);
+		return round(Math.round(inputValue / getAccuracy()) * getAccuracy());
 	}
 	
 	/**
@@ -108,9 +87,17 @@ public class ACDoubleAccuracyEffect implements IACModifyingEffect<Double> {
 	 * @return the rounded and formatted value.
 	 */
 	private Double round(Double value) {
-		String format = "0." + IntStream.range(0, precision).mapToObj(i -> "0").collect(Collectors.joining());
+		String format = "0." + IntStream.range(0, getPrecision()).mapToObj(i -> "0").collect(Collectors.joining());
 		DecimalFormat df = new DecimalFormat(format);
 		return Double.parseDouble(df.format(value));
+	}
+	
+	private double getAccuracy() {
+		return Double.parseDouble(getParameters().get(PARAM_KEY_ACCURACY));
+	}
+	
+	private int getPrecision() {
+		return Integer.parseInt(getParameters().get(PARAM_KEY_PRECISION));
 	}
 
 }

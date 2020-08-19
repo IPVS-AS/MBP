@@ -484,79 +484,69 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
             })
 
             // Policy list
-            .when(viewPrefix + '/policies', {
-                category: 'policies',
-                templateUrl: 'templates/policies',
+            .when(viewPrefix + '/policy', {
+                category: 'policy',
+                templateUrl: 'templates/policy',
                 controller: 'PolicyListController as ctrl',
                 resolve: {
                     ruleList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('policies');
+                        return CrudService.fetchAllItems('policy');
                     }],
                     addRule: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.addItem, 'policies');
+                        return angular.bind(this, CrudService.addItem, 'policy');
                     }],
                     deleteRule: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.deleteItem, 'policies');
+                        return angular.bind(this, CrudService.deleteItem, 'policy');
                     }],
                     policyConditionList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('policy-conditions');
+                        return CrudService.fetchAllItems('policy/condition');
                     }],
                     policyEffectList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('policy-effects');
+                        return CrudService.fetchAllItems('policy/effect');
                     }]
                 }
             })
 
             // Policy conditions list
-            .when(viewPrefix + '/policy-conditions', {
-                category: 'policy-conditions',
-                templateUrl: 'templates/policy-conditions',
+            .when(viewPrefix + '/policy/condition', {
+                category: 'policy/condition',
+                templateUrl: 'templates/policy/condition',
                 controller: 'PolicyConditionListController as ctrl',
                 resolve: {
                     policyConditionList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('policy-conditions');
+                        return CrudService.fetchAllItems('policy/condition');
                     }],
                     addPolicyCondition: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.addItem, 'policy-conditions');
+                        return angular.bind(this, CrudService.addItem, 'policy/condition');
                     }],
                     deletePolicyCondition: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.deleteItem, 'policy-conditions');
+                        return angular.bind(this, CrudService.deleteItem, 'policy/condition');
                     }]
                 }
             })
 
-            // Rule triggers list
-            // .when(viewPrefix + '/rule-triggers', {
-            //     category: 'rule-triggers',
-            //     templateUrl: 'templates/rule-triggers',
-            //     controller: 'RuleTriggerListController as ctrl',
-            //     resolve: {
-            //         ruleTriggerList: ['CrudService', function (CrudService) {
-            //             return CrudService.fetchAllItems('rule-triggers');
-            //         }],
-            //         addRuleTrigger: ['CrudService', function (CrudService) {
-            //             return angular.bind(this, CrudService.addItem, 'rule-triggers');
-            //         }],
-            //         deleteRuleTrigger: ['CrudService', function (CrudService) {
-            //             return angular.bind(this, CrudService.deleteItem, 'rule-triggers');
-            //         }],
-            //         actuatorList: ['CrudService', function (CrudService) {
-            //             return CrudService.fetchAllItems('actuators');
-            //         }],
-            //         sensorList: ['CrudService', function (CrudService) {
-            //             return CrudService.fetchAllItems('sensors');
-            //         }],
-            //         monitoringComponentList: ['MonitoringService', function (MonitoringService) {
-            //             return MonitoringService.getMonitoringComponents().then(function (response) {
-            //                 if (response.data) {
-            //                     return response.data;
-            //                 } else {
-            //                     return [];
-            //                 }
-            //             });
-            //         }]
-            //     }
-            // })
+            // Policy effects list
+            .when(viewPrefix + '/policy/effect', {
+                category: 'policy/effect',
+                templateUrl: 'templates/policy/effect',
+                controller: 'PolicyEffectListController as ctrl',
+                resolve: {
+                    policyEffectList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('policy/effect');
+                    }],
+                    policyEffectTypesList: ['PolicyService', function (RuleService) {
+                        return PolicyService.getPolicyEffectTypes().then(function (response) {
+                            return response.data || [];
+                        });
+                    }],
+                    addPolicyEffect: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'policy/effect');
+                    }],
+                    deletePolicyEffect: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'policy/effect');
+                    }]
+                }
+            })
 
             // Settings
             .when(viewPrefix + '/settings', {

@@ -18,4 +18,5 @@ public interface ComponentTypeRepository extends MongoRepository<ComponentType, 
     ComponentType findByName(@Param("name") String name);
 
     List<ComponentType> findAllByComponent(@Param("component") String component, Pageable pageable);
+
 }

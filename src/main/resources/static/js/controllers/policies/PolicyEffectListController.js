@@ -4,10 +4,22 @@
  * Controller for the policy conditions list page.
  */
 app.controller('PolicyEffectListController',
-    ['$scope', '$controller', '$interval', 'policyEffectList', 'addPolicyEffect', 'deletePolicyEffect', 'PolicyService', 'NotificationService', 'PolicyEffectService',
-        function ($scope, $controller, $interval, policyEffectList, addPolicyEffect, deletePolicyEffect, PolicyService, NotificationService, PolicyEffectService) {
+    ['$scope', '$controller', '$interval', 'policyEffectList', 'policyEffectTypesList', 'addPolicyEffect', 'deletePolicyEffect', 'PolicyService', 'NotificationService', 'PolicyEffectService',
+        function ($scope, $controller, $interval, policyEffectList, policyEffectTypesList, addPolicyEffect, deletePolicyEffect, PolicyService, NotificationService, PolicyEffectService) {
 
             var vm = this;
+
+            vm.policyEffectTypesList = policyEffectTypesList;
+
+            /**
+             * Initializing function, sets up basic things.
+             */
+            (function initController() {
+                // Validity check for policy effect types list
+                if (policyEffectTypesList.length < 1) {
+                    NotificationService.notify("Could not load policy effect types.", "error");
+                }
+            })();
 
             /**
              * [Public]

@@ -97,6 +97,116 @@
                                     ng-show="addPolicyEffectCtrl.item.errors.description">{{addPolicyEffectCtrl.item.errors.description.message}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                            <!-- item.type group -->
+                            <div class="form-group" ng-class="{'has-error' : addPolicyEffectCtrl.item.errors.type }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addPolicyEffectCtrl.item.errors.type }">
+                                    <select class="form-control show-tick" ng-model="addPolicyEffectCtrl.item.type"
+                                            ng-options="type.name for type in ctrl.policyEffectTypesList">
+                                        <option disabled selected value>Select action type *</option>
+                                    </select>
+                                </div>
+                                <span class="help-block" ng-show="addPolicyEffectCtrl.item.errors.type">{{addPolicyEffectCtrl.item.errors.type.message}}</span>
+                            </div>
+                            <!-- Switch for parameters of different action types -->
+                            <div ng-switch="addPolicyEffectCtrl.item.type">
+                                <div ng-switch-when="ACTUATOR_ACTION">
+                                    <p>Executes an action on an actuator that is part of the
+                                        IoT environment.</p>
+                                    <br/>
+                                    <!-- item.parameters[actuator] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <select class="form-control show-tick"
+                                                    ng-model="addPolicyEffectCtrl.item.parameters['actuator']"
+                                                    ng-options="actuator.id as (actuator.name) for actuator in ctrl.actuatorList">
+                                                <option disabled selected value>Select actuator *</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- item.parameters[action] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input class="form-control" type="text" placeholder="Action topic suffix *"
+                                                   ng-model="addPolicyEffectCtrl.item.parameters['action']"/>
+                                        </div>
+                                    </div>
+                                    <!-- item.parameters[data] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <textarea class="form-control" type="text" rows="4"
+                                                      placeholder="Additional data"
+                                                      ng-model="addPolicyEffectCtrl.item.parameters['data']">
+                                            </textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-switch-when="IFTTT_WEBHOOK">
+                                    <p>Triggers an
+                                        <a href="https://ifttt.com/maker_webhooks" target="_blank">IFTTT webhook</a>
+                                        that has been previously configured as part of an applet.</p>
+                                    <br/>
+                                    <!-- item.parameters[ifttt_key] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input class="form-control" type="text" placeholder="Personal IFTTT key *"
+                                                   ng-model="addPolicyEffectCtrl.item.parameters['ifttt_key']"/>
+                                        </div>
+                                    </div>
+                                    <!-- item.parameters[ifttt_name} group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input class="form-control" type="text" placeholder="Event name *"
+                                                   ng-model="addPolicyEffectCtrl.item.parameters['ifttt_name']"/>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-switch-when="COMPONENT_DEPLOYMENT">
+                                    <p>Deploys or undeploys a component that is part of the IoT environment.</p>
+                                    <br/>
+                                    <!-- item.parameters[component] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <select class="form-control show-tick"
+                                                    ng-options="(c.componentTypeName + '/' + c.id) as (c.name) group by c.type for c in ctrl.componentList"
+                                                    ng-model="addPolicyEffectCtrl.item.parameters['component']">
+                                                <option disabled selected value>Select component *</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <!-- item.parameters[deploy} group -->
+                                    <div class="form-group">
+                                        <div ng-init="addPolicyEffectCtrl.item.parameters['deploy']='DEPLOY'">
+                                            <input type="radio" id="deploy_deploy" class="with-gap"
+                                                   ng-model="addPolicyEffectCtrl.item.parameters['deploy']"
+                                                   value="DEPLOY">
+                                            <label for="deploy_deploy">Deploy</label>
+                                            <br/>
+                                            <input type="radio" id="deploy_start" class="with-gap"
+                                                   ng-model="addPolicyEffectCtrl.item.parameters['deploy']"
+                                                   value="START">
+                                            <label for="deploy_start">Deploy and start</label>
+                                            <br/>
+                                            <input type="radio" id="deploy_stop" class="with-gap"
+                                                   ng-model="addPolicyEffectCtrl.item.parameters['deploy']"
+                                                   value="STOP">
+                                            <label for="deploy_stop">Stop</label>
+                                            <br/>
+                                            <input type="radio" id="deploy_undeploy" class="with-gap"
+                                                   ng-model="addPolicyEffectCtrl.item.parameters['deploy']"
+                                                   value="UNDEPLOY">
+                                            <label for="deploy_undeploy">Stop and undeploy</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-switch-default></div>
+                            </div>
+                            <div class="form-group has-error" ng-show="addPolicyEffectCtrl.item.errors.parameters">
+                                <span class="help-block">
+                                    {{addPolicyEffectCtrl.item.errors.parameters.message}}
+                                </span>
+                            </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary m-t-0 waves-effect"

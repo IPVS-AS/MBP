@@ -37,7 +37,7 @@ public class ACPolicy {
 	private String id;
 	
 	/**
-	 * The name of this policy;
+	 * The name of this policy.
 	 */
 	@NotEmpty
 	private String name;
@@ -72,7 +72,7 @@ public class ACPolicy {
 	 * Note that this list can be empty.
 	 */
 	@DBRef
-	private List<IACEffect<?>> effects = new ArrayList<>();
+	private List<ACAbstractEffect<?>> effects = new ArrayList<>();
 	
 	/**
 	 * The {@link User} that owns this policy.
@@ -98,7 +98,7 @@ public class ACPolicy {
 	 * @param effects the list of {@link IACEffect effects} to apply if required.
 	 * @param owner the {@link User} that owns this policy.
 	 */
-	public ACPolicy(String name, int priority, List<ACAccessType> accessTypes, IACCondition condition, List<IACEffect<?>> effects, User owner) {
+	public ACPolicy(String name, int priority, List<ACAccessType> accessTypes, IACCondition condition, List<ACAbstractEffect<?>> effects, User owner) {
 		this.name = name;
 		this.priority = priority;
 		this.accessTypes = accessTypes;
@@ -148,11 +148,11 @@ public class ACPolicy {
 		return this;
 	}
 
-	public List<IACEffect<?>> getEffects() {
+	public List<ACAbstractEffect<?>> getEffects() {
 		return effects;
 	}
 
-	public ACPolicy setEffects(List<IACEffect<?>> effects) {
+	public ACPolicy setEffects(List<ACAbstractEffect<?>> effects) {
 		this.effects = effects;
 		return this;
 	}
