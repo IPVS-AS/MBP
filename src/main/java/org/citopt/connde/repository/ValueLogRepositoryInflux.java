@@ -18,11 +18,10 @@ import java.util.List;
 import static org.influxdb.querybuilder.BuiltQuery.QueryBuilder.*;
 
 /**
- * Represents a repository for persisting and querying value logs, powered by the MongoDB database.
+ * Represents a repository for persisting and querying value logs, powered by an InfluxDB database.
  */
 @Component
-public class ValueLogRepository {
-
+public class ValueLogRepositoryInflux {
     //InfluxDB bean to use
     private InfluxDB influxDB;
 
@@ -36,7 +35,7 @@ public class ValueLogRepository {
      * @param influxDB The InfluxDB database bean
      */
     @Autowired
-    private ValueLogRepository(InfluxDB influxDB) {
+    private ValueLogRepositoryInflux(InfluxDB influxDB) {
         this.influxDB = influxDB;
 
         //Create object mapper from influxDB instance
