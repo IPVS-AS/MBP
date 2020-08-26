@@ -1,11 +1,15 @@
 package org.citopt.connde.repository;
 
-import org.citopt.connde.InfluxDBConfiguration;
+import com.mongodb.MongoClient;
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.UpdateOptions;
+import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.PojoCodecProvider;
+import org.citopt.connde.MongoConfiguration;
 import org.citopt.connde.domain.valueLog.ValueLog;
-import org.influxdb.InfluxDB;
-import org.influxdb.dto.Query;
-import org.influxdb.impl.InfluxDBMapper;
-import org.influxdb.querybuilder.SelectQueryImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -13,34 +17,53 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import static org.influxdb.querybuilder.BuiltQuery.QueryBuilder.*;
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 /**
- * Represents a repository for persisting and querying value logs, powered by the MongoDB database.
+ * Represents a repository for persisting and querying value logs, powered by the MongoDB database. Since value
+ * logs are time series data, a special way of storing the values is needed in order to preserve efficiency.
+ * The approach implemented within this repository is described and recommended by the MongoDB blog post
+ * "Time Series Data and MongoDB".
+ * (https://www.mongodb.com/blog/post/time-series-data-and-mongodb-part-1-introduction)
  */
 @Component
 public class ValueLogRepository {
+    //Name of the database to use for the value logs
+    private static final String DATABASE_NAME = MongoConfiguration.DB_NAME;
 
-    //InfluxDB bean to use
-    private InfluxDB influxDB;
+    //Name of the collection to use for the value logs
+    private static final String COLLECTION_NAME = "mongoValueLogs";
 
-    //Derived mapper for mapping value log objects
-    private InfluxDBMapper influxDBMapper;
+    //MongoDB bean to use
+    private MongoClient mongoClient;
+
+    //Value log database and collection of the MongoDB
+    private MongoDatabase valueLogDatabase;
+    private MongoCollection<ValueLog> valueLogCollection;
 
     /**
-     * Instantiates the repository by passing a reference to the InfluxDB database bean
-     * that is supposed to be used (auto-wired).
+     * Instantiates the repository by passing a reference to the MongoDB bean that is supposed to be used (auto-wired).
      *
-     * @param influxDB The InfluxDB database bean
+     * @param mongoClient The MongoDB bean to use
      */
     @Autowired
-    private ValueLogRepository(InfluxDB influxDB) {
-        this.influxDB = influxDB;
+    private ValueLogRepository(MongoClient mongoClient) {
+        //Store reference to MongoDB bean
+        this.mongoClient = mongoClient;
 
-        //Create object mapper from influxDB instance
-        this.influxDBMapper = new InfluxDBMapper(influxDB);
+        //Fetch coded registry for mapping value log objects from and to BSON documents
+        CodecRegistry codecRegistry = fromRegistries(MongoClient.getDefaultCodecRegistry(), fromProviders(PojoCodecProvider.builder().automatic(true).build()));
+
+        //Get value log database and collection with codec registry
+        this.valueLogDatabase = mongoClient.getDatabase(DATABASE_NAME).withCodecRegistry(codecRegistry);
+        this.valueLogCollection = valueLogDatabase.getCollection(COLLECTION_NAME, ValueLog.class);
     }
 
     /**
@@ -49,8 +72,33 @@ public class ValueLogRepository {
      * @param valueLog The value log to write
      */
     public void write(ValueLog valueLog) {
-        //Just save the value log
-        influxDBMapper.save(valueLog);
+        //Sanity check
+        if (valueLog == null) {
+            throw new IllegalArgumentException("Value log must not be null.");
+        }
+
+        //Get time from value log
+        ZonedDateTime valueLogTime = valueLog.getTime().atZone(ZoneId.systemDefault());
+
+        //Calculate absolute day from value log
+        int absoluteDay = valueLogTime.getYear() * 366 + valueLogTime.getDayOfYear();
+
+        //Get epoch seconds from value log
+        long epochSeconds = valueLog.getTime().getEpochSecond();
+
+        Document filterDocument = new Document("idref", valueLog.getIdref());
+        filterDocument.append("nvalues", new Document("$lt", 80));
+        filterDocument.append("day", absoluteDay);
+
+        Document updateDocument = new Document("$push", new Document("values", valueLog));
+        updateDocument.append("$min", new Document("first", epochSeconds));
+        updateDocument.append("$max", new Document("last", epochSeconds));
+        updateDocument.append("$inc", new Document("nvalues", 1));
+
+        UpdateOptions updateOptions = new UpdateOptions();
+        updateOptions.upsert(true);
+
+        this.valueLogCollection.updateOne(filterDocument, updateDocument, updateOptions);
     }
 
     /**
@@ -65,14 +113,38 @@ public class ValueLogRepository {
             throw new IllegalArgumentException("Idref must not be null or empty.");
         }
 
-        //Build query
-        Query query = select().all().from(InfluxDBConfiguration.DATABASE_NAME, getMeasurementReference())
-                .where("idref='" + idref + "'");
+        /*
+        [{$match: {
+  "idref": "5f1ddc446d51821c984a6c96"
+}}, {$group: {
+  _id: "$idref",
+  "values": {$addToSet: "$values"}
+}}, {$project: {
+  "values": {  "$reduce":
+  {
+        "input": "$values",
+        "initialValue": [],
+        "in": { "$setUnion": [ "$$value", "$$this" ] }
+      }}
+}}, {$unwind: {
+  path: "$values"
+}}, {$replaceRoot: {
+  newRoot: "$values"
+}}]
+//TODO Project and group not needed probably
+         */
 
-        //Execute query and get list of value logs
-        List<ValueLog> valueLogs = influxDBMapper.query(query, ValueLog.class);
 
-        return valueLogs;
+        Document matchStage = new Document("$match", new Document("idref", idref));
+        Document unwindStage = new Document("$unwind", new Document("path", "$values"));
+        Document replaceRootStage = new Document("$replaceRoot", new Document("newRoot", "$values"));
+        
+        AggregateIterable<ValueLog> result = this.valueLogCollection.aggregate(Arrays.asList(matchStage, unwindStage, replaceRootStage), ValueLog.class);
+        for(ValueLog log : result){
+            System.out.println(log);
+        }
+
+        return new ArrayList<>();
     }
 
     /**
@@ -92,9 +164,6 @@ public class ValueLogRepository {
         int limit = pageable.getPageSize();
         int offset = pageable.getOffset();
 
-        //Build query
-        SelectQueryImpl selectQuery = select().all().from(InfluxDBConfiguration.DATABASE_NAME, getMeasurementReference());
-
         //Get desired sort option from pageable
         Sort sort = pageable.getSort();
 
@@ -109,9 +178,9 @@ public class ValueLogRepository {
 
             //Extend query for ordering with the chosen direction
             if (order.isAscending()) {
-                selectQuery = selectQuery.orderBy(asc());
+                //TODO
             } else {
-                selectQuery = selectQuery.orderBy(desc());
+                //TODO
             }
 
             //Only ordering for time is supported, so no need to consider other properties
@@ -120,16 +189,16 @@ public class ValueLogRepository {
 
         //Add limit and offset if meaningful
         if ((offset > 0) && (limit > 0)) {
-            selectQuery = selectQuery.limit(limit, offset);
+            //TODO
         } else if (limit > 0) {
-            selectQuery = selectQuery.limit(limit);
+            //TODO
         }
 
         //Add where clause in order to filter for idref
-        Query query = selectQuery.where("idref='" + idref + "'");
+        //Query query = selectQuery.where("idref='" + idref + "'");
 
         //Execute query
-        List<ValueLog> valueLogs = influxDBMapper.query(query, ValueLog.class);
+        List<ValueLog> valueLogs = new ArrayList<>();
 
         //Return value logs as page
         return new PageImpl<>(valueLogs, pageable, valueLogs.size());
@@ -142,24 +211,6 @@ public class ValueLogRepository {
             throw new IllegalArgumentException("Idref must not be null or empty.");
         }
 
-        //Create query
-        Query query = new Query("DELETE FROM " +
-                InfluxDBConfiguration.MEASUREMENT_NAME + " WHERE idref='" + idref + "'",
-                InfluxDBConfiguration.DATABASE_NAME);
-
-        //Query query = new Query("DROP SERIES FROM \"value_log\" WHERE idref='5c97dc2583aeb6078c5ab672'");
-        influxDB.query(query);
-    }
-
-    /**
-     * Returns a string that might be used for referencing measurements within queries to the InfluxDB database. It is
-     * a fully qualified name consisting out of the database name, the retention policy name and the measurements name.
-     *
-     * @return A string containing the measurement reference
-     */
-    private static String getMeasurementReference() {
-        return "\"" + InfluxDBConfiguration.DATABASE_NAME + "\".\"" +
-                InfluxDBConfiguration.RETENTION_POLICY_NAME + "\".\"" +
-                InfluxDBConfiguration.MEASUREMENT_NAME + "\"";
+        //TODO
     }
 }

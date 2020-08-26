@@ -32,7 +32,7 @@ public class ValueLogRepositoryInflux {
      * Instantiates the repository by passing a reference to the InfluxDB database bean
      * that is supposed to be used (auto-wired).
      *
-     * @param influxDB The InfluxDB database bean
+     * @param influxDB The InfluxDB database bean to use
      */
     @Autowired
     private ValueLogRepositoryInflux(InfluxDB influxDB) {
