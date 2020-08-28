@@ -102,7 +102,7 @@ public class TestingController {
      * @return HttpsStatus and Hashmap with all Reports regarding to the specific test
      */
     @GetMapping(value = "/test-details/pdfList/{testId}")
-    public ResponseEntity<Map<String, String>> getPDFList(@PathVariable(value = "testId") String testId) throws IOException {
+    public ResponseEntity<Map<Long, String>> getPDFList(@PathVariable(value = "testId") String testId) throws IOException {
         return testEngine.getPDFList(testId);
     }
 

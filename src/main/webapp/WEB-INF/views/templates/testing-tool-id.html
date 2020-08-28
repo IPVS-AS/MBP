@@ -67,13 +67,13 @@
                 <br/>
                 <div>
                     <span ng-show="testingChartCtrl.deploymentState=='READY' || testingChartCtrl.deploymentState =='DEPLOYED'">
-                        <button class="btn bg-cyan waves-effect" ng-click="ctrl.executeTest()">
+                        <button class="btn bg-cyan waves-effect" ng-click="testingChartCtrl.startComponent()" ng-disabled="testingChartCtrl.startTest=='STARTING_TEST'">
                             <i class="material-icons">play_arrow</i>
                             <span>Start Test</span>
                         </button>
                     </span>
                     <span ng-show="testingChartCtrl.deploymentState=='RUNNING'">
-                        <button class="btn bg-orange waves-effect" ng-click="ctrl.stopTest()">
+                        <button class="btn bg-orange waves-effect" ng-click="testingChartCtrl.stopComponent()">
                             <i class="material-icons">stop</i>
                             <span>Stop Test</span>
                         </button>
@@ -111,8 +111,8 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr ng-repeat="pdf in pdfTable">
-                            <td>{{pdf.date}}</td>
+                        <tr ng-repeat="pdf in pdfTable | orderBy:'-date'">
+                            <td>{{pdf.date * 1000 | date:'dd.MM.yyyy HH:mm:ss'}}   </td>
                             <td>
                                 <form ng-submit="ctrl.downloadPDF(pdf.path)">
                                     <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect"

@@ -340,6 +340,7 @@ app.controller('TestingDetailsController',
              * Creates a server request to get all rules to be observed during the Test of the IoT-Application.
              */
             function getTestRules() {
+
                 $http.get(ENDPOINT_URI + "/test-details/ruleList/" + COMPONENT_ID).success(function (response) {
                     $scope.ruleList = response;
 
@@ -391,6 +392,7 @@ app.controller('TestingDetailsController',
                 $http.get(ENDPOINT_URI + '/test-details/pdfList/' + COMPONENT_ID).then(function (response) {
                     var pdfList = {};
                     vm.pdfDetails = [];
+
 
                     if (Object.keys(response.data).length > 0) {
                         angular.forEach(response.data, function (value, key) {

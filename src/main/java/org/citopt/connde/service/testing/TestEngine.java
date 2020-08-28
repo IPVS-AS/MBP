@@ -28,13 +28,15 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.Map.Entry.comparingByKey;
+import static java.util.stream.Collectors.toMap;
 
 @Component
 public class TestEngine implements ValueLogReceiverObserver {
@@ -427,7 +429,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      * Method to download a specific Test Report
      *
      * @param path to the specific Test Report to download
-    */
+     */
     public ResponseEntity<String> downloadPDF(String path) throws IOException {
         TestDetails test = null;
         Pattern pattern = Pattern.compile("(.*?)_");
@@ -465,12 +467,12 @@ public class TestEngine implements ValueLogReceiverObserver {
      * @param testId ID of the test from which all reports are to be found
      * @return hashmap with the date and path to every report regarding to the specific test
      */
-    public ResponseEntity<Map<String, String>> getPDFList(String testId) {
+    public ResponseEntity<Map<Long, String>> getPDFList(String testId) {
         ResponseEntity pdfList = null;
         Map<Long, String> nullList = new TreeMap<>();
         TestDetails testDetails = testDetailsRepository.findOne(testId);
         try {
-            if(testDetails.isPdfExists()){
+            if (testDetails.isPdfExists()) {
                 Stream<Path> pathStream = Files.find(Paths.get(testDetails.getPathPDF()), 10, (path, basicFileAttributes) -> {
                     File file = path.toFile();
                     return !file.isDirectory() &&
@@ -491,15 +493,13 @@ public class TestEngine implements ValueLogReceiverObserver {
     }
 
 
-
-
     /**
      * Generates a Hashmap where the entries consist of the creation date of the report and the path to it.
      *
      * @param pathStream Stream of the matching reports regarding to to the specific test
      * @return Map out of the creation dates and paths to the report
      */
-    public Map<String, String> generateReportList(Stream<Path> pathStream) {
+    public Map<Long, String> generateReportList(Stream<Path> pathStream) {
         Map<Long, String> pdfEntry = new TreeMap<>();
 
         // Pattern to find the PDF-Files for a specific test with the specific ID in the Filename
@@ -516,35 +516,37 @@ public class TestEngine implements ValueLogReceiverObserver {
             // get  date in milliseconds out of the filename and convert this into the specified date format
             Matcher machter = pattern.matcher(singlePath.toString());
             if (machter.find()) {
-                 dateMilliseconds = Long.valueOf(machter.group(1));
+                dateMilliseconds = Long.valueOf(machter.group(1));
             }
             //Add properties to object
             pdfEntry.put(dateMilliseconds, singlePath.getFileName().toString());
 
         }
 
-        return convertMap(pdfEntry);
+
+        return sortMap(pdfEntry);
     }
 
 
     /**
-     * Converts the key timestamp to a Date in String format for the Map combined of timestamp and path to PDF (Test-Report).
+     * Sorts the timestamps of the List of Test-Reports.
      *
-     * @param sortTedMap Sorted map with the timestamp as Long in the key
-     * @return sorted Map with the key as Date in String format
+     * @param unsortedMap Sorted map with the timestamp as Long in the key
+     * @return sorted Map depending on the key
      */
-    private Map<String, String> convertMap(Map<Long, String> sortTedMap){
-        // Date Formatter
-        String patternDate = "dd.MM.yyyy HH:mm:ss";
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(patternDate);
-        String date = "";
+    private Map<Long, String> sortMap(Map<Long, String> unsortedMap) {
 
-        Map<String, String> sortedMapStr = new TreeMap<>();
-        for (Map.Entry<Long, String> entry : sortTedMap.entrySet()) {
-            date = simpleDateFormat.format(new Date(entry.getKey() * 1000));
-            sortedMapStr.put(date, entry.getValue());
-        }
-        return sortedMapStr;
+        Map<Long, String> treeMap = new TreeMap<Long, String>(new Comparator<Long>() {
+            @Override
+            public int compare(Long o1, Long o2) {
+                return o1.compareTo(o2);
+            }
+
+        });
+
+        treeMap.putAll(unsortedMap);
+
+        return treeMap;
     }
 }
 

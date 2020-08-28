@@ -1,11 +1,9 @@
-
-
 /**
  * Controller for the component details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('TestingChartController',
-    ['$scope', '$rootScope', '$routeParams', 'testingDetails', 'sensorList','$interval', 'ComponentService', 'CrudService', 'DeviceService', 'UnitService', 'NotificationService', '$http',
-        function ($scope, $rootScope, $routeParams,testingDetails,sensorList, $interval, ComponentService, CrudService,DeviceService, UnitService, NotificationService, $http) {
+    ['$scope', '$rootScope', '$routeParams', 'testingDetails', 'sensorList', '$interval', 'ComponentService', 'CrudService', 'DeviceService', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI',
+        function ($scope, $rootScope, $routeParams, testingDetails, sensorList, $interval, ComponentService, CrudService, DeviceService, UnitService, NotificationService, $http, ENDPOINT_URI) {
             //Selectors that allow the selection of different ui cards
             const LIVE_CHART_CARD_SELECTOR = ".live-chart-card";
             const HISTORICAL_CHART_CARD_SELECTOR = ".historical-chart-card";
@@ -13,16 +11,15 @@ app.controller('TestingChartController',
             const STATS_CARD_SELECTOR = ".stats-card";
 
 
-
             var vm = this;
 
 
             for (var i in sensorList) {
-                if(sensorList[i].name === testingDetails.type){
+                if (sensorList[i].name === testingDetails.type) {
                     vm.sensor = sensorList[i];
                     vm.component_id = sensorList[i].id;
                     vm.component_type = sensorList[i].componentTypeName;
-                    vm.component_type_url = vm.component_type +'s';
+                    vm.component_type_url = vm.component_type + 's';
                     vm.component_adapter_unit = sensorList[i]._embedded.adapter.unit;
 
                 }
@@ -65,11 +62,12 @@ app.controller('TestingChartController',
                 initLiveChart();
                 initHistoricalChart();
 
+
                 //Interval for updating states on a regular basis
                 var interval = $interval(function () {
                     updateDeploymentState(true);
                     updateDeviceState();
-                }, 2 * 60 * 1000);
+                }, 1000);
 
                 //Cancel interval on route change and enable the loading bar again
                 $scope.$on('$destroy', function () {
@@ -125,6 +123,7 @@ app.controller('TestingChartController',
                 });
             }
 
+
             /**
              * [Public]
              * Called, when the user updates the unit in which the values should be displayed
@@ -151,68 +150,72 @@ app.controller('TestingChartController',
             }
 
 
-
-            // TODO anpassen an Start Testing
             /**
              * [Public]
-             * Starts the current component (in case it has been stopped before) and shows a waiting screen during
+             * Creates a server request to get a list of all generated Test Reports regarding to the Test of the IoT-Application.
+             */
+            function getPDFList() {
+                $http.get(ENDPOINT_URI + '/test-details/pdfList/' + testingDetails.id).then(function (response) {
+                    var pdfList = {};
+                    vm.pdfDetails = [];
+
+                    if (Object.keys(response.data).length > 0) {
+                        angular.forEach(response.data, function (value, key) {
+                            vm.pdfDetails.push({
+                                "date": key,
+                                "path": value
+                            });
+                        });
+                        pdfList.pdfTable = vm.pdfDetails;
+                        $scope.pdfTable = pdfList.pdfTable;
+                    } else {
+                        document.getElementById("pdfTable").innerHTML = "There is no Test Report for this Test yet.";
+                    }
+                });
+            }
+
+
+            /**
+             * [Public]
+             * Starts the current test (in case it has been stopped before) and shows a waiting screen during
              * the start progress.
              */
             function startComponent() {
                 //Show waiting screen
-                showDeploymentWaitingScreen("Starting...");
+                vm.startTest = 'STARTING_TEST';
 
                 //Execute start request
-                ComponentService.startComponent(vm.COMPONENT_ID, vm.COMPONENT_TYPE, vm.parameterValues)
-                    .then(function (response) {
-                            //Success, check if everything worked well
-                            if (!response.data.success) {
-                                vm.deploymentState = 'UNKNOWN';
-                                NotificationService.notify('Error during starting: ' + response.data.globalMessage, 'error');
-                                return;
-                            }
-                            //Notify user
-                            vm.deploymentState = 'RUNNING';
-                            NotificationService.notify('Component started successfully.', 'success');
-                        },
-                        function (response) {
-                            //Failure
-                            vm.deploymentState = 'UNKNOWN';
-                            NotificationService.notify('Starting failed.', 'error');
-                        }).then(function () {
-                    //Finally hide the waiting screen
+                $http.post(ENDPOINT_URI + '/test-details/test/' + testingDetails.id, testingDetails.id.toString()).success(function (responseTest) {
+                    // If test completed successfully, update List of Test-Reports
+                    getPDFList();
+                    vm.startTest = "END_TEST";
+                    NotificationService.notify('Test completed successfully.', 'success');
+                }).error(function () {
+                    vm.startTest = "ERROR_TEST";
+                    NotificationService.notify('Error during start of test.', 'error');
+                    return;
+                }).finally(function () {
                     hideDeploymentWaitingScreen();
                 });
+
+
             }
 
             /**
              * [Public]
-             * Stops the current component and shows a waiting screen during the stop progress.
+             * Stops the current test and shows a waiting screen during the stop progress.
              */
             function stopComponent() {
                 //Show waiting screen
                 showDeploymentWaitingScreen("Stopping...");
 
-                //Execute stop request
-                ComponentService.stopComponent(COMPONENT_ID, COMPONENT_TYPE).then(function (response) {
-                        //Success, check if everything worked well
-                        if (!response.data.success) {
-                            vm.deploymentState = 'UNKNOWN';
-                            NotificationService.notify('Error during stopping: ' + response.data.globalMessage, 'error');
-                            return;
-                        }
-                        //Notify user
-                        vm.deploymentState = 'DEPLOYED';
-                        NotificationService.notify('Component stopped successfully.', 'success');
-                    },
-                    function (response) {
-                        //Failure
-                        vm.deploymentState = 'UNKNOWN';
-                        NotificationService.notify('Stopping failed.', 'error');
-                    }).then(function () {
+                vm.http = $http.post(ENDPOINT_URI + '/test-details/test/stop/' + testingDetails.id, testingDetails.id.toString()).success(function () {
                     //Finally hide the waiting screen
+                    vm.deploymentState = updateDeploymentState();
+                }).finally(function () {
                     hideDeploymentWaitingScreen();
                 });
+
             }
 
             /**
@@ -426,7 +429,6 @@ app.controller('TestingChartController',
                         value = false;
                     }
                     if (requiredParams[i].name == "device_code") {
-                        console.log("Requesting code for required parameter device_code.");
                         value = getDeviceCode();
                         continue;
                     }
