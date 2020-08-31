@@ -21,6 +21,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
@@ -138,13 +139,13 @@ public class ValueLogRepository {
         Document matchStage = new Document("$match", new Document("idref", idref));
         Document unwindStage = new Document("$unwind", new Document("path", "$values"));
         Document replaceRootStage = new Document("$replaceRoot", new Document("newRoot", "$values"));
-        
+
         AggregateIterable<ValueLog> result = this.valueLogCollection.aggregate(Arrays.asList(matchStage, unwindStage, replaceRootStage), ValueLog.class);
         for(ValueLog log : result){
             System.out.println(log);
         }
 
-        return new ArrayList<>();
+        return new LinkedList<>();
     }
 
     /**
