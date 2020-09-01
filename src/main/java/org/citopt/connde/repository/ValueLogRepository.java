@@ -4,10 +4,13 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import org.bson.conversions.Bson;
 import org.citopt.connde.MongoConfiguration;
 import org.citopt.connde.domain.valueLog.ValueLog;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +24,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
@@ -41,6 +44,8 @@ public class ValueLogRepository {
 
     //Name of the collection to use for the value logs
     private static final String COLLECTION_NAME = "mongoValueLogs";
+
+    private static final long VALUES_PER_DOCUMENT = 80;
 
     //MongoDB bean to use
     private MongoClient mongoClient;
@@ -88,7 +93,7 @@ public class ValueLogRepository {
         long epochSeconds = valueLog.getTime().getEpochSecond();
 
         Document filterDocument = new Document("idref", valueLog.getIdref());
-        filterDocument.append("nvalues", new Document("$lt", 80));
+        filterDocument.append("nvalues", new Document("$lt", VALUES_PER_DOCUMENT));
         filterDocument.append("day", absoluteDay);
 
         Document updateDocument = new Document("$push", new Document("values", valueLog));
@@ -114,6 +119,9 @@ public class ValueLogRepository {
             throw new IllegalArgumentException("Idref must not be null or empty.");
         }
 
+        //Create result list
+        List<ValueLog> resultList = new ArrayList<>();
+
         /*
         [{$match: {
   "idref": "5f1ddc446d51821c984a6c96"
@@ -136,16 +144,15 @@ public class ValueLogRepository {
          */
 
 
-        Document matchStage = new Document("$match", new Document("idref", idref));
-        Document unwindStage = new Document("$unwind", new Document("path", "$values"));
-        Document replaceRootStage = new Document("$replaceRoot", new Document("newRoot", "$values"));
+        Bson matchStage = Aggregates.match(Filters.eq("idref", idref));
+        Bson unwindStage = Aggregates.unwind("$values");
+        Bson replaceRootStage = Aggregates.replaceRoot("$values");
 
-        AggregateIterable<ValueLog> result = this.valueLogCollection.aggregate(Arrays.asList(matchStage, unwindStage, replaceRootStage), ValueLog.class);
-        for(ValueLog log : result){
-            System.out.println(log);
-        }
+        AggregateIterable<ValueLog> aggregateResult = this.valueLogCollection.aggregate(Arrays.asList(matchStage, unwindStage, replaceRootStage), ValueLog.class);
 
-        return new LinkedList<>();
+        aggregateResult.forEach((Consumer<ValueLog>) resultList::add);
+
+        return resultList;
     }
 
     /**
@@ -161,48 +168,74 @@ public class ValueLogRepository {
             throw new IllegalArgumentException("Idref must not be null or empty.");
         }
 
+        //Create result list
+        List<ValueLog> resultList = new ArrayList<>();
+
         //Get limit and offset from pageable
         int limit = pageable.getPageSize();
         int offset = pageable.getOffset();
 
-        //Get desired sort option from pageable
+        //Check if values need to be retrieved
+        if (limit <= 0) {
+            return new PageImpl<>(resultList, pageable, 0);
+        }
+
+        //Get sort parameters from pageable
         Sort sort = pageable.getSort();
 
-        //Iterate over all specified sort properties
-        for (Sort.Order order : sort) {
-            String property = order.getProperty();
+        //Documents representing the desired sort direction
+        Document coarseSortDocument = new Document("first", -1);
+        Document fineSortDocument = new Document("time", -1);
 
+        //Iterate over all specified sort parameters
+        for (Sort.Order order : sort) {
             //Only sorting for time property is supported, thus ignore the other ones
-            if (!property.equals("time")) {
+            if (!order.getProperty().equals("time")) {
                 continue;
             }
 
-            //Extend query for ordering with the chosen direction
+            //Check sort direction and adjust document if necessary
             if (order.isAscending()) {
-                //TODO
-            } else {
-                //TODO
+                coarseSortDocument = new Document("first", 1);
+                fineSortDocument = new Document("time", 1);
             }
 
             //Only ordering for time is supported, so no need to consider other properties
             break;
         }
 
-        //Add limit and offset if meaningful
-        if ((offset > 0) && (limit > 0)) {
-            //TODO
-        } else if (limit > 0) {
-            //TODO
+        //List of all aggregation stages to execute
+        List<Bson> aggregateStages = new ArrayList<>();
+
+        //Matching for idref
+        aggregateStages.add(Aggregates.match(Filters.eq("idref", idref)));
+
+        //Coarse-grained sorting on document level
+        aggregateStages.add(Aggregates.sort(coarseSortDocument));
+
+        //Unwinding
+        aggregateStages.add(Aggregates.unwind("$values"));
+
+        //Replace root elements with value log sub-documents
+        aggregateStages.add(Aggregates.replaceRoot("$values"));
+
+        //Sorting on value log level
+        aggregateStages.add(Aggregates.sort(fineSortDocument));
+
+        //Offset for pagination on value log level (if necessary)
+        if (offset > 0) {
+            aggregateStages.add(Aggregates.skip(offset));
         }
 
-        //Add where clause in order to filter for idref
-        //Query query = selectQuery.where("idref='" + idref + "'");
+        //FLimit for pagination on value log level (if necessary)
+        aggregateStages.add(Aggregates.limit(limit));
 
-        //Execute query
-        List<ValueLog> valueLogs = new ArrayList<>();
+        AggregateIterable<ValueLog> aggregateResult = this.valueLogCollection.aggregate(aggregateStages, ValueLog.class);
+
+        aggregateResult.forEach((Consumer<ValueLog>) resultList::add);
 
         //Return value logs as page
-        return new PageImpl<>(valueLogs, pageable, valueLogs.size());
+        return new PageImpl<>(resultList, pageable, resultList.size());
     }
 
     public void deleteByIdRef(String idref) {
