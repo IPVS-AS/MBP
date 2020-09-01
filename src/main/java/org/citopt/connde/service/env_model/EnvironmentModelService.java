@@ -851,9 +851,12 @@ public class EnvironmentModelService {
         device.setUsername(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_USERNAME, ""));
         device.setPassword(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_PASSWORD, ""));
 
-        //Find key pair from repository and set it
-        KeyPair keyPair = keyPairRepository.findOne(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_KEYPAIR));
-        device.setKeyPair(keyPair);
+        //Check if a key pair was provided
+        if(!deviceDetails.isNull(MODEL_JSON_KEY_DEVICE_KEYPAIR)){
+            //Get key pair from repository and set it
+            KeyPair keyPair = keyPairRepository.findOne(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_KEYPAIR));
+            device.setKeyPair(keyPair);
+        }
 
         //Return final device object
         return device;
