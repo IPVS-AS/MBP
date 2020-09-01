@@ -45,6 +45,10 @@ public class ValueLogRepository {
     //Name of the collection to use for the value logs
     private static final String COLLECTION_NAME = "mongoValueLogs";
 
+    //Name of the idref field
+    private static final String IDREF_FIELD_NAME = "idref";
+
+    //Number of value logs per document in the collection
     private static final long VALUES_PER_DOCUMENT = 80;
 
     //MongoDB bean to use
@@ -86,25 +90,25 @@ public class ValueLogRepository {
         //Get time from value log
         ZonedDateTime valueLogTime = valueLog.getTime().atZone(ZoneId.systemDefault());
 
-        //Calculate absolute day from value log
-        int absoluteDay = valueLogTime.getYear() * 366 + valueLogTime.getDayOfYear();
-
         //Get epoch seconds from value log
         long epochSeconds = valueLog.getTime().getEpochSecond();
 
-        Document filterDocument = new Document("idref", valueLog.getIdref());
-        filterDocument.append("nvalues", new Document("$lt", VALUES_PER_DOCUMENT));
-        filterDocument.append("day", absoluteDay);
+        //Filtering by idref and nvalues
+        Document filterQuery = new Document(IDREF_FIELD_NAME, valueLog.getIdref());
+        filterQuery.append("nvalues", new Document("$lt", VALUES_PER_DOCUMENT));
 
-        Document updateDocument = new Document("$push", new Document("values", valueLog));
-        updateDocument.append("$min", new Document("first", epochSeconds));
-        updateDocument.append("$max", new Document("last", epochSeconds));
-        updateDocument.append("$inc", new Document("nvalues", 1));
+        //Query for updating existing documents or creating new ones
+        Document updateQuery = new Document("$push", new Document("values", valueLog));
+        updateQuery.append("$min", new Document("first", epochSeconds));
+        updateQuery.append("$max", new Document("last", epochSeconds));
+        updateQuery.append("$inc", new Document("nvalues", 1));
 
+        //Allow for creating new documents when VALUES_PER_DOCUMENT is reached
         UpdateOptions updateOptions = new UpdateOptions();
         updateOptions.upsert(true);
 
-        this.valueLogCollection.updateOne(filterDocument, updateDocument, updateOptions);
+        //Perform update
+        this.valueLogCollection.updateOne(filterQuery, updateQuery, updateOptions);
     }
 
     /**
@@ -122,34 +126,19 @@ public class ValueLogRepository {
         //Create result list
         List<ValueLog> resultList = new ArrayList<>();
 
-        /*
-        [{$match: {
-  "idref": "5f1ddc446d51821c984a6c96"
-}}, {$group: {
-  _id: "$idref",
-  "values": {$addToSet: "$values"}
-}}, {$project: {
-  "values": {  "$reduce":
-  {
-        "input": "$values",
-        "initialValue": [],
-        "in": { "$setUnion": [ "$$value", "$$this" ] }
-      }}
-}}, {$unwind: {
-  path: "$values"
-}}, {$replaceRoot: {
-  newRoot: "$values"
-}}]
-//TODO Project and group not needed probably
-         */
+        //Matching for idref
+        Bson matchStage = Aggregates.match(Filters.eq(IDREF_FIELD_NAME, idref));
 
-
-        Bson matchStage = Aggregates.match(Filters.eq("idref", idref));
+        //Unwinding
         Bson unwindStage = Aggregates.unwind("$values");
+
+        //Replace root elements with value log sub-documents
         Bson replaceRootStage = Aggregates.replaceRoot("$values");
 
+        //Perform aggregation
         AggregateIterable<ValueLog> aggregateResult = this.valueLogCollection.aggregate(Arrays.asList(matchStage, unwindStage, replaceRootStage), ValueLog.class);
 
+        //Convert aggregation result to a list
         aggregateResult.forEach((Consumer<ValueLog>) resultList::add);
 
         return resultList;
@@ -208,10 +197,14 @@ public class ValueLogRepository {
         List<Bson> aggregateStages = new ArrayList<>();
 
         //Matching for idref
-        aggregateStages.add(Aggregates.match(Filters.eq("idref", idref)));
+        aggregateStages.add(Aggregates.match(Filters.eq(IDREF_FIELD_NAME, idref)));
 
         //Coarse-grained sorting on document level
         aggregateStages.add(Aggregates.sort(coarseSortDocument));
+
+        //Coarse-grained limit on document level
+        int calculatedLimit = (int) Math.ceil(((double) offset + limit) / ((double) VALUES_PER_DOCUMENT)) + 1;
+        aggregateStages.add(Aggregates.limit(calculatedLimit));
 
         //Unwinding
         aggregateStages.add(Aggregates.unwind("$values"));
@@ -219,32 +212,42 @@ public class ValueLogRepository {
         //Replace root elements with value log sub-documents
         aggregateStages.add(Aggregates.replaceRoot("$values"));
 
-        //Sorting on value log level
+        //Fine-grained Sorting on value log level
         aggregateStages.add(Aggregates.sort(fineSortDocument));
 
-        //Offset for pagination on value log level (if necessary)
+        //Fine-grained offset for pagination on value log level (if necessary)
         if (offset > 0) {
             aggregateStages.add(Aggregates.skip(offset));
         }
 
-        //FLimit for pagination on value log level (if necessary)
+        //Fine-grained Limit for pagination on value log level (if necessary)
         aggregateStages.add(Aggregates.limit(limit));
 
+        //Perform aggregation
         AggregateIterable<ValueLog> aggregateResult = this.valueLogCollection.aggregate(aggregateStages, ValueLog.class);
 
+        //Convert aggregation result to a list
         aggregateResult.forEach((Consumer<ValueLog>) resultList::add);
 
         //Return value logs as page
         return new PageImpl<>(resultList, pageable, resultList.size());
     }
 
+    /**
+     * Deletes all value logs that match a given idref.
+     *
+     * @param idref The idref to match for
+     */
     public void deleteByIdRef(String idref) {
-        //TODO Does not work
         //Sanity check
         if ((idref == null) || idref.isEmpty()) {
             throw new IllegalArgumentException("Idref must not be null or empty.");
         }
 
-        //TODO
+        //Build filter for deleting all documents with the given idref
+        Bson filter = Filters.eq(IDREF_FIELD_NAME, idref);
+
+        //Perform deletion
+        this.valueLogCollection.deleteMany(filter);
     }
 }
