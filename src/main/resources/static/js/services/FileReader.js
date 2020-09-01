@@ -4,7 +4,7 @@
 
 app.factory("FileReader",
     ["$q", function ($q) {
-        var onLoad = function (reader, deferred, scope, file) {
+        let onLoad = function (reader, deferred, scope, file) {
             return function () {
                 scope.$apply(function () {
                     deferred.resolve({
@@ -15,7 +15,7 @@ app.factory("FileReader",
             };
         };
 
-        var onError = function (reader, deferred, scope) {
+        let onError = function (reader, deferred, scope) {
             return function () {
                 scope.$apply(function () {
                     deferred.reject(reader.result);
@@ -23,7 +23,7 @@ app.factory("FileReader",
             };
         };
 
-        var onProgress = function (reader, scope) {
+        let onProgress = function (reader, scope) {
             return function (event) {
                 scope.$broadcast("fileProgress",
                     {
@@ -33,25 +33,25 @@ app.factory("FileReader",
             };
         };
 
-        var getReader = function (deferred, scope, file) {
-            var reader = new FileReader();
+        let getReader = function (deferred, scope, file) {
+            let reader = new FileReader();
             reader.onload = onLoad(reader, deferred, scope, file);
             reader.onerror = onError(reader, deferred, scope);
             reader.onprogress = onProgress(reader, scope);
             return reader;
         };
 
-        var readAsText = function (file, scope) {
-            var deferred = $q.defer();
+        let readAsText = function (file, scope) {
+            let deferred = $q.defer();
 
-            var reader = getReader(deferred, scope, file);
+            let reader = getReader(deferred, scope, file);
             reader.readAsText(file);
 
             return deferred.promise;
         };
 
-        var readMultipleAsText = function (files, scope) {
-            var promises = [];
+        let readMultipleAsText = function (files, scope) {
+            let promises = [];
 
             angular.forEach(files, function (file) {
                 promises.push(readAsText(file, scope));
@@ -60,17 +60,17 @@ app.factory("FileReader",
             return $q.all(promises);
         };
 
-        var readAsDataURL = function (file, scope) {
-            var deferred = $q.defer();
+        let readAsDataURL = function (file, scope) {
+            let deferred = $q.defer();
 
-            var reader = getReader(deferred, scope, file);
+            let reader = getReader(deferred, scope, file);
             reader.readAsDataURL(file);
 
             return deferred.promise;
         };
 
-        var readMultipleAsDataURL = function (files, scope) {
-            var promises = [];
+        let readMultipleAsDataURL = function (files, scope) {
+            let promises = [];
 
             angular.forEach(files, function (file) {
                 promises.push(readAsDataURL(file, scope));
@@ -79,11 +79,58 @@ app.factory("FileReader",
             return $q.all(promises);
         };
 
+        /**
+         * [Public]
+         * Reads a file from the user's disk as MD5 hash string.
+         *
+         * @param file The file to read
+         * @param scope Current angular scope
+         * @returns {*} A promise for reading and hashing the file
+         */
+        let readAsMD5Hash = function (file, scope) {
+            let deferred = $q.defer();
+
+            //Setup reader
+            let reader = getReader(deferred, scope, file);
+
+            //Read file as binary string
+            reader.readAsBinaryString(file);
+
+            //Return promise for the reading process and chain the hash generation
+            return deferred.promise.then(function (result) {
+                return CryptoJS.MD5(result.content).toString();
+            });
+        };
+
+        /**
+         * [Public]
+         * Reads multiple files from the user's disk as MD5 hash strings.
+         *
+         * @param files The files to read
+         * @param scope Current angular scope
+         * @returns {*} A promise for reading and hashing the files
+         */
+        let readMultipleAsMD5Hash = function (files, scope) {
+            //Array for all generated promises
+            let promises = [];
+
+            //Iterate over all files and read the hashes
+            angular.forEach(files, function (file) {
+                //Push promise to array
+                promises.push(readAsMD5Hash(file, scope));
+            });
+
+            //Return promise containing all file promises
+            return $q.all(promises);
+        };
+
         return {
             readAsText: readAsText,
             readMultipleAsText: readMultipleAsText,
-            readAsDataUrl: readAsDataURL,
-            readMultipleAsDataURL: readMultipleAsDataURL
+            readAsDataURL: readAsDataURL,
+            readMultipleAsDataURL: readMultipleAsDataURL,
+            readAsMD5Hash: readAsMD5Hash,
+            readMultipleAsMD5Hash: readMultipleAsMD5Hash
         };
     }]);
 

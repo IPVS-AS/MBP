@@ -1,8 +1,8 @@
 package org.citopt.connde.service.ssh;
 
 import com.jcabi.ssh.SSH;
-import com.jcabi.ssh.Shell;
 import com.jcabi.ssh.SSHByPassword;
+import com.jcabi.ssh.Shell;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -26,6 +26,8 @@ public class SSHSession {
     private static final String SHELL_CREATE_FILE_BASE64 = "bash -c \"base64 -d > %s/%s\"";
     private static final String SHELL_CHANGE_FILE_PERMISSIONS = "chmod %s %s";
     private static final String SHELL_EXECUTE_SHELL_SCRIPT = "bash %s%s";
+    private static final String SHELL_TEST_DIR_EXISTS = "[ -d \"%s\" ] && echo true || echo false";
+    private static final String SHELL_GENERATE_HASH = "md5sum %s | grep '^[^[:space:]]*' -o";
 
     private static final String SHELL_PREFIX_SUDO_PASSWORD = "sudo -S ";
 
@@ -220,7 +222,7 @@ public class SSHSession {
         path = path.replaceAll("/$", "");
 
         //Build corresponding command
-        String command = String.format("[ -d \"%s\" ] && echo true || echo false", path);
+        String command = String.format(SHELL_TEST_DIR_EXISTS, path);
 
         //Reset output stream of session
         resetStdOutStream();
@@ -231,6 +233,29 @@ public class SSHSession {
         //Retrieve return value and check its value
         String returnValue = stdOutStream.toString().toLowerCase();
         return returnValue.contains("true");
+    }
+
+    /**
+     * Returns the MD5 hash of a certain file on the remote device.
+     *
+     * @param filePath The the to hash
+     * @return The MD5 hash of the file
+     * @throws IOException In case of an I/O issue
+     */
+    public String generateHashOfFile(String filePath) throws IOException {
+        checkConnectionState();
+
+        //Build corresponding command
+        String command = String.format(SHELL_GENERATE_HASH, filePath);
+
+        //Reset output stream of session
+        resetStdOutStream();
+
+        //Execute command
+        executeShellCommand(command);
+
+        //Retrieve the resulting hash from the stream
+        return stdOutStream.toString().trim().toLowerCase();
     }
 
     /**
@@ -254,11 +279,10 @@ public class SSHSession {
      */
     protected synchronized void connect() throws IOException {
         //Create new safe shell instance
-        if (key != null){
-          shell = new Shell.Safe(new SSH(url, port, username, key));
-        }
-        else{
-          shell = new SSHByPassword(url, port, username, password);
+        if (key != null) {
+            shell = new Shell.Safe(new SSH(url, port, username, key));
+        } else {
+            shell = new SSHByPassword(url, port, username, password);
         }
         //Create corresponding streams for further usage
         stdOutStream = new ByteArrayOutputStream();
