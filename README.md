@@ -16,14 +16,14 @@ How to install and use the MBP is explained in the following.
 
 ## 1 Installation
 
-The following software components are used in order to set up the MBP: [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), [InfluxDB](https://portal.influxdata.com/downloads/), Java8, [Tomcat8](https://tomcat.apache.org/download-80.cgi), and Maven.
+The following software components are used in order to set up the MBP: [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), Java8, [Tomcat8](https://tomcat.apache.org/download-80.cgi), and Maven.
 
 ### 1.1 Installation on Linux 
 Please run the [installation script](install.sh), which automatically installs the aforementioned software components. Once the installation is completed, the MBP will be available on the URL `http://[MBP-Host]:8080/MBP`.  
 
 ### 1.2 Installation on Windows
 Please execute the following steps:  
-- Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), [InfluxDB](https://portal.influxdata.com/downloads/) and [Tomcat8](https://tomcat.apache.org/download-80.cgi)   
+- Install and start [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community) and [Tomcat8](https://tomcat.apache.org/download-80.cgi)   
 - Create the `MBP.war` file by building the provided maven project
     
     `$ mvn clean install`  
@@ -35,19 +35,17 @@ Once the installation is completed, the MBP will be available on the URL `http:/
 ### 1.3 Installation on Mac Os
 Please execute the following steps:
 - Install [Homebrew](https://brew.sh/index_de),
-- Install [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), [InfluxDB](https://portal.influxdata.com/downloads/), [Tomcat8](https://tomcat.apache.org/download-80.cgi) and [Maven](https://maven.apache.org/).
+- Install [Mosquitto MQTT Broker](https://mosquitto.org/download/), [mongoDB server](https://www.mongodb.com/download-center?jmp=nav#community), [Tomcat8](https://tomcat.apache.org/download-80.cgi) and [Maven](https://maven.apache.org/).
 
     `$ brew install mosquitto`  
     `$ brew install mongodb-community@4.2`   
-    `$ brew install influxdb`  
     `$ brew install tomcat`  
     `$ brew install maven3.6.3_1`(verify Maven Version: $ mvn -version)
     
-- Start Mosquitto, MongoDB, InfluxDB and Tomcat8.
+- Start Mosquitto, MongoDB and Tomcat8.
 
     `$ brew services start mosquitto`  
-    `$ brew services start mongodb-community`  
-    `$ brew services start influxdb`  
+    `$ brew services start mongodb-community`   
     `$ brew services start tomcat`  
     
     You can check if all of them have started correctly with:
