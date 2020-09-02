@@ -19,6 +19,7 @@ import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.data.rest.configuration.SpringDataRestConfiguration;
+import springfox.documentation.spring.web.paths.DefaultPathProvider;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger.web.DocExpansion;
 import springfox.documentation.swagger.web.ModelRendering;
@@ -51,16 +52,21 @@ public class SwaggerConfiguration {
         //Create bean
         return new Docket(DocumentationType.SWAGGER_2)
                 .useDefaultResponseMessages(false)
+                .pathProvider(new DefaultPathProvider() {
+                	@Override
+                	public String getOperationPath(String operationPath) {
+                		if (operationPath.contains(RestConfiguration.BASE_PATH)) {
+                			return operationPath.substring(operationPath.indexOf(RestConfiguration.BASE_PATH));
+                		}
+                		return operationPath;
+                	}
+                })
                 .additionalModels(typeResolver.resolve(ValidationErrorCollection.class))
                 .select()
 				.apis(RequestHandlerSelectors.withClassAnnotation(Api.class)
 							.or(RequestHandlerSelectors.withClassAnnotation(ApiModel.class)
 							.or(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class)))
 						.and(RequestHandlerSelectors.withClassAnnotation(ApiIgnore.class).negate()))
-//                .apis(Predicates.and(Predicates.or(RequestHandlerSelectors.withClassAnnotation(Api.class),
-//                        RequestHandlerSelectors.withClassAnnotation(ApiModel.class),
-//                        RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class)),
-//                        Predicates.not(RequestHandlerSelectors.withClassAnnotation(ApiIgnore.class))))
                 .paths(PathSelectors.any())
                 .build()
                 .apiInfo(apiInfo());
