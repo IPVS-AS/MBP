@@ -95,7 +95,7 @@ public class RestDeviceStateController {
         DeviceState deviceState = sshDeployer.determineDeviceState(device);
 
         //Wrap device state into resource
-        EntityModel<DeviceState> stateResource = EntityModel.of(deviceState);
+        EntityModel<DeviceState> stateResource = new EntityModel<>(deviceState);
 
         return new ResponseEntity<>(stateResource, HttpStatus.OK);
     }
