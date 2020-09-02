@@ -253,7 +253,8 @@ public class DeploymentWrapper {
         ComponentState componentState = sshDeployer.determineComponentState(component);
 
         //Wrap component state into resource
-        EntityModel<ComponentState> stateResource = EntityModel.of(componentState);
+//        EntityModel<ComponentState> stateResource = EntityModel.of(componentState);
+        EntityModel<ComponentState> stateResource = new EntityModel<ComponentState>(componentState);
 
         return new ResponseEntity<>(stateResource, HttpStatus.OK);
     }

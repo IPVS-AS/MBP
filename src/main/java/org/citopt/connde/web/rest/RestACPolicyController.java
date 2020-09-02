@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 
 import org.citopt.connde.RestConfiguration;
+import org.citopt.connde.domain.access_control.ACAbstractCondition;
 import org.citopt.connde.domain.access_control.ACAbstractEffect;
 import org.citopt.connde.domain.access_control.ACPolicy;
-import org.citopt.connde.domain.access_control.IACCondition;
 import org.citopt.connde.domain.access_control.dto.ACPolicyRequestDTO;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user.User;
@@ -32,6 +32,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -89,7 +90,8 @@ public class RestACPolicyController {
     	// Create self link
     	Link link = linkTo(methodOn(getClass()).all(pageable)).withSelfRel();
     	
-    	return ResponseEntity.ok(PagedModel.of(policyEntityModels, Pages.metaDataOf(pageable, policyEntityModels.size()), C.listOf(link)));
+    	return ResponseEntity.ok(new PagedModel<>(policyEntityModels, Pages.metaDataOf(pageable, policyEntityModels.size()), C.listOf(link)));
+//    	return ResponseEntity.ok(PagedModel.of(policyEntityModels, Pages.metaDataOf(pageable, policyEntityModels.size()), C.listOf(link)));
     }
     
     @GetMapping(path = "/{policyId}", produces = "application/hal+json")
@@ -119,8 +121,8 @@ public class RestACPolicyController {
     
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
     @ApiOperation(value = "Creates a new policy.", produces = "application/hal+json")
-    @ApiResponses({ @ApiResponse(code = 201, message = "Created!"), @ApiResponse(code = 404, message = "Requesting user, condition, or effect not found!"), @ApiResponse(code = 409, message = "Policy name already exists!") })
-    public ResponseEntity<EntityModel<ACPolicy>> create(@PathVariable("policyId") String policyId, @Valid @RequestBody ACPolicyRequestDTO requestDto, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+    @ApiResponses({ @ApiResponse(code = 201, message = "Policy successfully created!"), @ApiResponse(code = 404, message = "Requesting user, condition, or effect not found!"), @ApiResponse(code = 409, message = "Policy name already exists!") })
+    public ResponseEntity<EntityModel<ACPolicy>> create(@Valid @RequestBody ACPolicyRequestDTO requestDto, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
     	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername())
     			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
     	
@@ -130,16 +132,16 @@ public class RestACPolicyController {
     	}
     	
     	// Retrieve condition from the database
-    	Optional<IACCondition> conditionOptional = conditionRepository.findById(requestDto.getConditionId());
+    	Optional<ACAbstractCondition> conditionOptional = conditionRepository.findById(requestDto.getConditionId());
     	if (!conditionOptional.isPresent()) {
     		return ResponseEntity.notFound().build();
     	}
-    	IACCondition condition = conditionOptional.get();
+    	ACAbstractCondition condition = conditionOptional.get();
     	
     	// Retrieve effects from the database
-    	List<ACAbstractEffect<?>> effects = new ArrayList<>();
+    	List<ACAbstractEffect> effects = new ArrayList<>();
     	for (String effectId : requestDto.getEffectIds()) {
-    		Optional<ACAbstractEffect<?>> effectOptional = effectRepository.findById(effectId);
+    		Optional<ACAbstractEffect> effectOptional = effectRepository.findById(effectId);
     		if (!effectOptional.isPresent()) {
     			return ResponseEntity.notFound().build(); 
     		}
@@ -147,7 +149,7 @@ public class RestACPolicyController {
     	}
     	
     	// Create new policy and save it in the database
-    	ACPolicy policy = new ACPolicy(requestDto.getName(), requestDto.getPriority(), requestDto.getAccessTypes(), condition, effects, user);
+    	ACPolicy policy = new ACPolicy(requestDto.getName(), requestDto.getDescription(), requestDto.getAccessTypes(), condition, effects, user);
     	policy = policyRepository.save(policy);
     	
     	// Add self link to policy
@@ -156,8 +158,31 @@ public class RestACPolicyController {
     	return ResponseEntity.status(HttpStatus.CREATED).body(policyEntityModel); 
     }
     
+    @DeleteMapping(path = "/{policyId}")
+    @ApiOperation(value = "Deletes an existing policy.", produces = "application/hal+json")
+    @ApiResponses({ @ApiResponse(code = 204, message = "Policy successfully deleted!"), @ApiResponse(code = 404, message = "Requesting user or policy not found!") })
+    public ResponseEntity<Void> delete(@PathVariable("policyId") String policyId) {
+    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername())
+    			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+
+    	// Retrieve the policy to delete from the database (if it exists)
+    	Optional<ACPolicy> policyOptional = policyRepository.findById(policyId);
+    	if (!policyOptional.isPresent()) {
+    		return ResponseEntity.notFound().build();
+    	}
+    	ACPolicy policy = policyOptional.get();
+    	
+    	// Check whether the requesting user is the owner of the policy
+    	if (!policy.getOwner().getId().equals(user.getId())) {
+    		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    	}
+    	
+    	return ResponseEntity.noContent().build();
+    }
+    
     private EntityModel<ACPolicy> policyToEntityModel(ACPolicy policy) {
-    	return EntityModel.of(policy).add(linkTo(getClass()).slash(policy.getId()).withSelfRel());
+    	return new EntityModel<ACPolicy>(policy, linkTo(getClass()).slash(policy.getId()).withSelfRel());
+//    	return EntityModel.of(policy).add(linkTo(getClass()).slash(policy.getId()).withSelfRel());
     }
 
 }

@@ -6,6 +6,7 @@ import org.citopt.connde.util.ValidationErrorCollection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.fasterxml.classmate.TypeResolver;
 
@@ -26,14 +27,15 @@ import springfox.documentation.swagger.web.OperationsSorter;
 import springfox.documentation.swagger.web.TagsSorter;
 import springfox.documentation.swagger.web.UiConfiguration;
 import springfox.documentation.swagger.web.UiConfigurationBuilder;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 
 /**
  * Configuration for the swagger documentation generator.
  */
 @Import({SpringDataRestConfiguration.class})
 @Configuration
-@EnableSwagger2
+@EnableSwagger2WebMvc
+@EnableWebMvc
 public class SwaggerConfiguration {
     public static final String SWAGGER_PATH_UI = "/swagger-ui.html";
     public static final String SWAGGER_PATH_JSON = "/v2/api-docs";

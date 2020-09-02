@@ -5,7 +5,6 @@ import org.citopt.connde.domain.access_control.ACAccess;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACConditionEvaluatorNotAvailableException;
 import org.citopt.connde.domain.access_control.ACPolicy;
-import org.citopt.connde.domain.access_control.IACCondition;
 import org.springframework.stereotype.Service;
 
 /**

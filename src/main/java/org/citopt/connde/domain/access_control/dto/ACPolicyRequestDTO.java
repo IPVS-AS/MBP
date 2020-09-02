@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 
 import org.citopt.connde.domain.access_control.ACAccessType;
@@ -17,14 +16,7 @@ import org.citopt.connde.domain.user.User;
  * 
  * @author Jakob Benz
  */
-public class ACPolicyRequestDTO {
-	
-	@NotEmpty
-	private String name;
-	
-	@Nonnull
-	@Min(0)
-	private int priority;
+public class ACPolicyRequestDTO extends ACAbstractEntityRequestDTO {
 	
 	@NotEmpty
 	private List<ACAccessType> accessTypes = new ArrayList<>();
@@ -37,9 +29,8 @@ public class ACPolicyRequestDTO {
 	// - - -
 	public ACPolicyRequestDTO() {}
 	
-	public ACPolicyRequestDTO(String name, int priority, List<ACAccessType> accessTypes, String conditionId, List<String> effectIds, User owner) {
-		this.name = name;
-		this.priority = priority;
+	public ACPolicyRequestDTO(String name, String description, List<ACAccessType> accessTypes, String conditionId, List<String> effectIds, User owner) {
+		super(name, description);
 		this.accessTypes = accessTypes;
 		this.conditionId = conditionId;
 		this.effectIds = effectIds;
@@ -47,24 +38,6 @@ public class ACPolicyRequestDTO {
 	
 	// - - -
 	
-	public String getName() {
-		return name;
-	}
-
-	public ACPolicyRequestDTO setName(String name) {
-		this.name = name;
-		return this;
-	}
-
-	public int getPriority() {
-		return priority;
-	}
-
-	public ACPolicyRequestDTO setPriority(int priority) {
-		this.priority = priority;
-		return this;
-	}
-
 	public List<ACAccessType> getAccessTypes() {
 		return accessTypes;
 	}

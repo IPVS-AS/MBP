@@ -230,13 +230,13 @@
             </a>
             <ul class="ml-menu">
                 <li>
-                    <a href="view/policies" menu-item="menu-item">Policy Definitions</a>
+                    <a href="view/policy" menu-item="menu-item">Policy Definitions</a>
                 </li>
                 <li>
-                    <a href="view/policy-conditions" menu-item="menu-item">Conditions</a>
+                    <a href="view/policy/condition" menu-item="menu-item">Conditions</a>
                 </li>
                 <li>
-                    <a href="view/policy-effects" menu-item="menu-item">Effects</a>
+                    <a href="view/policy/effect" menu-item="menu-item">Effects</a>
                 </li>
             </ul>
         </li>
@@ -387,6 +387,9 @@
 <script th:src="@{/js/services/UserApprovalService.js}"></script>
 <script th:src="@{/js/services/RuleActionService.js}"></script>
 <script th:src="@{/js/services/RuleTriggerService.js}"></script>
+<script th:src="@{/js/services/PolicyService.js}"></script>
+<script th:src="@{/js/services/PolicyConditionService.js}"></script>
+<script th:src="@{/js/services/PolicyEffectService.js}"></script>
 
 <script th:src="@{/js/directives/menuItem.js}"></script>
 <script th:src="@{/js/directives/popover.js}"></script>
@@ -425,8 +428,8 @@
 <script th:src="@{/js/controllers/rules/RuleActionListController.js}"></script>
 <script th:src="@{/js/controllers/rules/RuleTriggerListController.js}"></script>
 <script th:src="@{/js/controllers/policies/PolicyListController.js}"></script>
-<script th:src="@{/js/controllers/rules/PolicyConditionListController.js}"></script>
-<script th:src="@{/js/controllers/rules/PolicyEffectListController.js}"></script>
+<script th:src="@{/js/controllers/policies/PolicyConditionListController.js}"></script>
+<script th:src="@{/js/controllers/policies/PolicyEffectListController.js}"></script>
 <script th:src="@{/js/controllers/settings/SettingsController.js}"></script>
 <script th:src="@{/js/controllers/user/LoginController.js}"></script>
 <script th:src="@{/js/controllers/user/RegisterController.js}"></script>

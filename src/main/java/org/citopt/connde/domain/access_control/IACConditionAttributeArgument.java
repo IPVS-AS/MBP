@@ -15,10 +15,10 @@ public interface IACConditionAttributeArgument<T extends Comparable<T>> extends 
 	public ACEntityType getEntityType();
 	
 	/**
-	 * Returns the key of the attribute this condition argument is specified for.
+	 * Returns the {@link ACAttributeKey} of the attribute this condition argument is specified for.
 	 * 
-	 * @return the key of the attribute this condition argument is specified for as {@code String}.
+	 * @return the {@link ACAttributeKey} of the attribute this condition argument is specified for as {@code String}.
 	 */
-	public String getKey();
+	public ACAttributeKey getKey();
 	
 }

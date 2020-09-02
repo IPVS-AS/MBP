@@ -14,11 +14,11 @@ public enum ACEffectType {
 	
 	private String name;
 	private String description;
-	private Class<? extends ACAbstractEffect<?>> clazz;
+	private Class<? extends ACAbstractEffect> clazz;
 	
 	// - - -
 	
-	private ACEffectType(String name, String description, Class<? extends ACAbstractEffect<?>> clazz) {
+	private ACEffectType(String name, String description, Class<? extends ACAbstractEffect> clazz) {
 		this.name = name;
 		this.description = description;
 		this.clazz = clazz;
@@ -34,7 +34,7 @@ public enum ACEffectType {
 		return description;
 	}
 	
-	public Class<? extends ACAbstractEffect<?>> getClazz() {
+	public Class<? extends ACAbstractEffect> getClazz() {
 		return clazz;
 	}
 

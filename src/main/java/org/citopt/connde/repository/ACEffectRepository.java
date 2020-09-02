@@ -17,7 +17,7 @@ import org.springframework.stereotype.Repository;
  * @author Jakob Benz
  */
 @Repository
-public interface ACEffectRepository extends MongoRepository<ACAbstractEffect<?>, String> {
+public interface ACEffectRepository extends MongoRepository<ACAbstractEffect, String> {
 	
 	/**
 	 * Retrieves all effects that are owned by the given user.
@@ -28,7 +28,7 @@ public interface ACEffectRepository extends MongoRepository<ACAbstractEffect<?>,
 	 * @author Jakob Benz
 	 */
 	@Query("{ 'owner.id' : :#{#ownerId} }")
-	List<ACAbstractEffect<?>> findByOwner(@Param("ownerId") String ownerId, Pageable pageable);
+	List<ACAbstractEffect> findByOwner(@Param("ownerId") String ownerId, Pageable pageable);
 	
 	@Query(value = "{ name : :#{#name} }", exists = true)
 	boolean existsByName(@Param("name") String name); 

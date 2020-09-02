@@ -1,5 +1,6 @@
 package org.citopt.connde.service.access_control;
 
+import org.citopt.connde.domain.access_control.ACAbstractCondition;
 import org.citopt.connde.domain.access_control.ACAccess;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 
@@ -8,7 +9,7 @@ import org.citopt.connde.domain.access_control.ACAccessRequest;
  * 
  * @author Jakob Benz
  */
-public abstract class ACAbstractConditionEvaluator<IACCondition> {
+public abstract class ACAbstractConditionEvaluator<T extends ACAbstractCondition> {
 	
 	/**
 	 * TODO: Method comment!
@@ -18,6 +19,6 @@ public abstract class ACAbstractConditionEvaluator<IACCondition> {
 	 * @param request
 	 * @return
 	 */
-	public abstract boolean evaluate(IACCondition condition, ACAccess access, ACAccessRequest request);
+	public abstract boolean evaluate(T condition, ACAccess access, ACAccessRequest request);
 	
 }

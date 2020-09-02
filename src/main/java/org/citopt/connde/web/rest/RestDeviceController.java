@@ -3,7 +3,6 @@ package org.citopt.connde.web.rest;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -15,15 +14,6 @@ import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccess;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
-import org.citopt.connde.domain.access_control.ACArgumentFunction;
-import org.citopt.connde.domain.access_control.ACConditionSimpleAttributeArgument;
-import org.citopt.connde.domain.access_control.ACConditionSimpleValueArgument;
-import org.citopt.connde.domain.access_control.ACDoubleAccuracyEffect;
-import org.citopt.connde.domain.access_control.ACEntityType;
-import org.citopt.connde.domain.access_control.ACPolicy;
-import org.citopt.connde.domain.access_control.ACSimpleCondition;
-import org.citopt.connde.domain.access_control.IACCondition;
-import org.citopt.connde.domain.access_control.IACEffect;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.repository.ACPolicyRepository;
@@ -110,7 +100,8 @@ public class RestDeviceController {
     	// Create self link
     	Link link = linkTo(methodOn(getClass()).all(pageable, accessRequest)).withSelfRel();
     	
-    	return ResponseEntity.ok(PagedModel.of(deviceEntityModels, Pages.metaDataOf(pageable, devices.size()), C.listOf(link)));
+    	return ResponseEntity.ok(new PagedModel<>(deviceEntityModels, Pages.metaDataOf(pageable, deviceEntityModels.size()), C.listOf(link)));
+//    	return ResponseEntity.ok(PagedModel.of(deviceEntityModels, Pages.metaDataOf(pageable, devices.size()), C.listOf(link)));
     }
     
     @GetMapping(path = "/{deviceId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
@@ -188,7 +179,8 @@ public class RestDeviceController {
 //    }
     
     private EntityModel<Device> deviceToEntityModel(Device device) {
-    	return EntityModel.of(device).add(linkTo(getClass()).slash(device.getId()).withSelfRel());
+    	return new EntityModel<Device>(device, linkTo(getClass()).slash(device.getId()).withSelfRel());
+//    	return EntityModel.of(device).add(linkTo(getClass()).slash(device.getId()).withSelfRel());
     }
 
     

@@ -2,6 +2,7 @@ package org.citopt.connde.domain.access_control;
 
 import java.util.Map;
 
+import org.citopt.connde.domain.user.User;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -11,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @ACEffect(type = ACEffectType.LOCATION_ACCURACY_EFFECT)
 @Document
-public class ACLocationAccuracyEffect extends ACAbstractEffect<Location> {
+public class ACLocationAccuracyEffect extends ACAbstractEffect {
 	
 	public static final String PARAM_KEY_ACCURACY = "accuracy";
 	
@@ -28,21 +29,20 @@ public class ACLocationAccuracyEffect extends ACAbstractEffect<Location> {
 	 * All-args constructor.
 	 * 
 	 * @param name the name of this effect.
+	 * @param description the description of this effect.
+	 * @param parameters the list of parameters this required to be applied.
+	 * @param owner the {@link User} that owns this effect.
 	 */
-	public ACLocationAccuracyEffect(String name, Map<String, String> parameters) {
-		super(name, parameters);
+	public ACLocationAccuracyEffect(String name, String description, Map<String, String> parameters, User owner) {
+		super(name, description, parameters, owner);
 	}
 	
 	// - - -
-	
 
-	
-	@Override
 	public Location applyToValue(Location inputValue) {
 		return apply(inputValue);
 	}
 
-	@Override
 	public Location applyToValueLog(IACValueLog<Location> inputValueLog) {
 		return apply(inputValueLog.getValue());
 	}

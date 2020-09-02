@@ -12,19 +12,6 @@ import javax.annotation.Nonnull;
  */
 public class ACAttribute {
 	
-	// User
-	public static final String KEY_USER_ID = "user.id";
-	public static final String KEY_USER_USERNAME = "user.username";
-	public static final String KEY_USER_FIRST_NAME = "user.firstName";
-	public static final String KEY_USER_LAST_NAME = "user.lastName";
-	
-	// User entity
-	public static final String KEY_USER_ENTITY_ID = "userEntity.id";
-	public static final String KEY_USER_ENTITY_ENVIRONMENT_MODEL = "userEntity.environmentModel";
-	public static final String KEY_USER_ENTITY_OWNER = "userEntity.owner";
-	public static final String KEY_USER_ENTITY_CREATED = "userEntity.created";
-	public static final String KEY_USER_ENTITY_UPDATEd = "userEntity.lastModified";
-	
 	/**
 	 * The {@link ACDataType type} of this attribute.
 	 */
@@ -32,10 +19,10 @@ public class ACAttribute {
 	private ACDataType type;
 	
 	/**
-	 * The key of the attribute. 
+	 * The {@link ACAttributeKey} of the attribute. 
 	 */
 	@Nonnull
-	private String key;
+	private ACAttributeKey key;
 	
 	/**
 	 * The value of the attribute.. 
@@ -54,10 +41,10 @@ public class ACAttribute {
 	 * All-args constructor.
 	 * 
 	 * @param type the {@link ACDataType type} of this attribute.
-	 * @param key the key of the attribute.
+	 * @param key the {@link ACAttributeKey} of the attribute.
 	 * @param value the value of the attribute.
 	 */
-	public ACAttribute(ACDataType type, String key, Object value) {
+	public ACAttribute(ACDataType type, ACAttributeKey key, Object value) {
 		this.type = type;
 		this.key = key;
 		this.value = value;
@@ -74,11 +61,11 @@ public class ACAttribute {
 		return this;
 	}
 	
-	public String getKey() {
+	public ACAttributeKey getKey() {
 		return key;
 	}
 
-	public  ACAttribute setKey(String key) {
+	public  ACAttribute setKey(ACAttributeKey key) {
 		this.key = key;
 		return this;
 	}

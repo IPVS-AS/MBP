@@ -1,35 +1,21 @@
 package org.citopt.connde.domain.access_control;
 
 import javax.annotation.Nonnull;
-import javax.persistence.GeneratedValue;
-import javax.validation.constraints.NotEmpty;
 
+import org.citopt.connde.domain.access_control.jquerybuilder.JQBRule;
+import org.citopt.connde.domain.user.User;
 import org.citopt.connde.service.access_control.ACSimpleConditionEvaluator;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * A simple condition that can be used to compare two arguments.
  * 
- * @param <T> the data type of the condition arguments
+ * @param <T> the data type of the condition arguments.
  * @author Jakob Benz
  */
 @Document
 @ACEvaluate(using = ACSimpleConditionEvaluator.class)
-public class ACSimpleCondition<T extends Comparable<T>> implements IACCondition {
-	
-	/**
-	 * The id of this condition.
-	 */
-	@Id
-    @GeneratedValue
-	private String id;
-	
-	/**
-	 * The name of this condition;
-	 */
-	@NotEmpty
-	private String name;
+public class ACSimpleCondition<T extends Comparable<T>> extends ACAbstractCondition {
 	
 	/**
 	 * The {@link ACArgumentFunction function}.
@@ -54,18 +40,22 @@ public class ACSimpleCondition<T extends Comparable<T>> implements IACCondition 
 	/**
 	 * No-args constructor.
 	 */
-	public ACSimpleCondition() {}
+	public ACSimpleCondition() {
+		super();
+	}
 	
 	/**
 	 * All-args constructor.
 	 * 
 	 * @param name the name of this condition.
+	 * @param description the description of this condition.
 	 * @param function the {@link ACArgumentFunction function}.
 	 * @param left the first (left) {@link IACConditionArgument argument}.
 	 * @param right the second (right) {@link IACConditionArgument argument}.
+	 * @param owner the {@link User} that owns this condition.
 	 */
-	public ACSimpleCondition(String name, ACArgumentFunction function, IACConditionArgument left, IACConditionArgument right) {
-		this.name = name;
+	public ACSimpleCondition(String name, String description, ACArgumentFunction function, IACConditionArgument left, IACConditionArgument right, User owner) {
+		super(name, description, owner);
 		this.function = function;
 		this.left = left;
 		this.right = right;
@@ -73,21 +63,6 @@ public class ACSimpleCondition<T extends Comparable<T>> implements IACCondition 
 	
 	// - - -
 	
-	@Override
-	public String getId() {
-		return id;
-	}
-	
-	@Override
-	public String getName() {
-		return name;
-	}
-	
-	public ACSimpleCondition<T> setName(String name) {
-		this.name = name;
-		return this;
-	}
-
 	public ACArgumentFunction getFunction() {
 		return function;
 	}
@@ -124,12 +99,27 @@ public class ACSimpleCondition<T extends Comparable<T>> implements IACCondition 
 	 * @param the name of the condition.
 	 * @param function the {@link ACArgumentFunction}.
 	 * @param entityType the {@link ACEntityType} of the entity the attribute refers to.
-	 * @param key the key of the attribute.
+	 * @param key the ACAttributeKey of the attribute.
 	 * @param right the second (right) argument.
 	 * @return the created {@link ACSimpleCondition}.
+	 * @param the {@link User} that owns this condition.
 	 */
-	public static <T extends Comparable<T>> ACSimpleCondition<T> create(String name, ACArgumentFunction function, ACEntityType entityType, String key, T right) {
-		return new ACSimpleCondition<T>(name, function, new ACConditionSimpleAttributeArgument<>(entityType, key), new ACConditionSimpleValueArgument<>(right));
+	public static <T extends Comparable<T>> ACSimpleCondition<T> create(String name, String description, ACArgumentFunction function, ACEntityType entityType, ACAttributeKey key, T right, User owner) {
+		return new ACSimpleCondition<T>(name, description, function, new ACConditionSimpleAttributeArgument<>(entityType, key), new ACConditionSimpleValueArgument<>(right), owner);
+	}
+	
+	/**
+	 * Builds a simple condition based on a single rule from the jQuery QueryBuilder.
+	 * 
+	 * @param <T> the data type of the condition arguments.
+	 * @param rule the {@link JQBRule}.
+	 * @return the {@link ACSimpleCondition}.
+	 */
+	public static <T extends Comparable<T>> ACSimpleCondition<T> forJQBRule(JQBRule rule) {
+		return new ACSimpleCondition<T>()
+				.setFunction(ACArgumentFunction.basedOn(rule.getOperator()))
+				.setLeft(ACConditionSimpleAttributeArgument.basedOn(rule))
+				.setRight(ACConditionSimpleValueArgument.basedOn(rule));
 	}
 	
 }

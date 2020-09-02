@@ -1,8 +1,5 @@
 package org.citopt.connde.service.access_control;
 
-import java.util.Comparator;
-import java.util.List;
-
 import org.citopt.connde.domain.access_control.ACAccess;
 import org.citopt.connde.domain.access_control.ACAccessDecision;
 import org.citopt.connde.domain.access_control.ACAccessDecisionResult;
@@ -32,12 +29,8 @@ public class AccessControlService {
 			return new ACAccessDecision(ACAccessDecisionResult.GRANTED);
 		}
 
-		// Get access control policies and sort them by their respective priority
-		List<ACPolicy> policies = access.getRequestedEntity().getAccessControlPolicies();
-		policies.sort(Comparator.comparing(ACPolicy::getPriority));
-		
 		// Check whether there is an applicable policy that grants access
-		for (ACPolicy policy : policies) {
+		for (ACPolicy policy : access.getRequestedEntity().getAccessControlPolicies()) {
 			try {
 				if (policy.getCondition().evaluate(access, request)) {
 					return new ACAccessDecision(ACAccessDecisionResult.GRANTED);

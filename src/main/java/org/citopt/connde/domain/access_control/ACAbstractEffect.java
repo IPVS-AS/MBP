@@ -3,7 +3,7 @@ package org.citopt.connde.domain.access_control;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.validation.constraints.NotEmpty;
+import org.citopt.connde.domain.user.User;
 
 /**
  * Abstract base class for access-control effects, that, e.g., filter or modify
@@ -11,19 +11,16 @@ import javax.validation.constraints.NotEmpty;
  * 
  * @author Jakob Benz
  */
-public abstract class ACAbstractEffect<T> {
-	
-	/**
-	 * The name of this effect.
-	 */
-	@NotEmpty
-	private String name; // implicitly final due to omitted setter
+public abstract class ACAbstractEffect extends ACAbstractEntity {
 	
 	/**
 	 * The list of parameters this effect requires to be applied.
 	 */
 	private Map<String, String> parameters = new HashMap<>();
 	
+	/**
+	 * The {@link ACEffectType} of this effect.
+	 */
 	private ACEffectType type = getClass().getAnnotation(ACEffect.class).type();
 	
 	// - - -
@@ -37,28 +34,21 @@ public abstract class ACAbstractEffect<T> {
 	 * All-args constructor.
 	 * 
 	 * @param name the name of this effect.
+	 * @param description the description of this effect.
+	 * @param parameters the list of parameters this required to be applied.
+	 * @param owner the {@link User} that owns this effect.
 	 */
-	public ACAbstractEffect(String name, Map<String, String> parameters) {
-		this.name = name;
-		this.parameters = parameters;
+	public ACAbstractEffect(String name, String description, Map<String, String> parameters, User owner) {
+		super(name, description, owner);
 	}
 	
 	// - - -
-	
-	public String getName() {
-		return name;
-	}
-	
-	public ACAbstractEffect<T> setName(String name) {
-		this.name = name;
-		return this;
-	}
 	
 	public Map<String, String> getParameters() {
 		return parameters;
 	}
 	
-	public ACAbstractEffect<T> setParameters(Map<String, String> parameters) {
+	public ACAbstractEffect setParameters(Map<String, String> parameters) {
 		this.parameters = parameters;
 		return this;
 	}
@@ -69,27 +59,26 @@ public abstract class ACAbstractEffect<T> {
 	
 	// - - -
 
-	/**
-	 * TODO: Method comment.
-	 * 
-	 * @param inputValue
-	 * @return
-	 */
-	public abstract T applyToValue(T inputValue);
-
-	/**
-	 * TODO: Method comment.
-	 * 
-	 * @param inputValueLog
-	 * @return
-	 */
-	public abstract T applyToValueLog(IACValueLog<T> inputValueLog);
+//	/**
+//	 * TODO: Method comment.
+//	 * 
+//	 * @param inputValue
+//	 * @return
+//	 */
+//	public abstract T applyToValue(T inputValue);
+//
+//	/**
+//	 * TODO: Method comment.
+//	 * 
+//	 * @param inputValueLog
+//	 * @return
+//	 */
+//	public abstract T applyToValueLog(IACValueLog<T> inputValueLog);
 	
-	public static void main(String[] args) {
-		ACDoubleAccuracyEffect e = new ACDoubleAccuracyEffect();
-		System.out.println(e.getType().getName());
-		System.out.println(e.getType().getDescription());
-		System.out.println(e.getType().getClazz());
+	// - - -
+	
+	public static ACAbstractEffect forType(ACEffectType type) throws InstantiationException, IllegalAccessException {
+		return type.getClazz().newInstance();
 	}
 	
 }

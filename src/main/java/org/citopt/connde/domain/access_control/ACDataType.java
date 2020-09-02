@@ -3,8 +3,6 @@ package org.citopt.connde.domain.access_control;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Enumeration for all data types supported within the access-control framework,
@@ -17,47 +15,47 @@ public enum ACDataType {
 	/**
 	 * Only numbers. 
 	 */
-	NUNERIC(Long.class, ACArgumentFunction.ALL),
+	NUNERIC(Long.class),
 	
 	/**
 	 * Only decimal numbers. 
 	 */
-	DECIMAL(Double.class, ACArgumentFunction.ALL),
+	DECIMAL(Double.class),
 	
 	/**
 	 * Only letters.
 	 */
-	ALPHABETIC(String.class, Arrays.asList(ACArgumentFunction.EQUALS, ACArgumentFunction.NOT_EQUALS)),
+	ALPHABETIC(String.class),
 	
 	/**
 	 * Only letters and/or numbers.
 	 */
-	ALPHANUMERIC(String.class, Arrays.asList(ACArgumentFunction.EQUALS, ACArgumentFunction.NOT_EQUALS)),
+	ALPHANUMERIC(String.class),
 	
 	/**
 	 * Only ASCII symbols.
 	 */
-	ASCII(String.class, Arrays.asList(ACArgumentFunction.EQUALS, ACArgumentFunction.NOT_EQUALS)),
+	ASCII(String.class),
 	
 	/**
 	 * ISO local date. Pattern: yyyy-MM-dd.
 	 */
-	DATE(LocalDate.class, ACArgumentFunction.ALL),
+	DATE(LocalDate.class),
 	
 	/**
 	 * ISO local time. Pattern: HH:mm:ss.
 	 */
-	TIME(LocalTime.class, ACArgumentFunction.ALL),
+	TIME(LocalTime.class),
 	
 	/**
 	 * ISO local date-time. Pattern: yyyy-MM-ddTHH:mm:ss.
 	 */
-	DATETIME(LocalDateTime.class, ACArgumentFunction.ALL),
+	DATETIME(LocalDateTime.class),
 	
 	/**
 	 * Location identified by a latitude and a longitude value. 
 	 */
-	LOCATION(Location.class, Arrays.asList(ACArgumentFunction.EQUALS, ACArgumentFunction.NOT_EQUALS));
+	LOCATION(Location.class);
 	
 	// - - -
 	
@@ -66,22 +64,15 @@ public enum ACDataType {
 	 */
 	private Class<?> clazz;
 	
-	/**
-	 * The list of applicable {@link ACArgumentFunction functions}.
-	 */
-	private List<ACArgumentFunction> applicableArgumentFunctions;
-	
 	// - - -
 	
 	/**
 	 * All-args constructor.
 	 * 
 	 * @param clazz the class to use, e.g., for deserializing and comparing. 
-	 * @param applicableArgumentFunctions the list of applicable
-	 * 		  {@link ACArgumentFunction functions}.
 	 */
-	private ACDataType(Class<?> clazz, List<ACArgumentFunction> applicableArgumentFunctions) {
-		this.applicableArgumentFunctions = applicableArgumentFunctions;
+	private ACDataType(Class<?> clazz) {
+		this.clazz = clazz;
 	}
 	
 	// - - -
@@ -90,8 +81,4 @@ public enum ACDataType {
 		return clazz;
 	}
 	
-	public List<ACArgumentFunction> getApplicableArgumentFunctions() {
-		return applicableArgumentFunctions;
-	}
-
 }

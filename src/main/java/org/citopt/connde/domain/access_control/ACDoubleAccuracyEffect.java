@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.citopt.connde.domain.user.User;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -14,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @ACEffect(type = ACEffectType.DOUBLE_ACCURACY_EFFECT)
 @Document
-public class ACDoubleAccuracyEffect extends ACAbstractEffect<Double> {
+public class ACDoubleAccuracyEffect extends ACAbstractEffect {
 	
 	public static final String PARAM_KEY_ACCURACY = "accuracy";
 	public static final String PARAM_KEY_PRECISION = "precision";
@@ -49,21 +50,20 @@ public class ACDoubleAccuracyEffect extends ACAbstractEffect<Double> {
 	 * All-args constructor.
 	 * 
 	 * @param name the name of this effect.
+	 * @param description the description of this effect.
+	 * @param parameters the list of parameters this required to be applied.
+	 * @param owner the {@link User} that owns this effect.
 	 */
-	public ACDoubleAccuracyEffect(String name, Map<String, String> parameters) {
-		super(name, parameters);
+	public ACDoubleAccuracyEffect(String name, String description, Map<String, String> parameters, User owner) {
+		super(name, description, parameters, owner);
 	}
 	
 	// - - -
 	
-
-	
-	@Override
 	public Double applyToValue(Double inputValue) {
 		return apply(inputValue);
 	}
 
-	@Override
 	public Double applyToValueLog(IACValueLog<Double> inputValueLog) {
 		return apply(inputValueLog.getValue());
 	}

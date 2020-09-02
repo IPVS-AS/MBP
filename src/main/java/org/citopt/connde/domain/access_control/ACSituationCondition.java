@@ -1,30 +1,14 @@
 package org.citopt.connde.domain.access_control;
 
-import javax.persistence.GeneratedValue;
-import javax.validation.constraints.NotEmpty;
-
+import org.citopt.connde.domain.user.User;
 import org.citopt.connde.service.cep.engine.core.queries.CEPQuery;
-import org.springframework.data.annotation.Id;
 
 /**
  * A simple condition that can be used to compare two arguments.
  * 
  * @author Jakob Benz
  */
-public class ACSituationCondition implements IACCondition {
-	
-	/**
-	 * The id of this policy.
-	 */
-	@Id
-    @GeneratedValue
-	private String id;
-	
-	/**
-	 * The name of this condition.
-	 */
-	@NotEmpty
-	private String name;
+public class ACSituationCondition extends ACAbstractCondition {
 	
 	/**
 	 * The {@link CEPQuery query} used to evaluate this condition.
@@ -41,30 +25,17 @@ public class ACSituationCondition implements IACCondition {
 	/**
 	 * All-args constructor.
 	 * 
-	 * @param the name of this condition.
+	 * @param name the name of this condition.
+	 * @param description the description of this condition.
 	 * @param query the {@link CEPQuery query} used to evaluate this condition.
+	 * @param the {@link User} that owns this condition.
 	 */
-	public ACSituationCondition(String name, CEPQuery query) {
-		this.name = name;
+	public ACSituationCondition(String name, String description, CEPQuery query, User owner) {
+		super(name, description, owner);
 		this.query = query;
 	}
 	
 	// - - -
-	
-	@Override
-	public String getId() {
-		return id;
-	}
-	
-	@Override
-	public String getName() {
-		return name;
-	}
-	
-	public ACSituationCondition setName(String name) {
-		this.name = name;
-		return this;
-	}
 
 	public CEPQuery getQuery() {
 		return query;

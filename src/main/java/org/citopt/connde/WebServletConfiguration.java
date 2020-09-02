@@ -36,7 +36,7 @@ import org.thymeleaf.templateresolver.ITemplateResolver;
 })
 @EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
 public class WebServletConfiguration
-//        extends WebMvcConfigurerAdapter
+//        extends WebMvcConfigurerAdapter {
         implements WebMvcConfigurer {
 
 	@Autowired
@@ -61,6 +61,8 @@ public class WebServletConfiguration
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         System.out.println("load addResourceHandlers");
+        registry.addResourceHandler("swagger-ui.html")
+        	.addResourceLocations("classpath:/META-INF/resources/");
         if (!registry.hasMappingForPattern("/webjars/**")) {
             registry.addResourceHandler("/webjars/**").addResourceLocations(
                     "classpath:/META-INF/resources/webjars/");

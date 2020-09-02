@@ -55,7 +55,7 @@ public abstract class UserEntity implements IACRequestedEntity {
     private EnvironmentModel environmentModel = null;
 
     // Owner of the entity
-    @ACAttributeValue(valueLookupPath = "id")
+    @ACAttributeValue
     @JsonIgnore
     @DBRef
     private User owner = null;

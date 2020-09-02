@@ -41,6 +41,6 @@ public @interface ACAttributeValue {
 	 * If {@link #key()} is also specified, this path will be used preferable
 	 * and the path in the {@link ACAttributeKey} will be ignored.
 	 */
-	public String valueLookupPath() default "";
+//	public String valueLookupPath() default "";
 
 }

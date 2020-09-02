@@ -22,23 +22,23 @@ public enum ACLogicalOperator {
 	/**
 	 * Logical OR, at least one the arguments has to be {@code true}.
 	 */
-	OR(Integer.MAX_VALUE, l -> l.stream().collect(Collectors.joining(" OR "))),
+	OR(Integer.MAX_VALUE, l -> l.stream().collect(Collectors.joining(" OR ")));
 	
-	/**
-	 * Logical NAND, at least one the arguments has to be {@code false}.
-	 */
-	NAND(Integer.MAX_VALUE, l -> "NOT (" + l.stream().collect(Collectors.joining(" AND ")) + ")"),
-	
-	/**
-	 * Logical NOR, both arguments have to be {@code false}. 
-	 */
-	NOR(Integer.MAX_VALUE, l -> "NOT (" + l.stream().collect(Collectors.joining(" OR ")) + ")"),
-	
-	/**
-	 * Logical XOR, the arguments have to be different, i.e. one has
-	 * to be {@code true}, the other has to {@code false}.
-	 */
-	XOR(2, l -> l.get(0) + " != " + l.get(1));
+//	/**
+//	 * Logical NAND, at least one the arguments has to be {@code false}.
+//	 */
+//	NAND(Integer.MAX_VALUE, l -> "NOT (" + l.stream().collect(Collectors.joining(" AND ")) + ")"),
+//	
+//	/**
+//	 * Logical NOR, both arguments have to be {@code false}. 
+//	 */
+//	NOR(Integer.MAX_VALUE, l -> "NOT (" + l.stream().collect(Collectors.joining(" OR ")) + ")"),
+//	
+//	/**
+//	 * Logical XOR, the arguments have to be different, i.e. one has
+//	 * to be {@code true}, the other has to {@code false}.
+//	 */
+//	XOR(2, l -> l.get(0) + " != " + l.get(1));
 	
 	// - - -
 	

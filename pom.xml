@@ -7,11 +7,18 @@
 	<version>0.1</version>
 	<packaging>war</packaging>
 
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.2.9.RELEASE</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+
 	<properties>
 		<endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<spring.version>5.2.8.RELEASE</spring.version>
-		<springboot.version>2.3.2.RELEASE</springboot.version>
+		<springboot.version>2.3.3.RELEASE</springboot.version>
 		<thymeleaf.version>3.0.11.RELEASE</thymeleaf.version>
 	</properties>
 
@@ -31,34 +38,34 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
-			<version>${spring.version}</version>
+<!-- 			<version>${spring.version}</version> -->
 			<type>jar</type>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-webmvc</artifactId>
-			<version>${spring.version}</version>
+<!-- 			<version>${spring.version}</version> -->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
-			<version>1.4.0.RELEASE</version>
+<!-- 			<version>1.4.0.RELEASE</version> -->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
-			<version>${springboot.version}</version>
+<!-- 			<version>${springboot.version}</version> -->
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-rest-core</artifactId>
-			<version>3.3.2.RELEASE</version>
-			<type>jar</type>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.springframework.data</groupId> -->
+<!-- 			<artifactId>spring-data-rest-core</artifactId> -->
+<!-- 			<version>3.3.2.RELEASE</version> -->
+<!-- 			<type>jar</type> -->
+<!-- 		</dependency> -->
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-rest-webmvc</artifactId>
-			<version>3.3.2.RELEASE</version>
+<!-- 			<version>3.2.9.RELEASE</version> -->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.session</groupId>
@@ -78,7 +85,7 @@
 		<dependency>
 			<groupId>org.springframework.hateoas</groupId>
 			<artifactId>spring-hateoas</artifactId>
-			<version>1.1.0.RELEASE</version>
+<!-- 			<version>1.0.2.RELEASE</version> -->
 		</dependency>
 		<!-- <dependency> -->
 		<!-- <groupId>org.springframework.boot</groupId> -->
@@ -88,14 +95,14 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-autoconfigure</artifactId>
-			<version>${springboot.version}</version>
+<!-- 			<version>${springboot.version}</version> -->
 		</dependency>
 
 		<!-- Servlet API -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
+<!-- 			<version>3.1.0</version> -->
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet.jsp</groupId>
@@ -107,26 +114,20 @@
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongo-java-driver</artifactId>
-			<version>3.12.7</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.mongodb</groupId> <!-- Exclude Project-E from Project-B -->
-					<artifactId>bson</artifactId>
-				</exclusion>
-			</exclusions>
+<!-- 			<version>3.12.7</version> -->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-mongodb</artifactId>
-			<version>2.2.9.RELEASE</version>
-			<!-- <version>3.0.2.RELEASE</version> -->
+<!-- 			<version>2.2.9.RELEASE</version> -->
+<!-- 			<version>3.0.2.RELEASE</version> -->
 		</dependency>
 
 		<!-- InfluxDB -->
 		<dependency>
 			<groupId>org.influxdb</groupId>
 			<artifactId>influxdb-java</artifactId>
-			<version>2.19</version>
+<!-- 			<version>2.19</version> -->
 		</dependency>
 
 		<!-- MQTT -->
@@ -147,17 +148,17 @@
 		<dependency>
 			<groupId>org.thymeleaf</groupId>
 			<artifactId>thymeleaf</artifactId>
-			<version>${thymeleaf.version}</version>
+<!-- 			<version>${thymeleaf.version}</version> -->
 		</dependency>
 		<dependency>
 			<groupId>org.thymeleaf</groupId>
 			<artifactId>thymeleaf-spring5</artifactId>
-			<version>${thymeleaf.version}</version>
+<!-- 			<version>${thymeleaf.version}</version> -->
 		</dependency>
 		<dependency>
 			<groupId>nz.net.ultraq.thymeleaf</groupId>
 			<artifactId>thymeleaf-layout-dialect</artifactId>
-			<version>2.4.1</version>
+<!-- 			<version>2.4.1</version> -->
 		</dependency>
 
 		<!-- JScience -->
@@ -171,7 +172,7 @@
 		<dependency>
 			<groupId>javax.xml.bind</groupId>
 			<artifactId>jaxb-api</artifactId>
-			<version>2.3.0</version>
+<!-- 			<version>2.3.0</version> -->
 		</dependency>
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
@@ -241,17 +242,17 @@
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-data-rest</artifactId>
-			<version>3.0.0</version>
+			<version>2.10.5</version>
 		</dependency>
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger-ui</artifactId>
-			<version>3.0.0</version>
+			<version>2.10.5</version>
 		</dependency>
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
-			<version>3.0.0</version>
+			<version>2.10.5</version>
 		</dependency>
 		<dependency>
 			<groupId>io.github.swagger2markup</groupId>

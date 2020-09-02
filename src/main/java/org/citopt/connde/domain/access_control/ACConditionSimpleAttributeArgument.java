@@ -1,5 +1,7 @@
 package org.citopt.connde.domain.access_control;
 
+import org.citopt.connde.domain.access_control.jquerybuilder.JQBRule;
+
 /**
  * A simple attribute argument intended to use with {@link ACSimpleCondition}.
  * The value of the argument will be computed by retrieving the {@link ACAttribute}.
@@ -16,9 +18,9 @@ public class ACConditionSimpleAttributeArgument<T extends Comparable<T>> impleme
 	private ACEntityType entityType;
 	
 	/**
-	 * The key of the attribute thiss attribute argument refers to.
+	 * The {@link ACAttributeKey} of the attribute this attribute argument refers to.
 	 */
-	private String key;
+	private ACAttributeKey key;
 	
 	// - - -
 
@@ -30,10 +32,20 @@ public class ACConditionSimpleAttributeArgument<T extends Comparable<T>> impleme
 	/**
 	 * All-args constructor.
 	 * 
-	 * @param entityType the {@link ACEntityType} of the entity this attribute argument refers to.
-	 * @param key the key of the attribute this attribute argument refers to.
+	 * @param key the {@link ACAttributeKey} of the attribute this attribute argument refers to.
 	 */
-	public ACConditionSimpleAttributeArgument(ACEntityType entityType, String key) {
+	public ACConditionSimpleAttributeArgument(ACAttributeKey key) {
+		this.entityType = key.getEntityType();
+		this.key = key;
+	}
+	
+	/**
+	 * All-args constructor.
+	 * 
+	 * @param entityType the {@link ACEntityType} of the entity this attribute argument refers to.
+	 * @param key the {@link ACAttributeKey} of the attribute this attribute argument refers to.
+	 */
+	public ACConditionSimpleAttributeArgument(ACEntityType entityType, ACAttributeKey key) {
 		this.entityType = entityType;
 		this.key = key;
 	}
@@ -51,13 +63,19 @@ public class ACConditionSimpleAttributeArgument<T extends Comparable<T>> impleme
 	}
 	
 	@Override
-	public String getKey() {
+	public ACAttributeKey getKey() {
 		return key;
 	}
 	
-	public ACConditionSimpleAttributeArgument<T> setKey(String key) {
+	public ACConditionSimpleAttributeArgument<T> setKey(ACAttributeKey key) {
 		this.key = key;
 		return this;
+	}
+	
+	// - - -
+	
+	public static <T extends Comparable<T>> ACConditionSimpleAttributeArgument<T> basedOn(JQBRule rule) {
+		return new ACConditionSimpleAttributeArgument<>(ACAttributeKey.forId(rule.getId()));
 	}
 	
 }
