@@ -1,4 +1,4 @@
-# Multi-purpose Binding and Provisioning Platform (MBP)
+<img src="https://user-images.githubusercontent.com/44437898/91723420-03d5f300-eb9c-11ea-9867-b2cc1d188929.png" width="850" >
 
 This project contains the **Multi-purpose Binding and Provisioning Platform (MBP)**, an IoT platform developed for easy binding, provisioning, and management of IoT environments. 
 Furthermore, the MBP enables the simple realization of IoT applications, such as heating, ventilation, air conditioning (HVAC) systems, by allowing users to create rules for the IoT environment, in a straightforward and event-condition-action fashion. 
