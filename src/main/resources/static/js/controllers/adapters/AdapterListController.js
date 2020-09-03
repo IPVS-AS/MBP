@@ -19,7 +19,7 @@ app.controller('AdapterListController',
             vm.dzRoutinesOptions = {
                 paramName: 'routinesFile',
                 addRemoveLinks: true,
-                previewTemplate:document.querySelector('#tpl').innerHTML,
+                previewTemplate: document.querySelector('#tpl').innerHTML,
                 createImageThumbnails: false,
                 maxFilesize: '100',
                 maxFiles: 99
@@ -32,8 +32,8 @@ app.controller('AdapterListController',
                     }
                     vm.addAdapterCtrl.item.routineFiles.push(file);
                 },
-                'removedfile': function(file){
-                  vm.addAdapterCtrl.item.routineFiles.splice(vm.addAdapterCtrl.item.routineFiles.indexOf(file),1);
+                'removedfile': function (file) {
+                    vm.addAdapterCtrl.item.routineFiles.splice(vm.addAdapterCtrl.item.routineFiles.indexOf(file), 1);
                 },
 
             };
@@ -86,15 +86,21 @@ app.controller('AdapterListController',
                 vm.parameters.splice(index, 1);
             }
 
-            //private
-            function readRoutines(routines) {
-                if ((routines !== undefined) && (routines.constructor === Array)) {
-                    //Read routines files
-                    return FileReader.readMultipleAsDataURL(routines, $scope);
-                } else {
-                    //Return empty promise (no routine files)
+            /**
+             * Reads given files from the user's disk and returns a promise
+             * containing the combined promises for all asynchronous 
+             * file read operations.
+             *
+             * @param files The files to read
+             * @returns {*} The combined result promises
+             */
+            function readFiles(files) {
+                //Sanity check
+                if ((files === undefined) || files.constructor !== Array) {
                     return $q.all([]);
                 }
+
+                return FileReader.readMultipleAsDataURL(files, $scope);
             }
 
             /**
@@ -164,8 +170,8 @@ app.controller('AdapterListController',
                     {
                         $scope: $scope,
                         addItem: function (data) {
-                            //Extend request parameters for routines and parameters
-                            return readRoutines(data.routineFiles)
+                            //Extend request parameters for routines, their hashes and parameters
+                            return readFiles(data.routineFiles)
                                 .then(function (response) {
                                     data.unit = data.unit || "";
                                     data.routines = response;

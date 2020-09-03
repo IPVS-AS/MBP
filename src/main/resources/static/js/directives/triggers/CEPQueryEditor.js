@@ -1181,10 +1181,10 @@ app.directive('cepQueryEditor', [function () {
                     }
 
                     //Apply styling
-                    $('button[data-add="rule"]').html('<i class="material-icons">add</i> Add condition');
-                    $('button[data-add="group"]').html('<i class="material-icons">add_circle_outline</i> Add group');
+                    $('button[data-add="rule"]').html('<i class="material-icons">add</i> Condition');
+                    $('button[data-add="group"]').html('<i class="material-icons">add_circle_outline</i> Group');
                     $('button[data-delete="rule"]').html('<i class="material-icons">delete</i>');
-                    $('button[data-delete="group"]').html('<i class="material-icons">delete_forever</i> Delete group');
+                    $('button[data-delete="group"]').html('<i class="material-icons">delete_forever</i> Group');
 
                     let ruleElement = rule.$el;
                     let filterContainer = $(ruleElement.find('div.rule-filter-container'));
