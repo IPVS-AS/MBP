@@ -10,6 +10,7 @@ app.controller('ComponentDetailsController',
             const DEPLOYMENT_CARD_SELECTOR = ".deployment-card";
             const STATS_CARD_SELECTOR = ".stats-card";
 
+
             //Important properties of the currently considered component
             const COMPONENT_ID = $routeParams.id;
             const COMPONENT_TYPE = componentDetails.componentTypeName;
