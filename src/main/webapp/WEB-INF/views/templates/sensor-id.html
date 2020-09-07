@@ -7,11 +7,11 @@
                 <i class="material-icons" style="position: absolute; margin-top: 4px">settings_remote</i>
                 <h2 style="margin-left: 35px;">
                     {{componentDetailsCtrl.component.name}}
-                    <small>{{componentDetailsCtrl.deploymentState=='NOT_READY' ? 'Deployment impossible' :
-                        (componentDetailsCtrl.deploymentState=='READY' ? 'Ready for deployment':
-                        (componentDetailsCtrl.deploymentState=='DEPLOYED' ? 'Deployed' :
-                        (componentDetailsCtrl.deploymentState=='RUNNING' ? 'Running' :
-                        (componentDetailsCtrl.deploymentState=='UNKNOWN' ? 'Unknown state' : 'Loading...'))))}}
+                    <small>{{componentDetailsCtrl.deploymentState == 'NOT_READY' ? 'Deployment impossible' :
+                            (componentDetailsCtrl.deploymentState == 'READY' ? 'Ready for deployment' :
+                                    (componentDetailsCtrl.deploymentState == 'DEPLOYED' ? 'Deployed' :
+                                            (componentDetailsCtrl.deploymentState == 'RUNNING' ? 'Running' :
+                                                    (componentDetailsCtrl.deploymentState == 'UNKNOWN' ? 'Unknown state' : 'Loading...'))))}}
                     </small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
@@ -42,7 +42,7 @@
                     <tr>
                         <th>Unit:</th>
                         <td>{{componentDetailsCtrl.component._embedded.adapter.unit ?
-                            componentDetailsCtrl.component._embedded.adapter.unit : 'None'}}
+                                componentDetailsCtrl.component._embedded.adapter.unit : 'None'}}
                         </td>
                     </tr>
                     <tr>
@@ -196,11 +196,10 @@
                                  unit="{{componentDetailsCtrl.displayUnit}}">
                 </value-log-stats>
                 <div style="height: 20px"></div>
-                <!--
                 <h4>Delete data</h4>
                 <button class="btn btn-danger waves-effect" ng-click="componentDetailsCtrl.deleteValueLogs()">
                     Delete all sensor data
-                </button>-->
+                </button>
             </div>
         </div>
     </div>
