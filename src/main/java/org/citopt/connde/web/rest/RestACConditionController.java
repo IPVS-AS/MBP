@@ -48,7 +48,7 @@ import io.swagger.annotations.ApiResponses;
  * @author Jakob Benz
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/policy-condition")
+@RequestMapping(RestConfiguration.BASE_PATH + "/policy-conditions")
 @Api(tags = {"Access-Control Policy Conditions"})
 public class RestACConditionController {
 	
@@ -79,7 +79,6 @@ public class RestACConditionController {
     	// Create self link
     	Link link = linkTo(methodOn(getClass()).all(pageable)).withSelfRel();
     	return ResponseEntity.ok(new PagedModel<>(conditionEntityModels, Pages.metaDataOf(pageable, conditionEntityModels.size()), C.listOf(link)));
-//    	return ResponseEntity.ok(PagedModel.of(conditionEntityModels, Pages.metaDataOf(pageable, conditionEntityModels.size()), C.listOf(link)));
     }
     
     @GetMapping(path = "/{conditionId}", produces = "application/hal+json")
@@ -151,13 +150,46 @@ public class RestACConditionController {
     		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     	}
     	
+    	// Actually delete condition in the database
+    	conditionRepository.deleteById(conditionId);
+    	
     	return ResponseEntity.noContent().build();
     }
     
     private EntityModel<ACAbstractCondition> conditionToEntityModel(ACAbstractCondition condition) {
     	return new EntityModel<>(condition, linkTo(getClass()).slash(condition.getId()).withSelfRel());
-//    	return EntityModel.of(condition).add(linkTo(getClass()).slash(condition.getId()).withSelfRel());
     }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
 	// ------------------------------------------------------------------------------------------------------------------------------------------
 	

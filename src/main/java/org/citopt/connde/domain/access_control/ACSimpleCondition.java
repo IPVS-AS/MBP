@@ -6,6 +6,7 @@ import org.citopt.connde.domain.access_control.jquerybuilder.JQBRule;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.service.access_control.ACSimpleConditionEvaluator;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.hateoas.server.core.Relation;
 
 /**
  * A simple condition that can be used to compare two arguments.
@@ -15,6 +16,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document
 @ACEvaluate(using = ACSimpleConditionEvaluator.class)
+@Relation(collectionRelation = "policy-conditions", itemRelation = "policy-conditions")
 public class ACSimpleCondition<T extends Comparable<T>> extends ACAbstractCondition {
 	
 	/**

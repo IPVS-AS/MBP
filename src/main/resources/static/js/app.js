@@ -102,7 +102,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         );
                     }],
                     countPolicies: ['CrudService', function (CrudService) {
-                        return CrudService.countItems('policy').then(
+                        return CrudService.countItems('policies').then(
                             function (count) {
                                 return count;
                             },
@@ -484,61 +484,61 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
             })
 
             // Policy list
-            .when(viewPrefix + '/policy', {
-                category: 'policy',
+            .when(viewPrefix + '/policies', {
+                category: 'policies',
                 templateUrl: 'templates/policies',
                 controller: 'PolicyListController as ctrl',
                 resolve: {
                     policyList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('policy');
+                        return CrudService.fetchAllItems('policies');
                     }],
                     addPolicy: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.addItem, 'policy');
+                        return angular.bind(this, CrudService.addItem, 'policies');
                     }],
                     deletePolicy: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.deleteItem, 'policy');
+                        return angular.bind(this, CrudService.deleteItem, 'policies');
                     }],
                     policyConditionList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('policy-condition');
+                        return CrudService.fetchAllItems('policy-conditions');
                     }],
                     policyEffectList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('policy-effect');
+                        return CrudService.fetchAllItems('policy-effects');
                     }]
                 }
             })
 
             // Policy conditions list
-            .when(viewPrefix + '/policy/condition', {
-                category: 'policy-condition',
+            .when(viewPrefix + '/policy-conditions', {
+                category: 'policy-conditions',
                 templateUrl: 'templates/policy-conditions',
                 controller: 'PolicyConditionListController as ctrl',
                 resolve: {
                     policyConditionList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('policy-condition');
+                        return CrudService.fetchAllItems('policy-conditions');
                     }],
                     addPolicyCondition: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.addItem, 'policy-condition');
+                        return angular.bind(this, CrudService.addItem, 'policy-conditions');
                     }],
                     deletePolicyCondition: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.deleteItem, 'policy-condition');
+                        return angular.bind(this, CrudService.deleteItem, 'policy-conditions');
                     }]
                 }
             })
 
             // Policy effects list
-            .when(viewPrefix + '/policy/effect', {
-                category: 'policy-effect',
+            .when(viewPrefix + '/policy-effects', {
+                category: 'policy-effects',
                 templateUrl: 'templates/policy-effects',
                 controller: 'PolicyEffectListController as ctrl',
                 resolve: {
                     policyEffectList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('policy-effect');
+                        return CrudService.fetchAllItems('policy-effects');
                     }],
                     addPolicyEffect: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.addItem, 'policy-effect');
+                        return angular.bind(this, CrudService.addItem, 'policy-effects');
                     }],
                     deletePolicyEffect: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.deleteItem, 'policy-effect');
+                        return angular.bind(this, CrudService.deleteItem, 'policy-effects');
                     }]
                 }
             })

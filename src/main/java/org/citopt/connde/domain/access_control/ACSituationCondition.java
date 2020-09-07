@@ -1,13 +1,19 @@
 package org.citopt.connde.domain.access_control;
 
 import org.citopt.connde.domain.user.User;
+import org.citopt.connde.service.access_control.ACSituationConditionEvaluator;
 import org.citopt.connde.service.cep.engine.core.queries.CEPQuery;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.hateoas.server.core.Relation;
 
 /**
  * A simple condition that can be used to compare two arguments.
  * 
  * @author Jakob Benz
  */
+@Document
+@ACEvaluate(using = ACSituationConditionEvaluator.class)
+@Relation(collectionRelation = "policy-conditions", itemRelation = "policy-conditions")
 public class ACSituationCondition extends ACAbstractCondition {
 	
 	/**

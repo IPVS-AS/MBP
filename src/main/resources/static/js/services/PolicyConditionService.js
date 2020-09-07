@@ -6,7 +6,7 @@
 app.factory('PolicyConditionService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT_URI) {
 
     // URI for the endpoint for policies using this condition
-    const PATH_PATH_POLICY_BY_CONDITION = ENDPOINT_URI + '/policy/byCondition/';
+    const PATH_PATH_POLICY_BY_CONDITION = ENDPOINT_URI + '/policies/byCondition/';
 
     // Performs a server request in order to retrieve a list of all policies using this condition
     function getPoliciesUsingThisCondition(policyConditionId) {

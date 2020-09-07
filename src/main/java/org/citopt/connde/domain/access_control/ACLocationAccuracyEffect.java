@@ -4,14 +4,16 @@ import java.util.Map;
 
 import org.citopt.connde.domain.user.User;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.hateoas.server.core.Relation;
 
 /**
  * This {@link IACModifyingEffect effect} manipulates the accuracy of a {@link Double} value.
  * 
  * @author Jakob Benz
  */
-@ACEffect(type = ACEffectType.LOCATION_ACCURACY_EFFECT)
 @Document
+@ACEffect(type = ACEffectType.LOCATION_ACCURACY_MODIFICATION)
+@Relation(collectionRelation = "policy-effects", itemRelation = "policy-effects")
 public class ACLocationAccuracyEffect extends ACAbstractEffect {
 	
 	public static final String PARAM_KEY_ACCURACY = "accuracy";

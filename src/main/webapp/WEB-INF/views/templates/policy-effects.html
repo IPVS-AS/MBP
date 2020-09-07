@@ -22,16 +22,43 @@
                         <tr>
                             <th>Name</th>
                             <th>Description</th>
-                            <th>Owner</th>
+                            <th>Parameters</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
                             <td>{{item.name}}</td>
-                            <td>{{item.description}}</td>
-                            <td>{{item.owner.username}}</td>
                             <td>
-                                <form ng-submit="deletePolicyCtrl.deleteItem()" style="display: inline-block">
+                                <div ng-if="item.description">
+                                    <a class="clickable" data-toggle="collapse" data-target="#description-{{item.id}}">
+                                        Show Description
+                                    </a>
+                                    <div id="description-{{item.id}}" class="collapse">
+                                        <span>{{item.description}}</span>
+                                    </div>
+                                </div>
+                                <div ng-if="!item.description">
+                                    <span>None</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div ng-if="item.parameters">
+                                    <a class="clickable" data-toggle="collapse" data-target="#parameters-{{item.id}}">
+                                        Show Parameters
+                                    </a>
+                                    <div id="parameters-{{item.id}}" class="collapse">
+                                        <p ng-repeat="(key, value) in item.parameters">{{key}}: {{value}}</p>
+                                    </div>
+                                </div>
+                                <div ng-if="!item.parameters">
+                                    <span>None</span>
+                                </div>
+                            </td>
+                            <!-- <td>
+                                <p ng-repeat="(key, value) in item.parameters">{{key}}: {{value}}</p>
+                            </td> -->
+                            <td>
+                                <form ng-submit="deletePolicyEffectCtrl.deleteItem()" style="display: inline-block">
                                     <button type="submit" class="btn btn-danger m-t-0 waves-effect"
                                         ng-click="deletePolicyEffectCtrl.item.id = item.id"> Delete
                                     </button>
@@ -40,8 +67,6 @@
                         </tr>
                         <tr ng-show="policyEffectListCtrl.items.length === 0">
                             <td>No policy effects registered.</td>
-                            <td></td>
-                            <td></td>
                             <td></td>
                             <td></td>
                             <td></td>

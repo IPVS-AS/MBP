@@ -7,14 +7,16 @@ import java.util.stream.IntStream;
 
 import org.citopt.connde.domain.user.User;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.hateoas.server.core.Relation;
 
 /**
  * This {@link IACModifyingEffect effect} manipulates the accuracy of a {@link Double} value.
  * 
  * @author Jakob Benz
  */
-@ACEffect(type = ACEffectType.DOUBLE_ACCURACY_EFFECT)
 @Document
+@ACEffect(type = ACEffectType.NUMERIC_ACCURACY_MODIFICATION)
+@Relation(collectionRelation = "policy-effects", itemRelation = "policy-effects")
 public class ACDoubleAccuracyEffect extends ACAbstractEffect {
 	
 	public static final String PARAM_KEY_ACCURACY = "accuracy";

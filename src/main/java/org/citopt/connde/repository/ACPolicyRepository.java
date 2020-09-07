@@ -17,6 +17,9 @@ import org.springframework.stereotype.Repository;
  */
 @Repository
 public interface ACPolicyRepository extends MongoRepository<ACPolicy, String> {
+
+	@Query(value = "{}", fields = "{ 'condition' : 1 }")
+	List<ACPolicy> ttt();
 	
 	/**
 	 * Retrieves all policies that are owned by the given user.
@@ -30,6 +33,12 @@ public interface ACPolicyRepository extends MongoRepository<ACPolicy, String> {
 	List<ACPolicy> findByOwner(@Param("ownerId") String ownerId, Pageable pageable);
 	
 	@Query(value = "{ name : :#{#name} }", exists = true)
-	boolean existsByName(@Param("name") String name); 
+	boolean existsByName(@Param("name") String name);
+	
+	@Query("{ $and : [ { 'owner.id' : :#{#ownerId} }, { 'condition.id' : :#{#conditionId} } ] }")
+	List<ACPolicy> findByOwnerAndCondition(@Param("ownerId") String ownerId, @Param("conditionId") String conditionId, Pageable pageable);
+	
+	@Query("{ $and : [ { 'owner.id' : :#{#ownerId} }, { 'effects' : { $elemMatch : { 'id' : :#{#effectId} } } } ] }")
+	List<ACPolicy> findByOwnerAndEffectAny(@Param("ownerId") String ownerId, @Param("effectId") String effectId, Pageable pageable);
 	
 }

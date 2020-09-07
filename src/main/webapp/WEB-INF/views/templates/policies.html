@@ -22,16 +22,29 @@
                     <thead>
                         <tr>
                             <th>Name</th>
+                            <th>Description</th>
                             <th>Priority</th>
                             <th>Condition</th>
                             <th>Access Types</th>
-                            <th>Effects</th>
-                            <th>Owner</th>
+                            <th>Effect</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
                             <td>{{item.name}}</td>
+                            <td>
+                                <div ng-if="item.description">
+                                    <a class="clickable" data-toggle="collapse" data-target="#description-{{item.id}}">
+                                        Show Description
+                                    </a>
+                                    <div id="description-{{item.id}}" class="collapse">
+                                        <span>{{item.description}}</span>
+                                    </div>
+                                </div>
+                                <div ng-if="!item.description">
+                                    <span>None</span>
+                                </div>
+                            </td>
                             <td>{{item.priority}}</td>
                             <td>{{item.condition.name}}</td>
                             <!-- check whether access to nested property (name) on condition works -->
@@ -42,13 +55,13 @@
                                 </button>
                                 <span ng-repeat-end="">&nbsp;</span>
                             </td>
-                            <td>
+                            <td>{{item.effect.name}}</td>
+                            <!-- <td>
                                 <button ng-repeat-start="effect in item.effects" class="btn btn-default" role="button">
                                     {{effect.name}}
                                 </button>
                                 <span ng-repeat-end="">&nbsp;</span>
-                            </td>
-                            <td>{{item.owner.username}}</td>
+                            </td> -->
                             <td>
                                 <form ng-submit="deletePolicyCtrl.deleteItem()" style="display: inline-block">
                                     <button type="submit" class="btn btn-danger m-t-0 waves-effect"
@@ -59,7 +72,6 @@
                         </tr>
                         <tr ng-show="policyListCtrl.items.length === 0">
                             <td>No policies registered.</td>
-                            <td></td>
                             <td></td>
                             <td></td>
                             <td></td>
@@ -105,22 +117,21 @@
                                 <span class="help-block"
                                     ng-show="addPolicyCtrl.item.errors.name">{{addPolicyCtrl.item.errors.name.message}}</span>
                             </div>
-                            <!-- item.priority group -->
-                            <div class="form-group" ng-class="{'has-error' : addPolicyCtrl.item.errors.priority }">
-                                <div class="form-line"
-                                    ng-class="{'focused error' : addPolicyCtrl.item.errors.priority }">
-                                    <input class="form-control" id="policy-form-input-priority" type="number"
-                                        placeholder="Priority *" ng-model="addPolicyCtrl.item.priority" />
+                            <!-- item.description group -->
+                            <div class="form-group" ng-class="{'has-error' : addPolicyCtrl.item.errors.description }">
+                                <div class="form-line" ng-class="{'focused error' : addPolicyCtrl.item.errors.description }">
+                                    <input class="form-control" id="policy-form-input-description" type="text"
+                                        placeholder="Description *" ng-model="addPolicyCtrl.item.description" />
                                 </div>
                                 <span class="help-block"
-                                    ng-show="addPolicyCtrl.item.errors.priority">{{addPolicyCtrl.item.errors.priority.message}}</span>
+                                    ng-show="addPolicyCtrl.item.errors.description">{{addPolicyCtrl.item.errors.description.message}}</span>
                             </div>
                             <!-- item.condition group -->
                             <div class="form-group" ng-class="{'has-error' : addPolicyCtrl.item.errors.condition }">
                                 <div class="form-line"
                                     ng-class="{'focused error' : addPolicyCtrl.item.errors.condition }">
-                                    <select class="form-control show-tick" ng-model="addPolicyCtrl.item.condition"
-                                        ng-options="c._links.self.href as (c.name) for c in ctrl.policyConditionList">
+                                    <select class="form-control show-tick" ng-model="addPolicyCtrl.item.conditionId"
+                                        ng-options="c.id as (c.name) for c in ctrl.policyConditionList">
                                         <option disabled selected value>Condition *</option>
                                     </select>
                                 </div>
@@ -132,10 +143,9 @@
                             <div class="form-group" ng-class="{'has-error' : addPolicyCtrl.item.errors.accessTypes }">
                                 <div class="form-line"
                                     ng-class="{'focused error' : addPolicyCtrl.item.errors.accessTypes }">
-                                    <select multiple class="form-control show-tick">
-                                        <option disabled selected value>Access Types *</option>
+                                    <select multiple class="form-control show-tick" ng-model="addPolicyCtrl.item.accessTypes">
+                                        <!-- <option disabled selected value>Access Types *</option> -->
                                         <option value="READ">READ</option>
-                                        <option value="WRITE">WRITE</option>
                                         <option value="UPDATE">UPDATE</option>
                                         <option value="DELETE">DELETE</option>
                                         <option value="START">START</option>
@@ -146,18 +156,18 @@
                                 <span class="help-block"
                                     ng-show="addPolicyCtrl.item.errors.accessTypes">{{addPolicyCtrl.item.errors.accessTypes.message}}</span>
                             </div>
-                            <!-- item.effects group -->
-                            <label>Effects:</label>
-                            <div class="form-group" ng-class="{'has-error' : addPolicyCtrl.item.errors.effects }">
+                            <!-- item.effect group -->
+                            <label>Effect:</label>
+                            <div class="form-group" ng-class="{'has-error' : addPolicyCtrl.item.errors.effect }">
                                 <div class="form-line"
-                                    ng-class="{'focused error' : addPolicyCtrl.item.errors.effects }">
-                                    <select class="form-control show-tick" ng-model="addPolicyCtrl.item.effects"
-                                        ng-options="e._links.self.href as (e.name) for e in ctrl.policyEffectList">
+                                    ng-class="{'focused error' : addPolicyCtrl.item.errors.effect }">
+                                    <select class="form-control show-tick" ng-model="addPolicyCtrl.item.effectId"
+                                        ng-options="e.id as (e.name) for e in ctrl.policyEffectList">
                                         <option disabled selected value>Effect *</option>
                                     </select>
                                 </div>
                                 <span class="help-block"
-                                    ng-show="addPolicyCtrl.item.errors.effects">{{addPolicyCtrl.item.errors.effects.message}}</span>
+                                    ng-show="addPolicyCtrl.item.errors.effect">{{addPolicyCtrl.item.errors.effect.message}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>

@@ -21,9 +21,7 @@ import org.springframework.expression.spel.support.StandardEvaluationContext;
  */
 public class ACCompositeConditionEvaluator extends ACAbstractConditionEvaluator<ACCompositeCondition> {
 	
-	public ACCompositeConditionEvaluator() {
-		// TODO Auto-generated constructor stub
-	}
+	public ACCompositeConditionEvaluator() {}
 
 	@Override
 	public boolean evaluate(ACCompositeCondition condition, ACAccess access, ACAccessRequest request) {

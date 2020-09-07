@@ -48,7 +48,7 @@ import io.swagger.annotations.ApiResponses;
  * @author Jakob Benz
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/policy-effect")
+@RequestMapping(RestConfiguration.BASE_PATH + "/policy-effects")
 @Api(tags = {"Access-Control Policy Effects"})
 public class RestACEffectController {
     
@@ -80,7 +80,6 @@ public class RestACEffectController {
     	Link link = linkTo(methodOn(getClass()).all(pageable)).withSelfRel();
     	
     	return ResponseEntity.ok(new PagedModel<>(effectEntityModels, Pages.metaDataOf(pageable, effectEntityModels.size()), C.listOf(link)));
-//    	return ResponseEntity.ok(PagedModel.of(effectEntityModels, Pages.metaDataOf(pageable, effectEntityModels.size()), C.listOf(link)));
     }
     
     @GetMapping(path = "/{effectId}", produces = "application/hal+json")
@@ -110,7 +109,7 @@ public class RestACEffectController {
     
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
     @ApiOperation(value = "Creates a new effect.", produces = "application/hal+json")
-    @ApiResponses({ @ApiResponse(code = 201, message = "effect successfully created!"), @ApiResponse(code = 404, message = "Requesting user not found!"), @ApiResponse(code = 409, message = "effect name already exists!") })
+    @ApiResponses({ @ApiResponse(code = 201, message = "Effect successfully created!"), @ApiResponse(code = 404, message = "Requesting user not found!"), @ApiResponse(code = 409, message = "effect name already exists!") })
     public <T> ResponseEntity<EntityModel<ACAbstractEffect>> create(@Valid @RequestBody ACEffectRequestDTO requestDto, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
     	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername())
     			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
@@ -137,7 +136,7 @@ public class RestACEffectController {
     	// Add self link to policy
     	EntityModel<ACAbstractEffect> effectEntityModel = effectToEntityModel(effect);
     	
-    	return ResponseEntity.status(HttpStatus.CREATED).body(effectEntityModel); 
+    	return ResponseEntity.status(HttpStatus.CREATED).body(effectEntityModel);
     }
     
     @DeleteMapping(path = "/{effectId}")
@@ -159,12 +158,14 @@ public class RestACEffectController {
     		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     	}
     	
+    	// Actually delete effect in the database
+    	effectRepository.deleteById(effectId);
+    	
     	return ResponseEntity.noContent().build();
     }
     
     private EntityModel<ACAbstractEffect> effectToEntityModel(ACAbstractEffect effect) {
     	return new EntityModel<ACAbstractEffect>(effect, linkTo(getClass()).slash(effect.getId()).withSelfRel());
-//    	return EntityModel.of(effect).add(linkTo(getClass()).slash(effect.getId()).withSelfRel());
     }
     
 }

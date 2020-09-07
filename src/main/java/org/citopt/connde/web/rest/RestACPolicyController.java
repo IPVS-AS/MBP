@@ -3,16 +3,17 @@ package org.citopt.connde.web.rest;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.assertj.core.util.Arrays;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAbstractCondition;
 import org.citopt.connde.domain.access_control.ACAbstractEffect;
+import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.access_control.ACPolicy;
 import org.citopt.connde.domain.access_control.dto.ACPolicyRequestDTO;
 import org.citopt.connde.domain.device.Device;
@@ -53,7 +54,7 @@ import io.swagger.annotations.ApiResponses;
  * @author Jakob Benz
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH + "/policy")
+@RequestMapping(RestConfiguration.BASE_PATH + "/policies")
 @Api(tags = {"Access-Control Policies"})
 public class RestACPolicyController {
 	
@@ -75,23 +76,38 @@ public class RestACPolicyController {
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
     public ResponseEntity<PagedModel<EntityModel<ACPolicy>>> all(@ApiParam(value = "Page parameters", required = true) Pageable pageable) {
     	// Retrieve requesting user from the database (if it can be identified and is present)
-    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername())
-    			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+    	return ResponseEntity.ok(policiesToPagedModel(policyRepository.findByOwner(user.getId(), pageable), pageable));
     	
-    	// Retrieve all policies owned by the user (no paging yet)
-    	List<ACPolicy> policiesOwnedByUser = policyRepository.findByOwner(user.getId(), Pages.ALL);
-    	
-    	// Extract requested page from all policies
-    	List<ACPolicy> page = Pages.page(policiesOwnedByUser, pageable);
-    	
-    	// Add self link to every policy
-    	List<EntityModel<ACPolicy>> policyEntityModels = page.stream().map(this::policyToEntityModel).collect(Collectors.toList());
-    	
-    	// Create self link
-    	Link link = linkTo(methodOn(getClass()).all(pageable)).withSelfRel();
-    	
-    	return ResponseEntity.ok(new PagedModel<>(policyEntityModels, Pages.metaDataOf(pageable, policyEntityModels.size()), C.listOf(link)));
-//    	return ResponseEntity.ok(PagedModel.of(policyEntityModels, Pages.metaDataOf(pageable, policyEntityModels.size()), C.listOf(link)));
+//    	// Retrieve all policies owned by the user (no paging yet)
+//    	List<ACPolicy> policiesOwnedByUser = policyRepository.findByOwner(user.getId(), Pages.ALL);
+//    	
+//    	// Extract requested page from all policies
+//    	List<ACPolicy> page = Pages.page(policiesOwnedByUser, pageable);
+//    	
+//    	// Add self link to every policy
+//    	List<EntityModel<ACPolicy>> policyEntityModels = page.stream().map(this::policyToEntityModel).collect(Collectors.toList());
+//    	
+//    	// Create self link
+//    	Link link = linkTo(methodOn(getClass()).all(pageable)).withSelfRel();
+    }
+	
+	@GetMapping(path = "/byCondition", produces = "application/hal+json")
+	@ApiOperation(value = "Retrieves all existing policies owned by the requesting entity.", produces = "application/hal+json")
+	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
+    public ResponseEntity<PagedModel<EntityModel<ACPolicy>>> byCondition(@PathVariable("conditionId") String conditionId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+    	// Retrieve requesting user from the database (if it can be identified and is present)
+    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+    	return ResponseEntity.ok(policiesToPagedModel(policyRepository.findByOwnerAndCondition(user.getId(), conditionId, pageable), pageable));
+    }
+	
+	@GetMapping(path = "/byEffect", produces = "application/hal+json")
+	@ApiOperation(value = "Retrieves all existing policies owned by the requesting entity.", produces = "application/hal+json")
+	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
+    public ResponseEntity<PagedModel<EntityModel<ACPolicy>>> byEffect(@PathVariable("effectId") String effectId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+    	// Retrieve requesting user from the database (if it can be identified and is present)
+    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+    	return ResponseEntity.ok(policiesToPagedModel(policyRepository.findByOwnerAndEffectAny(user.getId(), effectId, pageable), pageable));
     }
     
     @GetMapping(path = "/{policyId}", produces = "application/hal+json")
@@ -138,18 +154,19 @@ public class RestACPolicyController {
     	}
     	ACAbstractCondition condition = conditionOptional.get();
     	
-    	// Retrieve effects from the database
-    	List<ACAbstractEffect> effects = new ArrayList<>();
-    	for (String effectId : requestDto.getEffectIds()) {
-    		Optional<ACAbstractEffect> effectOptional = effectRepository.findById(effectId);
+    	// Retrieve effect from the database
+    	ACAbstractEffect effect = null;
+    	if (requestDto.getEffectId() != null) {
+    		Optional<ACAbstractEffect> effectOptional = effectRepository.findById(requestDto.getEffectId());
     		if (!effectOptional.isPresent()) {
     			return ResponseEntity.notFound().build(); 
     		}
-    		effects.add(effectOptional.get());
+    		effect = effectOptional.get();
     	}
     	
     	// Create new policy and save it in the database
-    	ACPolicy policy = new ACPolicy(requestDto.getName(), requestDto.getDescription(), requestDto.getAccessTypes(), condition, effects, user);
+    	List<ACAccessType> accessTypes = requestDto.getAccessTypes().stream().map(ACAccessType::valueOf).collect(Collectors.toList());
+    	ACPolicy policy = new ACPolicy(requestDto.getName(), requestDto.getDescription(), accessTypes, condition, effect, user);
     	policy = policyRepository.save(policy);
     	
     	// Add self link to policy
@@ -177,12 +194,35 @@ public class RestACPolicyController {
     		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     	}
     	
+    	// Actually delete policy in the database
+    	policyRepository.deleteById(policyId);
+    	
     	return ResponseEntity.noContent().build();
+    }
+    
+    @GetMapping(path = "/accessTypes", produces = "application/hal+json")
+	@ApiOperation(value = "Retrieves all existing policy access types.", produces = "application/hal+json")
+	@ApiResponses({ @ApiResponse(code = 200, message = "Success!") })
+    public ResponseEntity<List<String>> accessTypes() {
+    	return ResponseEntity.ok(Arrays.asList(ACAccessType.values()).stream().map(at -> at.toString()).collect(Collectors.toList()));
     }
     
     private EntityModel<ACPolicy> policyToEntityModel(ACPolicy policy) {
     	return new EntityModel<ACPolicy>(policy, linkTo(getClass()).slash(policy.getId()).withSelfRel());
-//    	return EntityModel.of(policy).add(linkTo(getClass()).slash(policy.getId()).withSelfRel());
+    }
+    
+    private PagedModel<EntityModel<ACPolicy>> policiesToPagedModel(List<ACPolicy> policies, Pageable pageable) {
+    	// Extract requested page from all policies
+    	List<ACPolicy> page = Pages.page(policies, pageable);
+    	
+    	// Add self link to every policy
+    	List<EntityModel<ACPolicy>> policyEntityModels = page.stream().map(this::policyToEntityModel).collect(Collectors.toList());
+    	
+    	// Create self link
+    	Link link = linkTo(methodOn(getClass()).all(pageable)).withSelfRel();
+    	
+    	// Create and return paged model
+    	return new PagedModel<>(policyEntityModels, Pages.metaDataOf(pageable, policyEntityModels.size()), C.listOf(link));
     }
 
 }

@@ -5,9 +5,6 @@ import java.util.Map;
 
 import javax.validation.constraints.NotEmpty;
 
-import org.citopt.connde.domain.access_control.ACAbstractEffect;
-import org.citopt.connde.domain.access_control.ACEffectType;
-
 /**
  * Request DTO for {@link ACAbstractEffect}.
  * 
@@ -18,13 +15,13 @@ public class ACEffectRequestDTO extends ACAbstractEntityRequestDTO {
 	@NotEmpty
 	private Map<String, String> parameters = new HashMap<>();
 
-	private ACEffectType type;
+	private String type;
 	
 	// - - -
 	
 	public ACEffectRequestDTO() {}
 	
-	public ACEffectRequestDTO(String name, String description, Map<String, String> parameters, ACEffectType type) {
+	public ACEffectRequestDTO(String name, String description, Map<String, String> parameters, String type) {
 		super(name, description);
 		this.parameters = parameters;
 		this.type = type;
@@ -41,11 +38,11 @@ public class ACEffectRequestDTO extends ACAbstractEntityRequestDTO {
 		return this;
 	}
 	
-	public ACEffectType getType() {
+	public String getType() {
 		return type;
 	}
 	
-	public ACEffectRequestDTO setType(ACEffectType type) {
+	public ACEffectRequestDTO setType(String type) {
 		this.type = type;
 		return this;
 	}

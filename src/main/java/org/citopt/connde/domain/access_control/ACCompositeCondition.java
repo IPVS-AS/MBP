@@ -11,6 +11,8 @@ import org.citopt.connde.domain.access_control.jquerybuilder.JQBRule;
 import org.citopt.connde.domain.access_control.jquerybuilder.JQBRuleGroup;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.service.access_control.ACCompositeConditionEvaluator;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.hateoas.server.core.Relation;
 
 /**
  * A composite condition combines two or more {@link IACCondition conditions}
@@ -19,7 +21,9 @@ import org.citopt.connde.service.access_control.ACCompositeConditionEvaluator;
  * 
  * @author Jakob Benz
  */
+@Document
 @ACEvaluate(using = ACCompositeConditionEvaluator.class)
+@Relation(collectionRelation = "policy-conditions", itemRelation = "policy-conditions")
 public class ACCompositeCondition extends ACAbstractCondition {
 	
 	/**

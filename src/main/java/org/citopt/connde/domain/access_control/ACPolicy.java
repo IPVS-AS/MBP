@@ -9,6 +9,7 @@ import javax.validation.constraints.NotEmpty;
 import org.citopt.connde.domain.user.User;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.hateoas.server.core.Relation;
 
 import io.swagger.annotations.ApiModel;
 
@@ -21,6 +22,7 @@ import io.swagger.annotations.ApiModel;
  * @author Jakob Benz
  */
 @Document
+@Relation(collectionRelation = "policies", itemRelation = "policies")
 @ApiModel("Model for Access Control Policies.")
 public class ACPolicy extends ACAbstractEntity {
 	
@@ -39,7 +41,7 @@ public class ACPolicy extends ACAbstractEntity {
 	private ACAbstractCondition condition;
 	
 	/**
-	 * The list of {@link IACEffect effects} to apply in case
+	 * The {@link ACAbstractEffect} to apply in case
 	 * <ol>
 	 *   <li>this policy is specified for {@link ACAccess} of type {@link ACAccessType#READ}, and</li>
 	 *   <li>the condition of this policy evaluates to {@code true}.</li>
@@ -47,7 +49,7 @@ public class ACPolicy extends ACAbstractEntity {
 	 * Note that this list can be empty.
 	 */
 	@DBRef
-	private List<ACAbstractEffect> effects = new ArrayList<>();
+	private ACAbstractEffect effect;
 	
 	// - - -
 	
@@ -63,14 +65,14 @@ public class ACPolicy extends ACAbstractEntity {
 	 * @param description the description of this policy.
 	 * @param accessTypes the list of access {@link ACAccessType types} this policy is applicable for.
 	 * @param condition the {@link ACAbstractCondition} of this policy.
-	 * @param effects the list of {@link IACEffect effects} to apply if required.
+	 * @param effect the {@link ACAbstractEffect} to apply if required.
 	 * @param owner the {@link User} that owns this policy.
 	 */
-	public ACPolicy(String name, String description, List<ACAccessType> accessTypes, ACAbstractCondition condition, List<ACAbstractEffect> effects, User owner) {
+	public ACPolicy(String name, String description, List<ACAccessType> accessTypes, ACAbstractCondition condition, ACAbstractEffect effect, User owner) {
 		super(name, description, owner);
 		this.accessTypes = accessTypes;
 		this.condition = condition;
-		this.effects = effects;
+		this.effect = effect;
 	}
 	
 	// - - -
@@ -93,12 +95,12 @@ public class ACPolicy extends ACAbstractEntity {
 		return this;
 	}
 
-	public List<ACAbstractEffect> getEffects() {
-		return effects;
+	public ACAbstractEffect getEffect() {
+		return effect;
 	}
 
-	public ACPolicy setEffects(List<ACAbstractEffect> effects) {
-		this.effects = effects;
+	public ACPolicy setEffect(ACAbstractEffect effect) {
+		this.effect = effect;
 		return this;
 	}
 	

@@ -8,6 +8,7 @@ app.controller('PolicyConditionListController',
         function ($scope, $controller, $interval, policyConditionList, addPolicyCondition, deletePolicyCondition, NotificationService, PolicyConditionService) {
 
             var vm = this;
+            // var queryResult = $scope.$('#condition-builder').queryBuilder('getRules');
 
             /**
              * [Public]

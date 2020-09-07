@@ -2,17 +2,19 @@ package org.citopt.connde.domain.access_control.dto;
 
 import javax.validation.constraints.NotEmpty;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * Abstract base class access-control related request DTOs.
  * 
  * @author Jakob Benz
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class ACAbstractEntityRequestDTO {
 	
 	@NotEmpty
 	private String name;
 	
-	@NotEmpty
 	private String description;
 	
 	// - - -

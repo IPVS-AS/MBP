@@ -77,6 +77,10 @@ public abstract class ACAbstractEffect extends ACAbstractEntity {
 	
 	// - - -
 	
+	public static ACAbstractEffect forType(String type) throws InstantiationException, IllegalAccessException {
+		return ACEffectType.valueOf(type).getClazz().newInstance();
+	}
+	
 	public static ACAbstractEffect forType(ACEffectType type) throws InstantiationException, IllegalAccessException {
 		return type.getClazz().newInstance();
 	}

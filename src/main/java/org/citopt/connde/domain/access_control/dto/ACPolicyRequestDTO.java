@@ -6,7 +6,6 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.validation.constraints.NotEmpty;
 
-import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.access_control.ACPolicy;
 import org.citopt.connde.domain.user.User;
 
@@ -19,30 +18,30 @@ import org.citopt.connde.domain.user.User;
 public class ACPolicyRequestDTO extends ACAbstractEntityRequestDTO {
 	
 	@NotEmpty
-	private List<ACAccessType> accessTypes = new ArrayList<>();
+	private List<String> accessTypes = new ArrayList<>();
 	
 	@Nonnull
 	private String conditionId;
 	
-	private List<String> effectIds = new ArrayList<>();
+	private String effectId;
 	
 	// - - -
 	public ACPolicyRequestDTO() {}
 	
-	public ACPolicyRequestDTO(String name, String description, List<ACAccessType> accessTypes, String conditionId, List<String> effectIds, User owner) {
+	public ACPolicyRequestDTO(String name, String description, List<String> accessTypes, String conditionId, String effectId, User owner) {
 		super(name, description);
 		this.accessTypes = accessTypes;
 		this.conditionId = conditionId;
-		this.effectIds = effectIds;
+		this.effectId = effectId;
 	}
 	
 	// - - -
 	
-	public List<ACAccessType> getAccessTypes() {
+	public List<String> getAccessTypes() {
 		return accessTypes;
 	}
 
-	public ACPolicyRequestDTO setAccessTypes(List<ACAccessType> accessTypes) {
+	public ACPolicyRequestDTO setAccessTypes(List<String> accessTypes) {
 		this.accessTypes = accessTypes;
 		return this;
 	}
@@ -56,12 +55,12 @@ public class ACPolicyRequestDTO extends ACAbstractEntityRequestDTO {
 		return this;
 	}
 
-	public List<String> getEffectIds() {
-		return effectIds;
+	public String getEffectId() {
+		return effectId;
 	}
 
-	public ACPolicyRequestDTO setEffectIds(List<String> effectIds) {
-		this.effectIds = effectIds;
+	public ACPolicyRequestDTO setEffectId(String effectId) {
+		this.effectId = effectId;
 		return this;
 	}
 
