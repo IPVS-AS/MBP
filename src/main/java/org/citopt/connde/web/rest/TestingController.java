@@ -165,13 +165,14 @@ public class TestingController {
      * @return edited configuration
      */
     @PostMapping(value = "/test-details/editConfig/{testId}")
-    public ResponseEntity<List<ParameterInstance>> editConfig(@PathVariable(value = "testId") String testId,
+    public ResponseEntity<List<List<ParameterInstance>>> editConfig(@PathVariable(value = "testId") String testId,
                                                               @RequestBody String useNewData) {
 
 
         TestDetails testDetails = testDetailsRepository.findById(testId);
-        List<ParameterInstance> config = testDetails.getConfig();
+        List<List<ParameterInstance>> configList = testDetails.getConfig();
 
+        for(List<ParameterInstance> config : configList)
         for (ParameterInstance parameterInstance : config) {
             if (parameterInstance.getName().equals("useNewData")) {
                 parameterInstance.setValue(Boolean.valueOf(useNewData));
@@ -179,10 +180,10 @@ public class TestingController {
         }
 
         // save the changes in the database
-        testDetails.setConfig(config);
+        testDetails.setConfig(configList);
         testDetailsRepository.save(testDetails);
 
-        return new ResponseEntity<>(config, HttpStatus.OK);
+        return new ResponseEntity<>(configList, HttpStatus.OK);
     }
 
     @PostMapping(value = "/test-details/deleteTestreport/{testId}")
@@ -214,8 +215,9 @@ public class TestingController {
 
     }
 
+    //TODO: Methode anpassen nach neuer Config Struktur
     @RequestMapping(value = "/test-details/updateTest/{testId}", method = RequestMethod.POST)
-    public HttpEntity<Object> updateTest(@PathVariable(value = "testId") String testId, @RequestBody String test) throws JSONException {
+    public HttpEntity<Object> updateTest(@PathVariable(value = "testId") String testId, @RequestBody String test) {
         try{
             ParameterInstance instance ;
             TestDetails testToUpdate = testDetailsRepository.findById(testId);
@@ -238,7 +240,7 @@ public class TestingController {
                     newConfig.add(instance);
                 }
             }
-            testToUpdate.setConfig(newConfig);
+            testToUpdate.setConfig(Collections.singletonList(newConfig));
 
             // Update the rules to be observed in the test
             Pattern pattern = Pattern.compile("rules\\/(.*)$");

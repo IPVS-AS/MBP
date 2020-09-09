@@ -15,8 +15,11 @@ app.controller('TestingChartController',
 
 
             for (var i in sensorList) {
-                if (sensorList[i].name === testingDetails.type) {
+
+                if (testingDetails.type.indexOf(sensorList[i].name)!== -1) {
+
                     vm.sensor = sensorList[i];
+                    console.log(sensorList[i]);
                     vm.component_id = sensorList[i].id;
                     vm.component_type = sensorList[i].componentTypeName;
                     vm.component_type_url = vm.component_type + 's';

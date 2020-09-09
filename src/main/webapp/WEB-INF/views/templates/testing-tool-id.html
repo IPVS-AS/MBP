@@ -2,15 +2,16 @@
     <!-- Actuator Properties Card -->
     <div class="col-lg-6">
         <div class="card deployment-card">
-            <div class="header"  ng-class="{'bg-red': testingChartCtrl.deploymentState=='NOT_READY', 'bg-green': testingChartCtrl.deploymentState=='READY', 'bg-teal': testingChartCtrl.deploymentState=='DEPLOYED', 'bg-cyan': testingChartCtrl.deploymentState=='RUNNING', 'bg-grey': testingChartCtrl.deploymentState=='UNKNOWN'}">
-            <i class="material-icons" style="position: absolute">bug_report</i>
+            <div class="header"
+                 ng-class="{'bg-red': testingChartCtrl.deploymentState=='NOT_READY', 'bg-green': testingChartCtrl.deploymentState=='READY', 'bg-teal': testingChartCtrl.deploymentState=='DEPLOYED', 'bg-cyan': testingChartCtrl.deploymentState=='RUNNING', 'bg-grey': testingChartCtrl.deploymentState=='UNKNOWN'}">
+                <i class="material-icons" style="position: absolute">bug_report</i>
                 <h2 style="margin-left: 35px;">
                     {{ctrl.test.name}}
-                    <small>{{testingChartCtrl.deploymentState=='NOT_READY' ? 'Deployment impossible' :
-                        (testingChartCtrl.deploymentState=='READY' ? 'Ready for deployment':
-                        (testingChartCtrl.deploymentState=='DEPLOYED' ? 'Deployed' :
-                        (testingChartCtrl.deploymentState=='RUNNING' ? 'Running' :
-                        (testingChartCtrl.deploymentState=='UNKNOWN' ? 'Unknown state' : 'Loading...'))))}}
+                    <small>{{testingChartCtrl.deploymentState == 'NOT_READY' ? 'Deployment impossible' :
+                            (testingChartCtrl.deploymentState == 'READY' ? 'Ready for deployment' :
+                                    (testingChartCtrl.deploymentState == 'DEPLOYED' ? 'Deployed' :
+                                            (testingChartCtrl.deploymentState == 'RUNNING' ? 'Running' :
+                                                    (testingChartCtrl.deploymentState == 'UNKNOWN' ? 'Unknown state' : 'Loading...'))))}}
                     </small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
@@ -24,7 +25,7 @@
             </div>
             <div class="body">
                 <h4>Properties</h4>
-                <table class="table table-hover">
+                <table class="table table-hover" >
                     <tbody>
                     <tr id="{{ctrl.test.name}}">
                         <th>Name:</th>
@@ -33,7 +34,8 @@
                     </tr>
                     <tr id="{{ctrl.test.type}}">
                         <th>Sensor type:</th>
-                        <td>{{ctrl.test.type}}</td>
+                        <!-- ctrl.test.type.toString()-->
+                        <td>{{ctrl.test.type.join(', ')}}</td>
                     </tr>
                     <tr id="{{ctrl.actionNames}}">
                         <th>Action types:</th>
@@ -52,7 +54,7 @@
                     <tr id=" ">
                         <th>Reuse Data:</th>
                         <td>
-                            <div class="switch" style="margin-left: -13px;">
+                            <div class="switch" style="margin-left: 0px;">
                                 <label>
                                     <input type="checkbox" ng-model="config.useNewData"
                                            ng-click="ctrl.editConfig(config.useNewData)">
@@ -67,7 +69,8 @@
                 <br/>
                 <div>
                     <span ng-show="testingChartCtrl.deploymentState=='READY' || testingChartCtrl.deploymentState =='DEPLOYED'">
-                        <button class="btn bg-cyan waves-effect" ng-click="testingChartCtrl.startComponent()" ng-disabled="testingChartCtrl.startTest=='STARTING_TEST'">
+                        <button class="btn bg-cyan waves-effect" ng-click="testingChartCtrl.startComponent()"
+                                ng-disabled="testingChartCtrl.startTest=='STARTING_TEST'">
                             <i class="material-icons">play_arrow</i>
                             <span>Start Test</span>
                         </button>
@@ -112,7 +115,7 @@
                         </thead>
                         <tbody>
                         <tr ng-repeat="pdf in pdfTable | orderBy:'-date'">
-                            <td>{{pdf.date * 1000 | date:'dd.MM.yyyy HH:mm:ss'}}   </td>
+                            <td>{{pdf.date * 1000 | date:'dd.MM.yyyy HH:mm:ss'}}</td>
                             <td>
                                 <form ng-submit="ctrl.downloadPDF(pdf.path)">
                                     <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect"
@@ -547,7 +550,8 @@
                             <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
                                 Close
                             </button>
-                            <button ng-click="ctrl.editTestConfiguration()" class="btn btn-primary m-t-0 waves-effect">Update
+                            <button ng-click="ctrl.editTestConfiguration()" class="btn btn-primary m-t-0 waves-effect">
+                                Update
                             </button>
                         </div>
                     </fieldset>
@@ -559,9 +563,8 @@
 </div>
 
 
-
 <!-- Live Values Card -->
-<div class="row clearfix" >
+<div class="row clearfix">
     <div class="col-lg-12">
         <div class="card live-chart-card animate-show-hide" ng-show="testingChartCtrl.deploymentState=='RUNNING'">
             <div class="header">
@@ -579,7 +582,7 @@
                             unit="{{testingChartCtrl.displayUnit}}">
                 </live-chart>
             </div>
-              </div>
+        </div>
     </div>
 </div>
 

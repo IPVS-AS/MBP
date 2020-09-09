@@ -26,7 +26,7 @@ app.controller('TestingController',
              * Initializing function, sets up basic things.
              */
             (function initController() {
-                vm.availableSensors=[];
+                vm.availableSensors = [];
                 //Check if the test list was retrieved successfully
                 if (testList == null) {
                     NotificationService.notify("Could not retrieve test list.", "error");
@@ -612,6 +612,7 @@ app.controller('TestingController',
                         $scope: $scope,
                         addItem: function (data) {
                             var newTestObject = {};
+                            newTestObject.config = [];
                             try {
                                 //Extend request parameters for routines and parameters
                                 var parameters;
@@ -624,13 +625,20 @@ app.controller('TestingController',
                                 var directionOutlier = Math.floor(Math.random() * 6);
                                 var directionMovement = Math.floor(Math.random() * 6);
 
-
-                                if (vm.availableSensors === 'TestingTemperaturSensor' || vm.availableSensors === 'TestingFeuchtigkeitsSensor') {
-                                    if (vm.config.event === '3' || vm.config.event === '4' || vm.config.event === '5' || vm.config.event === '6') {
-
+                                console.log(vm.selectedSensors);
+                                console.log(vm.config.eventTemp);
+                                if (vm.selectedSensors.includes('TestingTemperaturSensor')) {
+                                    console.log("Hallo Temp");
+                                    vm.parameterValues = [];
+                                    vm.parameterValues.push({
+                                        "name": "ConfigName",
+                                        "value": 'TestingTemperaturSensor'
+                                    });
+                                    if (vm.config.eventTemp === '3' || vm.config.eventTemp === '4' || vm.config.eventTemp === '5' || vm.config.eventTemp === '6') {
+                                       console.log("Event3");
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.config.event)
+                                            "value": parseInt(vm.config.eventTemp)
                                         });
                                         vm.parameterValues.push({"name": "anomaly", "value": 0});
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
@@ -638,21 +646,63 @@ app.controller('TestingController',
                                     } else {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.config.event)
+                                            "value": parseInt(vm.config.eventTemp)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
-                                        vm.parameterValues.push({"name": "room", "value": vm.config.room});
+                                        vm.parameterValues.push({"name": "room", "value": vm.config.roomTemp});
                                         vm.parameterValues.push({
                                             "name": "anomaly",
-                                            "value": parseInt(vm.config.anomaly)
+                                            "value": parseInt(vm.config.anomalyTemp)
                                         });
                                     }
-                                } else if (vm.availableSensors === 'TestingTemperaturSensorPl' || vm.availableSensors === 'TestingFeuchtigkeitsSensorPl') {
+                                    console.log(vm.parameterValues);
+                                    newTestObject.config.push(vm.parameterValues);
+                                    console.log(newTestObject.config);
 
-                                    if (vm.config.event === '3' || vm.config.event === '4' || vm.config.event === '5' || vm.config.event === '6') {
+
+                                }
+
+                                if (vm.selectedSensors.includes('TestingFeuchtigkeitsSensor')) {
+                                    vm.parameterValues = [];
+                                    vm.parameterValues.push({
+                                        "name": "ConfigName",
+                                        "value": 'TestingFeuchtigkeitsSensor'
+                                    });
+                                    if (vm.config.eventHum === '3' || vm.config.eventHum === '4' || vm.config.eventHum === '5' || vm.config.eventHum === '6') {
+
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.config.event)
+                                            "value": parseInt(vm.config.eventHum)
+                                        });
+                                        vm.parameterValues.push({"name": "anomaly", "value": 0});
+                                        vm.parameterValues.push({"name": "useNewData", "value": true});
+
+                                    } else {
+                                        vm.parameterValues.push({
+                                            "name": "event",
+                                            "value": parseInt(vm.config.eventHum)
+                                        });
+                                        vm.parameterValues.push({"name": "useNewData", "value": true});
+                                        vm.parameterValues.push({"name": "room", "value": vm.config.roomHum});
+                                        vm.parameterValues.push({
+                                            "name": "anomaly",
+                                            "value": parseInt(vm.config.anomalyHum)
+                                        });
+                                    }
+
+                                    newTestObject.config.push(vm.parameterValues);
+                                }
+
+                                if (vm.selectedSensors.includes('TestingTemperaturSensorPl')) {
+                                    vm.parameterValues = [];
+                                    vm.parameterValues.push({
+                                        "name": "ConfigName",
+                                        "value": 'TestingTemperaturSensorPl'
+                                    });
+                                    if (vm.config.eventTempPl === '3' || vm.config.eventTempPl === '4' || vm.config.eventTempPl === '5' || vm.config.eventTempPl === '6') {
+                                        vm.parameterValues.push({
+                                            "name": "event",
+                                            "value": parseInt(vm.config.eventTempPl)
                                         });
                                         vm.parameterValues.push({"name": "anomaly", "value": 0});
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
@@ -663,7 +713,7 @@ app.controller('TestingController',
                                         });
                                         vm.parameterValues.push({
                                             "name": "amountAnomalies",
-                                            "value":   vm.config.amountAnomalies
+                                            "value": vm.config.amountAnomalies
                                         });
                                     } else {
                                         vm.parameterValues.push({
@@ -674,129 +724,192 @@ app.controller('TestingController',
                                         vm.parameterValues.push({"name": "simTime", "value": vm.config.simTime});
                                         vm.parameterValues.push({
                                             "name": "amountEvents",
-                                            "value":  vm.config.amountEvents
+                                            "value": vm.config.amountEvents
                                         });
                                         vm.parameterValues.push({
                                             "name": "amountAnomalies",
-                                            "value":   vm.config.amountAnomalies
+                                            "value": vm.config.amountAnomalies
                                         });
-                                        vm.parameterValues.push({"name": "room", "value": vm.config.room});
+                                        vm.parameterValues.push({"name": "room", "value": vm.config.roomTempPl});
                                         vm.parameterValues.push({
                                             "name": "anomaly",
-                                            "value": parseInt(vm.config.anomaly)
+                                            "value": parseInt(vm.config.anomalyTempPl)
                                         });
 
                                     }
-                                } else if (vm.availableSensors === 'TestingGPSSensor') {
-                                    if (vm.config.event === '3' || vm.config.event === '4' || vm.config.event === '5') {
-                                        vm.parameterValues.push({"name": "who", "value":  vm.config.who});
+                                    newTestObject.config.push(vm.parameterValues);
+                                }
+
+                                if (vm.selectedSensors.includes('TestingFeuchtigkeitsSensorPl')) {
+                                    vm.parameterValues = [];
+                                    vm.parameterValues.push({
+                                        "name": "ConfigName",
+                                        "value": 'TestingFeuchtigkeitsSensorPl'
+                                    });
+                                    if (vm.config.eventHumPl === '3' || vm.config.eventHumPl === '4' || vm.config.eventHumPl === '5' || vm.config.eventHumPl === '6') {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.config.event)
+                                            "value": parseInt(vm.config.eventHumPl)
+                                        });
+                                        vm.parameterValues.push({"name": "anomaly", "value": 0});
+                                        vm.parameterValues.push({"name": "useNewData", "value": true});
+                                        vm.parameterValues.push({"name": "simTime", "value": vm.config.simTime});
+                                        vm.parameterValues.push({
+                                            "name": "amountEvents",
+                                            "value": vm.config.amountEvents
+                                        });
+                                        vm.parameterValues.push({
+                                            "name": "amountAnomalies",
+                                            "value": vm.config.amountAnomalies
+                                        });
+                                    } else {
+                                        vm.parameterValues.push({
+                                            "name": "event",
+                                            "value": parseInt(vm.config.eventHumPl)
+                                        });
+                                        vm.parameterValues.push({"name": "useNewData", "value": true});
+                                        vm.parameterValues.push({"name": "simTime", "value": vm.config.simTime});
+                                        vm.parameterValues.push({
+                                            "name": "amountEvents",
+                                            "value": vm.config.amountEvents
+                                        });
+                                        vm.parameterValues.push({
+                                            "name": "amountAnomalies",
+                                            "value": vm.config.amountAnomalies
+                                        });
+                                        vm.parameterValues.push({"name": "room", "value": vm.config.roomHumPl});
+                                        vm.parameterValues.push({
+                                            "name": "anomaly",
+                                            "value": parseInt(vm.config.anomalyHumPl)
+                                        });
+
+                                    }
+                                    newTestObject.config.push(vm.parameterValues);
+                                }
+
+                                if (vm.selectedSensors.includes('TestingGPSSensor')) {
+                                    vm.parameterValues = [];
+                                    vm.parameterValues.push({
+                                        "name": "ConfigName",
+                                        "value": 'TestingGPSSensor'
+                                    });
+                                    if (vm.config.eventGPS === '3' || vm.config.eventGPS === '4' || vm.config.eventGPS === '5') {
+                                        vm.parameterValues.push({"name": "who", "value": vm.config.whoGPS});
+                                        vm.parameterValues.push({
+                                            "name": "event",
+                                            "value": parseInt(vm.config.eventGPS)
                                         });
                                         vm.parameterValues.push({"name": "anomaly", "value": 0});
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
                                             "name": "latitude",
-                                            "value": vm.config.latitude
+                                            "value": vm.config.latitudeGPS
                                         });
                                         vm.parameterValues.push({
                                             "name": "longitude",
-                                            "value": vm.config.longitude
+                                            "value": vm.config.longitudeGPS
                                         });
-                                        vm.parameterValues.push({"name": "hight", "value": vm.config.hight});
+                                        vm.parameterValues.push({"name": "hight", "value": vm.config.hightGPS});
                                         vm.parameterValues.push({
                                             "name": "reactionMeters",
-                                            "value": vm.config.reactionMeters
+                                            "value": vm.config.reactionMetersGPS
                                         });
                                         vm.parameterValues.push({"name": "randomAngle", "value": randomAngle});
                                         vm.parameterValues.push({"name": "axis", "value": randomAxis});
                                     } else {
-                                        vm.parameterValues.push({"name": "who", "value":   vm.config.who});
+                                        vm.parameterValues.push({"name": "who", "value": vm.config.whoGPS});
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.config.event)
+                                            "value": parseInt(vm.config.eventGPS)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
                                             "name": "latitude",
-                                            "value": vm.config.latitude
+                                            "value": vm.config.latitudeGPS
                                         });
                                         vm.parameterValues.push({
                                             "name": "longitude",
-                                            "value": vm.config.longitude
+                                            "value": vm.config.longitudeGPS
                                         });
-                                        vm.parameterValues.push({"name": "hight", "value": vm.config.hight});
+                                        vm.parameterValues.push({"name": "hight", "value": vm.config.hightGPS});
                                         vm.parameterValues.push({
                                             "name": "reactionMeters",
-                                            "value": vm.config.reactionMeters
+                                            "value": vm.config.reactionMetersGPS
                                         });
                                         vm.parameterValues.push({"name": "randomAngle", "value": randomAngle});
                                         vm.parameterValues.push({"name": "axis", "value": randomAxis});
                                         vm.parameterValues.push({
                                             "name": "anomaly",
-                                            "value": parseInt(vm.config.anomaly)
+                                            "value": parseInt(vm.config.anomalyGPS)
                                         });
                                     }
-                                } else if (vm.availableSensors === 'TestingGPSSensorPl') {
-                                    if (vm.config.event === '3' || vm.config.event === '4' || vm.config.event === '5') {
 
-                                        vm.parameterValues.push({"name": "who", "value":   vm.config.who});
+                                    newTestObject.config.push(vm.parameterValues);
+                                }
+                                if (vm.selectedSensors.includes('TestingGPSSensorPl')) {
+                                    vm.parameterValues = [];
+                                    vm.parameterValues.push({
+                                        "name": "ConfigName",
+                                        "value": 'TestingGPSSensorPl'
+                                    });
+                                    if (vm.config.eventGPSPl === '3' || vm.config.eventGPSPl === '4' || vm.config.eventGPSPl === '5') {
+
+                                        vm.parameterValues.push({"name": "who", "value": vm.config.whoGPSPl});
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.config.event)
+                                            "value": parseInt(vm.config.eventGPSPl)
                                         });
                                         vm.parameterValues.push({"name": "anomaly", "value": 0});
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
                                             "name": "latitude",
-                                            "value": vm.config.latitude
+                                            "value": vm.config.latitudeGPSPl
                                         });
                                         vm.parameterValues.push({
                                             "name": "longitude",
-                                            "value": vm.config.longitude
+                                            "value": vm.config.longitudeGPSPl
                                         });
-                                        vm.parameterValues.push({"name": "hight", "value": vm.config.hight});
+                                        vm.parameterValues.push({"name": "hight", "value": vm.config.hightGPSPl});
                                         vm.parameterValues.push({
                                             "name": "reactionMeters",
-                                            "value": vm.config.reactionMeters
+                                            "value": vm.config.reactionMetersGPSPl
                                         });
                                         vm.parameterValues.push({"name": "randomAngle", "value": randomAngle});
                                         vm.parameterValues.push({"name": "axis", "value": randomAxis});
                                         vm.parameterValues.push({"name": "simTime", "value": vm.config.simTime});
                                         vm.parameterValues.push({
                                             "name": "amountEvents",
-                                            "value":  vm.config.amountEvents
+                                            "value": vm.config.amountEvents
                                         });
                                         vm.parameterValues.push({
                                             "name": "amountAnomalies",
-                                            "value":   vm.config.amountAnomalies
+                                            "value": vm.config.amountAnomalies
                                         });
                                     } else {
-                                        vm.parameterValues.push({"name": "who", "value":   vm.config.who});
+                                        vm.parameterValues.push({"name": "who", "value": vm.config.whoGPSPl});
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.config.event)
+                                            "value": parseInt(vm.config.eventGPSPl)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
                                             "name": "latitude",
-                                            "value": vm.config.latitude
+                                            "value": vm.config.latitudeGPSPl
                                         });
                                         vm.parameterValues.push({
                                             "name": "longitude",
-                                            "value": vm.config.longitude
+                                            "value": vm.config.longitudeGPSPl
                                         });
-                                        vm.parameterValues.push({"name": "hight", "value": vm.config.hight});
+                                        vm.parameterValues.push({"name": "hight", "value": vm.config.hightGPSPl});
                                         vm.parameterValues.push({
                                             "name": "reactionMeters",
-                                            "value": vm.config.reactionMeters
+                                            "value": vm.config.reactionMetersGPSPl
                                         });
                                         vm.parameterValues.push({"name": "randomAngle", "value": randomAngle});
                                         vm.parameterValues.push({"name": "axis", "value": randomAxis});
                                         vm.parameterValues.push({
                                             "name": "anomaly",
-                                            "value": parseInt(vm.config.anomaly)
+                                            "value": parseInt(vm.config.anomalyGPSPl)
                                         });
                                         vm.parameterValues.push({"name": "simTime", "value": vm.config.simTime});
                                         vm.parameterValues.push({
@@ -805,15 +918,22 @@ app.controller('TestingController',
                                         });
                                         vm.parameterValues.push({
                                             "name": "amountAnomalies",
-                                            "value":   vm.config.amountAnomalies
+                                            "value": vm.config.amountAnomalies
                                         });
                                     }
 
-                                } else if (vm.availableSensors === 'TestingBeschleunigungsSensor') {
-                                    if (vm.config.event === '3' || vm.config.event === '4' ||vm.config.event=== '5') {
+                                    newTestObject.config.push(vm.parameterValues);
+                                }
+                                if (vm.selectedSensors.includes('TestingBeschleunigungsSensor')) {
+                                    vm.parameterValues = [];
+                                    vm.parameterValues.push({
+                                        "name": "ConfigName",
+                                        "value": 'TestingBeschleunigungsSensor'
+                                    });
+                                    if (vm.config.eventAcc === '3' || vm.config.eventAcc === '4' || vm.config.eventAcc === '5') {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.config.event)
+                                            "value": parseInt(vm.config.eventAcc)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
@@ -832,24 +952,24 @@ app.controller('TestingController',
                                     } else if (vm.config.event === '2') {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.config.event)
+                                            "value": parseInt(vm.config.eventAcc)
                                         });
                                         vm.parameterValues.push({
                                             "name": "anomaly",
-                                            "value": parseInt(vm.config.anomaly)
+                                            "value": parseInt(vm.config.anomalyAcc)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
                                             "name": "weightObject",
-                                            "value": parseInt(vm.config.weightObject)
+                                            "value": parseInt(vm.config.weightObjectAcc)
                                         });
                                         vm.parameterValues.push({
                                             "name": "sensitivityClass",
-                                            "value": parseInt(vm.config.sensitivity)
+                                            "value": parseInt(vm.config.sensitivityAcc)
                                         });
                                         vm.parameterValues.push({
                                             "name": "reactionMeters",
-                                            "value": parseInt(vm.config.reactionMeters)
+                                            "value": parseInt(vm.config.reactionMetersAcc)
                                         });
                                         vm.parameterValues.push({
                                             "name": "directionAnomaly",
@@ -862,11 +982,11 @@ app.controller('TestingController',
                                     } else if (vm.config.event === '1') {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.config.event)
+                                            "value": parseInt(vm.config.eventAcc)
                                         });
                                         vm.parameterValues.push({
                                             "name": "anomaly",
-                                            "value": parseInt(vm.config.anomaly)
+                                            "value": parseInt(vm.config.anomalyAcc)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
@@ -882,11 +1002,19 @@ app.controller('TestingController',
                                         vm.parameterValues.push({"name": "sensitivityClass", "value": 0});
                                         vm.parameterValues.push({"name": "reactionMeters", "value": 3});
                                     }
-                                } else if (vm.availableSensors === 'TestingBeschleunigungsSensorPl') {
-                                    if (vm.config.event === '3' || vm.config.event === '4' ||vm.config.event === '5') {
+                                    newTestObject.config.push(vm.parameterValues);
+                                }
+
+                                if (vm.selectedSensors.includes('TestingBeschleunigungsSensorPl')) {
+                                    vm.parameterValues = [];
+                                    vm.parameterValues.push({
+                                        "name": "ConfigName",
+                                        "value": 'TestingBeschleunigungsSensorPl'
+                                    });
+                                    if (vm.config.eventAccPl === '3' || vm.config.eventAccPl === '4' || vm.config.eventAccPl === '5') {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.config.event)
+                                            "value": parseInt(vm.config.eventAccPl)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
@@ -905,33 +1033,33 @@ app.controller('TestingController',
                                         vm.parameterValues.push({"name": "simTime", "value": vm.config.simTime});
                                         vm.parameterValues.push({
                                             "name": "amountEvents",
-                                            "value":  vm.config.amountEvents
+                                            "value": vm.config.amountEvents
                                         });
                                         vm.parameterValues.push({
                                             "name": "amountAnomalies",
-                                            "value":  vm.config.amountAnomalies
+                                            "value": vm.config.amountAnomalies
                                         });
                                     } else if (vm.config.event === '2') {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.config.event)
+                                            "value": parseInt(vm.config.eventAccPl)
                                         });
                                         vm.parameterValues.push({
                                             "name": "anomaly",
-                                            "value": parseInt(vm.config.anomaly)
+                                            "value": parseInt(vm.config.anomalyAccPl)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
                                             "name": "weightObject",
-                                            "value": parseInt(vm.config.weightObject)
+                                            "value": parseInt(vm.config.weightObjectAccPl)
                                         });
                                         vm.parameterValues.push({
                                             "name": "sensitivityClass",
-                                            "value": parseInt(vm.config.sensitivity)
+                                            "value": parseInt(vm.config.sensitivityAccPl)
                                         });
                                         vm.parameterValues.push({
                                             "name": "reactionMeters",
-                                            "value": parseInt(vm.config.reactionMeters)
+                                            "value": parseInt(vm.config.reactionMetersAccPl)
                                         });
                                         vm.parameterValues.push({
                                             "name": "directionAnomaly",
@@ -944,20 +1072,20 @@ app.controller('TestingController',
                                         vm.parameterValues.push({"name": "simTime", "value": vm.config.simTime});
                                         vm.parameterValues.push({
                                             "name": "amountEvents",
-                                            "value":  vm.config.amountEvents
+                                            "value": vm.config.amountEvents
                                         });
                                         vm.parameterValues.push({
                                             "name": "amountAnomalies",
-                                            "value":  vm.config.amountAnomalies
+                                            "value": vm.config.amountAnomalies
                                         });
                                     } else if (vm.config.event === '1') {
                                         vm.parameterValues.push({
                                             "name": "event",
-                                            "value": parseInt(vm.config.event)
+                                            "value": parseInt(vm.config.eventAccPl)
                                         });
                                         vm.parameterValues.push({
                                             "name": "anomaly",
-                                            "value": parseInt(vm.config.anomaly)
+                                            "value": parseInt(vm.config.anomalyAccPl)
                                         });
                                         vm.parameterValues.push({"name": "useNewData", "value": true});
                                         vm.parameterValues.push({
@@ -975,13 +1103,14 @@ app.controller('TestingController',
                                         vm.parameterValues.push({"name": "simTime", "value": vm.config.simTime});
                                         vm.parameterValues.push({
                                             "name": "amountEvents",
-                                            "value":  vm.config.amountEvents
+                                            "value": vm.config.amountEvents
                                         });
                                         vm.parameterValues.push({
                                             "name": "amountAnomalies",
-                                            "value":  vm.config.amountAnomalies
+                                            "value": vm.config.amountAnomalies
                                         });
                                     }
+                                    newTestObject.config.push(vm.parameterValues);
                                 }
 
 
@@ -992,18 +1121,25 @@ app.controller('TestingController',
                                 }
 
 
-                                newTestObject.type = vm.availableSensors;
-                                newTestObject.config = vm.parameterValues;
+                                newTestObject.type = vm.selectedSensors;
+
+
+                                console.log(newTestObject);
                             } catch (e) {
+                                vm.parameterValues = [];
                                 newTestObject.type = "";
+                                vm.parameterValues.push({
+                                    "name": "ConfigName",
+                                    "value": 'ERROR'
+                                });
                                 vm.parameterValues.push({
                                     "name": "event",
                                     "value": parseInt(0)
                                 });
                                 vm.parameterValues.push({"name": "anomaly", "value": 0});
                                 vm.parameterValues.push({"name": "useNewData", "value": true});
-                                newTestObject.config = vm.parameterValues;
-
+                                newTestObject.config.push(vm.parameterValues);
+                                console.log(newTestObject);
 
                                 console.log("catched error")
                             }

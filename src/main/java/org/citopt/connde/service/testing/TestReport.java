@@ -249,7 +249,7 @@ public class TestReport {
         c2.setColspan(2);
         table.addCell(c2);
 
-
+/**
         // Planned simulation adds informations about the simulation time, amount of events and outliers
         if (test.getType().equals("TestingTemperaturSensorPl") || test.getType().equals("TestingFeuchtigkeitsSensorPl") || test.getType().equals("TestingGPSSensorPl") || test.getType().equals("TestingBeschleunigungsSensorPl")) {
             for (int i = 0; i < test.getConfig().size(); i++) {
@@ -297,6 +297,7 @@ public class TestReport {
 
             }
         }
+ **/
         return table;
     }
 
@@ -574,14 +575,14 @@ public class TestReport {
     public ArrayList<String> getSensorTypePDF(TestDetails test) {
 
         ArrayList<String> simDet = new ArrayList<>();
-        String type = test.getType();
+        //String type = test.getType();
         String kindOfSensor = "";
         String testCaseStr = "";
         String combiStr = "";
         int testCase = 0;
         int combination = 0;
 
-
+/**
         for (int i = 0; i < test.getConfig().size(); i++) {
             if (test.getConfig().get(i).getName().equals("event")) {
                 testCase = (Integer) test.getConfig().get(i).getValue();
@@ -590,6 +591,7 @@ public class TestReport {
                 combination = (Integer) test.getConfig().get(i).getValue();
             }
         }
+
 
         switch (type) {
             case "TestingTemperaturSensor":
@@ -617,9 +619,9 @@ public class TestReport {
                 kindOfSensor = "Acceleration Sensor (planned)";
                 break;
         }
-
+ **/
         simDet.add(0, kindOfSensor);
-
+/**
         switch (type) {
             case "TestingTemperaturSensor":
             case "TestingTemperaturSensorPl":
@@ -730,6 +732,7 @@ public class TestReport {
                 }
                 break;
         }
+ **/
 
         simDet.add(1, testCaseStr);
         simDet.add(2, combiStr);

@@ -1,6 +1,7 @@
 package org.citopt.connde.service.testing;
 
 
+import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
@@ -215,7 +216,7 @@ public class TestEngine implements ValueLogReceiverObserver {
 
         List<Sensor> testingSensor = testDetails.getSensor();
         List<Rule> rules = testDetails.getRules();
-        List<ParameterInstance> config = testDetails.getConfig();
+        List<List<ParameterInstance>> config = testDetails.getConfig();
 
         //activate the selected rules for the test
         for (Rule rule : rules) {
@@ -242,14 +243,28 @@ public class TestEngine implements ValueLogReceiverObserver {
         // check if the sensor/s are currently running
         for (Sensor sensor : testingSensor) {
             ResponseEntity<Boolean> sensorDeployed = restDeploymentController.isRunningSensor(sensor.getId());
-            // check if sensor is deployed
-            if (!sensorDeployed.getBody()) {
-                //if not deploy Sensor
-                restDeploymentController.deploySensor((sensor.getId()));
+            String sensorName = sensor.getName();
+            for (int i = 0; i < config.size(); i++){
+                for(int j = 0; j < config.get(i).size(); j++){
+                    for(ParameterInstance parameterInstance: config.get(j)){
+                        if (parameterInstance.getValue().equals(sensorName)) {
+                            // check if sensor is deployed
+                            if (!sensorDeployed.getBody()) {
+                                //if not deploy Sensor
+                                restDeploymentController.deploySensor((sensor.getId()));
+                            }
+                            restDeploymentController.stopSensor(sensor.getId());
+                            restDeploymentController.startSensor(sensor.getId(), config.get(j));
+                        }
+                    }
+                }
+
+
+
             }
 
-            restDeploymentController.stopSensor(sensor.getId());
-            restDeploymentController.startSensor(sensor.getId(), config);
+
+
         }
 
 
