@@ -172,6 +172,7 @@ public class TestingController {
         TestDetails testDetails = testDetailsRepository.findById(testId);
         List<List<ParameterInstance>> configList = testDetails.getConfig();
 
+        // Change value for the configuration of every sensor simulator of the test
         for(List<ParameterInstance> config : configList)
         for (ParameterInstance parameterInstance : config) {
             if (parameterInstance.getName().equals("useNewData")) {
