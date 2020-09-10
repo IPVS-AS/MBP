@@ -1,6 +1,7 @@
 package org.citopt.connde.service.testing;
 
 
+<<<<<<< HEAD
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,6 +12,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+=======
+>>>>>>> master
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
@@ -34,6 +37,27 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+<<<<<<< HEAD
+=======
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Map.Entry.comparingByKey;
+import static java.util.stream.Collectors.toMap;
+
+>>>>>>> master
 @Component
 public class TestEngine implements ValueLogReceiverObserver {
     @Autowired
@@ -48,6 +72,10 @@ public class TestEngine implements ValueLogReceiverObserver {
     @Autowired
     private ActuatorRepository actuatorRepository;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
     @Autowired
     private TestRepository testRepo;
 
@@ -420,38 +448,145 @@ public class TestEngine implements ValueLogReceiverObserver {
 
         return executedRules;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> master
     /**
-     * Download/Open Testreport.
+     * Method to download a specific Test Report
      *
-     * @param testId ID of the specific test
+     * @param path to the specific Test Report to download
      */
+<<<<<<< HEAD
     public ResponseEntity<String> downloadPDF(String testId) throws IOException {
         TestDetails test = testDetailsRepository.findById(testId).get();
         File result = new File(String.valueOf(test.getPathPDF()));
+=======
+    public ResponseEntity<String> downloadPDF(String path) throws IOException {
+        TestDetails test = null;
+        Pattern pattern = Pattern.compile("(.*?)_");
+        Matcher m = pattern.matcher(path);
+        if (m.find()) {
+            test = testDetailsRepository.findById(m.group(1));
+        }
+
+
+        File result = new File(test.getPathPDF() + "/" + path + ".pdf");
+>>>>>>> master
 
         ResponseEntity respEntity;
 
         if (result.exists()) {
-            InputStream inputStream = new FileInputStream(String.valueOf(test.getPathPDF()));
+            InputStream inputStream = new FileInputStream(result);
 
             byte[] out = org.apache.commons.io.IOUtils.toByteArray(inputStream);
 
             HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.add("content-disposition", "attachment; filename=" + testId + ".pdf");
+            responseHeaders.add("content-disposition", "attachment; filename=" + path + ".pdf");
 
             respEntity = new ResponseEntity(out, responseHeaders, HttpStatus.OK);
             inputStream.close();
         } else {
+<<<<<<< HEAD
         	// Note that HTTP OK (200) is confusing here, NOT_FOUND (404) would be appropriate
             respEntity = new ResponseEntity("File Not Found", HttpStatus.OK);
+=======
+            respEntity = new ResponseEntity("File Not Found", HttpStatus.NOT_FOUND);
+>>>>>>> master
         }
 
 
         return respEntity;
     }
 
+    /**
+     * Returns a Hashmap with date and path to of all Test Reports regarding to a specific test.
+     *
+     * @param testId ID of the test from which all reports are to be found
+     * @return hashmap with the date and path to every report regarding to the specific test
+     */
+    public ResponseEntity<Map<Long, String>> getPDFList(String testId) {
+        ResponseEntity pdfList = null;
+        Map<Long, String> nullList = new TreeMap<>();
+        TestDetails testDetails = testDetailsRepository.findOne(testId);
+        try {
+            if (testDetails.isPdfExists()) {
+                Stream<Path> pathStream = Files.find(Paths.get(testDetails.getPathPDF()), 10, (path, basicFileAttributes) -> {
+                    File file = path.toFile();
+                    return !file.isDirectory() &&
+                            file.getName().contains(testId + "_");
+                });
 
+                pdfList = new ResponseEntity(generateReportList(pathStream), HttpStatus.OK);
+            } else {
+                pdfList = new ResponseEntity(nullList, HttpStatus.OK);
+            }
+
+
+        } catch (IOException e) {
+            pdfList = new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+
+        return pdfList;
+    }
+
+
+    /**
+     * Generates a Hashmap where the entries consist of the creation date of the report and the path to it.
+     *
+     * @param pathStream Stream of the matching reports regarding to to the specific test
+     * @return Map out of the creation dates and paths to the report
+     */
+    public Map<Long, String> generateReportList(Stream<Path> pathStream) {
+        Map<Long, String> pdfEntry = new TreeMap<>();
+
+        // Pattern to find the PDF-Files for a specific test with the specific ID in the Filename
+        Pattern pattern = Pattern.compile("_(.*?).pdf");
+
+
+        Long dateMilliseconds = null;
+
+        // Put every path out of the stream into a list
+        List<Path> files = pathStream.sorted(Comparator.comparing(Path::toString)).collect(Collectors.toList());
+
+        files.forEach(System.out::println);
+        for (Path singlePath : files) {
+            // get  date in milliseconds out of the filename and convert this into the specified date format
+            Matcher machter = pattern.matcher(singlePath.toString());
+            if (machter.find()) {
+                dateMilliseconds = Long.valueOf(machter.group(1));
+            }
+            //Add properties to object
+            pdfEntry.put(dateMilliseconds, singlePath.getFileName().toString());
+
+        }
+
+
+        return sortMap(pdfEntry);
+    }
+
+
+    /**
+     * Sorts the timestamps of the List of Test-Reports.
+     *
+     * @param unsortedMap Sorted map with the timestamp as Long in the key
+     * @return sorted Map depending on the key
+     */
+    private Map<Long, String> sortMap(Map<Long, String> unsortedMap) {
+
+        Map<Long, String> treeMap = new TreeMap<Long, String>(new Comparator<Long>() {
+            @Override
+            public int compare(Long o1, Long o2) {
+                return o1.compareTo(o2);
+            }
+
+        });
+
+        treeMap.putAll(unsortedMap);
+
+        return treeMap;
+    }
 }
 
     

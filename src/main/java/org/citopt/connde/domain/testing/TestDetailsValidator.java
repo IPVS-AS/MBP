@@ -1,5 +1,6 @@
 package org.citopt.connde.domain.testing;
 
+import org.citopt.connde.repository.TestDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
@@ -10,9 +11,11 @@ import org.springframework.validation.Validator;
 @Component
 public class TestDetailsValidator implements Validator {
 
+    private static TestDetailsRepository repository;
     @Autowired
-    public void setTypeRepository() {
+    public void setTypeRepository(TestDetailsRepository testDetailsRepository) {
         System.out.println("autowiring type to TypeValidator");
+        TestDetailsValidator.repository = testDetailsRepository;
     }
 
     @Override
@@ -28,31 +31,30 @@ public class TestDetailsValidator implements Validator {
     }
 
 
-    public void validate(TestDetails test, Errors errors) {
-        // Check if name is empty
+    public void validate(TestDetails test , Errors errors) {
+
+        // Check if Testname is empty
         ValidationUtils.rejectIfEmptyOrWhitespace(
-                errors, "name", "test.name.empty",
+                errors, "name", "component.name.empty",
                 "The name cannot be empty!");
 
-        // Check if sensors are empty
-        if (test.getSensor() == null || test.getSensor().isEmpty()) {
-            errors.rejectValue("sensor", "test.sensor.empty",
-                    "Sensor must be provided.");
-        }
 
-        // Check if rules is empty
+
+
+        // Check if rule choice is empty
         if (test.getRules() == null) {
-            errors.rejectValue("rules", "test.rules.empty",
-                    "Rules must be selected.");
+            errors.rejectValue("rules", "component.rules.empty",
+                    "At least one rule must be selected!");
         }
 
-        // checks if the configuration for the sensor-simulator is empty
+        /**
+        // Check if the configuration for the sensor-simulator is empty
         if (test.getConfig() == null || test.getConfig().isEmpty()) {
-            errors.rejectValue("config", "test.config.empty",
+            errors.rejectValue("config", "component.config.empty",
                     "Config must be defined.");
         }
 
-
+**/
 
     }
 }

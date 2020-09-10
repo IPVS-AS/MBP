@@ -1,5 +1,6 @@
 package org.citopt.connde.domain.testing;
 
+import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.service.cep.engine.core.output.CEPOutput;
 import org.springframework.data.annotation.Id;
@@ -10,7 +11,7 @@ import javax.persistence.GeneratedValue;
 import java.util.Set;
 
 @Document
-public class Testing {
+public class Testing  {
     @Id
     @GeneratedValue
     private String id;
@@ -22,7 +23,7 @@ public class Testing {
 
     private Set<String> rule;
 
-
+    private static final String COMPONENT_TYPE_NAME = "testing-tool";
     /**
      * Returns the rule name the entry belongs to.
      *
@@ -60,6 +61,7 @@ public class Testing {
         this.id = id;
     }
 
+
     /**
      * Returns the rule trigger  of the entry.
      *
@@ -95,6 +97,8 @@ public class Testing {
     public void setOutput(CEPOutput output) {
         this.output = output;
     }
+
+
 
 
 }

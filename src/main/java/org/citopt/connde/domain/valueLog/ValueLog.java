@@ -13,16 +13,11 @@ import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Objects of this class represent value logs that were received by the MQTT broker and
- * are recorded by this application. Value logs are stored within an InfluxDB time series database.
+ * are recorded by this application.
  */
-@Measurement(name = InfluxDBConfiguration.MEASUREMENT_NAME,
-        database = InfluxDBConfiguration.DATABASE_NAME,
-        retentionPolicy = InfluxDBConfiguration.RETENTION_POLICY_NAME,
-        timeUnit = TimeUnit.SECONDS)
 @ApiModel(description = "Model for value logs of components")
 public class ValueLog implements IACValueLog<Double> {
 
-    @Column(name = "time")
     @ApiModelProperty(notes = "Receive time", example = "{\"nano\":0,\"epochSecond\":1570635657}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private Instant time;
 

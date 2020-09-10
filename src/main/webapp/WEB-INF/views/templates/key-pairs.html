@@ -56,7 +56,8 @@
                             <form ng-submit="deleteKeyPairCtrl.deleteItem()" ng-show="item.isDeletable"
                                   style="display: inline-block">
                                 <button type="submit" class="btn btn-danger m-t-0 waves-effect"
-                                        ng-click="deleteKeyPairCtrl.item.id = item.id"> Delete
+                                        ng-click="deleteKeyPairCtrl.item.id = item.id"><i class="material-icons"
+                                                                                          style="font-size:14px;">delete</i>
                                 </button>
                             </form>
                         </td>
@@ -95,7 +96,8 @@
                         <div class="modal-body">
                             <!-- "global" error for addItem -->
                             <div class="form-group" ng-class="{'has-error' : addKeyPairCtrl.item.errors.global}">
-                                <span class="alert alert-danger" ng-show="addKeyPairCtrl.item.errors.global"> {{addKeyPairCtrl.item.errors.global}} </span>
+                                <span class="alert alert-danger"
+                                      ng-show="addKeyPairCtrl.item.errors.global"> {{addKeyPairCtrl.item.errors.global}} </span>
                             </div>
                             <!-- item.name group -->
                             <div class="form-group" ng-class="{'has-error' : addKeyPairCtrl.item.errors.name }">
@@ -104,7 +106,8 @@
                                     <input class="form-control" type="text"
                                            placeholder="Name *" ng-model="addKeyPairCtrl.item.name"/>
                                 </div>
-                                <span class="help-block" ng-show="addKeyPairCtrl.item.errors.name">{{addKeyPairCtrl.item.errors.name.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addKeyPairCtrl.item.errors.name">{{addKeyPairCtrl.item.errors.name.message}}</span>
                             </div>
                             <!-- item.publicKey group -->
                             <div class="form-group" ng-class="{'has-error' : addKeyPairCtrl.item.errors.publicKey }">
@@ -114,7 +117,8 @@
                                              placeholder="Public RSA key" ng-model="addKeyPairCtrl.item.publicKey"
                                              rows="4"></textarea>
                                 </div>
-                                <span class="help-block" ng-show="addKeyPairCtrl.item.errors.publicKey">{{addKeyPairCtrl.item.errors.publicKey.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addKeyPairCtrl.item.errors.publicKey">{{addKeyPairCtrl.item.errors.publicKey.message}}</span>
                             </div>
                             <!-- item.privateKey group -->
                             <div class="form-group" ng-class="{'has-error' : addKeyPairCtrl.item.errors.privateKey }">
@@ -124,7 +128,8 @@
                                              placeholder="Private RSA key *" ng-model="addKeyPairCtrl.item.privateKey"
                                              rows="4"></textarea>
                                 </div>
-                                <span class="help-block" ng-show="addKeyPairCtrl.item.errors.privateKey">{{addKeyPairCtrl.item.errors.privateKey.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addKeyPairCtrl.item.errors.privateKey">{{addKeyPairCtrl.item.errors.privateKey.message}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>

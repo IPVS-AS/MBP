@@ -33,8 +33,6 @@ public class Adapter extends UserEntity {
 
     private String unit;
 
-    private Code service;
-
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<Code> routines;
 
@@ -121,14 +119,6 @@ public class Adapter extends UserEntity {
         } catch (Exception e) {
             return null;
         }
-    }
-
-    public Code getService() {
-        return service;
-    }
-
-    public void setService(Code service) {
-        this.service = service;
     }
 
     public List<Parameter> getParameters() {

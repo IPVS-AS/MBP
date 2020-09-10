@@ -1,11 +1,8 @@
 package org.citopt.connde.service.testing;
 
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfWriter;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.domain.testing.TestDetails;
@@ -14,19 +11,14 @@ import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.service.receiver.ValueLogReceiver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Chunk;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.List;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 /**
  * The component TestReport is used for the creation of test reports for tests of applications using the testing-tool
@@ -62,16 +54,18 @@ public class TestReport {
      * @return path where the TestReport can be found
      */
     public String generateTestreport(String testId, java.util.List<Rule> rulesBefore) throws Exception {
-        TestDetails test = testDetailsRepository.findById(testId).get();
+        TestDetails test = testDetailsRepository.findById(testId);
         Document doc = new Document();
 
         // Create a new pdf, which is named with the ID of the specific test
-        File tempFile = new File(testId + ".pdf");
+        File tempFile = new File(testId + "_"+ test.getEndTimeUnix() + ".pdf");
         if (tempFile.exists() && tempFile.isFile()) {
             tempFile.delete();
         }
-        File testReport = new File(testId + ".pdf");
-        String path = testReport.getAbsolutePath();
+        File testReport = new File(testId + "_"+ test.getEndTimeUnix() + ".pdf");
+        Path wholePath = Paths.get(testReport.getAbsolutePath());
+        String path = wholePath.getParent().toString();
+
 
         FileOutputStream pdfFileout = new FileOutputStream(testReport);
         PdfWriter.getInstance(doc, pdfFileout);
@@ -379,7 +373,7 @@ public class TestReport {
         ruleInfos.addCell(c1);
 
 
-        ArrayList<String> ruleActions = new ArrayList<>();
+        ArrayList ruleActions = new ArrayList();
         for (RuleAction action : ruleAfter.getActions()) {
             ruleActions.add(action.getName());
         }
@@ -499,7 +493,7 @@ public class TestReport {
      */
     public PdfPTable getRuleInfos(TestDetails test) {
         //noinspection MismatchedQueryAndUpdateOfCollection
-        ArrayList<String> rules = new ArrayList<>();
+        ArrayList rules = new ArrayList();
         StringBuilder rulesUser = new StringBuilder();
         String rulesExecuted;
         String triggerRules;

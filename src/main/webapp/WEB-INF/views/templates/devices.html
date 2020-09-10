@@ -71,18 +71,18 @@
                                     style="display: inline-block">
                                     <button type="submit" class="btn btn-danger m-t-0 waves-effect"
                                         ng-click="deleteDeviceCtrl.item.id = item.id">
-                                        Delete
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        <tr ng-show="deviceListCtrl.items.length === 0">
-                            <td>No devices registered.</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
+                                    <i class="material-icons" style="font-size:14px;">delete</i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr ng-show="deviceListCtrl.items.length === 0">
+                        <td>No devices registered.</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
                     </tbody>
                     <tfoot>
                         <tr>

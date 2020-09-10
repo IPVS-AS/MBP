@@ -29,7 +29,6 @@ public class GraphPlotter {
     public GraphPlotter() throws HeadlessException {
         System.setProperty("java.awt.headless", "true");
         boolean headless = GraphicsEnvironment.isHeadless();
-        System.out.println("Headless: " + headless);
         Toolkit tk = Toolkit.getDefaultToolkit();
         tk.beep();
     }
