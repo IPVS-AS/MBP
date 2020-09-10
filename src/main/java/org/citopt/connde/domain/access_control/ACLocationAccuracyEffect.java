@@ -33,10 +33,10 @@ public class ACLocationAccuracyEffect extends ACAbstractEffect {
 	 * @param name the name of this effect.
 	 * @param description the description of this effect.
 	 * @param parameters the list of parameters this required to be applied.
-	 * @param owner the {@link User} that owns this effect.
+	 * @param ownerId the id of the {@link User} that owns this policy.
 	 */
-	public ACLocationAccuracyEffect(String name, String description, Map<String, String> parameters, User owner) {
-		super(name, description, parameters, owner);
+	public ACLocationAccuracyEffect(String name, String description, Map<String, String> parameters, String ownerId) {
+		super(name, description, parameters, ownerId);
 	}
 	
 	// - - -

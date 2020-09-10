@@ -389,6 +389,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }],
                     keyPairList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('key-pairs');
+                    }],
+                    accessControlPolicyList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('policies');
                     }]
                 }
             })

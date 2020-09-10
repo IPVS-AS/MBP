@@ -36,10 +36,10 @@ public abstract class ACAbstractEffect extends ACAbstractEntity {
 	 * @param name the name of this effect.
 	 * @param description the description of this effect.
 	 * @param parameters the list of parameters this required to be applied.
-	 * @param owner the {@link User} that owns this effect.
+	 * @param ownerId the id of the {@link User} that owns this policy.
 	 */
-	public ACAbstractEffect(String name, String description, Map<String, String> parameters, User owner) {
-		super(name, description, owner);
+	public ACAbstractEffect(String name, String description, Map<String, String> parameters, String ownerId) {
+		super(name, description, ownerId);
 	}
 	
 	// - - -

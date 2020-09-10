@@ -54,10 +54,10 @@ public class ACSimpleCondition<T extends Comparable<T>> extends ACAbstractCondit
 	 * @param function the {@link ACArgumentFunction function}.
 	 * @param left the first (left) {@link IACConditionArgument argument}.
 	 * @param right the second (right) {@link IACConditionArgument argument}.
-	 * @param owner the {@link User} that owns this condition.
+	 * @param ownerId the id of the {@link User} that owns this policy.
 	 */
-	public ACSimpleCondition(String name, String description, ACArgumentFunction function, IACConditionArgument left, IACConditionArgument right, User owner) {
-		super(name, description, owner);
+	public ACSimpleCondition(String name, String description, ACArgumentFunction function, IACConditionArgument left, IACConditionArgument right, String ownerId) {
+		super(name, description, ownerId);
 		this.function = function;
 		this.left = left;
 		this.right = right;
@@ -104,10 +104,10 @@ public class ACSimpleCondition<T extends Comparable<T>> extends ACAbstractCondit
 	 * @param key the ACAttributeKey of the attribute.
 	 * @param right the second (right) argument.
 	 * @return the created {@link ACSimpleCondition}.
-	 * @param the {@link User} that owns this condition.
+	 * @param ownerId the id of the {@link User} that owns this policy.
 	 */
-	public static <T extends Comparable<T>> ACSimpleCondition<T> create(String name, String description, ACArgumentFunction function, ACEntityType entityType, ACAttributeKey key, T right, User owner) {
-		return new ACSimpleCondition<T>(name, description, function, new ACConditionSimpleAttributeArgument<>(entityType, key), new ACConditionSimpleValueArgument<>(right), owner);
+	public static <T extends Comparable<T>> ACSimpleCondition<T> create(String name, String description, ACArgumentFunction function, ACEntityType entityType, ACAttributeKey key, T right, String ownerId) {
+		return new ACSimpleCondition<T>(name, description, function, new ACConditionSimpleAttributeArgument<>(entityType, key), new ACConditionSimpleValueArgument<>(right), ownerId);
 	}
 	
 	/**

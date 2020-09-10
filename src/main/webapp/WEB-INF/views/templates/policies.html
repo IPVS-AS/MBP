@@ -23,7 +23,6 @@
                         <tr>
                             <th>Name</th>
                             <th>Description</th>
-                            <th>Priority</th>
                             <th>Condition</th>
                             <th>Access Types</th>
                             <th>Effect</th>
@@ -45,9 +44,7 @@
                                     <span>None</span>
                                 </div>
                             </td>
-                            <td>{{item.priority}}</td>
                             <td>{{item.condition.name}}</td>
-                            <!-- check whether access to nested property (name) on condition works -->
                             <td>
                                 <button ng-repeat-start="accessType in item.accessTypes" class="btn btn-default"
                                     role="button">
@@ -55,7 +52,7 @@
                                 </button>
                                 <span ng-repeat-end="">&nbsp;</span>
                             </td>
-                            <td>{{item.effect.name}}</td>
+                            <td>{{item.effect.name ? item.effect.name : "-"}}</td>
                             <!-- <td>
                                 <button ng-repeat-start="effect in item.effects" class="btn btn-default" role="button">
                                     {{effect.name}}

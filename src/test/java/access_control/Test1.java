@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -89,14 +88,10 @@ public class Test1 {
 	public void test0() throws JsonProcessingException {
 		User admin = userRepository.findOneByUsername("admin").get();
 
-		ACAbstractCondition c = new ACSimpleCondition<String>();
-		c.setName("Condition 1").setDescription("Condition for testing 1").setOwner(userRepository.findOneByUsername("admin").get());
+		ACAbstractCondition sc1 = new ACSimpleCondition<Double>("Simple condition 1", "Desc SC 1", ACArgumentFunction.EQUALS, new ACConditionSimpleValueArgument<Double>(1D), new ACConditionSimpleValueArgument<Double>(1D), admin.getId());
+		ACAbstractCondition sc2 = new ACSimpleCondition<Double>("Simple condition 2", "Desc SC 2", ACArgumentFunction.EQUALS, new ACConditionSimpleValueArgument<Double>(2D), new ACConditionSimpleValueArgument<Double>(2D), admin.getId());
 		
-		
-		ACAbstractCondition sc1 = new ACSimpleCondition<Double>("Simple condition 1", "Desc SC 1", ACArgumentFunction.EQUALS, new ACConditionSimpleValueArgument<Double>(1D), new ACConditionSimpleValueArgument<Double>(1D), admin);
-		ACAbstractCondition sc2 = new ACSimpleCondition<Double>("Simple condition 2", "Desc SC 2", ACArgumentFunction.EQUALS, new ACConditionSimpleValueArgument<Double>(2D), new ACConditionSimpleValueArgument<Double>(2D), admin);
-		
-		ACAbstractCondition cc1 = new ACCompositeCondition("Composite condition 1", "Desc CC 1", ACLogicalOperator.AND, C.listOf(sc1, sc2), admin);
+		ACAbstractCondition cc1 = new ACCompositeCondition("Composite condition 1", "Desc CC 1", ACLogicalOperator.AND, C.listOf(sc1, sc2), admin.getId());
 		
 		conditionRepository.save(sc1);
 		conditionRepository.save(sc2);

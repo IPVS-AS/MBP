@@ -34,10 +34,10 @@ public class ACSituationCondition extends ACAbstractCondition {
 	 * @param name the name of this condition.
 	 * @param description the description of this condition.
 	 * @param query the {@link CEPQuery query} used to evaluate this condition.
-	 * @param the {@link User} that owns this condition.
+	 * @param ownerId the id of the {@link User} that owns this policy.
 	 */
-	public ACSituationCondition(String name, String description, CEPQuery query, User owner) {
-		super(name, description, owner);
+	public ACSituationCondition(String name, String description, CEPQuery query, String ownerId) {
+		super(name, description, ownerId);
 		this.query = query;
 	}
 	

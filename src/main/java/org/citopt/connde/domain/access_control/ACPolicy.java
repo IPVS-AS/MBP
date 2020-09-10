@@ -7,7 +7,6 @@ import javax.annotation.Nonnull;
 import javax.validation.constraints.NotEmpty;
 
 import org.citopt.connde.domain.user.User;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.hateoas.server.core.Relation;
 
@@ -34,22 +33,30 @@ public class ACPolicy extends ACAbstractEntity {
 	private List<ACAccessType> accessTypes = new ArrayList<>();
 	
 	/**
-	 * The {@link ACAbstractCondition} of this policy.
+	 * The id of the {@link ACAbstractCondition} of this policy.
 	 */
 	@Nonnull
-	@DBRef
-	private ACAbstractCondition condition;
+//	@DBRef
+//	private ACAbstractCondition condition;
+	private String conditionId;
 	
 	/**
-	 * The {@link ACAbstractEffect} to apply in case
+	 * The id of the {@link ACAbstractEffect} to apply in case
 	 * <ol>
 	 *   <li>this policy is specified for {@link ACAccess} of type {@link ACAccessType#READ}, and</li>
 	 *   <li>the condition of this policy evaluates to {@code true}.</li>
 	 * </ol>
 	 * Note that this list can be empty.
 	 */
-	@DBRef
-	private ACAbstractEffect effect;
+//	@DBRef
+//	private ACAbstractEffect effect;
+	private String effectId;
+	
+	// NOTE: DBRefs are not used here, since Spring Data MongoDB lacks the support for DBRefs in retrieving queries.
+	//       Furthermore, even the MongoDB guys themselves do not recommend using DBRefs (e.g., see https://jira.spring.io/browse/DATAMONGO-1584)
+	//       since DBRefs basically are joins and apparently MongoDB isn't very good at that. Instead we simply store the id of the embedded
+	//       documents and do the lookup on the application level. From a performance / overhead point of view it's basically the same,
+	//       since we now have to do the lookup when retrieving entities but not when persisting (creating) them.
 	
 	// - - -
 	
@@ -64,15 +71,15 @@ public class ACPolicy extends ACAbstractEntity {
 	 * @param name the name of this policy.
 	 * @param description the description of this policy.
 	 * @param accessTypes the list of access {@link ACAccessType types} this policy is applicable for.
-	 * @param condition the {@link ACAbstractCondition} of this policy.
-	 * @param effect the {@link ACAbstractEffect} to apply if required.
-	 * @param owner the {@link User} that owns this policy.
+	 * @param conditionId the id of the {@link ACAbstractCondition} of this policy.
+	 * @param effectId the id of the {@link ACAbstractEffect} to apply if required.
+	 * @param ownerId the id of the {@link User} that owns this policy.
 	 */
-	public ACPolicy(String name, String description, List<ACAccessType> accessTypes, ACAbstractCondition condition, ACAbstractEffect effect, User owner) {
-		super(name, description, owner);
+	public ACPolicy(String name, String description, List<ACAccessType> accessTypes, String conditionId, String effectId, String ownerId) {
+		super(name, description, ownerId);
 		this.accessTypes = accessTypes;
-		this.condition = condition;
-		this.effect = effect;
+		this.conditionId = conditionId;
+		this.effectId = effectId;
 	}
 	
 	// - - -
@@ -86,21 +93,21 @@ public class ACPolicy extends ACAbstractEntity {
 		return this;
 	}
 
-	public ACAbstractCondition getCondition() {
-		return condition;
+	public String getConditionId() {
+		return conditionId;
 	}
 
-	public ACPolicy setCondition(ACAbstractCondition condition) {
-		this.condition = condition;
+	public ACPolicy setConditionId(String conditionId) {
+		this.conditionId = conditionId;
 		return this;
 	}
 
-	public ACAbstractEffect getEffect() {
-		return effect;
+	public String getEffectId() {
+		return effectId;
 	}
 
-	public ACPolicy setEffect(ACAbstractEffect effect) {
-		this.effect = effect;
+	public ACPolicy setEffectId(String effectId) {
+		this.effectId = effectId;
 		return this;
 	}
 	

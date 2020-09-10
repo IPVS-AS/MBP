@@ -52,10 +52,10 @@ public class ACCompositeCondition extends ACAbstractCondition {
 	 * @param description the description of this condition.
 	 * @param operator the {@link ACLogicalOperator operator} that combines the conditions.
 	 * @param conditions the conditions (at least 2).
-	 * @param the {@link User} that owns this condition.
+	 * @param ownerId the id of the {@link User} that owns this policy.
 	 */
-	public ACCompositeCondition(String name, String description, ACLogicalOperator operator, List<ACAbstractCondition> conditions, User owner) {
-		super(name, description, owner);
+	public ACCompositeCondition(String name, String description, ACLogicalOperator operator, List<ACAbstractCondition> conditions, String ownerId) {
+		super(name, description, ownerId);
 		this.operator = operator;
 		this.conditions = conditions;
 	}

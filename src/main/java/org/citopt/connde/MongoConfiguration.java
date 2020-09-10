@@ -31,7 +31,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 		MongoClient mc = MongoClients.create("mongodb://localhost:27017");
 		return mc;
 	}
-
+	
 	@Override
 	protected String getDatabaseName() {
 		return "connde";

@@ -29,16 +29,25 @@ public interface ACPolicyRepository extends MongoRepository<ACPolicy, String> {
 	 * @return a list holding all matching {@link ACPolicy} entities.
 	 * @author Jakob Benz
 	 */
-	@Query("{ 'owner.id' : :#{#ownerId} }")
+	@Query("{ 'ownerId' : :#{#ownerId} }")
 	List<ACPolicy> findByOwner(@Param("ownerId") String ownerId, Pageable pageable);
 	
 	@Query(value = "{ name : :#{#name} }", exists = true)
 	boolean existsByName(@Param("name") String name);
 	
-	@Query("{ $and : [ { 'owner.id' : :#{#ownerId} }, { 'condition.id' : :#{#conditionId} } ] }")
+	@Query(value = "{ 'conditionId' : :#{#conditionId} }", count = true)
+	public Long countUsingCondition(@Param("conditionId") String conditionId);
+	
+	@Query(value = "{ 'conditionId' : :#{#effectId} }", count = true)
+	public Long countUsingEffect(@Param("effectId") String effectId);
+	
+	@Query("{ $and : [ { 'ownerId' : :#{#ownerId} }, { 'conditionId' : :#{#conditionId} } ] }")
 	List<ACPolicy> findByOwnerAndCondition(@Param("ownerId") String ownerId, @Param("conditionId") String conditionId, Pageable pageable);
 	
-	@Query("{ $and : [ { 'owner.id' : :#{#ownerId} }, { 'effects' : { $elemMatch : { 'id' : :#{#effectId} } } } ] }")
-	List<ACPolicy> findByOwnerAndEffectAny(@Param("ownerId") String ownerId, @Param("effectId") String effectId, Pageable pageable);
+	@Query("{ $and : [ { 'ownerId' : :#{#ownerId} }, { 'effectId' : :#{#effectId} } ] }")
+	List<ACPolicy> findByOwnerAndEffect(@Param("ownerId") String ownerId, @Param("effectId") String effectId, Pageable pageable);
+	
+//	@Query("{ $and : [ { 'owner.id' : :#{#ownerId} }, { 'effects' : { $elemMatch : { 'id' : :#{#effectId} } } } ] }")
+//	List<ACPolicy> findByOwnerAndEffectAny(@Param("ownerId") String ownerId, @Param("effectId") String effectId, Pageable pageable);
 	
 }

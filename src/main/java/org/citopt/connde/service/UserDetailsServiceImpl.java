@@ -36,7 +36,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             return new org.springframework.security.core.userdetails.User(lowercaseUsername,
                 user.getPassword(),
                 grantedAuthorities);
-        }).orElseThrow(() -> new UsernameNotFoundException("User " + lowercaseUsername + " was not found in the " +
-        "database"));
+        }).orElseThrow(() -> new UsernameNotFoundException("User " + lowercaseUsername + " was not found in the database"));
     }
 }

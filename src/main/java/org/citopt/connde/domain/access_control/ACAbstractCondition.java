@@ -5,6 +5,10 @@ import org.citopt.connde.domain.access_control.jquerybuilder.JQBRule;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.service.access_control.ACAbstractConditionEvaluator;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * Abstract base class for all access-control policy conditions.
  * 
@@ -22,20 +26,21 @@ public abstract class ACAbstractCondition extends ACAbstractEntity {
 	 * 
 	 * @param name the name of this condition.
 	 * @param description the description of this condition.
-	 * @param owner the {@link User} that owns this condition.
+	 * @param ownerId the id of the {@link User} that owns this policy.
 	 */
-	public ACAbstractCondition(String name, String description, User owner) {
-		super(name, description, owner);
+	public ACAbstractCondition(String name, String description, String ownerId) {
+		super(name, description, ownerId);
 	}
 
 	// - - -
 	
-	public static ACAbstractCondition forJQBOutput(JQBOutput output) {
-		if (output.getRules().size() == 1) {
+	public static ACAbstractCondition forJQBOutput(String output) throws JsonMappingException, JsonProcessingException {
+		JQBOutput jqbOutput = new ObjectMapper().readValue(output, JQBOutput.class);
+		if (jqbOutput.getRules().size() == 1) {
 			// Only one simple condition
-			return ACSimpleCondition.forJQBRule((JQBRule) output.getRules().get(0));
+			return ACSimpleCondition.forJQBRule((JQBRule) jqbOutput.getRules().get(0));
 		} else {
-			return ACCompositeCondition.forJQBRuleGroup(output);
+			return ACCompositeCondition.forJQBRuleGroup(jqbOutput);
 		}
 	}
 	

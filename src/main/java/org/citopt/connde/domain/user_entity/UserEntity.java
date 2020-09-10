@@ -66,12 +66,10 @@ public abstract class UserEntity implements IACRequestedEntity {
     private Set<User> approvedUsers = new HashSet<>();
     
     /**
-     * The list of access-control {@link ACPolicy policies} evaluated
+     * The list of access-control {@link ACPolicy} ids evaluated
      * before allowing access to this user entity.
      */
-    @JsonIgnore
-    @DBRef
-    private List<ACPolicy> accessControlPolicies = new ArrayList<>();
+    private List<String> accessControlPolicyIds = new ArrayList<>();
 
     // Creation date, managed by Mongo Auditing
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -131,12 +129,12 @@ public abstract class UserEntity implements IACRequestedEntity {
     }
     
     @Override
-    public List<ACPolicy> getAccessControlPolicies() {
-    	return accessControlPolicies;
-    }
+    public List<String> getAccessControlPolicyIds() {
+		return accessControlPolicyIds;
+	}
     
-    public void setAccessControlPolicies(List<ACPolicy> accessControlPolicies) {
-		this.accessControlPolicies = accessControlPolicies;
+    public void setAccessControlPolicyIds(List<String> accessControlPolicyIds) {
+		this.accessControlPolicyIds = accessControlPolicyIds;
 	}
 
     /**

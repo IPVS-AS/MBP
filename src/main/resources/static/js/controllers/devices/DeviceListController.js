@@ -4,9 +4,9 @@
  * Controller for the device list page.
  */
 app.controller('DeviceListController',
-    ['$scope', '$controller', '$interval', 'DeviceService', 'deviceList', 'addDevice', 'deleteDevice', 'keyPairList',
+    ['$scope', '$controller', '$interval', 'DeviceService', 'deviceList', 'addDevice', 'deleteDevice', 'keyPairList', 'accessControlPolicyList',
         'ComponentTypeService', 'NotificationService',
-        function ($scope, $controller, $interval, DeviceService, deviceList, addDevice, deleteDevice, keyPairList,
+        function ($scope, $controller, $interval, DeviceService, deviceList, addDevice, deleteDevice, keyPairList, accessControlPolicyList,
                   ComponentTypeService, NotificationService) {
             var vm = this;
             
@@ -34,6 +34,11 @@ app.controller('DeviceListController',
                     }
                     return "#";
                 };
+
+                // Refresh policy select picker when the modal is opened
+                $('.modal').on('shown.bs.modal', function (e) {
+                    $('.selectpicker').selectpicker('refresh');
+                });
             })();
 
             //Extend each device in deviceList for the formatted mac address, a state and a reload function
@@ -193,7 +198,8 @@ app.controller('DeviceListController',
                     deleteItem: deleteDevice,
                     confirmDeletion: confirmDelete
                 }),
-                keyPairList: keyPairList
+                keyPairList: keyPairList,
+                accessControlPolicyList: accessControlPolicyList
             });
 
             // $watch 'addItem' result and add to 'itemList'

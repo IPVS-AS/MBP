@@ -5,7 +5,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -16,7 +15,6 @@ import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user.User;
-import org.citopt.connde.repository.ACPolicyRepository;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.UserRepository;
 import org.citopt.connde.security.SecurityUtils;
@@ -55,13 +53,10 @@ import io.swagger.annotations.ApiResponses;
 @Api(tags = {"Devices"})
 public class RestDeviceController {
 	
-	private static final Logger LOGGER = Logger.getLogger(RestDeviceController.class.getName());
+//	private static final Logger LOGGER = Logger.getLogger(RestDeviceController.class.getName());
 
     @Autowired
     private DeviceRepository deviceRepository;
-    
-    @Autowired
-    private ACPolicyRepository policyRepository;
     
     @Autowired
     private UserRepository userRepository;
@@ -81,15 +76,15 @@ public class RestDeviceController {
     	// Retrieve all devices owned by the user (no paging yet)
     	List<Device> devices = deviceRepository.findByOwner(user.getId(), Pages.ALL);
     	
-    	// Filter policies with non-matching access-types -> less policies to actually evaluate (no paging yet)
-    	devices = devices.stream().filter(d -> d.getAccessControlPolicies().stream().anyMatch(p -> p.getAccessTypes().contains(ACAccessType.READ))).collect(Collectors.toList());
+//    	// Filter policies with non-matching access-types -> less policies to actually evaluate (no paging yet)
+//    	devices = devices.stream().filter(d -> d.getAccessControlPolicies().stream().anyMatch(p -> p.getAccessTypes().contains(ACAccessType.READ))).collect(Collectors.toList());
     	
-    	// Filter devices the user is not permitted to access (still no paging yet)
-    	devices = devices.stream().filter(d -> {
-    		ACAccess access = new ACAccess(ACAccessType.READ, user, d);
-    		return d.getOwner().getId().equals(user.getId())
-    				|| d.getAccessControlPolicies().stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest));
-    	}).collect(Collectors.toList());
+//    	// Filter devices the user is not permitted to access (still no paging yet)
+//    	devices = devices.stream().filter(d -> {
+//    		ACAccess access = new ACAccess(ACAccessType.READ, user, d);
+//    		return d.getOwner().getId().equals(user.getId())
+//    				|| d.getAccessControlPolicies().stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest));
+//    	}).collect(Collectors.toList());
     	
     	// Extract requested page from all devices
     	List<Device> page = Pages.page(devices, pageable);
@@ -118,11 +113,11 @@ public class RestDeviceController {
     	}
     	Device device = deviceOptional.get();
     	
-    	// Check whether the requesting user is authorized to access the device
-    	ACAccess access = new ACAccess(ACAccessType.READ, user, device);
-    	if (!device.getOwner().getId().equals(user.getId()) && !device.getAccessControlPolicies().stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest))) {
-    		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    	}
+//    	// Check whether the requesting user is authorized to access the device
+//    	ACAccess access = new ACAccess(ACAccessType.READ, user, device);
+//    	if (!device.getOwner().getId().equals(user.getId()) && !device.getAccessControlPolicies().stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest))) {
+//    		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+//    	}
     			
     	// Add self link to device
     	EntityModel<Device> deviceEntityModel = deviceToEntityModel(device);

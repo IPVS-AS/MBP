@@ -28,12 +28,12 @@ public interface IACRequestedEntity extends IACEntity {
 	public User getOwner();
 	
 	/**
-	 * Returns the list of policies used to
+	 * Returns the list of policy ids used to
 	 * check whether access to this entity should be granted
 	 * or not.
 	 * 
-	 * @return the list of {@link ACPolicy policies}.
+	 * @return the list of {@link ACPolicy} ids.
 	 */
-	public List<ACPolicy> getAccessControlPolicies();
+	public List<String> getAccessControlPolicyIds();
 	
 }

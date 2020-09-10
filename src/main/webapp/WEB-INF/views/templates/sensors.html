@@ -165,6 +165,17 @@
                                 </div>
                                 <span class="help-block" ng-show="addSensorCtrl.item.errors.device">{{addSensorCtrl.item.errors.device.message}}</span>
                             </div>
+                            <!-- item.accessControlPolicyIds group -->
+                            <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.accessControlPolicyIds }">
+                                <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.accessControlPolicyIds }">
+                                    <select class="form-control selectpicker" title="Access Control Policies"
+                                            data-header="Access Control Policies"
+                                            ng-options="t.id as (t.name) for t in ctrl.accessControlPolicyList"
+                                            ng-model="addSensorCtrl.item.accessControlPolicyIds" multiple>
+                                    </select>
+                                </div>
+                                <span class="help-block" ng-show="addSensorCtrl.item.errors.accessControlPolicyIds">{{addSensorCtrl.item.errors.accessControlPolicyIds.message}}</span>
+                            </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>
                         <div class="modal-footer">

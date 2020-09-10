@@ -27,7 +27,7 @@ public interface ACEffectRepository extends MongoRepository<ACAbstractEffect, St
 	 * @return a list holding all matching {@link ACAbstractEffect} entities.
 	 * @author Jakob Benz
 	 */
-	@Query("{ 'owner.id' : :#{#ownerId} }")
+	@Query("{ 'ownerId' : :#{#ownerId} }")
 	List<ACAbstractEffect> findByOwner(@Param("ownerId") String ownerId, Pageable pageable);
 	
 	@Query(value = "{ name : :#{#name} }", exists = true)

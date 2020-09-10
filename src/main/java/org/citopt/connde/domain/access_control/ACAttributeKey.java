@@ -20,6 +20,16 @@ public enum ACAttributeKey {
 	REQUESTING_ENTITY_USERNAME(User.class, "requesting-entity-username", "username", ACEntityType.REQUESTING_ENTITY),
 	
 	/**
+	 * The first name of the requesting entity.
+	 */
+	REQUESTING_ENTITY_FIRSTNAME(User.class, "requesting-entity-firstname", "firstName", ACEntityType.REQUESTING_ENTITY),
+	
+	/**
+	 * The last name of the requesting entity.
+	 */
+	REQUESTING_ENTITY_LASTNAME(User.class, "requesting-entity-lastname", "lastName", ACEntityType.REQUESTING_ENTITY),
+	
+	/**
 	 * The id of an entity {@link User owner}.
 	 */
 	ENTITY_OWNER_ID(User.class, "entity-owner-id", "owner.id", ACEntityType.REQUESTED_ENTITY),

@@ -27,7 +27,7 @@ public interface ACConditionRepository extends MongoRepository<ACAbstractConditi
 	 * @return a list holding all matching {@link ACAbstractCondition} entities.
 	 * @author Jakob Benz
 	 */
-	@Query("{ 'owner.id' : :#{#ownerId} }")
+	@Query("{ 'ownerId' : :#{#ownerId} }")
 	List<ACAbstractCondition> findByOwner(@Param("ownerId") String ownerId, Pageable pageable);
 	
 	@Query(value = "{ name : :#{#name} }", exists = true)

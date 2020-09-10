@@ -19,8 +19,8 @@ public interface UserEntityExcerpt {
     @Value("#{target.getApprovedUsersProjection()}")
     Set<UserExcerpt> getApprovedUsers();
     
-    @Value("#{target.getAccessControlPolicies()}")
-    Set<ACPolicy> getAccessControlPolicies();
+    @Value("#{target.getAccessControlPolicyIds()}")
+    Set<ACPolicy> getAccessControlPolicyIds();
 
     @Value("#{target.isOwning()}")
     boolean getIsOwning();

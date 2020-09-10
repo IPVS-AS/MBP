@@ -16,24 +16,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ACConditionRequestDTO extends ACAbstractEntityRequestDTO {
 	
-	private JQBOutput condition;
+	private String condition;
 	
 	// - - -
 	
 	public ACConditionRequestDTO() {}
 	
-	public ACConditionRequestDTO(String name, String description, JQBOutput condition) {
+	public ACConditionRequestDTO(String name, String description, String condition) {
 		super(name, description);
 		this.condition = condition;
 	}
 	
 	// - - -
 	
-	public JQBOutput getCondition() {
+	public String getCondition() {
 		return condition;
 	}
 	
-	public ACConditionRequestDTO setCondition(JQBOutput condition) {
+	public ACConditionRequestDTO setCondition(String condition) {
 		this.condition = condition;
 		return this;
 	}

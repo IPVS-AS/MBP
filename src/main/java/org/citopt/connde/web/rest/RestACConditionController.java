@@ -4,7 +4,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -17,6 +16,7 @@ import org.citopt.connde.domain.user.User;
 import org.citopt.connde.repository.ACConditionRepository;
 import org.citopt.connde.repository.UserRepository;
 import org.citopt.connde.security.SecurityUtils;
+import org.citopt.connde.service.access_control.ACConditionService;
 import org.citopt.connde.util.C;
 import org.citopt.connde.util.Pages;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +53,9 @@ import io.swagger.annotations.ApiResponses;
 public class RestACConditionController {
 	
 	@Autowired
+	private ACConditionService conditionService;
+	
+	@Autowired
 	private ACConditionRepository conditionRepository;
 	
 	@Autowired
@@ -63,101 +66,51 @@ public class RestACConditionController {
 	@ApiOperation(value = "Retrieves all existing conditions owned by the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
     public ResponseEntity<PagedModel<EntityModel<ACAbstractCondition>>> all(@ApiParam(value = "Page parameters", required = true) Pageable pageable) {
-    	// Retrieve requesting user from the database (if it can be identified and is present)
-    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername())
-    			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
-    	
-    	// Retrieve all policies owned by the user (no paging yet)
-    	List<ACAbstractCondition> conditionsOwnedByUser = conditionRepository.findByOwner(user.getId(), Pages.ALL);
-    	
-    	// Extract requested page from all policies
-    	List<ACAbstractCondition> page = Pages.page(conditionsOwnedByUser, pageable);
-    	
-    	// Add self link to every policy
-    	List<EntityModel<ACAbstractCondition>> conditionEntityModels = page.stream().map(this::conditionToEntityModel).collect(Collectors.toList());
-    	
-    	// Create self link
-    	Link link = linkTo(methodOn(getClass()).all(pageable)).withSelfRel();
-    	return ResponseEntity.ok(new PagedModel<>(conditionEntityModels, Pages.metaDataOf(pageable, conditionEntityModels.size()), C.listOf(link)));
+    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+    	return ResponseEntity.ok(conditionsToPagedModel(conditionRepository.findByOwner(user.getId(), pageable), pageable));
     }
     
     @GetMapping(path = "/{conditionId}", produces = "application/hal+json")
     @ApiOperation(value = "Retrieves an existing condition identified by its id if available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to access the condition!"), @ApiResponse(code = 404, message = "Condition or requesting user not found!") })
     public ResponseEntity<EntityModel<ACAbstractCondition>> one(@PathVariable("conditionId") String conditionId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
-    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername())
-    			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
-    	
-    	// Retrieve the requested condition from the database (if it exists)
-    	Optional<ACAbstractCondition> conditionOptional = conditionRepository.findById(conditionId);
-    	if (!conditionOptional.isPresent()) {
-    		return ResponseEntity.notFound().build();
-    	}
-    	ACAbstractCondition condition = conditionOptional.get();
-    	
-    	// Check whether the requesting user is the owner of the condition
-    	if (!condition.getOwner().getId().equals(user.getId())) {
-    		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    	}
-    			
-    	// Add self link to condition
-    	EntityModel<ACAbstractCondition> conditionEntityModel = conditionToEntityModel(condition);
-    	
-    	return ResponseEntity.ok(conditionEntityModel);
+    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+    	return ResponseEntity.ok(conditionToEntityModel(conditionService.getForIdAndOwner(conditionId, user.getId())));
     }
     
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
     @ApiOperation(value = "Creates a new condition.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 201, message = "Condition successfully created!"), @ApiResponse(code = 404, message = "Requesting user not found!"), @ApiResponse(code = 409, message = "Condition name already exists!") })
     public ResponseEntity<EntityModel<ACAbstractCondition>> create(@Valid @RequestBody ACConditionRequestDTO requestDto, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
-    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername())
-    			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
-    	
-    	// Check whether a policy with the same name exists already
-    	if (conditionRepository.existsByName(requestDto.getName())) {
-    		return ResponseEntity.status(HttpStatus.CONFLICT).build();
-    	}
-    	
-    	// Create new condition and save it in the database
-    	ACAbstractCondition condition = (ACAbstractCondition) ACAbstractCondition.forJQBOutput(requestDto.getCondition())
-    			.setName(requestDto.getName())
-    			.setDescription(requestDto.getDescription())
-    			.setOwner(user);
-    	condition = conditionRepository.save(condition);
-    	
-    	// Add self link to policy
-    	EntityModel<ACAbstractCondition> conditionEntityModel = conditionToEntityModel(condition);
-    	
-    	return ResponseEntity.status(HttpStatus.CREATED).body(conditionEntityModel); 
+    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+    	return ResponseEntity.status(HttpStatus.CREATED).body(conditionToEntityModel(conditionService.create(requestDto, user.getId()))); 
     }
     
     @DeleteMapping(path = "/{conditionId}")
     @ApiOperation(value = "Deletes an existing condition.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 204, message = "Condition successfully deleted!"), @ApiResponse(code = 404, message = "Requesting user or condition not found!") })
     public ResponseEntity<Void> delete(@PathVariable("conditionId") String conditionId) {
-    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername())
-    			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
-
-    	// Retrieve the condition to delete from the database (if it exists)
-    	Optional<ACAbstractCondition> conditionOptional = conditionRepository.findById(conditionId);
-    	if (!conditionOptional.isPresent()) {
-    		return ResponseEntity.notFound().build();
-    	}
-    	ACAbstractCondition condition = conditionOptional.get();
-    	
-    	// Check whether the requesting user is the owner of the condition
-    	if (!condition.getOwner().getId().equals(user.getId())) {
-    		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    	}
-    	
-    	// Actually delete condition in the database
-    	conditionRepository.deleteById(conditionId);
-    	
+    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+    	conditionService.delete(conditionId, user.getId());
     	return ResponseEntity.noContent().build();
     }
     
     private EntityModel<ACAbstractCondition> conditionToEntityModel(ACAbstractCondition condition) {
     	return new EntityModel<>(condition, linkTo(getClass()).slash(condition.getId()).withSelfRel());
+    }
+    
+    private PagedModel<EntityModel<ACAbstractCondition>> conditionsToPagedModel(List<ACAbstractCondition> conditions, Pageable pageable) {
+    	// Extract requested page from all conditions
+    	List<ACAbstractCondition> page = Pages.page(conditions, pageable);
+    	
+    	// Add self link to every condition
+    	List<EntityModel<ACAbstractCondition>> conditionEntityModels = page.stream().map(this::conditionToEntityModel).collect(Collectors.toList());
+    	
+    	// Create self link
+    	Link link = linkTo(methodOn(getClass()).all(pageable)).withSelfRel();
+    	
+    	// Create and return paged model
+    	return new PagedModel<>(conditionEntityModels, Pages.metaDataOf(pageable, conditionEntityModels.size()), C.listOf(link));
     }
     
     
