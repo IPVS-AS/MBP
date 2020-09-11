@@ -1,10 +1,7 @@
 package org.citopt.connde.service.env_model;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.component.Actuator;
@@ -883,9 +880,14 @@ public class EnvironmentModelService {
         device.setUsername(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_USERNAME, ""));
         device.setPassword(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_PASSWORD, ""));
 
-        //Find key pair from repository and set it
-        KeyPair keyPair = keyPairRepository.findById(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_KEYPAIR)).get();
-        device.setKeyPair(keyPair);
+        //Check if a key pair was provided
+        if(!deviceDetails.isNull(MODEL_JSON_KEY_DEVICE_KEYPAIR)){
+            //Get key pair from repository and set it
+            Optional<KeyPair> keyPairOptional = keyPairRepository.findById(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_KEYPAIR));
+
+            //Set key pair if found
+            keyPairOptional.ifPresent(device::setKeyPair);
+        }
 
         //Return final device object
         return device;

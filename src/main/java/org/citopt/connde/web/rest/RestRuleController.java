@@ -12,11 +12,9 @@ import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 /**
  * REST Controller that exposes methods for the purpose of managing rules.
@@ -47,14 +45,17 @@ public class RestRuleController {
     @PostMapping(value = "/rules/enable/{id}")
     public ResponseEntity<ActionResponse> enableRule(@PathVariable(value = "id") String ruleId) {
         //Get rule from repository
-        Rule rule = ruleRepository.findById(ruleId).get();
+        Optional<Rule> ruleOptional = ruleRepository.findById(ruleId);
 
         //Check if rule was found
-        if (rule == null) {
+        if (!ruleOptional.isPresent()) {
             //Not found, return error message
             ActionResponse response = new ActionResponse(false, "The rule does not exist.");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
+
+        //Extract rule
+        Rule rule = ruleOptional.get();
 
         //Remembers whether enabling was successful
         boolean success = true;
@@ -80,14 +81,17 @@ public class RestRuleController {
     @PostMapping(value = "/rules/disable/{id}")
     public ResponseEntity<ActionResponse> disableRule(@PathVariable(value = "id") String ruleId) {
         //Get rule from repository
-        Rule rule = ruleRepository.findById(ruleId).get();
+        Optional<Rule> ruleOptional = ruleRepository.findById(ruleId);
 
         //Check if rule was found
-        if (rule == null) {
+        if (!ruleOptional.isPresent()) {
             //Not found, return error message
             ActionResponse response = new ActionResponse(false, "The rule does not exist.");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
+
+        //Extract rule
+        Rule rule = ruleOptional.get();
 
         //Disable rule if necessary
         if (rule.isEnabled()) {
@@ -102,14 +106,17 @@ public class RestRuleController {
     @PostMapping(value = "/rule-actions/test/{id}")
     public ResponseEntity<ActionResponse> testRuleAction(@PathVariable(value = "id") String actionId) {
         //Get rule action from repository
-        RuleAction ruleAction = ruleActionRepository.findById(actionId).get();
+        Optional<RuleAction> ruleActionOptional = ruleActionRepository.findById(actionId);
 
         //Check if rule was found
-        if (ruleAction == null) {
+        if (!ruleActionOptional.isPresent()) {
             //Not found, return error message
             ActionResponse response = new ActionResponse(false, "The rule action does not exist.");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
+
+        //Extract action
+        RuleAction ruleAction = ruleActionOptional.get();
 
         //Test action
         boolean result = ruleExecutor.testRuleAction(ruleAction);

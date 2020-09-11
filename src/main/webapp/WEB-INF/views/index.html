@@ -138,16 +138,18 @@
             <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 10px">
                 {{userData.firstName + " " + userData.lastName}}
             </div>
-            <div class="btn-group user-helper-dropdown" uib-dropdown="uib-dropdown" is-open="status.isopen">
+            <div class="btn-group user-helper-dropdown" uib-dropdown="uib-dropdown"
+                 is-open="status.isopen" ng-show="userData.isAdmin">
                 <!--<button class="dropdown-toggle pull-right">-->
-                <i class="material-icons" id="single-button" type="button" uib-dropdown-toggle="uib-dropdown-toggle"
+                <i class="material-icons" type="button" uib-dropdown-toggle="uib-dropdown-toggle"
                    ng-disabled="disabled">keyboard_arrow_down</i>
                 <!--</button>-->
                 <ul class="dropdown-menu pull-right" uib-dropdown-menu="uib-dropdown-menu" role="menu"
                     aria-labelledby="single-button">
                     <li>
                         <a href="view/users">
-                            <i class="material-icons">person</i>Users</a>
+                            <i class="material-icons">person</i>Users
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -400,6 +402,9 @@
 <script th:src="@{/js/controllers/actuators/ActuatorListController.js}"></script>
 <script th:src="@{/js/controllers/sensors/SensorListController.js}"></script>
 <script th:src="@{/js/controllers/testing/TestingController.js}"></script>
+<script th:src="@{/js/controllers/testing/TestingDetailsController.js}"></script>
+<script th:src="@{/js/controllers/testing/TestingChartController.js}"></script>
+
 <script th:src="@{/js/controllers/devices/DeviceListController.js}"></script>
 <script th:src="@{/js/controllers/devices/DeviceDetailsController.js}"></script>
 <script th:src="@{/js/controllers/adapters/AdapterListController.js}"></script>

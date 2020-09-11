@@ -1,11 +1,10 @@
 package org.citopt.connde.service.testing;
 
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.domain.testing.TestDetails;
@@ -15,18 +14,12 @@ import org.citopt.connde.service.receiver.ValueLogReceiver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Chunk;
-import com.itextpdf.text.Document;
-import com.itextpdf.text.Element;
-import com.itextpdf.text.Font;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.List;
-import com.itextpdf.text.Paragraph;
-import com.itextpdf.text.Phrase;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
-import com.itextpdf.text.pdf.PdfWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 /**
  * The component TestReport is used for the creation of test reports for tests of applications using the testing-tool
@@ -66,12 +59,14 @@ public class TestReport {
         Document doc = new Document();
 
         // Create a new pdf, which is named with the ID of the specific test
-        File tempFile = new File(testId + ".pdf");
+        File tempFile = new File(testId + "_" + test.getEndTimeUnix() + ".pdf");
         if (tempFile.exists() && tempFile.isFile()) {
             tempFile.delete();
         }
-        File testReport = new File(testId + ".pdf");
-        String path = testReport.getAbsolutePath();
+        File testReport = new File(testId + "_" + test.getEndTimeUnix() + ".pdf");
+        Path wholePath = Paths.get(testReport.getAbsolutePath());
+        String path = wholePath.getParent().toString();
+
 
         FileOutputStream pdfFileout = new FileOutputStream(testReport);
         PdfWriter.getInstance(doc, pdfFileout);
@@ -134,7 +129,7 @@ public class TestReport {
     }
 
     /**
-     *  Return a table with the success information of the test and the start/end time.
+     * Return a table with the success information of the test and the start/end time.
      *
      * @param test test for which the test report is created
      * @return table with success and time informations
@@ -333,8 +328,8 @@ public class TestReport {
     /**
      * Creates a table with all important informations about the rules of the application which was tested
      *
-     * @param test       test for which the test report is created
-     * @param rule       detail information of the selected rules before the test
+     * @param test test for which the test report is created
+     * @param rule detail information of the selected rules before the test
      * @return PDFTable with all important informations about the rules in the test of a specific application
      */
     private PdfPTable getRuleDetails(TestDetails test, Rule rule) {
@@ -353,10 +348,6 @@ public class TestReport {
         c0.setColspan(4);
         c0.setBackgroundColor(new BaseColor(157, 213, 227));
         ruleInfos.addCell(c0);
-
-
-
-
 
 
         // Rule: Condition (Trigger Querey)
@@ -489,7 +480,7 @@ public class TestReport {
 
         return ruleInfos;
 
-}
+    }
 
     /**
      * Returns a table with detailed informations of the rules belonging to the IoT-Application of the Test

@@ -106,12 +106,6 @@
 			<artifactId>spring-data-mongodb</artifactId>
 		</dependency>
 
-		<!-- InfluxDB -->
-		<dependency>
-			<groupId>org.influxdb</groupId>
-			<artifactId>influxdb-java</artifactId>
-		</dependency>
-
 		<!-- MQTT -->
 		<dependency>
 			<groupId>org.eclipse.paho</groupId>

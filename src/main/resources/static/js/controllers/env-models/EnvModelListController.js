@@ -79,16 +79,15 @@ app.controller('EnvModelListController',
             function saveExistingModel(modelObject) {
                 //Pass model object to controller
                 vm.updateEnvModelCtrl.item = modelObject;
-
                 //Pass model ID to the controller
                 vm.updateEnvModelCtrl.item.id = currentModelID;
-
+                console.log(vm.updateEnvModelCtrl.item);
                 //Create requeest for updating the model
                 vm.updateEnvModelCtrl.updateItem().then(function (data) {
                     //Check for success
                     if (vm.updateEnvModelCtrl.success) {
-                        console.log(data);
-                        console.log(vm.updateEnvModelCtrl.result)
+              //          console.log(data);
+                //        console.log(vm.updateEnvModelCtrl.result)
                     } else {
                         //Failure handling
                         //TODO

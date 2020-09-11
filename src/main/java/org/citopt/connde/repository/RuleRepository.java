@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository for rules that were created by the user. The repository is exposed for CRUD operations
@@ -20,6 +21,17 @@ import java.util.List;
 @RepositoryRestResource(collectionResourceRel = "rules", path = "rules")
 @Api(tags = {"Rule entities"}, description = "CRUD for rule entities")
 public interface RuleRepository extends UserEntityRepository<Rule> {
+
+
+    /**
+     * Retrieves a rule with certain id from the repository.
+     *
+     * @param id The name of the rule
+     * @return The rule
+     */
+    @RestResource(exported = false)
+    Optional<Rule> findById(@Param("id") String id);
+
 
     /**
      * Retrieves a rule that is of a certain name from the repository.
