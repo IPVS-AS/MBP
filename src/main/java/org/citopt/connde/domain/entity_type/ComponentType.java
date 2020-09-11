@@ -1,4 +1,4 @@
-package org.citopt.connde.domain.componentType;
+package org.citopt.connde.domain.entity_type;
 
 import javax.persistence.GeneratedValue;
 

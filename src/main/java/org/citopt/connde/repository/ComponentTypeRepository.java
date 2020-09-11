@@ -2,7 +2,7 @@ package org.citopt.connde.repository;
 
 import java.util.List;
 
-import org.citopt.connde.domain.componentType.ComponentType;
+import org.citopt.connde.domain.entity_type.ComponentType;
 import org.citopt.connde.repository.projection.ComponentTypeExcerpt;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;

@@ -3,7 +3,7 @@ package org.citopt.connde.web.rest;
 import io.swagger.annotations.*;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.constants.Constants;
-import org.citopt.connde.domain.componentType.ComponentType;
+import org.citopt.connde.domain.entity_type.ComponentType;
 import org.citopt.connde.repository.ComponentTypeRepository;
 import org.citopt.connde.web.rest.util.HeaderUtil;
 import org.citopt.connde.web.rest.util.PaginationUtil;

@@ -1,6 +1,6 @@
 package org.citopt.connde.web.rest.helper;
 
-import org.citopt.connde.domain.componentType.ComponentType;
+import org.citopt.connde.domain.entity_type.ComponentType;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;

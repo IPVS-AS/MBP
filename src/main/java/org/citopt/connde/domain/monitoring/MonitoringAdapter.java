@@ -1,7 +1,7 @@
 package org.citopt.connde.domain.monitoring;
 
 import org.citopt.connde.domain.adapter.Adapter;
-import org.citopt.connde.domain.componentType.ComponentType;
+import org.citopt.connde.domain.entity_type.ComponentType;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import java.util.List;

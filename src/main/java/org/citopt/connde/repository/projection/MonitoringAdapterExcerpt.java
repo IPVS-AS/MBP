@@ -1,6 +1,6 @@
 package org.citopt.connde.repository.projection;
 
-import org.citopt.connde.domain.componentType.ComponentType;
+import org.citopt.connde.domain.entity_type.ComponentType;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.springframework.data.rest.core.config.Projection;
 

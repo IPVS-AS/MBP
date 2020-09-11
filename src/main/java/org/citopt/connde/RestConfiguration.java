@@ -6,7 +6,7 @@ import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.ActuatorValidator;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.component.SensorValidator;
-import org.citopt.connde.domain.componentType.ComponentType;
+import org.citopt.connde.domain.entity_type.ComponentType;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.env_model.EnvironmentModel;
