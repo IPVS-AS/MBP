@@ -240,33 +240,25 @@ public class TestEngine implements ValueLogReceiverObserver {
         restDeploymentController.startActuator(testingActuator.getId(), new ArrayList<>());
 
 
+
         // check if the sensor/s are currently running
         for (Sensor sensor : testingSensor) {
             ResponseEntity<Boolean> sensorDeployed = restDeploymentController.isRunningSensor(sensor.getId());
             String sensorName = sensor.getName();
-            for (int i = 0; i < config.size(); i++){
-                for(int j = 0; j < config.get(i).size(); j++){
-                    for(ParameterInstance parameterInstance: config.get(j)){
-                        if (parameterInstance.getValue().equals(sensorName)) {
-                            // check if sensor is deployed
-                            if (!sensorDeployed.getBody()) {
-                                //if not deploy Sensor
-                                restDeploymentController.deploySensor((sensor.getId()));
-                            }
-                            restDeploymentController.stopSensor(sensor.getId());
-                            restDeploymentController.startSensor(sensor.getId(), config.get(j));
+            for (List<ParameterInstance> configSensor : config) {
+                for (ParameterInstance parameterInstance : configSensor) {
+                    if (parameterInstance.getName().equals("ConfigName") && parameterInstance.getValue().equals(sensorName)) {
+                        // check if sensor is deployed
+                        if (!sensorDeployed.getBody()) {
+                            //if not deploy Sensor
+                            restDeploymentController.deploySensor((sensor.getId()));
                         }
+                        restDeploymentController.stopSensor(sensor.getId());
+                        restDeploymentController.startSensor(sensor.getId(), configSensor);
                     }
                 }
-
-
-
             }
-
-
-
         }
-
 
         return new ResponseEntity<>("Test successfully started.", HttpStatus.OK);
     }

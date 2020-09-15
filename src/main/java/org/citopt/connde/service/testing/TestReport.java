@@ -3,6 +3,7 @@ package org.citopt.connde.service.testing;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfWriter;
+import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.domain.testing.TestDetails;
@@ -58,11 +59,11 @@ public class TestReport {
         Document doc = new Document();
 
         // Create a new pdf, which is named with the ID of the specific test
-        File tempFile = new File(testId + "_"+ test.getEndTimeUnix() + ".pdf");
+        File tempFile = new File(testId + "_" + test.getEndTimeUnix() + ".pdf");
         if (tempFile.exists() && tempFile.isFile()) {
             tempFile.delete();
         }
-        File testReport = new File(testId + "_"+ test.getEndTimeUnix() + ".pdf");
+        File testReport = new File(testId + "_" + test.getEndTimeUnix() + ".pdf");
         Path wholePath = Paths.get(testReport.getAbsolutePath());
         String path = wholePath.getParent().toString();
 
@@ -128,7 +129,7 @@ public class TestReport {
     }
 
     /**
-     *  Return a table with the success information of the test and the start/end time.
+     * Return a table with the success information of the test and the start/end time.
      *
      * @param test test for which the test report is created
      * @return table with success and time informations
@@ -216,88 +217,95 @@ public class TestReport {
         c0.setColspan(4);
         c0.setBackgroundColor(new BaseColor(117, 117, 117));
         table.addCell(c0);
-        ArrayList<String> simDet = getSensorTypePDF(test);
 
-        //Sensor-Type
-        c1 = new PdfPCell(new Phrase("Sensor-Type"));
-        c1.setColspan(2);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-        table.addCell(c1);
+        for (String type : test.getType()) {
 
-        c2 = new PdfPCell(new Phrase(simDet.get(0)));
-        c2.setColspan(2);
-        table.addCell(c2);
+            ArrayList<String> simDet = getSensorTypePDF(test, type);
 
-        //TestCase
-        c1 = new PdfPCell(new Phrase("Event"));
-        c1.setColspan(2);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-        table.addCell(c1);
-        c2 = new PdfPCell(new Phrase(simDet.get(1)));
-        c2.setColspan(2);
-        table.addCell(c2);
+            //Sensor-Type
+            c1 = new PdfPCell(new Phrase("Sensor-Type"));
+            c1.setColspan(2);
+            c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+            c1.setBackgroundColor(new BaseColor(157, 213, 227));
+            table.addCell(c1);
 
-        //Combination
-        c1 = new PdfPCell(new Phrase("Anomaly"));
-        c1.setColspan(2);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-        table.addCell(c1);
-        c2 = new PdfPCell(new Phrase(simDet.get(2)));
-        c2.setColspan(2);
-        table.addCell(c2);
+            c2 = new PdfPCell(new Phrase(simDet.get(0)));
+            c2.setColspan(2);
+            c2.setBackgroundColor(new BaseColor(157, 213, 227));
+            table.addCell(c2);
+
+            //TestCase
+            c1 = new PdfPCell(new Phrase("Event"));
+            c1.setColspan(2);
+            c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+            c1.setBackgroundColor(new BaseColor(191, 220, 227));
+            table.addCell(c1);
+            c2 = new PdfPCell(new Phrase(simDet.get(1)));
+            c2.setColspan(2);
+            table.addCell(c2);
+
+            //Combination
+            c1 = new PdfPCell(new Phrase("Anomaly"));
+            c1.setColspan(2);
+            c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+            c1.setBackgroundColor(new BaseColor(191, 220, 227));
+            table.addCell(c1);
+            c2 = new PdfPCell(new Phrase(simDet.get(2)));
+            c2.setColspan(2);
+            table.addCell(c2);
 
 /**
-        // Planned simulation adds informations about the simulation time, amount of events and outliers
-        if (test.getType().equals("TestingTemperaturSensorPl") || test.getType().equals("TestingFeuchtigkeitsSensorPl") || test.getType().equals("TestingGPSSensorPl") || test.getType().equals("TestingBeschleunigungsSensorPl")) {
-            for (int i = 0; i < test.getConfig().size(); i++) {
-                switch (test.getConfig().get(i).getName()) {
-                    case "simTime":
-                        simTime = String.valueOf(test.getConfig().get(i).getValue());
-                        c1 = new PdfPCell(new Phrase("Simulation-Time"));
-                        c1.setColspan(2);
-                        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-                        table.addCell(c1);
+ // Planned simulation adds informations about the simulation time, amount of events and outliers
+ if (test.getType().equals("TestingTemperaturSensorPl") || test.getType().equals("TestingFeuchtigkeitsSensorPl") || test.getType().equals("TestingGPSSensorPl") || test.getType().equals("TestingBeschleunigungsSensorPl")) {
+ for (int i = 0; i < test.getConfig().size(); i++) {
+ switch (test.getConfig().get(i).getName()) {
+ case "simTime":
+ simTime = String.valueOf(test.getConfig().get(i).getValue());
+ c1 = new PdfPCell(new Phrase("Simulation-Time"));
+ c1.setColspan(2);
+ c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+ c1.setBackgroundColor(new BaseColor(191, 220, 227));
+ table.addCell(c1);
 
-                        c2 = new PdfPCell(new Phrase(simTime + " hours"));
-                        c2.setColspan(2);
-                        table.addCell(c2);
+ c2 = new PdfPCell(new Phrase(simTime + " hours"));
+ c2.setColspan(2);
+ table.addCell(c2);
 
-                        break;
-                    case "amountEvents":
-                        amountEvents = String.valueOf(test.getConfig().get(i).getValue());
-                        c1 = new PdfPCell(new Phrase("Amount Events"));
-                        c1.setColspan(2);
-                        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-                        table.addCell(c1);
+ break;
+ case "amountEvents":
+ amountEvents = String.valueOf(test.getConfig().get(i).getValue());
+ c1 = new PdfPCell(new Phrase("Amount Events"));
+ c1.setColspan(2);
+ c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+ c1.setBackgroundColor(new BaseColor(191, 220, 227));
+ table.addCell(c1);
 
-                        c2 = new PdfPCell(new Phrase(amountEvents));
-                        c2.setColspan(2);
-                        table.addCell(c2);
+ c2 = new PdfPCell(new Phrase(amountEvents));
+ c2.setColspan(2);
+ table.addCell(c2);
 
-                        break;
-                    case "amountAnomalies":
-                        amountOutliers = String.valueOf(test.getConfig().get(i).getValue());
-                        c1 = new PdfPCell(new Phrase("Amount Anomalies"));
-                        c1.setColspan(2);
-                        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-                        table.addCell(c1);
+ break;
+ case "amountAnomalies":
+ amountOutliers = String.valueOf(test.getConfig().get(i).getValue());
+ c1 = new PdfPCell(new Phrase("Amount Anomalies"));
+ c1.setColspan(2);
+ c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+ c1.setBackgroundColor(new BaseColor(191, 220, 227));
+ table.addCell(c1);
 
-                        c2 = new PdfPCell(new Phrase(amountOutliers));
-                        c2.setColspan(2);
-                        table.addCell(c2);
+ c2 = new PdfPCell(new Phrase(amountOutliers));
+ c2.setColspan(2);
+ table.addCell(c2);
 
-                        break;
-                }
+ break;
+ }
 
-            }
-        }
+ }
+ }
  **/
+        }
+
+
         return table;
     }
 
@@ -328,8 +336,8 @@ public class TestReport {
     /**
      * Creates a table with all important informations about the rules of the application which was tested
      *
-     * @param test       test for which the test report is created
-     * @param rule       detail information of the selected rules before the test
+     * @param test test for which the test report is created
+     * @param rule detail information of the selected rules before the test
      * @return PDFTable with all important informations about the rules in the test of a specific application
      */
     private PdfPTable getRuleDetails(TestDetails test, Rule rule) {
@@ -348,10 +356,6 @@ public class TestReport {
         c0.setColspan(4);
         c0.setBackgroundColor(new BaseColor(157, 213, 227));
         ruleInfos.addCell(c0);
-
-
-
-
 
 
         // Rule: Condition (Trigger Querey)
@@ -484,7 +488,7 @@ public class TestReport {
 
         return ruleInfos;
 
-}
+    }
 
     /**
      * Returns a table with detailed informations of the rules belonging to the IoT-Application of the Test
@@ -572,28 +576,37 @@ public class TestReport {
      * @param test test for which the test report is created
      * @return List of configurations readable for the test report
      */
-    public ArrayList<String> getSensorTypePDF(TestDetails test) {
+    public ArrayList<String> getSensorTypePDF(TestDetails test, String sensorType) {
 
         ArrayList<String> simDet = new ArrayList<>();
-        //String type = test.getType();
         String kindOfSensor = "";
         String testCaseStr = "";
         String combiStr = "";
         int testCase = 0;
         int combination = 0;
+        java.util.List<ParameterInstance> config = null;
 
-/**
-        for (int i = 0; i < test.getConfig().size(); i++) {
-            if (test.getConfig().get(i).getName().equals("event")) {
-                testCase = (Integer) test.getConfig().get(i).getValue();
-            }
-            if (test.getConfig().get(i).getName().equals("anomaly")) {
-                combination = (Integer) test.getConfig().get(i).getValue();
+
+        for (java.util.List<ParameterInstance> configSensor : test.getConfig()) {
+            for (ParameterInstance parameterInstance : configSensor) {
+                if (parameterInstance.getName().equals("ConfigName") && parameterInstance.getValue().equals(sensorType)) {
+                    config = configSensor;
+                }
             }
         }
 
 
-        switch (type) {
+        for (ParameterInstance parameterInstance : config) {
+            if (parameterInstance.getName().equals("event")) {
+                testCase = (Integer) parameterInstance.getValue();
+            }
+            if (parameterInstance.getName().equals("anomaly")) {
+                combination = (Integer) parameterInstance.getValue();
+            }
+        }
+
+
+        switch (sensorType) {
             case "TestingTemperaturSensor":
                 kindOfSensor = "Temperature Sensor";
                 break;
@@ -619,10 +632,10 @@ public class TestReport {
                 kindOfSensor = "Acceleration Sensor (planned)";
                 break;
         }
- **/
+
         simDet.add(0, kindOfSensor);
-/**
-        switch (type) {
+
+        switch (sensorType) {
             case "TestingTemperaturSensor":
             case "TestingTemperaturSensorPl":
                 if (testCase == 1) {
@@ -732,7 +745,6 @@ public class TestReport {
                 }
                 break;
         }
- **/
 
         simDet.add(1, testCaseStr);
         simDet.add(2, combiStr);

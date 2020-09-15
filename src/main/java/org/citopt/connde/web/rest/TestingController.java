@@ -216,7 +216,7 @@ public class TestingController {
 
     }
 
-    //TODO: Methode anpassen nach neuer Config Struktur
+
     @RequestMapping(value = "/test-details/updateTest/{testId}", method = RequestMethod.POST)
     public HttpEntity<Object> updateTest(@PathVariable(value = "testId") String testId, @RequestBody String test) {
         try{

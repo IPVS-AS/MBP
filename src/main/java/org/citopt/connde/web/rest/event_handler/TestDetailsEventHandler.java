@@ -51,212 +51,36 @@ public class TestDetailsEventHandler {
      */
     @HandleBeforeCreate
     public void testStarted(TestDetails testDetails) throws IOException {
-        Sensor sensorX;
-        Sensor sensorY;
-        Sensor sensorZ;
+
         List<Sensor> sensorArray = new ArrayList<>();
 
 
         // checks if the sensors for the test are registered. If not this will be done in the following, if the specific operators are existing.
-        for(String type: testDetails.getType()){
-            switch (type) {
-                case "TestingGPSSensor":
-                    sensorX = sensorRepository.findByName("TestingGPSLatitude");
-                    sensorY = sensorRepository.findByName("TestingGPSLongitude");
-                    sensorZ = sensorRepository.findByName("TestingGPSHight");
-                    if (sensorX == null) {
-                        if (adapterRepository.findByName("TestingGPSLat") != null) {
-                            sensorX = new Sensor();
-                            sensorX.setName("TestingGPSLatitude");
-                            sensorX.setDevice(deviceRepository.findByName("TestingDevice"));
-                            sensorX.setAdapter(adapterRepository.findByName("TestingGPSLat"));
-                            sensorRepository.insert(sensorX);
 
-                        }
-                    }
 
-                    if (sensorY == null) {
-                        if (adapterRepository.findByName("TestingGPSLong") != null) {
-                            sensorY = new Sensor();
-                            sensorY.setName("TestingGPSLongitude");
-                            sensorY.setDevice(deviceRepository.findByName("TestingDevice"));
-                            sensorY.setAdapter(adapterRepository.findByName("TestingGPSLong"));
-                            sensorRepository.insert(sensorY);
-                        }
-                    }
-                    if (sensorZ == null) {
-                        if (adapterRepository.findByName("TestingGPSHight") != null) {
-                            sensorZ = new Sensor();
-                            sensorZ.setName("TestingGPSHight");
-                            sensorZ.setDevice(deviceRepository.findByName("TestingDevice"));
-                            sensorZ.setAdapter(adapterRepository.findByName("TestingGPSHight"));
-                            sensorRepository.insert(sensorZ);
-                        }
-                    }
+        for (String sensType : testDetails.getType()) {
 
-                    if (sensorX != null & sensorY != null & sensorZ != null) {
-                        sensorArray.add(sensorX);
-                        sensorArray.add(sensorY);
-                        sensorArray.add(sensorZ);
-                        testDetails.setSensor(sensorArray);
-                    }
-                    break;
-                case "TestingGPSSensorPl":
-                    sensorX = sensorRepository.findByName("TestingGPSLatitudePl");
-                    sensorY = sensorRepository.findByName("TestingGPSLongitudePl");
-                    sensorZ = sensorRepository.findByName("TestingGPSHightPl");
-                    if (sensorX == null) {
-                        if (adapterRepository.findByName("TestingGPSLatitudePl") != null) {
-                            sensorX = new Sensor();
-                            sensorX.setName("TestingGPSLatitudePl");
-                            sensorX.setDevice(deviceRepository.findByName("TestingDevice"));
-                            sensorX.setAdapter(adapterRepository.findByName("TestingGPSLatitudePl"));
-                            sensorRepository.insert(sensorX);
-                        }
-                    }
+            Sensor sensor = sensorRepository.findByName(sensType);
 
-                    if (sensorY == null) {
-                        if (adapterRepository.findByName("TestingGPSLongitudePl") != null) {
-                            sensorY = new Sensor();
-                            sensorY.setName("TestingGPSLongitudePl");
-                            sensorY.setDevice(deviceRepository.findByName("TestingDevice"));
-                            sensorY.setAdapter(adapterRepository.findByName("TestingGPSLongitudePl"));
-                            sensorRepository.insert(sensorY);
-                        }
-                    }
-                    if (sensorZ == null) {
-                        if (adapterRepository.findByName("TestingGPSHightPl") != null) {
-                            sensorZ = new Sensor();
-                            sensorZ.setName("TestingGPSHightPl");
-                            sensorZ.setDevice(deviceRepository.findByName("TestingDevice"));
-                            sensorZ.setAdapter(adapterRepository.findByName("TestingGPSHightPl"));
-                            sensorRepository.insert(sensorZ);
-                        }
-                    }
-
-                    if (sensorX != null & sensorY != null & sensorZ != null) {
-                        sensorArray.add(sensorX);
-                        sensorArray.add(sensorY);
-                        sensorArray.add(sensorZ);
-                        testDetails.setSensor(sensorArray);
-                    }
-
-                    break;
-                case "TestingBeschleunigungsSensor":
-                    sensorX = sensorRepository.findByName("TestingAccelerationX");
-                    sensorY = sensorRepository.findByName("TestingAccelerationY");
-                    sensorZ = sensorRepository.findByName("TestingAccelerationZ");
-
-                    if (sensorX == null) {
-                        if (adapterRepository.findByName("TestingAccelerationX") != null) {
-                            sensorX = new Sensor();
-                            sensorX.setName("TestingAccelerationX");
-                            sensorX.setDevice(deviceRepository.findByName("TestingDevice"));
-                            sensorX.setAdapter(adapterRepository.findByName("TestingAccelerationX"));
-                            sensorRepository.insert(sensorX);
-                        }
-
-                    }
-
-                    if (sensorY == null) {
-                        if (adapterRepository.findByName("TestingAccelerationY") != null) {
-                            sensorY = new Sensor();
-                            sensorY.setName("TestingAccelerationY");
-                            sensorY.setDevice(deviceRepository.findByName("TestingDevice"));
-                            sensorY.setAdapter(adapterRepository.findByName("TestingAccelerationY"));
-                            sensorRepository.insert(sensorY);
-                        }
-
-                    }
-                    if (sensorZ == null) {
-                        if (adapterRepository.findByName("TestingAccelerationZ") != null) {
-                            sensorZ = new Sensor();
-                            sensorZ.setName("TestingAccelerationZ");
-                            sensorZ.setDevice(deviceRepository.findByName("TestingDevice"));
-                            sensorZ.setAdapter(adapterRepository.findByName("TestingAccelerationZ"));
-                            sensorRepository.insert(sensorZ);
-                        }
-                    }
-
-                    if (sensorX != null & sensorY != null & sensorZ != null) {
-                        sensorArray.add(sensorX);
-                        sensorArray.add(sensorY);
-                        sensorArray.add(sensorZ);
-                        testDetails.setSensor(sensorArray);
-                    }
-
-                    break;
-                case "TestingBeschleunigungsSensorPl":
-                    sensorX = sensorRepository.findByName("TestingAccelerationPlX");
-                    sensorY = sensorRepository.findByName("TestingAccelerationPlY");
-                    sensorZ = sensorRepository.findByName("TestingAccelerationPlZ");
-                    if (sensorX == null) {
-                        if (adapterRepository.findByName("TestingAccelerationPlX") != null) {
-                            sensorX = new Sensor();
-                            sensorX.setName("TestingAccelerationPlX");
-                            sensorX.setDevice(deviceRepository.findByName("TestingDevice"));
-                            sensorX.setAdapter(adapterRepository.findByName("TestingAccelerationPlX"));
-                            sensorRepository.insert(sensorX);
-                        }
-
-                    }
-
-                    if (sensorY == null) {
-                        if (adapterRepository.findByName("TestingAccelerationPlY") != null) {
-                            sensorY = new Sensor();
-                            sensorY.setName("TestingAccelerationPlY");
-                            sensorY.setDevice(deviceRepository.findByName("TestingDevice"));
-                            sensorY.setAdapter(adapterRepository.findByName("TestingAccelerationPlY"));
-                            sensorRepository.insert(sensorY);
-                        }
-                    }
-                    if (sensorZ == null) {
-                        if (adapterRepository.findByName("TestingAccelerationPlZ") != null) {
-                            sensorZ = new Sensor();
-                            sensorZ.setName("TestingAccelerationPlZ");
-                            sensorZ.setDevice(deviceRepository.findByName("TestingDevice"));
-                            sensorZ.setAdapter(adapterRepository.findByName("TestingAccelerationPlZ"));
-                            sensorRepository.insert(sensorZ);
-                        }
-                    }
-
-                    if (sensorX != null & sensorY != null & sensorZ != null) {
-                        sensorArray.add(sensorX);
-                        sensorArray.add(sensorY);
-                        sensorArray.add(sensorZ);
-                        testDetails.setSensor(sensorArray);
-                    }
-
-                    break;
-                default:
-
-                    for (String sensType : testDetails.getType()){
-
-                        Sensor sensor = sensorRepository.findByName(sensType);
-
-                        sensorArray.add(sensor);
-                    }
-                    /**
-                     if (sensor == null) {
-                     sensor = new Sensor();
-                     sensor.setName(testDetails.getType());
-                     sensor.setDevice(deviceRepository.findByName("TestingDevice"));
-                     if (adapterRepository.findByName(testDetails.getType()) != null) {
-                     sensor.setAdapter(adapterRepository.findByName(testDetails.getType()));
-                     sensorRepository.insert(sensor);
-                     sensorArray.add(sensor);
-                     testDetails.setSensor(sensorArray);
-                     }
-
-                     } else {
-                     sensorArray.add(sensor);
-                     testDetails.setSensor(sensorArray);
-                     }
-                     **/
-                    break;
-            }
+            sensorArray.add(sensor);
         }
+        /**
+         if (sensor == null) {
+         sensor = new Sensor();
+         sensor.setName(testDetails.getType());
+         sensor.setDevice(deviceRepository.findByName("TestingDevice"));
+         if (adapterRepository.findByName(testDetails.getType()) != null) {
+         sensor.setAdapter(adapterRepository.findByName(testDetails.getType()));
+         sensorRepository.insert(sensor);
+         sensorArray.add(sensor);
+         testDetails.setSensor(sensorArray);
+         }
 
+         } else {
+         sensorArray.add(sensor);
+         testDetails.setSensor(sensorArray);
+         }
+         **/
 
 
         // checks if the testing actuator is registered

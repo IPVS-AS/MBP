@@ -17,14 +17,11 @@ app.controller('TestingChartController',
             for (var i in sensorList) {
 
                 if (testingDetails.type.indexOf(sensorList[i].name)!== -1) {
-
                     vm.sensor = sensorList[i];
-                    console.log(sensorList[i]);
                     vm.component_id = sensorList[i].id;
                     vm.component_type = sensorList[i].componentTypeName;
                     vm.component_type_url = vm.component_type + 's';
                     vm.component_adapter_unit = sensorList[i]._embedded.adapter.unit;
-
                 }
             }
 
@@ -119,7 +116,7 @@ app.controller('TestingChartController',
                 DeviceService.getDeviceState(vm.sensor._embedded.device.id).then(function (response) {
                     //Success
                     vm.deviceState = response.data.content;
-                }, function (response) {
+                }, function () {
                     //Failure
                     vm.deviceState = 'UNKNOWN';
                     NotificationService.notify('Could not load device state.', 'error');

@@ -68,7 +68,7 @@
                             <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>&nbsp;
                             <i ng-show="item.wasModelled" class="material-icons" style="vertical-align: bottom;">view_quilt</i>
                         </td>
-                        <td>{{item.type.toString()}}</td>
+                        <td>{{item.type.join(', ')}}</td>
                         <td>
                             <div class="switch" style="margin-top: 7px;">
                                 <label>
@@ -174,7 +174,7 @@
                                 </div>
                                 <div ng-if="ctrl.selectedSensors.includes('TestingTemperaturSensor')"  >
                                     <div class="form-line">
-                                        <h3>Configuration Temerature Sensor Simulator</h3>
+                                        <h3>Configuration Temperature Sensor Simulator</h3>
                                         <h4> Type of simulation </h4>
                                         <select class="form-control show-tick" id="select-event"
                                                 name="event"
