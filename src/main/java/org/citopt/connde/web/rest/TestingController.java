@@ -1,29 +1,21 @@
 package org.citopt.connde.web.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.util.JSON;
-import jdk.nashorn.internal.parser.JSONParser;
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.testing.TestDetails;
-import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.repository.RuleRepository;
 import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.service.testing.GraphPlotter;
 import org.citopt.connde.service.testing.TestEngine;
 import org.citopt.connde.service.testing.TestReport;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -111,8 +103,7 @@ public class TestingController {
         TestDetails testDetails = testDetailsRepository.findOne(testId);
 
         // get  informations about the status of the rules before the execution of the test
-        List<Rule> rulesbefore = testEngine.getStatRulesBefore(testDetails);
-        return rulesbefore;
+        return testEngine.getStatRulesBefore(testDetails);
     }
 
 
@@ -188,7 +179,7 @@ public class TestingController {
     }
 
     @PostMapping(value = "/test-details/deleteTestreport/{testId}")
-    public ResponseEntity<String> deleteTestReport(@PathVariable(value = "testId") String testId) {
+    public ResponseEntity deleteTestReport(@PathVariable(value = "testId") String testId) {
         ResponseEntity response;
 
         TestDetails testDetails = testDetailsRepository.findById(testId);
@@ -244,7 +235,7 @@ public class TestingController {
             testToUpdate.setConfig(Collections.singletonList(newConfig));
 
             // Update the rules to be observed in the test
-            Pattern pattern = Pattern.compile("rules\\/(.*)$");
+            Pattern pattern = Pattern.compile("rules/(.*)$");
             JSONArray rules = (JSONArray) updateInfos.get("rules");
             List<Rule> newRules = new ArrayList<>();
             if(rules != null){

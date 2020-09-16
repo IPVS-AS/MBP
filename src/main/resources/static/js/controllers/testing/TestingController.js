@@ -8,7 +8,7 @@ app.controller('TestingController',
     ['$scope', '$controller', '$interval', '$http', 'testList', '$rootScope', 'addTest', 'deleteTest', 'ruleList', '$q', 'ComponentService', 'FileReader', 'ENDPOINT_URI', 'NotificationService',
         function ($scope, $controller, $interval, $http, testList, $rootScope, addTest, deleteTest, ruleList, $q, ComponentService, FileReader, ENDPOINT_URI, NotificationService) {
 
-            var vm = this;
+            const vm = this;
             vm.ruleList = ruleList;
             //Stores the parameters and their values as assigned by the user
             vm.parameterValues = [];
@@ -17,7 +17,7 @@ app.controller('TestingController',
             vm.testName = "";
             vm.rulesPDF = [];
             vm.availableSensors = [];
-            var sensorList = ['TestingTemperaturSensor', 'TestingTemperaturSensorPl', 'TestingFeuchtigkeitsSensor', 'TestingFeuchtigkeitsSensorPl', 'TestingBeschleunigungsSensor', 'TestingBeschleunigungsSensorPl', 'TestingGPSSensor', 'TestingGPSSensorPl'];
+            const sensorList = ['TestingTemperaturSensor', 'TestingTemperaturSensorPl', 'TestingFeuchtigkeitsSensor', 'TestingFeuchtigkeitsSensorPl', 'TestingBeschleunigungsSensor', 'TestingBeschleunigungsSensorPl', 'TestingGPSSensor', 'TestingGPSSensorPl'];
 
             vm.test = "";
 
@@ -41,7 +41,7 @@ app.controller('TestingController',
                 $scope.availableSensors = vm.availableSensors;
 
                 //Interval for updating sensor states on a regular basis
-                var interval = $interval(function () {
+                const interval = $interval(function () {
                     getDevice();
                     //   checkActuatorReg();
                     //  checkSensorReg();
@@ -553,11 +553,11 @@ app.controller('TestingController',
              */
             function confirmDelete(data) {
 
-                var testId = data.id;
-                var testName = "";
+                const testId = data.id;
+                let testName = "";
 
                 //Determines the tests's name by checking the list
-                for (var i = 0; i < testList.length; i++) {
+                for (let i = 0; i < testList.length; i++) {
                     if (testId === testList[i].id) {
                         testName = testList[i].name;
                         break;
@@ -611,19 +611,19 @@ app.controller('TestingController',
                     {
                         $scope: $scope,
                         addItem: function (data) {
-                            var newTestObject = {};
+                            const newTestObject = {};
                             newTestObject.config = [];
                             try {
                                 //Extend request parameters for routines and parameters
-                                var parameters;
+                                let parameters;
                                 // random values Angle and Axis for the GPS-Sensor
-                                var randomAngle = Math.floor((Math.random() * 361));
-                                var randomAxis = Math.floor((Math.random() * 3));
+                                const randomAngle = Math.floor((Math.random() * 361));
+                                const randomAxis = Math.floor((Math.random() * 3));
 
 
                                 // random values for the direction of the outlier and movement for the acceleration Sensor
-                                var directionOutlier = Math.floor(Math.random() * 6);
-                                var directionMovement = Math.floor(Math.random() * 6);
+                                const directionOutlier = Math.floor(Math.random() * 6);
+                                const directionMovement = Math.floor(Math.random() * 6);
 
                                 console.log(vm.selectedSensors);
                                 console.log(vm.config.eventTemp);
@@ -1114,7 +1114,7 @@ app.controller('TestingController',
                                 }
 
 
-                                for (var property in data) {
+                                for (let property in data) {
                                     if (data.hasOwnProperty(property)) {
                                         newTestObject[property] = data[property];
                                     }
@@ -1146,8 +1146,10 @@ app.controller('TestingController',
 
 
                             newTestObject.rules = vm.rules;
-                            var radios = document.getElementsByName('executeRules');
-                            for (var i = 0, length = radios.length; i < length; i++) {
+                            const radios = document.getElementsByName('executeRules');
+                            let i = 0;
+                            const length = radios.length;
+                            for (; i < length; i++) {
                                 if (radios[i].checked) {
                                     var executeRulesTemp = radios[i].value;
                                     break;
@@ -1192,7 +1194,7 @@ app.controller('TestingController',
                 },
                 function () {
                     //Callback
-                    var test = vm.addTestCtrl.result;
+                    const test = vm.addTestCtrl.result;
 
                     if (test) {
                         //Close modal on success
@@ -1213,7 +1215,7 @@ app.controller('TestingController',
                 },
                 function () {
                     //Callback
-                    var id = vm.deleteTestCtrl.result;
+                    const id = vm.deleteTestCtrl.result;
                     vm.testListCtrl.removeItem(id);
                 }
             );

@@ -11,10 +11,10 @@ app.controller('TestingChartController',
             const STATS_CARD_SELECTOR = ".stats-card";
 
 
-            var vm = this;
+            const vm = this;
 
 
-            for (var i in sensorList) {
+            for (const i in sensorList) {
 
                 if (testingDetails.type.indexOf(sensorList[i].name)!== -1) {
                     vm.sensor = sensorList[i];
@@ -64,7 +64,7 @@ app.controller('TestingChartController',
 
 
                 //Interval for updating states on a regular basis
-                var interval = $interval(function () {
+                const interval = $interval(function () {
                     updateDeploymentState(true);
                     updateDeviceState();
                 }, 1000);
@@ -94,7 +94,7 @@ app.controller('TestingChartController',
                 ComponentService.getComponentState(COMPONENT_ID, COMPONENT_TYPE_URL).then(function (response) {
                     //Success
                     vm.deploymentState = response.data.content;
-                }, function (response) {
+                }, function () {
                     //Failure
                     vm.deploymentState = 'UNKNOWN';
                     NotificationService.notify('Could not retrieve deployment state.', 'error');
@@ -131,7 +131,7 @@ app.controller('TestingChartController',
              */
             function onDisplayUnitChange() {
                 //Retrieve entered unit
-                var inputUnit = vm.displayUnitInput;
+                const inputUnit = vm.displayUnitInput;
 
                 //Check whether the entered unit is compatible with the adapter unit
                 UnitService.checkUnitsForCompatibility(COMPONENT_ADAPTER_UNIT, inputUnit).then(function (response) {
@@ -156,7 +156,7 @@ app.controller('TestingChartController',
              */
             function getPDFList() {
                 $http.get(ENDPOINT_URI + '/test-details/pdfList/' + testingDetails.id).then(function (response) {
-                    var pdfList = {};
+                    const pdfList = {};
                     vm.pdfDetails = [];
 
                     if (Object.keys(response.data).length > 0) {
@@ -185,7 +185,7 @@ app.controller('TestingChartController',
                 vm.startTest = 'STARTING_TEST';
 
                 //Execute start request
-                $http.post(ENDPOINT_URI + '/test-details/test/' + testingDetails.id, testingDetails.id.toString()).success(function (responseTest) {
+                $http.post(ENDPOINT_URI + '/test-details/test/' + testingDetails.id, testingDetails.id.toString()).success(function () {
                     // If test completed successfully, update List of Test-Reports
                     getPDFList();
                     vm.startTest = "END_TEST";
@@ -193,7 +193,7 @@ app.controller('TestingChartController',
                 }).error(function () {
                     vm.startTest = "ERROR_TEST";
                     NotificationService.notify('Error during start of test.', 'error');
-                    return;
+
                 }).finally(function () {
                     hideDeploymentWaitingScreen();
                 });
@@ -232,7 +232,7 @@ app.controller('TestingChartController',
              */
             function retrieveComponentData(numberLogs, descending, unit) {
                 //Set default order
-                var order = 'asc';
+                let order = 'asc';
 
                 //Check for user option
                 if (descending) {
@@ -240,7 +240,7 @@ app.controller('TestingChartController',
                 }
 
                 //Initialize parameters for the server request
-                var pageDetails = {
+                const pageDetails = {
                     sort: 'time,' + order,
                     size: numberLogs
                 };
@@ -259,13 +259,13 @@ app.controller('TestingChartController',
                  * Executes the deletion of the value logs by performing the server request.
                  */
                 function executeDeletion() {
-                    ComponentService.deleteValueLogs(COMPONENT_ID, COMPONENT_TYPE).then(function (response) {
+                    ComponentService.deleteValueLogs(COMPONENT_ID, COMPONENT_TYPE).then(function () {
                         //Update historical chart and stats
                         $scope.historicalChartApi.updateChart();
                         $scope.valueLogStatsApi.updateStats();
 
                         NotificationService.notify("Value logs were deleted successfully.", "success");
-                    }, function (response) {
+                    }, function () {
                         NotificationService.notify("Could not delete value logs.", "error");
                     });
                 }
@@ -323,7 +323,7 @@ app.controller('TestingChartController',
                     return ComponentService.getValueLogStats(COMPONENT_ID, COMPONENT_TYPE_URL, unit).then(function (response) {
                         //Success, pass statistics data
                         return response.data;
-                    }, function (response) {
+                    }, function () {
                         //Failure
                         NotificationService.notify('Could not load value log statistics.', 'error');
                         return {};
@@ -419,16 +419,16 @@ app.controller('TestingChartController',
             function initParameters() {
                 //Retrieve all formal parameters for this component
 
-                var requiredParams = vm.sensor._embedded.adapter.parameters;
+                const requiredParams = vm.sensor._embedded.adapter.parameters;
                 //Iterate over all parameters
-                for (var i = 0; i < requiredParams.length; i++) {
+                for (let i = 0; i < requiredParams.length; i++) {
                     //Set empty default values for these parameters
-                    var value = "";
+                    let value = "";
 
-                    if (requiredParams[i].type == "Switch") {
+                    if (requiredParams[i].type === "Switch") {
                         value = false;
                     }
-                    if (requiredParams[i].name == "device_code") {
+                    if (requiredParams[i].name === "device_code") {
                         value = getDeviceCode();
                         continue;
                     }

@@ -4,15 +4,15 @@
  * Controller for the test details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('TestingDetailsController',
-    ['$scope', '$controller', 'testingDetails', 'sensorList', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI', 'ruleList', 'updateTest', 'CrudService',
-        function ($scope, $controller, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, ENDPOINT_URI, ruleList, updateTest, CrudService) {
+    ['$scope', '$controller', 'testingDetails', 'sensorList', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI', 'ruleList',
+        function ($scope, $controller, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, ENDPOINT_URI, ruleList) {
             //Initialization of variables that are used in the frontend by angular
-            var vm = this;
+            const vm = this;
             //Test ID
             const COMPONENT_ID = $routeParams.id;
 
             //Extend each sensor in sensorList for a state and a reload function
-            for (var i in sensorList) {
+            for (const i in sensorList) {
                 if (sensorList[i].name === testingDetails.type) {
                     vm.sensorID = sensorList[i].id;
                 }
@@ -28,7 +28,6 @@ app.controller('TestingDetailsController',
             vm.executeRules = true;
             vm.updateValues = [];
             vm.configUpdate = [];
-            vm.executeRulesNew;
             vm.rulesUpdate = [];
             vm.sensorType = testingDetails.type;
             vm.newTestObject = {};
@@ -58,56 +57,56 @@ app.controller('TestingDetailsController',
              * Get the Configuration of the test to display them on the edit Test Modal
              */
             function getConfig() {
-                var eventTemp;
-                var anomalyTemp;
-                var roomTemp;
-                var eventHum;
-                var anomalyHum;
-                var roomHum;
-                var eventTempPl;
-                var anomalyTempPl;
-                var roomTempPl;
-                var eventHumPl;
-                var anomalyHumPl;
-                var useNewData;
-                var roomHumPl;
+                let eventTemp;
+                let anomalyTemp;
+                let roomTemp;
+                let eventHum;
+                let anomalyHum;
+                let roomHum;
+                let eventTempPl;
+                let anomalyTempPl;
+                let roomTempPl;
+                let eventHumPl;
+                let anomalyHumPl;
+                let useNewData;
+                let roomHumPl;
 
-                var simTime;
-                var amountEvents;
-                var amountAnomalies;
-                var eventGPS;
-                var anomalyGPS;
-                var whoGPS;
-                var latitudeGPS;
-                var longitudeGPS;
-                var hightGPS;
-                var reactionMetersGPS;
+                let simTime;
+                let amountEvents;
+                let amountAnomalies;
+                let eventGPS;
+                let anomalyGPS;
+                let whoGPS;
+                let latitudeGPS;
+                let longitudeGPS;
+                let hightGPS;
+                let reactionMetersGPS;
 
-                var eventGPSPl;
-                var anomalyGPSPl;
-                var whoGPSPl;
-                var latitudeGPSPl;
-                var longitudeGPSPl;
-                var hightGPSPl;
-                var reactionMetersGPSPl;
+                let eventGPSPl;
+                let anomalyGPSPl;
+                let whoGPSPl;
+                let latitudeGPSPl;
+                let longitudeGPSPl;
+                let hightGPSPl;
+                let reactionMetersGPSPl;
 
-                var eventAcc;
-                var anomalyAcc;
-                var weightObjectAcc;
-                var sensitivityClassAcc;
-                var reactionMetersAcc;
+                let eventAcc;
+                let anomalyAcc;
+                let weightObjectAcc;
+                let sensitivityClassAcc;
+                let reactionMetersAcc;
 
-                var eventAccPl;
-                var anomalyAccPl;
-                var weightObjectAccPl;
-                var sensitivityClassAccPl;
-                var reactionMetersAccPl;
+                let eventAccPl;
+                let anomalyAccPl;
+                let weightObjectAccPl;
+                let sensitivityClassAccPl;
+                let reactionMetersAccPl;
 
                 vm.rules = [];
                 $rootScope.config = {};
 
 
-                let sensitivityClass;
+
                 if (testingDetails.type.includes('TestingTemperaturSensor')) {
                     testingDetails.config.forEach(function (config) {
                         config.forEach(function (parameterInstance) {
@@ -437,7 +436,7 @@ app.controller('TestingDetailsController',
                 }
 
                 if (testingDetails.type === 'TestingBeschleunigungsSensorPl') {
-                    ftestingDetails.config.forEach(function (config) {
+                    testingDetails.config.forEach(function (config) {
                         config.forEach(function (parameterInstance) {
                             if (parameterInstance.name === "event") {
                                 eventAccPl = parameterInstance.value;
@@ -550,7 +549,7 @@ app.controller('TestingDetailsController',
              */
             function getPDFList() {
                 $http.get(ENDPOINT_URI + '/test-details/pdfList/' + COMPONENT_ID).then(function (response) {
-                    var pdfList = {};
+                    const pdfList = {};
                     vm.pdfDetails = [];
 
 
@@ -574,7 +573,7 @@ app.controller('TestingDetailsController',
              * Performs a server request in order to start a test given by its id.
              */
             function executeTest() {
-                $http.post(ENDPOINT_URI + '/test-details/test/' + COMPONENT_ID, COMPONENT_ID.toString()).success(function successCallback(responseTest) {
+                $http.post(ENDPOINT_URI + '/test-details/test/' + COMPONENT_ID, COMPONENT_ID.toString()).success(function successCallback() {
                     // If the test was completed successfully, enable the download Test Report Button
                     getPDFList();
                 });
@@ -602,7 +601,6 @@ app.controller('TestingDetailsController',
              * Sends a server request in order to edit the configurations of the test "useNewData",
              * so that the latest values of a specific test are reused in the new execution or not
              *
-             * @param testId
              * @param useNewData
              */
             function editConfig(useNewData) {
@@ -656,13 +654,13 @@ app.controller('TestingDetailsController',
                     //Extend request parameters for routines and parameters
 
                     // random values Angle and Axis for the GPS-Sensor
-                    var randomAngle = Math.floor((Math.random() * 361));
-                    var randomAxis = Math.floor((Math.random() * 3));
+                    const randomAngle = Math.floor((Math.random() * 361));
+                    const randomAxis = Math.floor((Math.random() * 3));
 
 
                     // random values for the direction of the outlier and movement for the acceleration Sensor
-                    var directionAnomaly = Math.floor(Math.random() * 6);
-                    var directionMovement = Math.floor(Math.random() * 6);
+                    const directionAnomaly = Math.floor(Math.random() * 6);
+                    const directionMovement = Math.floor(Math.random() * 6);
                     vm.newTestObject = {};
                     vm.newTestObject.config = [];
 

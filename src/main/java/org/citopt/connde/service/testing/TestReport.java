@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * The component TestReport is used for the creation of test reports for tests of applications using the testing-tool
@@ -55,6 +56,7 @@ public class TestReport {
      * @return path where the TestReport can be found
      */
     public String generateTestreport(String testId, java.util.List<Rule> rulesBefore) throws Exception {
+        int counterRules = 0;
         TestDetails test = testDetailsRepository.findById(testId);
         Document doc = new Document();
 
@@ -119,7 +121,8 @@ public class TestReport {
 
 
         for (Rule rule : rulesBefore) {
-            PdfPTable ruleDetails = getRuleDetails(test, rule);
+             counterRules += 1;
+            PdfPTable ruleDetails = getRuleDetails(test, rule, counterRules);
             ruleDetails.setSpacingAfter(15f);
             doc.add(ruleDetails);
         }
@@ -204,6 +207,7 @@ public class TestReport {
      * @return table with user configurations of the test
      */
     private PdfPTable getTestDefinitions(TestDetails test) {
+        int counter = 0;
         PdfPCell c1;
         PdfPCell c2;
         String simTime;
@@ -211,7 +215,7 @@ public class TestReport {
         String amountOutliers;
         PdfPTable table = new PdfPTable(4);
         table.setWidthPercentage(100f);
-        Chunk text = new Chunk("Simulated Sensor", white);
+        Chunk text = new Chunk("Simulated Sensor(s)", white);
         PdfPCell c0 = new PdfPCell(new Phrase(text));
         c0.setHorizontalAlignment(Element.ALIGN_CENTER);
         c0.setColspan(4);
@@ -219,11 +223,11 @@ public class TestReport {
         table.addCell(c0);
 
         for (String type : test.getType()) {
-
+            counter += 1;
             ArrayList<String> simDet = getSensorTypePDF(test, type);
 
             //Sensor-Type
-            c1 = new PdfPCell(new Phrase("Sensor-Type"));
+            c1 = new PdfPCell(new Phrase(counter + ".: Sensor-Type"));
             c1.setColspan(2);
             c1.setHorizontalAlignment(Element.ALIGN_CENTER);
             c1.setBackgroundColor(new BaseColor(157, 213, 227));
@@ -254,55 +258,58 @@ public class TestReport {
             c2.setColspan(2);
             table.addCell(c2);
 
-/**
- // Planned simulation adds informations about the simulation time, amount of events and outliers
- if (test.getType().equals("TestingTemperaturSensorPl") || test.getType().equals("TestingFeuchtigkeitsSensorPl") || test.getType().equals("TestingGPSSensorPl") || test.getType().equals("TestingBeschleunigungsSensorPl")) {
- for (int i = 0; i < test.getConfig().size(); i++) {
- switch (test.getConfig().get(i).getName()) {
- case "simTime":
- simTime = String.valueOf(test.getConfig().get(i).getValue());
- c1 = new PdfPCell(new Phrase("Simulation-Time"));
- c1.setColspan(2);
- c1.setHorizontalAlignment(Element.ALIGN_CENTER);
- c1.setBackgroundColor(new BaseColor(191, 220, 227));
- table.addCell(c1);
+            // Planned simulation adds informations about the simulation time, amount of events and outliers
+            if (type.equals("TestingTemperaturSensorPl") || type.equals("TestingFeuchtigkeitsSensorPl") || type.equals("TestingGPSSensorPl") || type.equals("TestingBeschleunigungsSensorPl")) {
+                for (java.util.List<ParameterInstance> configSensor : test.getConfig()) {
+                    for (ParameterInstance parameterInstance : configSensor) {
+                        switch (parameterInstance.getName()) {
+                            case "simTime":
+                                simTime = String.valueOf(parameterInstance.getValue());
+                                c1 = new PdfPCell(new Phrase("Simulation-Time"));
+                                c1.setColspan(2);
+                                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                                c1.setBackgroundColor(new BaseColor(191, 220, 227));
+                                table.addCell(c1);
 
- c2 = new PdfPCell(new Phrase(simTime + " hours"));
- c2.setColspan(2);
- table.addCell(c2);
+                                c2 = new PdfPCell(new Phrase(simTime + " hours"));
+                                c2.setColspan(2);
+                                table.addCell(c2);
 
- break;
- case "amountEvents":
- amountEvents = String.valueOf(test.getConfig().get(i).getValue());
- c1 = new PdfPCell(new Phrase("Amount Events"));
- c1.setColspan(2);
- c1.setHorizontalAlignment(Element.ALIGN_CENTER);
- c1.setBackgroundColor(new BaseColor(191, 220, 227));
- table.addCell(c1);
+                                break;
+                            case "amountEvents":
+                                amountEvents = String.valueOf(parameterInstance.getValue());
+                                c1 = new PdfPCell(new Phrase("Amount Events"));
+                                c1.setColspan(2);
+                                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                                c1.setBackgroundColor(new BaseColor(191, 220, 227));
+                                table.addCell(c1);
 
- c2 = new PdfPCell(new Phrase(amountEvents));
- c2.setColspan(2);
- table.addCell(c2);
+                                c2 = new PdfPCell(new Phrase(amountEvents));
+                                c2.setColspan(2);
+                                table.addCell(c2);
 
- break;
- case "amountAnomalies":
- amountOutliers = String.valueOf(test.getConfig().get(i).getValue());
- c1 = new PdfPCell(new Phrase("Amount Anomalies"));
- c1.setColspan(2);
- c1.setHorizontalAlignment(Element.ALIGN_CENTER);
- c1.setBackgroundColor(new BaseColor(191, 220, 227));
- table.addCell(c1);
+                                break;
+                            case "amountAnomalies":
+                                amountOutliers = String.valueOf(parameterInstance.getValue());
+                                c1 = new PdfPCell(new Phrase("Amount Anomalies"));
+                                c1.setColspan(2);
+                                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                                c1.setBackgroundColor(new BaseColor(191, 220, 227));
+                                table.addCell(c1);
 
- c2 = new PdfPCell(new Phrase(amountOutliers));
- c2.setColspan(2);
- table.addCell(c2);
+                                c2 = new PdfPCell(new Phrase(amountOutliers));
+                                c2.setColspan(2);
+                                table.addCell(c2);
 
- break;
- }
+                                break;
+                        }
 
- }
- }
- **/
+                    }
+                }
+
+
+            }
+
         }
 
 
@@ -340,7 +347,8 @@ public class TestReport {
      * @param rule detail information of the selected rules before the test
      * @return PDFTable with all important informations about the rules in the test of a specific application
      */
-    private PdfPTable getRuleDetails(TestDetails test, Rule rule) {
+    @SuppressWarnings("DuplicatedCode")
+    private PdfPTable getRuleDetails(TestDetails test, Rule rule, int counterRules) {
 
         // get executed Rules
         String rulesExecuted = test.getRulesExecuted().toString().replace("[", "")  //remove the right bracket
@@ -351,7 +359,7 @@ public class TestReport {
         PdfPCell c0;
 
         Rule ruleAfter = ruleRepository.findByName(rule.getName());
-        c0 = new PdfPCell(new Phrase(rule.getName()));
+        c0 = new PdfPCell(new Phrase(counterRules + ". Rule: "+ rule.getName()));
         c0.setHorizontalAlignment(Element.ALIGN_CENTER);
         c0.setColspan(4);
         c0.setBackgroundColor(new BaseColor(157, 213, 227));
@@ -413,19 +421,16 @@ public class TestReport {
         c2.setColspan(2);
         c2.setHorizontalAlignment(Element.ALIGN_CENTER);
         ruleInfos.addCell(c2);
+        int executionsAfter;
         if (!rulesExecuted.contains(rule.getName())) {
-            int executionsAfter = rule.getExecutions();
-            c2 = new PdfPCell(new Phrase(Integer.toString(executionsAfter)));
-            c2.setColspan(2);
-            c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-            ruleInfos.addCell(c2);
+            executionsAfter = rule.getExecutions();
         } else {
-            int executionsAfter = ruleAfter.getExecutions();
-            c2 = new PdfPCell(new Phrase(Integer.toString(executionsAfter)));
-            c2.setColspan(2);
-            c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-            ruleInfos.addCell(c2);
+            executionsAfter = ruleAfter.getExecutions();
         }
+        c2 = new PdfPCell(new Phrase(Integer.toString(executionsAfter)));
+        c2.setColspan(2);
+        c2.setHorizontalAlignment(Element.ALIGN_CENTER);
+        ruleInfos.addCell(c2);
 
 
         // Last Execution time before/after
@@ -561,11 +566,16 @@ public class TestReport {
         rulesExecuted = test.getRulesExecuted().toString().replace("[", "")  //remove the right bracket
                 .replace("]", "");  //remove the left bracket
 
+        PdfPCell c3;
+        if(!rulesExecuted.equals("")){
+             c3 = new PdfPCell(new Phrase(rulesExecuted));
+        } else {
+             c3 = new PdfPCell(new Phrase("-"));
+        }
 
-        c2 = new PdfPCell(new Phrase(rulesExecuted));
-        c2.setColspan(2);
-        c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-        ruleInfos.addCell(c2);
+        c3.setColspan(2);
+        c3.setHorizontalAlignment(Element.ALIGN_CENTER);
+        ruleInfos.addCell(c3);
 
         return ruleInfos;
     }
@@ -591,12 +601,13 @@ public class TestReport {
             for (ParameterInstance parameterInstance : configSensor) {
                 if (parameterInstance.getName().equals("ConfigName") && parameterInstance.getValue().equals(sensorType)) {
                     config = configSensor;
+                    break;
                 }
             }
         }
 
 
-        for (ParameterInstance parameterInstance : config) {
+        for (ParameterInstance parameterInstance : Objects.requireNonNull(config)) {
             if (parameterInstance.getName().equals("event")) {
                 testCase = (Integer) parameterInstance.getValue();
             }
