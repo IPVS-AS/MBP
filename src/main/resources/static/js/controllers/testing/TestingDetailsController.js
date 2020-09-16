@@ -11,13 +11,14 @@ app.controller('TestingDetailsController',
             //Test ID
             const COMPONENT_ID = $routeParams.id;
 
+            vm.sensorListTest = [];
             //Extend each sensor in sensorList for a state and a reload function
             for (const i in sensorList) {
-                if (sensorList[i].name === testingDetails.type) {
-                    vm.sensorID = sensorList[i].id;
+                if (testingDetails.type.indexOf(sensorList[i].name) !== -1) {
+                    vm.sensorListTest.push(sensorList[i]);
                 }
-
             }
+
 
             vm.ruleList = ruleList;
             vm.test = testingDetails;
@@ -104,7 +105,6 @@ app.controller('TestingDetailsController',
 
                 vm.rules = [];
                 $rootScope.config = {};
-
 
 
                 if (testingDetails.type.includes('TestingTemperaturSensor')) {
@@ -851,7 +851,7 @@ app.controller('TestingDetailsController',
                         vm.newTestObject.config.push(vm.configUpdate);
                     }
                     if (testingDetails.type.includes('TestingGPSSensorPl')) {
-                        vm.configUpdate =[];
+                        vm.configUpdate = [];
                         if ($rootScope.config.eventGPS === '3' || $rootScope.config.eventGPS === '4' || $rootScope.config.eventGPS === '5') {
 
                             vm.configUpdate.push({"name": "who", "value": $rootScope.config.whoGPS});
@@ -924,7 +924,7 @@ app.controller('TestingDetailsController',
                         vm.newTestObject.config.push(vm.configUpdate);
                     }
                     if (testingDetails.type.includes('TestingBeschleunigungsSensor')) {
-                        vm.configUpdate =[];
+                        vm.configUpdate = [];
                         if ($rootScope.config.eventAcc === '3' || $rootScope.config.eventAcc === '4' || $rootScope.config.eventAcc === '5') {
                             vm.configUpdate.push({
                                 "name": "event",
@@ -1000,7 +1000,7 @@ app.controller('TestingDetailsController',
                         vm.newTestObject.config.push(vm.configUpdate);
                     }
                     if (testingDetails.type.includes('TestingBeschleunigungsSensorPl')) {
-                        vm.configUpdate =[];
+                        vm.configUpdate = [];
                         if ($rootScope.config.eventAccPl === '3' || $rootScope.config.eventAccPl === '4' || $rootScope.config.eventAccPl === '5') {
                             vm.configUpdate.push({
                                 "name": "event",
@@ -1135,7 +1135,7 @@ app.controller('TestingDetailsController',
                 {
                     $scope: $scope,
                     testingDetails: testingDetails,
-                    sensorList: sensorList,
+                    sensorList: vm.sensorListTest,
                     liveChartContainer: 'liveValues',
                     historicalChartContainer: 'historicalValues',
                     historicalChartSlider: 'historicalChartSlider'
