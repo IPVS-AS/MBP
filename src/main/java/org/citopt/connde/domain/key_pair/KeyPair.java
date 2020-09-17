@@ -43,8 +43,9 @@ public class KeyPair extends UserEntity {
      *
      * @param id The ID to set
      */
-    public void setId(String id) {
+    public KeyPair setId(String id) {
         this.id = id;
+        return this;
     }
 
     /**
@@ -61,8 +62,9 @@ public class KeyPair extends UserEntity {
      *
      * @param name The name to set
      */
-    public void setName(String name) {
+    public KeyPair setName(String name) {
         this.name = name;
+        return this;
     }
 
     /**
@@ -79,8 +81,9 @@ public class KeyPair extends UserEntity {
      *
      * @param publicKey The public key to set
      */
-    public void setPublicKey(String publicKey) {
+    public KeyPair setPublicKey(String publicKey) {
         this.publicKey = publicKey;
+        return this;
     }
 
     /**
@@ -97,8 +100,9 @@ public class KeyPair extends UserEntity {
      *
      * @param privateKey The private key to set
      */
-    public void setPrivateKey(String privateKey) {
+    public KeyPair setPrivateKey(String privateKey) {
         this.privateKey = privateKey;
+        return this;
     }
 
     /**

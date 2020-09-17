@@ -52,7 +52,7 @@ public abstract class ACAbstractCondition extends ACAbstractEntity {
 	 * @return
 	 * @throws ACConditionEvaluatorNotAvailableException 
 	 */
-	public boolean evaluate(ACAccess access, ACAccessRequest request) throws ACConditionEvaluatorNotAvailableException {
+	public boolean evaluate(ACAccess access, ACAccessRequest<?> request) throws ACConditionEvaluatorNotAvailableException {
 		return findEvaluator().evaluate(this, access, request);
 	}
 	

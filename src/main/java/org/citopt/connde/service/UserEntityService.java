@@ -1,28 +1,35 @@
 package org.citopt.connde.service;
 
-import static org.citopt.connde.domain.user_entity.UserEntityRole.ADMIN;
-import static org.citopt.connde.domain.user_entity.UserEntityRole.ANONYMOUS;
-import static org.citopt.connde.domain.user_entity.UserEntityRole.APPROVED_USER;
-import static org.citopt.connde.domain.user_entity.UserEntityRole.ENTITY_OWNER;
-import static org.citopt.connde.domain.user_entity.UserEntityRole.USER;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+import org.citopt.connde.domain.access_control.ACAccess;
+import org.citopt.connde.domain.access_control.ACAccessRequest;
+import org.citopt.connde.domain.access_control.ACAccessType;
+import org.citopt.connde.domain.access_control.ACPolicy;
+import org.citopt.connde.domain.access_control.IACRequestedEntity;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
-import org.citopt.connde.domain.user_entity.UserEntityPolicy;
-import org.citopt.connde.domain.user_entity.UserEntityRole;
+import org.citopt.connde.repository.ACPolicyRepository;
 import org.citopt.connde.repository.UserEntityRepository;
+import org.citopt.connde.service.access_control.ACPolicyEvaluationService;
+import org.citopt.connde.util.C;
+import org.citopt.connde.util.Pages;
+import org.citopt.connde.util.S;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-/**
- * Service that supports managing of user entities.
- */
 @Service
 public class UserEntityService {
 
@@ -30,170 +37,221 @@ public class UserEntityService {
 
     @Autowired
     private UserService userService;
-
+    
+    @Autowired
+    private ACPolicyRepository policyRepository;
+    
+    @Autowired
+    private ACPolicyEvaluationService policyEvaluationService;
+    
+    
+	/**
+	 * Retrieves all user entities from the database. Note that only those entities are returned,
+	 * that are either owned by the requesting user or for which a policy grants reading access
+	 * to the requesting user.
+	 * 
+	 * @param <E> the type of the {@link UserEntity}.
+	 * @param repository the repository to retrieve the user entities from.
+	 * @param accessType the {@link ACAccessType} to check.
+	 * @param accessRequest the {@link ACAccessRequest} containing the contextual information
+	 * 		  of the requesting user required to evaluate the policies.
+	 * @return the list of (filtered) user entities.
+	 */
+	public <E extends UserEntity> List<E> getAllWithPolicyCheck(UserEntityRepository<E> repository, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+		// Retrieve the currently logged in user from the database
+		User user = userService.getLoggedInUser();
+		
+		// Retrieve the entities from the database
+		List<E> entities = repository.findAll(DEFAULT_SORT);
+		
+		// Filter devices (according to owner and policies)
+    	return entities
+    			.stream()
+    			// Filter devices that are owned by the requesting user (all access granted)
+    			.filter(e -> e.getOwner().getId().equals(user.getId()))
+    			// Filter devices with policies with non-matching access-types
+    			.filter(e -> policyRepository.existsByIdAnyAndAccessTypeAll(e.getAccessControlPolicyIds(), C.listOf(accessType.toString())))
+    			// Filter devices with policies that deny access
+    			.filter(e -> {
+    				// Create the corresponding access object
+    	    		ACAccess access = new ACAccess(accessType, user, e);
+    	    		// Retrieve the policies from the database
+    	    		List<ACPolicy> policies = getPoliciesForEntity(e);
+    	    		// Evaluate the policies
+    	    		return policies.stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest));
+    	    	})
+    			.collect(Collectors.toList());
+	}
+	
+	/**
+	 * Retrieves a page of user entities from the database. Note that only those entities are returned,
+	 * that are either owned by the requesting user or for which a policy grants reading access
+	 * to the requesting user.
+	 * 
+	 * @param <E> the type of the {@link UserEntity}.
+	 * @param repository the repository to retrieve the user entities from.
+	 * @param accessType the {@link ACAccessType} to check.
+	 * @param accessRequest the {@link ACAccessRequest} containing the contextual information
+	 * 		  of the requesting user required to evaluate the policies.
+	 * @param pageable the {@link Pageable} to configure the resulting list.
+	 * @return the page of (filtered) user entities.
+	 */
+	public <E extends UserEntity> List<E> getPageWithPolicyCheck(UserEntityRepository<E> repository, ACAccessType accessType, ACAccessRequest<?> accessRequest, Pageable pageable) {
+		// Extract requested page from all entities
+    	return Pages.page(getAllWithPolicyCheck(repository, accessType, accessRequest), pageable);
+	}
+    
     /**
-     * Returns a user entity with a certain id from a given repository that is owned by the current user or where the
-     * user is among the set of approved users.
-     *
-     * @param repository The repository to retrieve the user entity from
-     * @param entityId   The id of the entity to retrieve
-     * @return The user entity or null if it could not be found or if the user has no permission to access it
+     * Retrieves a user entity from the database.
+     * 
+     * @param <E> the type of the {@link UserEntity}.
+     * @param repository the repository to retrieve the user entity from.
+     * @param entityId the id of the {@link UserEntity}.
+     * @return the {@link UserEntity} if it exists.
      */
-    public <E extends UserEntity> E getUserEntityFromRepository(UserEntityRepository<E> repository, String entityId) {
-        //Get current user
-        User user = userService.getUserWithAuthorities();
-
-        //Get corresponding user entities from repository
-        return getUserEntityFromRepository(repository, entityId, user);
+    public <E extends UserEntity> E getForId(UserEntityRepository<E> repository, String entityId) {
+		// Retrieve the entity from the database
+		return repository.findById(entityId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity with id '" + entityId + "' does not exist!"));
     }
-
+    
     /**
-     * Returns a user entity with a certain id from a given repository that is owned by a given user or where the
-     * user is among the set of approved users.
-     *
-     * @param repository The repository to retrieve the user entity from
-     * @param entityId   The id of the entity to retrieve
-     * @param user       The user for which the user entity is supposed to be retrieved
-     * @return The user entity or null if it could not be found or if the user has no permission to access it
+     * Retrieves a user entity from the database.
+     * 
+     * @param <E> the type of the {@link UserEntity}.
+     * @param repository the repository to retrieve the user entity from.
+     * @param entityId the id of the {@link UserEntity}.
+     * @param accessType the {@link ACAccessType} to check.
+	 * @param accessRequest the {@link ACAccessRequest} containing the contextual information
+	 * 		  of the requesting user required to evaluate the policies.
+     * @return the {@link UserEntity} if it exists and the user is either the owner or has been granted reading access
+     * 		   to it via a corresponding {@link ACPolicy}.
      */
-    public <E extends UserEntity> E getUserEntityFromRepository(UserEntityRepository<E> repository, String entityId, User user) {
-        //Sanity check
-        if (user == null) {
-            throw new IllegalArgumentException("User must not be null.");
-        }
+    public <E extends UserEntity> E getForIdWithPolicyCheck(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+		// Retrieve the currently logged in user from the database
+		User user = userService.getLoggedInUser();
 
-        //Get user entity from repository
-        E entity = repository.findById(entityId).get();
+		// Retrieve the entity from the database
+		E entity = repository.findById(entityId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity with id '" + entityId + "' does not exist!"));
 
-        //Check for null (not found)
-        if (entity == null) {
-            return null;
-        }
+		// Check whether the requesting user is allowed to access the entity
+    	ACAccess access = new ACAccess(accessType, user, entity);
+    	List<ACPolicy> policies = getPoliciesForEntity(entity);
+    	if (!entity.getOwner().getId().equals(user.getId()) && !policies.stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest))) {
+    		throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User '" + user.getUsername() + "' is not allowed to access entity with id '" + entityId + "'!");
+    	}
 
-        //Return entity if user is permitted
-        if (entity.isReadable()) {
-            return entity;
-        }
-
-        //User is not approved
-        return null;
+		return entity;
     }
-
+    
     /**
-     * Returns a list of user entities from a given repository that are owned by the current user or where the
-     * user is among the set of approved users.
-     *
-     * @param repository The repository to retrieve the user entities from
-     * @return List of user entities
+     * Deletes a user entity in the database.
+     * 
+     * @param <E> the type of the {@link UserEntity}.
+     * @param repository the repository to retrieve the user entity from.
+     * @param entityId the id of the {@link UserEntity}.
+     * @param accessType the {@link ACAccessType} to check.
+	 * @param accessRequest the {@link ACAccessRequest} containing the contextual information
+	 * 		  of the requesting user required to evaluate the policies.
      */
-    public <E extends UserEntity> List<E> getUserEntitiesFromRepository(UserEntityRepository<E> repository) {
-        //Get current user
-        User user = userService.getUserWithAuthorities();
-
-        //Get corresponding user entities from repository
-        return getUserEntitiesFromRepository(repository, user);
+    public <E extends UserEntity> void deleteWithPolicyCheck(UserEntityRepository<E> repository, String entityId, ACAccessRequest<?> accessRequest) {
+    	// Retrieve the currently logged in user from the database
+    	User user = userService.getLoggedInUser();
+    	
+    	// Retrieve the entity from the database
+    	E entity = getForIdWithPolicyCheck(repository, entityId, ACAccessType.READ, accessRequest);
+    	
+    	// Check whether the requesting user is allowed to delete the entity
+    	ACAccess access = new ACAccess(ACAccessType.DELETE, user, entity);
+    	List<ACPolicy> policies = getPoliciesForEntity(entity);
+    	if (!entity.getOwner().getId().equals(user.getId()) && !policies.stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest))) {
+    		throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User '" + user.getUsername() + "' is not allowed to delete entity with id '" + entityId + "'!");
+    	}
+    	
+    	// Everything checks out (user is owner or a policy grants the delete permission) -> delete the entity in the database
+    	repository.deleteById(entityId);
     }
-
-
-    /**
-     * Returns a list of user entities from a given repository that are owned by a given user or where the
-     * user is among the set of approved users.
-     *
-     * @param repository The repository to retrieve the user entities from
-     * @param user       The user for which the user entities are supposed to be retrieved
-     * @return List of user entities
-     */
-    public <E extends UserEntity> List<E> getUserEntitiesFromRepository(UserEntityRepository<E> repository, User user) {
-        //Sanity check
-        if (user == null) {
-            throw new IllegalArgumentException("User must not be null.");
-        }
-
-        //Get all user entities from repository
-        List<E> entities = repository.findAll(DEFAULT_SORT);
-
-        //Create result list
-        List<E> resultList = new ArrayList<>();
-
-        //Iterate over all entities in repository
-        for (E entity : entities) {
-            //Check user permission
-            if (entity.isReadable() || (entity.getOwner() == null)) {
-                resultList.add(entity);
-            }
-        }
-
-        //Return result
-        return resultList;
+    
+    public <E extends IACRequestedEntity> List<E> filterforOwnerAndPolicies(Supplier<List<E>> entitiesSupplier, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+    	return filterforOwnerAndPolicies(entitiesSupplier.get(), accessType, accessRequest);
     }
-
-    /**
-     * Returns the set of user entity roles that the current user holds for a given user entity.
-     *
-     * @param entity The user entity to check for
-     * @return The set of user entity roles
-     */
-    private Set<UserEntityRole> getUserEntityRoles(UserEntity entity) {
-        //Create set for all user matching entity roles
-        Set<UserEntityRole> roles = new HashSet<>();
-
-        //Get current user
-        User currentUser = userService.getUserWithAuthorities();
-
-        //Check for anonymous
-        if (currentUser == null) {
-            roles.add(ANONYMOUS);
-            return roles;
-        }
-
-        //User is registered
-        roles.add(USER);
-
-        //Check if user is approved
-        if (entity.isUserApproved(currentUser)) {
-            roles.add(APPROVED_USER);
-        }
-
-        //Check if user is owner
-        if (entity.isUserOwner(currentUser)) {
-            roles.add(ENTITY_OWNER);
-        }
-
-        //Check if user is admin
-        if (currentUser.isAdmin()) {
-            roles.add(ADMIN);
-        }
-
-        return roles;
+    
+    public <E extends IACRequestedEntity> List<E> filterforOwnerAndPolicies(List<E> entities, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+    	// Retrieve the currently logged in user from the database
+    	User user = userService.getLoggedInUser();
+    	
+    	// Filter entities (according to owner and policies)
+    	return entities
+    			.stream()
+    			// Filter devices that are owned by the requesting user (all access granted)
+    			.filter(e -> e.getOwner().getId().equals(user.getId()))
+    			// Filter devices with policies with non-matching access-types
+    			.filter(e -> policyRepository.existsByIdAnyAndAccessTypeAll(e.getAccessControlPolicyIds(), C.listOf(accessType.toString())))
+    			// Filter devices with policies that deny access
+    			.filter(e -> {
+    				// Create the corresponding access object
+    	    		ACAccess access = new ACAccess(accessType, user, e);
+    	    		// Retrieve the policies from the database
+    	    		List<ACPolicy> policies = getPoliciesForEntity(e);
+    	    		// Evaluate the policies
+    	    		return policies.stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest));
+    	    	})
+    			.collect(Collectors.toList());
     }
-
-    /**
-     * Checks if the current user has a certain permission regarding a given user entity.
-     *
-     * @param permission The permission to check
-     * @param entity     The pertained user entity
-     * @return True, if the user is permitted; false otherwise
-     */
-    public boolean isUserPermitted(UserEntity entity, String permission) {
-        //Sanity checks
-        if (entity == null) {
-            throw new IllegalArgumentException("User entity must not be null.");
-        } else if ((permission == null) || permission.isEmpty()) {
-            throw new IllegalArgumentException("Permission must not be null or empty.");
-        }
-
-        //Get policy for this entity
-        UserEntityPolicy policy = entity.getUserEntityPolicy();
-
-        //Sanity check
-        if (!policy.containsPermission(permission)) {
-            throw new IllegalArgumentException("The permission is not part of the policy of this user entity.");
-        }
-
-        //Get roles of current user
-        Set<UserEntityRole> userRoles = getUserEntityRoles(entity);
-
-        //Check policy
-        return policy.isPermitted(permission, userRoles);
+    
+    public <E extends IACRequestedEntity> List<ACPolicy> getPoliciesForEntity(E entity) {
+    	List<ACPolicy> policies = new ArrayList<>();
+    	entity.getAccessControlPolicyIds().forEach(policyId -> policyRepository.findById(policyId).ifPresent(policies::add));
+    	return policies;
     }
+    
+    public <E extends IACRequestedEntity> List<ACPolicy> getPoliciesForEntityAndAccessType(E entity, ACAccessType accessType) {
+    	List<ACPolicy> policies = new ArrayList<>();
+    	entity.getAccessControlPolicyIds().forEach(policyId -> policyRepository.findByIdAndAccessTypeAll(policyId, C.listOf(accessType.toString())).ifPresent(policies::add));
+    	return policies;
+    }
+    
+    public <E extends UserEntity> void requirePermission(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+    	E entity = getForIdWithPolicyCheck(repository, entityId, ACAccessType.READ, accessRequest);
+		requirePermission(entity, accessType, accessRequest);
+	}
+    
+    public <E extends IACRequestedEntity> void requirePermission(E entity, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+    	User requestingUser = userService.getLoggedInUser();
+		if (!checkPermission(entity, accessType, accessRequest)) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User '" + requestingUser.getUsername()
+					+ "' is not allowed to " + S.capitalize(accessType.toString()) + " "
+					+ S.capitalize(entity.getClass().getName()).toLowerCase() + " with id '" + entity.getId() + "'!");
+		}
+	}
+	
+    public <E extends UserEntity> boolean checkPermission(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+    	E entity = getForIdWithPolicyCheck(repository, entityId, ACAccessType.READ, accessRequest);
+		return checkPermission(entity, accessType, accessRequest);
+	}
+	
+    public <E extends IACRequestedEntity> boolean checkPermission(E entity, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+		List<ACPolicy> policies = getPoliciesForEntity(entity);
+		for (ACPolicy policy : policies) {
+			if (!policyEvaluationService.evaluate(policy, new ACAccess(accessType, userService.getLoggedInUser(), entity), accessRequest)) {
+				return false;
+			}
+		}
+		return true;
+	}
+    
+    public <E extends UserEntity> void requireUniqueName(UserEntityRepository<E> repository, String entityName) {
+    	if (repository.existsByName(entityName)) {
+    		throw new ResponseStatusException(HttpStatus.CONFLICT, "An entity with name '" + entityName + "' already exists.");
+    	}
+    }
+    
+    public <E extends UserEntity> PagedModel<EntityModel<E>> entitiesToPagedModel(List<E> entities, Link selfLink, Pageable pageable) {
+    	List<EntityModel<E>> deviceEntityModels = entities.stream().map(this::entityToEntityModel).collect(Collectors.toList());
+    	return new PagedModel<>(deviceEntityModels, Pages.metaDataOf(pageable, deviceEntityModels.size()), C.listOf(selfLink));
+    }
+    
+    public <E extends UserEntity> EntityModel<E> entityToEntityModel(E entity) {
+    	return new EntityModel<E>(entity, linkTo(getClass()).slash(entity.getId()).withSelfRel());
+    }
+    
 }

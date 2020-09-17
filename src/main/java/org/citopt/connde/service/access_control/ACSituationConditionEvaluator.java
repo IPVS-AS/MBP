@@ -15,7 +15,7 @@ public class ACSituationConditionEvaluator extends ACAbstractConditionEvaluator<
 	public ACSituationConditionEvaluator() {}
 
 	@Override
-	public boolean evaluate(ACCompositeCondition condition, ACAccess access, ACAccessRequest request) {
+	public boolean evaluate(ACCompositeCondition condition, ACAccess access, ACAccessRequest<?> request) {
 		throw new UnsupportedOperationException("Not implemented yet!");
 	}
 	

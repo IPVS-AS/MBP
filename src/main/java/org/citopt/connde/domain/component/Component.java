@@ -1,32 +1,28 @@
 package org.citopt.connde.domain.component;
 
+import java.util.Objects;
+
+import javax.persistence.GeneratedValue;
+
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user_entity.UserEntity;
-import org.citopt.connde.domain.user_entity.UserEntityPolicy;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import javax.persistence.GeneratedValue;
-
-import java.util.Objects;
-
-import static org.citopt.connde.domain.user_entity.UserEntityRole.ADMIN;
-import static org.citopt.connde.domain.user_entity.UserEntityRole.APPROVED_USER;
 
 /**
  * Document super class for components (actuators, sensors, ...).
  */
 @Document
 public abstract class Component extends UserEntity {
-    //Permission name for deployment
-    private static final String PERMISSION_NAME_DEPLOY = "deploy";
-
-    //Extend default policy by deployment permission
-    private static final UserEntityPolicy COMPONENT_POLICY = new UserEntityPolicy(DEFAULT_POLICY)
-            .addPermission(PERMISSION_NAME_DEPLOY).addRole(APPROVED_USER).addRole(ADMIN).lock();
+//    //Permission name for deployment
+//    private static final String PERMISSION_NAME_DEPLOY = "deploy";
+//
+//    //Extend default policy by deployment permission
+//    private static final UserEntityPolicy COMPONENT_POLICY = new UserEntityPolicy(DEFAULT_POLICY)
+//            .addPermission(PERMISSION_NAME_DEPLOY).addRole(APPROVED_USER).addRole(ADMIN).lock();
 
     @Id
     @GeneratedValue
@@ -96,10 +92,10 @@ public abstract class Component extends UserEntity {
     }
 
 
-    @Override
-    public UserEntityPolicy getUserEntityPolicy() {
-        return COMPONENT_POLICY;
-    }
+//    @Override
+//    public UserEntityPolicy getUserEntityPolicy() {
+//        return COMPONENT_POLICY;
+//    }
 
     @Override
     public boolean equals(Object o) {

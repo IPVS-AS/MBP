@@ -14,8 +14,7 @@ import org.citopt.connde.domain.access_control.dto.ACConditionRequestDTO;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.repository.ACConditionRepository;
-import org.citopt.connde.repository.UserRepository;
-import org.citopt.connde.security.SecurityUtils;
+import org.citopt.connde.service.UserService;
 import org.citopt.connde.service.access_control.ACConditionService;
 import org.citopt.connde.util.C;
 import org.citopt.connde.util.Pages;
@@ -34,7 +33,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -59,14 +57,15 @@ public class RestACConditionController {
 	private ACConditionRepository conditionRepository;
 	
 	@Autowired
-	private UserRepository userRepository;
+	private UserService userService;
 	
 
 	@GetMapping(produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing conditions owned by the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
     public ResponseEntity<PagedModel<EntityModel<ACAbstractCondition>>> all(@ApiParam(value = "Page parameters", required = true) Pageable pageable) {
-    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+//    	User user = userRepository.findByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+		User user = userService.getLoggedInUser();
     	return ResponseEntity.ok(conditionsToPagedModel(conditionRepository.findByOwner(user.getId(), pageable), pageable));
     }
     
@@ -74,7 +73,8 @@ public class RestACConditionController {
     @ApiOperation(value = "Retrieves an existing condition identified by its id if available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to access the condition!"), @ApiResponse(code = 404, message = "Condition or requesting user not found!") })
     public ResponseEntity<EntityModel<ACAbstractCondition>> one(@PathVariable("conditionId") String conditionId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
-    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+//    	User user = userRepository.findByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+    	User user = userService.getLoggedInUser();
     	return ResponseEntity.ok(conditionToEntityModel(conditionService.getForIdAndOwner(conditionId, user.getId())));
     }
     
@@ -82,7 +82,8 @@ public class RestACConditionController {
     @ApiOperation(value = "Creates a new condition.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 201, message = "Condition successfully created!"), @ApiResponse(code = 404, message = "Requesting user not found!"), @ApiResponse(code = 409, message = "Condition name already exists!") })
     public ResponseEntity<EntityModel<ACAbstractCondition>> create(@Valid @RequestBody ACConditionRequestDTO requestDto, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
-    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+//    	User user = userRepository.findByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+    	User user = userService.getLoggedInUser();
     	return ResponseEntity.status(HttpStatus.CREATED).body(conditionToEntityModel(conditionService.create(requestDto, user.getId()))); 
     }
     
@@ -90,7 +91,8 @@ public class RestACConditionController {
     @ApiOperation(value = "Deletes an existing condition.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 204, message = "Condition successfully deleted!"), @ApiResponse(code = 404, message = "Requesting user or condition not found!") })
     public ResponseEntity<Void> delete(@PathVariable("conditionId") String conditionId) {
-    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+//    	User user = userRepository.findByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+    	User user = userService.getLoggedInUser();
     	conditionService.delete(conditionId, user.getId());
     	return ResponseEntity.noContent().build();
     }
@@ -112,37 +114,6 @@ public class RestACConditionController {
     	// Create and return paged model
     	return new PagedModel<>(conditionEntityModels, Pages.metaDataOf(pageable, conditionEntityModels.size()), C.listOf(link));
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
 	// ------------------------------------------------------------------------------------------------------------------------------------------
 	

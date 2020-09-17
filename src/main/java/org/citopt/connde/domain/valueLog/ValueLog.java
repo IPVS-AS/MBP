@@ -1,12 +1,9 @@
 package org.citopt.connde.domain.valueLog;
 
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 
-import org.citopt.connde.InfluxDBConfiguration;
 import org.citopt.connde.domain.access_control.IACValueLog;
 import org.influxdb.annotation.Column;
-import org.influxdb.annotation.Measurement;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

@@ -5,7 +5,7 @@
  */
 app.factory('UserApprovalService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT_URI) {
     //URLs for server requests
-    const URL_SEARCH_USERS = ENDPOINT_URI + '/users/contain?query=';
+    const URL_SEARCH_USERS = ENDPOINT_URI + '/users/csearchByUsername?query=';
     const URL_USER_PREFIX = ENDPOINT_URI + '/';
     const URL_APPROVE_USER_SUFFIX = '/approve';
     const URL_DISAPPROVE_USER_SUFFIX = '/disapprove';

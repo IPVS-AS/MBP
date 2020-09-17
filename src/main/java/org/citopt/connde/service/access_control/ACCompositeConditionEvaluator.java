@@ -24,7 +24,7 @@ public class ACCompositeConditionEvaluator extends ACAbstractConditionEvaluator<
 	public ACCompositeConditionEvaluator() {}
 
 	@Override
-	public boolean evaluate(ACCompositeCondition condition, ACAccess access, ACAccessRequest request) {
+	public boolean evaluate(ACCompositeCondition condition, ACAccess access, ACAccessRequest<?> request) {
 		// Create a list with callbacks (as String) that evaluate the conditions, respectively
 		List<String> argumentExpressions = IntStream.range(0, condition.getConditions().size()).mapToObj(i -> "get(" + i + ").evaluate(#access, #request)").collect(Collectors.toList());
 		

@@ -1,12 +1,12 @@
 package org.citopt.connde.repository;
 
-import com.mongodb.MongoClient;
-import com.mongodb.client.AggregateIterable;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.UpdateOptions;
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
@@ -20,234 +20,231 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
-
-import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
-import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.UpdateOptions;
 
 /**
- * Represents a repository for persisting and querying value logs, powered by the MongoDB database. Since value
- * logs are time series data, a special way of storing the values is needed in order to preserve efficiency.
- * The approach implemented within this repository is described and recommended by the MongoDB blog post
- * "Time Series Data and MongoDB".
+ * Represents a repository for persisting and querying value logs, powered by
+ * the MongoDB database. Since value logs are time series data, a special way of
+ * storing the values is needed in order to preserve efficiency. The approach
+ * implemented within this repository is described and recommended by the
+ * MongoDB blog post "Time Series Data and MongoDB".
  * (https://www.mongodb.com/blog/post/time-series-data-and-mongodb-part-1-introduction)
  */
 @Component
 public class ValueLogRepository {
-    //Name of the database to use for the value logs
-    private static final String DATABASE_NAME = MongoConfiguration.DB_NAME;
 
-    //Name of the collection to use for the value logs
-    private static final String COLLECTION_NAME = "mongoValueLogs";
+	// Name of the database to use for the value logs
+	private static final String DATABASE_NAME = MongoConfiguration.DB_NAME;
 
-    //Name of the idref field
-    private static final String IDREF_FIELD_NAME = "idref";
+	// Name of the collection to use for the value logs
+	private static final String COLLECTION_NAME = "mongoValueLogs";
 
-    //Number of value logs per document in the collection
-    private static final long VALUES_PER_DOCUMENT = 80;
+	// Name of the idref field
+	private static final String IDREF_FIELD_NAME = "idref";
 
-    //MongoDB bean to use
-    private MongoClient mongoClient;
+	// Number of value logs per document in the collection
+	private static final long VALUES_PER_DOCUMENT = 80;
 
-    //Value log database and collection of the MongoDB
-    private MongoDatabase valueLogDatabase;
-    private MongoCollection<ValueLog> valueLogCollection;
+	// Value log database and collection of the MongoDB
+	private MongoDatabase valueLogDatabase;
+	private MongoCollection<ValueLog> valueLogCollection;
 
-    /**
-     * Instantiates the repository by passing a reference to the MongoDB bean that is supposed to be used (auto-wired).
-     *
-     * @param mongoClient The MongoDB bean to use
-     */
-    @Autowired
-    private ValueLogRepository(MongoClient mongoClient) {
-        //Store reference to MongoDB bean
-        this.mongoClient = mongoClient;
+	/**
+	 * Instantiates the repository by passing a reference to the MongoDB bean that
+	 * is supposed to be used (auto-wired).
+	 *
+	 * @param mongoClient The MongoDB bean to use
+	 */
+	@Autowired
+	private ValueLogRepository(MongoClient mongoClient) {
+		// Fetch coded registry for mapping value log objects from and to BSON documents
+		CodecRegistry codecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
+//        CodecRegistry codecRegistry = fromRegistries(com.mongodb.client.MongoClientFactory., fromProviders(PojoCodecProvider.builder().automatic(true).build()));
 
-        //Fetch coded registry for mapping value log objects from and to BSON documents
-        CodecRegistry codecRegistry = fromRegistries(MongoClient.getDefaultCodecRegistry(), fromProviders(PojoCodecProvider.builder().automatic(true).build()));
+		// Get value log database and collection with codec registry
+		this.valueLogDatabase = mongoClient.getDatabase(DATABASE_NAME).withCodecRegistry(codecRegistry);
+		this.valueLogCollection = valueLogDatabase.getCollection(COLLECTION_NAME, ValueLog.class);
+	}
 
-        //Get value log database and collection with codec registry
-        this.valueLogDatabase = mongoClient.getDatabase(DATABASE_NAME).withCodecRegistry(codecRegistry);
-        this.valueLogCollection = valueLogDatabase.getCollection(COLLECTION_NAME, ValueLog.class);
-    }
+	/**
+	 * Writes a given value log object into the repository.
+	 *
+	 * @param valueLog The value log to write
+	 */
+	public void write(ValueLog valueLog) {
+		// Sanity check
+		if (valueLog == null) {
+			throw new IllegalArgumentException("Value log must not be null.");
+		}
 
-    /**
-     * Writes a given value log object into the repository.
-     *
-     * @param valueLog The value log to write
-     */
-    public void write(ValueLog valueLog) {
-        //Sanity check
-        if (valueLog == null) {
-            throw new IllegalArgumentException("Value log must not be null.");
-        }
+		// Get epoch seconds from value log
+		long epochSeconds = valueLog.getTime().getEpochSecond();
 
-        //Get time from value log
-        ZonedDateTime valueLogTime = valueLog.getTime().atZone(ZoneId.systemDefault());
+		// Filtering by idref and nvalues
+		Document filterQuery = new Document(IDREF_FIELD_NAME, valueLog.getIdref());
+		filterQuery.append("nvalues", new Document("$lt", VALUES_PER_DOCUMENT));
 
-        //Get epoch seconds from value log
-        long epochSeconds = valueLog.getTime().getEpochSecond();
+		// Query for updating existing documents or creating new ones
+		Document updateQuery = new Document("$push", new Document("values", valueLog));
+		updateQuery.append("$min", new Document("first", epochSeconds));
+		updateQuery.append("$max", new Document("last", epochSeconds));
+		updateQuery.append("$inc", new Document("nvalues", 1));
 
-        //Filtering by idref and nvalues
-        Document filterQuery = new Document(IDREF_FIELD_NAME, valueLog.getIdref());
-        filterQuery.append("nvalues", new Document("$lt", VALUES_PER_DOCUMENT));
+		// Allow for creating new documents when VALUES_PER_DOCUMENT is reached
+		UpdateOptions updateOptions = new UpdateOptions();
+		updateOptions.upsert(true);
 
-        //Query for updating existing documents or creating new ones
-        Document updateQuery = new Document("$push", new Document("values", valueLog));
-        updateQuery.append("$min", new Document("first", epochSeconds));
-        updateQuery.append("$max", new Document("last", epochSeconds));
-        updateQuery.append("$inc", new Document("nvalues", 1));
+		// Perform update
+		this.valueLogCollection.updateOne(filterQuery, updateQuery, updateOptions);
+	}
 
-        //Allow for creating new documents when VALUES_PER_DOCUMENT is reached
-        UpdateOptions updateOptions = new UpdateOptions();
-        updateOptions.upsert(true);
+	/**
+	 * Finds and returns a list of value logs that match a certain id reference of a
+	 * component.
+	 *
+	 * @param idref The idref to match
+	 * @return The requested list of value logs
+	 */
+	public List<ValueLog> findAllByIdRef(String idref) {
+		// Sanity check
+		if ((idref == null) || idref.isEmpty()) {
+			throw new IllegalArgumentException("Idref must not be null or empty.");
+		}
 
-        //Perform update
-        this.valueLogCollection.updateOne(filterQuery, updateQuery, updateOptions);
-    }
+		// Create result list
+		List<ValueLog> resultList = new ArrayList<>();
 
-    /**
-     * Finds and returns a list of value logs that match a certain id reference of a component.
-     *
-     * @param idref The idref to match
-     * @return The requested list of value logs
-     */
-    public List<ValueLog> findAllByIdRef(String idref) {
-        //Sanity check
-        if ((idref == null) || idref.isEmpty()) {
-            throw new IllegalArgumentException("Idref must not be null or empty.");
-        }
+		// Matching for idref
+		Bson matchStage = Aggregates.match(Filters.eq(IDREF_FIELD_NAME, idref));
 
-        //Create result list
-        List<ValueLog> resultList = new ArrayList<>();
+		// Unwinding
+		Bson unwindStage = Aggregates.unwind("$values");
 
-        //Matching for idref
-        Bson matchStage = Aggregates.match(Filters.eq(IDREF_FIELD_NAME, idref));
+		// Replace root elements with value log sub-documents
+		Bson replaceRootStage = Aggregates.replaceRoot("$values");
 
-        //Unwinding
-        Bson unwindStage = Aggregates.unwind("$values");
+		// Perform aggregation
+		AggregateIterable<ValueLog> aggregateResult = this.valueLogCollection
+				.aggregate(Arrays.asList(matchStage, unwindStage, replaceRootStage), ValueLog.class);
 
-        //Replace root elements with value log sub-documents
-        Bson replaceRootStage = Aggregates.replaceRoot("$values");
+		// Convert aggregation result to a list
+		aggregateResult.forEach((Consumer<ValueLog>) resultList::add);
 
-        //Perform aggregation
-        AggregateIterable<ValueLog> aggregateResult = this.valueLogCollection.aggregate(Arrays.asList(matchStage, unwindStage, replaceRootStage), ValueLog.class);
+		return resultList;
+	}
 
-        //Convert aggregation result to a list
-        aggregateResult.forEach((Consumer<ValueLog>) resultList::add);
+	/**
+	 * Finds and returns a page of value logs that match a certain id reference of a
+	 * component.
+	 *
+	 * @param idref    The idref to match
+	 * @param pageable The pageable describing the desired page of value logs
+	 * @return The requested page of value logs
+	 */
+	public Page<ValueLog> findAllByIdRef(String idref, Pageable pageable) {
+		// Sanity check
+		if ((idref == null) || idref.isEmpty()) {
+			throw new IllegalArgumentException("Idref must not be null or empty.");
+		}
 
-        return resultList;
-    }
+		// Create result list
+		List<ValueLog> resultList = new ArrayList<>();
 
-    /**
-     * Finds and returns a page of value logs that match a certain id reference of a component.
-     *
-     * @param idref    The idref to match
-     * @param pageable The pageable describing the desired page of value logs
-     * @return The requested page of value logs
-     */
-    public Page<ValueLog> findAllByIdRef(String idref, Pageable pageable) {
-        //Sanity check
-        if ((idref == null) || idref.isEmpty()) {
-            throw new IllegalArgumentException("Idref must not be null or empty.");
-        }
+		// Get limit and offset from pageable
+		int limit = pageable.getPageSize();
+		long offset = pageable.getOffset();
 
-        //Create result list
-        List<ValueLog> resultList = new ArrayList<>();
+		// Check if values need to be retrieved
+		if (limit <= 0) {
+			return new PageImpl<>(resultList, pageable, 0);
+		}
 
-        //Get limit and offset from pageable
-        int limit = pageable.getPageSize();
-        long offset = pageable.getOffset();
+		// Get sort parameters from pageable
+		Sort sort = pageable.getSort();
 
-        //Check if values need to be retrieved
-        if (limit <= 0) {
-            return new PageImpl<>(resultList, pageable, 0);
-        }
+		// Documents representing the desired sort direction
+		Document coarseSortDocument = new Document("first", -1);
+		Document fineSortDocument = new Document("time", -1);
 
-        //Get sort parameters from pageable
-        Sort sort = pageable.getSort();
+		// Iterate over all specified sort parameters
+		for (Sort.Order order : sort) {
+			// Only sorting for time property is supported, thus ignore the other ones
+			if (!order.getProperty().equals("time")) {
+				continue;
+			}
 
-        //Documents representing the desired sort direction
-        Document coarseSortDocument = new Document("first", -1);
-        Document fineSortDocument = new Document("time", -1);
+			// Check sort direction and adjust document if necessary
+			if (order.isAscending()) {
+				coarseSortDocument = new Document("first", 1);
+				fineSortDocument = new Document("time", 1);
+			}
 
-        //Iterate over all specified sort parameters
-        for (Sort.Order order : sort) {
-            //Only sorting for time property is supported, thus ignore the other ones
-            if (!order.getProperty().equals("time")) {
-                continue;
-            }
+			// Only ordering for time is supported, so no need to consider other properties
+			break;
+		}
 
-            //Check sort direction and adjust document if necessary
-            if (order.isAscending()) {
-                coarseSortDocument = new Document("first", 1);
-                fineSortDocument = new Document("time", 1);
-            }
+		// List of all aggregation stages to execute
+		List<Bson> aggregateStages = new ArrayList<>();
 
-            //Only ordering for time is supported, so no need to consider other properties
-            break;
-        }
+		// Matching for idref
+		aggregateStages.add(Aggregates.match(Filters.eq(IDREF_FIELD_NAME, idref)));
 
-        //List of all aggregation stages to execute
-        List<Bson> aggregateStages = new ArrayList<>();
+		// Coarse-grained sorting on document level
+		aggregateStages.add(Aggregates.sort(coarseSortDocument));
 
-        //Matching for idref
-        aggregateStages.add(Aggregates.match(Filters.eq(IDREF_FIELD_NAME, idref)));
+		// Coarse-grained limit on document level
+		int calculatedLimit = (int) Math.ceil(((double) offset + limit) / ((double) VALUES_PER_DOCUMENT)) + 1;
+		aggregateStages.add(Aggregates.limit(calculatedLimit));
 
-        //Coarse-grained sorting on document level
-        aggregateStages.add(Aggregates.sort(coarseSortDocument));
+		// Unwinding
+		aggregateStages.add(Aggregates.unwind("$values"));
 
-        //Coarse-grained limit on document level
-        int calculatedLimit = (int) Math.ceil(((double) offset + limit) / ((double) VALUES_PER_DOCUMENT)) + 1;
-        aggregateStages.add(Aggregates.limit(calculatedLimit));
+		// Replace root elements with value log sub-documents
+		aggregateStages.add(Aggregates.replaceRoot("$values"));
 
-        //Unwinding
-        aggregateStages.add(Aggregates.unwind("$values"));
+		// Fine-grained Sorting on value log level
+		aggregateStages.add(Aggregates.sort(fineSortDocument));
 
-        //Replace root elements with value log sub-documents
-        aggregateStages.add(Aggregates.replaceRoot("$values"));
+		// Fine-grained offset for pagination on value log level (if necessary)
+		if (offset > 0) {
+			aggregateStages.add(Aggregates.skip((int) offset));
+		}
 
-        //Fine-grained Sorting on value log level
-        aggregateStages.add(Aggregates.sort(fineSortDocument));
+		// Fine-grained Limit for pagination on value log level (if necessary)
+		aggregateStages.add(Aggregates.limit(limit));
 
-        //Fine-grained offset for pagination on value log level (if necessary)
-        if (offset > 0) {
-            aggregateStages.add(Aggregates.skip(offset));
-        }
+		// Perform aggregation
+		AggregateIterable<ValueLog> aggregateResult = this.valueLogCollection.aggregate(aggregateStages,
+				ValueLog.class);
 
-        //Fine-grained Limit for pagination on value log level (if necessary)
-        aggregateStages.add(Aggregates.limit(limit));
+		// Convert aggregation result to a list
+		aggregateResult.forEach((Consumer<ValueLog>) resultList::add);
 
-        //Perform aggregation
-        AggregateIterable<ValueLog> aggregateResult = this.valueLogCollection.aggregate(aggregateStages, ValueLog.class);
+		// Return value logs as page
+		return new PageImpl<>(resultList, pageable, resultList.size());
+	}
 
-        //Convert aggregation result to a list
-        aggregateResult.forEach((Consumer<ValueLog>) resultList::add);
+	/**
+	 * Deletes all value logs that match a given idref.
+	 *
+	 * @param idref The idref to match for
+	 */
+	public void deleteByIdRef(String idref) {
+		// Sanity check
+		if ((idref == null) || idref.isEmpty()) {
+			throw new IllegalArgumentException("Idref must not be null or empty.");
+		}
 
-        //Return value logs as page
-        return new PageImpl<>(resultList, pageable, resultList.size());
-    }
+		// Build filter for deleting all documents with the given idref
+		Bson filter = Filters.eq(IDREF_FIELD_NAME, idref);
 
-    /**
-     * Deletes all value logs that match a given idref.
-     *
-     * @param idref The idref to match for
-     */
-    public void deleteByIdRef(String idref) {
-        //Sanity check
-        if ((idref == null) || idref.isEmpty()) {
-            throw new IllegalArgumentException("Idref must not be null or empty.");
-        }
-
-        //Build filter for deleting all documents with the given idref
-        Bson filter = Filters.eq(IDREF_FIELD_NAME, idref);
-
-        //Perform deletion
-        this.valueLogCollection.deleteMany(filter);
-    }
+		// Perform deletion
+		this.valueLogCollection.deleteMany(filter);
+	}
 }

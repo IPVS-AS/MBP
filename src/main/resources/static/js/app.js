@@ -302,6 +302,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }],
                     adapterList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('adapters');
+                    }],
+                    accessControlPolicyList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('policies');
                     }]
                 }
             })
@@ -347,6 +350,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }],
                     adapterList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('adapters');
+                    }],
+                    accessControlPolicyList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('policies');
                     }]
                 }
             })

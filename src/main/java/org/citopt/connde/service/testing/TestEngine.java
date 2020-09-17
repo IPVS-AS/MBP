@@ -1,19 +1,24 @@
 package org.citopt.connde.service.testing;
 
-
-<<<<<<< HEAD
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-=======
->>>>>>> master
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
@@ -29,564 +34,524 @@ import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.repository.TestRepository;
 import org.citopt.connde.service.receiver.ValueLogReceiver;
 import org.citopt.connde.service.receiver.ValueLogReceiverObserver;
-import org.citopt.connde.web.rest.RestDeploymentController;
+import org.citopt.connde.service.rules.RuleEngine;
 import org.citopt.connde.web.rest.RestRuleController;
+import org.citopt.connde.web.rest.helper.DeploymentWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-<<<<<<< HEAD
-=======
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static java.util.Map.Entry.comparingByKey;
-import static java.util.stream.Collectors.toMap;
-
->>>>>>> master
 @Component
 public class TestEngine implements ValueLogReceiverObserver {
-    @Autowired
-    private TestDetailsRepository testDetailsRepository;
+	@Autowired
+	private TestDetailsRepository testDetailsRepository;
 
-    @Autowired
-    private TestEngine testEngine;
+	@Autowired
+	private TestEngine testEngine;
 
-    @Autowired
-    private RuleTriggerRepository ruleTriggerRepository;
+	@Autowired
+	private RuleTriggerRepository ruleTriggerRepository;
 
-    @Autowired
-    private ActuatorRepository actuatorRepository;
+	@Autowired
+	private ActuatorRepository actuatorRepository;
 
-<<<<<<< HEAD
-=======
+	@Autowired
+	private TestRepository testRepo;
 
->>>>>>> master
-    @Autowired
-    private TestRepository testRepo;
+	@Autowired
+	private DeploymentWrapper deploymentWrapper;
 
-    @Autowired
-    private RestDeploymentController restDeploymentController;
+	@Autowired
+	private RuleRepository ruleRepository;
 
-    @Autowired
-    private RuleRepository ruleRepository;
+	@Autowired
+	private RuleEngine ruleEngine;
 
-    @Autowired
-    private RestRuleController restRuleController;
+	// List of all active Tests/testValues
+	Map<String, TestDetails> activeTests = new HashMap<>();
+	Map<String, List<Double>> testValues = new HashMap<>();
 
+	/**
+	 * Returns a list of all active tests.
+	 *
+	 * @return activeTests
+	 */
+	public Map<String, TestDetails> getActiveTests() {
+		return activeTests;
+	}
 
-    // List of all active Tests/testValues
-    Map<String, TestDetails> activeTests = new HashMap<>();
-    Map<String, List<Double>> testValues = new HashMap<>();
+	/**
+	 * Sets a list of all active tests
+	 *
+	 * @param activeTests active/running tests
+	 */
+	public void setActiveTests(Map<String, TestDetails> activeTests) {
+		this.activeTests = activeTests;
+	}
 
+	/**
+	 * Returns a list of all incomming values of the sensors of the activeted tests.
+	 *
+	 * @return list of test values
+	 */
+	public Map<String, List<Double>> getTestValues() {
+		return testValues;
+	}
 
-    /**
-     * Returns a list of all active tests.
-     *
-     * @return activeTests
-     */
-    public Map<String, TestDetails> getActiveTests() {
-        return activeTests;
-    }
+	/**
+	 * Sets a list of all incomming values of the sensors of the activeted tests.
+	 *
+	 * @param testValues list of test values
+	 */
+	public void setTestValues(Map<String, List<Double>> testValues) {
+		this.testValues = testValues;
+	}
 
-    /**
-     * Sets a list of all active tests
-     *
-     * @param activeTests active/running tests
-     */
-    public void setActiveTests(Map<String, TestDetails> activeTests) {
-        this.activeTests = activeTests;
-    }
+	/**
+	 * Registers the TestEngine as an Observer to the ValueLogReceiver which then
+	 * will be notified about incoming value logs.
+	 *
+	 * @param valueLogReceiver The value log receiver instance to use
+	 */
+	@Autowired
+	private TestEngine(ValueLogReceiver valueLogReceiver) {
+		valueLogReceiver.registerObserver(this);
+	}
 
-    /**
-     * Returns a list of all incomming values of the sensors of the activeted tests.
-     *
-     * @return list of test values
-     */
-    public Map<String, List<Double>> getTestValues() {
-        return testValues;
-    }
+	/**
+	 * Stores all Values from the active Tests
+	 *
+	 * @param valueLog The corresponding value log that arrived
+	 */
+	@Override
+	public void onValueReceived(ValueLog valueLog) {
+		if (!activeTests.containsKey(valueLog.getIdref())) {
+			return;
+		}
+		if (!testValues.containsKey(valueLog.getIdref())) {
+			List<Double> newList = new ArrayList<>();
+			newList.add(valueLog.getValue());
+			testValues.put(valueLog.getIdref(), newList);
+		} else {
+			List<Double> oldList = testValues.get(valueLog.getIdref());
+			oldList.add(valueLog.getValue());
+		}
+	}
 
-    /**
-     * Sets a list of all incomming values of the sensors of the activeted tests.
-     *
-     * @param testValues list of test values
-     */
-    public void setTestValues(Map<String, List<Double>> testValues) {
-        this.testValues = testValues;
-    }
+	/**
+	 * Checks if the sensors of the specific test are running
+	 *
+	 * @param testDetails specific test with all details
+	 * @return boolean, if test is still running
+	 */
+	public boolean testRunning(TestDetails testDetails) {
+		List<Sensor> testingSensors = testDetails.getSensor();
+		boolean response = false;
+		for (Sensor sensor : testingSensors) {
+			// TODO: I don't think this implementation is correct: test running = LAST
+			// sensor running
+			// Not sure what the criteria are for running tests - i guess all sensors have
+			// to run -> use a logical AND (&&) to create the response:
+//        	response = response && deploymentWrapper.isComponentRunning(sensor);
+			response = deploymentWrapper.isComponentRunning(sensor);
+		}
 
-    /**
-     * Registers the TestEngine as an Observer to the ValueLogReceiver which then will be notified about incoming value logs.
-     *
-     * @param valueLogReceiver The value log receiver instance to use
-     */
-    @Autowired
-    private TestEngine(ValueLogReceiver valueLogReceiver) {
-        valueLogReceiver.registerObserver(this);
-    }
+		return response;
+	}
 
-    /**
-     * Stores all Values from the active Tests
-     *
-     * @param valueLog The corresponding value log that arrived
-     */
-    @Override
-    public void onValueReceived(ValueLog valueLog) {
-        if (!activeTests.containsKey(valueLog.getIdref())) {
-            return;
-        }
-        if (!testValues.containsKey(valueLog.getIdref())) {
-            List<Double> newList = new ArrayList<>();
-            newList.add(valueLog.getValue());
-            testValues.put(valueLog.getIdref(), newList);
-        } else {
-            List<Double> oldList = testValues.get(valueLog.getIdref());
-            oldList.add(valueLog.getValue());
-        }
-    }
+	/**
+	 * Sets the End time of the test, if every Sensor of a test is finished.
+	 *
+	 * @param testId Id of the the running test
+	 * @return value-list of the simulated Sensor
+	 */
+	public Map<String, List<Double>> isFinished(String testId) {
+		boolean response = true;
+		TestDetails testDetails = testDetailsRepository.findById(testId).get();
+		while (response) {
+			response = testEngine.testRunning(testDetails);
+		}
+		testDetails.setEndTestTimeNow();
+		testDetailsRepository.save(testDetails);
 
-    /**
-     * Checks if the sensors of the specific test are running
-     *
-     * @param testDetails specific test with all details
-     * @return boolean, if test is still running
-     */
-    public boolean testRunning(TestDetails testDetails) {
-        List<Sensor> testingSensors = testDetails.getSensor();
-        boolean response = false;
-        for (Sensor sensor : testingSensors) {
-            ResponseEntity<Boolean> sensorRunning = restDeploymentController.isRunningSensor(sensor.getId());
-            response = sensorRunning.getBody();
-        }
+		return testEngine.getTestValues();
+	}
 
-        return response;
-    }
+	/**
+	 * Checks if the test was successful or not.
+	 *
+	 * @param triggerValuesMap map of all trigger values of a specific test
+	 * @param ruleNames        Names of all rules regarding to the test
+	 * @return information about the success
+	 */
+	public String checkSuccess(TestDetails test, Map<String, List<Double>> triggerValuesMap, List<String> ruleNames) {
+		String success = "Not Successful";
+		boolean triggerRules = test.isTriggerRules();
 
-    /**
-     * Sets the End time of the test, if every Sensor of a test is finished.
-     *
-     * @param testId Id of the the running test
-     * @return value-list of the simulated Sensor
-     */
-    public Map<String, List<Double>> isFinished(String testId) {
-        boolean response = true;
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
-        while (response) {
-            response = testEngine.testRunning(testDetails);
-        }
-        testDetails.setEndTestTimeNow();
-        testDetailsRepository.save(testDetails);
+		if (triggerRules) {
+			if (triggerValuesMap.size() == ruleNames.size()) {
+				for (String ruleName : ruleNames) {
+					if (triggerValuesMap.containsKey(ruleName)) {
+						success = "Successful";
+					} else {
+						success = "Not Successful";
+						break;
+					}
+				}
 
-        return testEngine.getTestValues();
-    }
+			}
+		} else {
+			if (triggerValuesMap.size() == 0) {
+				success = "Successful";
+			}
+		}
 
+		return success;
+	}
 
-    /**
-     * Checks if the test was successful or not.
-     *
-     * @param triggerValuesMap map of all trigger values of a specific test
-     * @param ruleNames        Names of all rules regarding to the test
-     * @return information about the success
-     */
-    public String checkSuccess(TestDetails test, Map<String, List<Double>> triggerValuesMap, List<String> ruleNames) {
-        String success = "Not Successful";
-        boolean triggerRules = test.isTriggerRules();
+	/**
+	 * Enable selected Rules, Deploy and Start the Actuator and Sensors of the test
+	 *
+	 * @param testDetails specific test to be executed
+	 */
+	public ResponseEntity<String> startTest(TestDetails testDetails) {
+		// TODO: Repository return objects should be checked - i temporarily added .orElse(null) to each function,
+    	//       since this is equivalent to the former implementation of the repositories.
+		Actuator testingActuator = actuatorRepository.findByName("TestingActuator").orElse(null);
 
-        if (triggerRules) {
-            if (triggerValuesMap.size() == ruleNames.size()) {
-                for (String ruleName : ruleNames) {
-                    if (triggerValuesMap.containsKey(ruleName)) {
-                        success = "Successful";
-                    } else {
-                        success = "Not Successful";
-                        break;
-                    }
-                }
+		List<Sensor> testingSensor = testDetails.getSensor();
+		List<Rule> rules = testDetails.getRules();
+		List<ParameterInstance> config = testDetails.getConfig();
 
-            }
-        } else {
-            if (triggerValuesMap.size() == 0) {
-                success = "Successful";
-            }
-        }
+		// activate the selected rules for the test
+		for (Rule rule : rules) {
+			// check if selected rules are active --> if not active Rules
+			ruleEngine.enableRule(rule);
+		}
 
-        return success;
-    }
+		// check if test exists
+		if (!testDetailsRepository.existsById(testDetails.getId())) {
 
-    /**
-     * Enable selected Rules, Deploy and Start the Actuator and Sensors of the test
-     *
-     * @param testDetails specific test to be executed
-     */
-    public ResponseEntity<String> startTest(TestDetails testDetails) {
-        Actuator testingActuator = actuatorRepository.findByName("TestingActuator");
+			return new ResponseEntity<>("Test does not exists.", HttpStatus.NOT_FOUND);
+		}
 
-        List<Sensor> testingSensor = testDetails.getSensor();
-        List<Rule> rules = testDetails.getRules();
-        List<ParameterInstance> config = testDetails.getConfig();
+		// check if actuator is deployed
+		boolean actuatorDeployed = deploymentWrapper.isComponentRunning(testingActuator);
+		if (!actuatorDeployed) {
+			// if false deploy actuator
+			deploymentWrapper.deployComponent(testingActuator);
+		}
+		// start the Actuator
+		deploymentWrapper.startComponent(testingActuator, new ArrayList<>());
 
-        //activate the selected rules for the test
-        for (Rule rule : rules) {
-            // check if selected rules are active --> if not active Rules
-            restRuleController.enableRule(rule.getId());
-        }
+		// check if the sensor/s are currently running
+		for (Sensor sensor : testingSensor) {
+			boolean sensorDeployed = deploymentWrapper.isComponentRunning(sensor);
+			// check if sensor is deployed
+			if (!sensorDeployed) {
+				// if not deploy Sensor
+				deploymentWrapper.deployComponent(sensor);
+			}
 
-        //check if test exists
-        if (!testDetailsRepository.existsById(testDetails.getId())) {
+			deploymentWrapper.stopComponent(sensor);
+			deploymentWrapper.startComponent(sensor, config);
+		}
 
-            return new ResponseEntity<>("Test does not exists.", HttpStatus.NOT_FOUND);
-        }
+		return new ResponseEntity<>("Test successfully started.", HttpStatus.OK);
+	}
 
-        //check if actuator is deployed
-        ResponseEntity<Boolean> actuatorDeployed = restDeploymentController.isRunningActuator(testingActuator.getId());
-        if (!actuatorDeployed.getBody()) {
-            //if false deploy actuator
-            restDeploymentController.deployActuator(testingActuator.getId());
-        }
-        // start the Actuator
-        restDeploymentController.startActuator(testingActuator.getId(), new ArrayList<>());
+	/**
+	 * Saved informations about the success, executed Rules and the trigger-values
+	 *
+	 * @param testId ID of the executed test
+	 */
+	public void testSuccess(String testId) {
+		TestDetails testDetails = testDetailsRepository.findById(testId).get();
+		List<String> ruleNames = new ArrayList<>();
 
+		List<Rule> ruleList = testDetails.getRules();
 
-        // check if the sensor/s are currently running
-        for (Sensor sensor : testingSensor) {
-            ResponseEntity<Boolean> sensorDeployed = restDeploymentController.isRunningSensor(sensor.getId());
-            // check if sensor is deployed
-            if (!sensorDeployed.getBody()) {
-                //if not deploy Sensor
-                restDeploymentController.deploySensor((sensor.getId()));
-            }
+		// add all names and triggerIDs of the rules of the application tested
+		for (Rule rule : ruleList) {
+			ruleNames.add(rule.getName());
+		}
 
-            restDeploymentController.stopSensor(sensor.getId());
-            restDeploymentController.startSensor(sensor.getId(), config);
-        }
+		Map<String, List<Double>> triggerValues = getTriggerValues(testId);
+		String sucessResponse = testEngine.checkSuccess(testDetails, triggerValues, ruleNames);
+		List<String> rulesExecuted = testEngine.getRulesExecuted(triggerValues);
 
+		// save informations about the success and rules of the executed test
+		testDetails.setTriggerValues(triggerValues);
+		testDetails.setSuccessful(sucessResponse);
+		testDetails.setRulesExecuted(rulesExecuted);
+		testDetailsRepository.save(testDetails);
+	}
 
-        return new ResponseEntity<>("Test successfully started.", HttpStatus.OK);
-    }
-
-
-    /**
-     * Saved informations about the success, executed Rules and the trigger-values
-     *
-     * @param testId ID of the executed test
-     */
-    public void testSuccess(String testId) {
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
-        List<String> ruleNames = new ArrayList<>();
-
-        List<Rule> ruleList = testDetails.getRules();
-
-        // add all  names and triggerIDs of the rules of the application  tested
-        for (Rule rule : ruleList) {
-            ruleNames.add(rule.getName());
-        }
-
-        Map<String, List<Double>> triggerValues = getTriggerValues(testId);
-        String sucessResponse = testEngine.checkSuccess(testDetails, triggerValues, ruleNames);
-        List<String> rulesExecuted = testEngine.getRulesExecuted(triggerValues);
-
-        // save informations about the success and rules of the executed test
-        testDetails.setTriggerValues(triggerValues);
-        testDetails.setSuccessful(sucessResponse);
-        testDetails.setRulesExecuted(rulesExecuted);
-        testDetailsRepository.save(testDetails);
-    }
-
-    /**
-     * Returns a list of all values that triggered the selected rules in the test, between start and end time.
-     *
-     * @param testId ID of the executed test
-     * @return List of trigger-values
-     */
-    @SuppressWarnings("unchecked")
+	/**
+	 * Returns a list of all values that triggered the selected rules in the test,
+	 * between start and end time.
+	 *
+	 * @param testId ID of the executed test
+	 * @return List of trigger-values
+	 */
+	@SuppressWarnings("unchecked")
 	public Map<String, List<Double>> getTriggerValues(String testId) {
-        Map<String, List<Double>> testValues = new HashMap<>();
+		Map<String, List<Double>> testValues = new HashMap<>();
 
+		TestDetails testDetails = testDetailsRepository.findById(testId).get();
+		List<String> ruleNames = new ArrayList<>();
+		List<String> triggerID = new ArrayList<>();
 
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
-        List<String> ruleNames = new ArrayList<>();
-        List<String> triggerID = new ArrayList<>();
+		Integer startTime = testDetails.getStartTimeUnix();
+		long endTime = testDetails.getEndTimeUnix();
 
-        Integer startTime = testDetails.getStartTimeUnix();
-        long endTime = testDetails.getEndTimeUnix();
+		for (int i = 0; i < testDetails.getSensor().size(); i++) {
+			for (RuleTrigger trigger : ruleTriggerRepository.findAll()) {
+				Sensor sensor = testDetails.getSensor().get(i);
+				String s = sensor.getId();
+				if (trigger.getQuery().contains(s)) {
+					triggerID.add(trigger.getId());
+					for (Rule nextRule : ruleRepository.findAll()) {
+						if (nextRule.getTrigger().getId().equals(trigger.getId())) {
+							ruleNames.add(nextRule.getName());
+						}
+					}
+				}
+			}
+		}
 
+		for (int i = 0; i < ruleNames.size(); i++) {
+			List<Double> values = new ArrayList<>();
+			String rulename = ruleNames.get(i);
+			List<Testing> test = testRepo.findAllByTriggerId(triggerID.get(i));
+			for (Testing testing : test) {
+				if (testing.getRule().contains(rulename)) {
+					LinkedHashMap<String, Double> timeTiggerValue = (LinkedHashMap<String, Double>) testing.getOutput()
+							.getOutputMap().get("event_0");
+					LinkedHashMap<String, Long> timeTiggerValMp = (LinkedHashMap<String, Long>) testing.getOutput()
+							.getOutputMap().get("event_0");
+					long timeTiggerVal = timeTiggerValMp.get("time");
+					if (timeTiggerVal >= startTime && timeTiggerVal <= endTime) {
+						values.add(timeTiggerValue.get("value"));
+					}
 
-        for (int i = 0; i < testDetails.getSensor().size(); i++) {
-            for (RuleTrigger trigger : ruleTriggerRepository.findAll()) {
-                Sensor sensor = testDetails.getSensor().get(i);
-                String s = sensor.getId();
-                if (trigger.getQuery().contains(s)) {
-                    triggerID.add(trigger.getId());
-                    for (Rule nextRule : ruleRepository.findAll()) {
-                        if (nextRule.getTrigger().getId().equals(trigger.getId())) {
-                            ruleNames.add(nextRule.getName());
-                        }
-                    }
-                }
-            }
-        }
+				}
+			}
+			if (values.size() > 0) {
+				testValues.put(rulename, values);
+			}
+		}
+		return testValues;
+	}
 
-        for (int i = 0; i < ruleNames.size(); i++) {
-            List<Double> values = new ArrayList<>();
-            String rulename = ruleNames.get(i);
-            List<Testing> test = testRepo.findAllByTriggerId(triggerID.get(i));
-            for (Testing testing : test) {
-                if (testing.getRule().contains(rulename)) {
-                    LinkedHashMap<String, Double> timeTiggerValue = (LinkedHashMap<String, Double>) testing.getOutput().getOutputMap().get("event_0");
-                    LinkedHashMap<String, Long> timeTiggerValMp = (LinkedHashMap<String, Long>) testing.getOutput().getOutputMap().get("event_0");
-                    long timeTiggerVal = timeTiggerValMp.get("time");
-                    if (timeTiggerVal >= startTime && timeTiggerVal <= endTime) {
-                        values.add(timeTiggerValue.get("value"));
-                    }
+	/**
+	 * Returns all informations about the rules of the tested application before the
+	 * execution
+	 *
+	 * @param test to be executed test
+	 * @return list of informations about the rules of the tested application before
+	 *         execution
+	 */
+	public List<Rule> getStatRulesBefore(TestDetails test) {
+		// Get the rules selected by the user with their informations about the last
+		// execution,.. before the sensor is started
+		List<Rule> rulesbefore = new ArrayList<>();
+		rulesbefore.addAll(test.getRules());
 
+		List<RuleTrigger> allRules = ruleTriggerRepository.findAll();
+		// Get Informations for all rules of the IoT-Applikation
+		for (int i = 0; i < test.getSensor().size(); i++) {
+			for (RuleTrigger trigger : allRules) {
+				Sensor sensor = test.getSensor().get(i);
+				String s = sensor.getId();
+				if (trigger.getQuery().contains(s)) {
+					for (Rule nextRule : ruleRepository.findAll()) {
+						if (nextRule.getTrigger().getId().equals(trigger.getId())) {
+							if (!rulesbefore.contains(nextRule)) {
+								rulesbefore.add(nextRule);
+							}
+						}
+					}
+				}
+			}
+		}
 
-                }
-            }
-            if (values.size() > 0) {
-                testValues.put(rulename, values);
-            }
-        }
-        return testValues;
-    }
+		return rulesbefore;
+	}
 
+	/**
+	 * Starts the test and saves all values form the sensor.
+	 *
+	 * @param test test to be executed
+	 */
+	public Map<String, List<Double>> executeTest(TestDetails test) {
 
-    /**
-     * Returns all informations about the rules of the tested application before the execution
-     *
-     * @param test to be executed test
-     * @return list of informations about the rules of the tested application before execution
-     */
-    public List<Rule> getStatRulesBefore(TestDetails test) {
-        // Get the rules selected by the user with their informations about the last execution,.. before the sensor is started
-        List<Rule> rulesbefore = new ArrayList<>();
-        rulesbefore.addAll(test.getRules());
+		Map<String, TestDetails> activeTests = testEngine.getActiveTests();
+		Map<String, List<Double>> list = testEngine.getTestValues();
+		for (Sensor sensor : test.getSensor()) {
+			activeTests.put(sensor.getId(), test);
+			list.remove(sensor.getId());
+		}
+		testEngine.setActiveTests(activeTests);
+		testEngine.setTestValues(list);
+		testEngine.startTest(testDetailsRepository.findById(test.getId()).get());
 
-        List<RuleTrigger> allRules = ruleTriggerRepository.findAll();
-        // Get Informations for all rules of the IoT-Applikation
-        for (int i = 0; i < test.getSensor().size(); i++) {
-            for (RuleTrigger trigger : allRules) {
-                Sensor sensor = test.getSensor().get(i);
-                String s = sensor.getId();
-                if (trigger.getQuery().contains(s)) {
-                    for (Rule nextRule : ruleRepository.findAll()) {
-                        if (nextRule.getTrigger().getId().equals(trigger.getId())) {
-                            if (!rulesbefore.contains(nextRule)) {
-                                rulesbefore.add(nextRule);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+		Map<String, List<Double>> valueList;
+		Map<String, List<Double>> valueListTest = new HashMap<>();
 
-        return rulesbefore;
-    }
+		// Get List of all simulated Values
+		valueList = testEngine.isFinished(test.getId());
+		TestDetails testDetails2 = testDetailsRepository.findById(test.getId()).get();
+		for (Sensor sensor : test.getSensor()) {
+			List<Double> temp = valueList.get(sensor.getId());
+			valueList.put(sensor.getName(), temp);
+			valueListTest.put(sensor.getName(), temp);
+			list.remove(sensor.getId());
+		}
 
-    /**
-     * Starts the test and saves all values form the sensor.
-     *
-     * @param test test to be executed
-     */
-    public Map<String, List<Double>> executeTest(TestDetails test) {
+		// save list of sensor values to database
+		testDetails2.setSimulationList(valueListTest);
+		testDetailsRepository.save(testDetails2);
 
-        Map<String, TestDetails> activeTests = testEngine.getActiveTests();
-        Map<String, List<Double>> list = testEngine.getTestValues();
-        for (Sensor sensor : test.getSensor()) {
-            activeTests.put(sensor.getId(), test);
-            list.remove(sensor.getId());
-        }
-        testEngine.setActiveTests(activeTests);
-        testEngine.setTestValues(list);
-        testEngine.startTest(testDetailsRepository.findById(test.getId()).get());
+		return valueListTest;
+	}
 
-        Map<String, List<Double>> valueList;
-        Map<String, List<Double>> valueListTest = new HashMap<>();
+	/**
+	 * Gets all Rules executed by the test
+	 *
+	 * @param triggerValues map of all trigger values of a specific test
+	 * @return a list of all executed rules
+	 */
+	public List<String> getRulesExecuted(Map<String, List<Double>> triggerValues) {
 
-        // Get List of all simulated Values
-        valueList = testEngine.isFinished(test.getId());
-        TestDetails testDetails2 = testDetailsRepository.findById(test.getId()).get();
-        for (Sensor sensor : test.getSensor()) {
-            List<Double> temp = valueList.get(sensor.getId());
-            valueList.put(sensor.getName(), temp);
-            valueListTest.put(sensor.getName(), temp);
-            list.remove(sensor.getId());
-        }
+		List<String> executedRules = new ArrayList<>();
+		triggerValues.forEach((k, v) -> executedRules.add(k));
 
-        // save list of sensor values to database
-        testDetails2.setSimulationList(valueListTest);
-        testDetailsRepository.save(testDetails2);
+		return executedRules;
+	}
 
-        return valueListTest;
-    }
+	/**
+	 * Method to download a specific Test Report
+	 *
+	 * @param path to the specific Test Report to download
+	 */
+	public ResponseEntity<String> downloadPDF(String path) throws IOException {
+		TestDetails test = null;
+		Pattern pattern = Pattern.compile("(.*?)_");
+		Matcher m = pattern.matcher(path);
+		if (m.find()) {
+			test = testDetailsRepository.findById(m.group(1)).get();
+		}
 
+		File result = new File(test.getPathPDF() + "/" + path + ".pdf");
 
-    /**
-     * Gets all Rules executed by the test
-     *
-     * @param triggerValues map of all trigger values of a specific test
-     * @return a list of all executed rules
-     */
-    public List<String> getRulesExecuted(Map<String, List<Double>> triggerValues) {
+		ResponseEntity respEntity;
 
-        List<String> executedRules = new ArrayList<>();
-        triggerValues.forEach((k, v) -> executedRules.add(k));
+		if (result.exists()) {
+			InputStream inputStream = new FileInputStream(result);
 
-        return executedRules;
-    }
-<<<<<<< HEAD
-    
-=======
+			byte[] out = org.apache.commons.io.IOUtils.toByteArray(inputStream);
 
->>>>>>> master
-    /**
-     * Method to download a specific Test Report
-     *
-     * @param path to the specific Test Report to download
-     */
-<<<<<<< HEAD
-    public ResponseEntity<String> downloadPDF(String testId) throws IOException {
-        TestDetails test = testDetailsRepository.findById(testId).get();
-        File result = new File(String.valueOf(test.getPathPDF()));
-=======
-    public ResponseEntity<String> downloadPDF(String path) throws IOException {
-        TestDetails test = null;
-        Pattern pattern = Pattern.compile("(.*?)_");
-        Matcher m = pattern.matcher(path);
-        if (m.find()) {
-            test = testDetailsRepository.findById(m.group(1));
-        }
+			HttpHeaders responseHeaders = new HttpHeaders();
+			responseHeaders.add("content-disposition", "attachment; filename=" + path + ".pdf");
 
+			respEntity = new ResponseEntity(out, responseHeaders, HttpStatus.OK);
+			inputStream.close();
+		} else {
+			respEntity = new ResponseEntity("File Not Found", HttpStatus.NOT_FOUND);
+		}
 
-        File result = new File(test.getPathPDF() + "/" + path + ".pdf");
->>>>>>> master
+		return respEntity;
+	}
 
-        ResponseEntity respEntity;
+	/**
+	 * Returns a Hashmap with date and path to of all Test Reports regarding to a
+	 * specific test.
+	 *
+	 * @param testId ID of the test from which all reports are to be found
+	 * @return hashmap with the date and path to every report regarding to the
+	 *         specific test
+	 */
+	public ResponseEntity<Map<Long, String>> getPDFList(String testId) {
+		ResponseEntity pdfList = null;
+		Map<Long, String> nullList = new TreeMap<>();
+		TestDetails testDetails = testDetailsRepository.findById(testId).get();
+		try {
+			if (testDetails.isPdfExists()) {
+				Stream<Path> pathStream = Files.find(Paths.get(testDetails.getPathPDF()), 10,
+						(path, basicFileAttributes) -> {
+							File file = path.toFile();
+							return !file.isDirectory() && file.getName().contains(testId + "_");
+						});
 
-        if (result.exists()) {
-            InputStream inputStream = new FileInputStream(result);
+				pdfList = new ResponseEntity(generateReportList(pathStream), HttpStatus.OK);
+			} else {
+				pdfList = new ResponseEntity(nullList, HttpStatus.OK);
+			}
 
-            byte[] out = org.apache.commons.io.IOUtils.toByteArray(inputStream);
+		} catch (IOException e) {
+			pdfList = new ResponseEntity(HttpStatus.NOT_FOUND);
+		}
 
-            HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.add("content-disposition", "attachment; filename=" + path + ".pdf");
+		return pdfList;
+	}
 
-            respEntity = new ResponseEntity(out, responseHeaders, HttpStatus.OK);
-            inputStream.close();
-        } else {
-<<<<<<< HEAD
-        	// Note that HTTP OK (200) is confusing here, NOT_FOUND (404) would be appropriate
-            respEntity = new ResponseEntity("File Not Found", HttpStatus.OK);
-=======
-            respEntity = new ResponseEntity("File Not Found", HttpStatus.NOT_FOUND);
->>>>>>> master
-        }
+	/**
+	 * Generates a Hashmap where the entries consist of the creation date of the
+	 * report and the path to it.
+	 *
+	 * @param pathStream Stream of the matching reports regarding to to the specific
+	 *                   test
+	 * @return Map out of the creation dates and paths to the report
+	 */
+	public Map<Long, String> generateReportList(Stream<Path> pathStream) {
+		Map<Long, String> pdfEntry = new TreeMap<>();
 
+		// Pattern to find the PDF-Files for a specific test with the specific ID in the
+		// Filename
+		Pattern pattern = Pattern.compile("_(.*?).pdf");
 
-        return respEntity;
-    }
+		Long dateMilliseconds = null;
 
-    /**
-     * Returns a Hashmap with date and path to of all Test Reports regarding to a specific test.
-     *
-     * @param testId ID of the test from which all reports are to be found
-     * @return hashmap with the date and path to every report regarding to the specific test
-     */
-    public ResponseEntity<Map<Long, String>> getPDFList(String testId) {
-        ResponseEntity pdfList = null;
-        Map<Long, String> nullList = new TreeMap<>();
-        TestDetails testDetails = testDetailsRepository.findOne(testId);
-        try {
-            if (testDetails.isPdfExists()) {
-                Stream<Path> pathStream = Files.find(Paths.get(testDetails.getPathPDF()), 10, (path, basicFileAttributes) -> {
-                    File file = path.toFile();
-                    return !file.isDirectory() &&
-                            file.getName().contains(testId + "_");
-                });
+		// Put every path out of the stream into a list
+		List<Path> files = pathStream.sorted(Comparator.comparing(Path::toString)).collect(Collectors.toList());
 
-                pdfList = new ResponseEntity(generateReportList(pathStream), HttpStatus.OK);
-            } else {
-                pdfList = new ResponseEntity(nullList, HttpStatus.OK);
-            }
+		files.forEach(System.out::println);
+		for (Path singlePath : files) {
+			// get date in milliseconds out of the filename and convert this into the
+			// specified date format
+			Matcher machter = pattern.matcher(singlePath.toString());
+			if (machter.find()) {
+				dateMilliseconds = Long.valueOf(machter.group(1));
+			}
+			// Add properties to object
+			pdfEntry.put(dateMilliseconds, singlePath.getFileName().toString());
 
+		}
 
-        } catch (IOException e) {
-            pdfList = new ResponseEntity(HttpStatus.NOT_FOUND);
-        }
+		return sortMap(pdfEntry);
+	}
 
-        return pdfList;
-    }
+	/**
+	 * Sorts the timestamps of the List of Test-Reports.
+	 *
+	 * @param unsortedMap Sorted map with the timestamp as Long in the key
+	 * @return sorted Map depending on the key
+	 */
+	private Map<Long, String> sortMap(Map<Long, String> unsortedMap) {
 
+		Map<Long, String> treeMap = new TreeMap<Long, String>(new Comparator<Long>() {
+			@Override
+			public int compare(Long o1, Long o2) {
+				return o1.compareTo(o2);
+			}
 
-    /**
-     * Generates a Hashmap where the entries consist of the creation date of the report and the path to it.
-     *
-     * @param pathStream Stream of the matching reports regarding to to the specific test
-     * @return Map out of the creation dates and paths to the report
-     */
-    public Map<Long, String> generateReportList(Stream<Path> pathStream) {
-        Map<Long, String> pdfEntry = new TreeMap<>();
+		});
 
-        // Pattern to find the PDF-Files for a specific test with the specific ID in the Filename
-        Pattern pattern = Pattern.compile("_(.*?).pdf");
+		treeMap.putAll(unsortedMap);
 
-
-        Long dateMilliseconds = null;
-
-        // Put every path out of the stream into a list
-        List<Path> files = pathStream.sorted(Comparator.comparing(Path::toString)).collect(Collectors.toList());
-
-        files.forEach(System.out::println);
-        for (Path singlePath : files) {
-            // get  date in milliseconds out of the filename and convert this into the specified date format
-            Matcher machter = pattern.matcher(singlePath.toString());
-            if (machter.find()) {
-                dateMilliseconds = Long.valueOf(machter.group(1));
-            }
-            //Add properties to object
-            pdfEntry.put(dateMilliseconds, singlePath.getFileName().toString());
-
-        }
-
-
-        return sortMap(pdfEntry);
-    }
-
-
-    /**
-     * Sorts the timestamps of the List of Test-Reports.
-     *
-     * @param unsortedMap Sorted map with the timestamp as Long in the key
-     * @return sorted Map depending on the key
-     */
-    private Map<Long, String> sortMap(Map<Long, String> unsortedMap) {
-
-        Map<Long, String> treeMap = new TreeMap<Long, String>(new Comparator<Long>() {
-            @Override
-            public int compare(Long o1, Long o2) {
-                return o1.compareTo(o2);
-            }
-
-        });
-
-        treeMap.putAll(unsortedMap);
-
-        return treeMap;
-    }
+		return treeMap;
+	}
 }
-
-    

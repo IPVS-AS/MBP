@@ -1,14 +1,10 @@
 package org.citopt.connde.domain.device;
 
-import static org.citopt.connde.domain.user_entity.UserEntityRole.ADMIN;
-import static org.citopt.connde.domain.user_entity.UserEntityRole.APPROVED_USER;
-
 import javax.persistence.GeneratedValue;
 
 import org.citopt.connde.domain.access_control.ACAttributeValue;
 import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.domain.user_entity.UserEntity;
-import org.citopt.connde.domain.user_entity.UserEntityPolicy;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -21,12 +17,12 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(description = "Model for device entities")
 public class Device extends UserEntity {
 
-    //Permission name for monitoring
-    private static final String PERMISSION_NAME_MONITORING = "monitor";
-
-    //Extend default policy by monitoring permission
-    private static final UserEntityPolicy DEVICE_POLICY = new UserEntityPolicy(DEFAULT_POLICY)
-            .addPermission(PERMISSION_NAME_MONITORING).addRole(APPROVED_USER).addRole(ADMIN).lock();
+//    //Permission name for monitoring
+//    private static final String PERMISSION_NAME_MONITORING = "monitor";
+//
+//    //Extend default policy by monitoring permission
+//    private static final UserEntityPolicy DEVICE_POLICY = new UserEntityPolicy(DEFAULT_POLICY)
+//            .addPermission(PERMISSION_NAME_MONITORING).addRole(APPROVED_USER).addRole(ADMIN).lock();
 
     @Id
     @GeneratedValue
@@ -147,8 +143,8 @@ public class Device extends UserEntity {
         return (keyPair != null) && (keyPair.hasPrivateKey());
     }
 
-    @Override
-    public UserEntityPolicy getUserEntityPolicy() {
-        return DEVICE_POLICY;
-    }
+//    @Override
+//    public UserEntityPolicy getUserEntityPolicy() {
+//        return DEVICE_POLICY;
+//    }
 }

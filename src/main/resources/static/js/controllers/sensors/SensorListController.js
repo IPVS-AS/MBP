@@ -5,10 +5,10 @@
  */
 app.controller('SensorListController',
     ['$scope', '$controller', '$interval', 'sensorList', 'addSensor', 'deleteSensor',
-        'deviceList', 'adapterList', 'ComponentService',
+        'deviceList', 'adapterList', 'accessControlPolicyList', 'ComponentService',
         'ComponentTypeService', 'NotificationService',
         function ($scope, $controller, $interval, sensorList, addSensor, deleteSensor,
-                  deviceList, adapterList, ComponentService,
+                  deviceList, adapterList, accessControlPolicyList, ComponentService,
                   ComponentTypeService, NotificationService) {
             var vm = this;
 
@@ -30,6 +30,11 @@ app.controller('SensorListController',
                 //Cancel interval on route change
                 $scope.$on('$destroy', function () {
                     $interval.cancel(interval);
+                });
+
+                // Refresh policy select picker when the modal is opened
+                $('.modal').on('shown.bs.modal', function (e) {
+                    $('.selectpicker').selectpicker('refresh');
                 });
             })();
 
@@ -154,7 +159,8 @@ app.controller('SensorListController',
 
             //Expose
             angular.extend(vm, {
-                registeringDevice: false
+                registeringDevice: false,
+                accessControlPolicyList: accessControlPolicyList
             });
 
             // expose controller ($controller will auto-add to $scope)

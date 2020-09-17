@@ -21,7 +21,7 @@
     return service;
 
     function Authenticate(user) {
-      return $http.post(ENDPOINT_URI + '/authenticate', user).then(handleSuccess, handleError);
+      return $http.post(ENDPOINT_URI + '/users/authenticate', user).then(handleSuccess, handleError);
     }
 
     function Logout() {
@@ -41,7 +41,7 @@
     }
 
     function Update(user) {
-      return $http.put(ENDPOINT_URI + '/users/', user).then(handleSuccess, handleError);
+      return $http.put(ENDPOINT_URI + '/users/' + user.id, user).then(handleSuccess, handleError);
     }
 
     function Delete(username) {

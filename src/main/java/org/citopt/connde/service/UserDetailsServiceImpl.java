@@ -1,15 +1,12 @@
 package org.citopt.connde.service;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -28,14 +25,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(final String username) {
         String lowercaseUsername = username.toLowerCase(Locale.ENGLISH);
-        Optional<User> userFromDatabase = userRepository.findOneByUsername(lowercaseUsername);
+        Optional<User> userFromDatabase = userRepository.findByUsername(lowercaseUsername);
         return userFromDatabase.map(user -> {
-            List<GrantedAuthority> grantedAuthorities = user.getAuthorities().stream()
-                    .map(authority -> new SimpleGrantedAuthority(authority.getName()))
-                .collect(Collectors.toList());
             return new org.springframework.security.core.userdetails.User(lowercaseUsername,
-                user.getPassword(),
-                grantedAuthorities);
+                user.getPassword(), Collections.emptyList());
         }).orElseThrow(() -> new UsernameNotFoundException("User " + lowercaseUsername + " was not found in the database"));
     }
 }

@@ -3,9 +3,7 @@ package org.citopt.connde.domain.user;
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
 import javax.persistence.GeneratedValue;
 import javax.validation.constraints.NotNull;
@@ -18,14 +16,13 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * User entity.
+ * A user of the MBP.
  */
 @Document
 @ApiModel(description = "Model for user entities")
@@ -59,68 +56,87 @@ public class User implements Serializable, IACRequestingEntity {
     @Field("last_name")
     @ApiModelProperty(notes = "Last name of the user", example = "Doe")
     private String lastName;
-
-    @JsonIgnore
-    private Set<Authority> authorities = new HashSet<>();
+    
+    @ApiModelProperty(notes = "Indicates whether the user is an admin user.", required = true)
+    private boolean isAdmin;
+    
+//    @JsonIgnore
+//    private Set<Authority> authorities = new HashSet<>();
+    
+    // - - -
 
     public String getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public User setId(String id) {
         this.id = id;
+		return this;
     }
 
     public String getUsername() {
         return username;
     }
 
-    //Lowercase the username before saving it in database
-    public void setUsername(String username) {
+    public User setUsername(String username) {
+    	// Lowercase the username before saving it in database
         this.username = username.toLowerCase(Locale.ENGLISH);
+		return this;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public User setPassword(String password) {
         this.password = password;
+		return this;
     }
 
     public String getFirstName() {
         return firstName;
     }
 
-    public void setFirstName(String firstName) {
+    public User setFirstName(String firstName) {
         this.firstName = firstName;
+		return this;
     }
 
     public String getLastName() {
         return lastName;
     }
 
-    public void setLastName(String lastName) {
+    public User setLastName(String lastName) {
         this.lastName = lastName;
+		return this;
     }
-
-    public Set<Authority> getAuthorities() {
-        return authorities;
-    }
-
-    public void setAuthorities(Set<Authority> authorities) {
-        this.authorities = authorities;
-    }
-
-    @JsonProperty("isAdmin")
-    @ApiModelProperty(notes = "Whether the user is an admin", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    
     public boolean isAdmin() {
-        //Create admin authority
-        Authority adminAuthority = new Authority(Constants.ADMIN);
-
-        //Check if authority available
-        return authorities.contains(adminAuthority);
+    	return isAdmin;
     }
+    
+    public User setAdmin(boolean isAdmin) {
+		this.isAdmin = isAdmin;
+		return this;
+	}
+
+//    public Set<Authority> getAuthorities() {
+//        return authorities;
+//    }
+//
+//    public void setAuthorities(Set<Authority> authorities) {
+//        this.authorities = authorities;
+//    }
+
+//    @JsonProperty("isAdmin")
+//    @ApiModelProperty(notes = "Whether the user is an admin", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+//    public boolean isAdmin() {
+//        //Create admin authority
+//        Authority adminAuthority = new Authority(Constants.ADMIN);
+//
+//        //Check if authority available
+//        return authorities.contains(adminAuthority);
+//    }
 
     @Override
     public boolean equals(Object o) {

@@ -28,12 +28,27 @@ public enum ACAccessType {
 	DELETE,
 	
 	/**
-	 * Start (deploy) something, e.g. a sensor.
+	 * Monitor an existing, e.g., device.
+	 */
+	MONITOR,
+	
+	/**
+	 * Deploy, e.g., an actuator. 
+	 */
+	DEPLOY,
+	
+	/**
+	 * Undeploy, e.g., a sensor.
+	 */
+	UNDEPLOY,
+	
+	/**
+	 * Start, e.g., monitoring.
 	 */
 	START,
 	
 	/**
-	 * Stop (undeploy) something, e.g., a sensor.
+	 * Stop, e.g., monitoring.
 	 */
 	STOP,
 	

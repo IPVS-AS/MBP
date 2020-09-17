@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
  * @author Jakob Benz
  */
 @Service
+@Deprecated
+// TODO: Probably not required after all...
 public class AccessControlService {
 	
 	@Autowired
@@ -34,7 +36,7 @@ public class AccessControlService {
 	 * @param request
 	 * @return
 	 */
-	public ACAccessDecision check(ACAccess access, ACAccessRequest request) {
+	public ACAccessDecision check(ACAccess access, ACAccessRequest<?> request) {
 		// Check whether the requesting entity is the owner of the requested entity
 		if (access.getRequestedEntity().getOwner().getId().equals(access.getRequestingEntity().getId())) {
 			return new ACAccessDecision(ACAccessDecisionResult.GRANTED);

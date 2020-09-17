@@ -19,6 +19,6 @@ public abstract class ACAbstractConditionEvaluator<T extends ACAbstractCondition
 	 * @param request
 	 * @return
 	 */
-	public abstract boolean evaluate(T condition, ACAccess access, ACAccessRequest request);
+	public abstract boolean evaluate(T condition, ACAccess access, ACAccessRequest<?> request);
 	
 }

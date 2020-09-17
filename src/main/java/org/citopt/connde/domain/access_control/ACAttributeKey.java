@@ -12,60 +12,60 @@ public enum ACAttributeKey {
 	/**
 	 * The id of the requesting entity.
 	 */
-	REQUESTING_ENTITY_ID(User.class, "requesting-entity-id", "id", ACEntityType.REQUESTING_ENTITY),
+	REQUESTING_ENTITY_ID("requesting-entity-id", String.class, "id", ACEntityType.REQUESTING_ENTITY),
 	
 	/**
 	 * The username of the requesting entity.
 	 */
-	REQUESTING_ENTITY_USERNAME(User.class, "requesting-entity-username", "username", ACEntityType.REQUESTING_ENTITY),
+	REQUESTING_ENTITY_USERNAME("requesting-entity-username", String.class, "username", ACEntityType.REQUESTING_ENTITY),
 	
 	/**
 	 * The first name of the requesting entity.
 	 */
-	REQUESTING_ENTITY_FIRSTNAME(User.class, "requesting-entity-firstname", "firstName", ACEntityType.REQUESTING_ENTITY),
+	REQUESTING_ENTITY_FIRSTNAME("requesting-entity-firstname", String.class, "firstName", ACEntityType.REQUESTING_ENTITY),
 	
 	/**
 	 * The last name of the requesting entity.
 	 */
-	REQUESTING_ENTITY_LASTNAME(User.class, "requesting-entity-lastname", "lastName", ACEntityType.REQUESTING_ENTITY),
+	REQUESTING_ENTITY_LASTNAME("requesting-entity-lastname", String.class, "lastName", ACEntityType.REQUESTING_ENTITY),
 	
 	/**
 	 * The id of an entity {@link User owner}.
 	 */
-	ENTITY_OWNER_ID(User.class, "entity-owner-id", "owner.id", ACEntityType.REQUESTED_ENTITY),
+	ENTITY_OWNER_ID("entity-owner-id", String.class, "owner.id", ACEntityType.REQUESTED_ENTITY),
 	
 	/**
 	 * The username of an entity {@link User owner}. 
 	 */
-	ENTITY_OWNER_USERNAME(User.class, "entity-owner-username", "owner.username", ACEntityType.REQUESTED_ENTITY),
+	ENTITY_OWNER_USERNAME("entity-owner-username", String.class, "owner.username", ACEntityType.REQUESTED_ENTITY),
 	
 	/**
 	 * <b>NOT INTENDED FOR USE!</b>
 	 * <br>
 	 * Only used for the default value in {@link ACAttributeValue#key()}.
 	 */
-	NULL(Void.class, "", "", null);
+	NULL("", Void.class, "", null);
 	
 	// - - -
 	
-	private Class<?> targetType;
 	private String id;
+	private Class<?> type;
 	private String valueLookupPath;
 	private ACEntityType entityType;
 	
-	private ACAttributeKey(Class<?> targetType, String id, String valueLookupPath, ACEntityType entityType) {
-		this.targetType = targetType;
+	private ACAttributeKey(String id, Class<?> type, String valueLookupPath, ACEntityType entityType) {
 		this.id = id;
+		this.type = type;
 		this.valueLookupPath = valueLookupPath;
 		this.entityType = entityType;
 	}
 	
-	public Class<?> getTargetType() {
-		return targetType;
-	}
-	
 	public String getId() {
 		return id;
+	}
+	
+	public Class<?> getType() {
+		return type;
 	}
 	
 	public String getValueLookupPath() {

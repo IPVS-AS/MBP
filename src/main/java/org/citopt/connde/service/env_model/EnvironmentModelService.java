@@ -776,7 +776,7 @@ public class EnvironmentModelService {
             }
 
             //Set entity owner
-            User owner = userService.getUserWithAuthorities();
+            User owner = userService.getLoggedInUser();
             entity.setOwner(owner);
 
             //Mark entity as modelled
@@ -886,7 +886,7 @@ public class EnvironmentModelService {
         //Check if a key pair was provided
         if(!deviceDetails.isNull(MODEL_JSON_KEY_DEVICE_KEYPAIR)){
             //Get key pair from repository and set it
-            KeyPair keyPair = keyPairRepository.findOne(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_KEYPAIR));
+            KeyPair keyPair = keyPairRepository.findById(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_KEYPAIR)).get();
             device.setKeyPair(keyPair);
         }
 

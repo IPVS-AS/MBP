@@ -150,7 +150,7 @@ public class RestConfiguration implements RepositoryRestConfigurer {
 				String id = resource.getContent().getId();
 				//Link sensor with deployment
 				Link link = linkTo(WebMvcLinkBuilder.
-						methodOn(RestDeploymentController.class).deploySensor(id))
+						methodOn(RestDeploymentController.class).deploySensor(id, null)) // TODO: How to get access-request? Or does it even matter?
 						.withRel("deploy");
 				resource.add(link);
 				return resource;
@@ -177,7 +177,7 @@ public class RestConfiguration implements RepositoryRestConfigurer {
 				String id = resource.getContent().getId();
 				//Link actuator with deployment
 				Link link = linkTo(WebMvcLinkBuilder.
-						methodOn(RestDeploymentController.class).deployActuator(id))
+						methodOn(RestDeploymentController.class).deployActuator(id, null)) // TODO: How to get access-request? Or does it even matter?
 						.withRel("deploy");
 				resource.add(link);
 				return resource;

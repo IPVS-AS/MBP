@@ -61,6 +61,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	    .antMatchers(HttpMethod.OPTIONS, "/**")
 	    .antMatchers("/resources/**")
 	    .antMatchers("/webapp/**")
+	    .antMatchers(HttpMethod.POST, "/api/users")
 	    .antMatchers(HttpMethod.POST,"/api/checkOauthTokenUser")
 	    .antMatchers(HttpMethod.POST,"/api/checkOauthTokenSuperuser")
         .antMatchers(HttpMethod.POST,"/api/checkOauthTokenAcl");
@@ -71,7 +72,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http
         	.csrf().disable()
         	.authorizeRequests()
-	            .antMatchers("/api/authenticate").permitAll()
 	            .antMatchers(HttpMethod.POST, "/api/users").permitAll()
 	            .antMatchers(HttpMethod.PUT, "/api/users").hasAuthority(Constants.ADMIN)
 	            .antMatchers(HttpMethod.GET, "/api/users").hasAuthority(Constants.ADMIN)

@@ -29,7 +29,7 @@ public class ACPolicyEvaluationService {
 	 * @param request the {@link ACAccessRequest} holding the attributes of the requesting entity.
 	 * @return {@code true} if and only if the {@link IACCondition} of the policy holds; {@code false} otherwise.
 	 */
-	public boolean evaluate(ACPolicy policy, ACAccess access, ACAccessRequest request) {
+	public boolean evaluate(ACPolicy policy, ACAccess access, ACAccessRequest<?> request) {
 		ACAbstractCondition condition = conditionService.getForId(policy.getConditionId());
 		try {
 			return condition.evaluate(access, request);

@@ -15,12 +15,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  * @author Jakob Benz
  */
-public class ACAccessRequest {
+public class ACAccessRequest<T> {
 	
 	/**
 	 * The context of the requesting entity as list of {@link ACAttribute attributes}.
 	 */
 	private List<ACAttribute> context = new ArrayList<>();
+	
+	/**
+	 * Can be used if a request body is required.
+	 */
+	private T requestBody;
 	
 	// - - -
 	
@@ -30,7 +35,7 @@ public class ACAccessRequest {
 	public ACAccessRequest() {}
 	
 	/**
-	 * All-args constructor.
+	 * Required-args constructor.
 	 * 
 	 * @param context the context of the requesting entity as list of {@link ACAttribute attributes}.
 	 */
@@ -39,14 +44,35 @@ public class ACAccessRequest {
 		this.context = context;
 	}
 	
+	/**
+	 * All-args constructor.
+	 * 
+	 * @param context the context of the requesting entity as list of {@link ACAttribute attributes}.
+	 * @param requestBody the actual request body.
+	 */
+	@JsonCreator
+	public ACAccessRequest(@JsonProperty("context") List<ACAttribute> context, T requestBody) {
+		this.context = context;
+		this.requestBody = requestBody;
+	}
+	
 	// - - -
 
 	public List<ACAttribute> getContext() {
 		return context;
 	}
 
-	public ACAccessRequest setContext(List<ACAttribute> context) {
+	public ACAccessRequest<T> setContext(List<ACAttribute> context) {
 		this.context = context;
+		return this;
+	}
+	
+	public T getRequestBody() {
+		return requestBody;
+	}
+	
+	public ACAccessRequest<T> setRequestBody(T requestBody) {
+		this.requestBody = requestBody;
 		return this;
 	}
 	

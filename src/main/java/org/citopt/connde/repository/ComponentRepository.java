@@ -13,12 +13,14 @@ import springfox.documentation.annotations.ApiIgnore;
 @NoRepositoryBean
 @ApiIgnore("Not an actual repository, only used as super interface")
 public interface ComponentRepository<C extends Component> extends UserEntityRepository<C> {
-    @RestResource(exported = false)
-    C findByName(@Param("name") String name);
+	
+//	@RestResource(exported = false)
+//	Optional<C> findByName(@Param("name") String name);
 
-    @RestResource(exported = false)
-    List<ComponentExcerpt> findAllByAdapterId(@Param("adapter.id") String adapterId);
+	@RestResource(exported = false)
+	List<ComponentExcerpt> findAllByAdapterId(@Param("adapter.id") String adapterId);
 
-    @RestResource(exported = false)
-    List<ComponentExcerpt> findAllByDeviceId(@Param("device.id") String deviceId);
+	@RestResource(exported = false)
+	List<ComponentExcerpt> findAllByDeviceId(@Param("device.id") String deviceId);
+	
 }

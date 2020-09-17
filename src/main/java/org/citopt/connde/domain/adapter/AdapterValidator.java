@@ -1,6 +1,7 @@
 package org.citopt.connde.domain.adapter;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import org.citopt.connde.domain.adapter.parameters.Parameter;
@@ -88,10 +89,9 @@ public class AdapterValidator implements Validator {
             nameSet.add(name);
         }
 
-        Adapter another;
-        if ((another = repository.findByName(adapter.getName())) != null) {
-            if (adapter.getId() == null
-                    || !adapter.getId().equals(another.getId())) {
+        Optional<Adapter> another = repository.findByName(adapter.getName());
+        if (another.isPresent()) {
+            if (adapter.getId() == null || !adapter.getId().equals(another.get().getId())) {
                 errors.rejectValue("name", "type.name.duplicate",
                         "The name is already registered");
             }

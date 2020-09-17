@@ -10,6 +10,7 @@ import javax.annotation.PostConstruct;
 import org.bson.Document;
 import org.citopt.connde.constants.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
@@ -23,10 +24,13 @@ import com.mongodb.client.MongoDatabase;
 @EnableMongoRepositories
 public class MongoConfiguration extends AbstractMongoClientConfiguration {
 	
+	public static final String DB_NAME = "connde";
+	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
 	@Override
+	@Bean
 	public MongoClient mongoClient() {
 		MongoClient mc = MongoClients.create("mongodb://localhost:27017");
 		return mc;
@@ -34,7 +38,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 	
 	@Override
 	protected String getDatabaseName() {
-		return "connde";
+		return DB_NAME;
 	}
 
 	@Override

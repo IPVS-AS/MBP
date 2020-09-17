@@ -14,8 +14,7 @@ import org.citopt.connde.domain.access_control.dto.ACEffectRequestDTO;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.repository.ACEffectRepository;
-import org.citopt.connde.repository.UserRepository;
-import org.citopt.connde.security.SecurityUtils;
+import org.citopt.connde.service.UserService;
 import org.citopt.connde.service.access_control.ACEffectService;
 import org.citopt.connde.util.C;
 import org.citopt.connde.util.Pages;
@@ -34,7 +33,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -59,14 +57,15 @@ public class RestACEffectController {
 	private ACEffectRepository effectRepository;
 	
 	@Autowired
-	private UserRepository userRepository;
+	private UserService userService;
 	
 
 	@GetMapping(produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing effects owned by the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
     public ResponseEntity<PagedModel<EntityModel<ACAbstractEffect>>> all(@ApiParam(value = "Page parameters", required = true) Pageable pageable) {
-    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+//    	User user = userRepository.findByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+		User user = userService.getLoggedInUser();
     	return ResponseEntity.ok(effectsToPagedModel(effectRepository.findByOwner(user.getId(), pageable), pageable));
     }
     
@@ -74,7 +73,8 @@ public class RestACEffectController {
     @ApiOperation(value = "Retrieves an existing effect identified by its id if available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to access the effect!"), @ApiResponse(code = 404, message = "Effect or requesting user not found!") })
     public ResponseEntity<EntityModel<ACAbstractEffect>> one(@PathVariable("effectId") String effectId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
-    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+//    	User user = userRepository.findByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+    	User user = userService.getLoggedInUser();
     	return ResponseEntity.ok(effectToEntityModel(effectService.getForIdAndOwner(effectId, user.getId())));
     }
     
@@ -82,7 +82,8 @@ public class RestACEffectController {
     @ApiOperation(value = "Creates a new effect.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 201, message = "Effect successfully created!"), @ApiResponse(code = 404, message = "Requesting user not found!"), @ApiResponse(code = 409, message = "effect name already exists!") })
     public <T> ResponseEntity<EntityModel<ACAbstractEffect>> create(@Valid @RequestBody ACEffectRequestDTO requestDto, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
-    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+//    	User user = userRepository.findByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+    	User user = userService.getLoggedInUser();
     	return ResponseEntity.status(HttpStatus.CREATED).body(effectToEntityModel(effectService.create(requestDto, user.getId())));
     }
     
@@ -90,7 +91,8 @@ public class RestACEffectController {
     @ApiOperation(value = "Deletes an existing effect.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 204, message = "effect successfully deleted!"), @ApiResponse(code = 404, message = "Requesting user or effect not found!") })
     public ResponseEntity<Void> delete(@PathVariable("effectId") String effectId) {
-    	User user = userRepository.findOneByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+//    	User user = userRepository.findByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Requesting user not found!"));
+    	User user = userService.getLoggedInUser();
     	effectService.delete(effectId, user.getId());
     	return ResponseEntity.noContent().build();
     }

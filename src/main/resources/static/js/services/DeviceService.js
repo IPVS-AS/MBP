@@ -11,7 +11,7 @@ app.factory('DeviceService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT
     const URL_GET_ALL_DEVICE_STATES = ENDPOINT_URI + '/devices/state';
 
     //URL under which the availability state of a certain device can be retrieved
-    const URL_GET_DEVICE_STATE = ENDPOINT_URI + '/devices/state/';
+    const URL_GET_DEVICE_STATE = ENDPOINT_URI + '/devices/${deviceId}/state/';
 
     //Performs a server request in order to retrieve a list of all using components.
     function getUsingComponents(adapterId) {
@@ -25,7 +25,8 @@ app.factory('DeviceService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT
 
     //Performs a server request in order to retrieve the availability state of a certain device.
     function getDeviceState(deviceId) {
-        return $http.get(URL_GET_DEVICE_STATE + deviceId);
+        let deviceId = deviceId;
+        return $http.get(URL_GET_DEVICE_STATE);
     }
 
     //public

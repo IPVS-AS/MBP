@@ -1,14 +1,11 @@
 package access_control;
 
-import java.util.List;
-
 import org.citopt.connde.MBPApplication;
 import org.citopt.connde.domain.access_control.ACAbstractCondition;
 import org.citopt.connde.domain.access_control.ACArgumentFunction;
 import org.citopt.connde.domain.access_control.ACCompositeCondition;
 import org.citopt.connde.domain.access_control.ACConditionSimpleValueArgument;
 import org.citopt.connde.domain.access_control.ACLogicalOperator;
-import org.citopt.connde.domain.access_control.ACPolicy;
 import org.citopt.connde.domain.access_control.ACSimpleCondition;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.repository.ACConditionRepository;
@@ -27,10 +24,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.databind.util.Converter;
 
 /**
  * @author Jakob Benz
@@ -61,32 +55,9 @@ public class Test1 {
 	@Autowired
 	private ACEffectRepository effectRepository;
 	
-	private static class ConditionConverter implements Converter<String, ACAbstractCondition> {
-
-		@Override
-		public ACAbstractCondition convert(String value) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public JavaType getInputType(TypeFactory typeFactory) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public JavaType getOutputType(TypeFactory typeFactory) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-		
-	}
-	
-	
 	@Test
 	public void test0() throws JsonProcessingException {
-		User admin = userRepository.findOneByUsername("admin").get();
+		User admin = userRepository.findByUsername("admin").get();
 
 		ACAbstractCondition sc1 = new ACSimpleCondition<Double>("Simple condition 1", "Desc SC 1", ACArgumentFunction.EQUALS, new ACConditionSimpleValueArgument<Double>(1D), new ACConditionSimpleValueArgument<Double>(1D), admin.getId());
 		ACAbstractCondition sc2 = new ACSimpleCondition<Double>("Simple condition 2", "Desc SC 2", ACArgumentFunction.EQUALS, new ACConditionSimpleValueArgument<Double>(2D), new ACConditionSimpleValueArgument<Double>(2D), admin.getId());
@@ -100,8 +71,20 @@ public class Test1 {
 	
 	@Test
 	public void test1() throws JsonProcessingException {
-		List<ACPolicy> policies = policyRepository.ttt();
-		System.out.println(policies.size());
+		//5f589ddff6b51b0e096b09c0
+		
+//		List<ACPolicy> policies = policyRepository.findByIdAny(C.listOf("5f589ddff6b51b0e096b09c0", "5f589ddff6b51b0e096b09c1"));
+//		List<ACPolicy> policies = policyRepository.findByAccessTypeMatchAll(C.listOf("READ", "UPDATE"));
+//		List<ACPolicy> policies = policyRepository.findByIdAnyAndAccessTypeAll(C.listOf("5f589ddff6b51b0e096b09c0", "5f589ddff6b51b0e096b09c1"), C.listOf("READ"));
+//		boolean exists = policyRepository.existsByIdAnyAndAccessTypeAll(C.listOf("5f589ddff6b51b0e096b09c0", "5f589ddff6b51b0e096b09c2"), C.listOf("READ, UPDATE"));
+//		System.err.println(exists);
+//		System.err.println(policies.size());
+//		policies.forEach(p -> System.out.println(p.getName()));
+		
+		////
+		
+		// 5f218c7822424828a8275037 - admin
+		
 	}
 	
 	@Test

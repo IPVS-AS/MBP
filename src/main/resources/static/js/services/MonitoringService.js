@@ -11,7 +11,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
         const URL_GET_STATE = URL_MONITORING_PREFIX + 'state/';
         const URL_STATS_SUFFIX = '/stats';
         const URL_VALUE_LOGS_SUFFIX = '/valueLogs';
-        const URL_ADAPTER_SUFFIX = '?adapter=';
+        const URL_ADAPTER_SUFFIX = '?adapterId=';
 
         /**
          * [Public]
@@ -107,7 +107,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
             var parameters = {};
 
             //Extend parameters for adapter id
-            parameters.adapter = monitoringAdapterId;
+            parameters.adapterId = monitoringAdapterId;
 
             //Check if unit was provided
             if (unit) {
@@ -134,7 +134,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
             var parameters = pageDetails;
 
             //Extend parameters for adapter id
-            parameters.adapter = monitoringAdapterId;
+            parameters.adapterId = monitoringAdapterId;
 
             //Check if unit was provided
             if (unit) {
@@ -165,7 +165,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          */
         function deleteMonitoringValueLogs(deviceId, monitoringAdapterId) {
             var parameters = {
-                adapter: monitoringAdapterId
+                adapterId: monitoringAdapterId
             };
 
             //Execute request

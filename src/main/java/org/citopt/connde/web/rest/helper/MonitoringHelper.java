@@ -2,7 +2,11 @@ package org.citopt.connde.web.rest.helper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.citopt.connde.domain.access_control.ACAccessRequest;
+import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
@@ -28,6 +32,7 @@ public class MonitoringHelper {
     @Autowired
     private MonitoringAdapterRepository monitoringAdapterRepository;
 
+    
     /**
      * Creates a deployable monitoring component which wraps a device and a monitoring adapter. For this purpose,
      * the objects for the provided ids are looked up in the dedicated repository.
@@ -38,112 +43,101 @@ public class MonitoringHelper {
      * in their repositories or the user is not authorized for them; otherwise the deployable monitoring component
      */
     public MonitoringComponent createMonitoringComponent(String deviceId, String monitoringAdapterId) {
-        //Retrieve corresponding device and adapter from their repositories
-        Device device = (Device) userEntityService.getUserEntityFromRepository(deviceRepository, deviceId);
-        MonitoringAdapter monitoringAdapter = (MonitoringAdapter) userEntityService.getUserEntityFromRepository(monitoringAdapterRepository, monitoringAdapterId);
+        // Retrieve corresponding device and adapter from the database
+    	Device device = userEntityService.getForId(deviceRepository, deviceId);
+    	MonitoringAdapter monitoringAdapter = userEntityService.getForId(monitoringAdapterRepository, monitoringAdapterId);
 
-        //Check if both objects were found
-        if ((device == null) || (monitoringAdapter == null)) {
-            return null;
-        }
-
-        //Create new monitoring component (wrapper)
+        // Create new monitoring component (wrapper)
         MonitoringComponent monitoringComponent = new MonitoringComponent(monitoringAdapter, device);
 
-        //Copy owner and approved users from device to void failing generic security checks
+        // Set owner accordingly
         monitoringComponent.setOwner(device.getOwner());
-        monitoringComponent.getApprovedUsers().addAll(device.getApprovedUsers());
 
         return monitoringComponent;
     }
 
-    /**
-     * Retrieves a list of all monitoring adapters in the corresponding repository
-     * that are compatible with a certain device.
-     *
-     * @param device The device for which the compatible monitoring adapters should be retrieved
-     * @return A list of monitoring adapters that are compatible with the device
-     */
-    public List<MonitoringAdapter> getCompatibleAdapters(Device device) {
-        //Sanity check
-        if (device == null) {
-            throw new IllegalArgumentException("Device must not be null.");
-        }
+	/**
+	 * Retrieves all monitoring adapters compatible with a given device.
+	 *
+	 * @param device the {@link Device}.
+	 * @return all monitoring adapters compatible with a given device.
+	 */
+	public List<MonitoringAdapter> getCompatibleAdapters(Device device) {
+		if (device == null) {
+			throw new IllegalArgumentException("Device must not be null.");
+		}
 
-        //Get device type
-        String deviceTyp = device.getComponentType();
+		// Get all compatible monitoring adapters
+		return monitoringAdapterRepository.findAll()
+				.stream().filter(a -> a.isCompatibleWith(device.getComponentType())).collect(Collectors.toList());
+	}
 
-        //Get all monitoring adapters
-        List<MonitoringAdapter> allAdapters = monitoringAdapterRepository.findAll();
+	/**
+	 * Retrieves all monitoring adapters compatible with a given device
+	 * and available for the requesting user.
+	 *
+	 * @param device the {@link Device}.
+	 * @param accessRequest the {@link ACAccessRequest} required for policy evaluation.
+	 * @return all monitoring adapters compatible with a given device
+	 * 		   and available for the requesting user.
+	 */
+	public List<MonitoringAdapter> getCompatibleAdapters(Device device, ACAccessRequest<?> accessRequest) {
+		if (device == null) {
+			throw new IllegalArgumentException("Device must not be null.");
+		}
 
-        //Create a list for all compatible adapters
-        List<MonitoringAdapter> compatibleAdapterList = new ArrayList<>();
+		// Get all compatible monitoring adapters available for the requesting user
+		return userEntityService.getAllWithPolicyCheck(monitoringAdapterRepository, ACAccessType.READ, accessRequest)
+				.stream().filter(a -> a.isCompatibleWith(device.getComponentType())).collect(Collectors.toList());
+	}
 
-        //Iterate over all adapters, check for compatibility and add compatible adapters to list
-        for (MonitoringAdapter adapter : allAdapters) {
-            if (adapter.isCompatibleWith(deviceTyp)) {
-                compatibleAdapterList.add(adapter);
-            }
-        }
+	/**
+	 * Retrieves all devices compatible with a given monitoring adapter.
+	 *
+	 * @param adapter the {@link MonitoringAdapter}.
+	 * @return all devices compatible with a given monitoring adapter.
+	 */
+	public List<Device> getCompatibleDevices(MonitoringAdapter adapter) {
+		if (adapter == null) {
+			throw new IllegalArgumentException("Adapter must not be null.");
+		}
+		
+		// Get all compatible devices
+		return deviceRepository.findAll()
+				.stream().filter(d -> adapter.isCompatibleWith(d.getComponentType())).collect(Collectors.toList());
+	}
 
-        return compatibleAdapterList;
-    }
+	/**
+	 * Retrieves all devices compatible with a given monitoring adapter
+	 * and available for the requesting user.
+	 *
+	 * @param adapter the {@link MonitoringAdapter}.
+	 * @param accessRequest the {@link ACAccessRequest} required for policy evaluation.
+	 * @return all devices compatible with a given monitoring adapter
+	 * 		   and available for the requesting user.
+	 */
+	public List<Device> getCompatibleDevices(MonitoringAdapter adapter, ACAccessRequest<?> accessRequest) {
+		if (adapter == null) {
+			throw new IllegalArgumentException("Adapter must not be null.");
+		}
+		
+		// Get all compatible devices available for the requesting user
+		return userEntityService.getAllWithPolicyCheck(deviceRepository, ACAccessType.READ, accessRequest)
+				.stream().filter(d -> adapter.isCompatibleWith(d.getComponentType())).collect(Collectors.toList());
+	}
 
-    /**
-     * Retrieves a list of all devices in the corresponding repository that are compatible with a certain
-     * monitoring adapter.
-     *
-     * @param adapter The monitoring adapter for which the compatible devices should be retrieved
-     * @return A list of devices that are compatible with the monitoring adapter
-     */
-    public List<Device> getCompatibleDevices(MonitoringAdapter adapter) {
-        //Sanity check
-        if (adapter == null) {
-            throw new IllegalArgumentException("Device must not be null.");
-        }
+	public List<MonitoringAdapterExcerpt> convertToListProjections(Iterable<MonitoringAdapter> monitoringAdapters) {
+		if (monitoringAdapters == null) {
+			throw new IllegalArgumentException("The list of monitoring adapters must not be null.");
+		}
+		
+		// Extract excerpt from each adapter
+		List<MonitoringAdapterExcerpt> adapterExcerpts = new ArrayList<>();
+		monitoringAdapters.forEach(a -> monitoringAdapterRepository.findExcerptById(a.getId()).ifPresent(adapterExcerpts::add));
+		return adapterExcerpts;
+	}
 
-        //Get all devices
-        List<Device> allDevices = deviceRepository.findAll();
-
-        //Create a list for all compatible devices
-        List<Device> compatibleDevicesList = new ArrayList<>();
-
-        //Iterate over all devices, check for compatibility and add compatible devices to list
-        for (Device device : allDevices) {
-            //Get component type of current device
-            String deviceComponentType = device.getComponentType();
-
-            //Check for compatibility
-            if (adapter.isCompatibleWith(deviceComponentType)) {
-                compatibleDevicesList.add(device);
-            }
-        }
-
-        return compatibleDevicesList;
-    }
-
-    /**
-     * Converts an Iterable of monitoring adapters into a list of monitoring adapter projections.
-     *
-     * @param monitoringAdapters The Iterable of monitoring adapters to convert
-     * @return The converted list of monitoring adapter projections
-     */
-    public List<MonitoringAdapterExcerpt> convertToListProjections(
-            Iterable<MonitoringAdapter> monitoringAdapters) {
-        //Sanity check
-        if (monitoringAdapters == null) {
-            throw new IllegalArgumentException("The iterable of monitoring adapters must not be null.");
-        }
-
-        //Create a list for the resulting adapter projections
-        List<MonitoringAdapterExcerpt> adapterProjectionList = new ArrayList<>();
-
-        //Get projection for each monitoring adapter of the iterable
-        for (MonitoringAdapter adapter : monitoringAdapters) {
-            MonitoringAdapterExcerpt projection = monitoringAdapterRepository.findExcerptById(adapter.getId()).get();
-            adapterProjectionList.add(projection);
-        }
-
-        return adapterProjectionList;
-    }
+	public Optional<MonitoringAdapterExcerpt> adapterToExcerpt(MonitoringAdapter monitoringAdapter) {
+		return monitoringAdapterRepository.findExcerptById(monitoringAdapter.getId());
+	}
 }
