@@ -4,7 +4,7 @@
         <div class="card">
             <div class="header">
                 <div class="col-lg-6">
-                    <h2>Sensors</h2>
+                    <h2>Sensors<small>Your sensors at a glance</small></h2>
                 </div>
                 <div class="align-right">
                     <button id="add-button" type="button"
@@ -72,7 +72,7 @@
                                 <user-approval entity-id="{{item.id}}" category-name="sensors"></user-approval>
                             </div>
                             <form ng-submit="deleteSensorCtrl.deleteItem()" style="display:inline-block">
-                                <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
                                         ng-click="deleteSensorCtrl.item.id = item.id">
                                     <i class="material-icons" style="font-size:14px;">delete</i>
                                 </button>

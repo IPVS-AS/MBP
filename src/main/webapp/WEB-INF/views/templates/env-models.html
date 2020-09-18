@@ -3,9 +3,12 @@
     <div class="col-lg-12">
         <div class="card">
             <div class="header">
-                <h2>Environment Models</h2>
+            	<div class="col-lg-6">
+                	<h2>Environment Models
+                	<small>Devices, sensors and actuators of IoT environments at a glance</small></h2>
+                </div>
                 <div class="align-right">
-                    <button type="button" class="btn bg-blue btn-circle waves-effect waves-circle waves-float"
+                    <button type="button" class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
                             ng-click="ctrl.createNewModel()">
                         <i class="material-icons">add</i>
                     </button>
@@ -28,7 +31,7 @@
                         <td>
                             <div ng-if="item.description">
                                 <a class="clickable" data-toggle="collapse" data-target="#description-{{item.id}}">
-                                    Toggle
+                                    Details
                                 </a>
                                 <div id="description-{{item.id}}" class="collapse">
                                     <span>{{item.description}}</span>
@@ -41,7 +44,7 @@
                         <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
                             <form ng-submit="ctrl.editModel(item.id)" style="display:inline-block;">
-                                <button type="submit" class="btn btn-default m-t-0 waves-effect">
+                                <button type="submit" class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float">
                                     <i class="material-icons" style="font-size:14px;">mode_edit</i>
                                 </button>
                             </form>
@@ -50,9 +53,9 @@
                             </div>&nbsp;&nbsp;
                             <form ng-submit="deleteEnvModelCtrl.deleteItem()" ng-show="item.isDeletable"
                                   style="display:inline-block;">
-                                <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
                                         ng-click="deleteEnvModelCtrl.item.id = item.id">
-                                    <i class="material-icons" style="font-size:14px;">delete</i>
+                                    <i class="material-icons" style="font-size:16px;">delete</i>
                                 </button>
                             </form>
                         </td>
@@ -81,7 +84,7 @@
                     <i class="material-icons" style="font-size: 16px;margin-left: 5px;line-height: 15px;">mode_edit</i>
                     <small>{{ctrl.modelProperties.description}}</small>
                 </h2>
-                <ul class="header-dropdown m-r--5">
+                <ul class="header-dropdown">
                     <li class="dropdown">
                         <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button"
                            aria-haspopup="true" aria-expanded="false">
@@ -113,24 +116,24 @@
                             </ul>
                         </div>
                     </div>
-                    <div class="col-lg-12 align-right" style="padding: 2px">
-                        <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
+                    <div class="col-lg-12 align-right">
+                        <button class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
                                 title="Register components" ng-click="ctrl.registerComponents()">
                             <i class="material-icons">backup</i>
                         </button>
-                        <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
+                        <button class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
                                 title="Deploy components" ng-click="ctrl.deployComponents()">
                             <i class="material-icons">sync</i>
                         </button>
-                        <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
+                        <button class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
                                 title="Undeploy components" ng-click="ctrl.undeployComponents()">
                             <i class="material-icons">sync_disabled</i>
                         </button>
-                        <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
+                        <button class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
                                 title="Start components" ng-click="ctrl.startComponents()">
                             <i class="material-icons">play_arrow</i>
                         </button>
-                        <button class="btn btn-primary btn-circle waves-effect waves-circle waves-float"
+                        <button class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
                                 title="Stop components" ng-click="ctrl.stopComponents()">
                             <i class="material-icons">pause</i>
                         </button>
