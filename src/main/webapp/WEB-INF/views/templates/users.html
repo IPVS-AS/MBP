@@ -38,11 +38,11 @@
               <td>{{v.firstName}}</td>
               <td>{{v.lastName}}</td>
               <td>
-                <button class="btn btn-primary" ng-click="vm.deleteUser(v.username)">
-                  <i class="material-icons" style="font-size: 16px">delete</i>
-                </button>
-                <button class="btn btn-primary" ng-click="vm.changeUpdate(v)">
+                <button class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float" ng-click="vm.changeUpdate(v)">
                   <i class="material-icons" style="font-size: 16px">edit</i>
+                </button>
+                <button class="btn bg-red btn-circle waves-effect waves-circle waves-float" ng-click="vm.deleteUser(v.username)">
+                  <i class="material-icons" style="font-size: 16px">delete</i>
                 </button>
               </td>
             </tr>

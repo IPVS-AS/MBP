@@ -4,13 +4,13 @@
 
             <!-- MODELS COUNT -->
             <a href="view/env-models">
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                     <div class="info-box" style="cursor: pointer;">
-                        <div class="icon bg-blue">
+                        <div class="icon bg-mbp-blue">
                             <i class="material-icons">view_quilt</i>
                         </div>
                         <div class="content">
-                            <div class="text">IoT Models</div>
+                            <div class="text">Environment Models</div>
                             <div class="number count-to" data-from="0" data-to="125"
                                  data-speed="1000" data-fresh-interval="20">{{ctrl.countEnvModels}}
                             </div>
@@ -21,9 +21,9 @@
 
             <!-- DEVICES COUNT -->
             <a href="view/devices">
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                     <div class="info-box" style="cursor: pointer;">
-                        <div class="icon bg-amber">
+                        <div class="icon bg-mbp-mid-blue">
                             <i class="material-icons">devices</i>
                         </div>
                         <div class="content">
@@ -36,28 +36,11 @@
                 </div>
             </a>
 
-            <!-- ACTUATORS COUNT -->
-            <a href="view/actuators">
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
-                    <div class="info-box" style="cursor: pointer;">
-                        <div class="icon bg-lime">
-                            <i class="material-icons">wb_incandescent</i>
-                        </div>
-                        <div class="content">
-                            <div class="text">Actuators</div>
-                            <div class="number count-to" data-from="0" data-to="125"
-                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countActuators}}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-
             <!-- SENSORS COUNT -->
             <a href="view/sensors">
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                     <div class="info-box" style="cursor: pointer;">
-                        <div class="icon bg-yellow">
+                        <div class="icon bg-mbp-light-salmon">
                             <i class="material-icons">settings_remote</i>
                         </div>
                         <div class="content">
@@ -67,54 +50,20 @@
                             </div>
                         </div>
                     </div>
-                </div>
+               </div>
             </a>
 
-            <!-- ADAPTERS COUNT -->
-            <a href="view/adapters">
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+            <!-- ACTUATORS COUNT -->
+            <a href="view/actuators">
+                <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
                     <div class="info-box" style="cursor: pointer;">
-                        <div class="icon bg-orange">
-                            <i class="material-icons">description</i>
+                        <div class="icon bg-mbp-mid-champagne">
+                            <i class="material-icons">wb_incandescent</i>
                         </div>
                         <div class="content">
-                            <div class="text">Extraction/Control Operators</div>
+                            <div class="text">Actuators</div>
                             <div class="number count-to" data-from="0" data-to="125"
-                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countAdapters}}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-
-            <!-- MONITORING ADAPTERS COUNT -->
-            <a href="view/monitoring-adapters">
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
-                    <div class="info-box" style="cursor: pointer;">
-                        <div class="icon bg-pink">
-                            <i class="material-icons">timeline</i>
-                        </div>
-                        <div class="content">
-                            <div class="text">Monitoring Operators</div>
-                            <div class="number count-to" data-from="0" data-to="125"
-                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countMonitoringAdapters}}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </a>
-
-            <!-- TEST COUNT -->
-            <a href="view/testing-tool">
-                <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
-                    <div class="info-box" style="cursor: pointer;">
-                        <div class="icon bg-amber">
-                            <i class="material-icons">bug_report</i>
-                        </div>
-                        <div class="content">
-                            <div class="text">Tests</div>
-                            <div class="number count-to" data-from="0" data-to="125"
-                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countTests}}
+                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countActuators}}
                             </div>
                         </div>
                     </div>
@@ -137,33 +86,30 @@
             </div>
             <div id="welcome-card-body" class="body collapse" ng-class="{'in': ctrl.showWelcomeCard}">
                 <div style="background-color:white;font-size: 18px;">
-                    <p>We are happy that you have chosen the MBP to manage and control your IoT
+                    <p>We are happy that you have chosen the MBP to manage your IoT
                         devices!</p><br/>
-                    <p>Let's start to set up your IoT environment in only seven steps:</p>
-                    <p>1. <a href="view/key-pairs" target="_blank"><i class="material-icons">vpn_key</i>&nbsp;Register
-                        RSA
-                        keys</a> that can be used by the MBP to access your IoT devices via SSH. (optional)</p>
-                    <p>2. <a href="view/devices" target="_blank"><i class="material-icons">devices</i>&nbsp;Register the
-                        IoT devices</a> of your environment.</p>
-                    <p>3. <a href="view/adapters" target="_blank"><i class="material-icons">description</i>&nbsp;Create
-                        extraction/control operators</a> for your your sensors and actuators. Control operators are
-                        optional and only
-                        required if there are actuators in your environment.</p>
-                    <p>4. <a href="view/sensors" target="_blank"><i class="material-icons">settings_remote</i>&nbsp;Register
-                        sensors</a> and <a href="view/actuators" target="_blank"><i class="material-icons">settings_remote</i>&nbsp;actuators</a>
+                    <p>Let's start to set up your IoT environment in only six steps:</p>
+                    <p> 1. <a href="view/devices" target="_blank"><i class="material-icons">devices</i>&nbsp;
+                        Register the IoT devices</a> of your environment. Optionally, you can register <a href="view/key-pairs" target="_blank"><i class="material-icons">vpn_key</i>&nbsp;
+                        Key Pairs</a> to be used by the MBP to access your IoT devices remotely.</p>
+                    <p> 2. <a href="view/adapters" target="_blank"><i class="material-icons">description</i>&nbsp;
+                        Create extraction/control operators</a> for your sensors and actuators. Control operators are
+                        only required if there are actuators in your environment.</p>
+                    <p> 3. <a href="view/sensors" target="_blank"><i class="material-icons">settings_remote</i>&nbsp;
+                        Register sensors</a> and <a href="view/actuators" target="_blank"><i class="material-icons">wb_incandescent</i>&nbsp;actuators</a>
                         that are connected to your devices, by selecting a target device and an operator.</p>
-                    <p>5. <a href="view/sensors" target="_blank"><i class="material-icons">file_download</i>&nbsp;Install
-                        operators on your sensors</a> and <a href="view/actuators" target="_blank">actuators</a>.</p>
-                    <p>6. <a href="view/sensors" target="_blank"><i class="material-icons">play_arrow</i>&nbsp;Start
-                        your
-                        sensors</a> and <a href="view/actuators" target="_blank">actuators</a>.</p>
-                    <p>7. <a href="view/rules" target="_blank"><i class="material-icons">call_split</i>&nbsp;Define
-                        rules</a> that make your environment smart and allow it to react to certain situations .</p>
+                    <p> 4. <a href="view/sensors" target="_blank"><i class="material-icons">file_download</i>&nbsp;Install
+                        operators for your sensors</a> and <a href="view/actuators" target="_blank">actuators</a> on target devices.</p>
+                    <p> 5. <a href="view/sensors" target="_blank"><i class="material-icons">play_arrow</i>&nbsp;Start
+                        your sensors</a> and <a href="view/actuators" target="_blank">actuators</a>.</p>
+                    <p> 6. <a href="view/rules" target="_blank"><i class="material-icons">call_split</i>&nbsp;Define
+                        rules</a> that make your environment smart and allow it to react to certain conditions.</p>
                     <br/>
-                    <p>As an alternative, you can also use the <a href="view/env-models" target="_blank"><i
-                            class="material-icons">view_quilt</i>environment modelling tool</a> to set up your
-                        environment at once.</p>
-                    <p><a class="btn btn-primary btn-lg" href="https://github.com/IPVS-AS/MBP/wiki" target="_blank"
+                    <p>As an alternative, you can use the <a href="view/env-models" target="_blank"><i
+                            class="material-icons">view_quilt</i>&nbsp;Environment Modeling Tool</a> to set up your
+                        IoT environment at once.</p>
+                    <br/>
+                    <p><a class="btn btn-info btn-lg" href="https://github.com/IPVS-AS/MBP/wiki" target="_blank"
                           role="button">Learn more about the MBP</a></p>
                 </div>
             </div>

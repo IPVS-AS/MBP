@@ -1,4 +1,4 @@
-﻿.theme-red .navbar {
+.theme-red .navbar {
   background-color: #F44336; }
 
 .theme-red .navbar-brand {
@@ -224,7 +224,7 @@
     color: #3F51B5 !important; }
 
 .theme-blue .navbar {
-  background-color: #2196F3; }
+  background-color: #00BEFF; }
 
 .theme-blue .navbar-brand {
   color: #fff; }
@@ -255,7 +255,7 @@
 .theme-blue .sidebar .menu .list li.active {
   background-color: transparent; }
   .theme-blue .sidebar .menu .list li.active > :first-child i, .theme-blue .sidebar .menu .list li.active > :first-child span {
-    color: #2196F3; }
+    color: #00BEFF; }
 
 .theme-blue .sidebar .menu .list .toggled {
   background-color: transparent; }
