@@ -173,7 +173,7 @@ app.controller('TestingChartController',
                     NotificationService.notify('Test completed successfully.', 'success');
                 }).error(function () {
                     vm.startTest = "ERROR_TEST";
-                    NotificationService.notify('Error during start of test.', 'error');
+                    NotificationService.notify('Error during the test.', 'error');
 
                 }).finally(function () {
                     hideDeploymentWaitingScreen();

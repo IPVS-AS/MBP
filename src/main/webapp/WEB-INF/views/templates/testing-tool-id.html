@@ -69,11 +69,34 @@
                 <br/>
                 <div>
                     <span ng-show="testingChartCtrl.deploymentState=='READY' || testingChartCtrl.deploymentState =='DEPLOYED'">
-                        <button class="btn bg-cyan waves-effect" ng-click="testingChartCtrl.startComponent()"
-                                ng-disabled="testingChartCtrl.startTest=='STARTING_TEST'">
-                            <i class="material-icons">play_arrow</i>
-                            <span>Start Test</span>
-                        </button>
+                        <div ng-switch on="testingChartCtrl.startTest">
+                            <div ng-switch-when='STARTING_TEST'>
+                                <button class="btn bg-cyan waves-effect"  type="button" disabled>
+                                    <span><div class="preloader pl-size-xs" >
+                                        <div class="spinner-layer pl-blue">
+                                            <div class="circle-clipper left">
+                                                <div class="circle"></div>
+                                            </div>
+                                            <div class="circle-clipper right">
+                                                <div class="circle"></div>
+                                            </div>
+                                        </div>
+                                    </div></span>
+
+                                        <span style="position:relative; bottom:4px;">Starting...</span>
+                                </button>
+
+                            </div>
+                            <div ng-switch-default>
+                                <button class="btn bg-cyan waves-effect" ng-click="testingChartCtrl.startComponent()"
+                                ng-disabled="testingChartCtrl.startTest=='STARTING_TEST'" type="button">
+                                    <i class="material-icons">play_arrow</i>
+                                    <span>Start Test</span>
+                                </button>
+                            </div>
+                        </div>
+
+
                     </span>
                     <span ng-show="testingChartCtrl.deploymentState=='RUNNING'">
                         <button class="btn bg-orange waves-effect" ng-click="testingChartCtrl.stopComponent()">
@@ -822,31 +845,31 @@
 </div>
 
 
-<!-- Live Values Card -->
-<div class="row clearfix">
-    <div class="col-lg-12">
-        <div class="card live-chart-card animate-show-hide" ng-show="testingChartCtrl.deploymentState=='RUNNING'">
-            <div class="header">
-                <h2>
-                    Live sensor values&nbsp;<i class="material-icons" style="color: red;">live_tv</i>
-                </h2>
-            </div>
+<div ng-repeat="sensor in ctrl.sensorList">
+    <!-- Live Values Card -->
+    <div class="row clearfix">
+        <div class="col-lg-12">
+            <div class="card live-chart-card animate-show-hide" ng-show="testingChartCtrl.deploymentState=='RUNNING'">
+                <div class="header">
+                    <h2>
+                        Live sensor values&nbsp;<i class="material-icons" style="color: red;">live_tv</i>
+                    </h2>
+                </div>
 
 
-            <div class="body">
-                <live-chart loading-start="testingChartCtrl.liveChart.loadingStart()"
-                            loading-finish="testingChartCtrl.liveChart.loadingFinish()"
-                            get-data="testingChartCtrl.liveChart.getData(numberLogs, descending, '')"
-                            is-updateable="testingChartCtrl.liveChart.isUpdateable()"
-                            unit="{{testingChartCtrl.displayUnit}}">
-                </live-chart>
+                <div class="body">
+                    <live-chart loading-start="testingChartCtrl.liveChart.loadingStart()"
+                                loading-finish="testingChartCtrl.liveChart.loadingFinish()"
+                                get-data="testingChartCtrl.liveChart.getData(numberLogs, descending, '', sensor)"
+                                is-updateable="testingChartCtrl.liveChart.isUpdateable()"
+                                unit="{{testingChartCtrl.displayUnit}}">
+                    </live-chart>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 
-<div ng-repeat="sensor in ctrl.sensorList">
     <!-- Historical Values Card -->
     <div class="row clearfix" ng-init="testingChartCtrl.specifyChart(sensor)">
         <div class="col-lg-12">
