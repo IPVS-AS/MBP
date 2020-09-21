@@ -1,7 +1,8 @@
 package org.citopt.connde.domain.monitoring;
 
 import org.citopt.connde.domain.adapter.Adapter;
-import org.citopt.connde.domain.entity_type.ComponentType;
+import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.domain.entity_type.DeviceType;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import java.util.List;
@@ -13,14 +14,14 @@ import java.util.List;
  */
 public class MonitoringAdapter extends Adapter {
     @DBRef
-    private List<ComponentType> deviceTypes;
+    private List<DeviceType> deviceTypes;
 
     /**
      * Returns the list of device types that are associated with this adapter.
      *
      * @return The list of device types
      */
-    public List<ComponentType> getDeviceTypes() {
+    public List<DeviceType> getDeviceTypes() {
         return deviceTypes;
     }
 
@@ -29,7 +30,7 @@ public class MonitoringAdapter extends Adapter {
      *
      * @return The list of device types to set
      */
-    public void setDeviceTypes(List<ComponentType> deviceTypes) {
+    public void setDeviceTypes(List<DeviceType> deviceTypes) {
         this.deviceTypes = deviceTypes;
     }
 
@@ -54,7 +55,7 @@ public class MonitoringAdapter extends Adapter {
      */
     public boolean isCompatibleWith(String deviceTypeName){
         //Iterate over all component types of this device and check for equality
-        for(ComponentType currentType : deviceTypes){
+        for(DeviceType currentType : deviceTypes){
             if(currentType.getName().equals(deviceTypeName)){
                 return true;
             }

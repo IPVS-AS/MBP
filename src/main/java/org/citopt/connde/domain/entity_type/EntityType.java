@@ -7,18 +7,27 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import javax.persistence.GeneratedValue;
 
 /**
- * Super class for certain types of entities.
+ * Super class for types of entities.
  */
 public abstract class EntityType extends UserEntity {
     @Id
     @GeneratedValue
-    private String id;
+    protected String id;
 
     @Indexed
-    private String name;
+    protected String name;
 
-    @Indexed
-    private String icon;
+    //@Indexed
+    //private EntityTypeIcon icon;
+
+
+    public EntityType() {
+
+    }
+
+    public EntityType(String name) {
+        this.name = name;
+    }
 
     /**
      * Returns the class of the user entity for which this type is for.
@@ -26,4 +35,16 @@ public abstract class EntityType extends UserEntity {
      * @return The class of the user entity
      */
     public abstract Class<? extends UserEntity> getEntityClass();
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

@@ -1,8 +1,5 @@
 package org.citopt.connde.web.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.util.JSON;
-import jdk.nashorn.internal.parser.JSONParser;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;

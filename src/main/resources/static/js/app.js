@@ -315,6 +315,42 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
+            // Actuator List and Register (includes Device List and Register)
+            .when(viewPrefix + '/entity-types', {
+                category: 'entity-types',
+                templateUrl: 'templates/entity-types',
+                controller: 'EntityTypesListController as ctrl',
+                resolve: {
+                    deviceTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('device-types');
+                    }],
+                    actuatorTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('actuator-types');
+                    }],
+                    sensorTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('sensor-types');
+                    }],
+                    addDeviceType: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'device-types');
+                    }],
+                    addActuatorType: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'actuator-types');
+                    }],
+                    addSensorType: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'sensor-types');
+                    }],
+                    deleteDeviceType: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'device-types');
+                    }],
+                    deleteActuatorType: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'actuator-types');
+                    }],
+                    deleteSensorType: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'sensor-types');
+                    }]
+                }
+            })
+
             // Sensors List and Register (includes Device List and Register)
             .when(viewPrefix + '/sensors', {
                 category: 'sensors',

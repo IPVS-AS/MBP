@@ -1,7 +1,7 @@
 package org.citopt.connde.web.rest.helper;
 
-import org.citopt.connde.domain.entity_type.ComponentType;
 import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.domain.entity_type.DeviceType;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.repository.DeviceRepository;
@@ -104,7 +104,7 @@ public class MonitoringHelper {
         }
 
         //Get device types of the adapter
-        List<ComponentType> adapterDeviceTypes = adapter.getDeviceTypes();
+        List<DeviceType> adapterDeviceTypes = adapter.getDeviceTypes();
 
         //Get all devices
         List<Device> allDevices = deviceRepository.findAll();

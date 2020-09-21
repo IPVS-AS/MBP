@@ -1,0 +1,162 @@
+<div class="row clearfix" ng-hide="ng-hide">
+    <!-- Main card -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>Entity types</h2>
+                </div>
+                <div class="align-right">
+                    <button id="add-button" type="button"
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                            data-toggle="modal" data-target="#addDeviceModal" data-backdrop="static"
+                            data-keyboard="false">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
+            </div>
+            <div class="body">
+                <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation" class="active">
+                        <a data-target="#deviceTypesTable" data-toggle="tab">
+                            <i class="material-icons">devices</i>
+                            Device types</a>
+                    </li>
+                    <li role="presentation">
+                        <a data-target="#actuatorTypesTable" data-toggle="tab">
+                            <i class="material-icons">wb_incandescent</i>
+                            Actuator types</a>
+                    </li>
+                    <li role="presentation">
+                        <a data-target="#sensorTypesTable" data-toggle="tab">
+                            <i class="material-icons">settings_remote</i>
+                            Sensor types</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div id="deviceTypesTable" class="tab-pane fade in active">
+                        <table class="table table-hover" st-table="displayedCollection"
+                               st-safe-src="deviceTypeListCtrl.items">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="item in displayedCollection">
+                                <td>{{item.name}}</td>
+                                <td>{{item.ownerName ? item.ownerName : "None"}}</td>
+                                <td>
+                                    <div ng-show="item.isApprovable" style="display:inline-block">
+                                        <user-approval entity-id="{{item.id}}" category-name="device-types"/>
+                                    </div>
+                                    <form ng-submit="deleteDeviceTypeCtrl.deleteItem()" ng-show="item.isDeletable"
+                                          style="display: inline-block">
+                                        <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                                ng-click="deleteDeviceTypeCtrl.item.id = item.id">
+                                            <i class="material-icons" style="font-size:14px;">delete</i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr ng-show="deviceTypeListCtrl.items.length === 0">
+                                <td>No device types available.</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div id="actuatorTypesTable" class="tab-pane fade in">
+                        <table class="table table-hover" st-table="displayedCollection"
+                               st-safe-src="actuatorTypeListCtrl.items">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="item in displayedCollection">
+                                <td>{{item.name}}</td>
+                                <td>{{item.ownerName ? item.ownerName : "None"}}</td>
+                                <td>
+                                    <div ng-show="item.isApprovable" style="display:inline-block">
+                                        <user-approval entity-id="{{item.id}}" category-name="actuator-types"/>
+                                    </div>
+                                    <form ng-submit="deleteActuatorTypeCtrl.deleteItem()" ng-show="item.isDeletable"
+                                          style="display: inline-block">
+                                        <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                                ng-click="deleteActuatorTypeCtrl.item.id = item.id">
+                                            <i class="material-icons" style="font-size:14px;">delete</i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr ng-show="actuatorTypeListCtrl.items.length === 0">
+                                <td>No actuator types available.</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div id="sensorTypesTable" class="tab-pane fade in">
+                        <table class="table table-hover" st-table="displayedCollection"
+                               st-safe-src="sensorTypeListCtrl.items">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="item in displayedCollection">
+                                <td>{{item.name}}</td>
+                                <td>{{item.ownerName ? item.ownerName : "None"}}</td>
+                                <td>
+                                    <div ng-show="item.isApprovable" style="display:inline-block">
+                                        <user-approval entity-id="{{item.id}}" category-name="sensor-types"/>
+                                    </div>
+                                    <form ng-submit="deleteSensorTypeCtrl.deleteItem()" ng-show="item.isDeletable"
+                                          style="display: inline-block">
+                                        <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                                ng-click="deleteSensorTypeCtrl.item.id = item.id">
+                                            <i class="material-icons" style="font-size:14px;">delete</i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr ng-show="sensorTypeListCtrl.items.length === 0">
+                                <td>No sensor types available.</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- #END# List of Devices Card -->
+</div>
