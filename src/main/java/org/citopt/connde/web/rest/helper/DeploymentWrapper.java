@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +73,11 @@ public class DeploymentWrapper {
         if (component == null) {
             ActionResponse response = new ActionResponse(false, "The component does not exist.");
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        //Sanitize parameter instances
+        if (parameterInstances == null) {
+            parameterInstances = Collections.emptyList();
         }
 
         //Security check
