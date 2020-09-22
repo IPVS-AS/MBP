@@ -402,7 +402,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            //Device Details
+            // Device Details
             .when(viewPrefix + '/devices/:id', {
                 category: 'devices',
                 templateUrl: 'templates/device-id.html',
@@ -458,7 +458,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            //Monitoring adapters
+            // Monitoring adapters
             .when(viewPrefix + '/monitoring-adapters', {
                 category: 'monitoring-adapters',
                 templateUrl: 'templates/monitoring-adapters',

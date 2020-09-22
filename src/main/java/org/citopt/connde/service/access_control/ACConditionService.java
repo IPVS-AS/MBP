@@ -8,6 +8,7 @@ import org.citopt.connde.domain.access_control.dto.ACConditionRequestDTO;
 import org.citopt.connde.repository.ACConditionRepository;
 import org.citopt.connde.repository.ACPolicyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -30,16 +31,25 @@ public class ACConditionService {
 	
 	// - - -
 	
-	public List<ACAbstractCondition> getAll() {
-		return conditionRepository.findAll();
+	public List<ACAbstractCondition> getAll(Pageable pageable) {
+		return conditionRepository.findAll(pageable)
+				.stream()
+				.map(ACAbstractCondition::computeAndSetHumanReadableDescription)
+				.collect(Collectors.toList());
 	}
 	
-	public List<ACAbstractCondition> getAllForOwner(String ownerId) {
-		return conditionRepository.findAll().stream().filter(p -> p.getOwnerId().equals(ownerId)).collect(Collectors.toList());
+	public List<ACAbstractCondition> getAllForOwner(String ownerId, Pageable pageable) {
+		return conditionRepository.findAllByOwner(ownerId, pageable)
+				.stream()
+				.filter(p -> p.getOwnerId().equals(ownerId))
+				.map(ACAbstractCondition::computeAndSetHumanReadableDescription)
+				.collect(Collectors.toList());
 	}
 	
 	public ACAbstractCondition getForId(String id) {
-		return conditionRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Access control policy with id '" + id + "' does not exist!"));
+		return conditionRepository.findById(id)
+				.map(ACAbstractCondition::computeAndSetHumanReadableDescription)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Access control policy with id '" + id + "' does not exist!"));
 	}
 	
 	public ACAbstractCondition getForIdAndOwner(String id, String ownerId) {

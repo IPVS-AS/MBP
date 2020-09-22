@@ -25,7 +25,7 @@ app.factory('DeviceService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT
 
     //Performs a server request in order to retrieve the availability state of a certain device.
     function getDeviceState(deviceId) {
-        let deviceId = deviceId;
+        // let deviceId = deviceId;
         return $http.get(URL_GET_DEVICE_STATE);
     }
 

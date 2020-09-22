@@ -12,23 +12,24 @@ import javax.annotation.Nonnull;
  */
 public class ACAttribute {
 	
-	/**
-	 * The {@link ACDataType type} of this attribute.
-	 */
-	@Nonnull
-	private ACDataType type;
+//	/**
+//	 * The {@link ACDataType type} of this attribute.
+//	 */
+//	@Nonnull
+//	private ACDataType type;
 	
 	/**
 	 * The {@link ACAttributeKey} of the attribute. 
 	 */
 	@Nonnull
 	private ACAttributeKey key;
+//	private String key;
 	
 	/**
 	 * The value of the attribute.. 
 	 */
 	@Nonnull
-	private Object value;
+	private String value;
 	
 	// - - -
 	
@@ -44,22 +45,22 @@ public class ACAttribute {
 	 * @param key the {@link ACAttributeKey} of the attribute.
 	 * @param value the value of the attribute.
 	 */
-	public ACAttribute(ACDataType type, ACAttributeKey key, Object value) {
-		this.type = type;
+	public ACAttribute(/*ACDataType type,*/ ACAttributeKey key, String value) {
+//		this.type = type;
 		this.key = key;
 		this.value = value;
 	}
 
 	// - - -
 	
-	public ACDataType getType() {
-		return type;
-	}
-
-	public ACAttribute setType(ACDataType type) {
-		this.type = type;
-		return this;
-	}
+//	public ACDataType getType() {
+//		return type;
+//	}
+//
+//	public ACAttribute setType(ACDataType type) {
+//		this.type = type;
+//		return this;
+//	}
 	
 	public ACAttributeKey getKey() {
 		return key;
@@ -70,11 +71,11 @@ public class ACAttribute {
 		return this;
 	}
 
-	public Object getValue() {
+	public String getValue() {
 		return value;
 	}
 
-	public  ACAttribute setValue(Object value) {
+	public  ACAttribute setValue(String value) {
 		this.value = value;
 		return this;
 	}

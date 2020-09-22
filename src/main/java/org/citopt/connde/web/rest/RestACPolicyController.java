@@ -15,7 +15,6 @@ import org.citopt.connde.domain.access_control.dto.ACPolicyRequestDTO;
 import org.citopt.connde.domain.access_control.dto.ACPolicyResponseDTO;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user.User;
-import org.citopt.connde.repository.ACPolicyRepository;
 import org.citopt.connde.service.UserService;
 import org.citopt.connde.service.access_control.ACPolicyService;
 import org.citopt.connde.util.C;
@@ -55,9 +54,6 @@ public class RestACPolicyController {
 	@Autowired
 	private ACPolicyService policyService;
 	
-	@Autowired
-	private ACPolicyRepository policyRepository;
-	
     @Autowired
     private UserService userService;
     
@@ -67,7 +63,7 @@ public class RestACPolicyController {
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
     public ResponseEntity<PagedModel<EntityModel<ACPolicyResponseDTO>>> all(@ApiParam(value = "Page parameters", required = true) Pageable pageable) {
 		User user = userService.getLoggedInUser();
-    	return ResponseEntity.ok(policiesToPagedModel(policyService.policiesToResponseDto(policyRepository.findByOwner(user.getId(), pageable), user.getId()), pageable));
+    	return ResponseEntity.ok(policiesToPagedModel(policyService.policiesToResponseDto(policyService.getAllForOwner(user.getId(), pageable), user.getId()), pageable));
     }
 	
 	@GetMapping(path = "/byCondition", produces = "application/hal+json")
@@ -75,7 +71,7 @@ public class RestACPolicyController {
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
     public ResponseEntity<PagedModel<EntityModel<ACPolicyResponseDTO>>> byCondition(@PathVariable("conditionId") String conditionId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
 		User user = userService.getLoggedInUser();
-    	return ResponseEntity.ok(policiesToPagedModel(policyService.policiesToResponseDto(policyRepository.findByOwnerAndCondition(user.getId(), conditionId, pageable), user.getId()), pageable));
+    	return ResponseEntity.ok(policiesToPagedModel(policyService.policiesToResponseDto(policyService.getAllForOwnerAndCondition(user.getId(), conditionId, pageable), user.getId()), pageable));
     }
 	
 	@GetMapping(path = "/byEffect", produces = "application/hal+json")
@@ -83,7 +79,7 @@ public class RestACPolicyController {
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
     public ResponseEntity<PagedModel<EntityModel<ACPolicyResponseDTO>>> byEffect(@PathVariable("effectId") String effectId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
 		User user = userService.getLoggedInUser();
-    	return ResponseEntity.ok(policiesToPagedModel(policyService.policiesToResponseDto(policyRepository.findByOwnerAndEffect(user.getId(), effectId, pageable), user.getId()), pageable));
+		return ResponseEntity.ok(policiesToPagedModel(policyService.policiesToResponseDto(policyService.getAllForOwnerAndEffect(user.getId(), effectId, pageable), user.getId()), pageable));
     }
     
     @GetMapping(path = "/{policyId}", produces = "application/hal+json")

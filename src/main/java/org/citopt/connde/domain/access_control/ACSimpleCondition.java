@@ -94,6 +94,19 @@ public class ACSimpleCondition<T extends Comparable<T>> extends ACAbstractCondit
 	
 	// - - -
 	
+	@Override
+	public String toHumanReadableString() {
+		return new StringBuilder()
+				.append(left.toHumanReadableString())
+				.append(" ")
+				.append(function.getHumanReadableDescription())
+				.append(" ")
+				.append(right.toHumanReadableString())
+				.toString();
+	}
+	
+	// - - -
+	
 	/**
 	 * Convenience function to create a new simple condition for comparing
 	 * an attribute value with a fixed value.

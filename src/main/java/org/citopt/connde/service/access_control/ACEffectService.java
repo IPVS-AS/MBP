@@ -8,6 +8,7 @@ import org.citopt.connde.domain.access_control.dto.ACEffectRequestDTO;
 import org.citopt.connde.repository.ACEffectRepository;
 import org.citopt.connde.repository.ACPolicyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,12 +29,12 @@ public class ACEffectService {
 	
 	// - - -
 	
-	public List<ACAbstractEffect> getAll() {
-		return effectRepository.findAll();
+	public List<ACAbstractEffect> getAll(Pageable pageable) {
+		return effectRepository.findAll(pageable).stream().collect(Collectors.toList());
 	}
 	
-	public List<ACAbstractEffect> getAllForOwner(String ownerId) {
-		return effectRepository.findAll().stream().filter(p -> p.getOwnerId().equals(ownerId)).collect(Collectors.toList());
+	public List<ACAbstractEffect> getAllForOwner(String ownerId, Pageable pageable) {
+		return effectRepository.findAllByOwner(ownerId, pageable);
 	}
 	
 	public ACAbstractEffect getForId(String id) {

@@ -3,6 +3,9 @@ package org.citopt.connde.web.rest;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -27,6 +30,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -57,6 +62,18 @@ public class RestDeviceController {
     public ResponseEntity<PagedModel<EntityModel<Device>>> all(@ApiParam(value = "Page parameters", required = true) Pageable pageable, @Valid @RequestBody ACAccessRequest<?> accessRequest) {
     	// Retrieve the corresponding devices (includes access-control)
     	List<Device> devices = userEntityService.getPageWithPolicyCheck(deviceRepository, ACAccessType.READ, accessRequest, pageable);
+    	
+    	try {
+    		new File("/Users/jakob/Desktop/temp.txt").delete();
+    		File file = new File("/Users/jakob/Desktop/temp.txt");
+    		FileWriter fw = new FileWriter(file);
+			fw.write(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(accessRequest));
+			fw.flush();
+			fw.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     	
     	// Create self link
     	Link selfLink = linkTo(methodOn(getClass()).all(pageable, accessRequest)).withSelfRel();

@@ -20,6 +20,7 @@
                         <tr>
                             <th>Name</th>
                             <th>Description</th>
+                            <th>Condition</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -37,6 +38,19 @@
                                     </div>
                                 </div>
                                 <div ng-if="!item.description">
+                                    <span>None</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div ng-if="item.humanReadableDescription">
+                                    <a class="clickable" data-toggle="collapse" data-target="#humanReadableDescription-{{item.id}}">
+                                        Show Condition
+                                    </a>
+                                    <div id="humanReadableDescription-{{item.id}}" class="collapse">
+                                        <span>{{item.humanReadableDescription}}</span>
+                                    </div>
+                                </div>
+                                <div ng-if="!item.humanReadableDescription">
                                     <span>None</span>
                                 </div>
                             </td>

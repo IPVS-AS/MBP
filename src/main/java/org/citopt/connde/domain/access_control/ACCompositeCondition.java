@@ -86,6 +86,27 @@ public class ACCompositeCondition extends ACAbstractCondition {
 		conditions.add(condition);
 		return this;
 	}
+	
+	@Override
+	public ACAbstractCondition computeAndSetHumanReadableDescription() {
+		super.computeAndSetHumanReadableDescription();
+		conditions.forEach(c -> c.computeAndSetHumanReadableDescription());
+		return this;
+	}
+	
+	@Override
+	public String toHumanReadableString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("(");
+		for (int i = 0; i < conditions.size(); i++) {
+			if (i > 0 && i < conditions.size()) {
+				sb.append(" ").append(operator.toString().toUpperCase()).append(" ");
+			}
+			sb.append(conditions.get(i).toHumanReadableString());
+		}
+		sb.append(")");
+		return sb.toString();
+	}
 
 	// - - -
 	

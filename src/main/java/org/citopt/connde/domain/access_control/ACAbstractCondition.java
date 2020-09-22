@@ -4,7 +4,9 @@ import org.citopt.connde.domain.access_control.jquerybuilder.JQBOutput;
 import org.citopt.connde.domain.access_control.jquerybuilder.JQBRule;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.service.access_control.ACAbstractConditionEvaluator;
+import org.springframework.data.annotation.Transient;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,6 +17,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author Jakob Benz
  */
 public abstract class ACAbstractCondition extends ACAbstractEntity {
+	
+	@Transient
+	private String humanReadableDescription;
 	
 	/**
 	 * No-args constructor.
@@ -31,18 +36,27 @@ public abstract class ACAbstractCondition extends ACAbstractEntity {
 	public ACAbstractCondition(String name, String description, String ownerId) {
 		super(name, description, ownerId);
 	}
-
+	
 	// - - -
 	
-	public static ACAbstractCondition forJQBOutput(String output) throws JsonMappingException, JsonProcessingException {
-		JQBOutput jqbOutput = new ObjectMapper().readValue(output, JQBOutput.class);
-		if (jqbOutput.getRules().size() == 1) {
-			// Only one simple condition
-			return ACSimpleCondition.forJQBRule((JQBRule) jqbOutput.getRules().get(0));
-		} else {
-			return ACCompositeCondition.forJQBRuleGroup(jqbOutput);
-		}
+	public String getHumanReadableDescription() {
+		return humanReadableDescription;
 	}
+	
+	public ACAbstractCondition computeAndSetHumanReadableDescription() {
+		humanReadableDescription = toHumanReadableString();
+		return this;
+	}
+	
+	// - - -
+	
+	/**
+	 * TODO: Method comment.
+	 * 
+	 * @return
+	 */
+	@JsonIgnore
+	public abstract String toHumanReadableString();
 	
 	/**
 	 * TODO: Method comment (check params).
@@ -57,6 +71,8 @@ public abstract class ACAbstractCondition extends ACAbstractEntity {
 	}
 	
 	/**
+	 * TODO: Method comment (check params).
+	 * 
 	 * @return
 	 * @throws ACConditionEvaluatorNotAvailableException
 	 */
@@ -79,6 +95,18 @@ public abstract class ACAbstractCondition extends ACAbstractEntity {
 		} catch (InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 			throw new ACConditionEvaluatorNotAvailableException(e.getMessage(), e);
+		}
+	}
+
+	// - - -
+	
+	public static ACAbstractCondition forJQBOutput(String output) throws JsonMappingException, JsonProcessingException {
+		JQBOutput jqbOutput = new ObjectMapper().readValue(output, JQBOutput.class);
+		if (jqbOutput.getRules().size() == 1) {
+			// Only one simple condition
+			return ACSimpleCondition.forJQBRule((JQBRule) jqbOutput.getRules().get(0));
+		} else {
+			return ACCompositeCondition.forJQBRuleGroup(jqbOutput);
 		}
 	}
 	

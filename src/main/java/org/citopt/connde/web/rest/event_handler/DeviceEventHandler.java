@@ -54,6 +54,7 @@ public class DeviceEventHandler {
 	 */
 	@HandleAfterCreate
 	public void afterDeviceCreate(Device device) {
+		System.err.println("111");
 		// Get all monitoring adapters
 		List<MonitoringAdapter> monitoringAdapters = monitoringAdapterRepository.findAll();
 

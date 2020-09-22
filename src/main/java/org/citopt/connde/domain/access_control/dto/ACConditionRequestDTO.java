@@ -1,9 +1,6 @@
 package org.citopt.connde.domain.access_control.dto;
 
 import org.citopt.connde.domain.access_control.ACAbstractCondition;
-import org.citopt.connde.domain.access_control.ACSimpleCondition;
-import org.citopt.connde.domain.access_control.jquerybuilder.JQBOutput;
-import org.citopt.connde.domain.access_control.jquerybuilder.JQBRule;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -52,26 +49,26 @@ public class ACConditionRequestDTO extends ACAbstractEntityRequestDTO {
 				"      \"type\": \"string\",\n" + 
 				"      \"input\": \"text\",\n" + 
 				"      \"operator\": \"not_equal\",\n" + 
-				"      \"value\": \"valueXY\"\n" + 
+				"      \"value\": \"value111\"\n" + 
 				"    },\n" + 
 				"    {\n" + 
 				"      \"condition\": \"OR\",\n" + 
 				"      \"rules\": [\n" + 
 				"        {\n" + 
-				"          \"id\": \"category\",\n" + 
-				"          \"field\": \"category\",\n" + 
-				"          \"type\": \"integer\",\n" + 
-				"          \"input\": \"select\",\n" + 
+				"          \"id\": \"requesting-entity-firstname\",\n" + 
+				"          \"field\": \"requesting-entity-firstname\",\n" + 
+				"          \"type\": \"string\",\n" + 
+				"          \"input\": \"text\",\n" + 
 				"          \"operator\": \"equal\",\n" + 
-				"          \"value\": 2\n" + 
+				"      	   \"value\": \"value222\"\n" +  
 				"        },\n" + 
 				"        {\n" + 
-				"          \"id\": \"category\",\n" + 
-				"          \"field\": \"category\",\n" + 
-				"          \"type\": \"integer\",\n" + 
-				"          \"input\": \"select\",\n" + 
+				"          \"id\": \"requesting-entity-lastname\",\n" + 
+				"          \"field\": \"requesting-entity-lastname\",\n" + 
+				"          \"type\": \"string\",\n" + 
+				"          \"input\": \"text\",\n" + 
 				"          \"operator\": \"equal\",\n" + 
-				"          \"value\": 1\n" + 
+				"          \"value\": \"value333\"\n" + 
 				"        }\n" + 
 				"      ]\n" + 
 				"    }\n" + 
@@ -79,9 +76,13 @@ public class ACConditionRequestDTO extends ACAbstractEntityRequestDTO {
 				"  \"valid\": true\n" + 
 				"}";
 		
-		JQBOutput o = om.readValue(output, JQBOutput.class);
-		System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(o));
-		System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(ACSimpleCondition.forJQBRule((JQBRule) o.getRules().get(0))));
+//		JQBOutput o = om.readValue(output, JQBOutput.class);
+//		System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(o));
+//		System.out.println(om.writerWithDefaultPrettyPrinter().writeValueAsString(ACSimpleCondition.forJQBRule((JQBRule) o.getRules().get(0))));
+		
+		ACAbstractCondition c = ACAbstractCondition.forJQBOutput(output);
+		System.err.println(c.toHumanReadableString());
+		System.out.println(c.getHumanReadableDescription());
 	}
 	
 }

@@ -14,75 +14,80 @@ public enum ACArgumentFunction {
 	 * Function that evaluates to {@code true}, if and only if
 	 * two arguments are equal.
 	 */
-	EQUALS(compareResult -> compareResult == 0, (l, r) -> l.equals(r)),
+	EQUALS("=", compareResult -> compareResult == 0, (l, r) -> l.equals(r)),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * two arguments are not equal.
 	 */
-	NOT_EQUALS(compareResult -> compareResult != 0, (l, r) -> !l.equals(r)),
+	NOT_EQUALS("!=", compareResult -> compareResult != 0, (l, r) -> !l.equals(r)),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument is less than the second argument.
 	 */
-	LESS_THAN(compareResult -> compareResult < 0, null),
+	LESS_THAN("<", compareResult -> compareResult < 0, null),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument is less than or equal to the second argument.
 	 */
-	LESS_THAN_OR_EQUAL_TO(compareResult -> compareResult <= 0, null),
+	LESS_THAN_OR_EQUAL_TO("<=", compareResult -> compareResult <= 0, null),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument is greater than the second argument.
 	 */
-	GREATER_THAN(compareResult -> compareResult > 0, null),
+	GREATER_THAN(">", compareResult -> compareResult > 0, null),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument is greater than or equal to the second argument.
 	 */
-	GREATER_THAN_OR_EQUAL_TO(compareResult -> compareResult >= 0, null),
+	GREATER_THAN_OR_EQUAL_TO(">=", compareResult -> compareResult >= 0, null),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument starts with the second argument.
 	 */
-	STARTS_WITH(null, (l, r) -> l.startsWith(r)),
+	STARTS_WITH("starts with", null, (l, r) -> l.startsWith(r)),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument does not start with the second argument.
 	 */
-	NOT_STARTS_WITH(null, (l, r) -> !l.startsWith(r)),
+	NOT_STARTS_WITH("does not start with", null, (l, r) -> !l.startsWith(r)),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument contains the second argument.
 	 */
-	CONTAINS(null, (l, r) -> l.contains(r)),
+	CONTAINS("contains", null, (l, r) -> l.contains(r)),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument does not contain the second argument.
 	 */
-	NOT_CONTAINS(null, (l, r) -> l.contains(r)),
+	NOT_CONTAINS("does not contain", null, (l, r) -> l.contains(r)),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument ends with the second argument.
 	 */
-	ENDS_WITH(null, (l, r) -> l.endsWith(r)),
+	ENDS_WITH("ends with", null, (l, r) -> l.endsWith(r)),
 
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument does not end with the second argument.
 	 */
-	NOT_ENDS_WITH(null, (l, r) -> !l.endsWith(r));
+	NOT_ENDS_WITH("does not end with", null, (l, r) -> !l.endsWith(r));
 	
 	// - - -
+	
+	/**
+	 * A human readable description.
+	 */
+	private String humanReadableDescription;
 	
 	/**
 	 * The predicate used to evaluate the result of the call to {@link Comparable#compareTo(Object)}.
@@ -94,20 +99,34 @@ public enum ACArgumentFunction {
 	 */
 	private BiFunction<String, String, Boolean> evaluationFunction;
 	
+	// - - -
+	
 	/**
 	 * All-args constructor.
 	 * 
+	 * @param humanReadableDescription the human readable description.
 	 * @param evaluationPredicate The {@link Predicate} used to evaluate
 	 * 		  the result of the call to {@link Comparable#compareTo(Object)}.
 	 * @param evaluationFunction the function used to evaluate functions on strings.
 	 */
-	private ACArgumentFunction(Predicate<Integer> evaluationPredicate, BiFunction<String, String, Boolean> evaluationFunction) {
+	private ACArgumentFunction(String humanReadableDescription, Predicate<Integer> evaluationPredicate, BiFunction<String, String, Boolean> evaluationFunction) {
+		this.humanReadableDescription = humanReadableDescription;
 		this.evaluationPredicate = evaluationPredicate;
 		this.evaluationFunction = evaluationFunction;
 	}
 	
+	// - - -
+	
+	public String getHumanReadableDescription() {
+		return humanReadableDescription;
+	}
+	
 	public Predicate<Integer> getEvaluationPredicate() {
 		return evaluationPredicate;
+	}
+	
+	public BiFunction<String, String, Boolean> getEvaluationFunction() {
+		return evaluationFunction;
 	}
 	
 	// - - -

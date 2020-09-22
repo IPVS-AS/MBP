@@ -5,4 +5,8 @@ package org.citopt.connde.domain.access_control;
  * 
  * @author Jakob Benz
  */
-public interface IACConditionArgument {}
+public interface IACConditionArgument {
+	
+	public String toHumanReadableString();
+	
+}

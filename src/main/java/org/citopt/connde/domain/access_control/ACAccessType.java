@@ -8,14 +8,14 @@ package org.citopt.connde.domain.access_control;
 public enum ACAccessType {
 	
 	/**
-	 * Create, e.g., a new sensor. 
-	 */
-	CREATE,
-	
-	/**
-	 * Read, e.g., sensor data.
+	 * Read, e.g., a device.
 	 */
 	READ,
+	
+	/**
+	 * Read, e.g., sensor value logs.
+	 */
+	READ_VALUE_LOGS,
 	
 	/**
 	 * Update an existing, e.g., rule.
@@ -50,11 +50,6 @@ public enum ACAccessType {
 	/**
 	 * Stop, e.g., monitoring.
 	 */
-	STOP,
-	
-	/**
-	 * Execute, e.g., a actuator action (via a rule action).
-	 */
-	EXECUTE;
+	STOP;
 	
 }

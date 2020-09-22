@@ -7,6 +7,7 @@ import org.citopt.connde.domain.access_control.ACCompositeCondition;
 import org.citopt.connde.domain.access_control.ACConditionSimpleValueArgument;
 import org.citopt.connde.domain.access_control.ACLogicalOperator;
 import org.citopt.connde.domain.access_control.ACSimpleCondition;
+import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.repository.ACConditionRepository;
 import org.citopt.connde.repository.ACEffectRepository;
@@ -89,6 +90,11 @@ public class Test1 {
 	
 	@Test
 	public void test2() throws JsonProcessingException {
+		Device d = new Device();
+		d.setIpAddress("123.123.123.123");
+		d.setName("Test Device 1");
+		
+		deviceRepository.save(d);
 	}
 	
 	@Test

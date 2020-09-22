@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * Abstraction for access requests. Contains the context of the requesting entity
@@ -15,10 +16,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  * @author Jakob Benz
  */
+@JsonDeserialize(using = ACAccessRequestDeserializer.class)
 public class ACAccessRequest<T> {
 	
 	/**
-	 * The context of the requesting entity as list of {@link ACAttribute attributes}.
+	 * The context of the requesting entity as list of {@link ACAttribute attributes}. // X-MBP
 	 */
 	private List<ACAttribute> context = new ArrayList<>();
 	

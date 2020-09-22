@@ -52,4 +52,11 @@ public class ACSituationCondition extends ACAbstractCondition {
 		return this;
 	}
 	
+	// - - -
+	
+	@Override
+	public String toHumanReadableString() {
+		return query.toString();
+	}
+	
 }

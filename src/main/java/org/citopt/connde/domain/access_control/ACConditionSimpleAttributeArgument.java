@@ -74,6 +74,13 @@ public class ACConditionSimpleAttributeArgument<T extends Comparable<T>> impleme
 	
 	// - - -
 	
+	@Override
+	public String toHumanReadableString() {
+		return key.getId();
+	}
+	
+	// - - -
+	
 	public static <T extends Comparable<T>> ACConditionSimpleAttributeArgument<T> basedOn(JQBRule rule) {
 		return new ACConditionSimpleAttributeArgument<>(ACAttributeKey.forId(rule.getId()));
 	}

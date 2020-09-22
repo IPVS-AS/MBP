@@ -49,6 +49,4 @@ public class JQBOutputDeserializer extends StdDeserializer<JQBOutput> {
 		return new JQBOutput(ruleGroup.getCondition(), ruleGroup.getRules(), valid);
 	}
 	
-	
-	
 }

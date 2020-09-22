@@ -82,8 +82,7 @@ public class RestValueLogController {
 			@Valid @RequestBody ACAccessRequest<?> accessRequest,
 			@ApiParam(value = "The page configuration", required = true) Pageable pageable) {
 		// Retrieve actuator from the database (includes access-control)
-		// TODO: Formerly, permission 'deploy' has been checked - i think it should be the 'read' permission
-		Actuator actuator = userEntityService.getForIdWithPolicyCheck(actuatorRepository, actuatorId, ACAccessType.READ, accessRequest);
+		Actuator actuator = userEntityService.getForIdWithPolicyCheck(actuatorRepository, actuatorId, ACAccessType.READ_VALUE_LOGS, accessRequest);
 
 		// Retrieve value logs
 		return ResponseEntity.ok(getValueLogs(actuator, unit, pageable));

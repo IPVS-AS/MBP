@@ -49,6 +49,13 @@ public class ACConditionSimpleValueArgument<T extends Comparable<T>> implements 
 	
 	// - - -
 	
+	@Override
+	public String toHumanReadableString() {
+		return value.toString();
+	}
+	
+	// - - -
+	
 	public static ACConditionSimpleValueArgument<?> basedOn(JQBRule rule) {
 		switch (rule.getType().toLowerCase()) {
 		case "string": return new ACConditionSimpleValueArgument<>(rule.getValue());

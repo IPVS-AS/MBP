@@ -11,6 +11,7 @@ import org.citopt.connde.repository.ACConditionRepository;
 import org.citopt.connde.repository.ACEffectRepository;
 import org.citopt.connde.repository.ACPolicyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -40,12 +41,20 @@ public class ACPolicyService {
 	
 	// - - -
 	
-	public List<ACPolicy> getAll() {
-		return policyRepository.findAll();
+	public List<ACPolicy> getAll(Pageable pageable) {
+		return policyRepository.findAll(pageable).stream().collect(Collectors.toList());
 	}
 	
-	public List<ACPolicy> getAllForOwner(String ownerId) {
-		return policyRepository.findAll().stream().filter(p -> p.getOwnerId().equals(ownerId)).collect(Collectors.toList());
+	public List<ACPolicy> getAllForOwner(String ownerId, Pageable pageable) {
+		return policyRepository.findAllByOwner(ownerId, pageable);
+	}
+	
+	public List<ACPolicy> getAllForOwnerAndCondition(String ownerId, String conditionId, Pageable pageable) {
+		return policyRepository.findByOwnerAndCondition(ownerId, conditionId, pageable);
+	}
+	
+	public List<ACPolicy> getAllForOwnerAndEffect(String ownerId, String effectId, Pageable pageable) {
+		return policyRepository.findByOwnerAndEffect(ownerId, effectId, pageable);
 	}
 	
 	public ACPolicy getForId(String id) {
