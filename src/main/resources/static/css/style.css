@@ -7556,7 +7556,7 @@ fieldset[disabled] .form-control {
       cursor: default;
       display: block;
       position: relative;
-      top: 25px; }
+      top: 25px;}
       .sidebar .user-info .info-container .name {
         white-space: nowrap;
         -ms-text-overflow: ellipsis;
@@ -7564,8 +7564,23 @@ fieldset[disabled] .form-control {
         text-overflow: ellipsis;
         overflow: hidden;
         font-size: 14px;
-        max-width: 200px;
-        color: #fff; }
+        max-width: 100px;
+        color: #fff; 
+        position: absolute;
+  	    right: 10px;
+  	    top: 50px;}
+  	  .sidebar .user-info .info-container .username {
+        white-space: nowrap;
+        -ms-text-overflow: ellipsis;
+        -o-text-overflow: ellipsis;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        font-size: 14px;
+        max-width: 100px;
+        color: #fff; 
+        position: absolute;
+  	    right: 10px;
+  	    top: 70px;}
       .sidebar .user-info .info-container .email {
         white-space: nowrap;
         -ms-text-overflow: ellipsis;
@@ -7577,14 +7592,15 @@ fieldset[disabled] .form-control {
         color: #fff; }
       .sidebar .user-info .info-container .user-helper-dropdown {
         position: absolute;
-        right: -3px;
-        bottom: -12px;
+        right: 5px;
+        top: 75px;
         -webkit-box-shadow: none;
         -moz-box-shadow: none;
         -ms-box-shadow: none;
         box-shadow: none;
         cursor: pointer;
-        color: #fff; }
+        color: #fff; 
+        }
   .sidebar .menu {
     position: relative;
     overflow-y: auto;
