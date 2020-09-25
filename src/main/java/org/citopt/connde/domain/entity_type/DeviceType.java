@@ -6,7 +6,7 @@ public class DeviceType extends EntityType {
 
     private boolean sshSupport = false;
 
-    public DeviceType(){
+    public DeviceType() {
         super();
     }
 
@@ -35,5 +35,11 @@ public class DeviceType extends EntityType {
     @Override
     public Class<Device> getEntityClass() {
         return Device.class;
+    }
+
+    public static DeviceType createDeviceType(String name, boolean sshSupport, String iconContent) {
+        DeviceType deviceType = new DeviceType(name, sshSupport);
+        deviceType.setIcon(new EntityTypeIcon(iconContent));
+        return deviceType;
     }
 }

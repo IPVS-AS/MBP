@@ -26,8 +26,6 @@
 /* Float the link section to the right */
 .tool-header-right {
     float: right;
-}
-
 .tool-header-left {
     float: left;
 }

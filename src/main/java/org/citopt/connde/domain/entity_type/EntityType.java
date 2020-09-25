@@ -17,9 +17,7 @@ public abstract class EntityType extends UserEntity {
     @Indexed
     protected String name;
 
-    //@Indexed
-    //private EntityTypeIcon icon;
-
+    private EntityTypeIcon icon;
 
     public EntityType() {
 
@@ -44,7 +42,17 @@ public abstract class EntityType extends UserEntity {
         return name;
     }
 
-    public void setName(String name) {
+    public EntityType setName(String name) {
         this.name = name;
+        return this;
+    }
+
+    public EntityTypeIcon getIcon() {
+        return icon;
+    }
+
+    public EntityType setIcon(EntityTypeIcon icon) {
+        this.icon = icon;
+        return this;
     }
 }
