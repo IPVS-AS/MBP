@@ -1,15 +1,10 @@
 package org.citopt.connde.web.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.util.JSON;
-import jdk.nashorn.internal.parser.JSONParser;
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.testing.TestDetails;
-import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.repository.RuleRepository;
 import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.service.testing.GraphPlotter;
@@ -18,17 +13,20 @@ import org.citopt.connde.service.testing.TestReport;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,7 +41,7 @@ public class TestingController {
     private TestDetailsRepository testDetailsRepository;
 
     @Autowired
-    private  RuleRepository ruleRepository;
+    private RuleRepository ruleRepository;
 
     @Autowired
     private TestEngine testEngine;
@@ -216,8 +214,8 @@ public class TestingController {
 
     @RequestMapping(value = "/test-details/updateTest/{testId}", method = RequestMethod.POST)
     public HttpEntity<Object> updateTest(@PathVariable(value = "testId") String testId, @RequestBody String test) throws JSONException {
-        try{
-            ParameterInstance instance ;
+        try {
+            ParameterInstance instance;
             TestDetails testToUpdate = testDetailsRepository.findById(testId);
 
             // Clear the configuration and rules field of the specific test
@@ -244,8 +242,8 @@ public class TestingController {
             Pattern pattern = Pattern.compile("rules\\/(.*)$");
             JSONArray rules = (JSONArray) updateInfos.get("rules");
             List<Rule> newRules = new ArrayList<>();
-            if(rules != null){
-                for (int i = 0; i < rules.length();i++){
+            if (rules != null) {
+                for (int i = 0; i < rules.length(); i++) {
                     Matcher m = pattern.matcher(rules.getString(i));
                     if (m.find()) {
                         newRules.add(ruleRepository.findById(m.group(1)));
@@ -260,11 +258,9 @@ public class TestingController {
             // Save all updates
             testDetailsRepository.save(testToUpdate);
             return new ResponseEntity<>(HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
         }
-
-
 
 
     }
