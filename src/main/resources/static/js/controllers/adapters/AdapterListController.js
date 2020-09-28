@@ -130,8 +130,8 @@ app.controller('AdapterListController',
                     //If the list is not empty, create a message that contains the names of all affected components
                     if (result.data.length > 0) {
 
-                        affectedWarning = "<br/><br/><strong>The following components are currently " +
-                            "using this adapter and will be deleted as well:</strong><br/>";
+                        affectedWarning = "<br/><br/>The following components are currently " +
+                            "using this operator and <strong>will be deleted as well</strong>:<br/>";
 
                         //Iterate over all affected components
                         for (var i = 0; i < result.data.length; i++) {
@@ -144,10 +144,10 @@ app.controller('AdapterListController',
 
                     //Show the alert to the user and return the resulting promise
                     return Swal.fire({
-                        title: 'Delete adapter',
+                        title: 'Delete operator',
                         type: 'warning',
-                        html: "Are you sure you want to delete the adapter \"" +
-                            adapterName + "\"?" + affectedWarning,
+                        html: "Are you sure you want to delete the operator <strong>" +
+                            adapterName + "</strong>?" + affectedWarning,
                         showCancelButton: true,
                         confirmButtonText: 'Delete',
                         confirmButtonClass: 'bg-red',

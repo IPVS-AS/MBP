@@ -108,6 +108,7 @@ target/
 hs_err_pid*
 /bin/
 *.prefs
+/.settings/
 .settings/org.eclipse.wst.jsdt.ui.superType.name
 .classpath
 .project
