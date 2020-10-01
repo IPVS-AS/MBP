@@ -162,6 +162,7 @@
                                 </div>
                                 <div class="form-group">
                                     <div class="form-line">
+                                        <h3>Sensor Simulators:</h3>
                                         <select class="form-control selectpicker"
                                                 title="Select sensor type to be simulated *"
                                                 data-header="Select sensor type to be simulated *"
@@ -169,12 +170,73 @@
                                                 ng-options="sensor for sensor in availableSensors"
                                                 multiple>
                                         </select>
-
                                     </div>
                                 </div>
+                                <div class="form-group">
+                                <div class="form-line">
+                                    <h3>Real Sensors:</h3>
+                                    <select class="form-control selectpicker"
+                                            title="Select a Sensor to be added to the Test *"
+                                            data-header="Select a Sensor to be added to the Test *"
+                                            ng-model="ctrl.selectedRealSensor"
+                                            ng-options="sensor as (sensor.name) for sensor in realSensorList"
+                                            multiple>
+                                    </select>
+                                </div>
+                            </div>
+                                <div ng-repeat="realSensor in ctrl.selectedRealSensor" ng-init="row=$index" >
+                                    <h3>Configuration Real Sensor: {{realSensor.name}}</h3>
+                                    <table class="table parameter-table">
+                                        <thead></thead>
+                                        <tbody>
+                                        <tr ng-repeat="parameter in realSensor._embedded.adapter.parameters">
+                                            <td>
+                                                <label>{{parameter.name}}:</label><br/>
+                                                <small ng-show="parameter.mandatory">(required)</small>
+                                            </td>
+                                            <td>
+                                                <div ng-switch="parameter.type">
+                                                    <div ng-switch-when="Text">
+                                                        <input class="form-control" type="text"
+                                                               ng-required="parameter.mandatory"
+                                                               ng-model="ctrl.parameterVal[realSensor.name][$index]"/>
+                                                        {{$parent.$parent.$index}}
+                                                        {{row}}
+                                                    </div>
+                                                    <div ng-switch-when="Number">
+                                                        <input class="form-control" type="number"
+                                                               ng-required="parameter.mandatory"
+                                                               ng-model="ctrl.parameterVal[realSensor.name][$index]"/>
+                                                    </div>
+                                                    <div class="switch" ng-switch-when="Switch">
+                                                        <label>No
+                                                            <input type="checkbox"
+                                                                   ng-model="ctrl.parameterVal[realSensor.name][$index]">
+                                                            <span class="lever"></span>Yes</label>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="label bg-grey" ng-show="parameter.unit">{{parameter.unit}}</span>
+                                            </td>
+                                        </tr>
+                                        <tr ng-show="realSensor._embedded.adapter.parameters.length === 0">
+                                            <td colspan="2">No parameters required.</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                    <div class="has-error" ng-show="ctrl.deployer.status.fieldErrors.parameters">
+                                        <span class="help-block focused error">{{ctrl.deployer.status.fieldErrors.parameters}}</span>
+                                    </div>
+
+                                    {{ctrl.parameterVal}}
+                                </div>
+
+
+
                                 <div ng-if="ctrl.selectedSensors.includes('TestingTemperaturSensor')"  >
                                     <div class="form-line">
-                                        <h3>Configuration Temperature Sensor Simulator</h3>
+                                        <h3>Configuration Sensor Simulator: Temperature Sensor Simulator</h3>
                                         <h4> Type of simulation </h4>
                                         <select class="form-control show-tick" id="select-event"
                                                 name="event"
@@ -229,7 +291,7 @@
                                 </div>
                                 <div ng-if="ctrl.selectedSensors.includes('TestingTemperaturSensorPl')"  >
                                     <div class="form-line">
-                                        <h3>Configuration Planned Temerature Sensor Simulator</h3>
+                                        <h3>Configuration Sensor Simulator: Planned Temerature Sensor Simulator</h3>
                                         <h4> Type of simulation </h4>
                                         <select class="form-control show-tick"
                                                 name="event"
@@ -283,7 +345,7 @@
                                     </div>
                                 </div>
                                 <div ng-if="ctrl.selectedSensors.includes('TestingFeuchtigkeitsSensor')">
-                                    <h3>Configuration Humidity Sensor Simulator</h3>
+                                    <h3>Configuration Sensor Simulator: Humidity Sensor Simulator</h3>
                                     <h4> Type of simulation: </h4>
                                     <div class="form-line">
                                         <select class="form-control show-tick" id="select-hum-testCase" name="event"
@@ -339,7 +401,7 @@
                                     </div>
                                 </div>
                                 <div ng-if="ctrl.selectedSensors.includes('TestingFeuchtigkeitsSensorPl')">
-                                    <h3>Configuration Planned Humidity Sensor Simulator</h3>
+                                    <h3>Configuration Sensor Simulator: Planned Humidity Sensor Simulator</h3>
                                     <h4> Type of simulation: </h4>
                                     <div class="form-line">
                                         <select class="form-control show-tick" name="event"
@@ -396,7 +458,7 @@
                                 </div>
                                 <div ng-if="ctrl.selectedSensors.includes('TestingGPSSensorPl')">
                                     <div class="form-line">
-                                        <h3>Configuration Planned GPS Sensor Simulator</h3>
+                                        <h3>Configuration Sensor Simulator: Planned GPS Sensor Simulator</h3>
                                         <h4> Specify whether the GPS data should be tracked for a human or a cat: </h4>
                                         <select class="form-control show-tick"
                                                 name="select-gps-cathum"
@@ -456,7 +518,7 @@
                                 </div>
                                 <div ng-if="ctrl.selectedSensors.includes('TestingGPSSensor')">
                                     <div class="form-line">
-                                        <h3>Configuration GPS Sensor Simulator</h3>
+                                        <h3>Configuration Sensor Simulator: GPS Sensor Simulator</h3>
                                         <h4> Specify whether the GPS data should be tracked for a human or a cat: </h4>
                                         <select class="form-control show-tick" id="select-gps-cathum"
                                                 name="select-gps-cathum"
@@ -516,7 +578,7 @@
                                 </div>
                                 <div ng-if="ctrl.selectedSensors.includes('TestingBeschleunigungsSensorPl')">
                                     <div class="form-line">
-                                        <h3>Configuration Planned Acceleration Sensor Simulator</h3>
+                                        <h3>Configuration Sensor Simulator: Planned Acceleration Sensor Simulator</h3>
                                         <h4> Type of simulation:</h4>
                                         <select class="form-control show-tick"  name="event"
                                                 ng-model="ctrl.config.eventAccPl">
@@ -597,7 +659,7 @@
                                 </div>
                                 <div ng-if="ctrl.selectedSensors.includes('TestingBeschleunigungsSensor')">
                                     <div class="form-line">
-                                        <h3>Configuration Acceleration Sensor Simulator</h3>
+                                        <h3>Configuration Sensor Simulator: Acceleration Sensor Simulator</h3>
                                         <h4> Type of simulation:</h4>
                                         <select class="form-control show-tick" id="select-acc-testCase" name="event"
                                                 ng-model="ctrl.config.eventAcc">
@@ -678,7 +740,7 @@
                                 </div>
                                 <div  class="form-line" ng-if="ctrl.selectedSensors.includes('TestingFeuchtigkeitsSensorPl') || ctrl.selectedSensors.includes('TestingTemperaturSensorPl') ||ctrl.selectedSensors.includes('TestingGPSSensorPl') || ctrl.selectedSensors.includes('TestingBeschleunigungsSensorPl')">
 
-                                    <h3>Configuration Planned Simulation</h3>
+                                    <h3>Configuration Sensor Simulator: Planned Simulation</h3>
                                     <h4> How long should the sensor be simulated? (specified in hours)</h4>
                                     <div class="form-line">
                                         <input type="text" id="simTime" name="simTime"

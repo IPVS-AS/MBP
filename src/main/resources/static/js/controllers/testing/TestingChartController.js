@@ -22,7 +22,7 @@ app.controller('TestingChartController',
 
             //Stores the parameters and their values as assigned by the user
             vm.parameterValues = [];
-
+            vm.deploymentState = '';
             /**
              * Initializing function, sets up basic things.
              */
@@ -48,7 +48,7 @@ app.controller('TestingChartController',
                 const interval = $interval(function () {
                     updateDeploymentState(true);
                     updateDeviceState();
-                }, 1000);
+                }, 500);
 
                 //Cancel interval on route change and enable the loading bar again
                 $scope.$on('$destroy', function () {
@@ -70,19 +70,41 @@ app.controller('TestingChartController',
                 if (!noWaitingScreen) {
                     showDeploymentWaitingScreen("Retrieving component state...");
                 }
+                vm.deploymentStateTemp = [];
+                try {
+                    for (var i = 0; i < sensorList.length; i++) {
+                        //Retrieve the state of the current component
 
-                //Retrieve the state of the current component
-                ComponentService.getComponentState(vm.sensorList[0].id, vm.sensorList[0].componentTypeName+'s').then(function (response) {
-                    //Success
-                    vm.deploymentState = response.data.content;
-                }, function () {
-                    //Failure
-                    vm.deploymentState = 'UNKNOWN';
-                    NotificationService.notify('Could not retrieve deployment state.', 'error');
-                }).then(function () {
+                        ComponentService.getComponentState(vm.sensorList[i].id, vm.sensorList[i].componentTypeName + 's').then(function (response) {
+                            //Success
+                            console.log( response);
+                            console.log(response.data);
+                            vm.deploymentStateTemp.push(response.data.content);
+
+
+                            if (vm.deploymentStateTemp.includes('NOT_READY')) {
+                                vm.deploymentState = 'NOT_READY';
+                            } else if (vm.deploymentStateTemp.includes('UNKNOWN')) {
+                                vm.deploymentState = 'UNKNOWN';
+                            } else if (vm.deploymentStateTemp.includes('RUNNING')) {
+                                vm.deploymentState = 'RUNNING';
+                            } else if (vm.deploymentStateTemp.includes('READY') || vm.deploymentStateTemp.includes('DEPLOYED')) {
+                                vm.deploymentState = 'READY';
+                            }
+
+                        }, function () {
+                            //Failure
+                            vm.deploymentStateTemp.push('UNKNOWN');
+                            NotificationService.notify('Could not retrieve deployment state.', 'error');
+                        })
+                    }
+
+
+                } finally {
                     //Finally hide the waiting screen again
                     hideDeploymentWaitingScreen();
-                });
+                }
+
             }
 
             /**

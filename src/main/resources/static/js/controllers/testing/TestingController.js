@@ -5,8 +5,8 @@
  * Controller for the sensor list page.
  */
 app.controller('TestingController',
-    ['$scope', '$controller', '$interval', '$http', 'testList', '$rootScope', 'addTest', 'deleteTest', 'ruleList', '$q', 'ComponentService', 'FileReader', 'ENDPOINT_URI', 'NotificationService',
-        function ($scope, $controller, $interval, $http, testList, $rootScope, addTest, deleteTest, ruleList, $q, ComponentService, FileReader, ENDPOINT_URI, NotificationService) {
+    ['$scope', '$controller', '$interval', '$http', 'testList', '$rootScope', 'addTest', 'deleteTest', 'ruleList', 'sensorList', '$q', 'ComponentService', 'FileReader', 'ENDPOINT_URI', 'NotificationService',
+        function ($scope, $controller, $interval, $http, testList, $rootScope, addTest, deleteTest, ruleList, sensorList, $q, ComponentService, FileReader, ENDPOINT_URI, NotificationService) {
 
             const vm = this;
             vm.ruleList = ruleList;
@@ -17,7 +17,8 @@ app.controller('TestingController',
             vm.testName = "";
             vm.rulesPDF = [];
             vm.availableSensors = [];
-            const sensorList = ['TestingTemperaturSensor', 'TestingTemperaturSensorPl', 'TestingFeuchtigkeitsSensor', 'TestingFeuchtigkeitsSensorPl', 'TestingBeschleunigungsSensor', 'TestingBeschleunigungsSensorPl', 'TestingGPSSensor', 'TestingGPSSensorPl'];
+            vm.realSensorList = [];
+            const sensorListSim = ['TestingTemperaturSensor', 'TestingTemperaturSensorPl', 'TestingFeuchtigkeitsSensor', 'TestingFeuchtigkeitsSensorPl', 'TestingBeschleunigungsSensor', 'TestingBeschleunigungsSensorPl', 'TestingGPSSensor', 'TestingGPSSensorPl'];
 
             vm.test = "";
 
@@ -32,13 +33,16 @@ app.controller('TestingController',
                     NotificationService.notify("Could not retrieve test list.", "error");
                 }
 
+                //Initialize parameters and retrieve states and stats
+                // initParameters();
+
                 getDevice();
                 checkActuatorReg();
-                for (let i = 0; i < sensorList.length; i++) {
-                    checkSensorReg(sensorList[i]);
+                for (let i = 0; i < sensorListSim.length; i++) {
+                    checkSensorReg(sensorListSim[i]);
                 }
-
                 $scope.availableSensors = vm.availableSensors;
+                $scope.realSensorList = vm.realSensorList;
 
                 //Interval for updating sensor states on a regular basis
                 const interval = $interval(function () {
@@ -57,6 +61,7 @@ app.controller('TestingController',
                     $interval.cancel(interval);
                 });
             })();
+
 
             /**
              * Performs a server request in order to start a test given by its id.
@@ -93,11 +98,13 @@ app.controller('TestingController',
 
                 $http.get(ENDPOINT_URI + '/test-details/pdfExists/' + testId).then(function (response) {
 
-                    if (response.data === "true") {
-                        document.getElementById(testName).disabled = false;
-                    } else if (response.data === "false") {
-
-                        document.getElementById(testName).disabled = true;
+                    switch (response.data) {
+                        case "true":
+                            document.getElementById(testName).disabled = false;
+                            break;
+                        case "false":
+                            document.getElementById(testName).disabled = true;
+                            break;
                     }
                 });
             }
@@ -164,8 +171,8 @@ app.controller('TestingController',
                     });
                     $scope.testingActuator = registered;
                 });
-
             }
+
 
             /**
              * Register the Actuator-Simulator for the Test of IoT-Applications.
@@ -235,96 +242,165 @@ app.controller('TestingController',
              * @param sensor
              */
             function checkSensorReg(sensor) {
-                $http.get(ENDPOINT_URI + '/sensors/search/findAll').success(function (response) {
-                    sensorX = false;
-                    sensorY = false;
-                    sensorZ = false;
-                    registered = "NOT_REGISTERED";
-                    angular.forEach(response._embedded.sensors, function (value) {
-                        if (sensor === 'TestingTemperaturSensor' || sensor === 'TestingTemperaturSensorPl' || sensor === 'TestingFeuchtigkeitsSensorPl' || sensor === 'TestingFeuchtigkeitsSensor') {
-                            if (value.name === sensor) {
-                                registered = "REGISTERED";
-                                vm.availableSensors.push(sensor);
-                            }
-                        } else if (sensor === 'TestingBeschleunigungsSensor') {
-                            if (value.name === "TestingAccelerationX") {
-                                sensorX = true;
-                            } else if (value.name === "TestingAccelerationY") {
-                                sensorY = true;
-                            } else if (value.name === "TestingAccelerationZ") {
-                                sensorZ = true;
-                            }
+                try {
+                    $http.get(ENDPOINT_URI + '/sensors/search/findAll').success(function (response) {
+                        sensorX = false;
+                        sensorY = false;
+                        sensorZ = false;
+                        registered = "NOT_REGISTERED";
+                        angular.forEach(response._embedded.sensors, function (value) {
+                            if (sensor === 'TestingTemperaturSensor') {
+                                if (value.name === sensor) {
+                                    registered = "REGISTERED";
+                                    vm.availableSensors.push(sensor);
+                                }
+                            } else if (sensor === 'TestingTemperaturSensorPl') {
+                                if (value.name === sensor) {
+                                    registered = "REGISTERED";
+                                    vm.availableSensors.push(sensor);
+                                }
+                            } else if (sensor === 'TestingFeuchtigkeitsSensorPl') {
+                                if (value.name === sensor) {
+                                    registered = "REGISTERED";
+                                    vm.availableSensors.push(sensor);
+                                }
+                            } else if (sensor === 'TestingFeuchtigkeitsSensor') {
+                                if (value.name === sensor) {
+                                    registered = "REGISTERED";
+                                    vm.availableSensors.push(sensor);
+                                }
+                            } else if (sensor === 'TestingBeschleunigungsSensor') {
+                                switch (value.name) {
+                                    case "TestingAccelerationX":
+                                        sensorX = true;
+                                        break;
+                                    case "TestingAccelerationY":
+                                        sensorY = true;
+                                        break;
+                                    case "TestingAccelerationZ":
+                                        sensorZ = true;
+                                        break;
+                                }
 
-                        } else if (sensor === 'TestingBeschleunigungsSensorPl') {
-                            if (value.name === "TestingAccelerationPlX") {
-                                sensorX = true;
-                            } else if (value.name === "TestingAccelerationPlY") {
-                                sensorY = true;
-                            } else if (value.name === "TestingAccelerationPlZ") {
-                                sensorZ = true;
-                            }
+                            } else if (sensor === 'TestingBeschleunigungsSensorPl') {
+                                switch (value.name) {
+                                    case "TestingAccelerationPlX":
+                                        sensorX = true;
+                                        break;
+                                    case "TestingAccelerationPlY":
+                                        sensorY = true;
+                                        break;
+                                    case "TestingAccelerationPlZ":
+                                        sensorZ = true;
+                                        break;
+                                }
 
-                        } else if (sensor === "TestingGPSSensor") {
-                            if (value.name === "TestingGPSLatitude") {
-                                sensorX = true;
-                            } else if (value.name === "TestingGPSLongitude") {
-                                sensorY = true;
-                            } else if (value.name === "TestingGPSHight") {
-                                sensorZ = true;
+                            } else if (sensor === "TestingGPSSensor") {
+                                switch (value.name) {
+                                    case "TestingGPSLatitude":
+                                        sensorX = true;
+                                        break;
+                                    case "TestingGPSLongitude":
+                                        sensorY = true;
+                                        break;
+                                    case "TestingGPSHight":
+                                        sensorZ = true;
+                                        break;
+                                }
+                            } else if (sensor === "TestingGPSSensorPl") {
+                                switch (value.name) {
+                                    case "TestingGPSLatitudePl":
+                                        sensorX = true;
+                                        break;
+                                    case "TestingGPSLongitudePl":
+                                        sensorY = true;
+                                        break;
+                                    case "TestingGPSHightPl":
+                                        sensorZ = true;
+                                        break;
+                                }
                             }
-                        } else if (sensor === "TestingGPSSensor") {
-                            if (value.name === "TestingGPSLatitudePl") {
-                                sensorX = true;
-                            } else if (value.name === "TestingGPSLongitudePl") {
-                                sensorY = true;
-                            } else if (value.name === "TestingGPSHightPl") {
-                                sensorZ = true;
-                            }
+                        });
+
+
+                        switch (sensor) {
+                            case 'TestingTemperaturSensor':
+                                $scope.temp = registered;
+                                break;
+                            case 'TestingTemperaturSensorPl':
+                                $scope.tempPl = registered;
+                                break;
+                            case 'TestingFeuchtigkeitsSensor':
+                                $scope.hum = registered;
+                                break;
+                            case 'TestingFeuchtigkeitsSensorPl':
+                                $scope.humPl = registered;
+                                break;
+                            case 'TestingBeschleunigungsSensor':
+                                if (sensorX && sensorY && sensorZ) {
+                                    $scope.acc = "REGISTERED";
+                                    vm.availableSensors.push(sensor);
+                                } else {
+                                    $scope.acc = "NOT_REGISTERED";
+                                }
+                                break;
+                            case 'TestingBeschleunigungsSensorPl':
+                                if (sensorX && sensorY && sensorZ) {
+                                    $scope.accPl = "REGISTERED";
+                                    vm.availableSensors.push(sensor);
+                                } else {
+                                    $scope.accPl = "NOT_REGISTERED";
+                                }
+                                break;
+                            case 'TestingGPSSensor':
+                                if (sensorX && sensorY && sensorZ) {
+                                    $scope.gps = "REGISTERED";
+                                    vm.availableSensors.push(sensor);
+                                } else {
+                                    $scope.gps = "NOT_REGISTERED";
+                                }
+                                break;
+                            case 'TestingGPSSensorPl':
+                                if (sensorX && sensorY && sensorZ) {
+                                    $scope.gpsPl = "REGISTERED";
+                                    vm.availableSensors.push(sensor);
+                                } else {
+                                    $scope.gpsPl = "NOT_REGISTERED";
+                                }
+                                break;
                         }
 
                     });
 
-                    if (sensor === 'TestingTemperaturSensor') {
-                        $scope.temp = registered;
-                    } else if (sensor === 'TestingTemperaturSensorPl') {
-                        $scope.tempPl = registered;
-                    } else if (sensor === 'TestingFeuchtigkeitsSensor') {
-                        $scope.hum = registered;
-                    } else if (sensor === 'TestingFeuchtigkeitsSensorPl') {
-                        $scope.humPl = registered;
-                    } else if (sensor === 'TestingBeschleunigungsSensor') {
-                        if (sensorX && sensorY && sensorZ) {
-                            $scope.acc = "REGISTERED";
-                            vm.availableSensors.push(sensor);
-                        } else {
-                            $scope.acc = "NOT_REGISTERED";
+                } finally {
+
+                    vm.realSensorList = [];
+                    for (let i = 0; i < sensorList.length; i++) {
+                        switch (sensorList[i].name) {
+                            case 'TestingTemperaturSensorPl':
+                                break;
+                            case 'TestingTemperaturSensor':
+                                break;
+                            case 'TestingFeuchtigkeitsSensor':
+                                break;
+                            case 'TestingFeuchtigkeitsSensorPl':
+                                break;
+                            case 'TestingBeschleunigungsSensor':
+                                break;
+                            case 'TestingBeschleunigungsSensorPl':
+                                break;
+                            case 'TestingGPSSensor':
+                                break;
+                            case 'TestingGPSSensorPl':
+                                break;
+                            default:
+                                vm.realSensorList.push(sensorList[i]);
                         }
-                    } else if (sensor === 'TestingBeschleunigungsSensorPl') {
-                        if (sensorX && sensorY && sensorZ) {
-                            $scope.accPl = "REGISTERED";
-                            vm.availableSensors.push(sensor);
-                        } else {
-                            $scope.accPl = "NOT_REGISTERED";
-                        }
-                    } else if (sensor === 'TestingGPSSensor') {
-                        if (sensorX && sensorY && sensorZ) {
-                            $scope.gps = "REGISTERED";
-                            vm.availableSensors.push(sensor);
-                        } else {
-                            $scope.gps = "NOT_REGISTERED";
-                        }
-                    } else if (sensor === 'TestingGPSSensorPl') {
-                        if (sensorX && sensorY && sensorZ) {
-                            $scope.gpsPl = "REGISTERED";
-                            vm.availableSensors.push(sensor);
-                        } else {
-                            $scope.gpsPl = "NOT_REGISTERED";
-                        }
+
                     }
-
-                });
-
+                }
             }
+
 
             /**
              * Register the one dimensional Sensor-Simulator for the Test of IoT-Applications.
@@ -400,26 +476,31 @@ app.controller('TestingController',
                 adaptersExistsX = false;
                 adaptersExistsY = false;
                 adaptersExistsZ = false;
-                if (sensor === "TestingBeschleunigungsSensor") {
-                    sensorX = "TestingAccelerationX";
-                    sensorY = "TestingAccelerationY";
-                    sensorZ = "TestingAccelerationZ";
-                    componentType = "Motion";
-                } else if (sensor === "TestingBeschleunigungsSensorPl") {
-                    sensorX = "TestingAccelerationPlX";
-                    sensorY = "TestingAccelerationPlY";
-                    sensorZ = "TestingAccelerationPlZ";
-                    componentType = "Motion";
-                } else if (sensor === "TestingGPSSensor") {
-                    sensorX = "TestingGPSLatitude";
-                    sensorY = "TestingGPSLongitude";
-                    sensorZ = "TestingGPSHight";
-                    componentType = "Location";
-                } else if (sensor === "TestingGPSSensorPl") {
-                    sensorX = "TestingGPSLatitudePl";
-                    sensorY = "TestingGPSLongitudePl";
-                    sensorZ = "TestingGPSHightPl";
-                    componentType = "Location";
+                switch (sensor) {
+                    case "TestingBeschleunigungsSensor":
+                        sensorX = "TestingAccelerationX";
+                        sensorY = "TestingAccelerationY";
+                        sensorZ = "TestingAccelerationZ";
+                        componentType = "Motion";
+                        break;
+                    case "TestingBeschleunigungsSensorPl":
+                        sensorX = "TestingAccelerationPlX";
+                        sensorY = "TestingAccelerationPlY";
+                        sensorZ = "TestingAccelerationPlZ";
+                        componentType = "Motion";
+                        break;
+                    case "TestingGPSSensor":
+                        sensorX = "TestingGPSLatitude";
+                        sensorY = "TestingGPSLongitude";
+                        sensorZ = "TestingGPSHight";
+                        componentType = "Location";
+                        break;
+                    case "TestingGPSSensorPl":
+                        sensorX = "TestingGPSLatitudePl";
+                        sensorY = "TestingGPSLongitudePl";
+                        sensorZ = "TestingGPSHightPl";
+                        componentType = "Location";
+                        break;
                 }
 
                 // Check if the required Adapters for the three dimensional sensor simulators exists
@@ -577,6 +658,24 @@ app.controller('TestingController',
                 });
             }
 
+            /**
+             * Retrieve authorization code for the device from the OAuth Authorization server.
+             */
+            function getDeviceCode() {
+                fetch(location.origin + '/MBP/oauth/authorize?client_id=device-client&response_type=code&scope=write', {
+                    headers: {
+                        // Basic http authentication with username "device-client" and the according password from MBP
+                        'Authorization': 'Basic ZGV2aWNlLWNsaWVudDpkZXZpY2U='
+                    }
+                }).then(function (response) {
+                    let chars = response.url.split('?');
+                    let code = chars[1].split('=');
+                    vm.parameterValues.push({
+                        "name": "device_code",
+                        "value": code[1]
+                    });
+                });
+            }
 
             /**
              * Sends a server request in order to edit the configurations of the test "useNewData",
@@ -613,6 +712,52 @@ app.controller('TestingController',
                         addItem: function (data) {
                             const newTestObject = {};
                             newTestObject.config = [];
+
+                            angular.forEach(vm.parameterVal, function (parameters, key) {
+                                console.log(parameters)
+                                for (let i = 0; i < vm.selectedRealSensor.length; i++) {
+                                    if (vm.selectedRealSensor[i].name === key) {
+                                        vm.parameterValues = [];
+                                        vm.parameterValues.push({
+                                            "name": "ConfigName",
+                                            "value": vm.selectedRealSensor[i].name
+                                        });
+                                        var requiredParams = vm.selectedRealSensor[i]._embedded.adapter.parameters;
+                                        console.log(requiredParams);
+
+                                        //Iterate over all parameters
+                                        for (let i = 0; i < requiredParams.length; i++) {
+                                            //Set empty default values for these parameters
+                                            var value = "";
+
+                                            if (requiredParams[i].type === "Switch") {
+                                                value = true;
+                                            }
+                                            if (requiredParams[i].name === "device_code") {
+                                                console.log("Requesting code for required parameter device_code.");
+                                                value = getDeviceCode();
+                                                continue;
+                                            }
+
+                                            //For each parameter, add a tuple (name, value) to the globally accessible parameter array
+                                            vm.parameterValues.push({
+                                                "name": requiredParams[i].name,
+                                                "value": parameters[i]
+                                            });
+
+
+                                        }
+
+
+                                        newTestObject.config.push(vm.parameterValues);
+                                    }
+
+
+                                }
+
+                            });
+
+
                             try {
                                 //Extend request parameters for routines and parameters
                                 let parameters;
@@ -625,17 +770,16 @@ app.controller('TestingController',
                                 const directionOutlier = Math.floor(Math.random() * 6);
                                 const directionMovement = Math.floor(Math.random() * 6);
 
-                                console.log(vm.selectedSensors);
-                                console.log(vm.config.eventTemp);
+
                                 if (vm.selectedSensors.includes('TestingTemperaturSensor')) {
-                                    console.log("Hallo Temp");
+
                                     vm.parameterValues = [];
                                     vm.parameterValues.push({
                                         "name": "ConfigName",
                                         "value": 'TestingTemperaturSensor'
                                     });
                                     if (vm.config.eventTemp === '3' || vm.config.eventTemp === '4' || vm.config.eventTemp === '5' || vm.config.eventTemp === '6') {
-                                       console.log("Event3");
+
                                         vm.parameterValues.push({
                                             "name": "event",
                                             "value": parseInt(vm.config.eventTemp)
@@ -655,9 +799,7 @@ app.controller('TestingController',
                                             "value": parseInt(vm.config.anomalyTemp)
                                         });
                                     }
-                                    console.log(vm.parameterValues);
                                     newTestObject.config.push(vm.parameterValues);
-                                    console.log(newTestObject.config);
 
 
                                 }
@@ -1124,7 +1266,6 @@ app.controller('TestingController',
                                 newTestObject.type = vm.selectedSensors;
 
 
-                                console.log(newTestObject);
                             } catch (e) {
                                 vm.parameterValues = [];
                                 newTestObject.type = "";
@@ -1139,7 +1280,6 @@ app.controller('TestingController',
                                 vm.parameterValues.push({"name": "anomaly", "value": 0});
                                 vm.parameterValues.push({"name": "useNewData", "value": true});
                                 newTestObject.config.push(vm.parameterValues);
-                                console.log(newTestObject);
 
                                 console.log("catched error")
                             }

@@ -7,11 +7,10 @@
                 <i class="material-icons" style="position: absolute">bug_report</i>
                 <h2 style="margin-left: 35px;">
                     {{ctrl.test.name}}
-                    <small>{{testingChartCtrl.deploymentState == 'NOT_READY' ? 'Deployment impossible' :
-                            (testingChartCtrl.deploymentState == 'READY' ? 'Ready for deployment' :
-                                    (testingChartCtrl.deploymentState == 'DEPLOYED' ? 'Deployed' :
-                                            (testingChartCtrl.deploymentState == 'RUNNING' ? 'Running' :
-                                                    (testingChartCtrl.deploymentState == 'UNKNOWN' ? 'Unknown state' : 'Loading...'))))}}
+                    <small>{{testingChartCtrl.deploymentState == 'NOT_READY' ? 'Start of Test impossible' :
+                            (testingChartCtrl.deploymentState == 'READY' ? 'Ready for starting the Test' :
+                                            (testingChartCtrl.deploymentState == 'RUNNING' ? 'Test Running' :
+                                                    (testingChartCtrl.deploymentState == 'UNKNOWN' ? 'Unknown state' : 'Loading...')))}}
                     </small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
