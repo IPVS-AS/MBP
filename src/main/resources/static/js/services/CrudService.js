@@ -16,18 +16,7 @@ app.factory('CrudService', ['$resource', '$q', 'ENDPOINT_URI', 'HttpService',
             ItemResource: Item,
 
             countItems: function (category) {
-                return Item.get({category: category}).$promise.then(
-                    function (data) {
-                        if (data.page.totalElements) {
-                            return data.page.totalElements;
-                        } else {
-                            return $q.reject(data);
-                        }
-                    },
-                    function (response) {
-                        return $q.reject(response);
-                    }
-                );
+                return HttpService.count(category);
             },
 
             getPage: function (category, params) {
@@ -77,41 +66,10 @@ app.factory('CrudService', ['$resource', '$q', 'ENDPOINT_URI', 'HttpService',
 
             addItem: function (category, data) {
                 return HttpService.addOne(category, data);
-                /*
-                return Item.save({category: category}, data).$promise.then(
-                    function (data) {
-                        return data;
-                    },
-                    function (response) {
-                        // something went wrong
-                        // if has data for errors, parse/map it
-                        if (response.data.errors) {
-                            var parsed = {parsed: true, response: response};
-                            var errors = response.data.errors;
-                            for (var i in errors) {
-                                if (errors[i].property) {
-                                    if (!parsed[errors[i].property]) {
-                                        parsed[errors[i].property] = errors[i];
-                                    }
-                                }
-                            }
-                            return $q.reject(parsed);
-                        }
-
-                        return $q.reject(response);
-                    }
-                );*/
             },
 
-            deleteItem: function (category, data) {
-                return Item.delete({category: category, id: data.id}).$promise.then(
-                    function (response) {
-                        return data.id;
-                    },
-                    function (response) {
-                        $q.reject(response);
-                    }
-                );
+            deleteItem: function (category, id) {
+                return HttpService.deleteOne(category, id);
             },
 
             updateItem: function (category, data) {

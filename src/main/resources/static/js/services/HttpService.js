@@ -67,7 +67,35 @@ app.factory('HttpService', ['$http', 'ENDPOINT_URI', 'UserService', 'Notificatio
             return $.ajax({
                 type: "POST",
                 url: url,
-                data: jsonPayload,
+                data: JSON.stringify(jsonPayload),
+                dataType: "json",
+                headers: generateHeader()
+            }).done(function (response) {
+                //Debug message
+                debug("Request succeeded, response:", response);
+
+                //Propagate response
+                return response;
+            }).fail(handleError).always(function () {
+                debug("Request processing completed.");
+            });
+        }
+
+        /**
+         * [Private]
+         * Performs a DELETE request without payload and returns the resulting promise.
+         * @param url The URl of the request
+         * @returns {*|void} The resulting promise
+         */
+        function deleteRequest(url) {
+            //Debug message
+            debug("Initiating DELETE request at " + url);
+
+            //Perform request
+            return $.ajax({
+                type: "DELETE",
+                url: url,
+                dataType: "json",
                 headers: generateHeader()
             }).done(function (response) {
                 //Debug message
@@ -94,29 +122,53 @@ app.factory('HttpService', ['$http', 'ENDPOINT_URI', 'UserService', 'Notificatio
                 ((typeof response.message === 'string') || (response.message instanceof String))
                 && response.message.trim().length > 3) {
                 NotificationService.showError(response.message);
-            } else {
+            } else if (response.status === 0) {
                 NotificationService.showError("Request to backend failed. Is it online?");
+            } else {
+                NotificationService.showError("Request was not successful.");
             }
+
+            return response;
         }
 
         /**
          * [Private]
          * Prints debug messages to the console, if debug mode is enabled.
-         * @param messages The debug messages to print
          */
-        function debug(messages) {
-            if (debugMode) {
-                console.log(messages);
+        function debug() {
+            if (!debugMode) {
+                return;
+            }
+
+            //Iterate over all arguments and log them
+            for (let i = 0; i < arguments; i++) {
+                console.log(arguments[i]);
             }
         }
 
         /**
          * [Public]
-         * Returns all entities f
-         * @param category
-         * @returns {*}
+         * Retrieves one entity of a certain id from a given category and returns the resulting promise.
+         * @param category The category of the entity
+         * @param id The ID of the entity to retrieve
+         * @returns {*} The resulting promise
+         */
+        function getOne(category, id) {
+            //Perform GET request
+            return getRequest(ENDPOINT_URI + "/" + category + "/" + id).then(function (data) {
+                //Sanitize and return entity
+                return data || {};
+            });
+        }
+
+        /**
+         * [Public]
+         * Retrieves all entities for a given category and returns the resulting promise.
+         * @param category The category to retrieve the entities for
+         * @returns {*} The resulting promise
          */
         function getAll(category) {
+            //Perform GET request
             return getRequest(ENDPOINT_URI + "/" + category).then(function (data) {
                 //Extend received object for empty list if none available
                 data._embedded = data._embedded || {};
@@ -129,29 +181,51 @@ app.factory('HttpService', ['$http', 'ENDPOINT_URI', 'UserService', 'Notificatio
 
         /**
          * [Public]
-         *
-         * @param category
-         * @param id
-         * @returns {*}
+         * Retrieves the number of entities for a given category and returns the resulting promise.
+         * @param category The category to count the entities for
+         * @returns {*} The resulting promise
          */
-        function getOne(category, id) {
-            //Perform get request
-            return getRequest(ENDPOINT_URI + "/" + category + "/" + id).then(function (data) {
-                //Sanitize and return entity
-                return data || {};
+        function count(category) {
+            //Perform GET request for counting the objects
+            return getRequest(ENDPOINT_URI + "/" + category).then(function (data) {
+                if ((typeof data !== 'object') || (typeof data.page !== 'object')) {
+                    return 0;
+                }
+                return data.page.totalElements || 0;
             });
         }
 
+        /**
+         * [Public]
+         * Adds one entity of a certain category with specific data and returns the resulting promise.
+         * @param category The category of the entity
+         * @param data The data of the entity to add
+         * @returns {*} The resulting promise
+         */
         function addOne(category, data) {
             //Sanitize data
             if (typeof data === 'undefined') {
                 data = {};
             }
 
-            //Perform post request
+            //Perform POST request
             return postRequest(ENDPOINT_URI + "/" + category, data).then(function (data) {
                 //Sanitize and return entity
                 return data || {};
+            });
+        }
+
+        /**
+         * [Public]
+         * Deletes one entity of a certain id from a given category and returns the resulting promise.
+         * @param category The category of the entity
+         * @param id The ID of the entity to delete
+         * @returns {*} The resulting promise
+         */
+        function deleteOne(category, id) {
+            //Perform DELETE request
+            return deleteRequest(ENDPOINT_URI + "/" + category + "/" + id).then(function (data) {
+                return id;
             });
         }
 
@@ -159,6 +233,9 @@ app.factory('HttpService', ['$http', 'ENDPOINT_URI', 'UserService', 'Notificatio
         return {
             getOne: getOne,
             getAll: getAll,
-            addOne: addOne
+            count: count,
+            addOne: addOne,
+            deleteOne: deleteOne
         };
-    }]);
+    }])
+;
