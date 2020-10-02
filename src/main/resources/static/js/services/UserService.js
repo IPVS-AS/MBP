@@ -31,7 +31,7 @@
         }
 
         function Authenticate(user) {
-            return $http.post(ENDPOINT_URI + '/authenticate', user);
+            return $http.post(ENDPOINT_URI + '/users/authenticate', user);
         }
 
         function Logout() {

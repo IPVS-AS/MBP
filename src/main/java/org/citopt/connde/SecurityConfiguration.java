@@ -61,7 +61,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	    .antMatchers("/resources/**")
 	    .antMatchers("/webapp/**")
 	    .antMatchers("/login", "/templates/register")
- 		.antMatchers(HttpMethod.POST, "/api/authenticate")
+ 		.antMatchers(HttpMethod.POST, "/api//users/authenticate")
 	    .antMatchers(HttpMethod.POST, "/api/users")
 	    .antMatchers(HttpMethod.POST,"/api/checkOauthTokenUser")
 	    .antMatchers(HttpMethod.POST,"/api/checkOauthTokenSuperuser")
