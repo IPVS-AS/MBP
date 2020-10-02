@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * Abstraction for access requests. Contains the context of the requesting entity
@@ -16,28 +15,18 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  * 
  * @author Jakob Benz
  */
-@JsonDeserialize(using = ACAccessRequestDeserializer.class)
-public class ACAccessRequest<T> {
+//@JsonDeserialize(using = ACAccessRequestDeserializer.class)
+public class ACAccessRequest {
 	
 	/**
 	 * The context of the requesting entity as list of {@link ACAttribute attributes}. // X-MBP
 	 */
 	private List<ACAttribute> context = new ArrayList<>();
 	
-	/**
-	 * Can be used if a request body is required.
-	 */
-	private T requestBody;
-	
 	// - - -
 	
 	/**
-	 * No-args constructor.
-	 */
-	public ACAccessRequest() {}
-	
-	/**
-	 * Required-args constructor.
+	 * All-args constructor.
 	 * 
 	 * @param context the context of the requesting entity as list of {@link ACAttribute attributes}.
 	 */
@@ -46,36 +35,29 @@ public class ACAccessRequest<T> {
 		this.context = context;
 	}
 	
-	/**
-	 * All-args constructor.
-	 * 
-	 * @param context the context of the requesting entity as list of {@link ACAttribute attributes}.
-	 * @param requestBody the actual request body.
-	 */
-	@JsonCreator
-	public ACAccessRequest(@JsonProperty("context") List<ACAttribute> context, T requestBody) {
-		this.context = context;
-		this.requestBody = requestBody;
-	}
-	
 	// - - -
 
 	public List<ACAttribute> getContext() {
 		return context;
 	}
 
-	public ACAccessRequest<T> setContext(List<ACAttribute> context) {
+	public ACAccessRequest setContext(List<ACAttribute> context) {
 		this.context = context;
 		return this;
 	}
 	
-	public T getRequestBody() {
-		return requestBody;
-	}
+	// - - -
 	
-	public ACAccessRequest<T> setRequestBody(T requestBody) {
-		this.requestBody = requestBody;
-		return this;
+	public static ACAccessRequest valueOf(String accessRequestHeader) {
+		List<ACAttribute> context = new ArrayList<>();
+		
+		String[] attributes = accessRequestHeader.split(";;");
+		for (String attribute : attributes) {
+			String[] keyValue = attribute.split("=");
+			context.add(new ACAttribute(ACAttributeKey.forId(keyValue[0]), keyValue[1]));
+		}
+		
+		return new ACAccessRequest(context);
 	}
 	
 }

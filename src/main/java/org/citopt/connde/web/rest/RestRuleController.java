@@ -5,20 +5,20 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
 
-import javax.validation.Valid;
-
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.domain.rules.RuleActionType;
+import org.citopt.connde.error.EntityAlreadyExistsException;
+import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.RuleActionRepository;
 import org.citopt.connde.repository.RuleRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.rules.RuleEngine;
 import org.citopt.connde.service.rules.RuleExecutor;
-import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -66,31 +67,34 @@ public class RestRuleController {
     private UserEntityService userEntityService;
     
     
-    @GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+    @GetMapping(produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing rule entities available for the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Rule or requesting user not found!") })
     public ResponseEntity<PagedModel<EntityModel<Rule>>> all(
-    		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+		// Parse the access-request information
+		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+		
     	// Retrieve the corresponding rules (includes access-control)
     	List<Rule> rules = userEntityService.getPageWithPolicyCheck(ruleRepository, ACAccessType.READ, accessRequest, pageable);
     	
     	// Create self link
-    	Link selfLink = linkTo(methodOn(getClass()).all(pageable, accessRequest)).withSelfRel();
+    	Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
     	
     	return ResponseEntity.ok(userEntityService.entitiesToPagedModel(rules, selfLink, pageable));
     }
     
-    @GetMapping(path = "/{ruleId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+    @GetMapping(path = "/{ruleId}", produces = "application/hal+json")
     @ApiOperation(value = "Retrieves an existing rule entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     		@ApiResponse(code = 401, message = "Not authorized to access the rule!"),
     		@ApiResponse(code = 404, message = "Rule or requesting user not found!") })
     public ResponseEntity<EntityModel<Rule>> one(
-    		@PathVariable("ruleId") String ruleId, @ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+    		@PathVariable("ruleId") String ruleId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
     	// Retrieve the corresponding rule (includes access-control)
-    	Rule rule = userEntityService.getForIdWithPolicyCheck(ruleRepository, ruleId, ACAccessType.READ, accessRequest);
+    	Rule rule = userEntityService.getForIdWithPolicyCheck(ruleRepository, ruleId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(rule));
     }
     
@@ -99,7 +103,7 @@ public class RestRuleController {
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 409, message = "Rule already exists!") })
     public ResponseEntity<EntityModel<Rule>> create(
     		@PathVariable("ruleId") String ruleId, @ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@RequestBody Rule rule) {
+    		@RequestBody Rule rule) throws EntityAlreadyExistsException {
     	// Check whether a rule with the same name already exists in the database
     	userEntityService.requireUniqueName(ruleRepository, rule.getName());
 
@@ -114,10 +118,10 @@ public class RestRuleController {
     		@ApiResponse(code = 401, message = "Not authorized to delete the rule!"),
     		@ApiResponse(code = 404, message = "Rule or requesting user not found!") })
     public ResponseEntity<Void> delete(
-    		@PathVariable("ruleId") String ruleId,
-    		@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+    		@PathVariable("ruleId") String ruleId) throws EntityNotFoundException {
     	// Delete the rule (includes access-control) 
-    	userEntityService.deleteWithPolicyCheck(ruleRepository, ruleId, accessRequest);
+    	userEntityService.deleteWithPolicyCheck(ruleRepository, ruleId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();
     }
     
@@ -130,8 +134,11 @@ public class RestRuleController {
 
 	@PostMapping(value = "/rules/enable/{id}")
 	public ResponseEntity<Void> enableRule(
-			@PathVariable(value = "id") String ruleId,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") String ruleId) throws MissingPermissionException, EntityNotFoundException {
+		// Parse the access-request information
+		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+		
 		// Retrieve the corresponding rule (includes access-control)
 		Rule rule = userEntityService.getForIdWithPolicyCheck(ruleRepository, ruleId, ACAccessType.READ, accessRequest);
 		
@@ -148,9 +155,12 @@ public class RestRuleController {
 	}
 
 	@PostMapping(value = "/rules/disable/{id}")
-	public ResponseEntity<ActionResponse> disableRule(
-			@PathVariable(value = "id") String ruleId,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+	public ResponseEntity<Void> disableRule(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") String ruleId) throws EntityNotFoundException, MissingPermissionException {
+		// Parse the access-request information
+		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+		
 		// Retrieve the corresponding rule (includes access-control)
 		Rule rule = userEntityService.getForIdWithPolicyCheck(ruleRepository, ruleId, ACAccessType.READ, accessRequest);
 		
@@ -161,17 +171,16 @@ public class RestRuleController {
 		if (rule.isEnabled()) {
 			ruleEngine.disableRule(rule);
 		}
-				
-		// TODO: Adjust frontend since response content changed
+		
 		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping(value = "/rule-actions/test/{id}")
 	public ResponseEntity<Boolean> testRuleAction(
-			@PathVariable(value = "id") String actionId,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") String actionId) throws EntityNotFoundException {
 		// Retrieve the corresponding rule action (includes access-control)
-		RuleAction ruleAction = userEntityService.getForIdWithPolicyCheck(ruleActionRepository, actionId, ACAccessType.READ, accessRequest);
+		RuleAction ruleAction = userEntityService.getForIdWithPolicyCheck(ruleActionRepository, actionId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
 
 		// Test action
 		boolean result = ruleExecutor.testRuleAction(ruleAction);

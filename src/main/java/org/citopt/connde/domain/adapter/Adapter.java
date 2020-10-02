@@ -9,8 +9,6 @@ import javax.persistence.GeneratedValue;
 
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.user_entity.UserEntity;
-import org.citopt.connde.exception.InsertFailureException;
-import org.citopt.connde.exception.NotFoundException;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -47,33 +45,8 @@ public class Adapter extends UserEntity {
         return routines;
     }
 
-    public void addRoutine(Code routine) throws InsertFailureException {
-        for (Code item : this.routines) {
-            if (routine.getName().equals(item.getName())) {
-                throw new InsertFailureException("Filename cannot be duplicate!");
-            }
-        }
+    public void addRoutine(Code routine) {
         this.routines.add(routine);
-    }
-
-    public Code getRoutine(String filename) throws NotFoundException {
-        for (Code item : this.routines) {
-            if (item.getName().equals(filename)) {
-                return item;
-            }
-        }
-        throw new NotFoundException("No such filename.");
-    }
-
-    public void deleteRoutine(String filename) throws NotFoundException {
-        for (Code item : this.routines) {
-            System.out.println(item.getName());
-            if (item.getName().equals(filename)) {
-                this.routines.remove(item);
-                return;
-            }
-        }
-        throw new NotFoundException("No such filename.");
     }
 
     public boolean hasRoutines() {

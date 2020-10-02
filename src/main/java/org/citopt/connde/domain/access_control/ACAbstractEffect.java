@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.citopt.connde.domain.user.User;
+import org.citopt.connde.domain.valueLog.ValueLog;
 
 /**
  * Abstract base class for access-control effects, that, e.g., filter or modify
@@ -74,6 +75,8 @@ public abstract class ACAbstractEffect extends ACAbstractEntity {
 //	 * @return
 //	 */
 //	public abstract T applyToValueLog(IACValueLog<T> inputValueLog);
+	
+	public abstract ValueLog apply(ValueLog valueLog);
 	
 	// - - -
 	

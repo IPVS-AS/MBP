@@ -2,8 +2,6 @@ package org.citopt.connde.web.rest;
 
 import java.util.List;
 
-import javax.validation.Valid;
-
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
@@ -13,6 +11,7 @@ import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.domain.rules.RuleTrigger;
+import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.RuleActionRepository;
 import org.citopt.connde.repository.RuleRepository;
@@ -25,7 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -67,6 +66,7 @@ public class RestComponentFilterController {
 	 *
 	 * @param ruleTriggerId the id of the {@link RuleTrigger}.
 	 * @return the list of {@link Rule}s.
+	 * @throws EntityNotFoundException 
 	 */
 	@GetMapping("/rules/by-ruleTrigger/{id}")
 	@ApiOperation(value = "Retrieves the rules which use a certain rule trigger and for which the user is authorized.", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -74,8 +74,11 @@ public class RestComponentFilterController {
 			@ApiResponse(code = 401, message = "Not authorized to access the rule trigger!"),
 			@ApiResponse(code = 404, message = "Rule trigger or requesting user not found!") })
 	public ResponseEntity<List<Rule>> getRulesByRuleTriggerId(
-			@PathVariable(value = "id") @ApiParam(value = "ID of the rule trigger", example = "5c97dc2583aeb6078c5ab672", required = true) String ruleTriggerId,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the rule trigger", example = "5c97dc2583aeb6078c5ab672", required = true) String ruleTriggerId) throws EntityNotFoundException {
+		// Parse the access-request information
+		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+		
 		// Make sure the requesting user is allowed to access the rule trigger
 		userEntityService.getForIdWithPolicyCheck(ruleTriggerRepository, ruleTriggerId, ACAccessType.READ, accessRequest);
 
@@ -92,6 +95,7 @@ public class RestComponentFilterController {
 	 *
 	 * @param ruleActionId the id of the {@link RuleAction}.
 	 * @return the list of {@link Rule}s.
+	 * @throws EntityNotFoundException 
 	 */
 	@GetMapping("/rules/by-ruleAction/{id}")
 	@ApiOperation(value = "Retrieves the rules which use a certain rule action and for which the user is authorized.", produces = "application/hal+json")
@@ -99,8 +103,11 @@ public class RestComponentFilterController {
 			@ApiResponse(code = 401, message = "Not authorized to access the rule action!"),
 			@ApiResponse(code = 404, message = "Rule action or requesting user not found!") })
 	public ResponseEntity<List<Rule>> getRulesByRuleActionId(
-			@PathVariable(value = "id") @ApiParam(value = "ID of the rule action", example = "5c97dc2583aeb6078c5ab672", required = true) String ruleActionId,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the rule action", example = "5c97dc2583aeb6078c5ab672", required = true) String ruleActionId) throws EntityNotFoundException {
+		// Parse the access-request information
+		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+		
 		// Make sure the requesting user is allowed to access the rule action
 		userEntityService.getForIdWithPolicyCheck(ruleActionRepository, ruleActionId, ACAccessType.READ, accessRequest);
 		
@@ -124,8 +131,11 @@ public class RestComponentFilterController {
 			@ApiResponse(code = 401, message = "Not authorized to access the adapter!"),
 			@ApiResponse(code = 404, message = "Adapter or requesting user not found!") })
 	public ResponseEntity<List<ComponentExcerpt>> getComponentsByAdapterId(
-			@PathVariable(value = "id") @ApiParam(value = "ID of the adapter", example = "5c97dc2583aeb6078c5ab672", required = true) String adapterId,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the adapter", example = "5c97dc2583aeb6078c5ab672", required = true) String adapterId) {
+		// Parse the access-request information
+		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+		
 		// Retrieve actuator and sensor excerpts from the database
 		List<ComponentExcerpt> componentExcerpts = userEntityService.filterforOwnerAndPolicies(() -> actuatorRepository.findAllByAdapterId(adapterId), ACAccessType.READ, accessRequest);
 		componentExcerpts.addAll(userEntityService.filterforOwnerAndPolicies(() -> sensorRepository.findAllByAdapterId(adapterId), ACAccessType.READ, accessRequest));
@@ -144,8 +154,11 @@ public class RestComponentFilterController {
 			@ApiResponse(code = 401, message = "Not authorized to access the adapter!"),
 			@ApiResponse(code = 404, message = "Adapter or requesting user not found!") })
 	public ResponseEntity<List<ComponentExcerpt>> getComponentsByDeviceID(
-			@PathVariable(value = "id") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId) {
+		// Parse the access-request information
+		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+		
 		// Retrieve actuator and sensor excerpts from the database
 		List<ComponentExcerpt> componentExcerpts = userEntityService.filterforOwnerAndPolicies(() -> actuatorRepository.findAllByAdapterId(deviceId), ACAccessType.READ, accessRequest);
 		componentExcerpts.addAll(userEntityService.filterforOwnerAndPolicies(() -> sensorRepository.findAllByAdapterId(deviceId), ACAccessType.READ, accessRequest));

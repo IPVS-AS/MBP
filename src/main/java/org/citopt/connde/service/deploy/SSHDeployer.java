@@ -1,12 +1,19 @@
 package org.citopt.connde.service.deploy;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.Code;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.exception.HashMismatch;
+import org.citopt.connde.error.MBPException;
 import org.citopt.connde.service.NetworkService;
 import org.citopt.connde.service.settings.SettingsService;
 import org.citopt.connde.service.settings.model.BrokerLocation;
@@ -17,13 +24,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.springframework.http.HttpStatus;
 
 /**
  * This component provides features for deploying components onto a remote
@@ -291,7 +292,7 @@ public class SSHDeployer {
 			// Compare generated hash to the given one
 			String givenHash = file.getHash();
 			if ((fileHash != null) && (givenHash != null) && (!givenHash.isEmpty()) && (!fileHash.equals(givenHash))) {
-				throw new HashMismatch("Hash of copied file " + file.getName() + " does not match.");
+				throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "Hash of copied file " + file.getName() + " does not match.");
 			}
 		}
 		LOGGER.log(Level.FINE, "Copying adapter files was successful");

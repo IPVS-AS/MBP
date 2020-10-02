@@ -38,7 +38,7 @@ public class ACEffectService {
 	}
 	
 	public ACAbstractEffect getForId(String id) {
-		return effectRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Access control policy with id '" + id + "' does not exist!"));
+		return effectRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Access control policy efectwith id '" + id + "' does not exist!"));
 	}
 	
 	public ACAbstractEffect getForIdAndOwner(String id, String ownerId) {
@@ -55,7 +55,7 @@ public class ACEffectService {
 	public ACAbstractEffect create(ACEffectRequestDTO requestDto, String ownerId) {
 		// Check whether a condition with the same name exists already
     	if (effectRepository.existsByName(requestDto.getName())) {
-    		throw new ResponseStatusException(HttpStatus.CONFLICT, "An access control policy condition with name '" + requestDto.getName() + "' exists already!");
+    		throw new ResponseStatusException(HttpStatus.CONFLICT, "An access control policy effect with name '" + requestDto.getName() + "' exists already!");
     	}
 		
 		// Create effect

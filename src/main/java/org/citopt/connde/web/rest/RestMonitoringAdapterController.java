@@ -5,12 +5,12 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
 
-import javax.validation.Valid;
-
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
+import org.citopt.connde.error.EntityAlreadyExistsException;
+import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.repository.MonitoringAdapterRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -51,33 +52,36 @@ public class RestMonitoringAdapterController {
     private UserEntityService userEntityService;
     
     
-	@GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+	@GetMapping(produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing monitoring adapter entities available for the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
 			@ApiResponse(code = 404, message = "Monitoring monitoring adapter or requesting user not found!") })
     public ResponseEntity<PagedModel<EntityModel<MonitoringAdapter>>> all(
-    		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+		// Parse the access-request information
+		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+		
     	// Retrieve the corresponding monitoring adapters (includes access-control)
     	List<MonitoringAdapter> monitoringAdapters = userEntityService.getPageWithPolicyCheck(monitoringAdapterRepository, ACAccessType.READ, accessRequest, pageable);
     	
     	// Create self link
-    	Link selfLink = linkTo(methodOn(getClass()).all(pageable, accessRequest)).withSelfRel();
+    	Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
     	
     	return ResponseEntity.ok(userEntityService.entitiesToPagedModel(monitoringAdapters, selfLink, pageable));
     }
     
-    @GetMapping(path = "/{monitoringAdapterId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+    @GetMapping(path = "/{monitoringAdapterId}", produces = "application/hal+json")
     @ApiOperation(value = "Retrieves an existing monitoring adapter entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     		@ApiResponse(code = 401, message = "Not authorized to access the monitoring adapter!"),
     		@ApiResponse(code = 404, message = "Monitoring adapter or requesting user not found!") })
     public ResponseEntity<EntityModel<MonitoringAdapter>> one(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("monitoringAdapterId") String monitoringAdapterId,
-    		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
     	// Retrieve the corresponding monitoring adapter (includes access-control)
-    	MonitoringAdapter monitoringAdapter = userEntityService.getForIdWithPolicyCheck(monitoringAdapterRepository, monitoringAdapterId, ACAccessType.READ, accessRequest);
+    	MonitoringAdapter monitoringAdapter = userEntityService.getForIdWithPolicyCheck(monitoringAdapterRepository, monitoringAdapterId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(monitoringAdapter));
     }
     
@@ -85,7 +89,7 @@ public class RestMonitoringAdapterController {
     @ApiOperation(value = "Retrieves an existing monitoring adapter entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     		@ApiResponse(code = 409, message = "Monitoring adapter already exists!") })
-    public ResponseEntity<EntityModel<MonitoringAdapter>> create(@PathVariable("monitoringAdapterId") String monitoringAdapterId, @ApiParam(value = "Page parameters", required = true) Pageable pageable, @RequestBody MonitoringAdapter monitoringAdapter) {
+    public ResponseEntity<EntityModel<MonitoringAdapter>> create(@PathVariable("monitoringAdapterId") String monitoringAdapterId, @ApiParam(value = "Page parameters", required = true) Pageable pageable, @RequestBody MonitoringAdapter monitoringAdapter) throws EntityAlreadyExistsException {
     	// Check whether a monitoring adapter with the same name already exists in the database
     	userEntityService.requireUniqueName(monitoringAdapterRepository, monitoringAdapter.getName());
 
@@ -99,9 +103,11 @@ public class RestMonitoringAdapterController {
     @ApiResponses({ @ApiResponse(code = 204, message = "Success!"),
     		@ApiResponse(code = 401, message = "Not authorized to delete the monitoring adapter!"),
     		@ApiResponse(code = 404, message = "Monitoring adapter or requesting user not found!") })
-    public ResponseEntity<Void> delete(@PathVariable("monitoringAdapterId") String monitoringAdapterId, @Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    public ResponseEntity<Void> delete(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+    		@PathVariable("monitoringAdapterId") String monitoringAdapterId) throws EntityNotFoundException {
     	// Delete the monitoring adapter (includes access-control) 
-    	userEntityService.deleteWithPolicyCheck(monitoringAdapterRepository, monitoringAdapterId, accessRequest);
+    	userEntityService.deleteWithPolicyCheck(monitoringAdapterRepository, monitoringAdapterId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();
     }
     

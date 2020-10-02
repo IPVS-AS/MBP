@@ -1,18 +1,5 @@
 package org.citopt.connde.service.settings;
 
-import org.apache.commons.io.IOUtils;
-import org.citopt.connde.domain.adapter.Adapter;
-import org.citopt.connde.domain.adapter.Code;
-import org.citopt.connde.domain.adapter.parameters.Parameter;
-import org.citopt.connde.domain.adapter.parameters.ParameterType;
-import org.citopt.connde.repository.AdapterRepository;
-import org.citopt.connde.web.rest.response.ActionResponse;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -20,6 +7,19 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
+
+import javax.servlet.ServletContext;
+
+import org.apache.commons.io.IOUtils;
+import org.citopt.connde.domain.adapter.Adapter;
+import org.citopt.connde.domain.adapter.Code;
+import org.citopt.connde.domain.adapter.parameters.Parameter;
+import org.citopt.connde.domain.adapter.parameters.ParameterType;
+import org.citopt.connde.repository.AdapterRepository;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * This service provides means for the management of default operators that may be added to the operator repository
@@ -45,7 +45,7 @@ public class DefaultOperatorService {
      *
      * @return An action response containing the result of this operation
      */
-    public ActionResponse addDefaultOperators() {
+    public boolean addDefaultOperators() {
 
         //Remembers if an operator was inserted
         boolean inserted = false;
@@ -157,6 +157,6 @@ public class DefaultOperatorService {
             }
         }
 
-        return new ActionResponse(inserted);
+        return inserted;
     }
 }

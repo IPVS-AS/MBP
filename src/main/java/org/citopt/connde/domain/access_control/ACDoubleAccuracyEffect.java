@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.citopt.connde.domain.user.User;
+import org.citopt.connde.domain.valueLog.ValueLog;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.hateoas.server.core.Relation;
 
@@ -62,12 +63,9 @@ public class ACDoubleAccuracyEffect extends ACAbstractEffect {
 	
 	// - - -
 	
-	public Double applyToValue(Double inputValue) {
-		return apply(inputValue);
-	}
-
-	public Double applyToValueLog(IACValueLog<Double> inputValueLog) {
-		return apply(inputValueLog.getValue());
+	@Override
+	public ValueLog apply(ValueLog valueLog) {
+		return valueLog.setValue(apply(valueLog.getValue()));
 	}
 	
 	// - - -

@@ -10,6 +10,7 @@ import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
+import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.MonitoringAdapterRepository;
 import org.citopt.connde.repository.projection.MonitoringAdapterExcerpt;
@@ -41,8 +42,9 @@ public class MonitoringHelper {
      * @param monitoringAdapterId The id of the monitoring adapter to wrap
      * @return Null, if either the device or the monitoring adapter could not be found
      * in their repositories or the user is not authorized for them; otherwise the deployable monitoring component
+     * @throws EntityNotFoundException 
      */
-    public MonitoringComponent createMonitoringComponent(String deviceId, String monitoringAdapterId) {
+    public MonitoringComponent createMonitoringComponent(String deviceId, String monitoringAdapterId) throws EntityNotFoundException {
         // Retrieve corresponding device and adapter from the database
     	Device device = userEntityService.getForId(deviceRepository, deviceId);
     	MonitoringAdapter monitoringAdapter = userEntityService.getForId(monitoringAdapterRepository, monitoringAdapterId);
@@ -81,7 +83,7 @@ public class MonitoringHelper {
 	 * @return all monitoring adapters compatible with a given device
 	 * 		   and available for the requesting user.
 	 */
-	public List<MonitoringAdapter> getCompatibleAdapters(Device device, ACAccessRequest<?> accessRequest) {
+	public List<MonitoringAdapter> getCompatibleAdapters(Device device, ACAccessRequest accessRequest) {
 		if (device == null) {
 			throw new IllegalArgumentException("Device must not be null.");
 		}
@@ -116,7 +118,7 @@ public class MonitoringHelper {
 	 * @return all devices compatible with a given monitoring adapter
 	 * 		   and available for the requesting user.
 	 */
-	public List<Device> getCompatibleDevices(MonitoringAdapter adapter, ACAccessRequest<?> accessRequest) {
+	public List<Device> getCompatibleDevices(MonitoringAdapter adapter, ACAccessRequest accessRequest) {
 		if (adapter == null) {
 			throw new IllegalArgumentException("Adapter must not be null.");
 		}

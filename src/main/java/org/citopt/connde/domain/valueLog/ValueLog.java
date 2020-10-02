@@ -58,8 +58,9 @@ public class ValueLog implements IACValueLog<Double> {
      *
      * @param time The time to set
      */
-    public void setTime(Instant time) {
+    public ValueLog setTime(Instant time) {
         this.time = time;
+        return this;
     }
 
     /**
@@ -76,8 +77,9 @@ public class ValueLog implements IACValueLog<Double> {
      *
      * @param qos The quality of service to set
      */
-    public void setQos(Integer qos) {
+    public ValueLog setQos(Integer qos) {
         this.qos = qos;
+        return this;
     }
 
     /**
@@ -94,8 +96,9 @@ public class ValueLog implements IACValueLog<Double> {
      *
      * @param topic The topic to set
      */
-    public void setTopic(String topic) {
+    public ValueLog setTopic(String topic) {
         this.topic = topic;
+        return this;
     }
 
     /**
@@ -112,8 +115,9 @@ public class ValueLog implements IACValueLog<Double> {
      *
      * @param message The message to set
      */
-    public void setMessage(String message) {
+    public ValueLog setMessage(String message) {
         this.message = message;
+        return this;
     }
 
     public String getIdref() {
@@ -125,8 +129,9 @@ public class ValueLog implements IACValueLog<Double> {
      *
      * @param idref The component id to set
      */
-    public void setIdref(String idref) {
+    public ValueLog setIdref(String idref) {
         this.idref = idref;
+        return this;
     }
 
     /**
@@ -143,8 +148,9 @@ public class ValueLog implements IACValueLog<Double> {
      *
      * @param component The component type to set
      */
-    public void setComponent(String component) {
+    public ValueLog setComponent(String component) {
         this.component = component;
+        return this;
     }
 
     /**
@@ -161,7 +167,8 @@ public class ValueLog implements IACValueLog<Double> {
      *
      * @param value The value to set
      */
-    public void setValue(double value) {
+    public ValueLog setValue(double value) {
         this.value = value;
+        return this;
     }
 }

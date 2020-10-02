@@ -60,9 +60,6 @@ public class User implements Serializable, IACRequestingEntity {
     @ApiModelProperty(notes = "Indicates whether the user is an admin user.", required = true)
     private boolean isAdmin;
     
-//    @JsonIgnore
-//    private Set<Authority> authorities = new HashSet<>();
-    
     // - - -
 
     public String getId() {
@@ -119,24 +116,6 @@ public class User implements Serializable, IACRequestingEntity {
 		this.isAdmin = isAdmin;
 		return this;
 	}
-
-//    public Set<Authority> getAuthorities() {
-//        return authorities;
-//    }
-//
-//    public void setAuthorities(Set<Authority> authorities) {
-//        this.authorities = authorities;
-//    }
-
-//    @JsonProperty("isAdmin")
-//    @ApiModelProperty(notes = "Whether the user is an admin", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
-//    public boolean isAdmin() {
-//        //Create admin authority
-//        Authority adminAuthority = new Authority(Constants.ADMIN);
-//
-//        //Check if authority available
-//        return authorities.contains(adminAuthority);
-//    }
 
     @Override
     public boolean equals(Object o) {

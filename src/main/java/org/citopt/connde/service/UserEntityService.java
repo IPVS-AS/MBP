@@ -14,12 +14,14 @@ import org.citopt.connde.domain.access_control.ACPolicy;
 import org.citopt.connde.domain.access_control.IACRequestedEntity;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
+import org.citopt.connde.error.EntityAlreadyExistsException;
+import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.ACPolicyRepository;
 import org.citopt.connde.repository.UserEntityRepository;
 import org.citopt.connde.service.access_control.ACPolicyEvaluationService;
 import org.citopt.connde.util.C;
 import org.citopt.connde.util.Pages;
-import org.citopt.connde.util.S;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -57,7 +59,7 @@ public class UserEntityService {
 	 * 		  of the requesting user required to evaluate the policies.
 	 * @return the list of (filtered) user entities.
 	 */
-	public <E extends UserEntity> List<E> getAllWithPolicyCheck(UserEntityRepository<E> repository, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+	public <E extends UserEntity> List<E> getAllWithPolicyCheck(UserEntityRepository<E> repository, ACAccessType accessType, ACAccessRequest accessRequest) {
 		// Retrieve the currently logged in user from the database
 		User user = userService.getLoggedInUser();
 		
@@ -96,7 +98,7 @@ public class UserEntityService {
 	 * @param pageable the {@link Pageable} to configure the resulting list.
 	 * @return the page of (filtered) user entities.
 	 */
-	public <E extends UserEntity> List<E> getPageWithPolicyCheck(UserEntityRepository<E> repository, ACAccessType accessType, ACAccessRequest<?> accessRequest, Pageable pageable) {
+	public <E extends UserEntity> List<E> getPageWithPolicyCheck(UserEntityRepository<E> repository, ACAccessType accessType, ACAccessRequest accessRequest, Pageable pageable) {
 		// Extract requested page from all entities
     	return Pages.page(getAllWithPolicyCheck(repository, accessType, accessRequest), pageable);
 	}
@@ -108,10 +110,11 @@ public class UserEntityService {
      * @param repository the repository to retrieve the user entity from.
      * @param entityId the id of the {@link UserEntity}.
      * @return the {@link UserEntity} if it exists.
+     * @throws EntityNotFoundException 
      */
-    public <E extends UserEntity> E getForId(UserEntityRepository<E> repository, String entityId) {
+    public <E extends UserEntity> E getForId(UserEntityRepository<E> repository, String entityId) throws EntityNotFoundException {
 		// Retrieve the entity from the database
-		return repository.findById(entityId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity with id '" + entityId + "' does not exist!"));
+		return repository.findById(entityId).orElseThrow(() -> new EntityNotFoundException("Entity", entityId));
     }
     
     /**
@@ -125,13 +128,14 @@ public class UserEntityService {
 	 * 		  of the requesting user required to evaluate the policies.
      * @return the {@link UserEntity} if it exists and the user is either the owner or has been granted reading access
      * 		   to it via a corresponding {@link ACPolicy}.
+     * @throws EntityNotFoundException 
      */
-    public <E extends UserEntity> E getForIdWithPolicyCheck(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+    public <E extends UserEntity> E getForIdWithPolicyCheck(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException {
 		// Retrieve the currently logged in user from the database
 		User user = userService.getLoggedInUser();
 
 		// Retrieve the entity from the database
-		E entity = repository.findById(entityId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Entity with id '" + entityId + "' does not exist!"));
+		E entity = repository.findById(entityId).orElseThrow(() -> new EntityNotFoundException("Entity", entityId));
 
 		// Check whether the requesting user is allowed to access the entity
     	ACAccess access = new ACAccess(accessType, user, entity);
@@ -152,8 +156,9 @@ public class UserEntityService {
      * @param accessType the {@link ACAccessType} to check.
 	 * @param accessRequest the {@link ACAccessRequest} containing the contextual information
 	 * 		  of the requesting user required to evaluate the policies.
+     * @throws EntityNotFoundException 
      */
-    public <E extends UserEntity> void deleteWithPolicyCheck(UserEntityRepository<E> repository, String entityId, ACAccessRequest<?> accessRequest) {
+    public <E extends UserEntity> void deleteWithPolicyCheck(UserEntityRepository<E> repository, String entityId, ACAccessRequest accessRequest) throws EntityNotFoundException {
     	// Retrieve the currently logged in user from the database
     	User user = userService.getLoggedInUser();
     	
@@ -171,11 +176,11 @@ public class UserEntityService {
     	repository.deleteById(entityId);
     }
     
-    public <E extends IACRequestedEntity> List<E> filterforOwnerAndPolicies(Supplier<List<E>> entitiesSupplier, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+    public <E extends IACRequestedEntity> List<E> filterforOwnerAndPolicies(Supplier<List<E>> entitiesSupplier, ACAccessType accessType, ACAccessRequest accessRequest) {
     	return filterforOwnerAndPolicies(entitiesSupplier.get(), accessType, accessRequest);
     }
     
-    public <E extends IACRequestedEntity> List<E> filterforOwnerAndPolicies(List<E> entities, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+    public <E extends IACRequestedEntity> List<E> filterforOwnerAndPolicies(List<E> entities, ACAccessType accessType, ACAccessRequest accessRequest) {
     	// Retrieve the currently logged in user from the database
     	User user = userService.getLoggedInUser();
     	
@@ -210,26 +215,23 @@ public class UserEntityService {
     	return policies;
     }
     
-    public <E extends UserEntity> void requirePermission(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+    public <E extends UserEntity> void requirePermission(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
     	E entity = getForIdWithPolicyCheck(repository, entityId, ACAccessType.READ, accessRequest);
 		requirePermission(entity, accessType, accessRequest);
 	}
     
-    public <E extends IACRequestedEntity> void requirePermission(E entity, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
-    	User requestingUser = userService.getLoggedInUser();
+    public <E extends IACRequestedEntity> void requirePermission(E entity, ACAccessType accessType, ACAccessRequest accessRequest) throws MissingPermissionException {
 		if (!checkPermission(entity, accessType, accessRequest)) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User '" + requestingUser.getUsername()
-					+ "' is not allowed to " + S.capitalize(accessType.toString()) + " "
-					+ S.capitalize(entity.getClass().getName()).toLowerCase() + " with id '" + entity.getId() + "'!");
+			throw new MissingPermissionException("Entity", entity.getId(), accessType);
 		}
 	}
 	
-    public <E extends UserEntity> boolean checkPermission(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+    public <E extends UserEntity> boolean checkPermission(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException {
     	E entity = getForIdWithPolicyCheck(repository, entityId, ACAccessType.READ, accessRequest);
 		return checkPermission(entity, accessType, accessRequest);
 	}
 	
-    public <E extends IACRequestedEntity> boolean checkPermission(E entity, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+    public <E extends IACRequestedEntity> boolean checkPermission(E entity, ACAccessType accessType, ACAccessRequest accessRequest) {
 		List<ACPolicy> policies = getPoliciesForEntity(entity);
 		for (ACPolicy policy : policies) {
 			if (!policyEvaluationService.evaluate(policy, new ACAccess(accessType, userService.getLoggedInUser(), entity), accessRequest)) {
@@ -239,9 +241,9 @@ public class UserEntityService {
 		return true;
 	}
     
-    public <E extends UserEntity> void requireUniqueName(UserEntityRepository<E> repository, String entityName) {
+    public <E extends UserEntity> void requireUniqueName(UserEntityRepository<E> repository, String entityName) throws EntityAlreadyExistsException {
     	if (repository.existsByName(entityName)) {
-    		throw new ResponseStatusException(HttpStatus.CONFLICT, "An entity with name '" + entityName + "' already exists.");
+    		throw new EntityAlreadyExistsException("Entity", entityName);
     	}
     }
     

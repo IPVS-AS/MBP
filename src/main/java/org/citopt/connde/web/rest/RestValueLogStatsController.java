@@ -2,7 +2,6 @@ package org.citopt.connde.web.rest;
 
 import javax.measure.quantity.Quantity;
 import javax.measure.unit.Unit;
-import javax.validation.Valid;
 
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
@@ -11,6 +10,8 @@ import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
+import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.UserEntityService;
@@ -23,7 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -66,6 +67,7 @@ public class RestValueLogStatsController {
 	 *                   to be retrieved
 	 * @param unit       A string specifying the desired unit of the value log stats
 	 * @return The value log stats of the actuator
+	 * @throws EntityNotFoundException 
 	 */
 	@GetMapping("/actuators/{id}/stats")
 	@ApiOperation(value = "Retrieves a list of statistics for recorded actuator value logs in a certain unit", produces = "application/hal+json")
@@ -74,12 +76,11 @@ public class RestValueLogStatsController {
 			@ApiResponse(code = 401, message = "Not authorized to access value log statistics of this actuator!"),
 			@ApiResponse(code = 404, message = "Actuator or requesting user not found!") })
 	public ResponseEntity<ValueLogStats> getActuatorValueLogStats(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator to retrieve value log statistics for", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId,
-			@RequestParam(value = "unit", required = false) String unit,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+			@RequestParam(value = "unit", required = false) String unit) throws EntityNotFoundException {
 		// Retrieve actuator from the database (includes access-control)
-		// TODO: Formerly, permission 'deploy' has been checked - i think it should be the 'read' permission
-		Actuator actuator = userEntityService.getForIdWithPolicyCheck(actuatorRepository, actuatorId, ACAccessType.READ, accessRequest);
+		Actuator actuator = userEntityService.getForIdWithPolicyCheck(actuatorRepository, actuatorId, ACAccessType.READ_VALUE_LOG_STATS, ACAccessRequest.valueOf(accessRequestHeader));
 
 		// Calculate value log stats
 		return ResponseEntity.ok(calculateValueLogStats(actuator, unit));
@@ -92,6 +93,7 @@ public class RestValueLogStatsController {
 	 *                 retrieved
 	 * @param unit     A string specifying the desired unit of the value log stats
 	 * @return The value log stats of the sensor
+	 * @throws EntityNotFoundException 
 	 */
 	@GetMapping("/sensors/{id}/stats")
 	@ApiOperation(value = "Retrieves a list of statistics for recorded sensor value logs in a certain unit", produces = "application/hal+json")
@@ -100,12 +102,11 @@ public class RestValueLogStatsController {
 			@ApiResponse(code = 401, message = "Not authorized to access value log statistics of this sensor!"),
 			@ApiResponse(code = 404, message = "Sensor or requesting user not found!") })
 	public ResponseEntity<ValueLogStats> getSensorValueLogStats(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor to retrieve value log statistics for", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId,
-			@RequestParam(value = "unit", required = false) String unit,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+			@RequestParam(value = "unit", required = false) String unit) throws EntityNotFoundException {
 		// Retrieve actuator from the database (includes access-control)
-		// TODO: Formerly, permission 'deploy' has been checked - i think it should be the 'read' permission
-		Sensor sensor = userEntityService.getForIdWithPolicyCheck(sensorRepository, sensorId, ACAccessType.READ, accessRequest);
+		Sensor sensor = userEntityService.getForIdWithPolicyCheck(sensorRepository, sensorId, ACAccessType.READ_VALUE_LOG_STATS, ACAccessRequest.valueOf(accessRequestHeader));
 
 		// Calculate value log stats
 		return ResponseEntity.ok(calculateValueLogStats(sensor, unit));
@@ -121,6 +122,8 @@ public class RestValueLogStatsController {
 	 * @param unit                A string specifying the desired unit of the value
 	 *                            log stats
 	 * @return The value log stats of the sensor
+	 * @throws MissingPermissionException 
+	 * @throws EntityNotFoundException 
 	 */
 	@GetMapping("/monitoring/{deviceId}/stats")
 	@ApiOperation(value = "Retrieves a list of statistics for recorded monitoring value logs in a certain unit", produces = "application/hal+json")
@@ -129,15 +132,15 @@ public class RestValueLogStatsController {
 		@ApiResponse(code = 401, message = "Not authorized to access value log statistics of this monitoring component!"),
 		@ApiResponse(code = 404, message = "Device, monitoring adapter or requesting user not found!") })
 	public ResponseEntity<ValueLogStats> getMonitoringValueLogStats(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "deviceId") @ApiParam(value = "ID of the device to retrieve value log statistics for", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
 			@RequestParam("adapter") @ApiParam(value = "ID of the monitoring adapter to retrieve value log statistics for", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringAdapterId,
-			@RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the monitoring value log statistics", example = "°C", required = false) String unit,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+			@RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the monitoring value log statistics", example = "°C", required = false) String unit) throws MissingPermissionException, EntityNotFoundException {
 		// Create new monitoring component from parameters
 		MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
 		
 		// Check monitoring permission
-		userEntityService.requirePermission(monitoringComponent.getDevice(), ACAccessType.MONITOR, accessRequest);
+		userEntityService.requirePermission(monitoringComponent.getDevice(), ACAccessType.MONITOR, ACAccessRequest.valueOf(accessRequestHeader));
 
 		// Retrieve value log statistics
 		return ResponseEntity.ok(calculateValueLogStats(monitoringComponent, unit));

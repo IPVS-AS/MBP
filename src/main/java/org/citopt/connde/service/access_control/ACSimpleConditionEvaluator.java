@@ -25,7 +25,7 @@ import org.citopt.connde.domain.access_control.IACEntity;
 public class ACSimpleConditionEvaluator<T extends Comparable<T>> extends ACAbstractConditionEvaluator<ACSimpleCondition<T>> {
 	
  	@Override
-	public boolean evaluate(ACSimpleCondition<T> condition, ACAccess access, ACAccessRequest<?> request) {
+	public boolean evaluate(ACSimpleCondition<T> condition, ACAccess access, ACAccessRequest request) {
 		Optional<T> leftValue = getValueForArgument(condition.getLeft(), access, request);
 		Optional<T> rightValue = getValueForArgument(condition.getRight(), access, request);
 		
@@ -47,7 +47,7 @@ public class ACSimpleConditionEvaluator<T extends Comparable<T>> extends ACAbstr
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private Optional<T> getValueForArgument(IACConditionArgument argument, ACAccess access, ACAccessRequest<?> request) {
+	private Optional<T> getValueForArgument(IACConditionArgument argument, ACAccess access, ACAccessRequest request) {
 		if (argument instanceof ACConditionSimpleAttributeArgument<?>) {
 			try {
 				return getValueForAttributeArgument((ACConditionSimpleAttributeArgument<T>) argument, access, request);
@@ -71,7 +71,7 @@ public class ACSimpleConditionEvaluator<T extends Comparable<T>> extends ACAbstr
 	 * @throws ACAttributeNotAvailableException
 	 */
 	@SuppressWarnings("unchecked")
-	private Optional<T> getValueForAttributeArgument(ACConditionSimpleAttributeArgument<T> attributeArgument, ACAccess access, ACAccessRequest<?> request) throws ACAttributeNotAvailableException {
+	private Optional<T> getValueForAttributeArgument(ACConditionSimpleAttributeArgument<T> attributeArgument, ACAccess access, ACAccessRequest request) throws ACAttributeNotAvailableException {
 		// Retrieve entity associated with the attribute argument
 		IACEntity associatedEntity = access.getEntityForType(attributeArgument.getEntityType());
 		

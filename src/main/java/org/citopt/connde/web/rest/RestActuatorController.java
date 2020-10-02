@@ -5,12 +5,12 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
 
-import javax.validation.Valid;
-
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.component.Actuator;
+import org.citopt.connde.error.EntityAlreadyExistsException;
+import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -51,33 +52,36 @@ public class RestActuatorController {
     private UserEntityService userEntityService;
     
     
-	@GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+	@GetMapping(produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing actuator entities available for the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
 			@ApiResponse(code = 404, message = "Actuator or requesting user not found!") })
     public ResponseEntity<PagedModel<EntityModel<Actuator>>> all(
-    		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+		// Parse the access-request information
+		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+		
     	// Retrieve the corresponding actuators (includes access-control)
     	List<Actuator> actuators = userEntityService.getPageWithPolicyCheck(actuatorRepository, ACAccessType.READ, accessRequest, pageable);
     	
     	// Create self link
-    	Link selfLink = linkTo(methodOn(getClass()).all(pageable, accessRequest)).withSelfRel();
+    	Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
     	
     	return ResponseEntity.ok(userEntityService.entitiesToPagedModel(actuators, selfLink, pageable));
     }
     
-    @GetMapping(path = "/{actuatorId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+    @GetMapping(path = "/{actuatorId}", produces = "application/hal+json")
     @ApiOperation(value = "Retrieves an existing actuator entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     		@ApiResponse(code = 401, message = "Not authorized to access the actuator!"),
     		@ApiResponse(code = 404, message = "Actuator or requesting user not found!") })
     public ResponseEntity<EntityModel<Actuator>> one(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("actuatorId") String actuatorId,
-    		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
     	// Retrieve the corresponding actuator (includes access-control)
-    	Actuator actuator = userEntityService.getForIdWithPolicyCheck(actuatorRepository, actuatorId, ACAccessType.READ, accessRequest);
+    	Actuator actuator = userEntityService.getForIdWithPolicyCheck(actuatorRepository, actuatorId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(actuator));
     }
     
@@ -85,7 +89,10 @@ public class RestActuatorController {
     @ApiOperation(value = "Retrieves an existing actuator entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     		@ApiResponse(code = 409, message = "Actuator already exists!") })
-    public ResponseEntity<EntityModel<Actuator>> create(@PathVariable("actuatorId") String actuatorId, @ApiParam(value = "Page parameters", required = true) Pageable pageable, @RequestBody Actuator actuator) {
+    public ResponseEntity<EntityModel<Actuator>> create(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+    		@PathVariable("actuatorId") String actuatorId, @ApiParam(value = "Page parameters", required = true) Pageable pageable,
+    		@RequestBody Actuator actuator) throws EntityAlreadyExistsException {
     	// Check whether a actuator with the same name already exists in the database
     	userEntityService.requireUniqueName(actuatorRepository, actuator.getName());
 
@@ -99,9 +106,11 @@ public class RestActuatorController {
     @ApiResponses({ @ApiResponse(code = 204, message = "Success!"),
     		@ApiResponse(code = 401, message = "Not authorized to delete the actuator!"),
     		@ApiResponse(code = 404, message = "Actuator or requesting user not found!") })
-    public ResponseEntity<Void> delete(@PathVariable("actuatorId") String actuatorId, @Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    public ResponseEntity<Void> delete(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+    		@PathVariable("actuatorId") String actuatorId) throws EntityNotFoundException {
     	// Delete the actuator (includes access-control) 
-    	userEntityService.deleteWithPolicyCheck(actuatorRepository, actuatorId, accessRequest);
+    	userEntityService.deleteWithPolicyCheck(actuatorRepository, actuatorId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();
     }
     

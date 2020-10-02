@@ -26,6 +26,8 @@ import org.citopt.connde.domain.testing.TestDetails;
 import org.citopt.connde.domain.testing.TestDetailsValidator;
 import org.citopt.connde.domain.user.Authority;
 import org.citopt.connde.domain.user.User;
+import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.web.rest.RestDeploymentController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -149,9 +151,13 @@ public class RestConfiguration implements RepositoryRestConfigurer {
 				//Get sensor id
 				String id = resource.getContent().getId();
 				//Link sensor with deployment
-				Link link = linkTo(WebMvcLinkBuilder.
-						methodOn(RestDeploymentController.class).deploySensor(id, null)) // TODO: How to get access-request? Or does it even matter?
-						.withRel("deploy");
+				Link link = null;
+				try {
+					link = linkTo(WebMvcLinkBuilder.methodOn(RestDeploymentController.class).deploySensor(null, id)).withRel("deploy");
+				} catch (EntityNotFoundException | MissingPermissionException e) {
+					// Does not matter here since only link building
+					e.printStackTrace();
+				}
 				resource.add(link);
 				return resource;
 			}
@@ -176,9 +182,13 @@ public class RestConfiguration implements RepositoryRestConfigurer {
 				//Get actuator id
 				String id = resource.getContent().getId();
 				//Link actuator with deployment
-				Link link = linkTo(WebMvcLinkBuilder.
-						methodOn(RestDeploymentController.class).deployActuator(id, null)) // TODO: How to get access-request? Or does it even matter?
-						.withRel("deploy");
+				Link link = null;
+				try {
+					link = linkTo(WebMvcLinkBuilder.methodOn(RestDeploymentController.class).deployActuator(id, null)).withRel("deploy");
+				} catch (EntityNotFoundException | MissingPermissionException e) {
+					// Does not matter here since only link building
+					e.printStackTrace();
+				}
 				resource.add(link);
 				return resource;
 			}

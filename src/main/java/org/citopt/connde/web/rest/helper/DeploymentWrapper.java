@@ -9,12 +9,10 @@ import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Component;
+import org.citopt.connde.error.DeploymentException;
 import org.citopt.connde.service.deploy.ComponentState;
 import org.citopt.connde.service.deploy.SSHDeployer;
-import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Component that wraps the methods provided by the SSHDeployer in order to offer consistent deployment features
@@ -33,14 +31,14 @@ public class DeploymentWrapper {
      *
      * @param component the {@link Component} to check.
      * @return {@code true} if and only the component is running; {@code false} otherwise.
-     * @throws ResponseStatusException
+     * @throws DeploymentException
      */
-    public boolean isComponentRunning(Component component) throws ResponseStatusException {
+    public boolean isComponentRunning(Component component) throws DeploymentException {
         try {
         	// Determine component status
             return sshDeployer.isComponentRunning(component);
         } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while checking the component status.");
+        	throw new DeploymentException("An error occurred while checking the component status.");
         }
     }
 
@@ -50,8 +48,9 @@ public class DeploymentWrapper {
 	 * @param component the {@link Component} to start.
 	 * @param parameterInstances the list of {@link ParameterInstance}s.
 	 * @return the resulting {@link ActionResponse}.
+     * @throws DeploymentException 
 	 */
-    public ActionResponse startComponent(Component component, List<ParameterInstance> parameterInstances) {
+    public void startComponent(Component component, List<ParameterInstance> parameterInstances) throws DeploymentException {
         // Get adapter for parameter comparison
         Adapter adapter = component.getAdapter();
 
@@ -72,18 +71,15 @@ public class DeploymentWrapper {
 
             // Check if no valid instance was found for this parameter
             if (!matchFound) {
-                ActionResponse response = new ActionResponse(false, "Invalid parameter configuration.");
-                response.addFieldError("parameters", "Parameter \"" + parameter.getName() + "\" is invalid.");
-                return response;
+            	throw new DeploymentException("Invalid parameter configuration.").addInvalidParameter(parameter.getName(), "Parameter " + parameter.getName() + " is invalid or missing.");
             }
         }
 
         try {
         	// Start component
             sshDeployer.startComponent(component, parameterInstances);
-            return new ActionResponse(true, "Successfully started component!");
         } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "An error occurred while starting the component.");
+        	throw new DeploymentException("An error occurred while starting the component.");
         }
     }
 
@@ -91,15 +87,14 @@ public class DeploymentWrapper {
      * Stops a component on its remote device.
      *
      * @param component the {@link Component} to stop.
-     * @return {@code true} if and only if stopping the component succeeded; {@code false} otherwise.
+     * @throws DeploymentException 
      */
-    public boolean stopComponent(Component component) {
+    public void stopComponent(Component component) throws DeploymentException {
         try {
         	// Undeploy component
             sshDeployer.stopComponent(component);
-            return true;
         } catch (IOException e) {
-        	return false;
+        	throw new DeploymentException("An error occurred while stopping the component.");
         }
     }
 
@@ -107,15 +102,14 @@ public class DeploymentWrapper {
      * Deploys a component onto its device.
      *
      * @param component the {@link Component} to deploy.
-     * @return {@code true} if and only if the deployment succeeded; {@code false} otherwise.
+     * @throws DeploymentException 
      */
-    public boolean deployComponent(Component component) {
+    public void deployComponent(Component component) throws DeploymentException {
         try {
         	// Deploy component
             sshDeployer.deployComponent(component);
-            return true;
         } catch (IOException e) {
-        	return false;
+        	throw new DeploymentException("An error occurred while deploying the component.");
         }
     }
 
@@ -123,15 +117,14 @@ public class DeploymentWrapper {
      * Undeploys a component onto its device.
      *
      * @param component the {@link Component} to undeploy.
-     * @return {@code true} if and only if the undeployment succeeded; {@code false} otherwise.
+     * @throws DeploymentException 
      */
-    public boolean undeployComponent(Component component) {
+    public void undeployComponent(Component component) throws DeploymentException {
         try {
         	// Undeploy component
             sshDeployer.undeployComponent(component);
-            return true;
         } catch (IOException e) {
-        	return false;
+        	throw new DeploymentException("An error occurred while undeploying the component.");
         }
     }
 

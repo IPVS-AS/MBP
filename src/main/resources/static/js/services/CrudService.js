@@ -13,17 +13,6 @@ app.factory('CrudService', ['$resource', '$q', 'ENDPOINT_URI', function ($resour
 
     var ItemGet = $resource(ENDPOINT_URI + '/:category/', { category: '@category' });
 
-    var accessRequest = {
-        'context': [
-                {
-                    'key' : 'requesting-entity-username',
-                    'value' : 'admin'
-                }
-            ]
-    };
-
-    // var headers = { "Content-Type": "application/json" };
-
     return {
         ItemResource: Item,
 

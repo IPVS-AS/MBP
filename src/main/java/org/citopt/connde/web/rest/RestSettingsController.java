@@ -8,7 +8,6 @@ import org.citopt.connde.service.mqtt.MQTTService;
 import org.citopt.connde.service.settings.DefaultOperatorService;
 import org.citopt.connde.service.settings.SettingsService;
 import org.citopt.connde.service.settings.model.Settings;
-import org.citopt.connde.web.rest.response.ActionResponse;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -54,17 +53,10 @@ public class RestSettingsController {
     @Secured({Constants.ADMIN})
     @ApiOperation(value = "Loads default operators from the resource directory of the MBP and makes them available for usage in actuators and sensors by all users.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
-    public ResponseEntity<ActionResponse> addDefaultOperators() {
-        //Call corresponding service function
-        ActionResponse response = defaultOperatorService.addDefaultOperators();
-
-        //Check for success
-        if (response.isSuccess()) {
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-
-        //No success
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<Void> addDefaultOperators() {
+        // Call corresponding service function
+        boolean success = defaultOperatorService.addDefaultOperators();
+        return ResponseEntity.status(success ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
     /**

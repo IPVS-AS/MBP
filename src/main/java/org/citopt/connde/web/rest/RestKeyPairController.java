@@ -6,13 +6,13 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
-
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.key_pair.KeyPair;
+import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.KeyPairRepository;
 import org.citopt.connde.service.UserEntityService;
@@ -25,13 +25,13 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -67,57 +67,49 @@ public class RestKeyPairController {
 	private SSHKeyPairGenerator keyPairGenerator;
 	
 	
-	@GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+	@GetMapping(produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing key-pair entities available for the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
 			@ApiResponse(code = 404, message = "Key-Pair or requesting user not found!") })
     public ResponseEntity<PagedModel<EntityModel<KeyPair>>> all(
-    		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+		// Parse the access-request information
+		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+		
     	// Retrieve the corresponding key-pairs (includes access-control)
     	List<KeyPair> adapters = userEntityService.getPageWithPolicyCheck(keyPairRepository, ACAccessType.READ, accessRequest, pageable);
     	
     	// Create self link
-    	Link selfLink = linkTo(methodOn(getClass()).all(pageable, accessRequest)).withSelfRel();
+    	Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
     	
     	return ResponseEntity.ok(userEntityService.entitiesToPagedModel(adapters, selfLink, pageable));
     }
     
-    @GetMapping(path = "/{keyPairId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+    @GetMapping(path = "/{keyPairId}", produces = "application/hal+json")
     @ApiOperation(value = "Retrieves an existing key-pair entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     		@ApiResponse(code = 401, message = "Not authorized to access the key-pair!"),
     		@ApiResponse(code = 404, message = "Key-Pair or requesting user not found!") })
     public ResponseEntity<EntityModel<KeyPair>> one(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("keyPairId") String keyPairId,
-    		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
     	// Retrieve the corresponding key-pair (includes access-control)
-    	KeyPair adapter = userEntityService.getForIdWithPolicyCheck(keyPairRepository, keyPairId, ACAccessType.READ, accessRequest);
+    	KeyPair adapter = userEntityService.getForIdWithPolicyCheck(keyPairRepository, keyPairId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(adapter));
     }
-    
-//    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
-//    @ApiOperation(value = "Retrieves an existing key-pair entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
-//    @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
-//    		@ApiResponse(code = 409, message = "Key-Pair already exists!") })
-//    public ResponseEntity<EntityModel<KeyPair>> create(@PathVariable("keyPairId") String keyPairId, @ApiParam(value = "Page parameters", required = true) Pageable pageable, @RequestBody KeyPair keyPair) {
-//    	// Check whether a key-pair with the same name already exists in the database
-//    	userEntityService.requireUniqueName(keyPairRepository, keyPair.getName());
-//
-//    	// Save key-pair in the database
-//    	KeyPair createdAdapter = keyPairRepository.save(keyPair);
-//    	return ResponseEntity.ok(userEntityService.entityToEntityModel(createdAdapter));
-//    }
     
     @DeleteMapping(path = "/{keyPairId}")
     @ApiOperation(value = "Deletes an existing key-pair entity identified by its id if it's available for the requesting entity.")
     @ApiResponses({ @ApiResponse(code = 204, message = "Success!"),
     		@ApiResponse(code = 401, message = "Not authorized to delete the key-pair!"),
     		@ApiResponse(code = 404, message = "Key-Pair or requesting user not found!") })
-    public ResponseEntity<Void> delete(@PathVariable("keyPairId") String keyPairId, @Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    public ResponseEntity<Void> delete(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+    		@PathVariable("keyPairId") String keyPairId) throws EntityNotFoundException {
     	// Delete the key-pair (includes access-control) 
-    	userEntityService.deleteWithPolicyCheck(keyPairRepository, keyPairId, accessRequest);
+    	userEntityService.deleteWithPolicyCheck(keyPairRepository, keyPairId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();
     }
 	
@@ -149,8 +141,11 @@ public class RestKeyPairController {
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
 			@ApiResponse(code = 404, message = "Key-pair or requesting user not found!") })
 	public ResponseEntity<List<Device>> getDevicesByKeyPair(
-			@PathVariable(value = "id") @ApiParam(value = "ID of the key-pair", example = "5c97dc2583aeb6078c5ab672", required = true) String keyPairId,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the key-pair", example = "5c97dc2583aeb6078c5ab672", required = true) String keyPairId) throws EntityNotFoundException, MissingPermissionException {
+		// Parse the access-request information
+		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+		
 		// Check permission for key-pair
 		userEntityService.requirePermission(keyPairRepository, keyPairId, ACAccessType.READ, accessRequest);
 

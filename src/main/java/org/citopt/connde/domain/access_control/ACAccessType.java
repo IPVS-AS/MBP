@@ -18,6 +18,16 @@ public enum ACAccessType {
 	READ_VALUE_LOGS,
 	
 	/**
+	 * Read, e.g., sensor value logs statistics.
+	 */
+	READ_VALUE_LOG_STATS,
+	
+	/**
+	 * Delete, e.g., sensor value logs.
+	 */
+	DELETE_VALUE_LOGS,
+	
+	/**
 	 * Update an existing, e.g., rule.
 	 */
 	UPDATE,

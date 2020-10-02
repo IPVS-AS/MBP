@@ -5,12 +5,12 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
 
-import javax.validation.Valid;
-
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.component.Sensor;
+import org.citopt.connde.error.EntityAlreadyExistsException;
+import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -51,33 +52,36 @@ public class RestSensorController {
     private UserEntityService userEntityService;
     
     
-	@GetMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+	@GetMapping(produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing sensor entities available for the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
 			@ApiResponse(code = 404, message = "Sensor or requesting user not found!") })
     public ResponseEntity<PagedModel<EntityModel<Sensor>>> all(
-    		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+		// Parse the access-request information
+		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+		
     	// Retrieve the corresponding sensors (includes access-control)
     	List<Sensor> sensors = userEntityService.getPageWithPolicyCheck(sensorRepository, ACAccessType.READ, accessRequest, pageable);
     	
     	// Create self link
-    	Link selfLink = linkTo(methodOn(getClass()).all(pageable, accessRequest)).withSelfRel();
+    	Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
     	
     	return ResponseEntity.ok(userEntityService.entitiesToPagedModel(sensors, selfLink, pageable));
     }
     
-    @GetMapping(path = "/{sensorId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+    @GetMapping(path = "/{sensorId}", produces = "application/hal+json")
     @ApiOperation(value = "Retrieves an existing sensor entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     		@ApiResponse(code = 401, message = "Not authorized to access the sensor!"),
     		@ApiResponse(code = 404, message = "Sensor or requesting user not found!") })
     public ResponseEntity<EntityModel<Sensor>> one(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("sensorId") String sensorId,
-    		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
     	// Retrieve the corresponding sensor (includes access-control)
-    	Sensor sensor = userEntityService.getForIdWithPolicyCheck(sensorRepository, sensorId, ACAccessType.READ, accessRequest);
+    	Sensor sensor = userEntityService.getForIdWithPolicyCheck(sensorRepository, sensorId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(sensor));
     }
     
@@ -85,7 +89,11 @@ public class RestSensorController {
     @ApiOperation(value = "Retrieves an existing sensor entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     		@ApiResponse(code = 409, message = "Sensor already exists!") })
-    public ResponseEntity<EntityModel<Sensor>> create(@PathVariable("sensorId") String sensorId, @ApiParam(value = "Page parameters", required = true) Pageable pageable, @RequestBody Sensor sensor) {
+    public ResponseEntity<EntityModel<Sensor>> create(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+    		@PathVariable("sensorId") String sensorId,
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
+    		@RequestBody Sensor sensor) throws EntityAlreadyExistsException {
     	// Check whether a sensor with the same name already exists in the database
     	userEntityService.requireUniqueName(sensorRepository, sensor.getName());
 
@@ -99,9 +107,11 @@ public class RestSensorController {
     @ApiResponses({ @ApiResponse(code = 204, message = "Success!"),
     		@ApiResponse(code = 401, message = "Not authorized to delete the sensor!"),
     		@ApiResponse(code = 404, message = "Sensor or requesting user not found!") })
-    public ResponseEntity<Void> delete(@PathVariable("sensorId") String sensorId, @Valid @RequestBody ACAccessRequest<?> accessRequest) {
+    public ResponseEntity<Void> delete(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+    		@PathVariable("sensorId") String sensorId) throws EntityNotFoundException {
     	// Delete the sensor (includes access-control) 
-    	userEntityService.deleteWithPolicyCheck(sensorRepository, sensorId, accessRequest);
+    	userEntityService.deleteWithPolicyCheck(sensorRepository, sensorId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();
     }
     

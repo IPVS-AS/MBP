@@ -27,6 +27,7 @@ import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.domain.testing.TestDetails;
 import org.citopt.connde.domain.testing.Testing;
 import org.citopt.connde.domain.valueLog.ValueLog;
+import org.citopt.connde.error.DeploymentException;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.RuleRepository;
 import org.citopt.connde.repository.RuleTriggerRepository;
@@ -35,7 +36,6 @@ import org.citopt.connde.repository.TestRepository;
 import org.citopt.connde.service.receiver.ValueLogReceiver;
 import org.citopt.connde.service.receiver.ValueLogReceiverObserver;
 import org.citopt.connde.service.rules.RuleEngine;
-import org.citopt.connde.web.rest.RestRuleController;
 import org.citopt.connde.web.rest.helper.DeploymentWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -145,8 +145,9 @@ public class TestEngine implements ValueLogReceiverObserver {
 	 *
 	 * @param testDetails specific test with all details
 	 * @return boolean, if test is still running
+	 * @throws DeploymentException 
 	 */
-	public boolean testRunning(TestDetails testDetails) {
+	public boolean testRunning(TestDetails testDetails) throws DeploymentException {
 		List<Sensor> testingSensors = testDetails.getSensor();
 		boolean response = false;
 		for (Sensor sensor : testingSensors) {
@@ -166,8 +167,9 @@ public class TestEngine implements ValueLogReceiverObserver {
 	 *
 	 * @param testId Id of the the running test
 	 * @return value-list of the simulated Sensor
+	 * @throws DeploymentException 
 	 */
-	public Map<String, List<Double>> isFinished(String testId) {
+	public Map<String, List<Double>> isFinished(String testId) throws DeploymentException {
 		boolean response = true;
 		TestDetails testDetails = testDetailsRepository.findById(testId).get();
 		while (response) {
@@ -215,8 +217,9 @@ public class TestEngine implements ValueLogReceiverObserver {
 	 * Enable selected Rules, Deploy and Start the Actuator and Sensors of the test
 	 *
 	 * @param testDetails specific test to be executed
+	 * @throws DeploymentException 
 	 */
-	public ResponseEntity<String> startTest(TestDetails testDetails) {
+	public ResponseEntity<String> startTest(TestDetails testDetails) throws DeploymentException {
 		// TODO: Repository return objects should be checked - i temporarily added .orElse(null) to each function,
     	//       since this is equivalent to the former implementation of the repositories.
 		Actuator testingActuator = actuatorRepository.findByName("TestingActuator").orElse(null);
@@ -385,8 +388,9 @@ public class TestEngine implements ValueLogReceiverObserver {
 	 * Starts the test and saves all values form the sensor.
 	 *
 	 * @param test test to be executed
+	 * @throws DeploymentException 
 	 */
-	public Map<String, List<Double>> executeTest(TestDetails test) {
+	public Map<String, List<Double>> executeTest(TestDetails test) throws DeploymentException {
 
 		Map<String, TestDetails> activeTests = testEngine.getActiveTests();
 		Map<String, List<Double>> list = testEngine.getTestValues();

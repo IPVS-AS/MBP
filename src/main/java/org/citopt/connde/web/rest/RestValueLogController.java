@@ -1,23 +1,29 @@
 package org.citopt.connde.web.rest;
 
+import java.util.List;
+
 import javax.measure.converter.UnitConverter;
 import javax.measure.quantity.Quantity;
 import javax.measure.unit.Unit;
-import javax.validation.Valid;
 
 import org.citopt.connde.RestConfiguration;
+import org.citopt.connde.domain.access_control.ACAbstractEffect;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
+import org.citopt.connde.domain.access_control.ACPolicy;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.domain.valueLog.ValueLog;
+import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.ValueLogRepository;
 import org.citopt.connde.service.UnitConverterService;
 import org.citopt.connde.service.UserEntityService;
+import org.citopt.connde.service.access_control.ACEffectService;
 import org.citopt.connde.util.S;
 import org.citopt.connde.web.rest.helper.MonitoringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +34,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -58,16 +64,19 @@ public class RestValueLogController {
 	private SensorRepository sensorRepository;
 
 	@Autowired
+	private ValueLogRepository valueLogRepository;
+
+	@Autowired
 	private UserEntityService userEntityService;
 
 	@Autowired
 	private UnitConverterService unitConverterService;
+	
+	@Autowired
+	private ACEffectService effectService;
 
 	@Autowired
 	private MonitoringHelper monitoringHelper;
-	
-	@Autowired
-	private ValueLogRepository valueLogRepository;
 	
 
 	@GetMapping("/actuators/{id}/valueLogs")
@@ -77,15 +86,27 @@ public class RestValueLogController {
 			@ApiResponse(code = 401, message = "Not authorized to access value logs of this actuator!"),
 			@ApiResponse(code = 404, message = "Actuator or requesting user not found!") })
 	public ResponseEntity<Page<ValueLog>> getActuatorValueLogs(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId,
 			@RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the actuator values", example = "°C", required = false) String unit,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest,
-			@ApiParam(value = "The page configuration", required = true) Pageable pageable) {
+			@ApiParam(value = "The page configuration", required = true) Pageable pageable) throws EntityNotFoundException {
 		// Retrieve actuator from the database (includes access-control)
-		Actuator actuator = userEntityService.getForIdWithPolicyCheck(actuatorRepository, actuatorId, ACAccessType.READ_VALUE_LOGS, accessRequest);
-
+		Actuator actuator = userEntityService.getForIdWithPolicyCheck(actuatorRepository, actuatorId, ACAccessType.READ_VALUE_LOGS, ACAccessRequest.valueOf(accessRequestHeader));
+		
+		// Retrieve the policies for the actuator from the database
+		List<ACPolicy> policies = userEntityService.getPoliciesForEntityAndAccessType(actuator, ACAccessType.READ_VALUE_LOGS);
+		
 		// Retrieve value logs
-		return ResponseEntity.ok(getValueLogs(actuator, unit, pageable));
+		Page<ValueLog> valueLogs = getValueLogs(actuator, unit, pageable);
+
+		// Check whether effect has to be applied
+		policies.stream().filter(p -> S.notEmpty(p.getEffectId())).findFirst()
+				.ifPresent(p -> {
+					ACAbstractEffect effect = effectService.getForId(p.getEffectId());
+					valueLogs.forEach(effect::apply);
+				});
+
+		return ResponseEntity.ok(valueLogs);
 	}
 
 	@GetMapping("/sensors/{id}/valueLogs")
@@ -95,16 +116,28 @@ public class RestValueLogController {
 			@ApiResponse(code = 401, message = "Not authorized to access value logs of this sensor!"),
 			@ApiResponse(code = 404, message = "Sensor or requesting user not found!") })
 	public ResponseEntity<Page<ValueLog>> getSensorValueLogs(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId,
 			@RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the sensor values", example = "°C", required = false) String unit,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest,
-			@ApiParam(value = "The page configuration", required = true) Pageable pageable) {
+			@ApiParam(value = "The page configuration", required = true) Pageable pageable) throws EntityNotFoundException {
 		// Retrieve actuator from the database (includes access-control)
 		// TODO: Formerly, permission 'deploy' has been checked - i think it should be the 'read' permission
-		Sensor sensor = userEntityService.getForIdWithPolicyCheck(sensorRepository, sensorId, ACAccessType.READ, accessRequest);
-
+		Sensor sensor = userEntityService.getForIdWithPolicyCheck(sensorRepository, sensorId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+		
+		// Retrieve the policies for the actuator from the database
+		List<ACPolicy> policies = userEntityService.getPoliciesForEntityAndAccessType(sensor, ACAccessType.READ_VALUE_LOGS);		
+		
 		// Retrieve value logs
-		return ResponseEntity.ok(getValueLogs(sensor, unit, pageable));
+		Page<ValueLog> valueLogs = getValueLogs(sensor, unit, pageable);
+
+		// Check whether effect has to be applied
+		policies.stream().filter(p -> S.notEmpty(p.getEffectId())).findFirst()
+				.ifPresent(p -> {
+					ACAbstractEffect effect = effectService.getForId(p.getEffectId());
+					valueLogs.forEach(effect::apply);
+				});
+
+		return ResponseEntity.ok(valueLogs);
 	}
 
 	@GetMapping("/monitoring/{deviceId}/valueLogs")
@@ -114,19 +147,31 @@ public class RestValueLogController {
 			@ApiResponse(code = 401, message = "Not authorized to access value logs of this monitoring component!"),
 			@ApiResponse(code = 404, message = "Device, monitoring adapter or requesting user not found!") })
 	public ResponseEntity<Page<ValueLog>> getMonitoringValueLogs(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "deviceId") @ApiParam(value = "ID of the device to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
 			@RequestParam("adapter") @ApiParam(value = "ID of the monitoring adapter to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringAdapterId,
 			@RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the monitoring value logs", example = "°C", required = false) String unit,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest,
-			@ApiParam(value = "The page configuration", required = true) Pageable pageable) {
+			@ApiParam(value = "The page configuration", required = true) Pageable pageable) throws MissingPermissionException, EntityNotFoundException {
 		// Create new monitoring component from parameters
 		MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
 		
 		// Check monitoring permission
-		userEntityService.requirePermission(monitoringComponent.getDevice(), ACAccessType.MONITOR, accessRequest);
-
+		userEntityService.requirePermission(monitoringComponent.getDevice(), ACAccessType.MONITOR, ACAccessRequest.valueOf(accessRequestHeader));
+		
+		// Retrieve the policies for the actuator from the database
+		List<ACPolicy> policies = userEntityService.getPoliciesForEntityAndAccessType(monitoringComponent, ACAccessType.READ_VALUE_LOGS);		
+		
 		// Retrieve value logs
-		return ResponseEntity.ok(getValueLogs(monitoringComponent, unit, pageable));
+		Page<ValueLog> valueLogs = getValueLogs(monitoringComponent, unit, pageable);
+
+		// Check whether effect has to be applied
+		policies.stream().filter(p -> S.notEmpty(p.getEffectId())).findFirst()
+				.ifPresent(p -> {
+					ACAbstractEffect effect = effectService.getForId(p.getEffectId());
+					valueLogs.forEach(effect::apply);
+				});
+
+		return ResponseEntity.ok(valueLogs);
 	}
 
 	@DeleteMapping("/actuators/{id}/valueLogs")
@@ -135,11 +180,10 @@ public class RestValueLogController {
 			@ApiResponse(code = 404, message = "Actuator or requesting user not found!") })
 	@ApiIgnore("Currently not working")
 	public ResponseEntity<Void> deleteActuatorValueLogs(
-			@PathVariable(value = "id") String actuatorId,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
-		// TODO: Does checking the 'delete' permission for the actuator make sense (actually the value logs are deleted, not the actuator) (formerly the 'deploy' permission had been checked)?
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") String actuatorId) throws EntityNotFoundException, MissingPermissionException {
 		// Check permission
-		userEntityService.requirePermission(actuatorRepository, actuatorId, ACAccessType.DELETE, accessRequest);
+		userEntityService.requirePermission(actuatorRepository, actuatorId, ACAccessType.DELETE_VALUE_LOGS, ACAccessRequest.valueOf(accessRequestHeader));
 
 		// Delete value logs of this actuator
 		valueLogRepository.deleteByIdRef(actuatorId);
@@ -152,11 +196,10 @@ public class RestValueLogController {
 			@ApiResponse(code = 404, message = "Sensor or requesting user not found!") })
 	@ApiIgnore("Currently not working")
 	public ResponseEntity<Void> deleteSensorValueLogs(
-			@PathVariable(value = "id") String sensorId,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
-		// TODO: Does checking the 'delete' permission for the actuator make sense (actually the value logs are deleted, not the actuator) (formerly the 'deploy' permission had been checked)?
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") String sensorId) throws EntityNotFoundException, MissingPermissionException {
 		// Check permission
-		userEntityService.requirePermission(sensorRepository, sensorId, ACAccessType.DELETE, accessRequest);
+		userEntityService.requirePermission(sensorRepository, sensorId, ACAccessType.DELETE_VALUE_LOGS, ACAccessRequest.valueOf(accessRequestHeader));
 
 		// Delete value logs of this sensor
 		valueLogRepository.deleteByIdRef(sensorId);
@@ -168,15 +211,16 @@ public class RestValueLogController {
 			@ApiResponse(code = 401, message = "Not authorized to delete value logs of this minitoring component!"),
 			@ApiResponse(code = 404, message = "Device, monitoring adapter or requesting user not found!") })
 	@ApiIgnore("Currently not working")
-	public ResponseEntity<Void> deleteMonitoringValueLogs(@PathVariable(value = "deviceId") String deviceId,
-			@RequestParam("adapter") String monitoringAdapterId,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
+	public ResponseEntity<Void> deleteMonitoringValueLogs(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "deviceId") String deviceId,
+			@RequestParam("adapter") String monitoringAdapterId) throws MissingPermissionException, EntityNotFoundException {
 
 		// Create new monitoring component from parameters
 		MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
 		
 		// Check delete permission
-		userEntityService.requirePermission(monitoringComponent.getDevice(), ACAccessType.DELETE, accessRequest);
+		userEntityService.requirePermission(monitoringComponent.getDevice(), ACAccessType.DELETE_VALUE_LOGS, ACAccessRequest.valueOf(accessRequestHeader));
 
 	
 		// Delete value logs of this sensor

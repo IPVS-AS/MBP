@@ -1,6 +1,5 @@
 package org.citopt.connde;
 
-import org.citopt.connde.constants.Constants;
 import org.citopt.connde.security.RestAuthenticationEntryPoint;
 import org.citopt.connde.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.BeanInitializationException;
@@ -61,6 +60,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	    .antMatchers(HttpMethod.OPTIONS, "/**")
 	    .antMatchers("/resources/**")
 	    .antMatchers("/webapp/**")
+	    .antMatchers("/login", "/templates/register")
+ 		.antMatchers(HttpMethod.POST, "/api/authenticate")
 	    .antMatchers(HttpMethod.POST, "/api/users")
 	    .antMatchers(HttpMethod.POST,"/api/checkOauthTokenUser")
 	    .antMatchers(HttpMethod.POST,"/api/checkOauthTokenSuperuser")
@@ -69,23 +70,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
-        	.csrf().disable()
-        	.authorizeRequests()
-	            .antMatchers(HttpMethod.POST, "/api/users").permitAll()
-	            .antMatchers(HttpMethod.PUT, "/api/users").hasAuthority(Constants.ADMIN)
-	            .antMatchers(HttpMethod.GET, "/api/users").hasAuthority(Constants.ADMIN)
-	            .antMatchers(HttpMethod.GET, "/api/users/:username").hasAuthority(Constants.ADMIN)
-	            .antMatchers(HttpMethod.DELETE, "/api/users/:username").hasAuthority(Constants.ADMIN)
-	            .antMatchers("/api/**").authenticated()
-            .and()
-				.httpBasic()
-        	    .authenticationEntryPoint(restAuthenticationEntryPoint())
-            .and()
-	            .logout()
-	            .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-	            .logoutSuccessUrl("/login")
-	            .invalidateHttpSession(true)
-	            .deleteCookies("JSESSIONID");
+		http
+			.csrf().disable()
+			.httpBasic().authenticationEntryPoint(restAuthenticationEntryPoint())
+			.and()
+				.authorizeRequests()
+				.antMatchers(HttpMethod.POST, "/api/authenticate").permitAll()
+				.antMatchers("/api/**").authenticated()
+			.and()
+			.logout()
+				.logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/login")
+				.invalidateHttpSession(true).deleteCookies("JSESSIONID");
     }
 }

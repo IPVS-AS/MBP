@@ -32,7 +32,7 @@ public class DeviceValidator implements Validator {
      * @param errors The errors object to add the error messages to
      */
     @Override
-    public void validate(Object o, Errors errors) {
+    public void validate(Object o, Errors errors) { // userData
         //Cast to device
         Device device = (Device) o;
 

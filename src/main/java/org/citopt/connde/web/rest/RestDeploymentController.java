@@ -13,12 +13,14 @@ import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.adapter.parameters.ParameterType;
 import org.citopt.connde.domain.component.Component;
+import org.citopt.connde.error.DeploymentException;
+import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.ComponentRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.web.rest.helper.DeploymentWrapper;
-import org.citopt.connde.web.rest.response.ActionResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelProcessor;
@@ -30,8 +32,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -67,10 +71,12 @@ public class RestDeploymentController implements RepresentationModelProcessor<En
 			@ApiResponse(code = 401, message = "Not authorized to start the actuator!"),
 			@ApiResponse(code = 404, message = "Device, actuator or requesting user not found!"),
 			@ApiResponse(code = 500, message = "Starting the actuator failed due to an unexpected error!") })
-	public ResponseEntity<ActionResponse> startActuator(
+	public ResponseEntity<Void> startActuator(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id,
-			@Valid @RequestBody @ApiParam(value = "Contains the context information for access-control and the list of parameters to use") ACAccessRequest<List<ParameterInstance>> accessRequest) {
-		return ResponseEntity.ok(deploymentWrapper.startComponent(getComponentWithPermissionCheck(actuatorRepository, id, ACAccessType.START, accessRequest), accessRequest.getRequestBody()));
+			@Valid @RequestBody @ApiParam(value = "The list of parameters to use") List<ParameterInstance> parameters) throws EntityNotFoundException, MissingPermissionException, DeploymentException {
+		deploymentWrapper.startComponent(getComponentWithPermissionCheck(actuatorRepository, id, ACAccessType.START, ACAccessRequest.valueOf(accessRequestHeader)), parameters);
+		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping("/start/sensor/{id}")
@@ -80,10 +86,12 @@ public class RestDeploymentController implements RepresentationModelProcessor<En
 			@ApiResponse(code = 401, message = "Not authorized to start the sensor!"),
 			@ApiResponse(code = 404, message = "Device, sensor or requesting user not found!"),
 			@ApiResponse(code = 500, message = "Starting the sensor failed due to an unexpected error!") })
-	public ResponseEntity<ActionResponse> startSensor(
+	public ResponseEntity<Void> startSensor(
+			@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id,
-			@Valid @RequestBody @ApiParam(value = "Contains the context information for access-control and the list of parameters to use") ACAccessRequest<List<ParameterInstance>> accessRequest) {
-		return ResponseEntity.ok(deploymentWrapper.startComponent(getComponentWithPermissionCheck(sensorRepository, id, ACAccessType.START, accessRequest), accessRequest.getRequestBody()));
+			@Valid @RequestBody @ApiParam(value = "The list of parameters to use") List<ParameterInstance> parameters) throws EntityNotFoundException, MissingPermissionException, DeploymentException {
+		deploymentWrapper.startComponent(getComponentWithPermissionCheck(sensorRepository, id, ACAccessType.START, ACAccessRequest.valueOf(accessRequestHeader)), parameters);
+		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping("/stop/actuator/{id}")
@@ -92,10 +100,11 @@ public class RestDeploymentController implements RepresentationModelProcessor<En
 			@ApiResponse(code = 401, message = "Not authorized to stop the actuator!"),
 			@ApiResponse(code = 404, message = "Device, actuator or requesting user not found!"),
 			@ApiResponse(code = 500, message = "Stopping the actuator failed due to an unexpected error!") })
-	public ResponseEntity<Boolean> stopActuator(
-			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
-		return ResponseEntity.ok(deploymentWrapper.stopComponent(getComponentWithPermissionCheck(actuatorRepository, id, ACAccessType.STOP, accessRequest)));
+	public ResponseEntity<Void> stopActuator(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id) throws EntityNotFoundException, MissingPermissionException, DeploymentException {
+		deploymentWrapper.stopComponent(getComponentWithPermissionCheck(actuatorRepository, id, ACAccessType.STOP, ACAccessRequest.valueOf(accessRequestHeader)));
+		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping("/stop/sensor/{id}")
@@ -104,10 +113,11 @@ public class RestDeploymentController implements RepresentationModelProcessor<En
 			@ApiResponse(code = 401, message = "Not authorized to stop the sensor!"),
 			@ApiResponse(code = 404, message = "Device, sensor or requesting user not found!"),
 			@ApiResponse(code = 500, message = "Stopping the sensor failed due to an unexpected error!") })
-	public ResponseEntity<Boolean> stopSensor(
-			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
-		return ResponseEntity.ok(deploymentWrapper.stopComponent(getComponentWithPermissionCheck(sensorRepository, id, ACAccessType.STOP, accessRequest)));
+	public ResponseEntity<Void> stopSensor(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id) throws EntityNotFoundException, MissingPermissionException, DeploymentException {
+		deploymentWrapper.stopComponent(getComponentWithPermissionCheck(sensorRepository, id, ACAccessType.STOP, ACAccessRequest.valueOf(accessRequestHeader)));
+		return ResponseEntity.ok().build();
 	}
 
 	@GetMapping("/deploy/actuator/{id}")
@@ -116,10 +126,11 @@ public class RestDeploymentController implements RepresentationModelProcessor<En
 			@ApiResponse(code = 401, message = "Not authorized to access the actuator!"),
 			@ApiResponse(code = 404, message = "Device, actuator or requesting user not found!"),
 			@ApiResponse(code = 500, message = "Check failed due to an unexpected error!") })
-	public ResponseEntity<Boolean> isRunningActuator(
-			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
-		return ResponseEntity.ok(deploymentWrapper.isComponentRunning(getComponentWithPermissionCheck(actuatorRepository, id, ACAccessType.READ, accessRequest)));
+	public ResponseEntity<Void> isRunningActuator(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id) throws ResponseStatusException, EntityNotFoundException, MissingPermissionException, DeploymentException {
+		deploymentWrapper.isComponentRunning(getComponentWithPermissionCheck(actuatorRepository, id, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader)));
+		return ResponseEntity.ok().build();
 	}
 
 	@GetMapping("/deploy/sensor/{id}")
@@ -128,10 +139,11 @@ public class RestDeploymentController implements RepresentationModelProcessor<En
 			@ApiResponse(code = 401, message = "Not authorized to access the sensor!"),
 			@ApiResponse(code = 404, message = "Device, sensor or requesting user not found!"),
 			@ApiResponse(code = 500, message = "Check failed due to an unexpected error!") })
-	public ResponseEntity<Boolean> isRunningSensor(
-			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
-		return ResponseEntity.ok(deploymentWrapper.isComponentRunning(getComponentWithPermissionCheck(sensorRepository, id, ACAccessType.READ, accessRequest)));
+	public ResponseEntity<Void> isRunningSensor(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id) throws ResponseStatusException, EntityNotFoundException, MissingPermissionException, DeploymentException {
+		deploymentWrapper.isComponentRunning(getComponentWithPermissionCheck(sensorRepository, id, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader)));
+		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping("/deploy/actuator/{id}")
@@ -140,10 +152,11 @@ public class RestDeploymentController implements RepresentationModelProcessor<En
 			@ApiResponse(code = 401, message = "Not authorized to deploy the actuator!"),
 			@ApiResponse(code = 404, message = "Device, actuator or requesting user not found!"),
 			@ApiResponse(code = 500, message = "Check failed due to an unexpected error!") })
-	public ResponseEntity<Boolean> deployActuator(
-			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
-		return ResponseEntity.ok(deploymentWrapper.deployComponent(getComponentWithPermissionCheck(actuatorRepository, id, ACAccessType.DEPLOY, accessRequest)));
+	public ResponseEntity<Void> deployActuator(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id) throws EntityNotFoundException, MissingPermissionException, DeploymentException {
+		deploymentWrapper.deployComponent(getComponentWithPermissionCheck(actuatorRepository, id, ACAccessType.DEPLOY, ACAccessRequest.valueOf(accessRequestHeader)));
+		return ResponseEntity.ok().build();
 	}
 
 	@PostMapping("/deploy/sensor/{id}")
@@ -152,10 +165,11 @@ public class RestDeploymentController implements RepresentationModelProcessor<En
 			@ApiResponse(code = 401, message = "Not authorized to deploy the sensor!"),
 			@ApiResponse(code = 404, message = "Device, sensor or requesting user not found!"),
 			@ApiResponse(code = 500, message = "Check failed due to an unexpected error!") })
-	public ResponseEntity<Boolean> deploySensor(
-			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
-		return ResponseEntity.ok(deploymentWrapper.deployComponent(getComponentWithPermissionCheck(sensorRepository, id, ACAccessType.DEPLOY, accessRequest)));
+	public ResponseEntity<Void> deploySensor(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id) throws EntityNotFoundException, MissingPermissionException, DeploymentException {
+		deploymentWrapper.deployComponent(getComponentWithPermissionCheck(sensorRepository, id, ACAccessType.DEPLOY, ACAccessRequest.valueOf(accessRequestHeader)));
+		return ResponseEntity.ok().build();
 	}
 
 	@DeleteMapping("/deploy/actuator/{id}")
@@ -164,10 +178,11 @@ public class RestDeploymentController implements RepresentationModelProcessor<En
 			@ApiResponse(code = 401, message = "Not authorized to undeploy the actuator!"),
 			@ApiResponse(code = 404, message = "Device, actuator or requesting user not found!"),
 			@ApiResponse(code = 500, message = "Check failed due to an unexpected error!") })
-	public ResponseEntity<Boolean> undeployActuator(
-			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
-		return ResponseEntity.ok(deploymentWrapper.undeployComponent(getComponentWithPermissionCheck(actuatorRepository, id, ACAccessType.UNDEPLOY, accessRequest)));
+	public ResponseEntity<Void> undeployActuator(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id) throws EntityNotFoundException, MissingPermissionException, DeploymentException {
+		deploymentWrapper.undeployComponent(getComponentWithPermissionCheck(actuatorRepository, id, ACAccessType.UNDEPLOY, ACAccessRequest.valueOf(accessRequestHeader)));
+		return ResponseEntity.ok().build();
 	}
 
 	@DeleteMapping("/deploy/sensor/{id}")
@@ -176,10 +191,11 @@ public class RestDeploymentController implements RepresentationModelProcessor<En
 			@ApiResponse(code = 401, message = "Not authorized to undeploy the sensor!"),
 			@ApiResponse(code = 404, message = "Device, sensor or requesting user not found!"),
 			@ApiResponse(code = 500, message = "Check failed due to an unexpected error!") })
-	public ResponseEntity<Boolean> undeploySensor(
-			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
-		return ResponseEntity.ok(deploymentWrapper.undeployComponent(getComponentWithPermissionCheck(sensorRepository, id, ACAccessType.UNDEPLOY, accessRequest)));
+	public ResponseEntity<Void> undeploySensor(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id) throws EntityNotFoundException, MissingPermissionException, DeploymentException {
+		deploymentWrapper.undeployComponent(getComponentWithPermissionCheck(sensorRepository, id, ACAccessType.UNDEPLOY, ACAccessRequest.valueOf(accessRequestHeader)));
+		return ResponseEntity.ok().build();
 	}
 	
 	@GetMapping("/adapter/parameter-types")
@@ -199,7 +215,7 @@ public class RestDeploymentController implements RepresentationModelProcessor<En
 		return new ResponseEntity<>(strDate, HttpStatus.OK);
 	}
 
-	private <C extends Component> C getComponentWithPermissionCheck(ComponentRepository<C> repository, String id, ACAccessType accessType, ACAccessRequest<?> accessRequest) {
+	private <C extends Component> C getComponentWithPermissionCheck(ComponentRepository<C> repository, String id, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
 		// Retrieve component from the database
 		C component = userEntityService.getForIdWithPolicyCheck(repository, id, ACAccessType.READ, accessRequest);
 					

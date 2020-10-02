@@ -4,14 +4,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.validation.Valid;
-
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.component.Sensor;
+import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.ComponentRepository;
 import org.citopt.connde.repository.SensorRepository;
@@ -23,7 +22,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -59,8 +58,8 @@ public class RestComponentStateController {
 	@GetMapping("/actuators/state")
 	@ApiOperation(value = "Retrieves the component state of all actuators for which the user is authorized", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!") })
-	public ResponseEntity<Map<String, ComponentState>> getStatesAllActuators(@Valid @RequestBody ACAccessRequest<?> accessRequest) {
-		return ResponseEntity.ok(getStatesAllComponents(actuatorRepository, accessRequest));
+	public ResponseEntity<Map<String, ComponentState>> getStatesAllActuators(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader) {
+		return ResponseEntity.ok(getStatesAllComponents(actuatorRepository, ACAccessRequest.valueOf(accessRequestHeader)));
 	}
 
 	/**
@@ -69,14 +68,15 @@ public class RestComponentStateController {
 	@GetMapping("/sensors/state")
 	@ApiOperation(value = "Retrieves the component state of all sensors for which the user is authorized", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success") })
-	public ResponseEntity<Map<String, ComponentState>> getStatesAllSensors(@Valid @RequestBody ACAccessRequest<?> accessRequest) {
-		return ResponseEntity.ok(getStatesAllComponents(sensorRepository, accessRequest));
+	public ResponseEntity<Map<String, ComponentState>> getStatesAllSensors(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader) {
+		return ResponseEntity.ok(getStatesAllComponents(sensorRepository, ACAccessRequest.valueOf(accessRequestHeader)));
 	}
 
 	/**
 	 * Retrieves the deployment status for a certain actuator.
 	 *
 	 * @param actuatorId the id of the {@link Actuator}.
+	 * @throws EntityNotFoundException 
 	 */
 	@GetMapping("/actuators/state/{id}")
 	@ApiOperation(value = "Retrieves the component state for an actuator", produces = "application/hal+json")
@@ -84,15 +84,16 @@ public class RestComponentStateController {
 			@ApiResponse(code = 401, message = "Not authorized to access the actuator"),
 			@ApiResponse(code = 404, message = "Actuator not found") })
 	public ResponseEntity<EntityModel<ComponentState>> getActuatorState(
-			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
-		return ResponseEntity.ok(getComponentState(actuatorId, actuatorRepository, accessRequest));
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId) throws EntityNotFoundException {
+		return ResponseEntity.ok(getComponentState(actuatorId, actuatorRepository, ACAccessRequest.valueOf(accessRequestHeader)));
 	}
 
 	/**
 	 * Retrieves the deployment status for a certain sensor.
 	 *
 	 * @param sensorId the id of the {@link Sensor}.
+	 * @throws EntityNotFoundException 
 	 */
 	@GetMapping("/sensors/state/{id}")
 	@ApiOperation(value = "Retrieves the component state for a sensor", produces = "application/hal+json")
@@ -100,12 +101,12 @@ public class RestComponentStateController {
 			@ApiResponse(code = 401, message = "Not authorized to access the sensor"),
 			@ApiResponse(code = 404, message = "Sensor not found") })
 	public ResponseEntity<EntityModel<ComponentState>> getSensorState(
-			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId,
-			@Valid @RequestBody ACAccessRequest<?> accessRequest) {
-		return ResponseEntity.ok(getComponentState(sensorId, sensorRepository, accessRequest));
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId) throws EntityNotFoundException {
+		return ResponseEntity.ok(getComponentState(sensorId, sensorRepository, ACAccessRequest.valueOf(accessRequestHeader)));
 	}
 
-	private <C extends Component> Map<String, ComponentState> getStatesAllComponents(ComponentRepository<C> repository, ACAccessRequest<?> accessRequest) {
+	private <C extends Component> Map<String, ComponentState> getStatesAllComponents(ComponentRepository<C> repository, ACAccessRequest accessRequest) {
 		// Retrieve all components from the database (according to owner and policies)
 		List<Component> componentList = userEntityService.getAllWithPolicyCheck(repository, ACAccessType.READ, accessRequest)
 				.stream()
@@ -116,7 +117,7 @@ public class RestComponentStateController {
 		return deploymentWrapper.getStatesAllComponents(componentList);
 	}
 
-	private <C extends Component> EntityModel<ComponentState> getComponentState(String componentId, ComponentRepository<C> repository, ACAccessRequest<?> accessRequest) {
+	private <C extends Component> EntityModel<ComponentState> getComponentState(String componentId, ComponentRepository<C> repository, ACAccessRequest accessRequest) throws EntityNotFoundException {
 		// Retrieve component from the database
 		Component component = userEntityService.getForIdWithPolicyCheck(repository, componentId, ACAccessType.READ, accessRequest);
 

@@ -5,9 +5,9 @@
     .module('app')
     .factory('AuthenticationService', AuthenticationService);
 
-  AuthenticationService.$inject = ['$http', '$cookieStore', '$rootScope', '$timeout', 'UserService'];
+  AuthenticationService.$inject = ['$http', '$httpProvider', '$cookieStore', '$rootScope', '$timeout', 'UserService'];
 
-  function AuthenticationService($http, $cookieStore, $rootScope, $timeout, UserService) {
+  function AuthenticationService($http, $httpProvider, $cookieStore, $rootScope, $timeout, UserService) {
     var service = {};
 
     service.Login = Login;
@@ -55,7 +55,6 @@
 
       // set default auth header for http requests
       $http.defaults.headers.common['Authorization'] = 'Basic ' + authData;
-      $http.defaults.headers.common['Content-Type'] = 'application/json';
 
       // store user details in globals cookie that keeps user logged in for 1 week (or until they logout)
       var cookieExp = new Date();
