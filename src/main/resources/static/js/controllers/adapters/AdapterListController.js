@@ -1,8 +1,8 @@
 /* global app */
 
 app.controller('AdapterListController',
-    ['$scope', '$controller', '$q', 'adapterList', 'adapterPreprocessing', 'addAdapter', 'deleteAdapter', 'FileReader', 'parameterTypesList', 'AdapterService', 'NotificationService',
-        function ($scope, $controller, $q, adapterList, adapterPreprocessing, addAdapter, deleteAdapter, FileReader, parameterTypesList, AdapterService, NotificationService) {
+    ['$scope', '$controller', '$q', 'adapterList', 'settings', 'adapterPreprocessing', 'addAdapter', 'deleteAdapter', 'FileReader', 'parameterTypesList', 'AdapterService', 'NotificationService',
+        function ($scope, $controller, $q, adapterList, settings, adapterPreprocessing, addAdapter, deleteAdapter, FileReader, parameterTypesList, AdapterService, NotificationService) {
             var vm = this;
 
             vm.dzServiceOptions = {
@@ -40,17 +40,6 @@ app.controller('AdapterListController',
 
             vm.dzMethods = {};
 
-            /**
-             * The device code parameter is necessary for every adapter.
-             * @type {{unit: string, name: string, type: string, mandatory: boolean}}
-             */
-            var deviceCodeParameter = {
-                name: "device_code",
-                type: "Text",
-                unit: "",
-                mandatory: true
-            };
-            vm.parameters = [deviceCodeParameter];
             vm.parameterTypes = parameterTypesList;
 
             /**
@@ -60,6 +49,21 @@ app.controller('AdapterListController',
                 //Validity check for parameter types
                 if (parameterTypesList.length < 1) {
                     NotificationService.notify("Could not load parameter types.", "error");
+                }
+
+                console.log("Checking broker location " + settings.brokerLocation);
+                if (settings.brokerLocation === "LOCAL_SECURE" || settings.brokerLocation === "REMOTE_SECURE") {
+                    /**
+                     * The device code parameter is necessary for every adapter, if a secured broker is used.
+                     * @type {{unit: string, name: string, type: string, mandatory: boolean}}
+                     */
+                    var deviceCodeParameter = {
+                        name: "device_code",
+                        type: "Text",
+                        unit: "",
+                        mandatory: true
+                    };
+                    vm.parameters = [deviceCodeParameter];
                 }
 
                 //Modify each adapter according to the preprocessing function (if provided)

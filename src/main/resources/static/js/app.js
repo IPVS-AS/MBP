@@ -425,6 +425,12 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                             }
                         });
                     }],
+                    settings: ['SettingsService', function (SettingsService) {
+                        //Retrieve settings initially
+                        return SettingsService.getSettings().then(function (response) {
+                            return response.data;
+                        });
+                    }],
                     adapterList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('adapters');
                     }],
