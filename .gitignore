@@ -112,6 +112,7 @@ hs_err_pid*
 .metadata
 bin/
 tmp/
+.settings
 *.tmp
 *.bak
 *.swp

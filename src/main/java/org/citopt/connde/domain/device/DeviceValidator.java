@@ -61,13 +61,9 @@ public class DeviceValidator implements Validator {
 
             ValidationUtils.rejectIfEmptyOrWhitespace(
                     errors, "password", "device.password.empty",
-                    "You must inform a password or a RSA key.");
+                    "You must inform a password or include a SSH key pair.");
 
-            ValidationUtils.rejectIfEmptyOrWhitespace(
-                    errors, "rsaKey", "device.rsaKey.empty",
-                    "You must inform a password or a RSA key.");
         }
-
         //Retrieve fields that need to be of a certain format
         String ipAddress = device.getIpAddress();
 

@@ -15,7 +15,7 @@ app.factory('NotificationService', function () {
             icon: 'warning',
             btType: 'warning'
         },
-        error:{
+        error: {
             icon: 'close',
             btType: 'danger'
         }
@@ -53,6 +53,16 @@ app.factory('NotificationService', function () {
 
             //Show notification
             $.notify(options, settings);
+        },
+
+        showSuccess: function (message, settings) {
+            return this.notify(message, 'success', settings);
+        },
+        showWarning: function (message, settings) {
+            return this.notify(message, 'warning', settings);
+        },
+        showError: function (message, settings) {
+            return this.notify(message, 'error', settings);
         }
     };
 });

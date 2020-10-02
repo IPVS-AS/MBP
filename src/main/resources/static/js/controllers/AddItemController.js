@@ -2,8 +2,8 @@
 
 'use strict';
 
-app.controller('AddItemController', ['addItem', 'NotificationService', function (addItem, NotificationService) {
-        var vm = this;
+app.controller('AddItemController', ['$rootScope', 'addItem', 'NotificationService', function ($rootScope, addItem, NotificationService) {
+        let vm = this;
 
         // public
         function addItemPromise() {
@@ -25,10 +25,12 @@ app.controller('AddItemController', ['addItem', 'NotificationService', function 
                         vm.item.errors = errors;
 
                         //Notify the user
-                        NotificationService.notify('Could not create entity.', 'error')
+                        //NotificationService.notify('Could not create entity.', 'error')
                     }
-            );
-
+            ).then(function (){
+                //Trigger angular $watch checks
+                $rootScope.$digest();
+            });
         }
 
         // expose

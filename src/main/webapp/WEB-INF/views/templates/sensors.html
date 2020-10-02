@@ -4,7 +4,7 @@
         <div class="card">
             <div class="header">
                 <div class="col-lg-6">
-                    <h2>Sensors</h2>
+                    <h2>Sensors<small>Your sensors at a glance</small></h2>
                 </div>
                 <div class="align-right">
                     <button id="add-button" type="button"
@@ -47,13 +47,13 @@
                                     </div>
                                 </div>
                                 <div ng-switch-when="NOT_READY">
-                                    <span class="label label-danger">Not Ready</span>
+                                    <span class="label label-danger">Unavailable</span>
                                 </div>
                                 <div ng-switch-when="READY">
                                     <span class="label label-success">Ready</span>
                                 </div>
                                 <div ng-switch-when="DEPLOYED">
-                                    <span class="label bg-teal">Deployed</span>
+                                    <span class="label bg-mbp-mid-blue">Installed</span>
                                 </div>
                                 <div ng-switch-when="RUNNING">
                                     <span class="label label-info">Running</span>
@@ -72,7 +72,7 @@
                                 <user-approval entity-id="{{item.id}}" category-name="sensors"></user-approval>
                             </div>
                             <form ng-submit="deleteSensorCtrl.deleteItem()" style="display:inline-block">
-                                <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
                                         ng-click="deleteSensorCtrl.item.id = item.id">
                                     <i class="material-icons" style="font-size:14px;">delete</i>
                                 </button>
@@ -80,7 +80,7 @@
                         </td>
                     </tr>
                     <tr ng-show="sensorListCtrl.items.length === 0">
-                        <td>No sensors registered.</td>
+                        <td>No registered sensors</td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -165,7 +165,7 @@
                                 </div>
                                 <span class="help-block" ng-show="addSensorCtrl.item.errors.device">{{addSensorCtrl.item.errors.device.message}}</span>
                             </div>
-                            <!-- item.accessControlPolicyIds group -->
+							<!-- item.accessControlPolicyIds group -->
                             <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.accessControlPolicyIds }">
                                 <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.accessControlPolicyIds }">
                                     <select class="form-control selectpicker" title="Access Control Policies"
@@ -176,7 +176,7 @@
                                 </div>
                                 <span class="help-block" ng-show="addSensorCtrl.item.errors.accessControlPolicyIds">{{addSensorCtrl.item.errors.accessControlPolicyIds.message}}</span>
                             </div>
-                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                            <span class="help-block" style="font-style: italic">* Mandatory fields</span>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
