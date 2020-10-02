@@ -70,7 +70,6 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          * @returns {*}
          */
         function getComponentState(componentId, component) {
-            console.log($http.get(URL_PREFIX + component + URL_GET_COMPONENT_STATE_SUFFIX + componentId))
             return $http.get(URL_PREFIX + component + URL_GET_COMPONENT_STATE_SUFFIX + componentId);
         }
 

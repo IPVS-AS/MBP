@@ -53,6 +53,12 @@ app.controller('TestingDetailsController',
 
             })();
 
+            function checkAvailability(arr, val) {
+                return arr.some(function (arrVal) {
+                    return val === arrVal;
+                });
+            }
+
 
             /**
              * Get the Configuration of the test to display them on the edit Test Modal
@@ -104,7 +110,33 @@ app.controller('TestingDetailsController',
                 let reactionMetersAccPl;
 
                 vm.rules = [];
+                vm.selectedRealSensor = [];
                 $rootScope.config = {};
+
+                //TODO: Get config details for real sensors
+                var arr = ['TestingTemperaturSensor', 'TestingTemperaturSensorPl', 'TestingFeuchtigkeitsSensor', 'TestingFeuchtigkeitsSensorPl', 'TestingGPSSensorPl', 'TestingGPSSensor', 'TestingBeschleunigungsSensor', 'TestingBeschleunigungsSensorPl']
+
+                for (let y = 0; y < testingDetails.type.length; y++) {
+
+                    if (!checkAvailability(arr, testingDetails.type[y])) {
+                        for (let z = 0; z < sensorList.length; z++) {
+                            if (sensorList[z].name === testingDetails.type[y]) {
+                                vm.selectedRealSensor.push(sensorList[z]);
+                            }
+
+                        }
+                    }
+
+                }
+
+                testingDetails.config.forEach(function (config) {
+                    for (let n = 0; n < config.length; n++) {
+                        if (config[n].name === "ConfigRealSensors") {
+                            vm.parameterVal = config[n].value;
+                        }
+                    }
+
+                })
 
 
                 if (testingDetails.type.includes('TestingTemperaturSensor')) {
@@ -635,6 +667,7 @@ app.controller('TestingDetailsController',
                     testingDetails.triggerRules = false;
                 }
 
+
                 $http.post(ENDPOINT_URI + '/test-details/updateTest/' + COMPONENT_ID, JSON.stringify(testingDetails)).success(function successCallback() {
                     //Close modal on success
                     $("#editTestModal").modal('toggle');
@@ -665,9 +698,57 @@ app.controller('TestingDetailsController',
                     vm.newTestObject.config = [];
 
 
+                    if(!angular.isUndefined(vm.parameterVal)){
+                        angular.forEach(vm.parameterVal, function (parameters, key) {
+                            console.log(parameters)
+                            for (let i = 0; i < vm.selectedRealSensor.length; i++) {
+                                if (vm.selectedRealSensor[i].name === key) {
+                                    vm.configUpdate = [];
+                                    vm.configUpdate.push({
+                                        "name": "ConfigName",
+                                        "value": vm.selectedRealSensor[i].name
+                                    });
+                                    var requiredParams = vm.selectedRealSensor[i]._embedded.adapter.parameters;
+                                    console.log(requiredParams);
+
+                                    //Iterate over all parameters
+                                    for (let i = 0; i < requiredParams.length; i++) {
+                                        //Set empty default values for these parameters
+                                        var value = "";
+
+                                        if (requiredParams[i].type === "Switch") {
+                                            value = true;
+                                        }
+                                        if (requiredParams[i].name === "device_code") {
+                                            console.log("Requesting code for required parameter device_code.");
+                                            value = getDeviceCode();
+                                            continue;
+                                        }
+
+                                        //For each parameter, add a tuple (name, value) to the globally accessible parameter array
+                                        vm.configUpdate.push({
+                                            "name": requiredParams[i].name,
+                                            "value": parameters[i]
+                                        });
+                                    }
+                                    vm.newTestObject.config.push(vm.configUpdate);
+                                }
+                            }
+                        });
+                        vm.newTestObject.config.push([{"name": "ConfigRealSensors", "value": vm.parameterVal}])
+                        console.log("Real Sensors Update")
+                        console.log(vm.newTestObject.config)
+                    }
+
+
                     if (testingDetails.type.includes('TestingTemperaturSensor')) {
                         vm.configUpdate = [];
+                        vm.configUpdate.push({
+                            "name": "ConfigName",
+                            "value": 'TestingTemperaturSensor'
+                        });
                         if ($rootScope.config.eventTemp === '3' || $rootScope.config.eventTemp === '4' || $rootScope.config.eventTemp === '5' || $rootScope.config.eventTemp === '6') {
+
                             vm.configUpdate.push({
                                 "name": "event",
                                 "value": parseInt($rootScope.config.eventTemp)
@@ -690,6 +771,10 @@ app.controller('TestingDetailsController',
                     }
                     if (testingDetails.type.includes('TestingFeuchtigkeitsSensor')) {
                         vm.configUpdate = [];
+                        vm.configUpdate.push({
+                            "name": "ConfigName",
+                            "value": 'TestingFeuchtigkeitsSensor'
+                        });
                         if ($rootScope.config.eventHum === '3' || $rootScope.config.eventHum === '4' || $rootScope.config.eventHum === '5' || $rootScope.config.eventHum === '6') {
                             vm.configUpdate.push({
                                 "name": "event",
@@ -713,6 +798,10 @@ app.controller('TestingDetailsController',
                     }
                     if (testingDetails.type.includes('TestingTemperaturSensorPl')) {
                         vm.configUpdate = [];
+                        vm.configUpdate.push({
+                            "name": "ConfigName",
+                            "value": 'TestingTemperaturSensorPl'
+                        });
                         if ($rootScope.config.eventTempPl === '3' || $rootScope.config.eventTempPl === '4' || $rootScope.config.eventTempPl === '5' || $rootScope.config.eventTempPl === '6') {
                             vm.configUpdate.push({
                                 "name": "event",
@@ -756,6 +845,10 @@ app.controller('TestingDetailsController',
                     }
                     if (testingDetails.type.includes('TestingFeuchtigkeitsSensorPl')) {
                         vm.configUpdate = [];
+                        vm.configUpdate.push({
+                            "name": "ConfigName",
+                            "value": 'TestingFeuchtigkeitsSensorPl'
+                        });
                         if ($rootScope.config.eventHumPl === '3' || $rootScope.config.eventHumPl === '4' || $rootScope.config.eventHumPl === '5' || $rootScope.config.eventHumPl === '6') {
                             vm.configUpdate.push({
                                 "name": "event",
@@ -798,6 +891,10 @@ app.controller('TestingDetailsController',
                     }
                     if (testingDetails.type.includes('TestingGPSSensor')) {
                         vm.configUpdate = [];
+                        vm.configUpdate.push({
+                            "name": "ConfigName",
+                            "value": 'TestingGPSSensor'
+                        });
                         if ($rootScope.config.eventGPS === '3' || $rootScope.config.eventGPS === '4' || $rootScope.config.eventGPS === '5') {
                             vm.configUpdate.push({"name": "who", "value": $rootScope.config.whoGPS});
                             vm.configUpdate.push({
@@ -852,6 +949,10 @@ app.controller('TestingDetailsController',
                     }
                     if (testingDetails.type.includes('TestingGPSSensorPl')) {
                         vm.configUpdate = [];
+                        vm.configUpdate.push({
+                            "name": "ConfigName",
+                            "value": 'TestingGPSSensorPl'
+                        });
                         if ($rootScope.config.eventGPS === '3' || $rootScope.config.eventGPS === '4' || $rootScope.config.eventGPS === '5') {
 
                             vm.configUpdate.push({"name": "who", "value": $rootScope.config.whoGPS});
@@ -925,6 +1026,10 @@ app.controller('TestingDetailsController',
                     }
                     if (testingDetails.type.includes('TestingBeschleunigungsSensor')) {
                         vm.configUpdate = [];
+                        vm.configUpdate.push({
+                            "name": "ConfigName",
+                            "value": 'TestingBeschleunigungsSensor'
+                        });
                         if ($rootScope.config.eventAcc === '3' || $rootScope.config.eventAcc === '4' || $rootScope.config.eventAcc === '5') {
                             vm.configUpdate.push({
                                 "name": "event",
@@ -1001,6 +1106,10 @@ app.controller('TestingDetailsController',
                     }
                     if (testingDetails.type.includes('TestingBeschleunigungsSensorPl')) {
                         vm.configUpdate = [];
+                        vm.configUpdate.push({
+                            "name": "ConfigName",
+                            "value": 'TestingBeschleunigungsSensorPl'
+                        });
                         if ($rootScope.config.eventAccPl === '3' || $rootScope.config.eventAccPl === '4' || $rootScope.config.eventAccPl === '5') {
                             vm.configUpdate.push({
                                 "name": "event",

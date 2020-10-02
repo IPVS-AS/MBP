@@ -107,7 +107,6 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
          * the update is finished, the loadingFinished function is called.
          */
         function updateChart() {
-            console.log("Update Chart ist hier.");
             //Ensure that the chart has already been initialized
             if (chart == null) {
                 console.error("The historical chart has not been initialized yet.");

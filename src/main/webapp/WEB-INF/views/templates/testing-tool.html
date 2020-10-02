@@ -200,8 +200,6 @@
                                                         <input class="form-control" type="text"
                                                                ng-required="parameter.mandatory"
                                                                ng-model="ctrl.parameterVal[realSensor.name][$index]"/>
-                                                        {{$parent.$parent.$index}}
-                                                        {{row}}
                                                     </div>
                                                     <div ng-switch-when="Number">
                                                         <input class="form-control" type="number"
@@ -228,8 +226,6 @@
                                     <div class="has-error" ng-show="ctrl.deployer.status.fieldErrors.parameters">
                                         <span class="help-block focused error">{{ctrl.deployer.status.fieldErrors.parameters}}</span>
                                     </div>
-
-                                    {{ctrl.parameterVal}}
                                 </div>
 
 

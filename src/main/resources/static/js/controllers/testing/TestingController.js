@@ -713,49 +713,45 @@ app.controller('TestingController',
                             const newTestObject = {};
                             newTestObject.config = [];
 
-                            angular.forEach(vm.parameterVal, function (parameters, key) {
-                                console.log(parameters)
-                                for (let i = 0; i < vm.selectedRealSensor.length; i++) {
-                                    if (vm.selectedRealSensor[i].name === key) {
-                                        vm.parameterValues = [];
-                                        vm.parameterValues.push({
-                                            "name": "ConfigName",
-                                            "value": vm.selectedRealSensor[i].name
-                                        });
-                                        var requiredParams = vm.selectedRealSensor[i]._embedded.adapter.parameters;
-                                        console.log(requiredParams);
-
-                                        //Iterate over all parameters
-                                        for (let i = 0; i < requiredParams.length; i++) {
-                                            //Set empty default values for these parameters
-                                            var value = "";
-
-                                            if (requiredParams[i].type === "Switch") {
-                                                value = true;
-                                            }
-                                            if (requiredParams[i].name === "device_code") {
-                                                console.log("Requesting code for required parameter device_code.");
-                                                value = getDeviceCode();
-                                                continue;
-                                            }
-
-                                            //For each parameter, add a tuple (name, value) to the globally accessible parameter array
+                            if(!angular.isUndefined(vm.parameterVal)){
+                                angular.forEach(vm.parameterVal, function (parameters, key) {
+                                    for (let i = 0; i < vm.selectedRealSensor.length; i++) {
+                                        if (vm.selectedRealSensor[i].name === key) {
+                                            vm.parameterValues = [];
                                             vm.parameterValues.push({
-                                                "name": requiredParams[i].name,
-                                                "value": parameters[i]
+                                                "name": "ConfigName",
+                                                "value": vm.selectedRealSensor[i].name
                                             });
+                                            var requiredParams = vm.selectedRealSensor[i]._embedded.adapter.parameters;
 
 
+                                            //Iterate over all parameters
+                                            for (let i = 0; i < requiredParams.length; i++) {
+                                                //Set empty default values for these parameters
+                                                var value = "";
+
+                                                if (requiredParams[i].type === "Switch") {
+                                                    value = true;
+                                                }
+                                                if (requiredParams[i].name === "device_code") {
+                                                    console.log("Requesting code for required parameter device_code.");
+                                                    value = getDeviceCode();
+                                                    continue;
+                                                }
+
+                                                //For each parameter, add a tuple (name, value) to the globally accessible parameter array
+                                                vm.parameterValues.push({
+                                                    "name": requiredParams[i].name,
+                                                    "value": parameters[i]
+                                                });
+                                            }
+                                            newTestObject.config.push(vm.parameterValues);
                                         }
-
-
-                                        newTestObject.config.push(vm.parameterValues);
                                     }
+                                });
+                                newTestObject.config.push([{"name": "ConfigRealSensors", "value": vm.parameterVal}])
+                            }
 
-
-                                }
-
-                            });
 
 
                             try {
@@ -1265,6 +1261,11 @@ app.controller('TestingController',
 
                                 newTestObject.type = vm.selectedSensors;
 
+                                for(let x = 0; x < vm.selectedRealSensor.length; x++){
+                                    newTestObject.type.push(vm.selectedRealSensor[x].name)
+                                }
+
+
 
                             } catch (e) {
                                 vm.parameterValues = [];
@@ -1302,7 +1303,6 @@ app.controller('TestingController',
 
                             vm.executeRules = executeRulesTemp === 'true';
                             newTestObject.triggerRules = vm.executeRules;
-
                             return addTest(newTestObject);
 
                         }

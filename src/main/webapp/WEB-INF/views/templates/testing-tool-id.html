@@ -275,6 +275,53 @@
                                 </div>
                             </div>
 
+                            <div ng-repeat="realSensor in ctrl.selectedRealSensor" ng-init="row=$index" >
+                                <h3>Configuration Real Sensor: {{realSensor.name}}</h3>
+                                <table class="table parameter-table">
+                                    <thead></thead>
+                                    <tbody>
+                                    <tr ng-repeat="parameter in realSensor._embedded.adapter.parameters">
+                                        <td>
+                                            <label>{{parameter.name}}:</label><br/>
+                                            <small ng-show="parameter.mandatory">(required)</small>
+                                        </td>
+                                        <td>
+                                            <div ng-switch="parameter.type">
+                                                <div ng-switch-when="Text">
+                                                    <input class="form-control" type="text"
+                                                           ng-required="parameter.mandatory"
+                                                           ng-model="ctrl.parameterVal[realSensor.name][$index]"/>
+                                                </div>
+                                                <div ng-switch-when="Number">
+                                                    <input class="form-control" type="number"
+                                                           ng-required="parameter.mandatory"
+                                                           ng-model="ctrl.parameterVal[realSensor.name][$index]"/>
+                                                </div>
+                                                <div class="switch" ng-switch-when="Switch">
+                                                    <label>No
+                                                        <input type="checkbox"
+                                                               ng-model="ctrl.parameterVal[realSensor.name][$index]">
+                                                        <span class="lever"></span>Yes</label>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="label bg-grey" ng-show="parameter.unit">{{parameter.unit}}</span>
+                                        </td>
+                                    </tr>
+                                    <tr ng-show="realSensor._embedded.adapter.parameters.length === 0">
+                                        <td colspan="2">No parameters required.</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                                <div class="has-error" ng-show="ctrl.deployer.status.fieldErrors.parameters">
+                                    <span class="help-block focused error">{{ctrl.deployer.status.fieldErrors.parameters}}</span>
+                                </div>
+                            </div>
+
+
+
+
                             <div ng-if="ctrl.sensorType.includes('TestingTemperaturSensor')">
                                 <div class="form-line">
                                     <h3>Configuration Temperature Sensor Simulator</h3>

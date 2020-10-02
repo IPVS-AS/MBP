@@ -35,7 +35,7 @@ public class TestingController {
     private TestDetailsRepository testDetailsRepository;
 
     @Autowired
-    private  RuleRepository ruleRepository;
+    private RuleRepository ruleRepository;
 
     @Autowired
     private TestEngine testEngine;
@@ -157,19 +157,19 @@ public class TestingController {
      */
     @PostMapping(value = "/test-details/editConfig/{testId}")
     public ResponseEntity<List<List<ParameterInstance>>> editConfig(@PathVariable(value = "testId") String testId,
-                                                              @RequestBody String useNewData) {
+                                                                    @RequestBody String useNewData) {
 
 
         TestDetails testDetails = testDetailsRepository.findById(testId);
         List<List<ParameterInstance>> configList = testDetails.getConfig();
 
         // Change value for the configuration of every sensor simulator of the test
-        for(List<ParameterInstance> config : configList)
-        for (ParameterInstance parameterInstance : config) {
-            if (parameterInstance.getName().equals("useNewData")) {
-                parameterInstance.setValue(Boolean.valueOf(useNewData));
+        for (List<ParameterInstance> config : configList)
+            for (ParameterInstance parameterInstance : config) {
+                if (parameterInstance.getName().equals("useNewData")) {
+                    parameterInstance.setValue(Boolean.valueOf(useNewData));
+                }
             }
-        }
 
         // save the changes in the database
         testDetails.setConfig(configList);
@@ -210,8 +210,8 @@ public class TestingController {
 
     @RequestMapping(value = "/test-details/updateTest/{testId}", method = RequestMethod.POST)
     public HttpEntity<Object> updateTest(@PathVariable(value = "testId") String testId, @RequestBody String test) {
-        try{
-            ParameterInstance instance ;
+        try {
+            ParameterInstance instance;
             TestDetails testToUpdate = testDetailsRepository.findById(testId);
 
             // Clear the configuration and rules field of the specific test
@@ -224,22 +224,28 @@ public class TestingController {
             Object config = updateInfos.get("config");
             JSONArray configEntries = (JSONArray) config;
 
-            List<ParameterInstance> newConfig = new ArrayList<>();
+            List<List<ParameterInstance>> newConfig = new ArrayList<>();
             if (configEntries != null) {
                 for (int i = 0; i < configEntries.length(); i++) {
-                    JSONObject singleEntry = (JSONObject) configEntries.get(i);
-                    instance = new ParameterInstance(singleEntry.getString("name"), singleEntry.get("value"));
-                    newConfig.add(instance);
+                    JSONArray singleConfig = (JSONArray) configEntries.get(i);
+                    List<ParameterInstance> newConfigInner = new ArrayList<>();
+                    for (int j = 0; j < singleConfig.length(); j++) {
+                        String edöfn = singleConfig.getJSONObject(j).getString("value");
+                        instance = new ParameterInstance(singleConfig.getJSONObject(j).getString("name"), singleConfig.getJSONObject(j).getString("value"));
+                        newConfigInner.add(instance);
+                    }
+                    newConfig.add(newConfigInner);
+
                 }
             }
-            testToUpdate.setConfig(Collections.singletonList(newConfig));
+            testToUpdate.setConfig(newConfig);
 
             // Update the rules to be observed in the test
             Pattern pattern = Pattern.compile("rules/(.*)$");
             JSONArray rules = (JSONArray) updateInfos.get("rules");
             List<Rule> newRules = new ArrayList<>();
-            if(rules != null){
-                for (int i = 0; i < rules.length();i++){
+            if (rules != null) {
+                for (int i = 0; i < rules.length(); i++) {
                     Matcher m = pattern.matcher(rules.getString(i));
                     if (m.find()) {
                         newRules.add(ruleRepository.findById(m.group(1)));
@@ -254,11 +260,9 @@ public class TestingController {
             // Save all updates
             testDetailsRepository.save(testToUpdate);
             return new ResponseEntity<>(HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
         }
-
-
 
 
     }

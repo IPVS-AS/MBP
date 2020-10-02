@@ -77,8 +77,6 @@ app.controller('TestingChartController',
 
                         ComponentService.getComponentState(vm.sensorList[i].id, vm.sensorList[i].componentTypeName + 's').then(function (response) {
                             //Success
-                            console.log( response);
-                            console.log(response.data);
                             vm.deploymentStateTemp.push(response.data.content);
 
 
