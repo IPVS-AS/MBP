@@ -21,7 +21,8 @@
     function login() {
       vm.dataLoading = true;
       AuthenticationService.Login(vm.username, vm.password, function(response) {
-        if (response.success) {
+        console.log(response);
+        if (response.status === 200) {
           //Get user object
           let userData = response.data || {};
 

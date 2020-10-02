@@ -47,7 +47,7 @@ import io.swagger.annotations.ApiResponses;
  * establishing SSH connections.
  */
 @RestController
-@RequestMapping(RestConfiguration.BASE_PATH)
+@RequestMapping(RestConfiguration.BASE_PATH + "/key-pairs")
 @Api(tags = { "key-pairs" })
 public class RestKeyPairController {
 
@@ -113,7 +113,7 @@ public class RestKeyPairController {
     	return ResponseEntity.noContent().build();
     }
 	
-	@PostMapping("/key-pairs/generate")
+	@PostMapping("/generate")
 	@ApiOperation(value = "Generates and registers a new SSH key-pair with a given name.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 201, message = "Success!"),
 			@ApiResponse(code = 400, message = "Invalid name!"),
