@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -46,6 +47,7 @@ public class TestReport {
     final String datePattern = "dd-MM-yyyy HH:mm:ss";
     final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(datePattern);
     final Font white = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
+    String[] simSensors = {"TestingTemperaturSensor", "TestingTemperaturSensorPl", "TestingFeuchtigkeitsSensor", "TestingFeuchtigkeitsSensorPl", "TestingBeschleunigungsSensor", "TestingBeschleunigungsSensorPl", "TestingGPSSensor", "TestingGPSSensorPl"};
 
 
     /**
@@ -94,7 +96,8 @@ public class TestReport {
         Paragraph para3 = new Paragraph("Test-Details: ", testDetails);
         para3.setAlignment(Element.ALIGN_CENTER);
 
-        PdfPTable table = getTestDefinitions(test);
+        PdfPTable simulationSensors = getSimulationConfig(test);
+        PdfPTable realSensors  =getRealSensorConfig(test);
 
         // Actuator informations
         PdfPTable actuatorInfos = getActuatorInfos();
@@ -110,7 +113,9 @@ public class TestReport {
         doc.newPage();
         doc.add(para3);
         doc.add(Chunk.NEWLINE);
-        doc.add(table);
+        doc.add(simulationSensors);
+        doc.add(Chunk.NEWLINE);
+        doc.add(realSensors);
         doc.add(Chunk.NEWLINE);
         doc.add(actuatorInfos);
         doc.add(Chunk.NEWLINE);
@@ -121,7 +126,7 @@ public class TestReport {
 
 
         for (Rule rule : rulesBefore) {
-             counterRules += 1;
+            counterRules += 1;
             PdfPTable ruleDetails = getRuleDetails(test, rule, counterRules);
             ruleDetails.setSpacingAfter(15f);
             doc.add(ruleDetails);
@@ -201,12 +206,12 @@ public class TestReport {
     }
 
     /**
-     * Returns a table with the user defined configurations of the test
+     * Returns a table with the user defined configurations of the simulated Sensors of the test
      *
      * @param test test for which the test report is created
      * @return table with user configurations of the test
      */
-    private PdfPTable getTestDefinitions(TestDetails test) {
+    private PdfPTable getSimulationConfig(TestDetails test) {
         int counter = 0;
         PdfPCell c1;
         PdfPCell c2;
@@ -222,99 +227,161 @@ public class TestReport {
         c0.setBackgroundColor(new BaseColor(117, 117, 117));
         table.addCell(c0);
 
+
         for (String type : test.getType()) {
-            counter += 1;
-            ArrayList<String> simDet = getSensorTypePDF(test, type);
+            if (Arrays.asList(simSensors).contains(type)) {
+                counter += 1;
+                ArrayList<String> simDet = getSensorTypePDF(test, type);
 
-            //Sensor-Type
-            c1 = new PdfPCell(new Phrase(counter + ".: Sensor-Type"));
-            c1.setColspan(2);
-            c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-            c1.setBackgroundColor(new BaseColor(157, 213, 227));
-            table.addCell(c1);
+                //Sensor-Type
+                c1 = new PdfPCell(new Phrase(counter + ".: Sensor-Type"));
+                c1.setColspan(2);
+                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                c1.setBackgroundColor(new BaseColor(157, 213, 227));
+                table.addCell(c1);
 
-            c2 = new PdfPCell(new Phrase(simDet.get(0)));
-            c2.setColspan(2);
-            c2.setBackgroundColor(new BaseColor(157, 213, 227));
-            table.addCell(c2);
+                c2 = new PdfPCell(new Phrase(simDet.get(0)));
+                c2.setColspan(2);
+                c2.setBackgroundColor(new BaseColor(157, 213, 227));
+                table.addCell(c2);
 
-            //TestCase
-            c1 = new PdfPCell(new Phrase("Event"));
-            c1.setColspan(2);
-            c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-            c1.setBackgroundColor(new BaseColor(191, 220, 227));
-            table.addCell(c1);
-            c2 = new PdfPCell(new Phrase(simDet.get(1)));
-            c2.setColspan(2);
-            table.addCell(c2);
+                //TestCase
+                c1 = new PdfPCell(new Phrase("Event"));
+                c1.setColspan(2);
+                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                c1.setBackgroundColor(new BaseColor(191, 220, 227));
+                table.addCell(c1);
+                c2 = new PdfPCell(new Phrase(simDet.get(1)));
+                c2.setColspan(2);
+                table.addCell(c2);
 
-            //Combination
-            c1 = new PdfPCell(new Phrase("Anomaly"));
-            c1.setColspan(2);
-            c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-            c1.setBackgroundColor(new BaseColor(191, 220, 227));
-            table.addCell(c1);
-            c2 = new PdfPCell(new Phrase(simDet.get(2)));
-            c2.setColspan(2);
-            table.addCell(c2);
+                //Combination
+                c1 = new PdfPCell(new Phrase("Anomaly"));
+                c1.setColspan(2);
+                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                c1.setBackgroundColor(new BaseColor(191, 220, 227));
+                table.addCell(c1);
+                c2 = new PdfPCell(new Phrase(simDet.get(2)));
+                c2.setColspan(2);
+                table.addCell(c2);
 
-            // Planned simulation adds informations about the simulation time, amount of events and outliers
-            if (type.equals("TestingTemperaturSensorPl") || type.equals("TestingFeuchtigkeitsSensorPl") || type.equals("TestingGPSSensorPl") || type.equals("TestingBeschleunigungsSensorPl")) {
-                for (java.util.List<ParameterInstance> configSensor : test.getConfig()) {
-                    for (ParameterInstance parameterInstance : configSensor) {
-                        switch (parameterInstance.getName()) {
-                            case "simTime":
-                                simTime = String.valueOf(parameterInstance.getValue());
-                                c1 = new PdfPCell(new Phrase("Simulation-Time"));
-                                c1.setColspan(2);
-                                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                                c1.setBackgroundColor(new BaseColor(191, 220, 227));
-                                table.addCell(c1);
+                // Planned simulation adds informations about the simulation time, amount of events and outliers
+                if (type.equals("TestingTemperaturSensorPl") || type.equals("TestingFeuchtigkeitsSensorPl") || type.equals("TestingGPSSensorPl") || type.equals("TestingBeschleunigungsSensorPl")) {
+                    for (java.util.List<ParameterInstance> configSensor : test.getConfig()) {
+                        for (ParameterInstance parameterInstance : configSensor) {
+                            switch (parameterInstance.getName()) {
+                                case "simTime":
+                                    simTime = String.valueOf(parameterInstance.getValue());
+                                    c1 = new PdfPCell(new Phrase("Simulation-Time"));
+                                    c1.setColspan(2);
+                                    c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                                    c1.setBackgroundColor(new BaseColor(191, 220, 227));
+                                    table.addCell(c1);
 
-                                c2 = new PdfPCell(new Phrase(simTime + " hours"));
-                                c2.setColspan(2);
-                                table.addCell(c2);
+                                    c2 = new PdfPCell(new Phrase(simTime + " hours"));
+                                    c2.setColspan(2);
+                                    table.addCell(c2);
 
-                                break;
-                            case "amountEvents":
-                                amountEvents = String.valueOf(parameterInstance.getValue());
-                                c1 = new PdfPCell(new Phrase("Amount Events"));
-                                c1.setColspan(2);
-                                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                                c1.setBackgroundColor(new BaseColor(191, 220, 227));
-                                table.addCell(c1);
+                                    break;
+                                case "amountEvents":
+                                    amountEvents = String.valueOf(parameterInstance.getValue());
+                                    c1 = new PdfPCell(new Phrase("Amount Events"));
+                                    c1.setColspan(2);
+                                    c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                                    c1.setBackgroundColor(new BaseColor(191, 220, 227));
+                                    table.addCell(c1);
 
-                                c2 = new PdfPCell(new Phrase(amountEvents));
-                                c2.setColspan(2);
-                                table.addCell(c2);
+                                    c2 = new PdfPCell(new Phrase(amountEvents));
+                                    c2.setColspan(2);
+                                    table.addCell(c2);
 
-                                break;
-                            case "amountAnomalies":
-                                amountOutliers = String.valueOf(parameterInstance.getValue());
-                                c1 = new PdfPCell(new Phrase("Amount Anomalies"));
-                                c1.setColspan(2);
-                                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                                c1.setBackgroundColor(new BaseColor(191, 220, 227));
-                                table.addCell(c1);
+                                    break;
+                                case "amountAnomalies":
+                                    amountOutliers = String.valueOf(parameterInstance.getValue());
+                                    c1 = new PdfPCell(new Phrase("Amount Anomalies"));
+                                    c1.setColspan(2);
+                                    c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                                    c1.setBackgroundColor(new BaseColor(191, 220, 227));
+                                    table.addCell(c1);
 
-                                c2 = new PdfPCell(new Phrase(amountOutliers));
-                                c2.setColspan(2);
-                                table.addCell(c2);
+                                    c2 = new PdfPCell(new Phrase(amountOutliers));
+                                    c2.setColspan(2);
+                                    table.addCell(c2);
 
-                                break;
+                                    break;
+                            }
+
                         }
-
                     }
                 }
-
-
             }
 
+
         }
-
-
         return table;
     }
+
+
+    /**
+     * Returns a table with the user defined configurations of the real Sensors of the test
+     *
+     * @param test test for which the test report is created
+     * @return table with user configurations of the test
+     */
+    private PdfPTable getRealSensorConfig(TestDetails test) {
+        int counter = 0;
+        PdfPCell c1;
+        PdfPCell c2;
+        PdfPTable table = new PdfPTable(4);
+        table.setWidthPercentage(100f);
+        Chunk text = new Chunk("Real Sensor(s)", white);
+        PdfPCell c0 = new PdfPCell(new Phrase(text));
+        c0.setHorizontalAlignment(Element.ALIGN_CENTER);
+        c0.setColspan(4);
+        c0.setBackgroundColor(new BaseColor(117, 117, 117));
+        table.addCell(c0);
+
+        for (String type : test.getType()) {
+            if (!Arrays.asList(simSensors).contains(type)) {
+                counter += 1;
+
+                //Sensor-Type
+                c1 = new PdfPCell(new Phrase(counter + ".: Sensor-Type"));
+                c1.setColspan(2);
+                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                c1.setBackgroundColor(new BaseColor(157, 213, 227));
+                table.addCell(c1);
+
+                c2 = new PdfPCell(new Phrase(type));
+                c2.setColspan(2);
+                c2.setBackgroundColor(new BaseColor(157, 213, 227));
+                table.addCell(c2);
+
+
+                for (java.util.List<ParameterInstance> configSensor : test.getConfig()) {
+                    for (ParameterInstance parameterInstance : configSensor) {
+                        if(parameterInstance.getValue().equals(type)){
+                            for (ParameterInstance parameterInstance2 : configSensor) {
+                                if(!parameterInstance2.getName().equals("ConfigName")){
+                                    c1 = new PdfPCell(new Phrase(parameterInstance2.getName().toString()));
+                                    c1.setColspan(2);
+                                    c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+                                    c1.setBackgroundColor(new BaseColor(191, 220, 227));
+                                    table.addCell(c1);
+                                    c2 = new PdfPCell(new Phrase(parameterInstance2.getValue().toString()));
+                                    c2.setColspan(2);
+                                    table.addCell(c2);
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return table;
+    }
+
 
     /**
      * Retruns a table with the Actuator informations of the Test.
@@ -359,7 +426,7 @@ public class TestReport {
         PdfPCell c0;
 
         Rule ruleAfter = ruleRepository.findByName(rule.getName());
-        c0 = new PdfPCell(new Phrase(counterRules + ". Rule: "+ rule.getName()));
+        c0 = new PdfPCell(new Phrase(counterRules + ". Rule: " + rule.getName()));
         c0.setHorizontalAlignment(Element.ALIGN_CENTER);
         c0.setColspan(4);
         c0.setBackgroundColor(new BaseColor(157, 213, 227));
@@ -567,10 +634,10 @@ public class TestReport {
                 .replace("]", "");  //remove the left bracket
 
         PdfPCell c3;
-        if(!rulesExecuted.equals("")){
-             c3 = new PdfPCell(new Phrase(rulesExecuted));
+        if (!rulesExecuted.equals("")) {
+            c3 = new PdfPCell(new Phrase(rulesExecuted));
         } else {
-             c3 = new PdfPCell(new Phrase("-"));
+            c3 = new PdfPCell(new Phrase("-"));
         }
 
         c3.setColspan(2);
@@ -609,10 +676,11 @@ public class TestReport {
 
         for (ParameterInstance parameterInstance : Objects.requireNonNull(config)) {
             if (parameterInstance.getName().equals("event")) {
-                testCase = (Integer) parameterInstance.getValue();
+                Object dd =parameterInstance.getValue();
+                testCase = Integer.parseInt(String.valueOf(parameterInstance.getValue()));
             }
             if (parameterInstance.getName().equals("anomaly")) {
-                combination = (Integer) parameterInstance.getValue();
+                combination = Integer.parseInt(String.valueOf(parameterInstance.getValue()));
             }
         }
 
