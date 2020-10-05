@@ -4,6 +4,7 @@ import sys
 import paho.mqtt.client as mqtt
 from datetime import datetime
 import time
+import os
 import json
 
 ########## Config ##########
