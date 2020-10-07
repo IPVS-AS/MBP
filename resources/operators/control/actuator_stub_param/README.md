@@ -10,7 +10,7 @@ This folder contains Parametrized operator scripts to simulate controlling an ac
 
 The following parameters need to be provided on deployment:
 
- - `"File_Name" (number)`: The name which is used to test action.
+ - `"File_Name" (Text)`: The file name (e.g., "my-actions.txt"), which is used to write messages from rule actions, for example from the button `Test action` in the `Rule Actions overview`.
 
 ## Operator files 
 
