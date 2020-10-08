@@ -9,6 +9,7 @@ import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.rules.RuleAction;
+import org.citopt.connde.domain.rules.RuleActionType;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.repository.RuleActionRepository;
@@ -109,6 +110,11 @@ public class RestRuleActionController {
     	// Delete the rule action (includes access-control) 
     	userEntityService.deleteWithPolicyCheck(ruleActionRepository, ruleActionId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();
+    }
+    
+    @GetMapping(value = "/types")
+    public ResponseEntity<RuleActionType[]> getRuleActionTypes() {
+    	return ResponseEntity.ok(RuleActionType.values());
     }
     
 }

@@ -10,7 +10,6 @@ import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
-import org.citopt.connde.domain.rules.RuleActionType;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.error.MissingPermissionException;
@@ -125,13 +124,6 @@ public class RestRuleController {
     	return ResponseEntity.noContent().build();
     }
     
-    // TODO: Add API description annotations
-
-    @GetMapping(value = "/rule-actions/types")
-    public ResponseEntity<RuleActionType[]> getRuleActionTypes() {
-    	return ResponseEntity.ok(RuleActionType.values());
-    }
-
 	@PostMapping(value = "/rules/enable/{id}")
 	public ResponseEntity<Void> enableRule(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,

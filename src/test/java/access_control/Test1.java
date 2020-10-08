@@ -1,13 +1,18 @@
 package access_control;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.citopt.connde.MBPApplication;
 import org.citopt.connde.domain.access_control.ACAbstractCondition;
+import org.citopt.connde.domain.access_control.ACAbstractEffect;
 import org.citopt.connde.domain.access_control.ACArgumentFunction;
 import org.citopt.connde.domain.access_control.ACCompositeCondition;
 import org.citopt.connde.domain.access_control.ACConditionSimpleValueArgument;
+import org.citopt.connde.domain.access_control.ACDoubleAccuracyEffect;
 import org.citopt.connde.domain.access_control.ACLogicalOperator;
+import org.citopt.connde.domain.access_control.ACPolicy;
 import org.citopt.connde.domain.access_control.ACSimpleCondition;
-import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.repository.ACConditionRepository;
 import org.citopt.connde.repository.ACEffectRepository;
@@ -15,8 +20,11 @@ import org.citopt.connde.repository.ACPolicyRepository;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.TestObjRepository;
 import org.citopt.connde.repository.UserRepository;
+import org.citopt.connde.service.access_control.ACConditionService;
 import org.citopt.connde.service.access_control.ACPolicyEvaluationService;
+import org.citopt.connde.service.access_control.ACPolicyService;
 import org.citopt.connde.util.C;
+import org.citopt.connde.util.Pages;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +54,12 @@ public class Test1 {
 	
 	@Autowired
 	private ACPolicyEvaluationService policyEvaluationService;
+	
+	@Autowired
+	private ACPolicyService policyService;
+	
+	@Autowired
+	private ACConditionService conditionService;
 	
 	@Autowired
 	private ACPolicyRepository policyRepository;
@@ -83,18 +97,28 @@ public class Test1 {
 //		policies.forEach(p -> System.out.println(p.getName()));
 		
 		////
-		
+//		User admin = userRepository.findByUsername("admin").get();
+//		ACAbstractCondition sc3 = new ACSimpleCondition<Double>("Simple condition 3", "Desc SC 3", ACArgumentFunction.EQUALS, new ACConditionSimpleAttributeArgument<String>(ACEntityType.REQUESTING_ENTITY, ACAttributeKey.REQUESTING_ENTITY_USERNAME), new ACConditionSimpleValueArgument<String>("admin"), admin.getId());
+//		conditionRepository.save(sc3);
 		// 5f218c7822424828a8275037 - admin
-		
+		ACPolicy p = policyService.getAll(Pages.ALL).get(0);
+		ACAbstractCondition c = conditionService.getForId(p.getConditionId());
+		System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(p));
+		System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(c));
 	}
 	
 	@Test
 	public void test2() throws JsonProcessingException {
-		Device d = new Device();
-		d.setIpAddress("123.123.123.123");
-		d.setName("Test Device 1");
-		
-		deviceRepository.save(d);
+		Map<String, String> p = new HashMap<>();
+		p.put(ACDoubleAccuracyEffect.PARAM_KEY_ACCURACY, "10");
+		p.put(ACDoubleAccuracyEffect.PARAM_KEY_PRECISION, "0");
+		ACAbstractEffect e = (ACAbstractEffect) new ACDoubleAccuracyEffect()
+				.setParameters(p)
+				.setName("Accuracy Effect #1")
+				.setDescription("AE1")
+				.setOwnerId("5f218c7822424828a8275037");
+		e = effectRepository.save(e);
+		System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(e));
 	}
 	
 	@Test
