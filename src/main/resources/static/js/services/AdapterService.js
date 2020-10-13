@@ -1,4 +1,3 @@
-/* global app */
 
 /**
  * Provides services for dealing with adapter objects and retrieving a list of components which use a certain adapter.

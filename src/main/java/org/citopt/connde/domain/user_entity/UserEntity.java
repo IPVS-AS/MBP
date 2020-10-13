@@ -1,9 +1,8 @@
 package org.citopt.connde.domain.user_entity;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import org.citopt.connde.domain.access_control.ACAttributeValue;
 import org.citopt.connde.domain.access_control.ACPolicy;
 import org.citopt.connde.domain.access_control.IACRequestedEntity;
@@ -13,10 +12,9 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import io.swagger.annotations.ApiModelProperty;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Base class for entity classes that require user management. It adds support for
@@ -39,7 +37,7 @@ public abstract class UserEntity implements IACRequestedEntity {
 //            .lock();
 
     // The environment model for which the entity was created (null if none)
-	@ACAttributeValue
+    @ACAttributeValue
     @JsonIgnore
     @DBRef
     private EnvironmentModel environmentModel = null;
@@ -54,7 +52,7 @@ public abstract class UserEntity implements IACRequestedEntity {
 //    @JsonIgnore
 //    @DBRef
 //    private Set<User> approvedUsers = new HashSet<>();
-    
+
     /**
      * The list of access-control {@link ACPolicy} ids evaluated
      * before allowing access to this user entity.
@@ -92,6 +90,15 @@ public abstract class UserEntity implements IACRequestedEntity {
     }
 
     /**
+     * Returns whether the entity has an owner.
+     *
+     * @return True, if the entity has an owner; false otherwise
+     */
+    public boolean hasOwner() {
+        return this.owner != null;
+    }
+
+    /**
      * Returns the owner of this entity.
      *
      * @return The owner
@@ -107,7 +114,7 @@ public abstract class UserEntity implements IACRequestedEntity {
      */
     public UserEntity setOwner(User owner) {
         this.owner = owner;
-		return this;
+        return this;
     }
 
 //    /**
@@ -118,7 +125,7 @@ public abstract class UserEntity implements IACRequestedEntity {
 //    public Set<User> getApprovedUsers() {
 //        return approvedUsers;
 //    }
-    
+
 //    /**
 //     * Sets the approved users set.
 //     *
@@ -127,16 +134,16 @@ public abstract class UserEntity implements IACRequestedEntity {
 //    public void setApprovedUsers(Set<User> approvedUsers) {
 //    	this.approvedUsers = approvedUsers;
 //    }
-    
+
     @Override
     public List<String> getAccessControlPolicyIds() {
-		return accessControlPolicyIds;
-	}
-    
+        return accessControlPolicyIds;
+    }
+
     public UserEntity setAccessControlPolicyIds(List<String> accessControlPolicyIds) {
-		this.accessControlPolicyIds = accessControlPolicyIds;
-		return this;
-	}
+        this.accessControlPolicyIds = accessControlPolicyIds;
+        return this;
+    }
 
     /**
      * Returns the creation date of the entity.
@@ -154,7 +161,7 @@ public abstract class UserEntity implements IACRequestedEntity {
      */
     public UserEntity setCreated(Date created) {
         this.created = created;
-		return this;
+        return this;
     }
 
     /**
@@ -173,7 +180,7 @@ public abstract class UserEntity implements IACRequestedEntity {
      */
     public UserEntity setLastModified(Date lastModified) {
         this.lastModified = lastModified;
-		return this;
+        return this;
     }
 
 //    /**

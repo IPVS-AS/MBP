@@ -69,6 +69,9 @@ public class UserEntityService {
 		// Filter devices (according to owner and policies)
     	return entities
     			.stream()
+				//Filter devices that have an owner
+				//TODO pls verify
+				.filter(UserEntity::hasOwner)
     			// Filter devices that are owned by the requesting user (all access granted)
     			.filter(e -> e.getOwner().getId().equals(user.getId()))
     			// Filter devices with policies with non-matching access-types

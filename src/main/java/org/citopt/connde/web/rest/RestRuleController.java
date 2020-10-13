@@ -101,7 +101,7 @@ public class RestRuleController {
     @ApiOperation(value = "Retrieves an existing rule entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 409, message = "Rule already exists!") })
     public ResponseEntity<EntityModel<Rule>> create(
-    		@PathVariable("ruleId") String ruleId, @ApiParam(value = "Page parameters", required = true) Pageable pageable,
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
     		@RequestBody Rule rule) throws EntityAlreadyExistsException {
     	// Check whether a rule with the same name already exists in the database
     	userEntityService.requireUniqueName(ruleRepository, rule.getName());

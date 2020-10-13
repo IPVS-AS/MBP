@@ -91,7 +91,6 @@ public class RestAdapterController {
     		@ApiResponse(code = 409, message = "Adapter already exists!") })
     public ResponseEntity<EntityModel<Adapter>> create(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-    		@PathVariable("adapterId") String adapterId,
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
     		@RequestBody Adapter adapter) throws EntityAlreadyExistsException {
     	// Check whether a adapter with the same name already exists in the database
