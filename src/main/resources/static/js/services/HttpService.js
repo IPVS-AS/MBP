@@ -79,20 +79,23 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
 
         /**
          * [Private]
-         * Performs a POST request with a given JSON payload and returns the resulting promise.
+         * Performs a POST request with a given payload and returns the resulting promise.
          * @param url The URl of the request
-         * @param jsonPayload The JSON payload of the POST request
+         * @param payload The payload of the POST request
          * @returns {*|void} The resulting promise
          */
-        function postRequest(url, jsonPayload) {
+        function postRequest(url, payload) {
+            //Sanitize payload
+            payload = payload || {};
+
             //Debug message
-            debug("Initiating POST request at " + url + " with payload:", jsonPayload);
+            debug("Initiating POST request at " + url + " with payload:", payload);
 
             //Perform request
             return $.ajax({
                 type: "POST",
                 url: url,
-                data: JSON.stringify(jsonPayload),
+                data: JSON.stringify(payload),
                 dataType: "json",
                 headers: generateHeader()
             }).done(function (response) {
@@ -108,20 +111,23 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
 
         /**
          * [Private]
-         * Performs a PUT request with a given JSON payload and returns the resulting promise.
+         * Performs a PUT request with a given payload and returns the resulting promise.
          * @param url The URl of the request
-         * @param jsonPayload The JSON payload of the PUT request
+         * @param payload The payload of the PUT request
          * @returns {*|void} The resulting promise
          */
-        function putRequest(url, jsonPayload) {
+        function putRequest(url, payload) {
+            //Sanitize payload
+            payload = payload || {};
+
             //Debug message
-            debug("Initiating PUT request at " + url + " with payload:", jsonPayload);
+            debug("Initiating PUT request at " + url + " with payload:", payload);
 
             //Perform request
             return $.ajax({
                 type: "PUT",
                 url: url,
-                data: JSON.stringify(jsonPayload),
+                data: JSON.stringify(payload),
                 dataType: "json",
                 headers: generateHeader()
             }).done(function (response) {
