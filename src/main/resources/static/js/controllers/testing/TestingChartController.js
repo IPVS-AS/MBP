@@ -2,8 +2,8 @@
  * Controller for the component details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('TestingChartController',
-    ['$scope', '$rootScope', '$routeParams', 'testingDetails', 'sensorList', '$interval', 'ComponentService', 'CrudService', 'DeviceService', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI',
-        function ($scope, $rootScope, $routeParams, testingDetails, sensorList, $interval, ComponentService, CrudService, DeviceService, UnitService, NotificationService, $http, ENDPOINT_URI) {
+    ['$scope', '$rootScope', '$routeParams', 'testingDetails', 'sensorList', '$interval', 'ComponentService', 'DeviceService', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI',
+        function ($scope, $rootScope, $routeParams, testingDetails, sensorList, $interval, ComponentService, DeviceService, UnitService, NotificationService, $http, ENDPOINT_URI) {
             //Selectors that allow the selection of different ui cards
             const LIVE_CHART_CARD_SELECTOR = ".live-chart-card";
             const HISTORICAL_CHART_CARD_SELECTOR = ".historical-chart-card";

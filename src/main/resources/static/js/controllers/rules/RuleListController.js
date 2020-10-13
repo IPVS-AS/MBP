@@ -5,9 +5,9 @@
  */
 app.controller('RuleListController',
     ['$scope', '$controller', '$interval', 'ruleList', 'addRule', 'deleteRule', 'ruleActionList', 'ruleTriggerList',
-        'CrudService', 'RuleService', 'NotificationService',
+        'RuleService', 'NotificationService',
         function ($scope, $controller, $interval, ruleList, addRule, deleteRule, ruleActionList, ruleTriggerList,
-                  CrudService, RuleService, NotificationService) {
+                RuleService, NotificationService) {
 
             var vm = this;
 

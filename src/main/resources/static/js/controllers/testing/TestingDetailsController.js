@@ -4,8 +4,8 @@
  * Controller for the test details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('TestingDetailsController',
-    ['$scope', '$controller', 'testingDetails', 'sensorList','$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI', 'ruleList', 'updateTest', 'CrudService',
-        function ($scope, $controller, testingDetails, sensorList ,$rootScope, $routeParams, $interval, UnitService, NotificationService, $http, ENDPOINT_URI, ruleList, updateTest, CrudService) {
+    ['$scope', '$controller', 'testingDetails', 'sensorList','$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI', 'ruleList', 'updateTest',
+        function ($scope, $controller, testingDetails, sensorList ,$rootScope, $routeParams, $interval, UnitService, NotificationService, $http, ENDPOINT_URI, ruleList, updateTest) {
             //Initialization of variables that are used in the frontend by angular
             var vm = this;
             //Test ID
