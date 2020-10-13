@@ -72,7 +72,7 @@ public class UserEntityService {
 				// Filter devices that have an owner
 				.filter(UserEntity::hasOwner)
     			// Filter devices that are owned by the requesting user (all access granted)
-    			.filter(e -> e.getOwner().getId().equals(user.getId()))
+    			.filter(e -> e.getOwner().getId().equals(user.getId())) // TODO EITHER admin OR owner OR policy grants access
     			// Filter devices with policies with non-matching access-types
     			.filter(e -> policyRepository.existsByIdAnyAndAccessTypeAll(e.getAccessControlPolicyIds(), C.listOf(accessType.toString())))
     			// Filter devices with policies that deny access
@@ -202,7 +202,7 @@ public class UserEntityService {
     			.stream()
     			// Filter devices that have an owner // TODO: Add check
     			// Filter devices that are owned by the requesting user (all access granted)
-    			.filter(e -> e.getOwner().getId().equals(user.getId()))
+    			.filter(e -> e.getOwner().getId().equals(user.getId())) // TODO EITHER admin OR owner OR policy grants access
     			// Filter devices with policies with non-matching access-types
     			.filter(e -> policyRepository.existsByIdAnyAndAccessTypeAll(e.getAccessControlPolicyIds(), C.listOf(accessType.toString())))
     			// Filter devices with policies that deny access
@@ -268,12 +268,6 @@ public class UserEntityService {
 		}
 		return true;
 	}
-    
-//    public <E extends UserEntity> void requireUniqueName(UserEntityRepository<E> repository, String entityName) throws EntityAlreadyExistsException {
-//    	if (repository.existsByName(entityName)) {
-//    		throw new EntityAlreadyExistsException("Entity", entityName);
-//    	}
-//    }
     
     public <E extends UserEntity> PagedModel<EntityModel<E>> entitiesToPagedModel(List<E> entities, Link selfLink, Pageable pageable) {
     	List<EntityModel<E>> deviceEntityModels = entities.stream().map(this::entityToEntityModel).collect(Collectors.toList());
