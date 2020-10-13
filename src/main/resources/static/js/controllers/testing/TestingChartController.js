@@ -10,7 +10,6 @@ app.controller('TestingChartController',
             const DEPLOYMENT_CARD_SELECTOR = ".deployment-card";
             const STATS_CARD_SELECTOR = ".stats-card";
 
-
             const vm = this;
             vm.sensorList = sensorList;
 

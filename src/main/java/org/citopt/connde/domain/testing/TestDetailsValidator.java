@@ -40,10 +40,9 @@ public class TestDetailsValidator implements Validator {
 
 
 
-
         // Check if rule choice is empty
         if (test.getRules() == null) {
-            errors.rejectValue("rules", "component.rules.empty",
+            errors.reject("rules", new String[]{"component.rules.empty"},
                     "At least one rule must be selected!");
         }
 

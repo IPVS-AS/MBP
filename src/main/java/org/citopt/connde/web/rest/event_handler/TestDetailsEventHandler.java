@@ -34,12 +34,17 @@ public class TestDetailsEventHandler {
 
         List<Sensor> sensorArray = new ArrayList<>();
 
+        List<String> f = testDetails.getType();
 
-        // checks if the sensors for the test are registered. If not this will be done in the following, if the specific operators are existing.
-        for (String sensType : testDetails.getType()) {
-            Sensor sensor = sensorRepository.findByName(sensType);
-            sensorArray.add(sensor);
+
+        if(testDetails.getType().size() > 0){
+            // checks if the sensors for the test are registered. If not this will be done in the following, if the specific operators are existing.
+            for (String sensType : testDetails.getType()) {
+                Sensor sensor = sensorRepository.findByName(sensType);
+                sensorArray.add(sensor);
+            }
         }
+
 
         // checks if the testing actuator is registered
         //  Actuator actuator = actuatorRepository.findByName("TestingActuator");

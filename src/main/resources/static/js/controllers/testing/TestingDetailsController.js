@@ -739,7 +739,7 @@ app.controller('TestingDetailsController',
                             "name": "ConfigName",
                             "value": 'TestingTemperaturSensor'
                         });
-                        if ($rootScope.config.eventTemp === 3 || $rootScope.config.eventTemp === 4 || $rootScope.config.eventTemp === 5 || $rootScope.config.eventTemp === 6    ) {
+                        if ($rootScope.config.eventTemp === '3' || $rootScope.config.eventTemp === '4' || $rootScope.config.eventTemp === '5' || $rootScope.config.eventTemp === '6') {
                             vm.configUpdate.push({
                                 "name": "event",
                                 "value": parseInt($rootScope.config.eventTemp)
@@ -1229,6 +1229,7 @@ app.controller('TestingDetailsController',
 
 
             }
+
 
             //Extend the controller object for the public functions to make them available from outside
             angular.extend(vm, $controller('TestingChartController as testingChartCtrl',

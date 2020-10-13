@@ -22,6 +22,7 @@ app.controller('TestingController',
 
             vm.test = "";
             vm.addSimulator = false;
+            vm.addRealSensor = false;
 
 
             /**
@@ -610,26 +611,62 @@ app.controller('TestingController',
 
             /**
              * [Public]
-             *
+             *Manage the addition or removal of simulated sensors for creating a test.
              */
-            function addSimulators(){
+            function addSimulators() {
                 var elem = document.getElementById("addSimulator");
-                if (elem.value==="+"){
+                if (elem.value === "+") {
                     elem.value = "-";
                     vm.addSimulator = true;
+                    document.getElementById("addSimulator").innerHTML = '';
                     document.getElementById("addSimulator").innerHTML = '<i class="material-icons">remove</i>';
 
                 } else {
                     elem.value = "+";
                     vm.addSimulator = false;
+                    document.getElementById("addSimulator").innerHTML = '';
                     document.getElementById("addSimulator").innerHTML = '<i class="material-icons">add</i>';
+
                 }
 
 
             }
 
 
+            /**
+             * [Public]
+             * Manage the addition or removal of real sensors for creating a test.
+             *
+             */
+            function addRealSensor() {
+                var elemReal = document.getElementById("addRealSensor");
+                vm.selectedRealSensor = [];
 
+
+                if (elemReal.value === '+') {
+                    vm.addRealSensors = true;
+                    elemReal.value = '-';
+                    document.getElementById("addRealSensor").innerHTML = '';
+                    document.getElementById("addRealSensor").innerHTML = '<i class="material-icons">remove</i>';
+
+
+                } else {
+                    elemReal.value = '+';
+                    vm.addRealSensors = false;
+                    document.getElementById("addRealSensor").innerHTML = '';
+                    document.getElementById("addRealSensor").innerHTML = '<i class="material-icons">add</i>';
+                }
+            }
+
+
+            /**
+             * [Public]
+             *
+             * Sends a server request in order to open a window for downloading/open the specific test report
+             *
+             * @param testID
+             * @param endtimeUnix
+             */
             function downloadPDF(testID, endtimeUnix) {
                 window.open('api/test-details/downloadPDF/' + testID + "_" + endtimeUnix, '_blank');
             }
@@ -736,50 +773,65 @@ app.controller('TestingController',
                             const newTestObject = {};
 
                             newTestObject.config = [];
-                            newTestObject.type=[];
-
-
-                            if(!angular.isUndefined(vm.parameterVal)){
-                                angular.forEach(vm.parameterVal, function (parameters, key) {
-                                    for (let i = 0; i < vm.selectedRealSensor.length; i++) {
-                                        if (vm.selectedRealSensor[i].name === key) {
-                                            vm.parameterValues = [];
-                                            vm.parameterValues.push({
-                                                "name": "ConfigName",
-                                                "value": vm.selectedRealSensor[i].name
-                                            });
-                                            var requiredParams = vm.selectedRealSensor[i]._embedded.adapter.parameters;
-
-
-                                            //Iterate over all parameters
-                                            for (let i = 0; i < requiredParams.length; i++) {
-                                                //Set empty default values for these parameters
-                                                var value = "";
-
-                                                if (requiredParams[i].type === "Switch") {
-                                                    value = true;
-                                                }
-                                                if (requiredParams[i].name === "device_code") {
-                                                    console.log("Requesting code for required parameter device_code.");
-                                                    value = getDeviceCode();
-                                                    continue;
-                                                }
-
-                                                //For each parameter, add a tuple (name, value) to the globally accessible parameter array
-                                                vm.parameterValues.push({
-                                                    "name": requiredParams[i].name,
-                                                    "value": parameters[i]
-                                                });
-                                            }
-                                            newTestObject.config.push(vm.parameterValues);
-                                        }
-                                    }
-                                });
-                                newTestObject.config.push([{"name": "ConfigRealSensors", "value": vm.parameterVal}])
-                            }
+                            newTestObject.type = [];
 
 
                             try {
+
+                                var checkRealSensor = false;
+                                var checkSimSensor = false;
+
+
+                                if (!angular.isUndefined(vm.selectedRealSensor)) {
+                                    if (!angular.isUndefined(vm.parameterVal)) {
+                                        for (let x = 0; x < vm.selectedRealSensor.length; x++) {
+                                            newTestObject.type.push(vm.selectedRealSensor[x].name);
+                                        }
+
+                                        checkRealSensor = true;
+                                        angular.forEach(vm.parameterVal, function (parameters, key) {
+                                            for (let i = 0; i < vm.selectedRealSensor.length; i++) {
+                                                if (vm.selectedRealSensor[i].name === key) {
+                                                    vm.parameterValues = [];
+                                                    vm.parameterValues.push({
+                                                        "name": "ConfigName",
+                                                        "value": vm.selectedRealSensor[i].name
+                                                    });
+                                                    var requiredParams = vm.selectedRealSensor[i]._embedded.adapter.parameters;
+
+
+                                                    //Iterate over all parameters
+                                                    for (let i = 0; i < requiredParams.length; i++) {
+                                                        //Set empty default values for these parameters
+                                                        var value = "";
+
+                                                        if (requiredParams[i].type === "Switch") {
+                                                            value = true;
+                                                        }
+                                                        if (requiredParams[i].name === "device_code") {
+                                                            console.log("Requesting code for required parameter device_code.");
+                                                            value = getDeviceCode();
+                                                            continue;
+                                                        }
+
+                                                        //For each parameter, add a tuple (name, value) to the globally accessible parameter array
+                                                        vm.parameterValues.push({
+                                                            "name": requiredParams[i].name,
+                                                            "value": parameters[i]
+                                                        });
+                                                    }
+                                                    newTestObject.config.push(vm.parameterValues);
+                                                }
+                                            }
+                                        });
+                                        newTestObject.config.push([{
+                                            "name": "ConfigRealSensors",
+                                            "value": vm.parameterVal
+                                        }])
+                                    }
+                                }
+
+
                                 //Extend request parameters for routines and parameters
                                 let parameters;
                                 // random values Angle and Axis for the GPS-Sensor
@@ -791,7 +843,11 @@ app.controller('TestingController',
                                 const directionOutlier = Math.floor(Math.random() * 6);
                                 const directionMovement = Math.floor(Math.random() * 6);
 
-                                if(!angular.isUndefined(vm.selectedSensor)){
+                                if (!angular.isUndefined(vm.selectedSensors)) {
+                                    checkSimSensor = true;
+                                    for (let z = 0; z < vm.selectedSensors.length; z++) {
+                                        newTestObject.type.push(vm.selectedSensors[z]);
+                                    }
                                     if (vm.selectedSensors.includes('TestingTemperaturSensor')) {
 
                                         vm.parameterValues = [];
@@ -1276,9 +1332,6 @@ app.controller('TestingController',
                                         newTestObject.config.push(vm.parameterValues);
                                     }
 
-                                    for(let z = 0; z < vm.selectedSensors; z++ ){
-                                        newTestObject.type.push(vm.selectedSensors[z]);
-                                    }
 
                                 }
 
@@ -1288,15 +1341,6 @@ app.controller('TestingController',
                                         newTestObject[property] = data[property];
                                     }
                                 }
-
-
-
-
-
-                                for(let x = 0; x < vm.selectedRealSensor.length; x++){
-                                    newTestObject.type.push(vm.selectedRealSensor[x].name)
-                                }
-
 
 
                             } catch (e) {
@@ -1329,6 +1373,11 @@ app.controller('TestingController',
                                 }
                             }
 
+                            if (checkSimSensor == false && checkRealSensor == false) {
+                                NotificationService.notify('Choose at least one sensor', 'error')
+                            }
+
+
                             if (executeRulesTemp === 'undefined') {
                                 NotificationService.notify('A decision must be made.', 'error')
                             }
@@ -1356,7 +1405,8 @@ app.controller('TestingController',
                 registerThreeDimSensor: registerThreeDimSensor,
                 checkActuatorReg: checkActuatorReg,
                 registerTestingActuator: registerTestingActuator,
-                addSimulators: addSimulators
+                addSimulators: addSimulators,
+                addRealSensor: addRealSensor
 
             });
             // $watch 'addTest' result and add to 'testList'
