@@ -1,5 +1,25 @@
 package org.citopt.connde.web.rest;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
+import org.citopt.connde.RestConfiguration;
+import org.citopt.connde.SwaggerConfiguration;
+import org.citopt.connde.error.MissingAdminPrivilegesException;
+import org.citopt.connde.service.UserEntityService;
+import org.citopt.connde.web.rest.response.DocumentationMetaData;
+import org.citopt.connde.web.rest.response.DocumentationURL;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import io.github.swagger2markup.GroupBy;
 import io.github.swagger2markup.Language;
 import io.github.swagger2markup.Swagger2MarkupConfig;
@@ -10,27 +30,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.SwaggerConfiguration;
-import org.citopt.connde.constants.Constants;
-import org.citopt.connde.error.MissingAdminPrivilegesException;
-import org.citopt.connde.service.UserEntityService;
-import org.citopt.connde.web.rest.response.DocumentationMetaData;
-import org.citopt.connde.web.rest.response.DocumentationURL;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 /**
  * REST controller for serving various data related to the documentation of the REST interface.
