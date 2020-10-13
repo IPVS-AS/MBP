@@ -166,7 +166,7 @@
                             <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.accessControlPolicyIds }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addSensorCtrl.item.errors.accessControlPolicyIds }">
-                                    <select multiple class="form-control select-picker" title="Access Control Policies"
+                                    <select multiple class="form-control selectpicker" title="Access Control Policies"
                                             data-header="Access Control Policies"
                                             ng-model="addSensorCtrl.item.accessControlPolicyIds"
                                             ng-options="p.id as (p.name) for p in ctrl.accessControlPolicyList">
