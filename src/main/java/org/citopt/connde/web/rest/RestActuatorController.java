@@ -63,7 +63,7 @@ public class RestActuatorController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
     	// Retrieve the corresponding actuators (includes access-control)
-    	List<Actuator> actuators = userEntityService.getPageWithPolicyCheck(actuatorRepository, ACAccessType.READ, accessRequest, pageable);
+    	List<Actuator> actuators = userEntityService.getPageWithAccessControlCheck(actuatorRepository, ACAccessType.READ, accessRequest, pageable);
     	
     	// Create self link
     	Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
@@ -81,7 +81,7 @@ public class RestActuatorController {
     		@PathVariable("actuatorId") String actuatorId,
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
     	// Retrieve the corresponding actuator (includes access-control)
-    	Actuator actuator = userEntityService.getForIdWithPolicyCheck(actuatorRepository, actuatorId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+    	Actuator actuator = userEntityService.getForIdWithAccessControlCheck(actuatorRepository, actuatorId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(actuator));
     }
     
@@ -104,7 +104,7 @@ public class RestActuatorController {
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("actuatorId") String actuatorId) throws EntityNotFoundException {
     	// Delete the actuator (includes access-control) 
-    	userEntityService.deleteWithPolicyCheck(actuatorRepository, actuatorId, ACAccessRequest.valueOf(accessRequestHeader));
+    	userEntityService.deleteWithAccessControlCheck(actuatorRepository, actuatorId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();
     }
     

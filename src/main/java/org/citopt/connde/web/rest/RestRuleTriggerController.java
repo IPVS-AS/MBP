@@ -61,7 +61,7 @@ public class RestRuleTriggerController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
     	// Retrieve the corresponding rule triggers (includes access-control)
-    	List<RuleTrigger> ruleTriggers = userEntityService.getPageWithPolicyCheck(ruleTriggerRepository, ACAccessType.READ, accessRequest, pageable);
+    	List<RuleTrigger> ruleTriggers = userEntityService.getPageWithAccessControlCheck(ruleTriggerRepository, ACAccessType.READ, accessRequest, pageable);
     	
     	// Create self link
     	Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
@@ -78,7 +78,7 @@ public class RestRuleTriggerController {
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("ruleTriggerId") String ruleTriggerId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
     	// Retrieve the corresponding rule trigger (includes access-control)
-    	RuleTrigger ruleTrigger = userEntityService.getForIdWithPolicyCheck(ruleTriggerRepository, ruleTriggerId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+    	RuleTrigger ruleTrigger = userEntityService.getForIdWithAccessControlCheck(ruleTriggerRepository, ruleTriggerId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(ruleTrigger));
     }
     
@@ -103,7 +103,7 @@ public class RestRuleTriggerController {
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("ruleTriggerId") String ruleTriggerId) throws EntityNotFoundException {
     	// Delete the rule trigger (includes access-control) 
-    	userEntityService.deleteWithPolicyCheck(ruleTriggerRepository, ruleTriggerId, ACAccessRequest.valueOf(accessRequestHeader));
+    	userEntityService.deleteWithAccessControlCheck(ruleTriggerRepository, ruleTriggerId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();
     }
     

@@ -108,7 +108,7 @@ public class RestComponentStateController {
 
 	private <C extends Component> Map<String, ComponentState> getStatesAllComponents(ComponentRepository<C> repository, ACAccessRequest accessRequest) {
 		// Retrieve all components from the database (according to owner and policies)
-		List<Component> componentList = userEntityService.getAllWithPolicyCheck(repository, ACAccessType.READ, accessRequest)
+		List<Component> componentList = userEntityService.getAllWithAccessControlCheck(repository, ACAccessType.READ, accessRequest)
 				.stream()
 				.map(entity -> (Component) entity)
 				.collect(Collectors.toList());
@@ -119,7 +119,7 @@ public class RestComponentStateController {
 
 	private <C extends Component> EntityModel<ComponentState> getComponentState(String componentId, ComponentRepository<C> repository, ACAccessRequest accessRequest) throws EntityNotFoundException {
 		// Retrieve component from the database
-		Component component = userEntityService.getForIdWithPolicyCheck(repository, componentId, ACAccessType.READ, accessRequest);
+		Component component = userEntityService.getForIdWithAccessControlCheck(repository, componentId, ACAccessType.READ, accessRequest);
 
 		// Determine component state
 		// TODO: Entity model really required here???

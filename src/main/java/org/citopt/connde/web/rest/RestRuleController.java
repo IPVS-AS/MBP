@@ -76,7 +76,7 @@ public class RestRuleController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
     	// Retrieve the corresponding rules (includes access-control)
-    	List<Rule> rules = userEntityService.getPageWithPolicyCheck(ruleRepository, ACAccessType.READ, accessRequest, pageable);
+    	List<Rule> rules = userEntityService.getPageWithAccessControlCheck(ruleRepository, ACAccessType.READ, accessRequest, pageable);
     	
     	// Create self link
     	Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
@@ -93,7 +93,7 @@ public class RestRuleController {
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("ruleId") String ruleId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
     	// Retrieve the corresponding rule (includes access-control)
-    	Rule rule = userEntityService.getForIdWithPolicyCheck(ruleRepository, ruleId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+    	Rule rule = userEntityService.getForIdWithAccessControlCheck(ruleRepository, ruleId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(rule));
     }
     
@@ -117,7 +117,7 @@ public class RestRuleController {
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("ruleId") String ruleId) throws EntityNotFoundException {
     	// Delete the rule (includes access-control) 
-    	userEntityService.deleteWithPolicyCheck(ruleRepository, ruleId, ACAccessRequest.valueOf(accessRequestHeader));
+    	userEntityService.deleteWithAccessControlCheck(ruleRepository, ruleId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();
     }
     
@@ -129,7 +129,7 @@ public class RestRuleController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
 		// Retrieve the corresponding rule (includes access-control)
-		Rule rule = userEntityService.getForIdWithPolicyCheck(ruleRepository, ruleId, ACAccessType.READ, accessRequest);
+		Rule rule = userEntityService.getForIdWithAccessControlCheck(ruleRepository, ruleId, ACAccessType.READ, accessRequest);
 		
 		// Check permission
 		userEntityService.requirePermission(rule, ACAccessType.START, accessRequest);
@@ -151,7 +151,7 @@ public class RestRuleController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
 		// Retrieve the corresponding rule (includes access-control)
-		Rule rule = userEntityService.getForIdWithPolicyCheck(ruleRepository, ruleId, ACAccessType.READ, accessRequest);
+		Rule rule = userEntityService.getForIdWithAccessControlCheck(ruleRepository, ruleId, ACAccessType.READ, accessRequest);
 		
 		// Check permission
 		userEntityService.requirePermission(rule, ACAccessType.STOP, accessRequest);
@@ -169,7 +169,7 @@ public class RestRuleController {
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "id") String actionId) throws EntityNotFoundException {
 		// Retrieve the corresponding rule action (includes access-control)
-		RuleAction ruleAction = userEntityService.getForIdWithPolicyCheck(ruleActionRepository, actionId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+		RuleAction ruleAction = userEntityService.getForIdWithAccessControlCheck(ruleActionRepository, actionId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
 
 		// Test action
 		boolean result = ruleExecutor.testRuleAction(ruleAction);

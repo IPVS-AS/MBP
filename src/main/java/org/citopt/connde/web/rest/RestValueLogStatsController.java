@@ -80,7 +80,7 @@ public class RestValueLogStatsController {
 			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator to retrieve value log statistics for", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId,
 			@RequestParam(value = "unit", required = false) String unit) throws EntityNotFoundException {
 		// Retrieve actuator from the database (includes access-control)
-		Actuator actuator = userEntityService.getForIdWithPolicyCheck(actuatorRepository, actuatorId, ACAccessType.READ_VALUE_LOG_STATS, ACAccessRequest.valueOf(accessRequestHeader));
+		Actuator actuator = userEntityService.getForIdWithAccessControlCheck(actuatorRepository, actuatorId, ACAccessType.READ_VALUE_LOG_STATS, ACAccessRequest.valueOf(accessRequestHeader));
 
 		// Calculate value log stats
 		return ResponseEntity.ok(calculateValueLogStats(actuator, unit));
@@ -106,7 +106,7 @@ public class RestValueLogStatsController {
 			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor to retrieve value log statistics for", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId,
 			@RequestParam(value = "unit", required = false) String unit) throws EntityNotFoundException {
 		// Retrieve actuator from the database (includes access-control)
-		Sensor sensor = userEntityService.getForIdWithPolicyCheck(sensorRepository, sensorId, ACAccessType.READ_VALUE_LOG_STATS, ACAccessRequest.valueOf(accessRequestHeader));
+		Sensor sensor = userEntityService.getForIdWithAccessControlCheck(sensorRepository, sensorId, ACAccessType.READ_VALUE_LOG_STATS, ACAccessRequest.valueOf(accessRequestHeader));
 
 		// Calculate value log stats
 		return ResponseEntity.ok(calculateValueLogStats(sensor, unit));

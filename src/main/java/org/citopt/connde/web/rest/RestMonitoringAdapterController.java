@@ -63,7 +63,7 @@ public class RestMonitoringAdapterController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
     	// Retrieve the corresponding monitoring adapters (includes access-control)
-    	List<MonitoringAdapter> monitoringAdapters = userEntityService.getPageWithPolicyCheck(monitoringAdapterRepository, ACAccessType.READ, accessRequest, pageable);
+    	List<MonitoringAdapter> monitoringAdapters = userEntityService.getPageWithAccessControlCheck(monitoringAdapterRepository, ACAccessType.READ, accessRequest, pageable);
     	
     	// Create self link
     	Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
@@ -81,7 +81,7 @@ public class RestMonitoringAdapterController {
     		@PathVariable("monitoringAdapterId") String monitoringAdapterId,
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
     	// Retrieve the corresponding monitoring adapter (includes access-control)
-    	MonitoringAdapter monitoringAdapter = userEntityService.getForIdWithPolicyCheck(monitoringAdapterRepository, monitoringAdapterId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+    	MonitoringAdapter monitoringAdapter = userEntityService.getForIdWithAccessControlCheck(monitoringAdapterRepository, monitoringAdapterId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(monitoringAdapter));
     }
     
@@ -104,7 +104,7 @@ public class RestMonitoringAdapterController {
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("monitoringAdapterId") String monitoringAdapterId) throws EntityNotFoundException {
     	// Delete the monitoring adapter (includes access-control) 
-    	userEntityService.deleteWithPolicyCheck(monitoringAdapterRepository, monitoringAdapterId, ACAccessRequest.valueOf(accessRequestHeader));
+    	userEntityService.deleteWithAccessControlCheck(monitoringAdapterRepository, monitoringAdapterId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();
     }
     

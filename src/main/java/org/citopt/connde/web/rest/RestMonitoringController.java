@@ -214,7 +214,7 @@ public class RestMonitoringController {
 		User user = userService.getLoggedInUser();
 		
 		// Retrieve the device from the database
-		Device device = userEntityService.getForIdWithPolicyCheck(deviceRepository, deviceId, ACAccessType.READ, accessRequest);
+		Device device = userEntityService.getForIdWithAccessControlCheck(deviceRepository, deviceId, ACAccessType.READ, accessRequest);
 		
 		// Check for monitoring permission
 		requireMonitoringPermission(device, user, accessRequest);
@@ -268,7 +268,7 @@ public class RestMonitoringController {
 		User user = userService.getLoggedInUser();
 		
 		// Retrieve the device from the database
-		Device device = userEntityService.getForIdWithPolicyCheck(deviceRepository, deviceId, ACAccessType.READ, accessRequest);
+		Device device = userEntityService.getForIdWithAccessControlCheck(deviceRepository, deviceId, ACAccessType.READ, accessRequest);
 
 		// Check for monitoring permission
 		requireMonitoringPermission(device, user, accessRequest);
@@ -301,7 +301,7 @@ public class RestMonitoringController {
 		User user = userService.getLoggedInUser();
 		
 		// Retrieve all devices available for the requesting user
-		List<MonitoringComponentDTO> monitoringComponents = userEntityService.getAllWithPolicyCheck(deviceRepository, ACAccessType.READ, accessRequest)
+		List<MonitoringComponentDTO> monitoringComponents = userEntityService.getAllWithAccessControlCheck(deviceRepository, ACAccessType.READ, accessRequest)
 				.stream()
 				// Filter devices based on policies
 				.filter(d -> checkMonitoringPermission(d, user, accessRequest))

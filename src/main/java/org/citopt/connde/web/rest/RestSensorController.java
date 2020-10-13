@@ -63,7 +63,7 @@ public class RestSensorController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
     	// Retrieve the corresponding sensors (includes access-control)
-    	List<Sensor> sensors = userEntityService.getPageWithPolicyCheck(sensorRepository, ACAccessType.READ, accessRequest, pageable);
+    	List<Sensor> sensors = userEntityService.getPageWithAccessControlCheck(sensorRepository, ACAccessType.READ, accessRequest, pageable);
     	
     	// Create self link
     	Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
@@ -81,7 +81,7 @@ public class RestSensorController {
     		@PathVariable("sensorId") String sensorId,
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
     	// Retrieve the corresponding sensor (includes access-control)
-    	Sensor sensor = userEntityService.getForIdWithPolicyCheck(sensorRepository, sensorId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+    	Sensor sensor = userEntityService.getForIdWithAccessControlCheck(sensorRepository, sensorId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(sensor));
     }
     
@@ -107,7 +107,7 @@ public class RestSensorController {
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("sensorId") String sensorId) throws EntityNotFoundException {
     	// Delete the sensor (includes access-control) 
-    	userEntityService.deleteWithPolicyCheck(sensorRepository, sensorId, ACAccessRequest.valueOf(accessRequestHeader));
+    	userEntityService.deleteWithAccessControlCheck(sensorRepository, sensorId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();
     }
     

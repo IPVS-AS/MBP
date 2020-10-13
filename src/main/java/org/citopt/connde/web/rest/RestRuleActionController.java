@@ -62,7 +62,7 @@ public class RestRuleActionController {
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
         // Retrieve the corresponding rule actions (includes access-control)
-        List<RuleAction> ruleActions = userEntityService.getPageWithPolicyCheck(ruleActionRepository, ACAccessType.READ, accessRequest, pageable);
+        List<RuleAction> ruleActions = userEntityService.getPageWithAccessControlCheck(ruleActionRepository, ACAccessType.READ, accessRequest, pageable);
 
         // Create self link
         Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
@@ -79,7 +79,7 @@ public class RestRuleActionController {
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable("ruleActionId") String ruleActionId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
         // Retrieve the corresponding rule action (includes access-control)
-        RuleAction ruleAction = userEntityService.getForIdWithPolicyCheck(ruleActionRepository, ruleActionId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+        RuleAction ruleAction = userEntityService.getForIdWithAccessControlCheck(ruleActionRepository, ruleActionId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
         return ResponseEntity.ok(userEntityService.entityToEntityModel(ruleAction));
     }
 
@@ -104,7 +104,7 @@ public class RestRuleActionController {
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable("ruleActionId") String ruleActionId) throws EntityNotFoundException {
         // Delete the rule action (includes access-control)
-        userEntityService.deleteWithPolicyCheck(ruleActionRepository, ruleActionId, ACAccessRequest.valueOf(accessRequestHeader));
+        userEntityService.deleteWithAccessControlCheck(ruleActionRepository, ruleActionId, ACAccessRequest.valueOf(accessRequestHeader));
         return ResponseEntity.noContent().build();
     }
 

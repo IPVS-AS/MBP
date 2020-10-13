@@ -91,7 +91,7 @@ public class RestValueLogController {
 			@RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the actuator values", example = "°C", required = false) String unit,
 			@ApiParam(value = "The page configuration", required = true) Pageable pageable) throws EntityNotFoundException {
 		// Retrieve actuator from the database (includes access-control)
-		Actuator actuator = userEntityService.getForIdWithPolicyCheck(actuatorRepository, actuatorId, ACAccessType.READ_VALUE_LOGS, ACAccessRequest.valueOf(accessRequestHeader));
+		Actuator actuator = userEntityService.getForIdWithAccessControlCheck(actuatorRepository, actuatorId, ACAccessType.READ_VALUE_LOGS, ACAccessRequest.valueOf(accessRequestHeader));
 		
 		// Retrieve the policies for the actuator from the database
 		List<ACPolicy> policies = userEntityService.getPoliciesForEntityAndAccessType(actuator, ACAccessType.READ_VALUE_LOGS);
@@ -122,7 +122,7 @@ public class RestValueLogController {
 			@ApiParam(value = "The page configuration", required = true) Pageable pageable) throws EntityNotFoundException {
 		// Retrieve actuator from the database (includes access-control)
 		// TODO: Formerly, permission 'deploy' has been checked - i think it should be the 'read' permission
-		Sensor sensor = userEntityService.getForIdWithPolicyCheck(sensorRepository, sensorId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+		Sensor sensor = userEntityService.getForIdWithAccessControlCheck(sensorRepository, sensorId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
 		
 		// Retrieve the policies for the actuator from the database
 		List<ACPolicy> policies = userEntityService.getPoliciesForEntityAndAccessType(sensor, ACAccessType.READ_VALUE_LOGS);		

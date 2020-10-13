@@ -89,7 +89,7 @@ public class MonitoringHelper {
 		}
 
 		// Get all compatible monitoring adapters available for the requesting user
-		return userEntityService.getAllWithPolicyCheck(monitoringAdapterRepository, ACAccessType.READ, accessRequest)
+		return userEntityService.getAllWithAccessControlCheck(monitoringAdapterRepository, ACAccessType.READ, accessRequest)
 				.stream().filter(a -> a.isCompatibleWith(device.getComponentType())).collect(Collectors.toList());
 	}
 
@@ -124,7 +124,7 @@ public class MonitoringHelper {
 		}
 		
 		// Get all compatible devices available for the requesting user
-		return userEntityService.getAllWithPolicyCheck(deviceRepository, ACAccessType.READ, accessRequest)
+		return userEntityService.getAllWithAccessControlCheck(deviceRepository, ACAccessType.READ, accessRequest)
 				.stream().filter(d -> adapter.isCompatibleWith(d.getComponentType())).collect(Collectors.toList());
 	}
 

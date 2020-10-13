@@ -55,7 +55,7 @@ public class RestDeviceStateController {
 		Map<String, DeviceState> deviceStates = new HashMap<>();
 
 		// Get all devices
-		List<Device> devices = userEntityService.getAllWithPolicyCheck(deviceRepository, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+		List<Device> devices = userEntityService.getAllWithAccessControlCheck(deviceRepository, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
 
 		// Iterate over all devices and determine the device state
 		for (Device device : devices) {
@@ -75,7 +75,7 @@ public class RestDeviceStateController {
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "deviceId") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId) throws EntityNotFoundException {
 		// Retrieve the device from the database
-		Device device = userEntityService.getForIdWithPolicyCheck(deviceRepository, deviceId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+		Device device = userEntityService.getForIdWithAccessControlCheck(deviceRepository, deviceId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
 
 		// Determine device state
 		DeviceState deviceState = sshDeployer.determineDeviceState(device);

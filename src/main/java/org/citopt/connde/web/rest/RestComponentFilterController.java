@@ -80,13 +80,13 @@ public class RestComponentFilterController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
 		// Make sure the requesting user is allowed to access the rule trigger
-		userEntityService.getForIdWithPolicyCheck(ruleTriggerRepository, ruleTriggerId, ACAccessType.READ, accessRequest);
+		userEntityService.getForIdWithAccessControlCheck(ruleTriggerRepository, ruleTriggerId, ACAccessType.READ, accessRequest);
 
 		// Retrieve all rules using the trigger from the database
     	List<Rule> rules = ruleRepository.findAllByTriggerId(ruleTriggerId);
     	
     	// Filter based on owner and policies
-    	rules = userEntityService.filterforOwnerAndPolicies(rules, ACAccessType.READ, accessRequest);
+    	rules = userEntityService.filterForAdminOwnerAndPolicies(rules, ACAccessType.READ, accessRequest);
     	return ResponseEntity.ok(rules);
 	}
 
@@ -109,13 +109,13 @@ public class RestComponentFilterController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
 		// Make sure the requesting user is allowed to access the rule action
-		userEntityService.getForIdWithPolicyCheck(ruleActionRepository, ruleActionId, ACAccessType.READ, accessRequest);
+		userEntityService.getForIdWithAccessControlCheck(ruleActionRepository, ruleActionId, ACAccessType.READ, accessRequest);
 		
 		// Retrieve all rules using the action from the database
     	List<Rule> rules = ruleRepository.findAllByActionId(ruleActionId);
     	
     	// Filter based on owner and policies
-    	rules = userEntityService.filterforOwnerAndPolicies(rules, ACAccessType.READ, accessRequest);
+    	rules = userEntityService.filterForAdminOwnerAndPolicies(rules, ACAccessType.READ, accessRequest);
     	return ResponseEntity.ok(rules);
 	}
 
@@ -137,8 +137,8 @@ public class RestComponentFilterController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
 		// Retrieve actuator and sensor excerpts from the database
-		List<ComponentExcerpt> componentExcerpts = userEntityService.filterforOwnerAndPolicies(() -> actuatorRepository.findAllByAdapterId(adapterId), ACAccessType.READ, accessRequest);
-		componentExcerpts.addAll(userEntityService.filterforOwnerAndPolicies(() -> sensorRepository.findAllByAdapterId(adapterId), ACAccessType.READ, accessRequest));
+		List<ComponentExcerpt> componentExcerpts = userEntityService.filterForAdminOwnerAndPolicies(() -> actuatorRepository.findAllByAdapterId(adapterId), ACAccessType.READ, accessRequest);
+		componentExcerpts.addAll(userEntityService.filterForAdminOwnerAndPolicies(() -> sensorRepository.findAllByAdapterId(adapterId), ACAccessType.READ, accessRequest));
 		return ResponseEntity.ok(componentExcerpts);
 	}
 
@@ -160,8 +160,8 @@ public class RestComponentFilterController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
 		// Retrieve actuator and sensor excerpts from the database
-		List<ComponentExcerpt> componentExcerpts = userEntityService.filterforOwnerAndPolicies(() -> actuatorRepository.findAllByAdapterId(deviceId), ACAccessType.READ, accessRequest);
-		componentExcerpts.addAll(userEntityService.filterforOwnerAndPolicies(() -> sensorRepository.findAllByAdapterId(deviceId), ACAccessType.READ, accessRequest));
+		List<ComponentExcerpt> componentExcerpts = userEntityService.filterForAdminOwnerAndPolicies(() -> actuatorRepository.findAllByAdapterId(deviceId), ACAccessType.READ, accessRequest);
+		componentExcerpts.addAll(userEntityService.filterForAdminOwnerAndPolicies(() -> sensorRepository.findAllByAdapterId(deviceId), ACAccessType.READ, accessRequest));
 		return ResponseEntity.ok(componentExcerpts);
 	}
 

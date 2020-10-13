@@ -80,7 +80,7 @@ public class RestKeyPairController {
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
         // Retrieve the corresponding key-pairs (includes access-control)
-        List<KeyPair> adapters = userEntityService.getPageWithPolicyCheck(keyPairRepository, ACAccessType.READ, accessRequest, pageable);
+        List<KeyPair> adapters = userEntityService.getPageWithAccessControlCheck(keyPairRepository, ACAccessType.READ, accessRequest, pageable);
 
         // Create self link
         Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
@@ -98,7 +98,7 @@ public class RestKeyPairController {
             @PathVariable("keyPairId") String keyPairId,
             @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
         // Retrieve the corresponding key-pair (includes access-control)
-        KeyPair adapter = userEntityService.getForIdWithPolicyCheck(keyPairRepository, keyPairId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+        KeyPair adapter = userEntityService.getForIdWithAccessControlCheck(keyPairRepository, keyPairId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
         return ResponseEntity.ok(userEntityService.entityToEntityModel(adapter));
     }
 
@@ -122,7 +122,7 @@ public class RestKeyPairController {
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable("keyPairId") String keyPairId) throws EntityNotFoundException {
         // Delete the key-pair (includes access-control)
-        userEntityService.deleteWithPolicyCheck(keyPairRepository, keyPairId, ACAccessRequest.valueOf(accessRequestHeader));
+        userEntityService.deleteWithAccessControlCheck(keyPairRepository, keyPairId, ACAccessRequest.valueOf(accessRequestHeader));
         return ResponseEntity.noContent().build();
     }
 
@@ -163,7 +163,7 @@ public class RestKeyPairController {
         userEntityService.requirePermission(keyPairRepository, keyPairId, ACAccessType.READ, accessRequest);
 
         // Retrieve all devices from the database (includes access-control)
-        List<Device> devices = userEntityService.getAllWithPolicyCheck(deviceRepository, ACAccessType.READ, accessRequest)
+        List<Device> devices = userEntityService.getAllWithAccessControlCheck(deviceRepository, ACAccessType.READ, accessRequest)
                 .stream()
                 // Filter devices that do not use the key-pair
                 .filter(d -> d.hasRSAKey() && d.getKeyPair().getId().equals(keyPairId))

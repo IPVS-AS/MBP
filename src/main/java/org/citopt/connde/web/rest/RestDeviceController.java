@@ -64,7 +64,7 @@ public class RestDeviceController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
     	// Retrieve the corresponding devices (includes access-control)
-    	List<Device> devices = userEntityService.getPageWithPolicyCheck(deviceRepository, ACAccessType.READ, accessRequest, pageable);
+    	List<Device> devices = userEntityService.getPageWithAccessControlCheck(deviceRepository, ACAccessType.READ, accessRequest, pageable);
     	
     	// Create self link
     	Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
@@ -85,7 +85,7 @@ public class RestDeviceController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
     	// Retrieve the corresponding device (includes access-control)
-    	Device device = userEntityService.getForIdWithPolicyCheck(deviceRepository, deviceId, ACAccessType.READ, accessRequest);
+    	Device device = userEntityService.getForIdWithAccessControlCheck(deviceRepository, deviceId, ACAccessType.READ, accessRequest);
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(device));
     }
     
@@ -112,7 +112,7 @@ public class RestDeviceController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
     	// Delete the device (includes access-control) 
-    	userEntityService.deleteWithPolicyCheck(deviceRepository, deviceId, accessRequest);
+    	userEntityService.deleteWithAccessControlCheck(deviceRepository, deviceId, accessRequest);
     	return ResponseEntity.noContent().build();
     }
     

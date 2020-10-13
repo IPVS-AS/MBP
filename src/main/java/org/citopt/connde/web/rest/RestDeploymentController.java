@@ -217,7 +217,7 @@ public class RestDeploymentController implements RepresentationModelProcessor<En
 
 	private <C extends Component> C getComponentWithPermissionCheck(ComponentRepository<C> repository, String id, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
 		// Retrieve component from the database
-		C component = userEntityService.getForIdWithPolicyCheck(repository, id, ACAccessType.READ, accessRequest);
+		C component = userEntityService.getForIdWithAccessControlCheck(repository, id, ACAccessType.READ, accessRequest);
 					
 		// Check permission
 		userEntityService.requirePermission(component, accessType, accessRequest);

@@ -63,7 +63,7 @@ public class RestAdapterController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
     	// Retrieve the corresponding adapters (includes access-control)
-    	List<Adapter> adapters = userEntityService.getPageWithPolicyCheck(adapterRepository, ACAccessType.READ, accessRequest, pageable);
+    	List<Adapter> adapters = userEntityService.getPageWithAccessControlCheck(adapterRepository, ACAccessType.READ, accessRequest, pageable);
     	
     	// Create self link
     	Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
@@ -81,7 +81,7 @@ public class RestAdapterController {
     		@PathVariable("adapterId") String adapterId,
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
     	// Retrieve the corresponding adapter (includes access-control)
-    	Adapter adapter = userEntityService.getForIdWithPolicyCheck(adapterRepository, adapterId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+    	Adapter adapter = userEntityService.getForIdWithAccessControlCheck(adapterRepository, adapterId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(adapter));
     }
     
@@ -107,7 +107,7 @@ public class RestAdapterController {
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("adapterId") String adapterId) throws EntityNotFoundException {
     	// Delete the adapter (includes access-control) 
-    	userEntityService.deleteWithPolicyCheck(adapterRepository, adapterId, ACAccessRequest.valueOf(accessRequestHeader));
+    	userEntityService.deleteWithAccessControlCheck(adapterRepository, adapterId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();
     }
     

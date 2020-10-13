@@ -58,7 +58,7 @@ public class RestEnvModelController {
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
         // Retrieve the corresponding environment models (includes access-control)
-        List<EnvironmentModel> environmentModels = userEntityService.getPageWithPolicyCheck(environmentModelRepository, ACAccessType.READ, accessRequest, pageable);
+        List<EnvironmentModel> environmentModels = userEntityService.getPageWithAccessControlCheck(environmentModelRepository, ACAccessType.READ, accessRequest, pageable);
 
         // Create self link
         Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
@@ -76,7 +76,7 @@ public class RestEnvModelController {
             @PathVariable("id") String environmentModelId,
             @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
         // Retrieve the corresponding environment model (includes access-control)
-        EnvironmentModel environmentModel = userEntityService.getForIdWithPolicyCheck(environmentModelRepository, environmentModelId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+        EnvironmentModel environmentModel = userEntityService.getForIdWithAccessControlCheck(environmentModelRepository, environmentModelId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
         return ResponseEntity.ok(userEntityService.entityToEntityModel(environmentModel));
     }
 
@@ -121,7 +121,7 @@ public class RestEnvModelController {
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable("id") String environmentModelId) throws EntityNotFoundException {
         // Delete the environment model (includes access-control)
-        userEntityService.deleteWithPolicyCheck(environmentModelRepository, environmentModelId, ACAccessRequest.valueOf(accessRequestHeader));
+        userEntityService.deleteWithAccessControlCheck(environmentModelRepository, environmentModelId, ACAccessRequest.valueOf(accessRequestHeader));
         return ResponseEntity.noContent().build();
     }
 
@@ -135,7 +135,7 @@ public class RestEnvModelController {
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String environmentModelId) throws EntityNotFoundException, EnvironmentModelParseException {
         // Retrieve the corresponding environment model (includes access-control)
-        EnvironmentModel environmentModel = userEntityService.getForIdWithPolicyCheck(environmentModelRepository, environmentModelId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+        EnvironmentModel environmentModel = userEntityService.getForIdWithAccessControlCheck(environmentModelRepository, environmentModelId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
 
         // Determine entity states
         environmentModelService.determineEntityStates(environmentModel);
@@ -209,7 +209,7 @@ public class RestEnvModelController {
 
     private void doAction(Consumer<EnvironmentModel> action, String environmentModelId, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
         // Retrieve the corresponding environment model (includes access-control)
-        EnvironmentModel environmentModel = userEntityService.getForIdWithPolicyCheck(environmentModelRepository, environmentModelId, ACAccessType.READ, accessRequest);
+        EnvironmentModel environmentModel = userEntityService.getForIdWithAccessControlCheck(environmentModelRepository, environmentModelId, ACAccessType.READ, accessRequest);
 
         // Check permission
         userEntityService.requirePermission(environmentModel, accessType, accessRequest);
