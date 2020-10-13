@@ -3,10 +3,27 @@
 /**
  * Provides services for HTTP requests.
  */
-app.factory('HttpService', ['$http', 'ENDPOINT_URI', 'UserService', 'NotificationService',
-    function ($http, ENDPOINT_URI, UserService, NotificationService) {
-
+app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
+    function ($rootScope, ENDPOINT_URI, NotificationService) {
+        //Enables or disables the debug mode
         const debugMode = true;
+
+        /**
+         * Returns a string of user attributes.
+         *
+         * @returns {string} The user attributes string
+         */
+        function getUserAttributes() {
+            //Check if user data is available
+            if (typeof $rootScope.globals.currentUser === 'undefined') {
+                return "";
+            }
+
+            //Put header string together
+            return "requesting-entity-firstname=" + $rootScope.globals.currentUser.userData.firstName + ";;"
+                + "requesting-entity-lastname=" + $rootScope.globals.currentUser.userData.lastName + ";;"
+                + "requesting-entity-username=" + $rootScope.globals.currentUser.username;
+        }
 
         /**
          * [Private]
@@ -14,10 +31,18 @@ app.factory('HttpService', ['$http', 'ENDPOINT_URI', 'UserService', 'Notificatio
          * @returns The header object (key-value)
          */
         function generateHeader() {
-            return {
+            //Create header object
+            let headers = {
                 'Content-Type': 'application/json;charset=UTF8',
-                'X-MBP-Access-Request': UserService.getUserAttributes()
+                'X-MBP-Access-Request': getUserAttributes()
             }
+
+            //Check if authorization can be added to the header
+            if ($rootScope.globals.currentUser) {
+                headers['Authorization'] = 'Basic ' + $rootScope.globals.currentUser.authdata;
+            }
+
+            return headers;
         }
 
         /**
@@ -66,6 +91,35 @@ app.factory('HttpService', ['$http', 'ENDPOINT_URI', 'UserService', 'Notificatio
             //Perform request
             return $.ajax({
                 type: "POST",
+                url: url,
+                data: JSON.stringify(jsonPayload),
+                dataType: "json",
+                headers: generateHeader()
+            }).done(function (response) {
+                //Debug message
+                debug("Request succeeded, response:", response);
+
+                //Propagate response
+                return response;
+            }).fail(handleError).always(function () {
+                debug("Request processing completed.");
+            });
+        }
+
+        /**
+         * [Private]
+         * Performs a PUT request with a given JSON payload and returns the resulting promise.
+         * @param url The URl of the request
+         * @param jsonPayload The JSON payload of the PUT request
+         * @returns {*|void} The resulting promise
+         */
+        function putRequest(url, jsonPayload) {
+            //Debug message
+            debug("Initiating PUT request at " + url + " with payload:", jsonPayload);
+
+            //Perform request
+            return $.ajax({
+                type: "PUT",
                 url: url,
                 data: JSON.stringify(jsonPayload),
                 dataType: "json",
@@ -217,6 +271,26 @@ app.factory('HttpService', ['$http', 'ENDPOINT_URI', 'UserService', 'Notificatio
 
         /**
          * [Public]
+         * Updates one entity of a certain category with specific data and returns the resulting promise.
+         * @param category The category of the entity to update
+         * @param data The data of the entity to update
+         * @returns {*} The resulting promise
+         */
+        function updateOne(category, data) {
+            //Sanitize data
+            if (typeof data === 'undefined') {
+                data = {};
+            }
+
+            //Perform POT request
+            return postRequest(ENDPOINT_URI + "/" + category + "/" + (data.id || "")).then(function (data) {
+                //Sanitize and return entity
+                return data || {};
+            });
+        }
+
+        /**
+         * [Public]
          * Deletes one entity of a certain id from a given category and returns the resulting promise.
          * @param category The category of the entity
          * @param id The ID of the entity to delete
@@ -231,10 +305,15 @@ app.factory('HttpService', ['$http', 'ENDPOINT_URI', 'UserService', 'Notificatio
 
         //Expose public functions
         return {
+            getRequest: getRequest,
+            postRequest: postRequest,
+            putRequest: putRequest,
+            deleteRequest: deleteRequest,
             getOne: getOne,
             getAll: getAll,
             count: count,
             addOne: addOne,
+            updateOne: updateOne,
             deleteOne: deleteOne
         };
     }])

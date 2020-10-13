@@ -94,7 +94,7 @@ public class RestActuatorController {
     	userEntityService.requireUniqueName(actuatorRepository, actuator.getName());
 
     	// Save actuator in the database
-    	Actuator createdActuator = actuatorRepository.save(actuator);
+    	Actuator createdActuator = userEntityService.create(actuatorRepository, actuator);
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(createdActuator));
     }
     

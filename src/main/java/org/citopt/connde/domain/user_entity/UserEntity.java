@@ -25,6 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public abstract class UserEntity implements IACRequestedEntity {
 
+	// The environment model for which the entity was created (null if none)
 	@ACAttributeValue
     @JsonIgnore
     @DBRef
@@ -32,7 +33,7 @@ public abstract class UserEntity implements IACRequestedEntity {
 
     // Owner of the entity
     @ACAttributeValue
-//    @JsonIgnore
+    @JsonIgnore
     @DBRef
     private User owner = null;
 
@@ -73,6 +74,15 @@ public abstract class UserEntity implements IACRequestedEntity {
     }
 
     /**
+     * Returns whether the entity has an owner.
+     *
+     * @return True, if the entity has an owner; false otherwise
+     */
+    public boolean hasOwner() {
+        return this.owner != null;
+    }
+
+    /**
      * Returns the owner of this entity.
      *
      * @return The owner
@@ -88,18 +98,18 @@ public abstract class UserEntity implements IACRequestedEntity {
      */
     public UserEntity setOwner(User owner) {
         this.owner = owner;
-		return this;
+        return this;
     }
 
     @Override
     public List<String> getAccessControlPolicyIds() {
-		return accessControlPolicyIds;
-	}
-    
+        return accessControlPolicyIds;
+    }
+
     public UserEntity setAccessControlPolicyIds(List<String> accessControlPolicyIds) {
-		this.accessControlPolicyIds = accessControlPolicyIds;
-		return this;
-	}
+        this.accessControlPolicyIds = accessControlPolicyIds;
+        return this;
+    }
 
     /**
      * Returns the creation date of the entity.
@@ -117,7 +127,7 @@ public abstract class UserEntity implements IACRequestedEntity {
      */
     public UserEntity setCreated(Date created) {
         this.created = created;
-		return this;
+        return this;
     }
 
     /**
@@ -136,7 +146,7 @@ public abstract class UserEntity implements IACRequestedEntity {
      */
     public UserEntity setLastModified(Date lastModified) {
         this.lastModified = lastModified;
-		return this;
+        return this;
     }
 
     /**

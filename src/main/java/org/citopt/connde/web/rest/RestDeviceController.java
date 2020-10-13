@@ -92,12 +92,11 @@ public class RestDeviceController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
     @ApiOperation(value = "Retrieves an existing device entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 409, message = "Device already exists!") })
-    public ResponseEntity<EntityModel<Device>> create(@RequestBody Device device) throws EntityAlreadyExistsException {
-    	// Check whether a device with the same name already exists in the database
-    	userEntityService.requireUniqueName(deviceRepository, device.getName());
-
+    public ResponseEntity<EntityModel<Device>> create(
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
+    		@RequestBody Device device) throws EntityAlreadyExistsException, EntityNotFoundException {
     	// Save device in the database
-    	Device createdDevice = deviceRepository.save(device);
+    	Device createdDevice = userEntityService.create(deviceRepository, device);
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(createdDevice));
     }
     

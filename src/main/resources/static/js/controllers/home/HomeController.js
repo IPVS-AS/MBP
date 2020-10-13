@@ -1,14 +1,13 @@
-/* global app */
-
+/**
+ * Controller for the Home page.
+ */
 app.controller('HomeController',
-    ['$scope', '$timeout', 'CrudService', 'ComponentService', 'DeviceService', 'countEnvModels',
-        'countActuators', 'countSensors', 'countDevices', 'countAdapters', 'countMonitoringAdapters', 'countPolicies', 'countTests',
-        function ($scope, $timeout, CrudService, ComponentService, DeviceService, countEnvModels,
-                  countActuators, countSensors, countDevices, countAdapters, countMonitoringAdapters, countPolicies, countTests) {
-
+    ['$scope', 'countEnvModels', 'countActuators', 'countSensors', 'countDevices', 'countPolicies',
+        function ($scope, countEnvModels, countActuators, countSensors, countDevices, countPolicies) {
             //DOM elements
             const ELEMENT_WELCOME_CARD = $('#welcome-card-body');
 
+            //Local storage keys
             const STORAGE_KEY_WELCOME = "show_welcome_card";
 
             let vm = this;
@@ -37,10 +36,8 @@ app.controller('HomeController',
                 countActuators: countActuators,
                 countSensors: countSensors,
                 countDevices: countDevices,
-                countAdapters: countAdapters,
-                countMonitoringAdapters: countMonitoringAdapters,
-                countPolicies: countPolicies,
-                countTests: countTests
+                countPolicies: countPolicies
             });
-        }]);
+        }]
+);
 

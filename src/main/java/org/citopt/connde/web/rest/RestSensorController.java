@@ -89,12 +89,12 @@ public class RestSensorController {
     @ApiOperation(value = "Retrieves an existing sensor entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     		@ApiResponse(code = 409, message = "Sensor already exists!") })
-    public ResponseEntity<EntityModel<Sensor>> create(@RequestBody Sensor sensor) throws EntityAlreadyExistsException {
-    	// Check whether a sensor with the same name already exists in the database
-    	userEntityService.requireUniqueName(sensorRepository, sensor.getName());
-
+    public ResponseEntity<EntityModel<Sensor>> create(
+    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
+    		@RequestBody Sensor sensor) throws EntityAlreadyExistsException, EntityNotFoundException {
     	// Save sensor in the database
-    	Sensor createdSensor = sensorRepository.save(sensor);
+    	Sensor createdSensor = userEntityService.create(sensorRepository, sensor);
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(createdSensor));
     }
     

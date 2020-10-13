@@ -3,8 +3,8 @@
 /**
  * Provides services for dealing with components, retrieving their states and calculating stats.
  */
-app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
-    function ($http, $resource, $q, ENDPOINT_URI) {
+app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI',
+    function (HttpService, $resource, $q, ENDPOINT_URI) {
 
         //URL prefix for requests
         const URL_PREFIX = ENDPOINT_URI + '/';
@@ -33,7 +33,7 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          * @returns {*}
          */
         function startComponent(componentId, componentType, parameterList) {
-            return $http.post(URL_START_COMPONENT + componentType + '/' + componentId, parameterList);
+            return HttpService.postRequest(URL_START_COMPONENT + componentType + '/' + componentId, parameterList);
         }
 
 
@@ -46,7 +46,7 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          * @returns {*}
          */
         function stopComponent(componentId, componentType) {
-            return $http.post(URL_STOP_COMPONENT + componentType + '/' + componentId);
+            return HttpService.postRequest(URL_STOP_COMPONENT + componentType + '/' + componentId);
         }
 
 
@@ -58,7 +58,7 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          * @returns {*}
          */
         function getAllComponentStates(component) {
-            return $http.get(URL_PREFIX + component + URL_GET_ALL_COMPONENT_STATES_SUFFIX);
+            return HttpService.getRequest(URL_PREFIX + component + URL_GET_ALL_COMPONENT_STATES_SUFFIX);
         }
 
         /**
@@ -70,7 +70,7 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          * @returns {*}
          */
         function getComponentState(componentId, component) {
-            return $http.get(URL_PREFIX + component + URL_GET_COMPONENT_STATE_SUFFIX + componentId);
+            return HttpService.getRequest(URL_PREFIX + component + URL_GET_COMPONENT_STATE_SUFFIX + componentId);
         }
 
         /**
@@ -116,7 +116,7 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
             }
 
             //Execute request
-            return $http.get(URL_PREFIX + component + 's/' + componentId + URL_VALUE_LOGS_SUFFIX, {
+            return HttpService.getRequest(URL_PREFIX + component + 's/' + componentId + URL_VALUE_LOGS_SUFFIX, {
                 params: parameters
             }).then(function (response) {
                 //Process received logs in order to be able to display them in a chart
@@ -135,7 +135,7 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          */
         function deleteValueLogs(componentId, component) {
             //Execute request
-            return $http.delete(URL_PREFIX + component + 's/' + componentId + URL_VALUE_LOGS_SUFFIX);
+            return HttpService.deleteRequest(URL_PREFIX + component + 's/' + componentId + URL_VALUE_LOGS_SUFFIX);
         }
 
 
@@ -209,42 +209,13 @@ app.factory('ComponentService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
             deleteValueLogs: deleteValueLogs,
             startComponent: startComponent,
             stopComponent: stopComponent,
-            isDeployed: function (url) {
-                return $http({
-                    method: 'GET',
-                    url: url
-                }).then(
-                    function (response) {
-                        if (response.data !== undefined) {
-                            console.log('isDeployed got data ' + response.data);
-                            return response.data === true
-                                || response.data === 'true'
-                                || response.data.status === 'true';
-                        } else {
-                            console.log('isDeployed invalid data');
-                            console.log(response);
-                            return $q.reject(response);
-                        }
-                    },
-                    function (response) {
-                        console.log('isDeployed error');
-                        return $q.reject(response);
-                    });
-            },
 
             deploy: function (url) {
-                return $http({
-                    method: 'POST',
-                    url: url,
-                    headers: {'Content-Type': 'application/json'}
-                });
+                return HttpService.postRequest(url);
             },
 
             undeploy: function (url) {
-                return $http({
-                    method: 'DELETE',
-                    url: url
-                });
+                return HttpService.deleteRequest(url);
             }
         };
     }

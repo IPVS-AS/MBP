@@ -1,62 +1,45 @@
-(function () {
-    'use strict';
+/**
+ * Provides services for dealing with adapter objects and retrieving a list of components which use a certain adapter.
+ */
+app.factory('UserService', ['$rootScope', 'HttpService', 'ENDPOINT_URI', 'BASE_URI',
+    function ($rootScope, HttpService, ENDPOINT_URI, BASE_URI) {
 
-    angular
-        .module('app')
-        .factory('UserService', UserService);
-
-    UserService.$inject = ['$rootScope', '$http', 'ENDPOINT_URI', 'BASE_URI'];
-
-    function UserService($rootScope, $http, ENDPOINT_URI, BASE_URI) {
-        var service = {};
-
-        service.Authenticate = Authenticate;
-        service.Logout = Logout;
-        service.GetAll = GetAll;
-        service.GetByUsername = GetByUsername;
-        service.Create = Create;
-        service.Update = Update;
-        service.Delete = Delete;
-        service.getUserAttributes = getUserAttributes;
-
-        return service;
-
-        /**
-         * [Public]
-         */
-        function getUserAttributes() {
-            return "requesting-entity-firstname=" + $rootScope.globals.currentUser.userData.firstName + ";;"
-                + "requesting-entity-lastname=" + $rootScope.globals.currentUser.userData.lastName + ";;"
-                + "requesting-entity-username=" + $rootScope.globals.currentUser.username;
+        function authenticate(user) {
+            return HttpService.postRequest(ENDPOINT_URI + '/users/authenticate', user);
         }
 
-        function Authenticate(user) {
-            return $http.post(ENDPOINT_URI + '/users/authenticate', user);
+        function logout() {
+            return HttpService.getRequest(BASE_URI + 'logout');
         }
 
-        function Logout() {
-            return $http.get(BASE_URI + 'logout');
+        function getAll() {
+            return HttpService.getRequest(ENDPOINT_URI + '/users');
         }
 
-        function GetAll() {
-            return $http.get(ENDPOINT_URI + '/users');
+        function getByUsername(username) {
+            return HttpService.getRequest(ENDPOINT_URI + '/users/' + username);
         }
 
-        function GetByUsername(username) {
-            return $http.get(ENDPOINT_URI + '/users/' + username);
+        function createUser(user) {
+            return HttpService.postRequest(ENDPOINT_URI + '/users', user);
         }
 
-        function Create(user) {
-            return $http.post(ENDPOINT_URI + '/users', user);
+        function updateUser(user) {
+            return HttpService.putRequest(ENDPOINT_URI + '/users/', user);
         }
 
-        function Update(user) {
-            return $http.put(ENDPOINT_URI + '/users/', user);
+        function deleteUser(username) {
+            return HttpService.deleteRequest(ENDPOINT_URI + '/users/' + username);
         }
 
-        function Delete(username) {
-            return $http.delete(ENDPOINT_URI + '/users/' + username);
-        }
-    }
-
-})();
+        //Expose
+        return {
+            Authenticate: authenticate,
+            Logout: logout,
+            GetAll: getAll,
+            GetByUsername: getByUsername,
+            Create: createUser,
+            Update: updateUser,
+            Delete: deleteUser
+        };
+    }]);
