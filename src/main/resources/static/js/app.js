@@ -81,8 +81,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     addEnvModel: ['HttpService', function (HttpService) {
                         return angular.bind(this, HttpService.addOne, 'env-models');
                     }],
-                    updateEnvModel: ['HttpService', function (CrudService) {
-                        return angular.bind(this, CrudService.updateItem, 'env-models');
+                    updateEnvModel: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.updateOne, 'env-models');
                     }],
                     deleteEnvModel: ['HttpService', function (HttpService) {
                         return angular.bind(this, HttpService.deleteOne, 'env-models');

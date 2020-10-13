@@ -282,8 +282,8 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
                 data = {};
             }
 
-            //Perform POT request
-            return postRequest(ENDPOINT_URI + "/" + category + "/" + (data.id || "")).then(function (data) {
+            //Perform PUT request
+            return putRequest(ENDPOINT_URI + "/" + category + "/" + data.id).then(function (data) {
                 //Sanitize and return entity
                 return data || {};
             });
