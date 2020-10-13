@@ -93,21 +93,18 @@ public class RestEnvModelController {
         return ResponseEntity.ok(userEntityService.entityToEntityModel(createdEnvironmentModel));
     }
 
-    //TODO pls verify
-    @PostMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+    @PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
     @ApiOperation(value = "Updates an existing environment model entity if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
             @ApiResponse(code = 404, message = "Environment model not found!")})
     public ResponseEntity<EntityModel<EnvironmentModel>> update(
             @PathVariable(name = "id") String id,
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-            @RequestBody EnvironmentModel environmentModel) throws EntityNotFoundException {
-        //Check if model exists
-        if (!environmentModelRepository.existsById(id)) {
-            throw new EntityNotFoundException("Environment model not found!");
-        }
+            @RequestBody EnvironmentModel environmentModel) throws EntityNotFoundException, MissingPermissionException {
+    	// Check permission (and whether environment model exists)
+    	userEntityService.requirePermission(environmentModelRepository, id, ACAccessType.UPDATE, ACAccessRequest.valueOf(accessRequestHeader));
 
-        //Fix entity ID
+        // Fix entity ID
         environmentModel.setId(id);
 
         // Save updated environment model to the database

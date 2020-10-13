@@ -4,8 +4,8 @@
  * Controller for the policies list page.
  */
 app.controller('PolicyListController',
-    ['$scope', '$controller', '$interval', 'policyList', 'addPolicy', 'deletePolicy', 'policyConditionList', 'policyEffectList', 'CrudService', 'PolicyService', 'NotificationService',
-        function ($scope, $controller, $interval, policyList, addPolicy, deletePolicy, policyConditionList, policyEffectList, CrudService, PolicyService, NotificationService) {
+    ['$scope', '$controller', '$interval', 'policyList', 'addPolicy', 'deletePolicy', 'policyConditionList', 'policyEffectList', 'PolicyService', 'NotificationService',
+        function ($scope, $controller, $interval, policyList, addPolicy, deletePolicy, policyConditionList, policyEffectList, PolicyService, NotificationService) {
 
             var vm = this;
 
