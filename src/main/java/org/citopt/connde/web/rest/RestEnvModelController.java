@@ -96,10 +96,7 @@ public class RestEnvModelController {
     @ApiOperation(value = "Retrieves an existing environment model entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     		@ApiResponse(code = 409, message = "Environment model already exists!") })
-    public ResponseEntity<EntityModel<EnvironmentModel>> create(
-    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-    		@PathVariable("environmentModelId") String environmentModelId, @ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@RequestBody EnvironmentModel adapter) throws EntityAlreadyExistsException {
+    public ResponseEntity<EntityModel<EnvironmentModel>> create(@RequestBody EnvironmentModel adapter) throws EntityAlreadyExistsException {
     	// Check whether a environment model with the same name already exists in the database
     	userEntityService.requireUniqueName(environmentModelRepository, adapter.getName());
 

@@ -36,6 +36,8 @@ public class RestComponentTypeController {
 //    @ApiOperation(value = "Creates a new component type", produces = "application/hal+json")
 //    @ApiResponses({@ApiResponse(code = 201, message = "Success"), @ApiResponse(code = 409, message = "Component type does already exist"), @ApiResponse(code = 401, message = "Not authorized to create a new component type")})
 //    public ResponseEntity<?> createComponentType(@Valid @RequestBody ComponentType componentType) {
+//    	  userEntityService.requireAdmin();
+//    
 //        ComponentType type = componentTypeRepository.findByName(componentType.getName());
 //        if (type != null && type.getComponent().equals(componentType.getComponent())) {
 //            return ResponseEntity.badRequest()

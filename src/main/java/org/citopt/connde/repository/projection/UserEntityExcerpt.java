@@ -3,6 +3,7 @@ package org.citopt.connde.repository.projection;
 import java.util.List;
 import java.util.Set;
 
+import org.citopt.connde.domain.access_control.ACPolicy;
 import org.citopt.connde.domain.access_control.IACRequestedEntity;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -20,10 +21,13 @@ public interface UserEntityExcerpt extends IACRequestedEntity {
 
 	@Value("#{target.getApprovedUsersProjection()}")
 	Set<UserExcerpt> getApprovedUsers();
-
+	
 	@Override
 	@Value("#{target.getAccessControlPolicyIds()}")
 	List<String> getAccessControlPolicyIds();
+	
+	@Value("#{target.getAccessControlPolicyIds().stream.map(@aCpolicyService::getForId).collect(Collectors.toList)}")
+	List<ACPolicy> getAccessControlPolicies();
 
 	@Value("#{target.isOwning()}")
 	boolean getIsOwning();

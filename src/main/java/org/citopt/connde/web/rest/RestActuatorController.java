@@ -89,10 +89,7 @@ public class RestActuatorController {
     @ApiOperation(value = "Retrieves an existing actuator entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     		@ApiResponse(code = 409, message = "Actuator already exists!") })
-    public ResponseEntity<EntityModel<Actuator>> create(
-    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-    		@PathVariable("actuatorId") String actuatorId, @ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@RequestBody Actuator actuator) throws EntityAlreadyExistsException {
+    public ResponseEntity<EntityModel<Actuator>> create(@RequestBody Actuator actuator) throws EntityAlreadyExistsException {
     	// Check whether a actuator with the same name already exists in the database
     	userEntityService.requireUniqueName(actuatorRepository, actuator.getName());
 

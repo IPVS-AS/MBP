@@ -212,6 +212,20 @@
                                     </button>
                                 </div>
                             </div>
+                            <!-- item.accessControlPolicyIds group -->
+                            <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.accessControlPolicyIds }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addAdapterCtrl.item.errors.accessControlPolicyIds }">
+                                    <select multiple class="form-control select-picker" title="Access Control Policies"
+                                            data-header="Access Control Policies"
+                                            ng-model="addAdapterCtrl.item.accessControlPolicyIds"
+                                            ng-options="p.id as (p.name) for p in ctrl.accessControlPolicyList">
+                                        <option value="">Select access control policies
+                                        <option/>
+                                    </select>
+                                </div>
+                                <span class="help-block" ng-show="addAdapterCtrl.item.errors.accessControlPolicyIds">{{addAdapterCtrl.item.errors.accessControlPolicyIds.message}}</span>
+                            </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>
                         <div class="modal-footer">

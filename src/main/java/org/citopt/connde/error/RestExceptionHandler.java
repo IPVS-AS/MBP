@@ -50,6 +50,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
 	}
 	
+	@ExceptionHandler(MissingAdminPrivilegesException.class)
+	public ResponseEntity<ApiError> handleMissingAdminPrivileges(MissingAdminPrivilegesException e) {
+		ApiError error = new ApiError(HttpStatus.UNAUTHORIZED, LocalDateTime.now(), e.getMessage());
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+	}
+	
 	@ExceptionHandler(MBPException.class)
 	public ResponseEntity<ApiError> handleMBPException(MBPException e) {
 		ApiError error = new ApiError(e.getStatus() == null ? HttpStatus.INTERNAL_SERVER_ERROR : e.getStatus(), LocalDateTime.now(), e.getMessage());

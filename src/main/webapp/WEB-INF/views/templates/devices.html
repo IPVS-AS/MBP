@@ -23,6 +23,7 @@
                         <th class="align-center">State</th>
                         <th>Device type</th>
                         <th>IP address</th>
+                        <th>Policies</th>
                         <th>Owner</th>
                     </tr>
                     </thead>
@@ -62,6 +63,19 @@
                         </td>
                         <td>{{item.componentType}}</td>
                         <td>{{item.ipAddress}}</td>
+                        <td>
+                            <div ng-if="item.acc">
+                                <a class="clickable" data-toggle="collapse" data-target="#humanReadableDescription-{{item.id}}">
+                                    Show Condition
+                                </a>
+                                <div id="humanReadableDescription-{{item.id}}" class="collapse">
+                                    <span>{{item.humanReadableDescription}}</span>
+                                </div>
+                            </div>
+                            <div ng-if="!item.humanReadableDescription">
+                                <span>None</span>
+                            </div>
+                        </td>
                         <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
                             <div ng-show="item.isApprovable" style="display:inline-block">
@@ -78,6 +92,9 @@
                     </tr>
                     <tr ng-show="deviceListCtrl.items.length === 0">
                         <td>No devices registered.</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
                         <td></td>
                         <td></td>
                     </tr>
@@ -176,6 +193,20 @@
                                     </select>
                                 </div>
                                 <span class="help-block" ng-show="addDeviceCtrl.item.errors.keypair">{{addDeviceCtrl.item.errors.keypair.message}}</span>
+                            </div>
+                            <!-- item.accessControlPolicyIds group -->
+                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.accessControlPolicyIds }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDeviceCtrl.item.errors.accessControlPolicyIds }">
+                                    <select multiple class="form-control select-picker" title="Access Control Policies"
+                                            data-header="Access Control Policies"
+                                            ng-model="addDeviceCtrl.item.accessControlPolicyIds"
+                                            ng-options="p.id as (p.name) for p in ctrl.accessControlPolicyList">
+                                        <option value="">Select access control policies
+                                        <option/>
+                                    </select>
+                                </div>
+                                <span class="help-block" ng-show="addDeviceCtrl.item.errors.accessControlPolicyIds">{{addDeviceCtrl.item.errors.accessControlPolicyIds.message}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">* Mandatory field</span>
                         </div>

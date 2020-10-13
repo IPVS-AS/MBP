@@ -16,6 +16,7 @@ import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingAdminPrivilegesException;
 import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.ACPolicyRepository;
 import org.citopt.connde.repository.UserEntityRepository;
@@ -213,6 +214,20 @@ public class UserEntityService {
     	List<ACPolicy> policies = new ArrayList<>();
     	entity.getAccessControlPolicyIds().forEach(policyId -> policyRepository.findByIdAndAccessTypeAll(policyId, C.listOf(accessType.toString())).ifPresent(policies::add));
     	return policies;
+    }
+    
+    public void requireAdmin() throws MissingAdminPrivilegesException {
+    	requireAdmin(userService.getLoggedInUser());
+    }
+    
+    public void requireAdmin(String userId) throws MissingAdminPrivilegesException {
+    	requireAdmin(userService.getForId(userId));
+    }
+    
+    public void requireAdmin(User user) throws MissingAdminPrivilegesException {
+    	if (!user.isAdmin()) {
+    		throw new MissingAdminPrivilegesException();
+    	}
     }
     
     public <E extends UserEntity> void requirePermission(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {

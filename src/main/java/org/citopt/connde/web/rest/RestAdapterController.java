@@ -89,11 +89,7 @@ public class RestAdapterController {
     @ApiOperation(value = "Retrieves an existing adapter entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     		@ApiResponse(code = 409, message = "Adapter already exists!") })
-    public ResponseEntity<EntityModel<Adapter>> create(
-    		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-    		@PathVariable("adapterId") String adapterId,
-    		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@RequestBody Adapter adapter) throws EntityAlreadyExistsException {
+    public ResponseEntity<EntityModel<Adapter>> create(@RequestBody Adapter adapter) throws EntityAlreadyExistsException {
     	// Check whether a adapter with the same name already exists in the database
     	userEntityService.requireUniqueName(adapterRepository, adapter.getName());
 
