@@ -3,8 +3,8 @@
 /**
  * Provides services for managing the application settings.
  */
-app.factory('SettingsService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
-    function ($http, $resource, $q, ENDPOINT_URI) {
+app.factory('SettingsService', ['HttpService', 'ENDPOINT_URI',
+    function (HttpService, ENDPOINT_URI) {
         //URLs for server requests
         const URL_SETTINGS = ENDPOINT_URI + '/settings';
         const URL_DEFAULT_OPERATORS = ENDPOINT_URI + '/settings/default-operators';
@@ -16,7 +16,7 @@ app.factory('SettingsService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          * @returns {*}
          */
         function addDefaultOperators() {
-            return $.post(URL_DEFAULT_OPERATORS);
+            return HttpService.postRequest(URL_DEFAULT_OPERATORS);
         }
 
         /**
@@ -26,7 +26,7 @@ app.factory('SettingsService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          * @returns {*}
          */
         function getSettings() {
-            return $http.get(URL_SETTINGS);
+            return HttpService.getRequest(URL_SETTINGS);
         }
 
         /**
@@ -36,12 +36,7 @@ app.factory('SettingsService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          * @returns {*}
          */
         function saveSettings(settings) {
-            return $http({
-                method: 'POST',
-                url: URL_SETTINGS,
-                data: settings,
-                headers: {'Content-Type': 'application/json'}
-            });
+            return HttpService.postRequest(url, settings);
         }
 
         /**
@@ -51,7 +46,7 @@ app.factory('SettingsService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          * @returns {*}
          */
         function getDocumentationMetaData() {
-            return $http.get(URL_DOCUMENTATION_META_DATA);
+            return HttpService.getRequest(URL_DOCUMENTATION_META_DATA);
         }
 
         //Expose public methods

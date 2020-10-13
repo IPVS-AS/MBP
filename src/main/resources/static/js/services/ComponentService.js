@@ -92,9 +92,7 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             }
 
             //Execute request
-            return $http.get(URL_PREFIX + component + '/' + componentId + URL_GET_VALUE_LOG_STATS_SUFFIX, {
-                params: parameters
-            });
+            return HttpService.getRequest(URL_PREFIX + component + '/' + componentId + URL_GET_VALUE_LOG_STATS_SUFFIX, parameters);
         }
 
         /**

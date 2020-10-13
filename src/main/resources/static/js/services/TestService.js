@@ -3,8 +3,8 @@
 /**
  * Provides services for managing tests.
  */
-app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
-    function ($http, $resource, $q, ENDPOINT_URI) {
+app.factory('TestService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI',
+    function (HttpService, $resource, $q, ENDPOINT_URI) {
         //URLs for server requests
         const URL_TEST_RULE_ACTION = ENDPOINT_URI + '/test-details/test/';
 
@@ -15,7 +15,7 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          * @returns {*}
          */
         function executeTest(testId) {
-            return $http.post(URL_TEST_RULE_ACTION + testId);
+            return HttpService.postRequest(URL_TEST_RULE_ACTION + testId);
         }
 
 

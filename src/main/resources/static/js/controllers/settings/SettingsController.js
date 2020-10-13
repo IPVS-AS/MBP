@@ -4,8 +4,8 @@
  * Controller for the settings page.
  */
 app.controller('SettingsController',
-    ['$scope', '$http', '$q', 'ENDPOINT_URI', 'settings', 'documentationMetaData', 'SettingsService', 'NotificationService',
-        function ($scope, $http, $q, ENDPOINT_URI, settings, documentationMetaData, SettingsService, NotificationService) {
+    ['$scope', '$q', 'settings', 'documentationMetaData', 'SettingsService', 'NotificationService',
+        function ($scope, $q, settings, documentationMetaData, SettingsService, NotificationService) {
             let vm = this;
 
             //Extend controller for settings and meta data object

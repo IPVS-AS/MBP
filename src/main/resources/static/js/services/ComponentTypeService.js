@@ -5,9 +5,9 @@
     .module('app')
     .factory('ComponentTypeService', ComponentTypeService);
 
-  ComponentTypeService.$inject = ['$http', 'ENDPOINT_URI'];
+  ComponentTypeService.$inject = ['HttpService', 'ENDPOINT_URI'];
 
-  function ComponentTypeService($http, ENDPOINT_URI) {
+  function ComponentTypeService(HttpService, ENDPOINT_URI) {
 
     const RESOURCE_LOCATION = "/component-types";
 
@@ -20,16 +20,16 @@
     return service;
 
     function Create(user) {
-      return $http.post(ENDPOINT_URI + RESOURCE_LOCATION, componentType).then(handleSuccess, handleError);
+      return HttpService.postRequest(ENDPOINT_URI + RESOURCE_LOCATION, componentType).then(handleSuccess, handleError);
     }
 
     function GetAll() {
-      return $http.get(ENDPOINT_URI + RESOURCE_LOCATION).then(handleSuccess, handleError);
+      return HttpService.getRequest(ENDPOINT_URI + RESOURCE_LOCATION).then(handleSuccess, handleError);
     }
 
     function GetByComponent(component) {
       component = component.toUpperCase();
-      return $http.get(ENDPOINT_URI + RESOURCE_LOCATION +  '/' + component).then(handleSuccess, handleError);
+      return HttpService.getRequest(ENDPOINT_URI + RESOURCE_LOCATION +  '/' + component).then(handleSuccess, handleError);
     }
 
     // private functions

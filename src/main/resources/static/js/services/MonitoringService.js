@@ -3,8 +3,8 @@
 /**
  * Provides services for monitoring and the retrieval of monitoring adapters.
  */
-app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'ComponentService',
-    function ($http, $resource, $q, ENDPOINT_URI, ComponentService) {
+app.factory('MonitoringService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI', 'ComponentService',
+    function (HttpService, $resource, $q, ENDPOINT_URI, ComponentService) {
         //URLs for server requests
         const URL_GET_COMPATIBLE_ADAPTERS = ENDPOINT_URI + '/monitoring-adapters/by-device/';
         const URL_MONITORING_PREFIX = ENDPOINT_URI + '/monitoring/';
@@ -21,7 +21,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          * @returns {*}
          */
         function getDeviceMonitoringState(deviceId) {
-            return $http.get(URL_GET_STATE + deviceId);
+            return HttpService.getRequest(URL_GET_STATE + deviceId);
         }
 
         /**
@@ -33,7 +33,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          * @returns {*}
          */
         function getMonitoringState(deviceId, monitoringAdapterId) {
-            return $http.get(URL_GET_STATE + deviceId + URL_ADAPTER_SUFFIX + monitoringAdapterId);
+            return HttpService.getRequest(URL_GET_STATE + deviceId + URL_ADAPTER_SUFFIX + monitoringAdapterId);
         }
 
         /**
@@ -44,7 +44,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          * @returns {*}
          */
         function getCompatibleMonitoringAdapters(deviceId) {
-            return $http.get(URL_GET_COMPATIBLE_ADAPTERS + deviceId);
+            return HttpService.getRequest(URL_GET_COMPATIBLE_ADAPTERS + deviceId);
         }
 
         /**
@@ -56,7 +56,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          * @returns {*}
          */
         function isMonitoringActive(deviceId, monitoringAdapterId) {
-            return $http.get(generateMonitoringURL(deviceId, monitoringAdapterId));
+            return HttpService.getRequest(generateMonitoringURL(deviceId, monitoringAdapterId));
         }
 
         /**
@@ -69,12 +69,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          * @returns {*}
          */
         function enableMonitoring(deviceId, monitoringAdapterId, parameterList) {
-            return $http({
-                method: 'POST',
-                url: generateMonitoringURL(deviceId, monitoringAdapterId),
-                data: parameterList,
-                headers: {'Content-Type': 'application/json'}
-            });
+            return HttpService.postRequest(generateMonitoringURL(deviceId, monitoringAdapterId), parameterList);
         }
 
 
@@ -87,10 +82,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          * @returns {*}
          */
         function disableMonitoring(deviceId, monitoringAdapterId) {
-            return $http({
-                method: 'DELETE',
-                url: generateMonitoringURL(deviceId, monitoringAdapterId)
-            });
+            return HttpService.deleteRequest(generateMonitoringURL(deviceId, monitoringAdapterId));
         }
 
         /**
@@ -115,9 +107,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
             }
 
             //Execute request
-            return $http.get(URL_MONITORING_PREFIX + deviceId + URL_STATS_SUFFIX, {
-                params: parameters
-            });
+            return HttpService.getRequest(URL_MONITORING_PREFIX + deviceId + URL_STATS_SUFFIX, parameters);
         }
 
         /**
@@ -142,9 +132,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
             }
 
             //Execute request
-            return $http.get(URL_MONITORING_PREFIX + deviceId + URL_VALUE_LOGS_SUFFIX, {
-                params: parameters
-            }).then(function (response) {
+            return HttpService.getRequest(URL_MONITORING_PREFIX + deviceId + URL_VALUE_LOGS_SUFFIX, parameters).then(function (response) {
                 //Process received logs in order to be able to display them in a chart
                 return ComponentService.processValueLogs(response.data.content);
             });
@@ -164,14 +152,8 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          * @returns {*}
          */
         function deleteMonitoringValueLogs(deviceId, monitoringAdapterId) {
-            var parameters = {
-                adapterId: monitoringAdapterId
-            };
-
             //Execute request
-            return $http.delete(URL_MONITORING_PREFIX + deviceId + URL_VALUE_LOGS_SUFFIX, {
-                params: parameters
-            });
+            return HttpService.deleteRequest(URL_MONITORING_PREFIX + deviceId + URL_VALUE_LOGS_SUFFIX + '?adapterId=' + monitoringAdapterId);
         }
 
         /**
@@ -182,7 +164,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          * @returns {*}
          */
         function getMonitoringComponents() {
-            return $http.get(URL_MONITORING_PREFIX);
+            return HttpService.getRequest(URL_MONITORING_PREFIX);
         }
 
 

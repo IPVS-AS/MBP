@@ -65,7 +65,6 @@ app.controller('RuleListController',
                     if (ruleId === ruleList[i].id) {
                         ruleName = ruleList[i].name;
                         break;
-                    }
                 }
 
                 //Show the alert to the user and return the resulting promise
