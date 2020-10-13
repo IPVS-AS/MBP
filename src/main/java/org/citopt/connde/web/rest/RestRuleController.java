@@ -102,12 +102,9 @@ public class RestRuleController {
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 409, message = "Rule already exists!") })
     public ResponseEntity<EntityModel<Rule>> create(
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@RequestBody Rule rule) throws EntityAlreadyExistsException {
-    	// Check whether a rule with the same name already exists in the database
-    	userEntityService.requireUniqueName(ruleRepository, rule.getName());
-
+    		@RequestBody Rule rule) throws EntityAlreadyExistsException, EntityNotFoundException {
     	// Save rule in the database
-    	Rule createdRule = ruleRepository.save(rule);
+    	Rule createdRule = userEntityService.create(ruleRepository, rule);
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(createdRule));
     }
     

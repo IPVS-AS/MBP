@@ -94,12 +94,9 @@ public class RestDeviceController {
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 409, message = "Device already exists!") })
     public ResponseEntity<EntityModel<Device>> create(
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@RequestBody Device device) throws EntityAlreadyExistsException {
-    	// Check whether a device with the same name already exists in the database
-    	userEntityService.requireUniqueName(deviceRepository, device.getName());
-
+    		@RequestBody Device device) throws EntityAlreadyExistsException, EntityNotFoundException {
     	// Save device in the database
-    	Device createdDevice = deviceRepository.save(device);
+    	Device createdDevice = userEntityService.create(deviceRepository, device);
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(createdDevice));
     }
     

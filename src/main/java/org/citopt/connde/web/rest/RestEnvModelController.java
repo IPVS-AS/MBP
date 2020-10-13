@@ -87,12 +87,9 @@ public class RestEnvModelController {
     public ResponseEntity<EntityModel<EnvironmentModel>> create(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @ApiParam(value = "Page parameters", required = true) Pageable pageable,
-            @RequestBody EnvironmentModel adapter) throws EntityAlreadyExistsException {
-        // Check whether a environment model with the same name already exists in the database
-        userEntityService.requireUniqueName(environmentModelRepository, adapter.getName());
-
+            @RequestBody EnvironmentModel adapter) throws EntityAlreadyExistsException, EntityNotFoundException {
         // Save environment model in the database
-        EnvironmentModel createdEnvironmentModel = environmentModelRepository.save(adapter);
+        EnvironmentModel createdEnvironmentModel = userEntityService.create(environmentModelRepository, adapter);
         return ResponseEntity.ok(userEntityService.entityToEntityModel(createdEnvironmentModel));
     }
 

@@ -88,12 +88,9 @@ public class RestRuleTriggerController {
     		@ApiResponse(code = 409, message = "Rule trigger already exists!") })
     public ResponseEntity<EntityModel<RuleTrigger>> create(
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@RequestBody RuleTrigger ruleTrigger) throws EntityAlreadyExistsException {
-    	// Check whether a rule trigger with the same name already exists in the database
-    	userEntityService.requireUniqueName(ruleTriggerRepository, ruleTrigger.getName());
-
+    		@RequestBody RuleTrigger ruleTrigger) throws EntityAlreadyExistsException, EntityNotFoundException {
     	// Save rule trigger in the database
-    	RuleTrigger createdRuleTrigger = ruleTriggerRepository.save(ruleTrigger);
+    	RuleTrigger createdRuleTrigger = userEntityService.create(ruleTriggerRepository, ruleTrigger);
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(createdRuleTrigger));
     }
     

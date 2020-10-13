@@ -92,12 +92,9 @@ public class RestAdapterController {
     public ResponseEntity<EntityModel<Adapter>> create(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@RequestBody Adapter adapter) throws EntityAlreadyExistsException {
-    	// Check whether a adapter with the same name already exists in the database
-    	userEntityService.requireUniqueName(adapterRepository, adapter.getName());
-
+    		@RequestBody Adapter adapter) throws EntityAlreadyExistsException, EntityNotFoundException {
     	// Save adapter in the database
-    	Adapter createdAdapter = adapterRepository.save(adapter);
+    	Adapter createdAdapter = userEntityService.create(adapterRepository,  adapter);
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(createdAdapter));
     }
     

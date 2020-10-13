@@ -92,12 +92,9 @@ public class RestActuatorController {
     public ResponseEntity<EntityModel<Actuator>> create(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("actuatorId") String actuatorId, @ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@RequestBody Actuator actuator) throws EntityAlreadyExistsException {
-    	// Check whether a actuator with the same name already exists in the database
-    	userEntityService.requireUniqueName(actuatorRepository, actuator.getName());
-
+    		@RequestBody Actuator actuator) throws EntityAlreadyExistsException, EntityNotFoundException {
     	// Save actuator in the database
-    	Actuator createdActuator = actuatorRepository.save(actuator);
+    	Actuator createdActuator = userEntityService.create(actuatorRepository, actuator);
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(createdActuator));
     }
     

@@ -89,12 +89,9 @@ public class RestMonitoringAdapterController {
     @ApiOperation(value = "Retrieves an existing monitoring adapter entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     		@ApiResponse(code = 409, message = "Monitoring adapter already exists!") })
-    public ResponseEntity<EntityModel<MonitoringAdapter>> create(@PathVariable("monitoringAdapterId") String monitoringAdapterId, @ApiParam(value = "Page parameters", required = true) Pageable pageable, @RequestBody MonitoringAdapter monitoringAdapter) throws EntityAlreadyExistsException {
-    	// Check whether a monitoring adapter with the same name already exists in the database
-    	userEntityService.requireUniqueName(monitoringAdapterRepository, monitoringAdapter.getName());
-
+    public ResponseEntity<EntityModel<MonitoringAdapter>> create(@PathVariable("monitoringAdapterId") String monitoringAdapterId, @ApiParam(value = "Page parameters", required = true) Pageable pageable, @RequestBody MonitoringAdapter monitoringAdapter) throws EntityAlreadyExistsException, EntityNotFoundException {
     	// Save monitoring adapter in the database
-    	MonitoringAdapter createdMonitoringAdapter = monitoringAdapterRepository.save(monitoringAdapter);
+    	MonitoringAdapter createdMonitoringAdapter = userEntityService.create(monitoringAdapterRepository, monitoringAdapter);
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(createdMonitoringAdapter));
     }
     

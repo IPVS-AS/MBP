@@ -14,7 +14,6 @@ import org.citopt.connde.domain.access_control.ACPolicy;
 import org.citopt.connde.domain.access_control.IACRequestedEntity;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
-import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.ACPolicyRepository;
@@ -69,8 +68,7 @@ public class UserEntityService {
 		// Filter devices (according to owner and policies)
     	return entities
     			.stream()
-				//Filter devices that have an owner
-				//TODO pls verify
+				// Filter devices that have an owner
 				.filter(UserEntity::hasOwner)
     			// Filter devices that are owned by the requesting user (all access granted)
     			.filter(e -> e.getOwner().getId().equals(user.getId()))
@@ -150,6 +148,17 @@ public class UserEntityService {
 		return entity;
     }
     
+    public <E extends UserEntity> E create(UserEntityRepository<E> repository, E entity) throws EntityNotFoundException {
+    	// Retrieve the currently logged in user from the database
+    	User user = userService.getLoggedInUser();
+    	
+    	// Set owner user manually
+    	entity.setOwner(user);
+    	
+    	// Save (create) entity
+    	return repository.save(entity);
+    }
+    
     /**
      * Deletes a user entity in the database.
      * 
@@ -190,6 +199,7 @@ public class UserEntityService {
     	// Filter entities (according to owner and policies)
     	return entities
     			.stream()
+    			// Filter devices that have an owner // TODO: Add check
     			// Filter devices that are owned by the requesting user (all access granted)
     			.filter(e -> e.getOwner().getId().equals(user.getId()))
     			// Filter devices with policies with non-matching access-types
@@ -244,11 +254,11 @@ public class UserEntityService {
 		return true;
 	}
     
-    public <E extends UserEntity> void requireUniqueName(UserEntityRepository<E> repository, String entityName) throws EntityAlreadyExistsException {
-    	if (repository.existsByName(entityName)) {
-    		throw new EntityAlreadyExistsException("Entity", entityName);
-    	}
-    }
+//    public <E extends UserEntity> void requireUniqueName(UserEntityRepository<E> repository, String entityName) throws EntityAlreadyExistsException {
+//    	if (repository.existsByName(entityName)) {
+//    		throw new EntityAlreadyExistsException("Entity", entityName);
+//    	}
+//    }
     
     public <E extends UserEntity> PagedModel<EntityModel<E>> entitiesToPagedModel(List<E> entities, Link selfLink, Pageable pageable) {
     	List<EntityModel<E>> deviceEntityModels = entities.stream().map(this::entityToEntityModel).collect(Collectors.toList());

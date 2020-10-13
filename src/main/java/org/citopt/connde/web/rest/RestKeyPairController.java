@@ -1,6 +1,11 @@
 package org.citopt.connde.web.rest;
 
-import io.swagger.annotations.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
@@ -23,14 +28,21 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * REST Controller for functions related to RSA key-pairs that may be used for
@@ -95,12 +107,9 @@ public class RestKeyPairController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 409, message = "Key pair already exists!")})
     public ResponseEntity<EntityModel<KeyPair>> create(
             @ApiParam(value = "Page parameters", required = true) Pageable pageable,
-            @RequestBody KeyPair keyPair) throws EntityAlreadyExistsException {
-        // Check whether a device with the same name already exists in the database
-        userEntityService.requireUniqueName(keyPairRepository, keyPair.getName());
-
+            @RequestBody KeyPair keyPair) throws EntityAlreadyExistsException, EntityNotFoundException {
         // Save key pair in the database
-        KeyPair createdKeyPair = keyPairRepository.save(keyPair);
+        KeyPair createdKeyPair = userEntityService.create(keyPairRepository, keyPair);
         return ResponseEntity.ok(userEntityService.entityToEntityModel(createdKeyPair));
     }
 
