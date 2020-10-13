@@ -48,9 +48,6 @@
                                     <i class="material-icons" style="font-size:14px;">mode_edit</i>
                                 </button>
                             </form>
-                            <div ng-show="item.isApprovable" style="display:inline-block">
-                                <user-approval entity-id="{{item.id}}" category-name="env-models"></user-approval>
-                            </div>&nbsp;&nbsp;
                             <form ng-submit="deleteEnvModelCtrl.deleteItem()" ng-show="item.isDeletable"
                                   style="display:inline-block;">
                                 <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"

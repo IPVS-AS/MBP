@@ -50,9 +50,6 @@
                         </td>
                         <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
-                            <div ng-show="item.isApprovable" style="display:inline-block">
-                                <user-approval entity-id="{{item.id}}" category-name="key-pairs"></user-approval>
-                            </div>
                             <form ng-submit="deleteKeyPairCtrl.deleteItem()" ng-show="item.isDeletable"
                                   style="display: inline-block">
                                 <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"

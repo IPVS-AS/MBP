@@ -25,6 +25,7 @@ import org.citopt.connde.service.access_control.ACPolicyEvaluationService;
 import org.citopt.connde.service.access_control.ACPolicyService;
 import org.citopt.connde.util.C;
 import org.citopt.connde.util.Pages;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ContextConfiguration(classes = MBPApplication.class)
+@Ignore
 public class Test1 {
 	
 	@Autowired

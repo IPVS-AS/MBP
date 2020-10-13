@@ -68,9 +68,6 @@
                         <td>{{item._embedded.device.name}}</td>
                         <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
-                            <div ng-show="item.isApprovable" style="display:inline-block">
-                                <user-approval entity-id="{{item.id}}" category-name="sensors"></user-approval>
-                            </div>
                             <form ng-submit="deleteSensorCtrl.deleteItem()" style="display:inline-block">
                                 <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
                                         ng-click="deleteSensorCtrl.item.id = item.id">

@@ -55,10 +55,6 @@
                                 </div>
                             </td>
                             <td>
-                                <div ng-show="item.isApprovable" style="display:inline-block">
-                                    <user-approval entity-id="{{item.id}}" category-name="policy-conditions">
-                                    </user-approval>
-                                </div>
                                 <form ng-submit="deletePolicyConditionCtrl.deleteItem()" ng-show="item.isDeletable"
                                     style="display: inline-block">
                                     <button type="submit" class="btn btn-danger m-t-0 waves-effect"

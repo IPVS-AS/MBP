@@ -198,9 +198,6 @@
                         </td>
                         <td class="align-center">{{rule.ownerName ? rule.ownerName : "None"}}</td>
                         <td>
-                            <div ng-show="rule.isApprovable" style="display:inline-block">
-                                <user-approval entity-id="{{rule.id}}" category-name="rules"></user-approval>
-                            </div>
                             <form ng-submit="deleteRuleCtrl.deleteItem()" ng-show="rule.isDeletable"
                                   style="display: inline-block">
                                 <button type="submit" class="btn btn-danger m-t-0 waves-effect"
