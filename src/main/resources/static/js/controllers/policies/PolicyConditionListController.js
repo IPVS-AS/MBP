@@ -71,7 +71,7 @@ app.controller('PolicyConditionListController',
                     // Make sure the result is valid
                     if (policyCondition) {
                         // Close modal on success
-                        $("#addPolicyConditionModal").modal('toggle');
+                        $('#addPolicyConditionModal').modal('toggle');
 
                         // Add policy condition to list
                         vm.policyConditionListCtrl.pushItem(policyCondition);

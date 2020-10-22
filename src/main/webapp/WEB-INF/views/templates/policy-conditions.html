@@ -55,8 +55,7 @@
                                 </div>
                             </td>
                             <td>
-                                <form ng-submit="deletePolicyConditionCtrl.deleteItem()" ng-show="item.isDeletable"
-                                    style="display: inline-block">
+                                <form ng-submit="deletePolicyConditionCtrl.deleteItem()" style="display: inline-block">
                                     <button type="submit" class="btn btn-danger m-t-0 waves-effect"
                                         ng-click="deletePolicyConditionCtrl.item.id = item.id">
                                         Delete
@@ -152,13 +151,14 @@
                                         $(function () {
                                             $('#register').on("click", function () {
                                                 var result = JSON.stringify($('#condition-builder').queryBuilder('getRules'), null, 2);
+                                                alert(result);
                                                 $("#policy-condition-form-input-condition").val(result).trigger("input");
                                             });
 
-                                            $("#closemodal").on('click', function () {
-                                                $("#addPolicyConditionModal").modal().hide();
-                                                // $('#addPolicyConditionModal').modal('toggle');
-                                            });
+                                            // $("#closemodal").on('click', function () {
+                                            //     $("#addPolicyConditionModal").modal().hide();
+                                            //     // $('#addPolicyConditionModal').modal('toggle');
+                                            // });
                                         });
                                     </script>
                                 </div>
@@ -170,7 +170,7 @@
                             <button id="closemodal" type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
                                 Close
                             </button>
-                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                            <button id="register" type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
                         </div>
                     </fieldset>
                 </form>

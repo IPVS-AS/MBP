@@ -7,11 +7,6 @@ package org.citopt.connde.domain.access_control;
  */
 public enum ACAttributeKey {
 	
-//	/**
-//	 * The id of the requesting entity.
-//	 */
-//	REQUESTING_ENTITY_ID("requesting-entity-id", "The id of the requesting entity (user).", String.class, "id", ACEntityType.REQUESTING_ENTITY),
-	
 	/**
 	 * The username of the requesting entity.
 	 */
@@ -27,20 +22,15 @@ public enum ACAttributeKey {
 	 */
 	REQUESTING_ENTITY_LASTNAME("lastname", "The last name of the requesting entity (user).", String.class, "lastName", ACEntityType.REQUESTING_ENTITY),
 	
+//	/**
+//	 * The last name of the requesting entity.
+//	 */
+//	REQUESTING_ENTITY_DEMO_1("lastname", "The last name of the requesting entity (user).", String.class, "lastName", ACEntityType.REQUESTING_ENTITY),
+	
 	/**
 	 * The last name of the requesting entity.
 	 */
 	REQUESTING_ENTITY_IS_ADMIN("isAdmin", "The admin status of the equesting entity (user).", String.class, "isAdmin", ACEntityType.REQUESTING_ENTITY),
-	
-//	/**
-//	 * The id of an entity {@link User owner}.
-//	 */
-//	ENTITY_OWNER_ID("entity-owner-id", "The id of the owning entity.", String.class, "owner.id", ACEntityType.REQUESTED_ENTITY),
-//	
-//	/**
-//	 * The username of an entity {@link User owner}. 
-//	 */
-//	ENTITY_OWNER_USERNAME("entity-owner-username", "The username of the owning entity (user).", String.class, "owner.username", ACEntityType.REQUESTED_ENTITY),
 	
 	/**
 	 * <b>NOT INTENDED FOR USE!</b>

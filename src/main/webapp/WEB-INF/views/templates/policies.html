@@ -53,12 +53,6 @@
                                 <span ng-repeat-end="">&nbsp;</span>
                             </td>
                             <td>{{item.effect.name ? item.effect.name : "-"}}</td>
-                            <!-- <td>
-                                <button ng-repeat-start="effect in item.effects" class="btn btn-default" role="button">
-                                    {{effect.name}}
-                                </button>
-                                <span ng-repeat-end="">&nbsp;</span>
-                            </td> -->
                             <td>
                                 <form ng-submit="deletePolicyCtrl.deleteItem()" style="display: inline-block">
                                     <button type="submit" class="btn btn-danger m-t-0 waves-effect"

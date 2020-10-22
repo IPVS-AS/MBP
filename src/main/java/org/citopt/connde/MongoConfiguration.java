@@ -1,9 +1,7 @@
 package org.citopt.connde;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -82,9 +80,6 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 		if (!collectionExists(database, "user")) {
 			database.createCollection("user");
 			List<Document> documents = new ArrayList<>();
-			Set<Document> authorities = new HashSet<>();
-			authorities.add(authorityAdmin);
-			authorities.add(authorityUser);
 
 			// An administration user
 			Document adminUser = new Document();
@@ -92,8 +87,8 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 			adminUser.put("first_name", "Admin");
 			adminUser.put("last_name", "Admin");
 			adminUser.put("username", "admin");
+			adminUser.put("isAdmin", true);
 			adminUser.put("password", passwordEncoder.encode("admin"));
-			adminUser.put("authorities", authorities);
 
 			documents.add(adminUser);
 
@@ -105,13 +100,8 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 			mbpUser.put("last_name", "Platform");
 			mbpUser.put("username", "mbp");
 			mbpUser.put("password", passwordEncoder.encode("mbp-platform"));
-			mbpUser.put("authorities", authorities);
 
 			documents.add(mbpUser);
-
-			Set<Document> deviceAuthorities = new HashSet<>();
-			deviceAuthorities.add(authorityDevice);
-			deviceAuthorities.add(authorityUser);
 
 			// A user which is used by IoT devices for http authentication
 			Document deviceUser = new Document();
@@ -120,7 +110,6 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 			deviceUser.put("last_name", "Client");
 			deviceUser.put("username", "device-client");
 			deviceUser.put("password", passwordEncoder.encode("device"));
-			deviceUser.put("authorities", deviceAuthorities);
 
 			documents.add(deviceUser);
 			database.getCollection("user").insertMany(documents);
