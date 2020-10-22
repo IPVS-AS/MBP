@@ -9,6 +9,7 @@ import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.deploy.DeviceState;
@@ -73,7 +74,7 @@ public class RestDeviceStateController {
 			@ApiResponse(code = 404, message = "Device or requesting user not found!") })
 	public ResponseEntity<EntityModel<DeviceState>> getDeviceStatus(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-			@PathVariable(value = "deviceId") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId) throws EntityNotFoundException {
+			@PathVariable(value = "deviceId") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId) throws EntityNotFoundException, MissingPermissionException {
 		// Retrieve the device from the database
 		Device device = userEntityService.getForIdWithAccessControlCheck(deviceRepository, deviceId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
 

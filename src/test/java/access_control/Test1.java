@@ -14,6 +14,7 @@ import org.citopt.connde.domain.access_control.ACLogicalOperator;
 import org.citopt.connde.domain.access_control.ACPolicy;
 import org.citopt.connde.domain.access_control.ACSimpleCondition;
 import org.citopt.connde.domain.user.User;
+import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.repository.ACConditionRepository;
 import org.citopt.connde.repository.ACEffectRepository;
 import org.citopt.connde.repository.ACPolicyRepository;
@@ -87,7 +88,7 @@ public class Test1 {
 	}
 	
 	@Test
-	public void test1() throws JsonProcessingException {
+	public void test1() throws JsonProcessingException, EntityNotFoundException {
 		//5f589ddff6b51b0e096b09c0
 		
 //		List<ACPolicy> policies = policyRepository.findByIdAny(C.listOf("5f589ddff6b51b0e096b09c0", "5f589ddff6b51b0e096b09c1"));

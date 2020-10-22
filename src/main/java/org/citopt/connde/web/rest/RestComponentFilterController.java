@@ -12,6 +12,7 @@ import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.RuleActionRepository;
 import org.citopt.connde.repository.RuleRepository;
@@ -67,6 +68,7 @@ public class RestComponentFilterController {
 	 * @param ruleTriggerId the id of the {@link RuleTrigger}.
 	 * @return the list of {@link Rule}s.
 	 * @throws EntityNotFoundException 
+	 * @throws MissingPermissionException 
 	 */
 	@GetMapping("/rules/by-ruleTrigger/{id}")
 	@ApiOperation(value = "Retrieves the rules which use a certain rule trigger and for which the user is authorized.", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -75,7 +77,7 @@ public class RestComponentFilterController {
 			@ApiResponse(code = 404, message = "Rule trigger or requesting user not found!") })
 	public ResponseEntity<List<Rule>> getRulesByRuleTriggerId(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-			@PathVariable(value = "id") @ApiParam(value = "ID of the rule trigger", example = "5c97dc2583aeb6078c5ab672", required = true) String ruleTriggerId) throws EntityNotFoundException {
+			@PathVariable(value = "id") @ApiParam(value = "ID of the rule trigger", example = "5c97dc2583aeb6078c5ab672", required = true) String ruleTriggerId) throws EntityNotFoundException, MissingPermissionException {
 		// Parse the access-request information
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
@@ -96,6 +98,7 @@ public class RestComponentFilterController {
 	 * @param ruleActionId the id of the {@link RuleAction}.
 	 * @return the list of {@link Rule}s.
 	 * @throws EntityNotFoundException 
+	 * @throws MissingPermissionException 
 	 */
 	@GetMapping("/rules/by-ruleAction/{id}")
 	@ApiOperation(value = "Retrieves the rules which use a certain rule action and for which the user is authorized.", produces = "application/hal+json")
@@ -104,7 +107,7 @@ public class RestComponentFilterController {
 			@ApiResponse(code = 404, message = "Rule action or requesting user not found!") })
 	public ResponseEntity<List<Rule>> getRulesByRuleActionId(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-			@PathVariable(value = "id") @ApiParam(value = "ID of the rule action", example = "5c97dc2583aeb6078c5ab672", required = true) String ruleActionId) throws EntityNotFoundException {
+			@PathVariable(value = "id") @ApiParam(value = "ID of the rule action", example = "5c97dc2583aeb6078c5ab672", required = true) String ruleActionId) throws EntityNotFoundException, MissingPermissionException {
 		// Parse the access-request information
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		

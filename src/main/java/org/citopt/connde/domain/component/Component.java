@@ -17,12 +17,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
  */
 @Document
 public abstract class Component extends UserEntity {
-//    //Permission name for deployment
-//    private static final String PERMISSION_NAME_DEPLOY = "deploy";
-//
-//    //Extend default policy by deployment permission
-//    private static final UserEntityPolicy COMPONENT_POLICY = new UserEntityPolicy(DEFAULT_POLICY)
-//            .addPermission(PERMISSION_NAME_DEPLOY).addRole(APPROVED_USER).addRole(ADMIN).lock();
 
     @Id
     @GeneratedValue
@@ -91,11 +85,6 @@ public abstract class Component extends UserEntity {
         return "Component{" + "id=" + id + ", name=" + name + ", type=" + adapter + '}';
     }
 
-
-//    @Override
-//    public UserEntityPolicy getUserEntityPolicy() {
-//        return COMPONENT_POLICY;
-//    }
 
     @Override
     public boolean equals(Object o) {

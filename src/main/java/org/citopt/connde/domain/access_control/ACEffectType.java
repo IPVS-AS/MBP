@@ -7,8 +7,8 @@ package org.citopt.connde.domain.access_control;
  */
 public enum ACEffectType {
 	
-	NUMERIC_ACCURACY_MODIFICATION("Numeric Accuracy Modification", "This effect allows manipulating the accuracy and precision of a double value.", ACDoubleAccuracyEffect.class),
-	LOCATION_ACCURACY_MODIFICATION("Location Accuracy Modification", "This effect allows manipulating the accuary of a location value.", ACLocationAccuracyEffect.class);
+	NUMERIC_ACCURACY_MODIFICATION("Numeric Accuracy Modification", "This effect allows manipulating the accuracy and precision of a double value.", ACDoubleAccuracyEffect.class);
+//	LOCATION_ACCURACY_MODIFICATION("Location Accuracy Modification", "This effect allows manipulating the accuary of a location value.", ACLocationAccuracyEffect.class);
 	
 	// - - -
 	

@@ -1,5 +1,6 @@
 package org.citopt.connde.service.access_control;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -7,14 +8,15 @@ import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.access_control.ACPolicy;
 import org.citopt.connde.domain.access_control.dto.ACPolicyRequestDTO;
 import org.citopt.connde.domain.access_control.dto.ACPolicyResponseDTO;
+import org.citopt.connde.error.EntityAlreadyExistsException;
+import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingOwnerPrivilegesException;
 import org.citopt.connde.repository.ACConditionRepository;
 import org.citopt.connde.repository.ACEffectRepository;
 import org.citopt.connde.repository.ACPolicyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 /**
  * Service for {@link ACPolicy policies}.
@@ -57,35 +59,35 @@ public class ACPolicyService {
 		return policyRepository.findByOwnerAndEffect(ownerId, effectId, pageable);
 	}
 	
-	public ACPolicy getForId(String id) {
-		return policyRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Access control policy with id '" + id + "' does not exist!"));
+	public ACPolicy getForId(String id) throws EntityNotFoundException {
+		return policyRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Policy", id));
 	}
 	
-	public ACPolicy getForIdAndOwner(String id, String ownerId) {
+	public ACPolicy getForIdAndOwner(String id, String ownerId) throws EntityNotFoundException, MissingOwnerPrivilegesException {
 		ACPolicy policy = getForId(id);
 		
 		// Check whether the requesting user is the owner
 		if (!policy.getOwnerId().equals(ownerId)) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Owner privileges required!");
+			throw new MissingOwnerPrivilegesException();
 		}
 		
 		return policy;
 	}
 	
-	public ACPolicy create(ACPolicyRequestDTO requestDto, String ownerId) {
+	public ACPolicy create(ACPolicyRequestDTO requestDto, String ownerId) throws EntityAlreadyExistsException, EntityNotFoundException {
 		// Check whether a policy with the same name exists already
     	if (policyRepository.existsByName(requestDto.getName())) {
-    		throw new ResponseStatusException(HttpStatus.CONFLICT, "An access control policy with name '" + requestDto.getName() + "' exists already!");
+    		throw new EntityAlreadyExistsException("Policy", requestDto.getName());
     	}
 		
     	// Check whether condition exists
 		if (!conditionRepository.existsById(requestDto.getConditionId())) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Access control policy condition with id '" + requestDto.getConditionId() + "' does not exist!");
+			throw new EntityNotFoundException("Policy condition", requestDto.getConditionId());
 		}
 		
 		// Check whether effect exists
 		if (requestDto.getEffectId() != null && !effectRepository.existsById(requestDto.getEffectId())) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Access control policy effect with id '" + requestDto.getEffectId() + "' does not exist!");
+			throw new EntityNotFoundException("Policy effect", requestDto.getEffectId());
 		}
 		
 		// Create policy
@@ -94,7 +96,7 @@ public class ACPolicyService {
     	return policyRepository.save(policy);
 	}
 	
-	public void delete(String id, String ownerId) {
+	public void delete(String id, String ownerId) throws EntityNotFoundException, MissingOwnerPrivilegesException {
 		// Retrieve policy to delete from the database (if it exists) (includes owner check)
 		getForIdAndOwner(id, ownerId);
 		
@@ -102,11 +104,15 @@ public class ACPolicyService {
     	policyRepository.deleteById(id);
 	}
 	
-	public List<ACPolicyResponseDTO> policiesToResponseDto(List<ACPolicy> policies, String userId) {
-		return policies.stream().map(p -> policyToResponseDto(p, userId)).collect(Collectors.toList());
+	public List<ACPolicyResponseDTO> policiesToResponseDto(List<ACPolicy> policies, String userId) throws EntityNotFoundException, MissingOwnerPrivilegesException {
+		List<ACPolicyResponseDTO> responseDtos = new ArrayList<>();
+		for (ACPolicy p : policies) {
+			responseDtos.add(policyToResponseDto(p, userId));
+		}
+		return responseDtos;
 	}
 	
-	public ACPolicyResponseDTO policyToResponseDto(ACPolicy policy, String ownerId) {
+	public ACPolicyResponseDTO policyToResponseDto(ACPolicy policy, String ownerId) throws EntityNotFoundException, MissingOwnerPrivilegesException {
 		return new ACPolicyResponseDTO()
     			.setId(policy.getId())
     			.setName(policy.getName())

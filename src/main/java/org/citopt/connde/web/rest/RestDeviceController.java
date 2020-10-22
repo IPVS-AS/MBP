@@ -11,6 +11,7 @@ import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +81,7 @@ public class RestDeviceController {
     public ResponseEntity<EntityModel<Device>> one(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("deviceId") String deviceId,
-    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
 		// Parse the access-request information
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
@@ -107,7 +108,7 @@ public class RestDeviceController {
     		@ApiResponse(code = 404, message = "Device or requesting user not found!") })
     public ResponseEntity<Void> delete(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-    		@PathVariable("deviceId") String deviceId) throws EntityNotFoundException {
+    		@PathVariable("deviceId") String deviceId) throws EntityNotFoundException, MissingPermissionException {
 		// Parse the access-request information
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		

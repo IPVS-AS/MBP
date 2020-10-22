@@ -34,7 +34,7 @@ public class EntityAlreadyExistsException extends EntityException {
 	@Override
 	public String getEntityDescription() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(entityName);
+		sb.append(getEntityType());
 		if (entityName != null) {
 			sb.append(" with name '").append(entityName).append("'");
 		}

@@ -11,6 +11,7 @@ import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +80,7 @@ public class RestActuatorController {
     public ResponseEntity<EntityModel<Actuator>> one(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("actuatorId") String actuatorId,
-    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
     	// Retrieve the corresponding actuator (includes access-control)
     	Actuator actuator = userEntityService.getForIdWithAccessControlCheck(actuatorRepository, actuatorId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(actuator));
@@ -102,7 +103,7 @@ public class RestActuatorController {
     		@ApiResponse(code = 404, message = "Actuator or requesting user not found!") })
     public ResponseEntity<Void> delete(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-    		@PathVariable("actuatorId") String actuatorId) throws EntityNotFoundException {
+    		@PathVariable("actuatorId") String actuatorId) throws EntityNotFoundException, MissingPermissionException {
     	// Delete the actuator (includes access-control) 
     	userEntityService.deleteWithAccessControlCheck(actuatorRepository, actuatorId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();

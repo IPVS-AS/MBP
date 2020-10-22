@@ -11,6 +11,7 @@ import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.ComponentRepository;
 import org.citopt.connde.repository.SensorRepository;
@@ -77,6 +78,7 @@ public class RestComponentStateController {
 	 *
 	 * @param actuatorId the id of the {@link Actuator}.
 	 * @throws EntityNotFoundException 
+	 * @throws MissingPermissionException 
 	 */
 	@GetMapping("/actuators/state/{id}")
 	@ApiOperation(value = "Retrieves the component state for an actuator", produces = "application/hal+json")
@@ -85,7 +87,7 @@ public class RestComponentStateController {
 			@ApiResponse(code = 404, message = "Actuator not found") })
 	public ResponseEntity<EntityModel<ComponentState>> getActuatorState(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId) throws EntityNotFoundException {
+			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId) throws EntityNotFoundException, MissingPermissionException {
 		return ResponseEntity.ok(getComponentState(actuatorId, actuatorRepository, ACAccessRequest.valueOf(accessRequestHeader)));
 	}
 
@@ -94,6 +96,7 @@ public class RestComponentStateController {
 	 *
 	 * @param sensorId the id of the {@link Sensor}.
 	 * @throws EntityNotFoundException 
+	 * @throws MissingPermissionException 
 	 */
 	@GetMapping("/sensors/state/{id}")
 	@ApiOperation(value = "Retrieves the component state for a sensor", produces = "application/hal+json")
@@ -102,7 +105,7 @@ public class RestComponentStateController {
 			@ApiResponse(code = 404, message = "Sensor not found") })
 	public ResponseEntity<EntityModel<ComponentState>> getSensorState(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId) throws EntityNotFoundException {
+			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId) throws EntityNotFoundException, MissingPermissionException {
 		return ResponseEntity.ok(getComponentState(sensorId, sensorRepository, ACAccessRequest.valueOf(accessRequestHeader)));
 	}
 
@@ -117,7 +120,7 @@ public class RestComponentStateController {
 		return deploymentWrapper.getStatesAllComponents(componentList);
 	}
 
-	private <C extends Component> EntityModel<ComponentState> getComponentState(String componentId, ComponentRepository<C> repository, ACAccessRequest accessRequest) throws EntityNotFoundException {
+	private <C extends Component> EntityModel<ComponentState> getComponentState(String componentId, ComponentRepository<C> repository, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
 		// Retrieve component from the database
 		Component component = userEntityService.getForIdWithAccessControlCheck(repository, componentId, ACAccessType.READ, accessRequest);
 

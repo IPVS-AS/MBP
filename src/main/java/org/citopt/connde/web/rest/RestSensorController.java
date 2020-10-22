@@ -11,6 +11,7 @@ import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +80,7 @@ public class RestSensorController {
     public ResponseEntity<EntityModel<Sensor>> one(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("sensorId") String sensorId,
-    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
     	// Retrieve the corresponding sensor (includes access-control)
     	Sensor sensor = userEntityService.getForIdWithAccessControlCheck(sensorRepository, sensorId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(sensor));
@@ -105,7 +106,7 @@ public class RestSensorController {
     		@ApiResponse(code = 404, message = "Sensor or requesting user not found!") })
     public ResponseEntity<Void> delete(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-    		@PathVariable("sensorId") String sensorId) throws EntityNotFoundException {
+    		@PathVariable("sensorId") String sensorId) throws EntityNotFoundException, MissingPermissionException {
     	// Delete the sensor (includes access-control) 
     	userEntityService.deleteWithAccessControlCheck(sensorRepository, sensorId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();

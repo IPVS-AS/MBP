@@ -11,6 +11,7 @@ import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.AdapterRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +80,7 @@ public class RestAdapterController {
     public ResponseEntity<EntityModel<Adapter>> one(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("adapterId") String adapterId,
-    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
     	// Retrieve the corresponding adapter (includes access-control)
     	Adapter adapter = userEntityService.getForIdWithAccessControlCheck(adapterRepository, adapterId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(adapter));
@@ -105,7 +106,7 @@ public class RestAdapterController {
     		@ApiResponse(code = 404, message = "Adapter or requesting user not found!") })
     public ResponseEntity<Void> delete(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-    		@PathVariable("adapterId") String adapterId) throws EntityNotFoundException {
+    		@PathVariable("adapterId") String adapterId) throws EntityNotFoundException, MissingPermissionException {
     	// Delete the adapter (includes access-control) 
     	userEntityService.deleteWithAccessControlCheck(adapterRepository, adapterId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();

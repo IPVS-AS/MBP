@@ -11,6 +11,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 import org.citopt.connde.constants.Constants;
+import org.citopt.connde.domain.access_control.ACAttributeValue;
 import org.citopt.connde.domain.access_control.IACRequestingEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -35,6 +36,7 @@ public class User implements Serializable, IACRequestingEntity {
     @ApiModelProperty(notes = "User ID", example = "5c8f7ad66f9e3c1bacb0fa99", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String id;
 
+    @ACAttributeValue
     @NotNull
     @Pattern(regexp = Constants.USERNAME_REGEX)
     @Size(min = 1, max = 100)
@@ -47,16 +49,19 @@ public class User implements Serializable, IACRequestingEntity {
     @ApiModelProperty(notes = "User password", example = "secret", required = true)
     private String password;
 
+    @ACAttributeValue
     @Size(max = 50)
     @Field("first_name")
     @ApiModelProperty(notes = "First name of the user", example = "John")
     private String firstName;
 
+    @ACAttributeValue
     @Size(max = 50)
     @Field("last_name")
     @ApiModelProperty(notes = "Last name of the user", example = "Doe")
     private String lastName;
     
+    @ACAttributeValue
     @ApiModelProperty(notes = "Indicates whether the user is an admin user.", required = true)
     private boolean isAdmin;
     

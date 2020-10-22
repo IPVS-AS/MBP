@@ -11,6 +11,8 @@ import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.constants.Constants;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user.UserAuthData;
+import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.InvalidPasswordException;
 import org.citopt.connde.repository.UserRepository;
 import org.citopt.connde.repository.projection.UserExcerpt;
 import org.citopt.connde.service.UserService;
@@ -28,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -56,7 +57,7 @@ public class RestUserController {
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     		@ApiResponse(code = 401, message = "Not authorized to access users (admin privileges required)!"),
     		@ApiResponse(code = 404, message = "Requesting user not found!") })
-    public ResponseEntity<List<User>> all(@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws URISyntaxException {
+    public ResponseEntity<List<User>> all(@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws URISyntaxException, EntityNotFoundException {
     	// Check whether the requesting user has admin privileges
     	userService.requireAdmin();
     	
@@ -69,7 +70,7 @@ public class RestUserController {
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     	@ApiResponse(code = 401, message = "Not authorized to access users (admin privileges required)!"),
     		@ApiResponse(code = 404, message = "User or requesting user not found!") })
-    public ResponseEntity<User> oneForUsername(@PathVariable @ApiParam(value = "Username of the user", example = "MyUser", required = true) String username) {
+    public ResponseEntity<User> oneForUsername(@PathVariable @ApiParam(value = "Username of the user", example = "MyUser", required = true) String username) throws EntityNotFoundException {
     	// Check whether the requesting user has admin privileges
     	userService.requireAdmin();
     	
@@ -82,7 +83,7 @@ public class RestUserController {
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success"),
 			@ApiResponse(code = 403, message = "Invalid password!"),
 			@ApiResponse(code = 404, message = "User or requesting user not found!") })
-	public ResponseEntity<User> authenticate(@RequestBody @ApiParam(value = "Authentication data", required = true) UserAuthData authData) {
+	public ResponseEntity<User> authenticate(@RequestBody @ApiParam(value = "Authentication data", required = true) UserAuthData authData) throws InvalidPasswordException {
 		// Retrieve user from database
 		User user = userService.getForUsername(authData.getUsername().toLowerCase(Locale.ENGLISH));
 
@@ -90,7 +91,7 @@ public class RestUserController {
 		if (userService.checkPassword(user.getId(), authData.getPassword())) {
 			return ResponseEntity.ok(user);
 		} else {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid password!");
+			throw new InvalidPasswordException();
 		}
 	}
 	
@@ -109,7 +110,7 @@ public class RestUserController {
     		@ApiResponse(code = 404, message = "User to update or requesting user not found!"),
     		@ApiResponse(code = 409, message = "Username is already in use.") })
     public ResponseEntity<User> update(@PathVariable("userId") @ApiParam(value = "The id of the user", example = "5f218c7822424828a8275037") String userId,
-    		@RequestBody @ApiParam(value = "The user to update", required = true) User user) {
+    		@RequestBody @ApiParam(value = "The user to update", required = true) User user) throws EntityNotFoundException {
 		// Check whether the requesting user has admin privileges
 		userService.requireAdmin();
 		
@@ -122,7 +123,7 @@ public class RestUserController {
 	@ApiResponses({ @ApiResponse(code = 204, message = "User successfully deleted!"),
 			@ApiResponse(code = 401, message = "Not authorized to access users (admin privileges required)!"),
 			@ApiResponse(code = 404, message = "User to delete or requesting user not found!") })
-	public ResponseEntity<Void> delete(@PathVariable("username") @ApiParam(value = "Username of the user to delete", example = "MyUser", required = true) String username) {
+	public ResponseEntity<Void> delete(@PathVariable("username") @ApiParam(value = "Username of the user to delete", example = "MyUser", required = true) String username) throws EntityNotFoundException {
 		// Check whether the requesting user has admin privileges
 		userService.requireAdmin();
 		

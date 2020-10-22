@@ -15,6 +15,9 @@ import org.citopt.connde.domain.access_control.dto.ACPolicyRequestDTO;
 import org.citopt.connde.domain.access_control.dto.ACPolicyResponseDTO;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user.User;
+import org.citopt.connde.error.EntityAlreadyExistsException;
+import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingOwnerPrivilegesException;
 import org.citopt.connde.service.UserService;
 import org.citopt.connde.service.access_control.ACPolicyService;
 import org.citopt.connde.util.C;
@@ -61,7 +64,7 @@ public class RestACPolicyController {
 	@GetMapping(produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing policies owned by the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
-    public ResponseEntity<PagedModel<EntityModel<ACPolicyResponseDTO>>> all(@ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+    public ResponseEntity<PagedModel<EntityModel<ACPolicyResponseDTO>>> all(@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingOwnerPrivilegesException {
 		User user = userService.getLoggedInUser();
     	return ResponseEntity.ok(policiesToPagedModel(policyService.policiesToResponseDto(policyService.getAllForOwner(user.getId(), pageable), user.getId()), pageable));
     }
@@ -69,7 +72,7 @@ public class RestACPolicyController {
 	@GetMapping(path = "/byCondition", produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing policies owned by the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
-    public ResponseEntity<PagedModel<EntityModel<ACPolicyResponseDTO>>> byCondition(@PathVariable("conditionId") String conditionId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+    public ResponseEntity<PagedModel<EntityModel<ACPolicyResponseDTO>>> byCondition(@PathVariable("conditionId") String conditionId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingOwnerPrivilegesException {
 		User user = userService.getLoggedInUser();
     	return ResponseEntity.ok(policiesToPagedModel(policyService.policiesToResponseDto(policyService.getAllForOwnerAndCondition(user.getId(), conditionId, pageable), user.getId()), pageable));
     }
@@ -77,7 +80,7 @@ public class RestACPolicyController {
 	@GetMapping(path = "/byEffect", produces = "application/hal+json")
 	@ApiOperation(value = "Retrieves all existing policies owned by the requesting entity.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!") })
-    public ResponseEntity<PagedModel<EntityModel<ACPolicyResponseDTO>>> byEffect(@PathVariable("effectId") String effectId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+    public ResponseEntity<PagedModel<EntityModel<ACPolicyResponseDTO>>> byEffect(@PathVariable("effectId") String effectId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingOwnerPrivilegesException {
 		User user = userService.getLoggedInUser();
 		return ResponseEntity.ok(policiesToPagedModel(policyService.policiesToResponseDto(policyService.getAllForOwnerAndEffect(user.getId(), effectId, pageable), user.getId()), pageable));
     }
@@ -85,7 +88,7 @@ public class RestACPolicyController {
     @GetMapping(path = "/{policyId}", produces = "application/hal+json")
     @ApiOperation(value = "Retrieves an existing policy identified by its id if available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to access the policy!"), @ApiResponse(code = 404, message = "Policy or requesting user not found!") })
-    public ResponseEntity<EntityModel<ACPolicyResponseDTO>> one(@PathVariable("policyId") String policyId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+    public ResponseEntity<EntityModel<ACPolicyResponseDTO>> one(@PathVariable("policyId") String policyId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingOwnerPrivilegesException {
     	User user = userService.getLoggedInUser();
     	return ResponseEntity.ok(policyToEntityModel(policyService.policyToResponseDto(policyService.getForIdAndOwner(policyId, user.getId()), user.getId())));
     }
@@ -93,7 +96,7 @@ public class RestACPolicyController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
     @ApiOperation(value = "Creates a new policy.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 201, message = "Policy successfully created!"), @ApiResponse(code = 404, message = "Requesting user, condition, or effect not found!"), @ApiResponse(code = 409, message = "Policy name already exists!") })
-    public ResponseEntity<EntityModel<ACPolicyResponseDTO>> create(@Valid @RequestBody ACPolicyRequestDTO requestDto, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+    public ResponseEntity<EntityModel<ACPolicyResponseDTO>> create(@Valid @RequestBody ACPolicyRequestDTO requestDto, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, EntityAlreadyExistsException, MissingOwnerPrivilegesException {
     	User user = userService.getLoggedInUser();
     	return ResponseEntity.status(HttpStatus.CREATED).body(policyToEntityModel(policyService.policyToResponseDto(policyService.create(requestDto, user.getId()), user.getId()))); 
     }
@@ -101,7 +104,7 @@ public class RestACPolicyController {
     @DeleteMapping(path = "/{policyId}")
     @ApiOperation(value = "Deletes an existing policy.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 204, message = "Policy successfully deleted!"), @ApiResponse(code = 404, message = "Requesting user or policy not found!") })
-    public ResponseEntity<Void> delete(@PathVariable("policyId") String policyId) {
+    public ResponseEntity<Void> delete(@PathVariable("policyId") String policyId) throws EntityNotFoundException, MissingOwnerPrivilegesException {
     	User user = userService.getLoggedInUser();
     	policyService.delete(policyId, user.getId());
     	return ResponseEntity.noContent().build();
@@ -118,7 +121,7 @@ public class RestACPolicyController {
     	return new EntityModel<ACPolicyResponseDTO>(policy, linkTo(getClass()).slash(policy.getId()).withSelfRel());
     }
     
-    private PagedModel<EntityModel<ACPolicyResponseDTO>> policiesToPagedModel(List<ACPolicyResponseDTO> policies, Pageable pageable) {
+    private PagedModel<EntityModel<ACPolicyResponseDTO>> policiesToPagedModel(List<ACPolicyResponseDTO> policies, Pageable pageable) throws EntityNotFoundException, MissingOwnerPrivilegesException {
     	// Extract requested page from all policies
     	List<ACPolicyResponseDTO> page = Pages.page(policies, pageable);
     	

@@ -13,6 +13,10 @@ import org.citopt.connde.domain.access_control.ACAbstractEffect;
 import org.citopt.connde.domain.access_control.dto.ACEffectRequestDTO;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user.User;
+import org.citopt.connde.error.EntityAlreadyExistsException;
+import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.EntityStillInUseException;
+import org.citopt.connde.error.MissingOwnerPrivilegesException;
 import org.citopt.connde.service.UserService;
 import org.citopt.connde.service.access_control.ACEffectService;
 import org.citopt.connde.util.C;
@@ -67,7 +71,7 @@ public class RestACEffectController {
     @GetMapping(path = "/{effectId}", produces = "application/hal+json")
     @ApiOperation(value = "Retrieves an existing effect identified by its id if available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to access the effect!"), @ApiResponse(code = 404, message = "Effect or requesting user not found!") })
-    public ResponseEntity<EntityModel<ACAbstractEffect>> one(@PathVariable("effectId") String effectId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+    public ResponseEntity<EntityModel<ACAbstractEffect>> one(@PathVariable("effectId") String effectId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingOwnerPrivilegesException {
     	User user = userService.getLoggedInUser();
     	return ResponseEntity.ok(effectToEntityModel(effectService.getForIdAndOwner(effectId, user.getId())));
     }
@@ -75,7 +79,7 @@ public class RestACEffectController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
     @ApiOperation(value = "Creates a new effect.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 201, message = "Effect successfully created!"), @ApiResponse(code = 404, message = "Requesting user not found!"), @ApiResponse(code = 409, message = "effect name already exists!") })
-    public <T> ResponseEntity<EntityModel<ACAbstractEffect>> create(@Valid @RequestBody ACEffectRequestDTO requestDto, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+    public <T> ResponseEntity<EntityModel<ACAbstractEffect>> create(@Valid @RequestBody ACEffectRequestDTO requestDto, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityAlreadyExistsException {
     	User user = userService.getLoggedInUser();
     	return ResponseEntity.status(HttpStatus.CREATED).body(effectToEntityModel(effectService.create(requestDto, user.getId())));
     }
@@ -83,7 +87,7 @@ public class RestACEffectController {
     @DeleteMapping(path = "/{effectId}")
     @ApiOperation(value = "Deletes an existing effect.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 204, message = "effect successfully deleted!"), @ApiResponse(code = 404, message = "Requesting user or effect not found!") })
-    public ResponseEntity<Void> delete(@PathVariable("effectId") String effectId) {
+    public ResponseEntity<Void> delete(@PathVariable("effectId") String effectId) throws EntityNotFoundException, EntityStillInUseException, MissingOwnerPrivilegesException {
     	User user = userService.getLoggedInUser();
     	effectService.delete(effectId, user.getId());
     	return ResponseEntity.noContent().build();

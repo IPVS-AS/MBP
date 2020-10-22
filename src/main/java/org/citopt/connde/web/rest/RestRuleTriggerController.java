@@ -11,6 +11,7 @@ import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.RuleTriggerRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +77,7 @@ public class RestRuleTriggerController {
     		@ApiResponse(code = 404, message = "Rule trigger or requesting user not found!") })
     public ResponseEntity<EntityModel<RuleTrigger>> one(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-    		@PathVariable("ruleTriggerId") String ruleTriggerId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
+    		@PathVariable("ruleTriggerId") String ruleTriggerId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
     	// Retrieve the corresponding rule trigger (includes access-control)
     	RuleTrigger ruleTrigger = userEntityService.getForIdWithAccessControlCheck(ruleTriggerRepository, ruleTriggerId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(ruleTrigger));
@@ -101,7 +102,7 @@ public class RestRuleTriggerController {
     		@ApiResponse(code = 404, message = "Rule trigger or requesting user not found!") })
     public ResponseEntity<Void> delete(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-    		@PathVariable("ruleTriggerId") String ruleTriggerId) throws EntityNotFoundException {
+    		@PathVariable("ruleTriggerId") String ruleTriggerId) throws EntityNotFoundException, MissingPermissionException {
     	// Delete the rule trigger (includes access-control) 
     	userEntityService.deleteWithAccessControlCheck(ruleTriggerRepository, ruleTriggerId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();

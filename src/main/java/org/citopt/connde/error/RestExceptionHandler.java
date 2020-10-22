@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
@@ -28,6 +29,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler(EntityAlreadyExistsException.class)
 	public ResponseEntity<ApiError> handleEntityAlreadyExists(EntityAlreadyExistsException e) {
+		ApiError error = new ApiError(HttpStatus.CONFLICT, LocalDateTime.now(), e.getMessage());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+	}
+	
+	@ExceptionHandler(EntityStillInUseException.class)
+	public ResponseEntity<ApiError> handleEntityStillInUseExists(EntityStillInUseException e) {
 		ApiError error = new ApiError(HttpStatus.CONFLICT, LocalDateTime.now(), e.getMessage());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
 	}
@@ -56,8 +63,26 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
 	}
 	
+	@ExceptionHandler(MissingOwnerPrivilegesException.class)
+	public ResponseEntity<ApiError> handleMissingOwnerPrivileges(MissingOwnerPrivilegesException e) {
+		ApiError error = new ApiError(HttpStatus.UNAUTHORIZED, LocalDateTime.now(), e.getMessage());
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+	}
+	
+	@ExceptionHandler(InvalidPasswordException.class)
+	public ResponseEntity<ApiError> handleInvalidPassword(InvalidPasswordException e) {
+		ApiError error = new ApiError(HttpStatus.FORBIDDEN, LocalDateTime.now(), e.getMessage());
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+	}
+	
 	@ExceptionHandler(MBPException.class)
 	public ResponseEntity<ApiError> handleMBPException(MBPException e) {
+		ApiError error = new ApiError(e.getStatus() == null ? HttpStatus.INTERNAL_SERVER_ERROR : e.getStatus(), LocalDateTime.now(), e.getMessage());
+		return ResponseEntity.status(e.getStatus() == null ? HttpStatus.INTERNAL_SERVER_ERROR : e.getStatus()).body(error);
+	}
+	
+	@ExceptionHandler(ResponseStatusException.class)
+	public ResponseEntity<ApiError> handleResponseStatusException(ResponseStatusException e) {
 		ApiError error = new ApiError(e.getStatus() == null ? HttpStatus.INTERNAL_SERVER_ERROR : e.getStatus(), LocalDateTime.now(), e.getMessage());
 		return ResponseEntity.status(e.getStatus() == null ? HttpStatus.INTERNAL_SERVER_ERROR : e.getStatus()).body(error);
 	}

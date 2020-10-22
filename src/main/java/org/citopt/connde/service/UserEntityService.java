@@ -4,6 +4,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -28,9 +29,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class UserEntityService {
@@ -45,6 +44,21 @@ public class UserEntityService {
     
     @Autowired
     private ACPolicyEvaluationService policyEvaluationService;
+    
+    // - - -
+    
+//    public <E extends UserEntity> void foo(Class<?> entityType) {
+//    	entityType.getAnnotationsByType(MBPEntity.class);
+//    }
+//    
+//    public <T extends UserEntityRepository<?>> T getRepo(Class<?> repoType) {
+//    	Reflections reflections = new Reflections(Constants.ROOT_PACKAGE);
+//    	Set<Class<?>> challengeClasses = reflections.getTypesAnnotatedWith(MBPEntity.class);
+//    	
+//    	return (T) DynamicBeanProvider.get(repoType);
+//    }
+    
+    // - - -
     
     
 	/**
@@ -107,8 +121,9 @@ public class UserEntityService {
      * @return the {@link UserEntity} if it exists and the user is either the owner or has been granted reading access
      * 		   to it via a corresponding {@link ACPolicy}.
      * @throws EntityNotFoundException 
+     * @throws MissingPermissionException 
      */
-    public <E extends UserEntity> E getForIdWithAccessControlCheck(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException {
+    public <E extends UserEntity> E getForIdWithAccessControlCheck(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
 		// Retrieve the currently logged in user from the database
 		User user = userService.getLoggedInUser();
 
@@ -119,10 +134,19 @@ public class UserEntityService {
     	ACAccess access = new ACAccess(accessType, user, entity);
     	List<ACPolicy> policies = getPoliciesForEntity(entity);
     	if (!entity.getOwner().getId().equals(user.getId()) && !policies.stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest))) {
-    		throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User '" + user.getUsername() + "' is not allowed to access entity with id '" + entityId + "'!");
+    		throw new MissingPermissionException(null, entityId, accessType);
     	}
 
 		return entity;
+    }
+    
+    public <E extends UserEntity> Optional<ACPolicy> getFirstPolicyGrantingAccess(E entity, ACAccessType accessType, ACAccessRequest accessRequest) {
+    	for (ACPolicy policy : getPoliciesForEntity(entity)) {
+    		if (policyEvaluationService.evaluate(policy, new ACAccess(accessType, userService.getLoggedInUser(), entity), accessRequest)) {
+    			return Optional.of(policy);
+    		}
+    	}
+    	return Optional.empty();
     }
     
     public <E extends UserEntity> E create(UserEntityRepository<E> repository, E entity) throws EntityNotFoundException {
@@ -146,8 +170,9 @@ public class UserEntityService {
 	 * @param accessRequest the {@link ACAccessRequest} containing the contextual information
 	 * 		  of the requesting user required to evaluate the policies.
      * @throws EntityNotFoundException 
+     * @throws MissingPermissionException 
      */
-    public <E extends UserEntity> void deleteWithAccessControlCheck(UserEntityRepository<E> repository, String entityId, ACAccessRequest accessRequest) throws EntityNotFoundException {
+    public <E extends UserEntity> void deleteWithAccessControlCheck(UserEntityRepository<E> repository, String entityId, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
     	// Retrieve the currently logged in user from the database
     	User user = userService.getLoggedInUser();
     	
@@ -158,7 +183,7 @@ public class UserEntityService {
     	ACAccess access = new ACAccess(ACAccessType.DELETE, user, entity);
     	List<ACPolicy> policies = getPoliciesForEntity(entity);
     	if (!entity.getOwner().getId().equals(user.getId()) && !policies.stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest))) {
-    		throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User '" + user.getUsername() + "' is not allowed to delete entity with id '" + entityId + "'!");
+    		throw new MissingPermissionException(null, entityId, ACAccessType.DELETE);
     	}
     	
     	// Everything checks out (user is owner or a policy grants the delete permission) -> delete the entity in the database
@@ -229,7 +254,7 @@ public class UserEntityService {
 		}
 	}
 	
-    public <E extends UserEntity> boolean checkPermission(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException {
+    public <E extends UserEntity> boolean checkPermission(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
     	E entity = getForIdWithAccessControlCheck(repository, entityId, ACAccessType.READ, accessRequest);
 		return checkPermission(entity, accessType, accessRequest);
 	}

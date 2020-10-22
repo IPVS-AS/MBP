@@ -1,7 +1,5 @@
 package org.citopt.connde.web.rest;
 
-import java.util.List;
-
 import javax.measure.converter.UnitConverter;
 import javax.measure.quantity.Quantity;
 import javax.measure.unit.Unit;
@@ -17,6 +15,7 @@ import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.domain.valueLog.ValueLog;
 import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MBPException;
 import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
@@ -38,7 +37,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -89,23 +87,12 @@ public class RestValueLogController {
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId,
 			@RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the actuator values", example = "°C", required = false) String unit,
-			@ApiParam(value = "The page configuration", required = true) Pageable pageable) throws EntityNotFoundException {
+			@ApiParam(value = "The page configuration", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
 		// Retrieve actuator from the database (includes access-control)
-		Actuator actuator = userEntityService.getForIdWithAccessControlCheck(actuatorRepository, actuatorId, ACAccessType.READ_VALUE_LOGS, ACAccessRequest.valueOf(accessRequestHeader));
-		
-		// Retrieve the policies for the actuator from the database
-		List<ACPolicy> policies = userEntityService.getPoliciesForEntityAndAccessType(actuator, ACAccessType.READ_VALUE_LOGS);
+		Actuator actuator = userEntityService.getForId(actuatorRepository, actuatorId);
 		
 		// Retrieve value logs
-		Page<ValueLog> valueLogs = getValueLogs(actuator, unit, pageable);
-
-		// Check whether effect has to be applied
-		policies.stream().filter(p -> S.notEmpty(p.getEffectId())).findFirst()
-				.ifPresent(p -> {
-					ACAbstractEffect effect = effectService.getForId(p.getEffectId());
-					valueLogs.forEach(effect::apply);
-				});
-
+		Page<ValueLog> valueLogs = getValueLogs(actuator, unit, pageable, ACAccessRequest.valueOf(accessRequestHeader));
 		return ResponseEntity.ok(valueLogs);
 	}
 
@@ -119,24 +106,12 @@ public class RestValueLogController {
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId,
 			@RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the sensor values", example = "°C", required = false) String unit,
-			@ApiParam(value = "The page configuration", required = true) Pageable pageable) throws EntityNotFoundException {
+			@ApiParam(value = "The page configuration", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
 		// Retrieve actuator from the database (includes access-control)
-		// TODO: Formerly, permission 'deploy' has been checked - i think it should be the 'read' permission
-		Sensor sensor = userEntityService.getForIdWithAccessControlCheck(sensorRepository, sensorId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
-		
-		// Retrieve the policies for the actuator from the database
-		List<ACPolicy> policies = userEntityService.getPoliciesForEntityAndAccessType(sensor, ACAccessType.READ_VALUE_LOGS);		
+		Sensor sensor = userEntityService.getForId(sensorRepository, sensorId);
 		
 		// Retrieve value logs
-		Page<ValueLog> valueLogs = getValueLogs(sensor, unit, pageable);
-
-		// Check whether effect has to be applied
-		policies.stream().filter(p -> S.notEmpty(p.getEffectId())).findFirst()
-				.ifPresent(p -> {
-					ACAbstractEffect effect = effectService.getForId(p.getEffectId());
-					valueLogs.forEach(effect::apply);
-				});
-
+		Page<ValueLog> valueLogs = getValueLogs(sensor, unit, pageable, ACAccessRequest.valueOf(accessRequestHeader));
 		return ResponseEntity.ok(valueLogs);
 	}
 
@@ -155,22 +130,11 @@ public class RestValueLogController {
 		// Create new monitoring component from parameters
 		MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
 		
-		// Check monitoring permission
-		userEntityService.requirePermission(monitoringComponent.getDevice(), ACAccessType.MONITOR, ACAccessRequest.valueOf(accessRequestHeader));
-		
-		// Retrieve the policies for the actuator from the database
-		List<ACPolicy> policies = userEntityService.getPoliciesForEntityAndAccessType(monitoringComponent, ACAccessType.READ_VALUE_LOGS);		
+		// Check permission
+		userEntityService.requirePermission(monitoringComponent, ACAccessType.MONITOR, ACAccessRequest.valueOf(accessRequestHeader));
 		
 		// Retrieve value logs
-		Page<ValueLog> valueLogs = getValueLogs(monitoringComponent, unit, pageable);
-
-		// Check whether effect has to be applied
-		policies.stream().filter(p -> S.notEmpty(p.getEffectId())).findFirst()
-				.ifPresent(p -> {
-					ACAbstractEffect effect = effectService.getForId(p.getEffectId());
-					valueLogs.forEach(effect::apply);
-				});
-
+		Page<ValueLog> valueLogs = getValueLogs(monitoringComponent, unit, pageable, ACAccessRequest.valueOf(accessRequestHeader));
 		return ResponseEntity.ok(valueLogs);
 	}
 
@@ -235,8 +199,14 @@ public class RestValueLogController {
 	 * @param unit the target unit as {@code String}.
 	 * @param pageable the {@link Pageable} to configure the result set.
 	 * @return the requested {@link Page} with the converted {@link ValueLog}s.
+	 * @throws MissingPermissionException 
+	 * @throws EntityNotFoundException 
 	 */
-	private <C extends Component> Page<ValueLog> getValueLogs(C component, String unit, Pageable pageable) {
+	private <C extends Component> Page<ValueLog> getValueLogs(C component, String unit, Pageable pageable, ACAccessRequest accessRequest) throws MissingPermissionException, EntityNotFoundException {
+		// Check permission (if access is granted, the policy that grants access is returned)
+		ACPolicy policy = userEntityService.getFirstPolicyGrantingAccess(component, ACAccessType.READ_VALUE_LOGS, accessRequest)
+				.orElseThrow(() -> new MissingPermissionException("Component", component.getId(), ACAccessType.READ_VALUE_LOGS));
+		
 		// Retrieve the value logs from the database (already paged)
 		Page<ValueLog> page = valueLogRepository.findAllByIdRef(component.getId(), pageable);
 
@@ -247,7 +217,7 @@ public class RestValueLogController {
 			try {
 				targetUnit = Unit.valueOf(unit);
 			} catch (Exception e) {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid unit!");
+				throw new MBPException(HttpStatus.BAD_REQUEST, "Invalid unit!");
 			}
 
 			// Get source unit
@@ -258,6 +228,12 @@ public class RestValueLogController {
 			for (ValueLog valueLog : page) {
 				unitConverterService.convertValueLogValue(valueLog, converter);
 			}
+		}
+		
+		// Apply effect (constraints)
+		if (policy.getEffectId() != null) {
+			ACAbstractEffect effect = effectService.getForId(policy.getEffectId());
+			page.forEach(effect::apply);
 		}
 		
 		return page;

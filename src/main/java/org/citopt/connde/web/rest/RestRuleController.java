@@ -12,6 +12,7 @@ import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MBPException;
 import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.RuleActionRepository;
 import org.citopt.connde.repository.RuleRepository;
@@ -34,7 +35,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -91,7 +91,7 @@ public class RestRuleController {
     		@ApiResponse(code = 404, message = "Rule or requesting user not found!") })
     public ResponseEntity<EntityModel<Rule>> one(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-    		@PathVariable("ruleId") String ruleId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
+    		@PathVariable("ruleId") String ruleId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
     	// Retrieve the corresponding rule (includes access-control)
     	Rule rule = userEntityService.getForIdWithAccessControlCheck(ruleRepository, ruleId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(rule));
@@ -115,7 +115,7 @@ public class RestRuleController {
     		@ApiResponse(code = 404, message = "Rule or requesting user not found!") })
     public ResponseEntity<Void> delete(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-    		@PathVariable("ruleId") String ruleId) throws EntityNotFoundException {
+    		@PathVariable("ruleId") String ruleId) throws EntityNotFoundException, MissingPermissionException {
     	// Delete the rule (includes access-control) 
     	userEntityService.deleteWithAccessControlCheck(ruleRepository, ruleId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();
@@ -136,7 +136,7 @@ public class RestRuleController {
 
 		// Enable rule if necessary
 		if (!rule.isEnabled() && !ruleEngine.enableRule(rule)) {
-			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Rule could not be enabled. Do all required components still exist?");
+			throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "Rule could not be enabled. Do all required components still exist?");
 		}
 		
 		// TODO: Adjust frontend since response content changed
@@ -167,7 +167,7 @@ public class RestRuleController {
 	@PostMapping(value = "/rule-actions/test/{id}")
 	public ResponseEntity<Boolean> testRuleAction(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-			@PathVariable(value = "id") String actionId) throws EntityNotFoundException {
+			@PathVariable(value = "id") String actionId) throws EntityNotFoundException, MissingPermissionException {
 		// Retrieve the corresponding rule action (includes access-control)
 		RuleAction ruleAction = userEntityService.getForIdWithAccessControlCheck(ruleActionRepository, actionId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
 

@@ -74,7 +74,7 @@ public class RestEnvModelController {
     public ResponseEntity<EntityModel<EnvironmentModel>> one(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable("id") String environmentModelId,
-            @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
+            @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
         // Retrieve the corresponding environment model (includes access-control)
         EnvironmentModel environmentModel = userEntityService.getForIdWithAccessControlCheck(environmentModelRepository, environmentModelId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
         return ResponseEntity.ok(userEntityService.entityToEntityModel(environmentModel));
@@ -119,7 +119,7 @@ public class RestEnvModelController {
             @ApiResponse(code = 404, message = "Environment model or requesting user not found!")})
     public ResponseEntity<Void> delete(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-            @PathVariable("id") String environmentModelId) throws EntityNotFoundException {
+            @PathVariable("id") String environmentModelId) throws EntityNotFoundException, MissingPermissionException {
         // Delete the environment model (includes access-control)
         userEntityService.deleteWithAccessControlCheck(environmentModelRepository, environmentModelId, ACAccessRequest.valueOf(accessRequestHeader));
         return ResponseEntity.noContent().build();
@@ -133,7 +133,7 @@ public class RestEnvModelController {
             @ApiResponse(code = 500, message = "An error occurred while retrieving the states!")})
     public ResponseEntity<Map<String, EntityState>> getEntityStates(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-            @PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String environmentModelId) throws EntityNotFoundException, EnvironmentModelParseException {
+            @PathVariable(value = "id") @ApiParam(value = "ID of the environment model", example = "5c97dc2583aeb6078c5ab672", required = true) String environmentModelId) throws EntityNotFoundException, EnvironmentModelParseException, MissingPermissionException {
         // Retrieve the corresponding environment model (includes access-control)
         EnvironmentModel environmentModel = userEntityService.getForIdWithAccessControlCheck(environmentModelRepository, environmentModelId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
 

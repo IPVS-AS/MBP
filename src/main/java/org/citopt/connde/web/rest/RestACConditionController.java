@@ -15,6 +15,10 @@ import org.citopt.connde.domain.access_control.ACAttributeKey;
 import org.citopt.connde.domain.access_control.dto.ACConditionRequestDTO;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user.User;
+import org.citopt.connde.error.EntityAlreadyExistsException;
+import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.EntityStillInUseException;
+import org.citopt.connde.error.MissingOwnerPrivilegesException;
 import org.citopt.connde.service.UserService;
 import org.citopt.connde.service.access_control.ACConditionService;
 import org.citopt.connde.util.C;
@@ -69,7 +73,7 @@ public class RestACConditionController {
     @GetMapping(path = "/{conditionId}", produces = "application/hal+json")
     @ApiOperation(value = "Retrieves an existing condition identified by its id if available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to access the condition!"), @ApiResponse(code = 404, message = "Condition or requesting user not found!") })
-    public ResponseEntity<EntityModel<ACAbstractCondition>> one(@PathVariable("conditionId") String conditionId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+    public ResponseEntity<EntityModel<ACAbstractCondition>> one(@PathVariable("conditionId") String conditionId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingOwnerPrivilegesException {
     	User user = userService.getLoggedInUser();
     	return ResponseEntity.ok(conditionToEntityModel(conditionService.getForIdAndOwner(conditionId, user.getId())));
     }
@@ -77,7 +81,7 @@ public class RestACConditionController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
     @ApiOperation(value = "Creates a new condition.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 201, message = "Condition successfully created!"), @ApiResponse(code = 404, message = "Requesting user not found!"), @ApiResponse(code = 409, message = "Condition name already exists!") })
-    public ResponseEntity<EntityModel<ACAbstractCondition>> create(@Valid @RequestBody ACConditionRequestDTO requestDto, @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+    public ResponseEntity<EntityModel<ACAbstractCondition>> create(@Valid @RequestBody ACConditionRequestDTO requestDto, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityAlreadyExistsException {
     	User user = userService.getLoggedInUser();
     	return ResponseEntity.status(HttpStatus.CREATED).body(conditionToEntityModel(conditionService.create(requestDto, user.getId()))); 
     }
@@ -85,7 +89,7 @@ public class RestACConditionController {
     @DeleteMapping(path = "/{conditionId}")
     @ApiOperation(value = "Deletes an existing condition.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 204, message = "Condition successfully deleted!"), @ApiResponse(code = 404, message = "Requesting user or condition not found!") })
-    public ResponseEntity<Void> delete(@PathVariable("conditionId") String conditionId) {
+    public ResponseEntity<Void> delete(@PathVariable("conditionId") String conditionId) throws EntityNotFoundException, EntityStillInUseException, MissingOwnerPrivilegesException {
     	User user = userService.getLoggedInUser();
     	conditionService.delete(conditionId, user.getId());
     	return ResponseEntity.noContent().build();

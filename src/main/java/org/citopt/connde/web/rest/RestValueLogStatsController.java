@@ -11,6 +11,7 @@ import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MBPException;
 import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
@@ -28,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -68,6 +68,7 @@ public class RestValueLogStatsController {
 	 * @param unit       A string specifying the desired unit of the value log stats
 	 * @return The value log stats of the actuator
 	 * @throws EntityNotFoundException 
+	 * @throws MissingPermissionException 
 	 */
 	@GetMapping("/actuators/{id}/stats")
 	@ApiOperation(value = "Retrieves a list of statistics for recorded actuator value logs in a certain unit", produces = "application/hal+json")
@@ -78,7 +79,7 @@ public class RestValueLogStatsController {
 	public ResponseEntity<ValueLogStats> getActuatorValueLogStats(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator to retrieve value log statistics for", example = "5c97dc2583aeb6078c5ab672", required = true) String actuatorId,
-			@RequestParam(value = "unit", required = false) String unit) throws EntityNotFoundException {
+			@RequestParam(value = "unit", required = false) String unit) throws EntityNotFoundException, MissingPermissionException {
 		// Retrieve actuator from the database (includes access-control)
 		Actuator actuator = userEntityService.getForIdWithAccessControlCheck(actuatorRepository, actuatorId, ACAccessType.READ_VALUE_LOG_STATS, ACAccessRequest.valueOf(accessRequestHeader));
 
@@ -94,6 +95,7 @@ public class RestValueLogStatsController {
 	 * @param unit     A string specifying the desired unit of the value log stats
 	 * @return The value log stats of the sensor
 	 * @throws EntityNotFoundException 
+	 * @throws MissingPermissionException 
 	 */
 	@GetMapping("/sensors/{id}/stats")
 	@ApiOperation(value = "Retrieves a list of statistics for recorded sensor value logs in a certain unit", produces = "application/hal+json")
@@ -104,7 +106,7 @@ public class RestValueLogStatsController {
 	public ResponseEntity<ValueLogStats> getSensorValueLogStats(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor to retrieve value log statistics for", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId,
-			@RequestParam(value = "unit", required = false) String unit) throws EntityNotFoundException {
+			@RequestParam(value = "unit", required = false) String unit) throws EntityNotFoundException, MissingPermissionException {
 		// Retrieve actuator from the database (includes access-control)
 		Sensor sensor = userEntityService.getForIdWithAccessControlCheck(sensorRepository, sensorId, ACAccessType.READ_VALUE_LOG_STATS, ACAccessRequest.valueOf(accessRequestHeader));
 
@@ -161,7 +163,7 @@ public class RestValueLogStatsController {
 			try {
 				unit = Unit.valueOf(unitString);
 			} catch (Exception e) {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid unit!");
+				throw new MBPException(HttpStatus.BAD_REQUEST, "Invalid unit!");
 			}
 		}
 

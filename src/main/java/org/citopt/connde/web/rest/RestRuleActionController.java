@@ -12,6 +12,7 @@ import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.domain.rules.RuleActionType;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.RuleActionRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,7 +78,7 @@ public class RestRuleActionController {
             @ApiResponse(code = 404, message = "Rule action or requesting user not found!")})
     public ResponseEntity<EntityModel<RuleAction>> one(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-            @PathVariable("ruleActionId") String ruleActionId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
+            @PathVariable("ruleActionId") String ruleActionId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
         // Retrieve the corresponding rule action (includes access-control)
         RuleAction ruleAction = userEntityService.getForIdWithAccessControlCheck(ruleActionRepository, ruleActionId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
         return ResponseEntity.ok(userEntityService.entityToEntityModel(ruleAction));
@@ -102,7 +103,7 @@ public class RestRuleActionController {
             @ApiResponse(code = 404, message = "Rule action or requesting user not found!")})
     public ResponseEntity<Void> delete(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-            @PathVariable("ruleActionId") String ruleActionId) throws EntityNotFoundException {
+            @PathVariable("ruleActionId") String ruleActionId) throws EntityNotFoundException, MissingPermissionException {
         // Delete the rule action (includes access-control)
         userEntityService.deleteWithAccessControlCheck(ruleActionRepository, ruleActionId, ACAccessRequest.valueOf(accessRequestHeader));
         return ResponseEntity.noContent().build();

@@ -4,7 +4,9 @@ import javax.persistence.GeneratedValue;
 
 import org.citopt.connde.domain.access_control.ACAttributeValue;
 import org.citopt.connde.domain.key_pair.KeyPair;
+import org.citopt.connde.domain.user_entity.MBPEntity;
 import org.citopt.connde.domain.user_entity.UserEntity;
+import org.citopt.connde.repository.DeviceRepository;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -14,15 +16,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+@MBPEntity(repository = DeviceRepository.class)
 @ApiModel(description = "Model for device entities")
 public class Device extends UserEntity {
-
-//    //Permission name for monitoring
-//    private static final String PERMISSION_NAME_MONITORING = "monitor";
-//
-//    //Extend default policy by monitoring permission
-//    private static final UserEntityPolicy DEVICE_POLICY = new UserEntityPolicy(DEFAULT_POLICY)
-//            .addPermission(PERMISSION_NAME_MONITORING).addRole(APPROVED_USER).addRole(ADMIN).lock();
 
     @Id
     @GeneratedValue

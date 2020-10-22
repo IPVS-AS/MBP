@@ -35,7 +35,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -128,7 +127,7 @@ public class RestDeploymentController implements RepresentationModelProcessor<En
 			@ApiResponse(code = 500, message = "Check failed due to an unexpected error!") })
 	public ResponseEntity<Void> isRunningActuator(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id) throws ResponseStatusException, EntityNotFoundException, MissingPermissionException, DeploymentException {
+			@PathVariable(value = "id") @ApiParam(value = "ID of the actuator", example = "5c97dc2583aeb6078c5ab672", required = true) String id) throws EntityNotFoundException, MissingPermissionException, DeploymentException {
 		deploymentWrapper.isComponentRunning(getComponentWithPermissionCheck(actuatorRepository, id, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader)));
 		return ResponseEntity.ok().build();
 	}
@@ -141,7 +140,7 @@ public class RestDeploymentController implements RepresentationModelProcessor<En
 			@ApiResponse(code = 500, message = "Check failed due to an unexpected error!") })
 	public ResponseEntity<Void> isRunningSensor(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id) throws ResponseStatusException, EntityNotFoundException, MissingPermissionException, DeploymentException {
+			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String id) throws EntityNotFoundException, MissingPermissionException, DeploymentException {
 		deploymentWrapper.isComponentRunning(getComponentWithPermissionCheck(sensorRepository, id, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader)));
 		return ResponseEntity.ok().build();
 	}

@@ -13,6 +13,7 @@ import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MBPException;
 import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.KeyPairRepository;
@@ -36,7 +37,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -96,7 +96,7 @@ public class RestKeyPairController {
     public ResponseEntity<EntityModel<KeyPair>> one(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable("keyPairId") String keyPairId,
-            @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
+            @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
         // Retrieve the corresponding key-pair (includes access-control)
         KeyPair adapter = userEntityService.getForIdWithAccessControlCheck(keyPairRepository, keyPairId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
         return ResponseEntity.ok(userEntityService.entityToEntityModel(adapter));
@@ -120,7 +120,7 @@ public class RestKeyPairController {
             @ApiResponse(code = 404, message = "Key-Pair or requesting user not found!")})
     public ResponseEntity<Void> delete(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-            @PathVariable("keyPairId") String keyPairId) throws EntityNotFoundException {
+            @PathVariable("keyPairId") String keyPairId) throws EntityNotFoundException, MissingPermissionException {
         // Delete the key-pair (includes access-control)
         userEntityService.deleteWithAccessControlCheck(keyPairRepository, keyPairId, ACAccessRequest.valueOf(accessRequestHeader));
         return ResponseEntity.noContent().build();
@@ -133,9 +133,9 @@ public class RestKeyPairController {
             @ApiResponse(code = 409, message = "Key-pair name already exists!")})
     public ResponseEntity<KeyPair> generateKeyPair(@RequestBody @ApiParam(value = "The name of the key-pair") String name) {
         if (S.nullOrEmpty(name)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name must not be empty!");
+            throw new MBPException(HttpStatus.BAD_REQUEST, "Name must not be empty!");
         } else if (keyPairRepository.existsByName(name)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Key-pair with name '" + name + "' already exists!");
+            throw new MBPException(HttpStatus.CONFLICT, "Key-pair with name '" + name + "' already exists!");
         }
 
         // Generate key-pair

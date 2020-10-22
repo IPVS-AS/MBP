@@ -11,6 +11,7 @@ import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
+import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.MonitoringAdapterRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +80,7 @@ public class RestMonitoringAdapterController {
     public ResponseEntity<EntityModel<MonitoringAdapter>> one(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("monitoringAdapterId") String monitoringAdapterId,
-    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException {
+    		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
     	// Retrieve the corresponding monitoring adapter (includes access-control)
     	MonitoringAdapter monitoringAdapter = userEntityService.getForIdWithAccessControlCheck(monitoringAdapterRepository, monitoringAdapterId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(monitoringAdapter));
@@ -102,7 +103,7 @@ public class RestMonitoringAdapterController {
     		@ApiResponse(code = 404, message = "Monitoring adapter or requesting user not found!") })
     public ResponseEntity<Void> delete(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-    		@PathVariable("monitoringAdapterId") String monitoringAdapterId) throws EntityNotFoundException {
+    		@PathVariable("monitoringAdapterId") String monitoringAdapterId) throws EntityNotFoundException, MissingPermissionException {
     	// Delete the monitoring adapter (includes access-control) 
     	userEntityService.deleteWithAccessControlCheck(monitoringAdapterRepository, monitoringAdapterId, ACAccessRequest.valueOf(accessRequestHeader));
     	return ResponseEntity.noContent().build();

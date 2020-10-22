@@ -33,7 +33,7 @@ public class MissingPermissionException extends EntityException {
 	
 	@Override
 	public String getMessage() {
-		return "Missing permission '" + accessType.toString() + "' for " + getEntityDescription() + ".";
+		return "Missing permission '" + accessType.toString() + "'" + (getEntityDescription() == null ? "." : (" for " + getEntityDescription() + "."));
 	}
 
 }

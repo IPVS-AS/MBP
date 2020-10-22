@@ -2,6 +2,7 @@ package org.citopt.connde;
 
 import java.util.List;
 
+import org.citopt.connde.constants.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -32,12 +33,10 @@ import org.thymeleaf.templateresolver.ITemplateResolver;
 @EnableWebMvc
 @EnableSpringDataWebSupport
 @ComponentScan(basePackages = {
-    "org.citopt.connde"
+    Constants.ROOT_PACKAGE
 })
 @EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
-public class WebServletConfiguration
-//        extends WebMvcConfigurerAdapter {
-        implements WebMvcConfigurer {
+public class WebServletConfiguration implements WebMvcConfigurer {
 
 	@Autowired
     private ApplicationContext applicationContext;

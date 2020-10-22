@@ -6,6 +6,8 @@ package org.citopt.connde.constants;
  * @author Imeri Amil
  */
 public final class Constants {
+	
+	public static final String ROOT_PACKAGE = "org.citopt.connde";
 
     //Regex for acceptable usernames
     public static final String USERNAME_REGEX = "^[_'.@A-Za-z0-9-]*$";
