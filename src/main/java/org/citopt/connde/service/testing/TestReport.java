@@ -97,7 +97,7 @@ public class TestReport {
         para3.setAlignment(Element.ALIGN_CENTER);
 
         PdfPTable simulationSensors = getSimulationConfig(test);
-        PdfPTable realSensors  =getRealSensorConfig(test);
+        PdfPTable realSensors = getRealSensorConfig(test);
 
         // Actuator informations
         PdfPTable actuatorInfos = getActuatorInfos();
@@ -360,9 +360,9 @@ public class TestReport {
 
                 for (java.util.List<ParameterInstance> configSensor : test.getConfig()) {
                     for (ParameterInstance parameterInstance : configSensor) {
-                        if(parameterInstance.getValue().equals(type)){
+                        if (parameterInstance.getValue().equals(type)) {
                             for (ParameterInstance parameterInstance2 : configSensor) {
-                                if(!parameterInstance2.getName().equals("ConfigName")){
+                                if (!parameterInstance2.getName().equals("ConfigName")) {
                                     c1 = new PdfPCell(new Phrase(parameterInstance2.getName().toString()));
                                     c1.setColspan(2);
                                     c1.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -378,6 +378,13 @@ public class TestReport {
                     }
                 }
             }
+        }
+
+        if(counter==0){
+            PdfPCell realSens = new PdfPCell(new Phrase("No Real Sensor was integrated into the test."));
+            realSens.setColspan(4);
+            realSens.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(realSens);
         }
         return table;
     }
@@ -676,7 +683,7 @@ public class TestReport {
 
         for (ParameterInstance parameterInstance : Objects.requireNonNull(config)) {
             if (parameterInstance.getName().equals("event")) {
-                Object dd =parameterInstance.getValue();
+                Object dd = parameterInstance.getValue();
                 testCase = Integer.parseInt(String.valueOf(parameterInstance.getValue()));
             }
             if (parameterInstance.getName().equals("anomaly")) {
