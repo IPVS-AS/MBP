@@ -60,7 +60,7 @@ public class TestDetails {
 
     private List<String> rulesExecuted;
 
-    private Map<String, List<Double>> simulationList;
+    private Map<String, Map<Long, Double>> simulationList;
 
     private boolean triggerRules;
 
@@ -128,7 +128,7 @@ public class TestDetails {
      *
      * @return simulationList
      */
-    public Map<String, List<Double>> getSimulationList() {
+    public Map<String, Map<Long,Double>> getSimulationList() {
         return simulationList;
     }
 
@@ -137,7 +137,7 @@ public class TestDetails {
      *
      * @param simulationList list of simulated values of the sensors
      */
-    public void setSimulationList(Map<String, List<Double>> simulationList) {
+    public void setSimulationList(Map<String, Map<Long, Double>> simulationList) {
         this.simulationList = simulationList;
     }
 

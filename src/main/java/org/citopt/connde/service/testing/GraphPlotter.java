@@ -64,16 +64,19 @@ public class GraphPlotter {
     private static XYSeriesCollection createDataset(TestDetails test) {
         XYSeriesCollection dataSet = new XYSeriesCollection();
 
-        Map<String, List<Double>> simulationLists = test.getSimulationList();
+
+        Map<String, Map<Long,Double>> simulationLists = test.getSimulationList();
         Iterator it = simulationLists.entrySet().iterator();
 
         while (it.hasNext()) {
+            double counter = 0.0;
             Map.Entry pair = (Map.Entry) it.next();
             String object = String.valueOf(pair.getKey());
             XYSeries series = new XYSeries(object);
-            List<Double> simulationVal = (List<Double>) pair.getValue();
-            for (int j = 0; j < simulationVal.size(); j++) {
-                series.add(Double.valueOf(j), simulationVal.get(j));
+            Map<Long, Double> simVal = (Map<Long, Double>) pair.getValue();
+            for (Map.Entry<Long, Double> entry : simVal.entrySet()) {
+                series.add(counter, entry.getValue());
+                counter +=1.0;
             }
             dataSet.addSeries(series);
         }

@@ -67,7 +67,7 @@ public class TestingController {
         List<Rule> rulesbefore = testEngine.getStatRulesBefore(testDetails);
 
         // Start the test and get Map of sensor values
-        Map<String, List<Double>> valueListTest = testEngine.executeTest(testDetails);
+        Map<String, Map<Long,Double>> valueListTest = testEngine.executeTest(testDetails);
 
         // Check the test for success
         testEngine.testSuccess(testId);

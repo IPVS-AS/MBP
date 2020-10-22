@@ -64,7 +64,7 @@ public class TestEngine implements ValueLogReceiverObserver {
 
     // List of all active Tests/testValues
     Map<String, TestDetails> activeTests = new HashMap<>();
-    Map<String, List<Double>> testValues = new HashMap<>();
+    Map<String, Map<Long,Double>> testValues = new HashMap<>();
 
 
     /**
@@ -90,7 +90,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      *
      * @return list of test values
      */
-    public Map<String, List<Double>> getTestValues() {
+    public Map<String, Map<Long, Double>> getTestValues() {
         return testValues;
     }
 
@@ -99,7 +99,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      *
      * @param testValues list of test values
      */
-    public void setTestValues(Map<String, List<Double>> testValues) {
+    public void setTestValues(Map<String, Map<Long, Double>> testValues) {
         this.testValues = testValues;
     }
 
@@ -124,12 +124,12 @@ public class TestEngine implements ValueLogReceiverObserver {
             return;
         }
         if (!testValues.containsKey(valueLog.getIdref())) {
-            List<Double> newList = new ArrayList<>();
-            newList.add(valueLog.getValue());
+            Map<Long, Double> newList = new HashMap<>();
+            newList.put(valueLog.getTime().getEpochSecond(), valueLog.getValue());
             testValues.put(valueLog.getIdref(), newList);
         } else {
-            List<Double> oldList = testValues.get(valueLog.getIdref());
-            oldList.add(valueLog.getValue());
+            Map<Long, Double> oldList = testValues.get(valueLog.getIdref());
+            oldList.put(valueLog.getTime().getEpochSecond(), valueLog.getValue());
         }
     }
 
@@ -156,7 +156,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      * @param testId Id of the the running test
      * @return value-list of the simulated Sensor
      */
-    public Map<String, List<Double>> isFinished(String testId) {
+    public Map<String, Map<Long,Double>> isFinished(String testId) {
         boolean response = true;
         TestDetails testDetails = testDetailsRepository.findById(testId);
         while (response) {
@@ -379,10 +379,10 @@ public class TestEngine implements ValueLogReceiverObserver {
      *
      * @param test test to be executed
      */
-    public Map<String, List<Double>> executeTest(TestDetails test) {
+    public Map<String, Map<Long,Double>> executeTest(TestDetails test) {
 
         Map<String, TestDetails> activeTests = testEngine.getActiveTests();
-        Map<String, List<Double>> list = testEngine.getTestValues();
+        Map<String, Map<Long, Double>> list = testEngine.getTestValues();
         for (Sensor sensor : test.getSensor()) {
             activeTests.put(sensor.getId(), test);
             list.remove(sensor.getId());
@@ -391,14 +391,14 @@ public class TestEngine implements ValueLogReceiverObserver {
         testEngine.setTestValues(list);
         testEngine.startTest(testDetailsRepository.findById(test.getId()));
 
-        Map<String, List<Double>> valueList;
-        Map<String, List<Double>> valueListTest = new HashMap<>();
+        Map<String, Map<Long, Double>> valueList;
+        Map<String, Map<Long, Double>> valueListTest = new HashMap<>();
 
         // Get List of all simulated Values
         valueList = testEngine.isFinished(test.getId());
         TestDetails testDetails2 = testDetailsRepository.findOne(test.getId());
         for (Sensor sensor : test.getSensor()) {
-            List<Double> temp = valueList.get(sensor.getId());
+            Map<Long, Double> temp = valueList.get(sensor.getId());
             valueList.put(sensor.getName(), temp);
             valueListTest.put(sensor.getName(), temp);
             list.remove(sensor.getId());
@@ -514,7 +514,6 @@ public class TestEngine implements ValueLogReceiverObserver {
         // Put every path out of the stream into a list
         List<Path> files = pathStream.sorted(Comparator.comparing(Path::toString)).collect(Collectors.toList());
 
-        files.forEach(System.out::println);
         for (Path singlePath : files) {
             // get  date in milliseconds out of the filename and convert this into the specified date format
             Matcher machter = pattern.matcher(singlePath.toString());
