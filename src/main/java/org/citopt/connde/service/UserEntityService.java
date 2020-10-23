@@ -51,7 +51,7 @@ public class UserEntityService {
     
     @Autowired
     private ACPolicyEvaluationService policyEvaluationService;
-    
+
     
 	/**
 	 * Retrieves all user entities from the database. Note that only those entities are returned,
@@ -158,7 +158,6 @@ public class UserEntityService {
      * @param <E> the type of the {@link UserEntity}.
      * @param repository the repository to retrieve the user entity from.
      * @param entityId the id of the {@link UserEntity}.
-     * @param accessType the {@link ACAccessType} to check.
 	 * @param accessRequest the {@link ACAccessRequest} containing the contextual information
 	 * 		  of the requesting user required to evaluate the policies.
      * @throws EntityNotFoundException 
