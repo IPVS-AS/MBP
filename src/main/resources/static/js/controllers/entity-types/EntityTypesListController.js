@@ -5,8 +5,7 @@
  */
 app.controller('EntityTypesListController',
     ['$scope', '$controller', '$q',
-        'accessControlPolicyList',
-        'deviceTypesList', 'actuatorTypesList', 'sensorTypesList',
+        'deviceTypesList', 'actuatorTypesList', 'sensorTypesList', 'accessControlPolicyList',
         'addDeviceType', 'addActuatorType', 'addSensorType',
         'deleteDeviceType', 'deleteActuatorType', 'deleteSensorType', 'FileReader',
         function ($scope, $controller, $q, deviceTypesList, actuatorTypesList, sensorTypesList, accessControlPolicyList,

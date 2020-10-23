@@ -5,10 +5,10 @@
  */
 app.controller('ActuatorListController',
     ['$scope', '$controller', '$interval', 'actuatorList', 'addActuator', 'deleteActuator',
-        'deviceList', 'adapterList', 'accessControlPolicyList', 'ComponentService', 'ComponentTypeService', 'NotificationService',
+        'accessControlPolicyList', 'deviceList', 'adapterList', 'actuatorTypesList', 'ComponentService', 'NotificationService',
         function ($scope, $controller, $interval, actuatorList, addActuator, deleteActuator,
-            deviceList, adapterList, accessControlPolicyList, ComponentService, ComponentTypeService, NotificationService) {
-            var vm = this;
+            accessControlPolicyList, deviceList, adapterList, actuatorTypesList, ComponentService, NotificationService) {
+            let vm = this;
 
             vm.adapterList = adapterList;
             vm.deviceList = deviceList;
@@ -17,22 +17,16 @@ app.controller('ActuatorListController',
              * Initializing function, sets up basic things.
              */
             (function initController() {
-                loadActuatorTypes();
                 loadActuatorStates();
 
                 //Interval for updating actuator states on a regular basis
-                var interval = $interval(function () {
+                let interval = $interval(function () {
                     loadActuatorStates();
                 }, 5 * 60 * 1000);
 
                 //Cancel interval on route change
                 $scope.$on('$destroy', function () {
                     $interval.cancel(interval);
-                });
-
-                // Refresh policy select picker when the modal is opened
-                $('.modal').on('shown.bs.modal', function (e) {
-                    $('.selectpicker').selectpicker('refresh');
                 });
             })();
 
@@ -62,225 +56,157 @@ app.controller('ActuatorListController',
              * @returns A promise of the user's decision
              */
             function confirmDelete(data) {
-                var actuatorId = data.id;
-                var actuatorName = "";
+                let actuatorId = data.id;
+                let actuatorName = "";
 
                 //Determines the actuator's name by checking all actuators in the actuator list
                 for (var i = 0; i < actuatorList.length; i++) {
-                    if (actuatorId == actuatorList[i].id) {
+                    if (actuatorId === actuatorList[i].id) {
                         actuatorName = actuatorList[i].name;
                         break;
                     }
+                }
 
-                    /**
-                     * [Public]
-                     * @param actuator
-                     * @returns {*}
-                     */
-                    $scope.detailsLink = function (actuator) {
-                        if (actuator.id) {
-                            return "view/actuators/" + actuator.id;
-                        }
-                        return "#";
-                    };
+                //Show the alert to the user and return the resulting promise
+                return Swal.fire({
+                    title: 'Delete actuator',
+                    type: 'warning',
+                    html: "Are you sure you want to delete actuator \"" + actuatorName + "\"?",
+                    showCancelButton: true,
+                    confirmButtonText: 'Delete',
+                    confirmButtonClass: 'bg-red',
+                    focusConfirm: false,
+                    cancelButtonText: 'Cancel'
+                });
+            }
 
-                    /**
-                     * [Public]
-                     * Shows an alert that asks the user if he is sure that he wants to delete a certain actuator.
-                     *
-                     * @param data A data object that contains the id of the actuator that is supposed to be deleted
-                     * @returns A promise of the user's decision
-                     */
-                    function confirmDelete(data) {
-                        let actuatorId = data.id;
-                        let actuatorName = "";
+            /**
+             * [Private]
+             * Returns a function that retrieves the state for a actuator with a certain id.
+             * @param id The id of the actuator
+             * @returns {Function}
+             */
+            function createReloadStateFunction(id) {
+                //Create function and return it
+                return function () {
+                    getActuatorState(id);
+                };
+            }
 
-                        //Determines the actuator's name by checking all actuators in the actuator list
-                        for (var i = 0; i < actuatorList.length; i++) {
-                            if (actuatorId === actuatorList[i].id) {
-                                actuatorName = actuatorList[i].name;
-                                break;
-                            }
-                        }
-
-                        //Show the alert to the user and return the resulting promise
-                        return Swal.fire({
-                            title: 'Delete actuator',
-                            type: 'warning',
-                            html: "Are you sure you want to delete actuator \"" + actuatorName + "\"?",
-                            showCancelButton: true,
-                            confirmButtonText: 'Delete',
-                            confirmButtonClass: 'bg-red',
-                            focusConfirm: false,
-                            cancelButtonText: 'Cancel'
-                        });
+            /**
+             * [Private]
+             * Sends a server request in order to retrieve the deployment state of a actuator with a certain id.
+             * The state is then stored in the corresponding actuator object in actuatorList.
+             *
+             * @param id The id of the actuator whose state is supposed to be retrieved
+             */
+            function getActuatorState(id) {
+                //Resolve actuator object of the affected actuator
+                var actuator = null;
+                for (var i = 0; i < actuatorList.length; i++) {
+                    if (actuatorList[i].id === id) {
+                        actuator = actuatorList[i];
                     }
+                }
 
-                    /**
-                     * [Private]
-                     * Returns a function that retrieves the state for a actuator with a certain id.
-                     * @param id The id of the actuator
-                     * @returns {Function}
-                     */
-                    function createReloadStateFunction(id) {
-                        //Create function and return it
-                        return function () {
-                            getActuatorState(id);
-                        };
+                //Check if actuator could be found
+                if (actuator == null) {
+                    return;
+                }
+
+                //Enable spinner
+                actuator.state = 'LOADING';
+
+                //Perform server request and set state of the actuator object accordingly
+                ComponentService.getComponentState(actuator.id, 'actuators').then(function (response) {
+                    actuator.state = response.data.content;
+                }, function (response) {
+                    actuator.state = 'UNKNOWN';
+                    NotificationService.notify("Could not retrieve the actuator state.", "error");
+                });
+            }
+
+            /**
+             * [Private]
+             * Sends a server request in order to retrieve the deployment states of all registered actuators.
+             * The states are then stored in the corresponding actuator objects in actuatorList.
+             */
+            function loadActuatorStates() {//Perform server request
+
+                ComponentService.getAllComponentStates('actuators').then(function (response) {
+                    var statesMap = response.data;
+
+                    //Iterate over all actuators in actuatorList and update the states of all actuators accordingly
+                    for (var i in actuatorList) {
+                        var actuatorId = actuatorList[i].id;
+                        actuatorList[i].state = statesMap[actuatorId];
                     }
-
-                    /**
-                     * [Private]
-                     * Sends a server request in order to retrieve the deployment state of a actuator with a certain id.
-                     * The state is then stored in the corresponding actuator object in actuatorList.
-                     *
-                     * @param id The id of the actuator whose state is supposed to be retrieved
-                     */
-                    function getActuatorState(id) {
-                        //Resolve actuator object of the affected actuator
-                        var actuator = null;
-                        for (var i = 0; i < actuatorList.length; i++) {
-                            if (actuatorList[i].id === id) {
-                                actuator = actuatorList[i];
-                            }
-                        }
-
-                        //Check if actuator could be found
-                        if (actuator == null) {
-                            return;
-                        }
+                }, function (response) {
+                    for (var i in actuatorList) {
+                        actuatorList[i].state = 'UNKNOWN';
                     }
+                    NotificationService.notify("Could not retrieve actuator states.", "error");
+                });
+            }
 
-                    //Expose
-                    angular.extend(vm, {
-                        registeringDevice: false,
-                        accessControlPolicyList: accessControlPolicyList
-                    });
+            //Expose controller ($controller will auto-add to $scope)
+            angular.extend(vm, {
+                actuatorListCtrl: $controller('ItemListController as actuatorListCtrl', {
+                    $scope: $scope,
+                    list: actuatorList
+                }),
+                addActuatorCtrl: $controller('AddItemController as addActuatorCtrl', {
+                    $scope: $scope,
+                    addItem: addActuator
+                }),
+                deleteActuatorCtrl: $controller('DeleteItemController as deleteActuatorCtrl', {
+                    $scope: $scope,
+                    deleteItem: deleteActuator,
+                    confirmDeletion: confirmDelete
+                }),
+                accessControlPolicyList: accessControlPolicyList,
+                registeringDevice: false,
+                actuatorTypes: actuatorTypesList
+            });
 
-                    // expose controller ($controller will auto-add to $scope)
-                    angular.extend(vm, {
-                        actuatorListCtrl: $controller('ItemListController as actuatorListCtrl', {
-                            $scope: $scope,
-                            list: actuatorList
-                        }),
-                        addActuatorCtrl: $controller('AddItemController as addActuatorCtrl', {
-                            $scope: $scope,
-                            addItem: addActuator
-                        }),
-                        deleteActuatorCtrl: $controller('DeleteItemController as deleteActuatorCtrl', {
-                            $scope: $scope,
-                            deleteItem: deleteActuator,
-                            confirmDeletion: confirmDelete
-                        })
-                    });
+            //Watch 'addActuator' result and add to 'actuatorList'
+            $scope.$watch(
+                function () {
+                    //Value being watched
+                    return vm.addActuatorCtrl.result;
+                },
+                function () {
+                    //Callback
+                    var actuator = vm.addActuatorCtrl.result;
 
-                    // $watch 'addActuator' result and add to 'actuatorList'
-                    $scope.$watch(
-                        function () {
-                            //Value being watched
-                            return vm.addActuatorCtrl.result;
-                        },
-                        function () {
-                            //Callback
-                            var actuator = vm.addActuatorCtrl.result;
+                    if (actuator) {
+                        //Close modal on success
+                        $("#addActuatorModal").modal('toggle');
 
-                            if (actuator) {
-                                //Close modal on success
-                                $("#addActuatorModal").modal('toggle');
+                        //Add state and reload function to the new object
+                        actuator.state = 'LOADING';
+                        actuator.reloadState = createReloadStateFunction(actuator.id);
 
-                                //Add state and reload function to the new object
-                                actuator.state = 'LOADING';
+                        //Add actuator to actuator list
+                        vm.actuatorListCtrl.pushItem(actuator);
 
-                                //Perform server request and set state of the actuator object accordingly
-                                ComponentService.getComponentState(actuator.id, 'actuators').then(function (response) {
-                                    actuator.state = response.data.content;
-                                }, function (response) {
-                                    actuator.state = 'UNKNOWN';
-                                    NotificationService.notify("Could not retrieve the actuator state.", "error");
-                                });
-                            }
+                        //Retrieve state of the new actuator
+                        getActuatorState(actuator.id);
+                    }
+                }
+            );
 
-                            /**
-                             * [Private]
-                             * Sends a server request in order to retrieve the deployment states of all registered actuators.
-                             * The states are then stored in the corresponding actuator objects in actuatorList.
-                             */
-                            function loadActuatorStates() {//Perform server request
+            //Watch 'deleteItem' result and remove from 'itemList'
+            $scope.$watch(
+                function () {
+                    // value being watched
+                    return vm.deleteActuatorCtrl.result;
+                },
+                function () {
+                    let id = vm.deleteActuatorCtrl.result;
+                    vm.actuatorListCtrl.removeItem(id);
+                }
+            );
 
-                                ComponentService.getAllComponentStates('actuators').then(function (response) {
-                                    var statesMap = response.data;
-
-                                    //Iterate over all actuators in actuatorList and update the states of all actuators accordingly
-                                    for (var i in actuatorList) {
-                                        var actuatorId = actuatorList[i].id;
-                                        actuatorList[i].state = statesMap[actuatorId];
-                                    }
-                                }, function (response) {
-                                    for (var i in actuatorList) {
-                                        actuatorList[i].state = 'UNKNOWN';
-                                    }
-                                    NotificationService.notify("Could not retrieve actuator states.", "error");
-                                });
-                            }
-
-                            //Expose controller ($controller will auto-add to $scope)
-                            angular.extend(vm, {
-                                actuatorListCtrl: $controller('ItemListController as actuatorListCtrl', {
-                                    $scope: $scope,
-                                    list: actuatorList
-                                }),
-                                addActuatorCtrl: $controller('AddItemController as addActuatorCtrl', {
-                                    $scope: $scope,
-                                    addItem: addActuator
-                                }),
-                                deleteActuatorCtrl: $controller('DeleteItemController as deleteActuatorCtrl', {
-                                    $scope: $scope,
-                                    deleteItem: deleteActuator,
-                                    confirmDeletion: confirmDelete
-                                }),
-                                registeringDevice: false,
-                                actuatorTypes: actuatorTypesList
-                            });
-
-                            //Watch 'addActuator' result and add to 'actuatorList'
-                            $scope.$watch(
-                                function () {
-                                    //Value being watched
-                                    return vm.addActuatorCtrl.result;
-                                },
-                                function () {
-                                    //Callback
-                                    var actuator = vm.addActuatorCtrl.result;
-
-                                    if (actuator) {
-                                        //Close modal on success
-                                        $("#addActuatorModal").modal('toggle');
-
-                                        //Add state and reload function to the new object
-                                        actuator.state = 'LOADING';
-                                        actuator.reloadState = createReloadStateFunction(actuator.id);
-
-                                        //Add actuator to actuator list
-                                        vm.actuatorListCtrl.pushItem(actuator);
-
-                                        //Retrieve state of the new actuator
-                                        getActuatorState(actuator.id);
-                                    }
-                                }
-                            );
-
-                            //Watch 'deleteItem' result and remove from 'itemList'
-                            $scope.$watch(
-                                function () {
-                                    // value being watched
-                                    return vm.deleteActuatorCtrl.result;
-                                },
-                                function () {
-                                    let id = vm.deleteActuatorCtrl.result;
-                                    vm.actuatorListCtrl.removeItem(id);
-                                }
-                            );
-
-                        }
-                        }
+        }
     ]);

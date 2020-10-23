@@ -206,10 +206,12 @@ public class UserEntityService {
         // Requesting user is a non-admin user
         List<E> filteredEntities = new ArrayList<>();
         // Add all entities owned by the requesting user
-        filteredEntities.addAll(entities.stream().filter(e -> e.getOwner() != null).filter(e -> e.getOwner().getId().equals(user.getId())).collect(Collectors.toList()));
+        filteredEntities.addAll(entities.stream()
+        		.filter(e -> e.getOwner() == null || e.getOwner().getId().equals(user.getId()))
+        		.collect(Collectors.toList()));
         // Add all entities with a policy that grants access to the requesting user
         filteredEntities.addAll(entities.stream()
-                .filter(e -> (e.getOwner() != null) && (!e.getOwner().getId().equals(user.getId())))
+                .filter(e -> (e.getOwner() == null) || (!e.getOwner().getId().equals(user.getId())))
                 .filter(e -> policyRepository.existsByIdAnyAndAccessTypeAll(e.getAccessControlPolicyIds(), C.listOf(accessType.toString())))
                 .filter(e -> checkPermission(e, accessType, accessRequest))
                 .collect(Collectors.toList()));
