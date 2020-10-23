@@ -27,7 +27,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
         // configure the routing rules here
         $routeProvider
 
-        // Home
+            // Home
             .when('/', {
                 templateUrl: 'templates/home',
                 controller: 'HomeController as ctrl',
@@ -146,20 +146,14 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     adapterList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('adapters');
                     }],
-                    deviceTypesList: ['ComponentTypeService', function (ComponentTypeService) {
-                        return ComponentTypeService.GetByComponent('DEVICE').then(function (response) {
-                            return response.data || [];
-                        });
+                    deviceTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('device-types');
                     }],
-                    actuatorTypesList: ['ComponentTypeService', function (ComponentTypeService) {
-                        return ComponentTypeService.GetByComponent('ACTUATOR').then(function (response) {
-                            return response.data || [];
-                        });
+                    actuatorTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('actuator-types');
                     }],
-                    sensorTypesList: ['ComponentTypeService', function (ComponentTypeService) {
-                        return ComponentTypeService.GetByComponent('SENSOR').then(function (response) {
-                            return response.data || [];
-                        });
+                    sensorTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('sensor-types');
                     }]
                 }
             })
@@ -174,11 +168,11 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         return CrudService.fetchAllItems('key-pairs');
                     }],
                     addKeyPair: ['CrudService', function (CrudService) {
-                        // bind category parameter
+                        //Bind category parameter
                         return angular.bind(this, CrudService.addItem, 'key-pairs');
                     }],
                     deleteKeyPair: ['CrudService', function (CrudService) {
-                        // bind category parameter
+                        //Bind category parameter
                         return angular.bind(this, CrudService.deleteItem, 'key-pairs');
                     }]
                 }
@@ -280,11 +274,11 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         return CrudService.fetchAllItems('actuators');
                     }],
                     addActuator: ['CrudService', function (CrudService) {
-                        // bind category parameter
+                        //Bind category parameter
                         return angular.bind(this, CrudService.addItem, 'actuators');
                     }],
                     deleteActuator: ['CrudService', function (CrudService) {
-                        // bind category parameter
+                        //Bind category parameter
                         return angular.bind(this, CrudService.deleteItem, 'actuators');
                     }],
                     deviceList: ['CrudService', function (CrudService) {
@@ -292,6 +286,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }],
                     adapterList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('adapters');
+                    }],
+                    actuatorTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('actuator-types');
                     }]
                 }
             })
@@ -361,11 +358,11 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         return CrudService.fetchAllItems('sensors');
                     }],
                     addSensor: ['CrudService', function (CrudService) {
-                        // bind category parameter
+                        //Bind category parameter
                         return angular.bind(this, CrudService.addItem, 'sensors');
                     }],
                     deleteSensor: ['CrudService', function (CrudService) {
-                        // bind category parameter
+                        //Bind category parameter
                         return angular.bind(this, CrudService.deleteItem, 'sensors');
                     }],
                     deviceList: ['CrudService', function (CrudService) {
@@ -373,6 +370,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }],
                     adapterList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('adapters');
+                    }],
+                    sensorTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('sensor-types');
                     }]
                 }
             })
@@ -406,12 +406,15 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         return CrudService.fetchAllItems('devices');
                     }],
                     addDevice: ['CrudService', function (CrudService) {
-                        // bind category parameter
+                        //Bind category parameter
                         return angular.bind(this, CrudService.addItem, 'devices');
                     }],
                     deleteDevice: ['CrudService', function (CrudService) {
-                        // bind category parameter
+                        //Bind category parameter
                         return angular.bind(this, CrudService.deleteItem, 'devices');
+                    }],
+                    deviceTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('device-types');
                     }],
                     keyPairList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('key-pairs');
@@ -465,11 +468,11 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         return CrudService.fetchAllItems('adapters');
                     }],
                     addAdapter: ['CrudService', function (CrudService) {
-                        // bind category parameter
+                        //Bind category parameter
                         return angular.bind(this, CrudService.addItem, 'adapters');
                     }],
                     deleteAdapter: ['CrudService', function (CrudService) {
-                        // bind category parameter
+                        //Bind category parameter
                         return angular.bind(this, CrudService.deleteItem, 'adapters');
                     }]
                 }
@@ -481,12 +484,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 templateUrl: 'templates/monitoring-adapters',
                 controller: 'MonitoringAdapterListController as ctrl',
                 resolve: {
-                    deviceTypesList: ['ComponentTypeService', function (ComponentTypeService) {
-                        return ComponentTypeService.GetByComponent('device').then(function (response) {
-                            return response.data;
-                        }, function () {
-                            return [];
-                        });
+                    deviceTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('device-types');
                     }],
                     parameterTypesList: ['ParameterTypeService', function (ParameterTypeService) {
                         return ParameterTypeService.getAll().then(function (response) {
@@ -529,9 +528,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }]
                 }
             })
-            
+
             // Testing-Tool
-            .when(viewPrefix + '/testing-tool',{
+            .when(viewPrefix + '/testing-tool', {
                 category: 'test-details',
                 templateUrl: 'templates/testing-tool',
                 controller: 'TestingController as ctrl',
@@ -540,14 +539,14 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         return CrudService.fetchAllItems('test-details');
                     }],
                     addTest: ['CrudService', function (CrudService) {
-                        // bind category parameter
+                        //Bind category parameter
                         return angular.bind(this, CrudService.addItem, 'test-details');
                     }],
                     ruleList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('rules');
                     }],
                     deleteTest: ['CrudService', function (CrudService) {
-                        // bind category parameter
+                        //Bind category parameter
                         return angular.bind(this, CrudService.deleteItem, 'test-details');
 
                     }]
