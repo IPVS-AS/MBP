@@ -6,7 +6,7 @@ import org.citopt.connde.domain.access_control.ACAttributeValue;
 import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.domain.user_entity.MBPEntity;
 import org.citopt.connde.domain.user_entity.UserEntity;
-import org.citopt.connde.repository.DeviceRepository;
+import org.citopt.connde.service.DeviceDeleteValidator;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-@MBPEntity(repository = DeviceRepository.class)
+@MBPEntity(deleteValidator = DeviceDeleteValidator.class)
 @ApiModel(description = "Model for device entities")
 public class Device extends UserEntity {
 

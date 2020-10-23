@@ -5,10 +5,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.citopt.connde.repository.UserEntityRepository;
+import org.citopt.connde.service.IDeleteValidator;
 
 /**
- * Annotation used to declare MBP managed entities and to indicate the concrete repository implementation.
+ * Annotation used to declare MBP managed entities.
  * 
  * @author Jakob Benz
  */
@@ -16,6 +16,6 @@ import org.citopt.connde.repository.UserEntityRepository;
 @Target({ElementType.TYPE, ElementType.FIELD})
 public @interface MBPEntity {
 	
-	public Class<?> repository() default UserEntityRepository.class;
+	public Class<? extends IDeleteValidator<?>>[] deleteValidator() default {};
 	
 }

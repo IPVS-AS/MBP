@@ -1,18 +1,24 @@
 package org.citopt.connde.domain.key_pair;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import javax.persistence.GeneratedValue;
+
+import org.citopt.connde.domain.user_entity.MBPEntity;
 import org.citopt.connde.domain.user_entity.UserEntity;
+import org.citopt.connde.service.KeyPairDeleteValidator;
 import org.springframework.data.annotation.Id;
 
-import javax.persistence.GeneratedValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Document class for RSA key pairs. Key pairs are named user entities and consist out of a public and a private key.
  */
+@MBPEntity(deleteValidator = KeyPairDeleteValidator.class)
 @ApiModel(description = "Model for RSA key pairs")
 public class KeyPair extends UserEntity {
+	
     @Id
     @GeneratedValue
     @ApiModelProperty(notes = "Key pair ID", example = "5c8f7ad66f9e3c1bacb0fa99", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
