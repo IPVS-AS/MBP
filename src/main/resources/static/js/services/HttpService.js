@@ -174,14 +174,38 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
          * @param response The error response (if available)
          */
         function handleError(response) {
+            /**
+             * Extracts an error message from a given response object.
+             * @param response To response object to extract the message from
+             * @return The extracted error message or null in case there is none
+             */
+            function extractMessage(response) {
+                //Sanity check for object
+                if (typeof response !== 'object') {
+                    return null;
+                }
+
+                //Check for message field
+                if ((typeof response.message === 'string') || (response.message instanceof String)) {
+                    return response.message;
+                }
+
+                //Check for responseJSON
+                if ((typeof response.responseJSON === 'object') &&
+                    (typeof response.responseJSON.message === 'string') || (response.responseJSON.message instanceof String)) {
+                    return response.responseJSON.message;
+                }
+            }
+
             //Debug messages
             debug("Request failed, response:", response);
 
+            //Extract error message if available
+            let errorMessage = extractMessage(response);
+
             //Check if response is available
-            if ((typeof response === 'object') &&
-                ((typeof response.message === 'string') || (response.message instanceof String))
-                && response.message.trim().length > 3) {
-                NotificationService.showError(response.message);
+            if (errorMessage != null) {
+                NotificationService.showError(errorMessage);
             } else if (response.status === 0) {
                 NotificationService.showError("Request to backend failed. Is it online?");
             } else {
@@ -196,12 +220,13 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
          * Prints debug messages to the console, if debug mode is enabled.
          */
         function debug() {
+            //Check if debugging is desired
             if (!debugMode) {
                 return;
             }
 
             //Iterate over all arguments and log them
-            for (let i = 0; i < arguments; i++) {
+            for (let i = 0; i < arguments.length; i++) {
                 console.log(arguments[i]);
             }
         }

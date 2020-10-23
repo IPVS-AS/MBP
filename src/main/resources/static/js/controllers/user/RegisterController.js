@@ -1,34 +1,34 @@
-(function() {
-  'use strict';
+/**
+ * Controller for the rules list page.
+ */
+app.controller('RegisterController', ['$scope', 'UserService', '$location', 'NotificationService',
+    function ($scope, UserService, $location, NotificationService) {
+        let vm = this;
 
-  angular
-    .module('app')
-    .controller('RegisterController', RegisterController);
+        function register() {
+            vm.dataLoading = true;
+            UserService.Create(vm.user).then(function (response) {
+                NotificationService.showSuccess("Registration was successful!");
 
-  RegisterController.$inject = ['UserService', '$location', '$rootScope', 'FlashService'];
+                //Redirect
+                $location.path('/login');
+            }, function (response) {
+                //Check why the request failed
+                /*
+                if (response.status === 409) {
+                    NotificationService.showError("The name is already in use.")
+                } else {
+                    NotificationService.showError("Login failed.")
+                }*/
+            }).then(function () {
+                vm.dataLoading = false;
+                $scope.$apply();
+            });
+        }
 
-  function RegisterController(UserService, $location, $rootScope, FlashService) {
-    var vm = this;
-
-    vm.register = register;
-
-    function register() {
-      vm.dataLoading = true;
-      UserService.Create(vm.user)
-        .then(function(response) {
-          if (response.success) {
-            FlashService.Success(response.message, true);
-            $location.path('/login');
-          } else {
-            if (response.status === 403) {
-              FlashService.Error("Authorization error!");
-            } else {
-              FlashService.Error(response.message);
-            }
-            vm.dataLoading = false;
-          }
+        //Expose functions
+        angular.extend(vm, {
+            register: register
         });
-    }
-  }
-
-})();
+    }]
+);

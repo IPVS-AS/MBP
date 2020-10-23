@@ -29,6 +29,7 @@ app.controller('LoginController', ['$scope', '$location', '$rootScope', 'Authent
                 //Redirect
                 $location.path('/');
             }, function (response) {
+                /*
                 //Check why the request failed
                 if (response.status === 403) {
                     NotificationService.showError("Incorrect password.")
@@ -36,7 +37,7 @@ app.controller('LoginController', ['$scope', '$location', '$rootScope', 'Authent
                     NotificationService.showError("User does not exist.")
                 } else {
                     NotificationService.showError("Login failed.")
-                }
+                }*/
             }).then(function () {
                 vm.dataLoading = false;
                 $scope.$apply();
