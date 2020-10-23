@@ -73,14 +73,14 @@ app.controller('DeviceListController',
                     var affectedWarning = "";
 
                     //If list is not empty, create a message that contains the names of all affected components
-                    if (result.data.length > 0) {
+                    if (result.length > 0) {
                         affectedWarning = "<br/><br/><strong>The following components are currently " +
                             "using this device and will be deleted as well:</strong><br/>";
 
-                        for (var i = 0; i < result.data.length; i++) {
+                        for (var i = 0; i < result.length; i++) {
                             affectedWarning += "- ";
-                            affectedWarning += result.data[i].name;
-                            affectedWarning += " (" + result.data[i].component + ")";
+                            affectedWarning += result[i].name;
+                            affectedWarning += " (" + result[i].component + ")";
                             affectedWarning += "<br/>";
                         }
                     }

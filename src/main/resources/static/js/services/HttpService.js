@@ -195,6 +195,8 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
                     (typeof response.responseJSON.message === 'string') || (response.responseJSON.message instanceof String)) {
                     return response.responseJSON.message;
                 }
+
+                return null;
             }
 
             //Debug messages
