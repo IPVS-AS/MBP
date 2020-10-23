@@ -8,7 +8,7 @@ import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.component.SensorValidator;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.device.DeviceValidator;
-import org.citopt.connde.domain.entity_type.EntityType;
+import org.citopt.connde.domain.entity_type.*;
 import org.citopt.connde.domain.env_model.EnvironmentModel;
 import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.domain.key_pair.KeyPairValidator;
@@ -74,6 +74,7 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
                 EntityType.class,
                 EnvironmentModel.class,
                 Rule.class, RuleTrigger.class, RuleAction.class,
+                DeviceType.class, ActuatorType.class, SensorType.class,
                 TestDetails.class);
     }
 
@@ -120,6 +121,10 @@ public class RestConfiguration extends RepositoryRestConfigurerAdapter {
         //Rule triggers
         v.addValidator("beforeSave", new RuleTriggerValidator());
         v.addValidator("beforeCreate", new RuleTriggerValidator());
+
+        //Entity types
+        v.addValidator("beforeSave", new EntityTypeValidator());
+        v.addValidator("beforeCreate", new EntityTypeValidator());
 
         //TestDetails
         v.addValidator("beforeSave", new TestDetailsValidator());
