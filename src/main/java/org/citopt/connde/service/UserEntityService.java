@@ -5,15 +5,20 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.citopt.connde.DynamicBeanProvider;
+import org.citopt.connde.constants.Constants;
 import org.citopt.connde.domain.access_control.ACAccess;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.access_control.ACPolicy;
 import org.citopt.connde.domain.access_control.IACRequestedEntity;
+import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.domain.user.User;
+import org.citopt.connde.domain.user_entity.MBPEntity;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.error.MissingAdminPrivilegesException;
@@ -23,6 +28,7 @@ import org.citopt.connde.repository.UserEntityRepository;
 import org.citopt.connde.service.access_control.ACPolicyEvaluationService;
 import org.citopt.connde.util.C;
 import org.citopt.connde.util.Pages;
+import org.reflections.Reflections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -30,6 +36,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
+
 
 @Service
 public class UserEntityService {
@@ -44,6 +51,24 @@ public class UserEntityService {
     
     @Autowired
     private ACPolicyEvaluationService policyEvaluationService;
+    
+    // - - -
+    
+    public static void main(String[] args) throws InstantiationException, IllegalAccessException {
+    	Reflections reflections = new Reflections(Constants.ROOT_PACKAGE);
+    	Set<Class<?>> challengeClasses = reflections.getTypesAnnotatedWith(MBPEntity.class);
+    	challengeClasses.forEach(c -> System.out.println(c.getName()));
+    	System.out.println();
+    	
+    	MBPEntity annotation = KeyPair.class.getAnnotationsByType(MBPEntity.class)[0];
+//    	for (Class<?> c : annotation.usedBy()) {
+//    		System.out.println(c.getName());
+//    	}
+    	IDeleteValidator v = DynamicBeanProvider.get(annotation.deleteValidator()[0]);
+//    	IDeleteValidator v = annotation.deleteValidator()[0].newInstance();
+    	
+//    	DynamicBeanProvider.get(repoType);
+	}
     
     // - - -
     
@@ -179,6 +204,9 @@ public class UserEntityService {
     	// Retrieve the entity from the database
     	E entity = getForIdWithAccessControlCheck(repository, entityId, ACAccessType.READ, accessRequest);
     	
+    	// Check whether entity actually can be deleted (may still be in use)
+    	requireDeletable(entity);
+    		
     	// Check whether the requesting user is allowed to delete the entity
     	ACAccess access = new ACAccess(ACAccessType.DELETE, user, entity);
     	List<ACPolicy> policies = getPoliciesForEntity(entity);
@@ -188,6 +216,20 @@ public class UserEntityService {
     	
     	// Everything checks out (user is owner or a policy grants the delete permission) -> delete the entity in the database
     	repository.deleteById(entityId);
+    }
+    
+    @SuppressWarnings("unchecked")
+	public <E extends UserEntity> void requireDeletable(E entity) {
+    	MBPEntity[] annotations = entity.getClass().getAnnotationsByType(MBPEntity.class);
+    	List<IDeleteValidator<E>> validators = new ArrayList<>();
+    	for (MBPEntity annotation : annotations) {
+    		for (Class<? extends IDeleteValidator<?>> c : annotation.deleteValidator()) {    			
+    			validators.add((IDeleteValidator<E>) DynamicBeanProvider.get(c));
+    		}
+    	}
+    	
+    	// Throws exception if entity is not deletable
+    	validators.forEach(v -> v.validateDeletable(entity));
     }
     
     public <E extends IACRequestedEntity> List<E> filterForAdminOwnerAndPolicies(Supplier<List<E>> entitiesSupplier, ACAccessType accessType, ACAccessRequest accessRequest) {

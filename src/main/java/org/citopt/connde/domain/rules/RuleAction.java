@@ -1,6 +1,8 @@
 package org.citopt.connde.domain.rules;
 
+import org.citopt.connde.domain.user_entity.MBPEntity;
 import org.citopt.connde.domain.user_entity.UserEntity;
+import org.citopt.connde.service.RuleActionDeleteValidator;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -13,6 +15,7 @@ import java.util.Objects;
  * Objects of this class represent actions of rules that are executed after at least one of the containing rules
  * was triggered.
  */
+@MBPEntity(deleteValidator = RuleActionDeleteValidator.class)
 @Document
 public class RuleAction extends UserEntity {
     @Id

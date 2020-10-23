@@ -1,18 +1,22 @@
 package org.citopt.connde.domain.rules;
 
+import java.util.Objects;
+
+import javax.persistence.GeneratedValue;
+
+import org.citopt.connde.domain.user_entity.MBPEntity;
 import org.citopt.connde.domain.user_entity.UserEntity;
+import org.citopt.connde.service.RuleTriggerDeleteValidator;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import javax.persistence.GeneratedValue;
-import java.util.Objects;
 
 /**
  * Objects of this class represent triggers of rules that induce the execution of the containing rules. They consist out of a
  * CEP query string that is injected into a CEP engine. If the corresponding event pattern as described in the query
  * is detected by the engine, the actions of the containing rules may be executed subsequently.
  */
+@MBPEntity(deleteValidator = RuleTriggerDeleteValidator.class)
 @Document
 public class RuleTrigger extends UserEntity {
     @Id
