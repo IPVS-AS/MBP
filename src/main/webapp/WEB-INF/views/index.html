@@ -12,7 +12,7 @@
     <title>MBP</title>
 
     <!-- Favicon-->
-    <link rel="icon" th:href="@{/images/favicon.ico}" type="image/x-icon">
+    <link rel="icon" th:href="@{/images/mbp-icon.png}" type="image/x-icon">
 
     <!-- Google Fonts -->
     <link th:href="@{/plugins/google-fonts/roboto.css}" rel="stylesheet">
@@ -128,14 +128,14 @@
 <aside id="leftsidebar" class="sidebar" ng-show="loggedIn">
     <!-- User Info -->
     <div class="user-info">
-        <div class="image">
+        <div class="image" style="float: right">
             <img src="images/user.png" width="48" height="48" alt="User"/>
         </div>
-        <div class="info-container">
+        <div class="info-container" >
             <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 {{username}}
             </div>
-            <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 10px">
+            <div class="username" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 10px">
                 {{userData.firstName + " " + userData.lastName}}
             </div>
             <div class="btn-group user-helper-dropdown" uib-dropdown="uib-dropdown"

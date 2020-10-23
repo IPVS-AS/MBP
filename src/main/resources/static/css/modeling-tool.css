@@ -529,6 +529,18 @@ li {
     background-image: url("../images/model/default-device.png");
 }
 
+.bosch-xdk-device {
+    background-image: url("../images/model/default-device.png");
+}
+
+.esp-device {
+    background-image: url("../images/model/default-device.png");
+}
+
+.gateway-device {
+    background-image: url("../images/model/default-device.png");
+}
+
 /* --- Actuators ----------------------------------------------------------------------------------------- */
 .light-actuator {
     background-image: url("../images/model/light-actuator.png");
@@ -617,6 +629,10 @@ li {
 
 .vibration-sensor {
     background-image: url("../images/model/vibration-sensor.png");
+}
+
+.pressure-sensor {
+    background-image: url("../images/model/default-sensor.png");
 }
 
 .default-sensor {

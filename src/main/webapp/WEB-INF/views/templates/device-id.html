@@ -1,15 +1,15 @@
 <div class="row clearfix">
     <!-- Device Details Card -->
-    <div class="col-lg-4">
+    <div class="col-lg-5">
         <div class="card details-card">
             <div class="header"
                  ng-class="{'bg-red': ctrl.deviceState=='OFFLINE', 'bg-orange': ctrl.deviceState=='ONLINE', 'bg-green': ctrl.deviceState=='SSH_AVAILABLE', 'bg-grey': ctrl.deviceState=='UNKNOWN'}">
                 <i class="material-icons" style="position: absolute; margin-top: 4px">devices</i>
                 <h2 style="margin-left: 35px;">
                     {{ctrl.device.name}}
-                    <small>{{ctrl.deviceState=='OFFLINE' ? 'Device unavailable' :
-                        (ctrl.deviceState=='ONLINE' ? 'Device available, but no SSH connection possible':
-                        (ctrl.deviceState=='SSH_AVAILABLE' ? 'Available for monitoring' :
+                    <small>{{ctrl.deviceState=='OFFLINE' ? 'Unavailable' :
+                        (ctrl.deviceState=='ONLINE' ? 'Not connected':
+                        (ctrl.deviceState=='SSH_AVAILABLE' ? 'Connected' :
                         (ctrl.deviceState=='UNKNOWN' ? 'Unknown state' : 'Loading...')))}}
                     </small>
                 </h2>
@@ -22,13 +22,8 @@
                 </ul>
             </div>
             <div class="body">
-                <h4>Properties</h4>
                 <table class="table table-hover">
                     <tbody>
-                    <tr id="{{ctrl.device.id}}">
-                        <th>Name:</th>
-                        <td>{{ctrl.device.name}}</td>
-                    </tr>
                     <tr>
                         <th>Device type:</th>
                         <td>{{ctrl.device.componentType}}</td>
@@ -60,12 +55,12 @@
     </div>
 
     <!-- Monitoring Control Card -->
-    <div class="col-lg-8">
+    <div class="col-lg-7">
         <div class="card control-card">
             <div class="header">
                 <h2>
                     Available monitoring operators
-                    <small>Options to enable and disable monitoring for this device.</small>
+                    <small>Enable or disable monitoring for this device</small>
                 </h2>
             </div>
             <div class="body">
@@ -120,7 +115,7 @@
                                 </tr>
                                 </tbody>
                             </table>
-                            <span ng-show="adapter.parameters.length == 0">No parameters</span>
+                            <span ng-show="adapter.parameters.length == 0">None</span>
                         </td>
                         <td class="align-center">
                             <div ng-switch="adapter.state" ng-click="adapter.reloadState()" class="clickable">
@@ -198,7 +193,7 @@
                     </ul>
                 </div>
                 <div class="body collapse in" id="card-body-{{adapter.id}}">
-                    <div class="form-group" style="margin-bottom: 10px">
+                    <div class="form-group align-right" style="margin-bottom: 10px">
                         <div class="form-line">
                             <unit-input ng-model="adapter.displayUnitInput"
                                         unit-filter="{{adapter.unit}}"></unit-input>
@@ -213,7 +208,7 @@
                         <li role="presentation" ng-show="adapter.state == 'RUNNING'">
                             <a data-target="#live-chart-{{adapter.id}}"
                                ng-attr-data-toggle="{{adapter.state == 'RUNNING' ? 'tab' : '' }}">
-                                <i class="material-icons" style="color: red;">live_tv</i>&nbsp;Live Chart
+                                <i class="material-icons">live_tv</i>&nbsp;Live Chart
                             </a>
                         </li>
                         <li role="presentation" class="active" ng-click="adapter.historicalChartApi.updateChart()">

@@ -4,7 +4,8 @@
         <div class="card">
             <div class="header">
                 <div class="col-lg-6">
-                    <h2>Rule Definitions</h2>
+                    <h2>Rule Definitions
+                    <small>Rules for your IoT environments</small></h2>
                 </div>
                 <div class="align-right">
                     <button id="add-button" type="button"
@@ -73,7 +74,7 @@
                             </div>
                             <form ng-submit="deleteRuleCtrl.deleteItem()" ng-show="rule.isDeletable"
                                   style="display: inline-block">
-                                <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
                                         ng-click="deleteRuleCtrl.item.id = rule.id">
                                     <i class="material-icons" style="font-size:14px;">delete</i>
                                 </button>

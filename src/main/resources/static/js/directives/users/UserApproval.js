@@ -155,13 +155,13 @@ app.directive('userApproval', ['$timeout', 'UserApprovalService', 'CrudService',
                 '</div>' +
                 '<span class="help-block" ng-show="errorMessage">{{errorMessage}}</span>' +
                 '</div>' +
-                '<button type="submit" class="btn btn-success btn-block m-t-5 waves-effect">Share</button>' +
+                '<button type="submit" class="btn bg-mbp-blue waves-effect m-t-5">Share with User</button>' +
                 '</form>' +
                 '</div>' +
                 '<div class="modal-footer">' +
-                '<button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">Close</button>' +
+                '<button type="button" class="btn btn-secondary m-r-10 waves-effect" data-dismiss="modal">Close</button>' +
                 '</div></div></div></div>' +
-                '<button type="submit" class="btn btn-warning m-t-0 waves-effect" data-toggle="modal" ' +
+                '<button type="submit" class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float" data-toggle="modal" ' +
                 'data-target="#approval-model-{{entityId}}" data-backdrop="static" data-keyboard="false">' +
                 '<i class="material-icons" style="font-size:14px;">share</i>' +
                 '</button>',

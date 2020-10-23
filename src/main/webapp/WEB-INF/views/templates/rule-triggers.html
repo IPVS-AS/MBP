@@ -4,7 +4,7 @@
         <div class="card">
             <div class="header">
                 <div class="col-lg-6">
-                    <h2>Rule Conditions</h2>
+                    <h2>Rule Conditions<small>Conditions to trigger yours rules</small></h2>
                 </div>
                 <div class="align-right">
                     <button id="add-button" type="button" data-toggle="collapse" data-target="#add-trigger-card"
@@ -58,7 +58,7 @@
                             </div>
                             <form ng-submit="deleteRuleTriggerCtrl.deleteItem()" ng-show="item.isDeletable"
                                   style="display: inline-block">
-                                <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
                                         ng-click="deleteRuleTriggerCtrl.item.id = item.id">
                                     <i class="material-icons" style="font-size:14px;">delete</i>
                                 </button>

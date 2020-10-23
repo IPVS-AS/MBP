@@ -4,11 +4,28 @@ The following commands can be executed in a command shell once a git client has 
 
 ## Clone the project
 Create a new directory with a working copy of the master branch
+
 ````bash
 git clone https://github.com/IPVS-AS/MBP.git
 ````
 
 ## Checkout new branch
 ````bash
-git checkout -b your-branch-name
+git checkout -b feature/<your-feature-name>
+````
+
+If changes are related to an existent issue, use:
+
+````bash
+git checkout -b issue/<issue_number>
+````
+
+## Commit and push your changes
+
+If changes are related to an existent issue, link the issue number on the commit message.
+
+````bash
+git add <modified_files>
+git commit -m '<message> #<issue_number_if_existent>'
+git push --set-upstream origin <your-branche-name>
 ````

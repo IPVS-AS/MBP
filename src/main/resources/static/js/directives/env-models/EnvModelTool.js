@@ -1517,6 +1517,21 @@ app.directive('envModelTool',
                     '</ul>' +
                     '</div>' +
                     '</div>' +
+                    '</div>' +        
+                    '<div class="panel panel-default">' +
+                    '<div class="panel-heading" style="overflow-x: hidden;">' +
+                    '<h4 class="panel-title">' +
+                    '<a class="clickable collapsed" data-toggle="collapse" data-target="#collapseSensors" aria-expanded="false">' +
+                    '<span class="material-icons" style="font-size: 20px;">settings_remote</span>Sensor types' +
+                    '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>' +
+                    '</h4>' +
+                    '</div>' +
+                    '<div id="collapseSensors" class="panel-collapse collapse">' +
+                    '<div class="panel-body canvas-wide modeling-tool canvasPalette">' +
+                    '<ul class="dragList sensor-palette">' +
+                    '</ul>' +
+                    '</div>' +
+                    '</div>' +
                     '</div>' +
                     '<div class="panel panel-default">' +
                     '<div class="panel-heading" style="overflow-x: hidden;">' +
@@ -1529,21 +1544,6 @@ app.directive('envModelTool',
                     '<div id="collapseActuators" class="panel-collapse collapse">' +
                     '<div class="panel-body canvas-wide modeling-tool canvasPalette">' +
                     '<ul class="dragList actuator-palette">' +
-                    '</ul>' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="panel panel-default">' +
-                    '<div class="panel-heading" style="overflow-x: hidden;">' +
-                    '<h4 class="panel-title">' +
-                    '<a class="clickable collapsed" data-toggle="collapse" data-target="#collapseSensors" aria-expanded="false">' +
-                    '<span class="material-icons" style="font-size: 20px;">settings_remote</span>Sensors' +
-                    '<i class="material-icons" style="float: right;">keyboard_arrow_down</i></a>' +
-                    '</h4>' +
-                    '</div>' +
-                    '<div id="collapseSensors" class="panel-collapse collapse">' +
-                    '<div class="panel-body canvas-wide modeling-tool canvasPalette">' +
-                    '<ul class="dragList sensor-palette">' +
                     '</ul>' +
                     '</div>' +
                     '</div>' +
@@ -1610,7 +1610,7 @@ app.directive('envModelTool',
                     '<input class="form-control" type="text" placeholder="User name" ng-model="modalElementDetails.username"/>' +
                     '</div></div>' +
                     '<div class="form-group"><div class="form-line">' +
-                    '<input class="form-control" type="text" placeholder="Password" ng-model="modalElementDetails.password"/>' +
+                    '<input class="form-control" type="password" placeholder="Password" autocomplete="no" ng-model="modalElementDetails.password"/>' +
                     '</div></div>' +
                     '<div class="form-group"><div class="form-line">' +
                     '<select class="form-control show-tick" ng-model="modalElementDetails.keyPair" ng-options="t.id as (t.name) for t in keyPairList">' +
