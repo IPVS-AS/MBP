@@ -93,14 +93,14 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     adapterList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('adapters');
                     }],
-                    deviceTypesList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('device-types');
+                    deviceTypesList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('device-types');
                     }],
-                    actuatorTypesList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('actuator-types');
+                    actuatorTypesList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('actuator-types');
                     }],
-                    sensorTypesList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('sensor-types');
+                    sensorTypesList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('sensor-types');
                     }]
                 }
             })
@@ -209,6 +209,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
+            // Actuators
             .when(viewPrefix + '/actuators', {
                 category: 'actuators',
                 templateUrl: 'templates/actuators',
@@ -229,6 +230,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     adapterList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('adapters');
                     }],
+                    actuatorTypesList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('actuator-types');
+                    }],
                     accessControlPolicyList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('policies');
                     }]
@@ -247,38 +251,41 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            // Actuator List and Register (includes Device List and Register)
+            // Entity types
             .when(viewPrefix + '/entity-types', {
                 category: 'entity-types',
                 templateUrl: 'templates/entity-types',
                 controller: 'EntityTypesListController as ctrl',
                 resolve: {
-                    deviceTypesList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('device-types');
+                    deviceTypesList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('device-types');
                     }],
-                    actuatorTypesList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('actuator-types');
+                    actuatorTypesList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('actuator-types');
                     }],
-                    sensorTypesList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('sensor-types');
+                    sensorTypesList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('sensor-types');
                     }],
-                    addDeviceType: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.addItem, 'device-types');
+                    addDeviceType: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.addOne, 'device-types');
                     }],
-                    addActuatorType: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.addItem, 'actuator-types');
+                    addActuatorType: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.addOne, 'actuator-types');
                     }],
-                    addSensorType: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.addItem, 'sensor-types');
+                    addSensorType: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.addOne, 'sensor-types');
                     }],
-                    deleteDeviceType: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.deleteItem, 'device-types');
+                    deleteDeviceType: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.deleteOne, 'device-types');
                     }],
-                    deleteActuatorType: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.deleteItem, 'actuator-types');
+                    deleteActuatorType: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.deleteOne, 'actuator-types');
                     }],
-                    deleteSensorType: ['CrudService', function (CrudService) {
-                        return angular.bind(this, CrudService.deleteItem, 'sensor-types');
+                    deleteSensorType: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.deleteOne, 'sensor-types');
+                    }],
+                    accessControlPolicyList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('policies');
                     }]
                 }
             })
@@ -303,6 +310,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }],
                     adapterList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('adapters');
+                    }],
+                    sensorTypesList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('sensor-types');
                     }],
                     accessControlPolicyList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('policies');
@@ -339,6 +349,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }],
                     keyPairList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('key-pairs');
+                    }],
+                    deviceTypesList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('device-types');
                     }],
                     accessControlPolicyList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('policies');
@@ -400,8 +413,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 templateUrl: 'templates/monitoring-adapters',
                 controller: 'MonitoringAdapterListController as ctrl',
                 resolve: {
-                    deviceTypesList: ['CrudService', function (CrudService) {
-                        return CrudService.fetchAllItems('device-types');
+                    deviceTypesList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('device-types');
                     }],
                     parameterTypesList: ['ParameterTypeService', function (ParameterTypeService) {
                         return ParameterTypeService.getAll().then(function (response) {

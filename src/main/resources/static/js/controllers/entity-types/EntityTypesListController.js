@@ -5,10 +5,11 @@
  */
 app.controller('EntityTypesListController',
     ['$scope', '$controller', '$q',
+        'accessControlPolicyList',
         'deviceTypesList', 'actuatorTypesList', 'sensorTypesList',
         'addDeviceType', 'addActuatorType', 'addSensorType',
         'deleteDeviceType', 'deleteActuatorType', 'deleteSensorType', 'FileReader',
-        function ($scope, $controller, $q, deviceTypesList, actuatorTypesList, sensorTypesList,
+        function ($scope, $controller, $q, deviceTypesList, actuatorTypesList, sensorTypesList, accessControlPolicyList,
                   addDeviceType, addActuatorType, addSensorType,
                   deleteDeviceType, deleteActuatorType, deleteSensorType, FileReader) {
             let vm = this;
@@ -177,7 +178,8 @@ app.controller('EntityTypesListController',
                     $scope: $scope,
                     deleteItem: deleteSensorType,
                     confirmDeletion: confirmDelete.bind(null, 'sensor', sensorTypesList)
-                })
+                }),
+                accessControlPolicyList: accessControlPolicyList
             });
 
             //Watch addition of device types

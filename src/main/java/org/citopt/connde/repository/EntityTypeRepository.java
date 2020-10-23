@@ -1,5 +1,7 @@
 package org.citopt.connde.repository;
 
+import java.util.Optional;
+
 import org.citopt.connde.domain.entity_type.EntityType;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.query.Param;
@@ -15,5 +17,5 @@ import springfox.documentation.annotations.ApiIgnore;
 @ApiIgnore("Not an actual repository, only used as super interface")
 public interface EntityTypeRepository<T extends EntityType> extends UserEntityRepository<T> {
     @RestResource(exported = false)
-    T findByName(@Param("name") String name);
+    Optional<T> findByName(@Param("name") String name);
 }

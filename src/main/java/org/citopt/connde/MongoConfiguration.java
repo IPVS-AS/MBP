@@ -6,8 +6,6 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 
 import org.bson.Document;
-import org.citopt.connde.constants.Constants;
-import org.citopt.connde.domain.entity_type.DeviceType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,35 +46,6 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 	@PostConstruct
 	private void addValuesInDatabase() {
 		MongoDatabase database = mongoClient().getDatabase(getDatabaseName());
-
-		// Add component types
-		if (!collectionExists(database, "componentType")) {
-			database.createCollection("componentType");
-			for (int i = 0; i < Constants.componentTypes.length; i++) {
-				Document document = new Document();
-				document.put("name", Constants.componentTypes[i][0]);
-				document.put("component", Constants.componentTypes[i][1]);
-				database.getCollection("componentType").insertOne(document);
-			}
-		}
-
-		// Add authorities
-		Document authorityAdmin = new Document();
-		authorityAdmin.put("_id", Constants.ADMIN);
-		Document authorityUser = new Document();
-		authorityUser.put("_id", Constants.USER);
-		Document authorityDevice = new Document();
-		authorityDevice.put("_id", Constants.DEVICE);
-		Document authorityAnonymous = new Document();
-		authorityAnonymous.put("_id", Constants.ANONYMOUS);
-
-		if (!collectionExists(database, "authority")) {
-			database.createCollection("authority");
-			database.getCollection("authority").insertOne(authorityAdmin);
-			database.getCollection("authority").insertOne(authorityUser);
-			database.getCollection("authority").insertOne(authorityDevice);
-			database.getCollection("authority").insertOne(authorityAnonymous);
-		}
 
 		if (!collectionExists(database, "user")) {
 			database.createCollection("user");
