@@ -14,7 +14,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.citopt.connde.domain.entity_type.ActuatorType.createActuatorType;
 import static org.citopt.connde.domain.entity_type.DeviceType.createDeviceType;
+import static org.citopt.connde.domain.entity_type.SensorType.createSensorType;
 
 /**
  * Configuration for entities that are supposed to be available as default.
@@ -32,8 +34,10 @@ public class DefaultEntitiesConfiguration {
     @Autowired
     public void defaultDeviceTypes(DeviceTypeRepository deviceTypeRepository) {
 
+        //Put together the path to the device icons
         String iconPath = IMAGE_PATH + "device_types/";
 
+        //Create list of device types
         List<DeviceType> deviceTypes = Arrays.asList(
                 createDeviceType("Raspberry Pi", true, iconPath + "raspberry-pi.png"),
                 createDeviceType("Arduino", false, iconPath + "arduino.png"),
@@ -61,16 +65,21 @@ public class DefaultEntitiesConfiguration {
      */
     @Autowired
     public void defaultActuatorTypes(ActuatorTypeRepository actuatorTypeRepository) {
+
+        //Put together the path to the actuator icons
+        String iconPath = IMAGE_PATH + "actuator_types/";
+
+        //Create list of actuator types
         List<ActuatorType> actuatorTypes = Arrays.asList(
-                new ActuatorType("Buzzer"),
-                new ActuatorType("Speaker"),
-                new ActuatorType("Switch"),
-                new ActuatorType("LED"),
-                new ActuatorType("Light"),
-                new ActuatorType("Vibration"),
-                new ActuatorType("Motor"),
-                new ActuatorType("Heater"),
-                new ActuatorType("Air Conditioner")
+                createActuatorType("Buzzer", iconPath + "buzzer.png"),
+                createActuatorType("Speaker", iconPath + "speaker.png"),
+                createActuatorType("Switch", iconPath + "switch.png"),
+                createActuatorType("LED", iconPath + "led.png"),
+                createActuatorType("Light", iconPath + "light.png"),
+                createActuatorType("Vibration", iconPath + "vibration.png"),
+                createActuatorType("Motor", iconPath + "motor.png"),
+                createActuatorType("Heater", iconPath + "heater.png"),
+                createActuatorType("Air Conditioner", iconPath + "air-conditioner.png")
         );
 
         //Only add if repository is empty
@@ -86,20 +95,25 @@ public class DefaultEntitiesConfiguration {
      */
     @Autowired
     public void defaultSensorTypes(SensorTypeRepository sensorTypeRepository) {
+
+        //Put together the path to the device icons
+        String iconPath = IMAGE_PATH + "sensor_types/";
+
+        //Create list of sensor types
         List<SensorType> sensorTypes = Arrays.asList(
-                new SensorType("Temperature"),
-                new SensorType("Motion"),
-                new SensorType("Camera"),
-                new SensorType("Location"),
-                new SensorType("Gas"),
-                new SensorType("Sound"),
-                new SensorType("Touch"),
-                new SensorType("Humidity"),
-                new SensorType("Vibration"),
-                new SensorType("Gyroscope"),
-                new SensorType("Pressure"),
-                new SensorType("Proximity"),
-                new SensorType("Light")
+                createSensorType("Temperature", iconPath + "temperature.png"),
+                createSensorType("Motion", iconPath + "motion.png"),
+                createSensorType("Camera", iconPath + "camera.png"),
+                createSensorType("Location", iconPath + "location.png"),
+                createSensorType("Gas", iconPath + "gas.png"),
+                createSensorType("Sound", iconPath + "sound.png"),
+                createSensorType("Touch", iconPath + "touch.png"),
+                createSensorType("Humidity", iconPath + "humidity.png"),
+                createSensorType("Vibration", iconPath + "vibration.png"),
+                createSensorType("Gyroscope", iconPath + "gyroscope.png"),
+                createSensorType("Pressure", iconPath + "default.png"),
+                createSensorType("Proximity", iconPath + "proximity.png"),
+                createSensorType("Light", iconPath + "light.png")
         );
 
         //Only add if repository is empty

@@ -76,6 +76,7 @@
                                 <td></td>
                                 <td></td>
                                 <td></td>
+                                <td></td>
                             </tr>
                             </tbody>
                             <tfoot>
@@ -100,12 +101,15 @@
                             <thead>
                             <tr>
                                 <th>Name</th>
+                                <th>Icon</th>
                                 <th>Owner</th>
                             </tr>
                             </thead>
                             <tbody>
                             <tr ng-repeat="actuator in displayedActuatorCollection">
                                 <td>{{actuator.name}}</td>
+                                <td><img src="{{actuator.icon.content}}" alt="{{actuator.icon.name}}"
+                                         style="width:40px;height:40px;"/></td>
                                 <td>{{actuator.ownerName ? actuator.ownerName : "None"}}</td>
                                 <td>
                                     <div ng-show="actuator.isApprovable" style="display:inline-block">
@@ -149,12 +153,15 @@
                             <thead>
                             <tr>
                                 <th>Name</th>
+                                <th>Icon</th>
                                 <th>Owner</th>
                             </tr>
                             </thead>
                             <tbody>
                             <tr ng-repeat="sensor in displayedSensorCollection">
                                 <td>{{sensor.name}}</td>
+                                <td><img src="{{sensor.icon.content}}" alt="{{sensor.icon.name}}"
+                                         style="width:40px;height:40px;"/></td>
                                 <td>{{sensor.ownerName ? sensor.ownerName : "None"}}</td>
                                 <td>
                                     <div ng-show="sensor.isApprovable" style="display:inline-block">
@@ -201,7 +208,7 @@
                     </h5>
                 </div>
                 <form ng-submit="addDeviceTypeCtrl.addItem()">
-                    <fieldset id="actuator-form">
+                    <fieldset>
                         <div class="modal-body">
                             <!-- "global" error for addItem -->
                             <div class="form-group" ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.global}">
@@ -228,19 +235,6 @@
                                          callbacks="ctrl.dzDeviceTypeIconCallbacks"
                                          methods="ctrl.dzIconMethods" ng-dropzone>
                                     </div>
-                                    <div style="display:none;">
-                                        <div id='tpl' class="dz-preview dz-file-preview ">
-                                            <div class="dz-details col-lg-4 col-sm-6 col-12">
-                                                <div class="dz-filename"><span data-dz-name></span></div>
-                                                <img data-dz-thumbnail/>
-                                            </div>
-                                            <div class="dz-progress"><span class="dz-upload"
-                                                                           data-dz-uploadprogress></span></div>
-                                            <div class="dz-success-mark"><span>✔</span></div>
-                                            <div class="dz-error-mark"><span>✘</span></div>
-                                            <div class="dz-error-message"><span data-dz-errormessage></span></div>
-                                        </div>
-                                    </div>
                                 </div>
                                 <span class="help-block"
                                       ng-show="addDeviceTypeCtrl.item.errors.icon">{{addDeviceTypeCtrl.item.errors.icon.message}}</span>
@@ -256,6 +250,134 @@
                     </fieldset>
                 </form>
             </div>
+        </div>
+    </div>
+
+    <!-- Actuator types modal -->
+    <div class="modal fade" id="addActuatorTypeModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register a new actuator type
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form ng-submit="addActuatorTypeCtrl.addItem()">
+                    <fieldset>
+                        <div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <div class="form-group" ng-class="{'has-error' : addActuatorTypeCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addActuatorTypeCtrl.item.errors.global">
+			                      {{addActuatorTypeCtrl.item.errors.global}}
+			                    </span>
+                            </div>
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : addActuatorTypeCtrl.item.errors.name }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addActuatorTypeCtrl.item.errors.name }">
+                                    <input class="form-control" type="text"
+                                           placeholder="Name *" ng-model="addActuatorTypeCtrl.item.name"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addActuatorTypeCtrl.item.errors.name">{{addActuatorTypeCtrl.item.errors.name.message}}</span>
+                            </div>
+                            <!-- item.icon group -->
+                            <label>Icon:</label>
+                            <div class="form-group" ng-class="{'has-error' : addActuatorTypeCtrl.item.errors.icon }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addActuatorTypeCtrl.item.errors.icon }">
+                                    <div class="dropzone" options="ctrl.dzIconOptions"
+                                         callbacks="ctrl.dzActuatorTypeIconCallbacks"
+                                         methods="ctrl.dzIconMethods" ng-dropzone>
+                                    </div>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addActuatorTypeCtrl.item.errors.icon">{{addActuatorTypeCtrl.item.errors.icon.message}}</span>
+                            </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sensor types modal -->
+    <div class="modal fade" id="addSensorTypeModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register a new sensor type
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form ng-submit="addSensorTypeCtrl.addItem()">
+                    <fieldset>
+                        <div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <div class="form-group" ng-class="{'has-error' : addSensorTypeCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addSensorTypeCtrl.item.errors.global">
+			                      {{addSensorTypeCtrl.item.errors.global}}
+			                    </span>
+                            </div>
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : addSensorTypeCtrl.item.errors.name }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addSensorTypeCtrl.item.errors.name }">
+                                    <input class="form-control" type="text"
+                                           placeholder="Name *" ng-model="addSensorTypeCtrl.item.name"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addSensorTypeCtrl.item.errors.name">{{addSensorTypeCtrl.item.errors.name.message}}</span>
+                            </div>
+                            <!-- item.icon group -->
+                            <label>Icon:</label>
+                            <div class="form-group" ng-class="{'has-error' : addSensorTypeCtrl.item.errors.icon }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addSensorTypeCtrl.item.errors.icon }">
+                                    <div class="dropzone" options="ctrl.dzIconOptions"
+                                         callbacks="ctrl.dzSensorTypeIconCallbacks"
+                                         methods="ctrl.dzIconMethods" ng-dropzone>
+                                    </div>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addSensorTypeCtrl.item.errors.icon">{{addSensorTypeCtrl.item.errors.icon.message}}</span>
+                            </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Template definition for icons in dropzones -->
+    <div style="display:none;">
+        <div id='dropzone-icon-template' class="dz-preview dz-file-preview ">
+            <div class="dz-details col-lg-4 col-sm-6 col-12">
+                <div class="dz-filename"><span data-dz-name></span></div>
+                <img data-dz-thumbnail/>
+            </div>
+            <div class="dz-progress"><span class="dz-upload"
+                                           data-dz-uploadprogress></span></div>
+            <div class="dz-success-mark"><span>✔</span></div>
+            <div class="dz-error-mark"><span>✘</span></div>
+            <div class="dz-error-message"><span data-dz-errormessage></span></div>
         </div>
     </div>
 </div>

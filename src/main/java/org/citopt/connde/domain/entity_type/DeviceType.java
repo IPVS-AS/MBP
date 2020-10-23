@@ -37,8 +37,19 @@ public class DeviceType extends EntityType {
         return Device.class;
     }
 
+    /**
+     * Creates and returns a new device type by a given name, SSH support flag and an icon context.
+     *
+     * @param name        The name of the new device type
+     * @param sshSupport  True, if devices of the new type support SSH; false otherwise
+     * @param iconContent An URL to an existing icon or a base64 string of an icon to use for this device entity
+     * @return The created device type
+     */
     public static DeviceType createDeviceType(String name, boolean sshSupport, String iconContent) {
+        //Create device type
         DeviceType deviceType = new DeviceType(name, sshSupport);
+
+        //Set icon
         deviceType.setIcon(new EntityTypeIcon(iconContent));
         return deviceType;
     }

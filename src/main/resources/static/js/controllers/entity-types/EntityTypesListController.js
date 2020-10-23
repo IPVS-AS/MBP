@@ -16,7 +16,7 @@ app.controller('EntityTypesListController',
             vm.dzIconOptions = {
                 paramName: 'icon',
                 addRemoveLinks: true,
-                previewTemplate: document.querySelector('#tpl').innerHTML,
+                previewTemplate: document.querySelector('#dropzone-icon-template').innerHTML,
                 createImageThumbnails: true,
                 maxFilesize: 1,
                 maxFiles: 1,
@@ -83,26 +83,28 @@ app.controller('EntityTypesListController',
              * [Public]
              * Shows an alert that asks the user if he is sure that he wants to delete a certain entity type.
              *
+             * @param typeCategoryName Name of the entity type category
+             * @param typesList Reference to the corresponding list of entity types
              * @param data A data object that contains the id of the entity type that is supposed to be deleted
              * @returns A promise of the user's decision
              */
-            function confirmDelete(data) {
-                var deviceTypeId = data.id;
-                var deviceTypeName = "";
+            function confirmDelete(typeCategoryName, typesList, data) {
+                var entityTypeId = data.id;
+                var entityTypeName = "";
 
-                //Determines the device type's name by checking the list
-                for (var i = 0; i < deviceTypesList.length; i++) {
-                    if (deviceTypeId === deviceTypesList[i].id) {
-                        deviceTypeName = deviceTypesList[i].name;
+                //Determines the entity type's name by checking the given list
+                for (var i = 0; i < typesList.length; i++) {
+                    if (entityTypeId === typesList[i].id) {
+                        entityTypeName = typesList[i].name;
                         break;
                     }
                 }
 
                 //Show the alert to the user and return the resulting promise
                 return Swal.fire({
-                    title: 'Delete entity type',
+                    title: 'Delete ' + typeCategoryName + ' type',
                     type: 'warning',
-                    html: "Are you sure you want to delete entity type \"" + deviceTypeName + "\"?",
+                    html: "Are you sure you want to delete " + typeCategoryName + " type \"" + entityTypeName + "\"?",
                     showCancelButton: true,
                     confirmButtonText: 'Delete',
                     confirmButtonClass: 'bg-red',
@@ -139,29 +141,46 @@ app.controller('EntityTypesListController',
                 }),
                 addActuatorTypeCtrl: $controller('AddItemController as addActuatorTypeCtrl', {
                     $scope: $scope,
-                    addItem: addActuatorType
+                    addItem: function (data) {
+                        //Extend request for icon
+                        return readFile(data.icon[0]).then(function (response) {
+                            data.icon = response || null;
+                            return addActuatorType(data);
+                        }, function (response) {
+                            return $q.reject(response);
+                        });
+                    }
                 }),
                 addSensorTypeCtrl: $controller('AddItemController as addSensorTypeCtrl', {
                     $scope: $scope,
-                    addItem: addSensorType
+                    addItem: function (data) {
+                        //Extend request for icon
+                        return readFile(data.icon[0]).then(function (response) {
+                            data.icon = response || null;
+                            return addSensorType(data);
+                        }, function (response) {
+                            return $q.reject(response);
+                        });
+                    }
                 }),
                 deleteDeviceTypeCtrl: $controller('DeleteItemController as deleteDeviceTypeCtrl', {
                     $scope: $scope,
                     deleteItem: deleteDeviceType,
-                    confirmDeletion: confirmDelete
+                    confirmDeletion: confirmDelete.bind(null, 'device', deviceTypesList)
                 }),
                 deleteActuatorTypeCtrl: $controller('DeleteItemController as deleteActuatorTypeCtrl', {
                     $scope: $scope,
                     deleteItem: deleteActuatorType,
-                    confirmDeletion: null
+                    confirmDeletion: confirmDelete.bind(null, 'actuator', actuatorTypesList)
                 }),
                 deleteSensorTypeCtrl: $controller('DeleteItemController as deleteSensorTypeCtrl', {
                     $scope: $scope,
                     deleteItem: deleteSensorType,
-                    confirmDeletion: null
+                    confirmDeletion: confirmDelete.bind(null, 'sensor', sensorTypesList)
                 })
             });
 
+            //Watch addition of device types
             $scope.$watch(
                 //Value being watched
                 function () {
@@ -184,6 +203,52 @@ app.controller('EntityTypesListController',
                 }
             );
 
+            //Watch addition of actuator types
+            $scope.$watch(
+                //Value being watched
+                function () {
+                    return vm.addActuatorTypeCtrl.result;
+                },
+                //Callback
+                function () {
+                    let data = vm.addActuatorTypeCtrl.result;
+                    if (data) {
+                        //Close modal on success
+                        $("#addActuatorTypeModal").modal('toggle');
+
+                        //Reset dropzone
+                        vm.addActuatorTypeCtrl.item.icon = [];
+                        vm.dzIconMethods.removeAllFiles();
+
+                        //Add new item to list
+                        vm.actuatorTypeListCtrl.pushItem(data);
+                    }
+                }
+            );
+
+            //Watch addition of sensor types
+            $scope.$watch(
+                //Value being watched
+                function () {
+                    return vm.addSensorTypeCtrl.result;
+                },
+                //Callback
+                function () {
+                    let data = vm.addSensorTypeCtrl.result;
+                    if (data) {
+                        //Close modal on success
+                        $("#addSensorTypeModal").modal('toggle');
+
+                        //Reset dropzone
+                        vm.addSensorTypeCtrl.item.icon = [];
+                        vm.dzIconMethods.removeAllFiles();
+
+                        //Add new item to list
+                        vm.sensorTypeListCtrl.pushItem(data);
+                    }
+                }
+            );
+
             //Watch deletion of device types and remove them from the list
             $scope.$watch(
                 //Value being watched
@@ -194,6 +259,32 @@ app.controller('EntityTypesListController',
                 function () {
                     let id = vm.deleteDeviceTypeCtrl.result;
                     vm.deviceTypeListCtrl.removeItem(id);
+                }
+            )
+
+            //Watch deletion of actuator types and remove them from the list
+            $scope.$watch(
+                //Value being watched
+                function () {
+                    return vm.deleteActuatorTypeCtrl.result;
+                },
+                //Callback
+                function () {
+                    let id = vm.deleteActuatorTypeCtrl.result;
+                    vm.actuatorTypeListCtrl.removeItem(id);
+                }
+            );
+
+            //Watch deletion of sensor types and remove them from the list
+            $scope.$watch(
+                //Value being watched
+                function () {
+                    return vm.deleteSensorTypeCtrl.result;
+                },
+                //Callback
+                function () {
+                    let id = vm.deleteSensorTypeCtrl.result;
+                    vm.sensorTypeListCtrl.removeItem(id);
                 }
             );
         }
