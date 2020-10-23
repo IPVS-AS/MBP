@@ -69,7 +69,7 @@ app.controller('SensorListController',
 
                 //Determines the sensor's name by checking all sensors in the sensor list
                 for (var i = 0; i < sensorList.length; i++) {
-                    if (sensorId == sensorList[i].id) {
+                    if (sensorId === sensorList[i].id) {
                         sensorName = sensorList[i].name;
                         break;
                     }

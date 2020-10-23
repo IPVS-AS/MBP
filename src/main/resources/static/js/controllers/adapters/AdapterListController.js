@@ -134,10 +134,10 @@ app.controller('AdapterListController',
                             "using this adapter and will be deleted as well:</strong><br/>";
 
                         //Iterate over all affected components
-                        for (var i = 0; i < result.data.length; i++) {
+                        for (var i = 0; i < result.length; i++) {
                             affectedWarning += "- ";
-                            affectedWarning += result.data[i].name;
-                            affectedWarning += " (" + result.data[i].component + ")";
+                            affectedWarning += result[i].name;
+                            affectedWarning += " (" + result[i].component + ")";
                             affectedWarning += "<br/>";
                         }
                     }
