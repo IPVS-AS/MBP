@@ -1610,7 +1610,7 @@ app.directive('envModelTool',
                     '<input class="form-control" type="text" placeholder="User name" ng-model="modalElementDetails.username"/>' +
                     '</div></div>' +
                     '<div class="form-group"><div class="form-line">' +
-                    '<input class="form-control" type="text" placeholder="Password" ng-model="modalElementDetails.password"/>' +
+                    '<input class="form-control" type="password" placeholder="Password" autocomplete="no" ng-model="modalElementDetails.password"/>' +
                     '</div></div>' +
                     '<div class="form-group"><div class="form-line">' +
                     '<select class="form-control show-tick" ng-model="modalElementDetails.keyPair" ng-options="t.id as (t.name) for t in keyPairList">' +

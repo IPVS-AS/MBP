@@ -75,12 +75,36 @@
     <div class="col-lg-12">
         <div id="model-edit-card" class="card collapse">
             <div class="header">
-                <h2 class="editable" data-toggle="modal" data-target="#modelPropertiesModal" data-backdrop="static"
-                    data-keyboard="false">
-                    {{ctrl.modelProperties.name}}
-                    <i class="material-icons" style="font-size: 16px;margin-left: 5px;line-height: 15px;">mode_edit</i>
-                    <small>{{ctrl.modelProperties.description}}</small>
-                </h2>
+	            <div class="col-lg-6">
+                    <h2 class="editable" data-toggle="modal" data-target="#modelPropertiesModal" data-backdrop="static"
+                        data-keyboard="false">
+                        {{ctrl.modelProperties.name}}
+                        <i class="material-icons" style="font-size: 16px;margin-left: 5px;line-height: 15px;">mode_edit</i>
+                        <small>{{ctrl.modelProperties.description}}</small>
+                    </h2>
+                </div>
+                <div class="align-right m-r-25">
+                    <button class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
+                                title="Register components" ng-click="ctrl.registerComponents()">
+                            <i class="material-icons">backup</i>
+                    </button>
+                    <button class="btn bg-mbp-mid-blue btn-circle waves-effect waves-circle waves-float"
+                            title="Install components" ng-click="ctrl.deployComponents()">
+                        <i class="material-icons">file_download</i>
+                    </button>
+                    <button class="btn bg-mbp-mid-blue btn-circle waves-effect waves-circle waves-float"
+                            title="Start components" ng-click="ctrl.startComponents()">
+                        <i class="material-icons">play_arrow</i>
+                    </button>
+                    <button class="btn bg-mbp-mid-blue btn-circle waves-effect waves-circle waves-float"
+                            title="Stop components" ng-click="ctrl.stopComponents()">
+                        <i class="material-icons">stop</i>
+                    </button>
+                    <button class="btn bg-mbp-mid-blue btn-circle waves-effect waves-circle waves-float"
+                            title="Uninstall components" ng-click="ctrl.undeployComponents()">
+                        <i class="material-icons">file_upload</i>
+                    </button>
+                </div>
                 <ul class="header-dropdown">
                     <li class="dropdown">
                         <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button"
@@ -88,8 +112,8 @@
                             <i class="material-icons">more_vert</i>
                         </a>
                         <ul class="dropdown-menu pull-right">
-                            <li><a href="javascript:void(0);" class=" waves-effect waves-block">Export</a></li>
-                            <li><a href="javascript:void(0);" class=" waves-effect waves-block">Import</a></li>
+                            <li><a href="javascript:void(0);" class=" waves-effect waves-block" ng-click="ctrl.envModelToolApi.export()">Export</a></li>
+                            <li><a href="javascript:void(0);" class=" waves-effect waves-block" ng-click="ctrl.envModelToolApi.import()">Import</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -103,41 +127,14 @@
                          aria-valuemax="100" style="width: 100%;">{{ctrl.progressBarText}}
                     </div>
                 </div>
-
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div id="model-error-message" class="alert alert-danger">
-                            <strong>Errors occurred:</strong>
-                            <ul>
-                                <li ng-repeat="error in ctrl.errorMessageList track by $index">- {{error}}</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-lg-12 align-right">
-                        <button class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
-                                title="Register components" ng-click="ctrl.registerComponents()">
-                            <i class="material-icons">backup</i>
-                        </button>
-                        <button class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
-                                title="Deploy components" ng-click="ctrl.deployComponents()">
-                            <i class="material-icons">sync</i>
-                        </button>
-                        <button class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
-                                title="Undeploy components" ng-click="ctrl.undeployComponents()">
-                            <i class="material-icons">sync_disabled</i>
-                        </button>
-                        <button class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
-                                title="Start components" ng-click="ctrl.startComponents()">
-                            <i class="material-icons">play_arrow</i>
-                        </button>
-                        <button class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
-                                title="Stop components" ng-click="ctrl.stopComponents()">
-                            <i class="material-icons">pause</i>
-                        </button>
+                <div class="col-lg-12">
+                    <div id="model-error-message" class="alert alert-danger">
+                        <strong>Errors occurred:</strong>
+                        <ul>
+                            <li ng-repeat="error in ctrl.errorMessageList track by $index">- {{error}}</li>
+                        </ul>
                     </div>
                 </div>
-
-
                 <div class="btn-group" role="group" style="margin-left: 221px; width: calc(100% - 220px - 2px)">
                     <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.saveModel()"
                             ng-disabled="!ctrl.saveNecessary" data-toggle="tooltip" title="Save model">
@@ -171,14 +168,6 @@
                     <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.delete()"
                             ng-disabled="!isFocused" data-toggle="tooltip" title="Delete selected">
                         <i class="material-icons">delete</i>
-                    </button>
-                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.export()"
-                            data-toggle="tooltip" title="Export model">
-                        <i class="material-icons">file_upload</i>
-                    </button>
-                    <button type="button" class="btn btn-default waves-effect" ng-click="ctrl.envModelToolApi.import()"
-                            data-toggle="tooltip" title="Import model">
-                        <i class="material-icons">file_download</i>
                     </button>
                 </div>
                 <env-model-tool api="ctrl.envModelToolApi"

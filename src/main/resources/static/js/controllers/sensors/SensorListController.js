@@ -5,11 +5,10 @@
  */
 app.controller('SensorListController',
     ['$scope', '$controller', '$interval', 'sensorList', 'addSensor', 'deleteSensor',
-        'deviceList', 'adapterList', 'accessControlPolicyList', 'ComponentService',
-        'ComponentTypeService', 'NotificationService',
+        'deviceList', 'adapterList', 'sensorTypesList', 'accessControlPolicyList', 'ComponentService', 'NotificationService',
         function ($scope, $controller, $interval, sensorList, addSensor, deleteSensor,
-                  deviceList, adapterList, accessControlPolicyList, ComponentService,
-                  ComponentTypeService, NotificationService) {
+                  deviceList, adapterList, sensorTypesList, accessControlPolicyList, ComponentService,
+                  NotificationService) {
             var vm = this;
 
             vm.adapterList = adapterList;
@@ -19,11 +18,10 @@ app.controller('SensorListController',
              * Initializing function, sets up basic things.
              */
             (function initController() {
-                loadSensorTypes();
                 loadSensorStates();
 
                 //Interval for updating sensor states on a regular basis
-                var interval = $interval(function () {
+                let interval = $interval(function () {
                     loadSensorStates();
                 }, 5 * 60 * 1000);
 
@@ -64,8 +62,8 @@ app.controller('SensorListController',
              * @returns A promise of the user's decision
              */
             function confirmDelete(data) {
-                var sensorId = data.id;
-                var sensorName = "";
+                let sensorId = data.id;
+                let sensorName = "";
 
                 //Determines the sensor's name by checking all sensors in the sensor list
                 for (var i = 0; i < sensorList.length; i++) {
@@ -112,7 +110,7 @@ app.controller('SensorListController',
                 //Resolve sensor object of the affected sensor
                 var sensor = null;
                 for (var i = 0; i < sensorList.length; i++) {
-                    if (sensorList[i].id == id) {
+                    if (sensorList[i].id === id) {
                         sensor = sensorList[i];
                     }
                 }
@@ -157,13 +155,7 @@ app.controller('SensorListController',
                 });
             }
 
-            //Expose
-            angular.extend(vm, {
-                registeringDevice: false,
-                accessControlPolicyList: accessControlPolicyList
-            });
-
-            // expose controller ($controller will auto-add to $scope)
+            //Expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {
                 sensorListCtrl: $controller('ItemListController as sensorListCtrl', {
                     $scope: $scope,
@@ -177,10 +169,13 @@ app.controller('SensorListController',
                     $scope: $scope,
                     deleteItem: deleteSensor,
                     confirmDeletion: confirmDelete
-                })
+                }),
+                registeringDevice: false,
+                sensorTypes: sensorTypesList,
+                accessControlPolicyList: accessControlPolicyList
             });
 
-            // $watch 'addSensor' result and add to 'sensorList'
+            //Watch 'addSensor' result and add to 'sensorList'
             $scope.$watch(
                 function () {
                     //Value being watched
@@ -207,7 +202,7 @@ app.controller('SensorListController',
                 }
             );
 
-            // $watch 'deleteItem' result and remove from 'itemList'
+            //Watch 'deleteItem' result and remove from 'itemList'
             $scope.$watch(
                 function () {
                     // value being watched
@@ -219,17 +214,6 @@ app.controller('SensorListController',
                     vm.sensorListCtrl.removeItem(id);
                 }
             );
-
-            function loadSensorTypes() {
-                ComponentTypeService.GetByComponent('SENSOR')
-                    .then(function (response) {
-                        if (response.success) {
-                            vm.sensorTypes = response.data;
-                        } else {
-                            console.log("Error loading sensor types!");
-                        }
-                    });
-            };
 
         }
     ]);

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.domain.entity_type.DeviceType;
 import org.citopt.connde.domain.monitoring.MonitoringAdapter;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.error.EntityNotFoundException;

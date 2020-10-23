@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 
 import org.bson.Document;
 import org.citopt.connde.constants.Constants;
+import org.citopt.connde.domain.entity_type.DeviceType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

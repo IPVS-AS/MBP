@@ -17,7 +17,7 @@ app.controller('DeviceDetailsController',
             //Important properties of the currently considered device
             const DEVICE_ID = $routeParams.id;
 
-            var vm = this;
+            let vm = this;
 
 
             /**

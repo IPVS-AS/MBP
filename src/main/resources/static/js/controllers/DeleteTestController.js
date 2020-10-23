@@ -51,14 +51,14 @@ app.controller('DeleteTestController', ['deleteItem', 'confirmDeletion', '$http'
                     vm.item = {};
 
                     //Notify the user
-                    NotificationService.notify('Entitiy successfully deleted.', 'success')
+                    NotificationService.notify('Entity successfully deleted', 'success')
                 },
                 function (errors) {
                     //Failure, add the received errors to the form
                     vm.item.errors = errors;
 
                     //Notify the user
-                    NotificationService.notify('Could not delete entitiy.', 'error');
+                    NotificationService.notify('Could not delete entity', 'error');
                 }
             );
         }

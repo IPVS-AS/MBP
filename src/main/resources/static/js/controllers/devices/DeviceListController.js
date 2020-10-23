@@ -5,16 +5,15 @@
  */
 app.controller('DeviceListController',
     ['$scope', '$controller', '$interval', 'DeviceService', 'deviceList', 'addDevice', 'deleteDevice', 'keyPairList', 'accessControlPolicyList',
-        'ComponentTypeService', 'NotificationService',
+        'deviceTypesList', 'keyPairList', 'NotificationService',
         function ($scope, $controller, $interval, DeviceService, deviceList, addDevice, deleteDevice, keyPairList, accessControlPolicyList,
-                  ComponentTypeService, NotificationService) {
+                 deviceTypesList, keyPairList, NotificationService) {
             var vm = this;
             
             /**
              * Initializing function, sets up basic things.
              */
             (function initController() {
-                loadDeviceTypes();
                 loadDeviceStates();
 
                 //Interval for updating device states  on a regular basis
@@ -198,8 +197,9 @@ app.controller('DeviceListController',
                     deleteItem: deleteDevice,
                     confirmDeletion: confirmDelete
                 }),
-                keyPairList: keyPairList,
-                accessControlPolicyList: accessControlPolicyList
+                accessControlPolicyList: accessControlPolicyList,
+                deviceTypesList: deviceTypesList,
+                keyPairList: keyPairList
             });
 
             // $watch 'addItem' result and add to 'itemList'
@@ -244,17 +244,5 @@ app.controller('DeviceListController',
                     vm.deviceListCtrl.removeItem(id);
                 }
             );
-
-            function loadDeviceTypes() {
-                ComponentTypeService.GetByComponent('DEVICE')
-                    .then(function (response) {
-                        if (response.success) {
-                            vm.deviceTypesList = response.data;
-                        } else {
-                            console.log("Error loading device types!");
-                        }
-                    });
-            }
-
         }
     ]);

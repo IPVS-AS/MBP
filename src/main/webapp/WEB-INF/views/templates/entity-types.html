@@ -1,0 +1,383 @@
+<div class="row clearfix" ng-hide="ng-hide">
+    <!-- Main card -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>Entity types</h2>
+                </div>
+            </div>
+            <div class="body">
+                <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation" class="active">
+                        <a data-target="#deviceTypesTable" data-toggle="tab">
+                            <i class="material-icons">devices</i>
+                            Device types&nbsp;
+                            <span class="badge bg-teal">{{deviceTypeListCtrl.items.length}}</span>
+                        </a>
+                    </li>
+                    <li role="presentation">
+                        <a data-target="#actuatorTypesTable" data-toggle="tab">
+                            <i class="material-icons">wb_incandescent</i>
+                            Actuator types&nbsp;
+                            <span class="badge bg-teal">{{actuatorTypeListCtrl.items.length}}</span>
+                        </a>
+                    </li>
+                    <li role="presentation">
+                        <a data-target="#sensorTypesTable" data-toggle="tab">
+                            <i class="material-icons">settings_remote</i>
+                            Sensor types&nbsp;
+                            <span class="badge bg-teal">{{sensorTypeListCtrl.items.length}}</span>
+                        </a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div id="deviceTypesTable" class="tab-pane fade in active">
+                        <div class="align-right">
+                            <button type="button"
+                                    class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                                    data-toggle="modal" data-target="#addDeviceTypeModal" data-backdrop="static"
+                                    data-keyboard="false">
+                                <i class="material-icons">add</i>
+                            </button>
+                        </div>
+                        <table class="table table-hover" st-table="displayedDeviceCollection"
+                               st-safe-src="deviceTypeListCtrl.items">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Icon</th>
+                                <th>SSH support</th>
+                                <th>Owner</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="device in displayedDeviceCollection">
+                                <td>{{device.name}}</td>
+                                <td><img src="{{device.icon.content}}" alt="{{device.icon.name}}"
+                                         style="width:40px;height:40px;"/></td>
+                                <td>{{device.sshsupport ? "Yes" : "No"}}</td>
+                                <td>{{device.ownerName ? device.ownerName : "None"}}</td>
+                                <td>
+                                    <div ng-show="device.isApprovable" style="display:inline-block">
+                                        <user-approval entity-id="{{device.id}}" category-name="device-types"/>
+                                    </div>
+                                    <form ng-submit="deleteDeviceTypeCtrl.deleteItem()" ng-show="device.isDeletable"
+                                          style="display: inline-block">
+                                        <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                                ng-click="deleteDeviceTypeCtrl.item.id = device.id">
+                                            <i class="material-icons" style="font-size:14px;">delete</i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr ng-show="deviceTypeListCtrl.items.length === 0">
+                                <td>No device types available.</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div id="actuatorTypesTable" class="tab-pane fade in">
+                        <div class="align-right">
+                            <button type="button"
+                                    class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                                    data-toggle="modal" data-target="#addActuatorTypeModal" data-backdrop="static"
+                                    data-keyboard="false">
+                                <i class="material-icons">add</i>
+                            </button>
+                        </div>
+                        <table class="table table-hover" st-table="displayedActuatorCollection"
+                               st-safe-src="actuatorTypeListCtrl.items">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Icon</th>
+                                <th>Owner</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="actuator in displayedActuatorCollection">
+                                <td>{{actuator.name}}</td>
+                                <td><img src="{{actuator.icon.content}}" alt="{{actuator.icon.name}}"
+                                         style="width:40px;height:40px;"/></td>
+                                <td>{{actuator.ownerName ? actuator.ownerName : "None"}}</td>
+                                <td>
+                                    <div ng-show="actuator.isApprovable" style="display:inline-block">
+                                        <user-approval entity-id="{{actuator.id}}" category-name="actuator-types"/>
+                                    </div>
+                                    <form ng-submit="deleteActuatorTypeCtrl.deleteItem()" ng-show="actuator.isDeletable"
+                                          style="display: inline-block">
+                                        <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                                ng-click="deleteActuatorTypeCtrl.item.id = actuator.id">
+                                            <i class="material-icons" style="font-size:14px;">delete</i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr ng-show="actuatorTypeListCtrl.items.length === 0">
+                                <td>No actuator types available.</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    <div id="sensorTypesTable" class="tab-pane fade in">
+                        <div class="align-right">
+                            <button type="button"
+                                    class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                                    data-toggle="modal" data-target="#addSensorTypeModal" data-backdrop="static"
+                                    data-keyboard="false">
+                                <i class="material-icons">add</i>
+                            </button>
+                        </div>
+                        <table class="table table-hover" st-table="displayedSensorCollection"
+                               st-safe-src="sensorTypeListCtrl.items">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Icon</th>
+                                <th>Owner</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="sensor in displayedSensorCollection">
+                                <td>{{sensor.name}}</td>
+                                <td><img src="{{sensor.icon.content}}" alt="{{sensor.icon.name}}"
+                                         style="width:40px;height:40px;"/></td>
+                                <td>{{sensor.ownerName ? sensor.ownerName : "None"}}</td>
+                                <td>
+                                    <div ng-show="sensor.isApprovable" style="display:inline-block">
+                                        <user-approval entity-id="{{sensor.id}}" category-name="sensor-types"/>
+                                    </div>
+                                    <form ng-submit="deleteSensorTypeCtrl.deleteItem()" ng-show="sensor.isDeletable"
+                                          style="display: inline-block">
+                                        <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                                ng-click="deleteSensorTypeCtrl.item.id = sensor.id">
+                                            <i class="material-icons" style="font-size:14px;">delete</i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr ng-show="sensorTypeListCtrl.items.length === 0">
+                                <td>No sensor types available.</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device types modal -->
+    <div class="modal fade" id="addDeviceTypeModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register a new device type
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form ng-submit="addDeviceTypeCtrl.addItem()">
+                    <fieldset>
+                        <div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <div class="form-group" ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addDeviceTypeCtrl.item.errors.global">
+			                      {{addDeviceTypeCtrl.item.errors.global}}
+			                    </span>
+                            </div>
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
+                                    <input class="form-control" type="text"
+                                           placeholder="Name *" ng-model="addDeviceTypeCtrl.item.name"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDeviceTypeCtrl.item.errors.name">{{addDeviceTypeCtrl.item.errors.name.message}}</span>
+                            </div>
+                            <!-- item.icon group -->
+                            <label>Icon:</label>
+                            <div class="form-group" ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.icon }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.icon }">
+                                    <div class="dropzone" options="ctrl.dzIconOptions"
+                                         callbacks="ctrl.dzDeviceTypeIconCallbacks"
+                                         methods="ctrl.dzIconMethods" ng-dropzone>
+                                    </div>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addDeviceTypeCtrl.item.errors.icon">{{addDeviceTypeCtrl.item.errors.icon.message}}</span>
+                            </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actuator types modal -->
+    <div class="modal fade" id="addActuatorTypeModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register a new actuator type
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form ng-submit="addActuatorTypeCtrl.addItem()">
+                    <fieldset>
+                        <div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <div class="form-group" ng-class="{'has-error' : addActuatorTypeCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addActuatorTypeCtrl.item.errors.global">
+			                      {{addActuatorTypeCtrl.item.errors.global}}
+			                    </span>
+                            </div>
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : addActuatorTypeCtrl.item.errors.name }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addActuatorTypeCtrl.item.errors.name }">
+                                    <input class="form-control" type="text"
+                                           placeholder="Name *" ng-model="addActuatorTypeCtrl.item.name"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addActuatorTypeCtrl.item.errors.name">{{addActuatorTypeCtrl.item.errors.name.message}}</span>
+                            </div>
+                            <!-- item.icon group -->
+                            <label>Icon:</label>
+                            <div class="form-group" ng-class="{'has-error' : addActuatorTypeCtrl.item.errors.icon }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addActuatorTypeCtrl.item.errors.icon }">
+                                    <div class="dropzone" options="ctrl.dzIconOptions"
+                                         callbacks="ctrl.dzActuatorTypeIconCallbacks"
+                                         methods="ctrl.dzIconMethods" ng-dropzone>
+                                    </div>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addActuatorTypeCtrl.item.errors.icon">{{addActuatorTypeCtrl.item.errors.icon.message}}</span>
+                            </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sensor types modal -->
+    <div class="modal fade" id="addSensorTypeModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register a new sensor type
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form ng-submit="addSensorTypeCtrl.addItem()">
+                    <fieldset>
+                        <div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <div class="form-group" ng-class="{'has-error' : addSensorTypeCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addSensorTypeCtrl.item.errors.global">
+			                      {{addSensorTypeCtrl.item.errors.global}}
+			                    </span>
+                            </div>
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : addSensorTypeCtrl.item.errors.name }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addSensorTypeCtrl.item.errors.name }">
+                                    <input class="form-control" type="text"
+                                           placeholder="Name *" ng-model="addSensorTypeCtrl.item.name"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addSensorTypeCtrl.item.errors.name">{{addSensorTypeCtrl.item.errors.name.message}}</span>
+                            </div>
+                            <!-- item.icon group -->
+                            <label>Icon:</label>
+                            <div class="form-group" ng-class="{'has-error' : addSensorTypeCtrl.item.errors.icon }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addSensorTypeCtrl.item.errors.icon }">
+                                    <div class="dropzone" options="ctrl.dzIconOptions"
+                                         callbacks="ctrl.dzSensorTypeIconCallbacks"
+                                         methods="ctrl.dzIconMethods" ng-dropzone>
+                                    </div>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addSensorTypeCtrl.item.errors.icon">{{addSensorTypeCtrl.item.errors.icon.message}}</span>
+                            </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Template definition for icons in dropzones -->
+    <div style="display:none;">
+        <div id='dropzone-icon-template' class="dz-preview dz-file-preview ">
+            <div class="dz-details col-lg-4 col-sm-6 col-12">
+                <div class="dz-filename"><span data-dz-name></span></div>
+                <img data-dz-thumbnail/>
+            </div>
+            <div class="dz-progress"><span class="dz-upload"
+                                           data-dz-uploadprogress></span></div>
+            <div class="dz-success-mark"><span>✔</span></div>
+            <div class="dz-error-mark"><span>✘</span></div>
+            <div class="dz-error-message"><span data-dz-errormessage></span></div>
+        </div>
+    </div>
+</div>

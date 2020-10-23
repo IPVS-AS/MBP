@@ -93,20 +93,14 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     adapterList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('adapters');
                     }],
-                    deviceTypesList: ['ComponentTypeService', function (ComponentTypeService) {
-                        return ComponentTypeService.GetByComponent('DEVICE').then(function (response) {
-                            return response.data || [];
-                        });
+                    deviceTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('device-types');
                     }],
-                    actuatorTypesList: ['ComponentTypeService', function (ComponentTypeService) {
-                        return ComponentTypeService.GetByComponent('ACTUATOR').then(function (response) {
-                            return response.data || [];
-                        });
+                    actuatorTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('actuator-types');
                     }],
-                    sensorTypesList: ['ComponentTypeService', function (ComponentTypeService) {
-                        return ComponentTypeService.GetByComponent('SENSOR').then(function (response) {
-                            return response.data || [];
-                        });
+                    sensorTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('sensor-types');
                     }]
                 }
             })
@@ -253,6 +247,43 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
+            // Actuator List and Register (includes Device List and Register)
+            .when(viewPrefix + '/entity-types', {
+                category: 'entity-types',
+                templateUrl: 'templates/entity-types',
+                controller: 'EntityTypesListController as ctrl',
+                resolve: {
+                    deviceTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('device-types');
+                    }],
+                    actuatorTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('actuator-types');
+                    }],
+                    sensorTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('sensor-types');
+                    }],
+                    addDeviceType: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'device-types');
+                    }],
+                    addActuatorType: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'actuator-types');
+                    }],
+                    addSensorType: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.addItem, 'sensor-types');
+                    }],
+                    deleteDeviceType: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'device-types');
+                    }],
+                    deleteActuatorType: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'actuator-types');
+                    }],
+                    deleteSensorType: ['CrudService', function (CrudService) {
+                        return angular.bind(this, CrudService.deleteItem, 'sensor-types');
+                    }]
+                }
+            })
+
+            // Sensors List and Register (includes Device List and Register)
             .when(viewPrefix + '/sensors', {
                 category: 'sensors',
                 templateUrl: 'templates/sensors',
@@ -369,12 +400,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 templateUrl: 'templates/monitoring-adapters',
                 controller: 'MonitoringAdapterListController as ctrl',
                 resolve: {
-                    deviceTypesList: ['ComponentTypeService', function (ComponentTypeService) {
-                        return ComponentTypeService.GetByComponent('device').then(function (response) {
-                            return response.data;
-                        }, function () {
-                            return [];
-                        });
+                    deviceTypesList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('device-types');
                     }],
                     parameterTypesList: ['ParameterTypeService', function (ParameterTypeService) {
                         return ParameterTypeService.getAll().then(function (response) {
@@ -478,7 +505,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            //Testing tool
+            // Testing-Tool
             .when(viewPrefix + '/testing-tool', {
                 category: 'test-details',
                 templateUrl: 'templates/testing-tool',

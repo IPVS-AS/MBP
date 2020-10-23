@@ -47,7 +47,7 @@ app.controller('DeleteItemController', ['$rootScope', 'deleteItem', 'confirmDele
                     vm.item = {};
 
                     //Notify the user
-                    NotificationService.notify('Entitiy successfully deleted.', 'success')
+                    NotificationService.notify('Entity successfully deleted', 'success')
                 },
                 function (errors) {
                     //Failure, add the received errors to the form

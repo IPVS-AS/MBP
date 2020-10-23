@@ -8,9 +8,9 @@ import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.ActuatorValidator;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.component.SensorValidator;
-import org.citopt.connde.domain.componentType.ComponentType;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.device.DeviceValidator;
+import org.citopt.connde.domain.entity_type.*;
 import org.citopt.connde.domain.env_model.EnvironmentModel;
 import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.domain.key_pair.KeyPairValidator;
@@ -78,35 +78,36 @@ public class RestConfiguration implements RepositoryRestConfigurer {
                 Adapter.class, MonitoringAdapter.class,
                 Actuator.class, Sensor.class,
                 User.class, Authority.class,
-                ComponentType.class,
+                EntityType.class,
                 EnvironmentModel.class,
                 Rule.class, RuleTrigger.class, RuleAction.class,
+                DeviceType.class, ActuatorType.class, SensorType.class,
                 TestDetails.class);
     }
 
-	/**
-	 * Creates and adds validators for the REST documents.
-	 *
-	 * @param v Validating repository event listener to extend
-	 */
-	@Override
-	public void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener v) {
+    /**
+     * Creates and adds validators for the REST documents.
+     *
+     * @param v Validating repository event listener to extend
+     */
+    @Override
+    public void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener v) {
 
-		//Adapters
-		v.addValidator("beforeSave", new AdapterValidator());
-		v.addValidator("beforeCreate", new AdapterValidator());
+        //Adapters
+        v.addValidator("beforeSave", new AdapterValidator());
+        v.addValidator("beforeCreate", new AdapterValidator());
 
-		//Monitoring adapters
-		v.addValidator("beforeSave", new MonitoringAdapterValidator());
-		v.addValidator("beforeCreate", new MonitoringAdapterValidator());
+        //Monitoring adapters
+        v.addValidator("beforeSave", new MonitoringAdapterValidator());
+        v.addValidator("beforeCreate", new MonitoringAdapterValidator());
 
-		//Sensors
-		v.addValidator("beforeSave", new SensorValidator());
-		v.addValidator("beforeCreate", new SensorValidator());
+        //Sensors
+        v.addValidator("beforeSave", new SensorValidator());
+        v.addValidator("beforeCreate", new SensorValidator());
 
-		//Actuators
-		v.addValidator("beforeSave", new ActuatorValidator());
-		v.addValidator("beforeCreate", new ActuatorValidator());
+        //Actuators
+        v.addValidator("beforeSave", new ActuatorValidator());
+        v.addValidator("beforeCreate", new ActuatorValidator());
 
         //Key pairs
         v.addValidator("beforeSave", new KeyPairValidator());
@@ -127,6 +128,10 @@ public class RestConfiguration implements RepositoryRestConfigurer {
         //Rule triggers
         v.addValidator("beforeSave", new RuleTriggerValidator());
         v.addValidator("beforeCreate", new RuleTriggerValidator());
+
+        //Entity types
+        v.addValidator("beforeSave", new EntityTypeValidator());
+        v.addValidator("beforeCreate", new EntityTypeValidator());
 
         //TestDetails
         v.addValidator("beforeSave", new TestDetailsValidator());
