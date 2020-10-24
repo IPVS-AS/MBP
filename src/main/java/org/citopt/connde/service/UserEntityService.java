@@ -117,7 +117,7 @@ public class UserEntityService {
         // Check whether the requesting user is allowed to access the entity
         ACAccess access = new ACAccess(accessType, user, entity);
         List<ACPolicy> policies = getPoliciesForEntity(entity);
-        if (!entity.getOwner().getId().equals(user.getId()) && !policies.stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest))) {
+        if (((entity.getOwner() == null) || (!entity.getOwner().getId().equals(user.getId()))) && !policies.stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest))) {
             throw new MissingPermissionException(null, entityId, accessType);
         }
 

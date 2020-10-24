@@ -12,7 +12,7 @@
     <title>MBP</title>
 
     <!-- Favicon-->
-    <link rel="icon" th:href="@{/images/favicon.ico}" type="image/x-icon">
+    <link rel="icon" th:href="@{/images/mbp-icon.png}" type="image/x-icon">
 
     <!-- Google Fonts -->
     <link th:href="@{/plugins/google-fonts/roboto.css}" rel="stylesheet">
@@ -126,29 +126,15 @@
     <!-- User Info -->
     <div class="user-info">
         <div class="image">
-            <img src="images/user.png" width="48" height="48" alt="User"/>
+            <img src="images/user.png" alt="User" style="width:48px;height:48px"/>
         </div>
         <div class="info-container">
             <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 {{username}}
             </div>
-            <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 10px">
+            <div class="username" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                 style="font-size: 10px">
                 {{userData.firstName + " " + userData.lastName}}
-            </div>
-            <div class="btn-group user-helper-dropdown" uib-dropdown="uib-dropdown"
-                 is-open="status.isopen" ng-show="userData.isAdmin">
-                <!--<button class="dropdown-toggle pull-right">-->
-                <i class="material-icons" type="button" uib-dropdown-toggle="uib-dropdown-toggle"
-                   ng-disabled="disabled">keyboard_arrow_down</i>
-                <!--</button>-->
-                <ul class="dropdown-menu pull-right" uib-dropdown-menu="uib-dropdown-menu" role="menu"
-                    aria-labelledby="single-button">
-                    <li>
-                        <a href="view/users">
-                            <i class="material-icons">person</i>Users
-                        </a>
-                    </li>
-                </ul>
             </div>
         </div>
     </div>
@@ -156,107 +142,107 @@
     <!-- Menu -->
     <div class="menu">
         <ul class="list">
-          <li class="header">Main Navigation</li>
-          <li class="active" href="./" menu-item="menu-item">
-            <a href="./">
-              <i class="material-icons">home</i>
-              <span>Home</span>
-            </a>
-          </li>
-          <li href="view/env-models" menu-item="menu-item">
-            <a href="view/env-models">
-              <i class="material-icons">view_quilt</i>
-              <span>Environment Models</span>
-            </a>
-          </li>
-          <li menu-item="menu-item">
-              <a class="menu-toggle">
-                  <i class="material-icons">call_split</i>
-                  <span>Rules</span>
-              </a>
-              <ul class="ml-menu">
-                  <li>
-                      <a href="view/rules" menu-item="menu-item">Definitions</a>
-                  </li>
-                  <li>
-                      <a href="view/rule-triggers" menu-item="menu-item">Conditions</a>
-                  </li>
-                  <li>
-                      <a href="view/rule-actions" menu-item="menu-item">Actions</a>
-                  </li>
-              </ul>
-          </li>
+            <li class="header">Main Navigation</li>
+            <li class="active" href="./" menu-item="menu-item">
+                <a href="./">
+                    <i class="material-icons">home</i>
+                    <span>Home</span>
+                </a>
+            </li>
+            <li href="view/env-models" menu-item="menu-item">
+                <a href="view/env-models">
+                    <i class="material-icons">view_quilt</i>
+                    <span>Environment Models</span>
+                </a>
+            </li>
+            <li menu-item="menu-item">
+                <a class="menu-toggle">
+                    <i class="material-icons">call_split</i>
+                    <span>Rules</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/rules" menu-item="menu-item">Definitions</a>
+                    </li>
+                    <li>
+                        <a href="view/rule-triggers" menu-item="menu-item">Conditions</a>
+                    </li>
+                    <li>
+                        <a href="view/rule-actions" menu-item="menu-item">Actions</a>
+                    </li>
+                </ul>
+            </li>
             <li href="view/key-pairs" menu-item="menu-item">
                 <a href="view/key-pairs">
                     <i class="material-icons">vpn_key</i>
                     <span>Key Pairs</span>
                 </a>
             </li>
-          <li href="view/devices" menu-item="menu-item">
-            <a href="view/devices">
-              <i class="material-icons">devices</i>
-              <span>Devices</span>
-            </a>
-          </li>
-          <li href="view/sensors" menu-item="menu-item">
-            <a href="view/sensors">
-              <i class="material-icons">settings_remote</i>
-              <span>Sensors</span>
-            </a>
-          </li>
-          <li href="view/actuators" menu-item="menu-item">
-            <a href="view/actuators">
-              <i class="material-icons">wb_incandescent</i>
-              <span>Actuators</span>
-            </a>
-          </li>
-          <li href="view/entity-types" menu-item="menu-item">
-            <a href="view/entity-types">
-                <i class="material-icons">widgets</i>
-                <span>Entity Types</span>
-            </a>
-          </li>
-          <li href="view/adapters" menu-item="menu-item">
-            <a href="view/adapters">
-              <i class="material-icons">description</i>
-              <span>Extraction/Control Operators</span>
-            </a>
-          </li>
-          <li href="view/monitoring-adapters" menu-item="menu-item">
-            <a href="view/monitoring-adapters">
-              <i class="material-icons">timeline</i>
-              <span>Monitoring Operators</span>
-            </a>
-          </li>
-          <li menu-item="menu-item">
-            <a class="menu-toggle">
-                <i class="material-icons">security</i>
-                <span>Policies</span>
-            </a>
-            <ul class="ml-menu">
-                <li>
-                    <a href="view/policies" menu-item="menu-item">Policy Definitions</a>
-                </li>
-                <li>
-                    <a href="view/policy-conditions" menu-item="menu-item">Conditions</a>
-                </li>
-                <li>
-                    <a href="view/policy-effects" menu-item="menu-item">Effects</a>
-                </li>
-            </ul>
-        </li>
-          <li href="view/testing-tool" menu-item="menu-item">
-            <a href="view/testing-tool">
-              <i class="material-icons">bug_report</i>
-              <span>Testing-Tool</span>
-            </a>
-          </li>
-          <li href="view/settings" menu-item="menu-item" ng-show="userData.isAdmin">
-            <a href="view/settings">
-              <i class="material-icons">settings</i>
-              <span>Settings</span>
-            </a>
-          </li>
+            <li href="view/devices" menu-item="menu-item">
+                <a href="view/devices">
+                    <i class="material-icons">devices</i>
+                    <span>Devices</span>
+                </a>
+            </li>
+            <li href="view/sensors" menu-item="menu-item">
+                <a href="view/sensors">
+                    <i class="material-icons">settings_remote</i>
+                    <span>Sensors</span>
+                </a>
+            </li>
+            <li href="view/actuators" menu-item="menu-item">
+                <a href="view/actuators">
+                    <i class="material-icons">wb_incandescent</i>
+                    <span>Actuators</span>
+                </a>
+            </li>
+            <li href="view/entity-types" menu-item="menu-item">
+                <a href="view/entity-types">
+                    <i class="material-icons">widgets</i>
+                    <span>Entity Types</span>
+                </a>
+            </li>
+            <li href="view/adapters" menu-item="menu-item">
+                <a href="view/adapters">
+                    <i class="material-icons">description</i>
+                    <span>Extraction/Control Operators</span>
+                </a>
+            </li>
+            <li href="view/monitoring-adapters" menu-item="menu-item">
+                <a href="view/monitoring-adapters">
+                    <i class="material-icons">timeline</i>
+                    <span>Monitoring Operators</span>
+                </a>
+            </li>
+            <li menu-item="menu-item">
+                <a class="menu-toggle">
+                    <i class="material-icons">security</i>
+                    <span>Policies</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/policies" menu-item="menu-item">Policy Definitions</a>
+                    </li>
+                    <li>
+                        <a href="view/policy-conditions" menu-item="menu-item">Conditions</a>
+                    </li>
+                    <li>
+                        <a href="view/policy-effects" menu-item="menu-item">Effects</a>
+                    </li>
+                </ul>
+            </li>
+            <li href="view/testing-tool" menu-item="menu-item">
+                <a href="view/testing-tool">
+                    <i class="material-icons">bug_report</i>
+                    <span>Testing-Tool</span>
+                </a>
+            </li>
+            <li href="view/settings" menu-item="menu-item" ng-show="userData.isAdmin">
+                <a href="view/settings">
+                    <i class="material-icons">settings</i>
+                    <span>Settings</span>
+                </a>
+            </li>
         </ul>
     </div>
     <!-- #Menu -->
@@ -264,7 +250,7 @@
     <div class="legal">
         <div class="copyright">
             &copy;
-            {{ctrl.getDate()| date:'yyyy'}}
+            {{ctrl.getDate() | date:'yyyy'}}
             <a href="swagger-ui.html" target="_blank">MBP</a>.
         </div>
     </div>
@@ -274,10 +260,6 @@
 
 <section class="content" ng-style="{ 'margin-left' : loggedIn ? '315px' : '0px' }">
     <div class="container-fluid">
-        <!-- <div ng-controller="MainCtrl as main"> <pre>$location.absUrl() = {{main.$location.absUrl()}}</pre> <pre>$location.path() = {{main.$location.path()}}</pre> <pre>$route.current.templateUrl = {{main.$route.current.templateUrl}}</pre>
-        <pre>$route.current.params = {{main.$route.current.params}}</pre> <pre>$route.current.scope.name = {{$route.current.scope.name}}</pre> <pre>$routeParams = {{main.$routeParams}}</pre> </div> -->
-        <div ng-class="{ 'alert': flash, 'alert-success': flash.type === 'success', 'alert-danger': flash.type === 'error' }"
-             ng-if="flash" ng-bind="flash.message"></div>
         <div ng-view="ng-view"></div>
     </div>
 </section>
@@ -356,6 +338,9 @@
 
 <!-- jQuery-QueryBuilder -->
 <script th:src="@{/plugins/jquery-querybuilder/js/query-builder.standalone.min.js}"></script>
+
+<!-- jQuery-CountTo -->
+<script th:src="@{/plugins/jquery-countTo/countTo.js}"></script>
 
 <!-- Easy Autocomplete -->
 <script th:src="@{/plugins/easy-autocomplete/autocomplete.min.js}"></script>

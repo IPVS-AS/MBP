@@ -27,8 +27,12 @@ app.controller('HomeController',
                 }).on('hide.bs.collapse', function () {
                     localStorage.setItem(STORAGE_KEY_WELCOME, "false");
                 })
-            })();
 
+                //Trigger info-box count effect
+                $(document).ready(() => {
+                    $('.count-to').countTo();
+                });
+            })();
 
             //Expose
             angular.extend(vm, {
