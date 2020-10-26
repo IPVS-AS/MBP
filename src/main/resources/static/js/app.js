@@ -5,29 +5,32 @@ let app = angular.module('app', ['ngRoute', 'ngResource', 'ngCookies', 'ngSaniti
 app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvider', 'dropzoneOpsProvider',
     function ($provide, $routeProvider, $locationProvider, $resourceProvider, dropzoneOpsProvider) {
 
-        // enable HTML5mode to disable hashbang urls
+        //Enable HTML5mode to disable hashbang urls
         $locationProvider.html5Mode(true);
 
-        // Don't strip trailing slashes from calculated URLs
+        //Don't strip trailing slashes from calculated URLs
         $resourceProvider.defaults.stripTrailingSlashes = false;
 
-        // gets link from html (provided by Thymeleaf - server sided)
-        let ENDPOINT_URI = $('#ENDPOINT_URI').attr('href');
-        let BASE_URI = $('#BASE_URI').attr('href');
+        //Retrieves link from html (provided by Thymeleaf - server sided)
+        const ENDPOINT_URI = $('#ENDPOINT_URI').attr('href');
+        const BASE_URI = $('#BASE_URI').attr('href');
         $provide.value('ENDPOINT_URI', ENDPOINT_URI);
         $provide.value('BASE_URI', BASE_URI);
 
+        //Prefix for views
+        const viewPrefix = '/view';
+        //Define parameter types
+        const parameterTypes = ["Text", "Number", "Switch"];
+
+        //Set dropzone options
         dropzoneOpsProvider.setOptions({
             url: 'a',
             maxFilesize: '100',
             autoProcessQueue: false
         });
 
-        let viewPrefix = '/view';
-
         //Configure routing rules
         $routeProvider
-
             // Home
             .when('/', {
                 templateUrl: 'templates/home',
@@ -386,15 +389,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 resolve: {
                     adapterPreprocessing: function () {
                     },
-                    parameterTypesList: ['ParameterTypeService', function (ParameterTypeService) {
-                        return ParameterTypeService.getAll().then(function (response) {
-                            if (response.success) {
-                                return response.data;
-                            } else {
-                                return [];
-                            }
-                        });
-                    }],
+                    parameterTypesList: () => parameterTypes,
                     adapterList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('adapters');
                     }],
@@ -416,15 +411,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     deviceTypesList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('device-types');
                     }],
-                    parameterTypesList: ['ParameterTypeService', function (ParameterTypeService) {
-                        return ParameterTypeService.getAll().then(function (response) {
-                            if (response.success) {
-                                return response.data;
-                            } else {
-                                return [];
-                            }
-                        });
-                    }],
+                    parameterTypesList: () => parameterTypes,
                     monitoringAdapterList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('monitoring-adapters');
                     }],

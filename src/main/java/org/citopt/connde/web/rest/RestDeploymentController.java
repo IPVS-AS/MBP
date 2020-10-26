@@ -196,13 +196,6 @@ public class RestDeploymentController implements RepresentationModelProcessor<En
 		deploymentWrapper.undeployComponent(getComponentWithPermissionCheck(sensorRepository, id, ACAccessType.UNDEPLOY, ACAccessRequest.valueOf(accessRequestHeader)));
 		return ResponseEntity.ok().build();
 	}
-	
-	@GetMapping("/adapter/parameter-types")
-	@ApiOperation(value = "Returns a list of all available parameter types", produces = MediaType.APPLICATION_JSON_VALUE)
-	@ApiResponse(code = 200, message = "Success!")
-	public ResponseEntity<List<ParameterType>> getAllParameterTypes() {
-		return ResponseEntity.ok(Arrays.asList(ParameterType.values()));
-	}
 
 	@GetMapping("/time")
 	@ApiOperation(value = "Returns the current server time", notes = "Format of the returned timestamp: yyyy-MM-dd HH:mm:ss", produces = "application/hal+json")
