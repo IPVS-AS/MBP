@@ -103,27 +103,36 @@ public class UserEntityService {
      * @param accessRequest the {@link ACAccessRequest} containing the contextual information
      *                      of the requesting user required to evaluate the policies.
      * @return the {@link UserEntity} if it exists and the user is either the owner or has been granted reading access
-     * to it via a corresponding {@link ACPolicy}.
+     * 		   to it via a corresponding {@link ACPolicy}.
      * @throws EntityNotFoundException
      * @throws MissingPermissionException
      */
     public <E extends UserEntity> E getForIdWithAccessControlCheck(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
-        // Retrieve the currently logged in user from the database
-        User user = userService.getLoggedInUser();
-
         // Retrieve the entity from the database
         E entity = repository.findById(entityId).orElseThrow(() -> new EntityNotFoundException("Entity", entityId));
 
-        // Check whether the requesting user is allowed to access the entity
-        ACAccess access = new ACAccess(accessType, user, entity);
-        List<ACPolicy> policies = getPoliciesForEntity(entity);
-        if (((entity.getOwner() == null) || (!entity.getOwner().getId().equals(user.getId()))) && !policies.stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest))) {
-            throw new MissingPermissionException(null, entityId, accessType);
+        // Check owner
+        if (!checkOwner(entity)) {
+        	// Not the owner -> check policies
+        	requirePermission(repository, entityId, accessType, accessRequest);
         }
 
         return entity;
     }
 
+	/**
+	 * Retrieves the first applicable policy that grant the requested access. For
+	 * example, used for applying effects (constraints) where we need the
+	 * {@link ACAbstractEffect} associated with a certain policy.
+	 * 
+	 * @param entity        the {@link UserEntity} access is requested for.
+	 * @param accessType    the {@link ACAccessType}.
+	 * @param accessRequest the {@link ACAccessRequest} containing the contextual
+	 *                      information of the requesting user required to evaluate
+	 *                      the policies.
+	 * @return the first policy granting access if there is any wrapped in an
+	 *         {@link Optional}; an empty {@link Optional} otherwise.
+	 */
     public <E extends UserEntity> Optional<ACPolicy> getFirstPolicyGrantingAccess(E entity, ACAccessType accessType, ACAccessRequest accessRequest) {
         for (ACPolicy policy : getPoliciesForEntity(entity)) {
             if (policyEvaluationService.evaluate(policy, new ACAccess(accessType, userService.getLoggedInUser(), entity), accessRequest)) {
@@ -156,26 +165,29 @@ public class UserEntityService {
      * @throws MissingPermissionException
      */
     public <E extends UserEntity> void deleteWithAccessControlCheck(UserEntityRepository<E> repository, String entityId, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
-        // Retrieve the currently logged in user from the database
-        User user = userService.getLoggedInUser();
-
         // Retrieve the entity from the database
         E entity = getForIdWithAccessControlCheck(repository, entityId, ACAccessType.READ, accessRequest);
 
         // Check whether entity actually can be deleted (may still be in use)
         requireDeletable(entity);
-
-        // Check whether the requesting user is allowed to delete the entity
-        ACAccess access = new ACAccess(ACAccessType.DELETE, user, entity);
-        List<ACPolicy> policies = getPoliciesForEntity(entity);
-        if (!entity.getOwner().getId().equals(user.getId()) && !policies.stream().anyMatch(p -> policyEvaluationService.evaluate(p, access, accessRequest))) {
-            throw new MissingPermissionException(null, entityId, ACAccessType.DELETE);
+        
+        // Check owner
+        if (!checkOwner(entity)) {
+        	// Not the owner -> check policies
+        	requirePermission(repository, entityId, ACAccessType.DELETE, accessRequest);
         }
 
         // Everything checks out (user is owner or a policy grants the delete permission) -> delete the entity in the database
         repository.deleteById(entityId);
     }
 
+    /**
+     * Checks whether the entity can be deleted from an integrity point-of-view.
+     * For example, a key-pair cannot be deleted if it is currently being used
+     * by a device.
+     * 
+     * @param entity the {@link UserEntity} to delete.
+     */
     @SuppressWarnings("unchecked")
     public <E extends UserEntity> void requireDeletable(E entity) {
         MBPEntity[] annotations = entity.getClass().getAnnotationsByType(MBPEntity.class);
@@ -207,12 +219,11 @@ public class UserEntityService {
         List<E> filteredEntities = new ArrayList<>();
         // Add all entities owned by the requesting user
         filteredEntities.addAll(entities.stream()
-        		.filter(e -> e.getOwner() == null || e.getOwner().getId().equals(user.getId()))
+        		.filter(e -> checkOwner(user.getId(), e))
         		.collect(Collectors.toList()));
-        // Add all entities with a policy that grants access to the requesting user
+        // Add all entities with a policy that grants access to the requesting user (not owned by the user)
         filteredEntities.addAll(entities.stream()
-                .filter(e -> (e.getOwner() == null) || (!e.getOwner().getId().equals(user.getId())))
-                .filter(e -> policyRepository.existsByIdAnyAndAccessTypeAll(e.getAccessControlPolicyIds(), C.listOf(accessType.toString())))
+        		.filter(e -> !checkOwner(user.getId(), e))
                 .filter(e -> checkPermission(e, accessType, accessRequest))
                 .collect(Collectors.toList()));
 
@@ -243,6 +254,18 @@ public class UserEntityService {
         if (!user.isAdmin()) {
             throw new MissingAdminPrivilegesException();
         }
+    }
+    
+    public <E extends IACRequestedEntity> boolean checkOwner(E entity) {
+    	return checkOwner(userService.getLoggedInUser(), entity);
+    }
+
+    public <E extends IACRequestedEntity> boolean checkOwner(String userId, E entity) {
+    	return entity.getOwner() != null && entity.getOwner().getId().equals(userId);
+    }
+
+    public <E extends IACRequestedEntity> boolean checkOwner(User user, E entity) {
+    	return checkOwner(user.getId(), entity);
     }
 
     public <E extends UserEntity> void requirePermission(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
