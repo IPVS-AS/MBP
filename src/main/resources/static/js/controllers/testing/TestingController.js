@@ -25,6 +25,7 @@ app.controller('TestingController',
             vm.addRealSensor = false;
 
 
+
             /**
              * Initializing function, sets up basic things.
              */
@@ -797,6 +798,8 @@ app.controller('TestingController',
                                                         "name": "ConfigName",
                                                         "value": vm.selectedRealSensor[i].name
                                                     });
+
+                                                    vm.parameterValues.push({"name": "useNewData", "value": true});
                                                     var requiredParams = vm.selectedRealSensor[i]._embedded.adapter.parameters;
 
 

@@ -523,6 +523,10 @@ app.controller('TestingDetailsController',
             }
 
 
+
+
+
+
             /**
              * [Private]
              * Creates a server request to get all rules to be observed during the Test of the IoT-Application.
@@ -1228,6 +1232,15 @@ app.controller('TestingDetailsController',
                 vm.executeRulesNew = vm.executeRules === true;
 
 
+            }
+
+            /**
+             * [Public]
+             * Performs a server request in order to add default operators.
+             * @returns {*}
+             */
+            function addRerunOperators() {
+                return $.post(URL_DEFAULT_OPERATORS);
             }
 
 

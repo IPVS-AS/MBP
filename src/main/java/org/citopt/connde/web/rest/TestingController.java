@@ -1,21 +1,30 @@
 package org.citopt.connde.web.rest;
 
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.citopt.connde.RestConfiguration;
+import org.citopt.connde.constants.Constants;
+import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.testing.TestDetails;
+import org.citopt.connde.repository.AdapterRepository;
 import org.citopt.connde.repository.RuleRepository;
 import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.service.testing.GraphPlotter;
 import org.citopt.connde.service.testing.TestEngine;
 import org.citopt.connde.service.testing.TestReport;
+import org.citopt.connde.service.testing.TestRerunOperatorService;
+import org.citopt.connde.web.rest.response.ActionResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -46,6 +55,40 @@ public class TestingController {
     @Autowired
     private TestReport testReport;
 
+    @Autowired
+    private AdapterRepository adapterRepository;
+
+    @Autowired
+    private TestRerunOperatorService rerunOperatorService;
+
+    String[] sensorSim = {"TestingTemperaturSensor", "TestingTemperaturSensorPl", "TestingFeuchtigkeitsSensor", "TestingFeuchtigkeitsSensorPl", "TestingGPSSensorPl", "TestingGPSSensor", "TestingBeschleunigungsSensor", "TestingBeschleunigungsSensorPl"};
+    List<String> sensorSimulators = Arrays.asList(sensorSim);
+
+
+
+    /**
+     * Called when the client wants to load default operators and make them available for usage
+     * in actuators and sensorss by all users.
+     *
+     * @return An action response containing the result of the request
+     */
+    @PostMapping(value = "/test-details/rerun-operators")
+    @Secured({Constants.ADMIN})
+    @ApiOperation(value = "Loads default operators from the resource directory of the MBP and makes them available for usage in actuators and sensors by all users.", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
+    public ResponseEntity<ActionResponse> addReuseOperators(String sensorName) {
+        //Call corresponding service function
+        ActionResponse response = rerunOperatorService.addDefaultOperators(sensorName);
+
+        //Check for success
+        if (response.isSuccess()) {
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+
+        //No success
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 
     /**
      * Starts the selected Test and creates the TestReport with the corresponding line chart.
@@ -67,7 +110,7 @@ public class TestingController {
         List<Rule> rulesbefore = testEngine.getStatRulesBefore(testDetails);
 
         // Start the test and get Map of sensor values
-        Map<String, Map<Long,Double>> valueListTest = testEngine.executeTest(testDetails);
+        Map<String, Map<Long, Double>> valueListTest = testEngine.executeTest(testDetails);
 
         // Check the test for success
         testEngine.testSuccess(testId);
@@ -160,20 +203,54 @@ public class TestingController {
                                                                     @RequestBody String useNewData) {
 
 
+
         TestDetails testDetails = testDetailsRepository.findById(testId);
         List<List<ParameterInstance>> configList = testDetails.getConfig();
 
+        if (Boolean.valueOf(useNewData) == false) {
+            for (List<ParameterInstance> config : configList) {
+                for (ParameterInstance parameterInstance : config) {
+                    if (parameterInstance.getName().equals("ConfigName")) {
+                        if(!sensorSimulators.contains(parameterInstance.getValue())){
+                            addReuseOperators(parameterInstance.getValue().toString());
+                        }
+                    }
+                }
+            }
+        } else{
+            // Delete the ReuseApdapter for each real sensor if not needed
+            for (List<ParameterInstance> config : configList) {
+                for (ParameterInstance parameterInstance : config) {
+                    if (parameterInstance.getName().equals("ConfigName")) {
+                        if(!sensorSimulators.contains(parameterInstance.getValue())){
+                            // Delete Reuse Operator (sonst zu viele operatoren)
+                            String adapterName = "REUSE_" + parameterInstance.getValue();
+                            Adapter adapterReuse = adapterRepository.findByName(adapterName);
+                            if(adapterReuse != null){
+                                adapterRepository.delete(adapterReuse);
+                            }
+                        }
+                    }
+                }
+            }
+
+
+
+        }
+
+
         // Change value for the configuration of every sensor simulator of the test
-        for (List<ParameterInstance> config : configList)
+        for (List<ParameterInstance> config : configList) {
             for (ParameterInstance parameterInstance : config) {
                 if (parameterInstance.getName().equals("useNewData")) {
                     parameterInstance.setValue(Boolean.valueOf(useNewData));
                 }
             }
-
+        }
         // save the changes in the database
         testDetails.setConfig(configList);
         testDetailsRepository.save(testDetails);
+
 
         return new ResponseEntity<>(configList, HttpStatus.OK);
     }

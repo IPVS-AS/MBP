@@ -1,0 +1,14 @@
+{
+  "name": "RERUN_",
+  "description": "Rerun operator simulating the last generated values of a real sensor in a test.",
+  "unit": "No Unit",
+  "files": [
+    "rerun.py",
+    "../../../mbp_client/mbp_client.py",
+    "../../../mbp_client/install.sh",
+    "../../../mbp_client/start.sh",
+    "../../../mbp_client/stop.sh",
+    "../../../mbp_client/running.sh",
+    "entry-file-name"
+  ]
+}
