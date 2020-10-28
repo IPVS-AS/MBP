@@ -530,6 +530,11 @@ public class TestEngine implements ValueLogReceiverObserver {
     }
 
 
+    public void addRerunSensor(String toString) {
+
+
+    }
+
     /**
      * Sorts the timestamps of the List of Test-Reports.
      *

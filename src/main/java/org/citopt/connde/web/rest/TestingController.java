@@ -76,7 +76,7 @@ public class TestingController {
     @Secured({Constants.ADMIN})
     @ApiOperation(value = "Loads default operators from the resource directory of the MBP and makes them available for usage in actuators and sensors by all users.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
-    public ResponseEntity<ActionResponse> addReuseOperators(String sensorName) {
+    public ResponseEntity<ActionResponse> addRerunOperators(String sensorName) {
         //Call corresponding service function
         ActionResponse response = rerunOperatorService.addDefaultOperators(sensorName);
 
@@ -212,7 +212,10 @@ public class TestingController {
                 for (ParameterInstance parameterInstance : config) {
                     if (parameterInstance.getName().equals("ConfigName")) {
                         if(!sensorSimulators.contains(parameterInstance.getValue())){
-                            addReuseOperators(parameterInstance.getValue().toString());
+                            //
+                            addRerunOperators(parameterInstance.getValue().toString());
+                            testEngine.addRerunSensor(parameterInstance.getValue().toString());
+
                         }
                     }
                 }
@@ -223,8 +226,8 @@ public class TestingController {
                 for (ParameterInstance parameterInstance : config) {
                     if (parameterInstance.getName().equals("ConfigName")) {
                         if(!sensorSimulators.contains(parameterInstance.getValue())){
-                            // Delete Reuse Operator (sonst zu viele operatoren)
-                            String adapterName = "REUSE_" + parameterInstance.getValue();
+                            // Delete Reuse Operator
+                            String adapterName = "RERUN_" + parameterInstance.getValue();
                             Adapter adapterReuse = adapterRepository.findByName(adapterName);
                             if(adapterReuse != null){
                                 adapterRepository.delete(adapterReuse);
@@ -233,9 +236,6 @@ public class TestingController {
                     }
                 }
             }
-
-
-
         }
 
 
@@ -254,6 +254,8 @@ public class TestingController {
 
         return new ResponseEntity<>(configList, HttpStatus.OK);
     }
+
+
 
     @PostMapping(value = "/test-details/deleteTestreport/{testId}")
     public ResponseEntity deleteTestReport(@PathVariable(value = "testId") String testId) {
