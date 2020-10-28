@@ -134,6 +134,7 @@ app.directive('envModelTool',
                      * @param className A CSS class name representing the component type
                      */
                     function addElementsToPalette(elements, palette, className) {
+
                         $.each(elements, function (index, elementObject) {
                             //Create DOM element
                             let element = $('<div>').addClass('window').addClass(className);
@@ -145,6 +146,11 @@ app.directive('envModelTool',
                             //Check if element specifies free resizability
                             if (((typeof elementObject.freeResize) !== 'undefined') && elementObject.freeResize) {
                                 element.addClass('free-resize');
+                            }
+
+                            //Add icon if existing
+                            if (elementObject.hasOwnProperty("icon")) {
+                                element.css('background-image', 'url("' + elementObject.icon.content + '")')
                             }
 
                             //Create list item
@@ -277,6 +283,7 @@ app.directive('envModelTool',
                     element.draggable({
                         start: (event, ui) => {
                             createElementProperties.classes = element.attr('class');
+                            createElementProperties.background = element.css('background-image');
                             createElementProperties.type = type;
                         },
                         helper: () => {
@@ -418,7 +425,8 @@ app.directive('envModelTool',
                         'top': createElementProperties.top,
                         'left': createElementProperties.left,
                         'width': '50px',
-                        'height': '50px'
+                        'height': '50px',
+                        'background-image': createElementProperties.background
                     });
 
                     // Increase the size of room
@@ -1517,7 +1525,7 @@ app.directive('envModelTool',
                     '</ul>' +
                     '</div>' +
                     '</div>' +
-                    '</div>' +        
+                    '</div>' +
                     '<div class="panel panel-default">' +
                     '<div class="panel-heading" style="overflow-x: hidden;">' +
                     '<h4 class="panel-title">' +

@@ -186,12 +186,13 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
                 }
 
                 //Check for message field
-                if ((typeof response.message === 'string') || (response.message instanceof String)) {
+                if ((response.hasOwnProperty('message'))
+                    && ((typeof response.message === 'string') || (response.message instanceof String))) {
                     return response.message;
                 }
 
                 //Check for responseJSON
-                if ((typeof response.responseJSON === 'object') &&
+                if ((response.hasOwnProperty('responseJSON')) &&
                     (typeof response.responseJSON.message === 'string') || (response.responseJSON.message instanceof String)) {
                     return response.responseJSON.message;
                 }
