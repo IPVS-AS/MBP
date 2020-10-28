@@ -36,8 +36,6 @@ public class ACPolicy extends ACAbstractEntity {
 	 * The id of the {@link ACAbstractCondition} of this policy.
 	 */
 	@Nonnull
-//	@DBRef
-//	private ACAbstractCondition condition;
 	private String conditionId;
 	
 	/**
@@ -48,8 +46,6 @@ public class ACPolicy extends ACAbstractEntity {
 	 * </ol>
 	 * Note that this list can be empty.
 	 */
-//	@DBRef
-//	private ACAbstractEffect effect;
 	private String effectId;
 	
 	// NOTE: DBRefs are not used here, since Spring Data MongoDB lacks the support for DBRefs in retrieving queries.
