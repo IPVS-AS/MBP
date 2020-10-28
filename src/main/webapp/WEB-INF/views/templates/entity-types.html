@@ -54,7 +54,7 @@
                             <tbody>
                             <tr ng-repeat="device in displayedDeviceCollection">
                                 <td>{{device.name}}</td>
-                                <td><img src="{{device.icon.content}}" alt="{{device.icon.name}}"
+                                <td><img ng-src="{{device.icon.content}}" alt="{{device.icon.name}}"
                                          style="width:40px;height:40px;"/></td>
                                 <td>{{device.sshsupport ? "Yes" : "No"}}</td>
                                 <td>{{device.ownerName ? device.ownerName : "None"}}</td>
@@ -108,7 +108,7 @@
                             <tbody>
                             <tr ng-repeat="actuator in displayedActuatorCollection">
                                 <td>{{actuator.name}}</td>
-                                <td><img src="{{actuator.icon.content}}" alt="{{actuator.icon.name}}"
+                                <td><img ng-src="{{actuator.icon.content}}" alt="{{actuator.icon.name}}"
                                          style="width:40px;height:40px;"/></td>
                                 <td>{{actuator.ownerName ? actuator.ownerName : "None"}}</td>
                                 <td>
@@ -160,7 +160,7 @@
                             <tbody>
                             <tr ng-repeat="sensor in displayedSensorCollection">
                                 <td>{{sensor.name}}</td>
-                                <td><img src="{{sensor.icon.content}}" alt="{{sensor.icon.name}}"
+                                <td><img ng-src="{{sensor.icon.content}}" alt="{{sensor.icon.name}}"
                                          style="width:40px;height:40px;"/></td>
                                 <td>{{sensor.ownerName ? sensor.ownerName : "None"}}</td>
                                 <td>

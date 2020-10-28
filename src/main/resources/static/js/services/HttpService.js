@@ -259,10 +259,23 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
             return getRequest(ENDPOINT_URI + "/" + category).then(function (data) {
                 //Extend received object for empty list if none available
                 data._embedded = data._embedded || {};
-                data._embedded[category] = data._embedded[category] || [];
 
-                //Extract entity list
-                return data._embedded[category];
+                //Iterate over all properties of the embedded objects
+                for (let key in data._embedded) {
+                    //Check property
+                    if (!data._embedded.hasOwnProperty(key)) {
+                        continue;
+                    }
+
+                    //Compare key to category
+                    if (key.replaceAll('-', '').toLowerCase() === category.replaceAll('-', '').toLowerCase()) {
+                        //Key matches to category, return list
+                        return data._embedded[key] || [];
+                    }
+                }
+
+                //No matching key found
+                return [];
             });
         }
 
