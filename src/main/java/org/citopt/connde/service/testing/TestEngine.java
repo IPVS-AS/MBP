@@ -21,10 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,8 +31,20 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+
+import java.util.Map;
+
 @Component
 public class TestEngine implements ValueLogReceiverObserver {
+    @Autowired
+    private DeviceRepository deviceRepository;
+
+    @Autowired
+    private SensorRepository sensorRepository;
+
+    @Autowired
+    private AdapterRepository adapterRepository;
+
     @Autowired
     private TestDetailsRepository testDetailsRepository;
 
@@ -47,7 +56,6 @@ public class TestEngine implements ValueLogReceiverObserver {
 
     @Autowired
     private ActuatorRepository actuatorRepository;
-
 
     @Autowired
     private TestRepository testRepo;
@@ -65,6 +73,9 @@ public class TestEngine implements ValueLogReceiverObserver {
     // List of all active Tests/testValues
     Map<String, TestDetails> activeTests = new HashMap<>();
     Map<String, Map<Long,Double>> testValues = new HashMap<>();
+
+    String[] sensorSim = {"TestingTemperaturSensor", "TestingTemperaturSensorPl", "TestingFeuchtigkeitsSensor", "TestingFeuchtigkeitsSensorPl", "TestingGPSSensorPl", "TestingGPSSensor", "TestingBeschleunigungsSensor", "TestingBeschleunigungsSensorPl"};
+    List<String> sensorSimulators = Arrays.asList(sensorSim);
 
 
     /**
@@ -235,25 +246,67 @@ public class TestEngine implements ValueLogReceiverObserver {
         restDeploymentController.startActuator(testingActuator.getId(), new ArrayList<>());
 
 
+        if(testDetails.isUseNewData() == false){
 
-        // check if the sensor/s are currently running
-        for (Sensor sensor : testingSensor) {
-            ResponseEntity<Boolean> sensorDeployed = restDeploymentController.isRunningSensor(sensor.getId());
-            String sensorName = sensor.getName();
-            for (List<ParameterInstance> configSensor : config) {
-                for (ParameterInstance parameterInstance : configSensor) {
-                    if (parameterInstance.getName().equals("ConfigName") && parameterInstance.getValue().equals(sensorName)) {
-                        // check if sensor is deployed
-                        if (!sensorDeployed.getBody()) {
-                            //if not deploy Sensor
-                            restDeploymentController.deploySensor((sensor.getId()));
+            List<ParameterInstance> parameters = null;
+            List<Long> intervals = new ArrayList<>();
+            List<Double> values = new ArrayList<>();
+
+            for (Sensor sensor : testingSensor) {
+                // If not a sensor simulator
+                if(!sensorSimulators.contains(sensor)){
+                    if( !restDeploymentController.isRunningSensor(sensor.getId()).getBody()){
+                        //if not deploy Sensor
+                        restDeploymentController.deploySensor((sensor.getId()));
+                    }
+                    restDeploymentController.stopSensor(sensor.getId());
+                    for (Map.Entry<String, Map<Long, Double>> entry : testDetails.getSimulationList().entrySet()) {
+
+                        String[] parts = sensor.getName().split("_");
+                        String realSensorName = parts[1];
+                        if(entry.getKey().equals(realSensorName)){
+                            ParameterInstance intervalParam = new ParameterInstance();
+                            intervalParam.setName("interval");
+                            ParameterInstance valueParam = new ParameterInstance();
+                            valueParam.setName("value");
+                            for(Map.Entry<Long, Double> interval : entry.getValue().entrySet()){
+                                intervals.add(interval.getKey());
+                                values.add(interval.getValue());
+                            }
+                            parameters.add(intervalParam);
+                            parameters.add(valueParam);
+
+
                         }
-                        restDeploymentController.stopSensor(sensor.getId());
-                        restDeploymentController.startSensor(sensor.getId(), configSensor);
+                    }
+                    restDeploymentController.startSensor(sensor.getId(),parameters);
+                }
+            }
+
+
+
+
+        } else{
+            // check if the sensor/s are currently running
+            for (Sensor sensor : testingSensor) {
+                ResponseEntity<Boolean> sensorDeployed = restDeploymentController.isRunningSensor(sensor.getId());
+                String sensorName = sensor.getName();
+                for (List<ParameterInstance> configSensor : config) {
+                    for (ParameterInstance parameterInstance : configSensor) {
+                        if (parameterInstance.getName().equals("ConfigName") && parameterInstance.getValue().equals(sensorName)) {
+                            // check if sensor is deployed
+                            if (!sensorDeployed.getBody()) {
+                                //if not deploy Sensor
+                                restDeploymentController.deploySensor((sensor.getId()));
+                            }
+                            restDeploymentController.stopSensor(sensor.getId());
+                            restDeploymentController.startSensor(sensor.getId(), configSensor);
+                        }
                     }
                 }
             }
         }
+
 
         return new ResponseEntity<>("Test successfully started.", HttpStatus.OK);
     }
@@ -530,8 +583,30 @@ public class TestEngine implements ValueLogReceiverObserver {
     }
 
 
-    public void addRerunSensor(String toString) {
+    /**
+     * Adds the Sensors for the Test Rerun with real Sensors.
+     *
+     * @param realSensorName
+     */
+    public void addRerunSensor(String realSensorName) {
+        Sensor newSensor = new Sensor();
+        // New sensor is nor owned by anyone
+        newSensor.setOwner(null);
 
+        try{
+            // Set all relevant information
+            newSensor.setName("RERUN_"+realSensorName);
+            newSensor.setComponentType("Computer");
+            newSensor.setDevice(deviceRepository.findByName("TestingDevice"));
+            newSensor.setAdapter(adapterRepository.findByName("RERUN_"+realSensorName));
+
+            //Insert new sensor into repository
+            sensorRepository.insert(newSensor);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 

@@ -12,6 +12,7 @@ import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.testing.TestDetails;
 import org.citopt.connde.repository.AdapterRepository;
 import org.citopt.connde.repository.RuleRepository;
+import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.service.testing.GraphPlotter;
 import org.citopt.connde.service.testing.TestEngine;
@@ -59,6 +60,9 @@ public class TestingController {
     private AdapterRepository adapterRepository;
 
     @Autowired
+    private SensorRepository sensorRepository;
+
+    @Autowired
     private TestRerunOperatorService rerunOperatorService;
 
     String[] sensorSim = {"TestingTemperaturSensor", "TestingTemperaturSensorPl", "TestingFeuchtigkeitsSensor", "TestingFeuchtigkeitsSensorPl", "TestingGPSSensorPl", "TestingGPSSensor", "TestingBeschleunigungsSensor", "TestingBeschleunigungsSensorPl"};
@@ -99,7 +103,6 @@ public class TestingController {
      */
     @PostMapping(value = "/test-details/test/{testId}")
     public String executeTest(@PathVariable(value = "testId") String testId) throws Exception {
-
         TestDetails testDetails = testDetailsRepository.findOne(testId);
 
         // Set the exact start time of the test
@@ -212,7 +215,6 @@ public class TestingController {
                 for (ParameterInstance parameterInstance : config) {
                     if (parameterInstance.getName().equals("ConfigName")) {
                         if(!sensorSimulators.contains(parameterInstance.getValue())){
-                            //
                             addRerunOperators(parameterInstance.getValue().toString());
                             testEngine.addRerunSensor(parameterInstance.getValue().toString());
 
@@ -221,16 +223,18 @@ public class TestingController {
                 }
             }
         } else{
-            // Delete the ReuseApdapter for each real sensor if not needed
+            // Delete the Reuse Adapters and Sensors for each real sensor if the data should not be reused
             for (List<ParameterInstance> config : configList) {
                 for (ParameterInstance parameterInstance : config) {
                     if (parameterInstance.getName().equals("ConfigName")) {
                         if(!sensorSimulators.contains(parameterInstance.getValue())){
                             // Delete Reuse Operator
-                            String adapterName = "RERUN_" + parameterInstance.getValue();
-                            Adapter adapterReuse = adapterRepository.findByName(adapterName);
+                            String reuseName = "RERUN_" + parameterInstance.getValue();
+                            Adapter adapterReuse = adapterRepository.findByName(reuseName);
+                            Sensor sensorReuse = sensorRepository.findByName(reuseName);
                             if(adapterReuse != null){
                                 adapterRepository.delete(adapterReuse);
+                                sensorRepository.delete(sensorReuse);
                             }
                         }
                     }
@@ -249,6 +253,7 @@ public class TestingController {
         }
         // save the changes in the database
         testDetails.setConfig(configList);
+        testDetails.setUseNewData(Boolean.valueOf(useNewData));
         testDetailsRepository.save(testDetails);
 
 
@@ -272,7 +277,7 @@ public class TestingController {
                 Files.delete(pathDiagram);
                 response = new ResponseEntity<>("Testreport successfully deleted", HttpStatus.OK);
             } catch (NoSuchFileException x) {
-                response = new ResponseEntity<>("Testreport doesn't extist.", HttpStatus.NOT_FOUND);
+                response = new ResponseEntity<>("Testreport doesn't exist.", HttpStatus.NOT_FOUND);
             } catch (IOException x) {
                 response = new ResponseEntity<>(x, HttpStatus.CONFLICT);
             }

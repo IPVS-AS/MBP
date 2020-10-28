@@ -11,16 +11,16 @@ INTERVAL_BETWEEN_SENDING_DATA = 15
 def main(argv):
     #default interval for sending data
     sendingInterval = [30]
+    sensorVals =[]
 
     #Read other interval informations from parameter data
     paramArray = json.loads(argv[0])
     for param in paramArray:
-    if not ('name' in param and 'value' in param):
-        continue
-    elif param["name"] == "interval":
-        sendingInterval = param["value"]
-    elif param["name"] == "sensorVals":
-        sensorVals = param["value"]
+        if not ('name' in param and 'value' in param):
+            continue
+        else:
+            sendingInterval.append(param["name"])
+            sensorVals.append(param["value"])
 
     # instantiate the MBP client
     mbp = MBPclient()

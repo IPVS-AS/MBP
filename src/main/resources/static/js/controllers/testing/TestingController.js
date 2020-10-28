@@ -25,6 +25,7 @@ app.controller('TestingController',
             vm.addRealSensor = false;
 
 
+            console.log(ENDPOINT_URI );
 
             /**
              * Initializing function, sets up basic things.
@@ -154,6 +155,7 @@ app.controller('TestingController',
                         "errors": {}
                     };
                 $http.post(ENDPOINT_URI + '/devices/', param).then(function success(response) {
+                    console.log(response)
                     getDevice();
                     //Notify the user
                     NotificationService.notify('Entity successfully created.', 'success')
@@ -450,6 +452,7 @@ app.controller('TestingController',
 
                                 // Server request for the registration of the specific sensor
                                 $http.post(ENDPOINT_URI + '/sensors/', param).then(function success(response) {
+                                    console.log(response)
                                     checkSensorReg(sensor);
 
                                     //Notify the user if specific sensor is successfully registered

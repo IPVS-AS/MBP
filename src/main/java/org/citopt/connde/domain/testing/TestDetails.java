@@ -64,6 +64,8 @@ public class TestDetails {
 
     private boolean triggerRules;
 
+    private boolean useNewData;
+
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy HH:mm:ss")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -375,4 +377,22 @@ public class TestDetails {
         this.config = config;
     }
 
+
+    /**
+     * Returns the information whether data from the last test run should be used again or not.
+     *
+     * @return useNewData boolean whether data from the last test run should be used again or not.
+     */
+    public boolean isUseNewData() {
+        return useNewData;
+    }
+
+    /**
+     *  Sets the information whether data from the last test run should be used again or not.
+     *
+     * @param useNewData boolean whether data from the last test run should be used again or not.
+     */
+    public void setUseNewData(boolean useNewData) {
+        this.useNewData = useNewData;
+    }
 }
