@@ -50,7 +50,7 @@ public class TestRerunOperatorService {
      *
      * @return An action response containing the result of this operation
      */
-    public ActionResponse addDefaultOperators(String sensorName) {
+    public ActionResponse addDefaultOperators() {
 
 
 
@@ -83,7 +83,7 @@ public class TestRerunOperatorService {
                 JSONObject descriptorJSON = new JSONObject(descriptorContent);
 
                 //Set operator properties from the descriptor
-                newOperator.setName(descriptorJSON.optString("name")+sensorName);
+                newOperator.setName(descriptorJSON.optString("name"));
                 newOperator.setDescription(descriptorJSON.optString("description"));
                 newOperator.setUnit(descriptorJSON.optString("unit"));
 

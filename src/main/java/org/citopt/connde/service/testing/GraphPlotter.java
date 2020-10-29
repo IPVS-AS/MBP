@@ -14,6 +14,7 @@ import java.awt.image.BufferedImage;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +66,7 @@ public class GraphPlotter {
         XYSeriesCollection dataSet = new XYSeriesCollection();
 
 
-        Map<String, Map<Long,Double>> simulationLists = test.getSimulationList();
+        Map<String, LinkedHashMap<Long,Double>> simulationLists = test.getSimulationList();
         Iterator it = simulationLists.entrySet().iterator();
 
         while (it.hasNext()) {

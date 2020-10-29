@@ -72,7 +72,7 @@ public class TestEngine implements ValueLogReceiverObserver {
 
     // List of all active Tests/testValues
     Map<String, TestDetails> activeTests = new HashMap<>();
-    Map<String, Map<Long,Double>> testValues = new HashMap<>();
+    Map<String, LinkedHashMap<Long,Double>> testValues = new HashMap<>();
 
     String[] sensorSim = {"TestingTemperaturSensor", "TestingTemperaturSensorPl", "TestingFeuchtigkeitsSensor", "TestingFeuchtigkeitsSensorPl", "TestingGPSSensorPl", "TestingGPSSensor", "TestingBeschleunigungsSensor", "TestingBeschleunigungsSensorPl"};
     List<String> sensorSimulators = Arrays.asList(sensorSim);
@@ -101,7 +101,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      *
      * @return list of test values
      */
-    public Map<String, Map<Long, Double>> getTestValues() {
+    public Map<String, LinkedHashMap<Long, Double>> getTestValues() {
         return testValues;
     }
 
@@ -110,7 +110,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      *
      * @param testValues list of test values
      */
-    public void setTestValues(Map<String, Map<Long, Double>> testValues) {
+    public void setTestValues(Map<String, LinkedHashMap<Long, Double>> testValues) {
         this.testValues = testValues;
     }
 
@@ -135,7 +135,7 @@ public class TestEngine implements ValueLogReceiverObserver {
             return;
         }
         if (!testValues.containsKey(valueLog.getIdref())) {
-            Map<Long, Double> newList = new HashMap<>();
+            LinkedHashMap<Long, Double> newList = new LinkedHashMap<Long, Double>();
             newList.put(valueLog.getTime().getEpochSecond(), valueLog.getValue());
             testValues.put(valueLog.getIdref(), newList);
         } else {
@@ -167,7 +167,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      * @param testId Id of the the running test
      * @return value-list of the simulated Sensor
      */
-    public Map<String, Map<Long,Double>> isFinished(String testId) {
+    public Map<String, LinkedHashMap<Long,Double>> isFinished(String testId) {
         boolean response = true;
         TestDetails testDetails = testDetailsRepository.findById(testId);
         while (response) {
@@ -246,40 +246,46 @@ public class TestEngine implements ValueLogReceiverObserver {
         restDeploymentController.startActuator(testingActuator.getId(), new ArrayList<>());
 
 
-        if(testDetails.isUseNewData() == false){
+        if(!testDetails.isUseNewData()){
 
-            List<ParameterInstance> parameters = null;
+            List<ParameterInstance> parameters = new ArrayList<>();
             List<Long> intervals = new ArrayList<>();
             List<Double> values = new ArrayList<>();
 
             for (Sensor sensor : testingSensor) {
                 // If not a sensor simulator
                 if(!sensorSimulators.contains(sensor)){
+                    /**
                     if( !restDeploymentController.isRunningSensor(sensor.getId()).getBody()){
                         //if not deploy Sensor
-                        restDeploymentController.deploySensor((sensor.getId()));
-                    }
-                    restDeploymentController.stopSensor(sensor.getId());
-                    for (Map.Entry<String, Map<Long, Double>> entry : testDetails.getSimulationList().entrySet()) {
+                            restDeploymentController.deploySensor((sensor.getId()));
+                    }**/
 
-                        String[] parts = sensor.getName().split("_");
-                        String realSensorName = parts[1];
-                        if(entry.getKey().equals(realSensorName)){
+                    restDeploymentController.stopSensor(sensor.getId());
+
+                    Map<String, LinkedHashMap<Long, Double>> entry3 =  testDetails.getSimulationList();
+                    for (Map.Entry<String, LinkedHashMap<Long, Double>> entry : testDetails.getSimulationList().entrySet()) {
+                        if (entry.getKey().equals(sensor.getName())) {
                             ParameterInstance intervalParam = new ParameterInstance();
                             intervalParam.setName("interval");
                             ParameterInstance valueParam = new ParameterInstance();
                             valueParam.setName("value");
-                            for(Map.Entry<Long, Double> interval : entry.getValue().entrySet()){
+                            for (Map.Entry<Long, Double> interval : entry.getValue().entrySet()) {
                                 intervals.add(interval.getKey());
                                 values.add(interval.getValue());
                             }
-                            parameters.add(intervalParam);
-                            parameters.add(valueParam);
+                            intervalParam.setValue(intervals);
+                            valueParam.setValue(values);
+                            if (parameters != null) {
+                                parameters.add(intervalParam);
+                                parameters.add(valueParam);
+                            }
 
 
                         }
                     }
-                    restDeploymentController.startSensor(sensor.getId(),parameters);
+                    Sensor rerunSensor = sensorRepository.findByName("RERUN_"+sensor.getName());
+                    restDeploymentController.startSensor(rerunSensor.getId(),parameters);
                 }
             }
 
@@ -432,10 +438,10 @@ public class TestEngine implements ValueLogReceiverObserver {
      *
      * @param test test to be executed
      */
-    public Map<String, Map<Long,Double>> executeTest(TestDetails test) {
+    public Map<String, LinkedHashMap<Long,Double>> executeTest(TestDetails test) {
 
         Map<String, TestDetails> activeTests = testEngine.getActiveTests();
-        Map<String, Map<Long, Double>> list = testEngine.getTestValues();
+        Map<String, LinkedHashMap<Long, Double>> list = testEngine.getTestValues();
         for (Sensor sensor : test.getSensor()) {
             activeTests.put(sensor.getId(), test);
             list.remove(sensor.getId());
@@ -444,14 +450,14 @@ public class TestEngine implements ValueLogReceiverObserver {
         testEngine.setTestValues(list);
         testEngine.startTest(testDetailsRepository.findById(test.getId()));
 
-        Map<String, Map<Long, Double>> valueList;
-        Map<String, Map<Long, Double>> valueListTest = new HashMap<>();
+        Map<String, LinkedHashMap<Long, Double>> valueList;
+        Map<String, LinkedHashMap<Long, Double>> valueListTest = new HashMap<>();
 
         // Get List of all simulated Values
         valueList = testEngine.isFinished(test.getId());
         TestDetails testDetails2 = testDetailsRepository.findOne(test.getId());
         for (Sensor sensor : test.getSensor()) {
-            Map<Long, Double> temp = valueList.get(sensor.getId());
+            LinkedHashMap<Long, Double> temp = valueList.get(sensor.getId());
             valueList.put(sensor.getName(), temp);
             valueListTest.put(sensor.getName(), temp);
             list.remove(sensor.getId());
@@ -598,7 +604,7 @@ public class TestEngine implements ValueLogReceiverObserver {
             newSensor.setName("RERUN_"+realSensorName);
             newSensor.setComponentType("Computer");
             newSensor.setDevice(deviceRepository.findByName("TestingDevice"));
-            newSensor.setAdapter(adapterRepository.findByName("RERUN_"+realSensorName));
+            newSensor.setAdapter(adapterRepository.findByName("RERUN_OPERATOR"));
 
             //Insert new sensor into repository
             sensorRepository.insert(newSensor);
@@ -618,7 +624,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      */
     private Map<Long, String> sortMap(Map<Long, String> unsortedMap) {
 
-        Map<Long, String> treeMap = new TreeMap<>((o1, o2) -> o1.compareTo(o2));
+        Map<Long, String> treeMap = new TreeMap<>(Long::compareTo);
 
         treeMap.putAll(unsortedMap);
 

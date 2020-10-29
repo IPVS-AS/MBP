@@ -34,13 +34,16 @@ def main(argv):
         while True:
             for sensorValue in sensorVals:
                 value = sensorValue
-            
+                print(value)
+
+                # waits a time interval before sending new data
+            for sleepTime in sendingInterval:
+                time.sleep(sleepTime)
+
             # send data to the MBP
             mbp.send_data(value)
             
-            # waits a time interval before sending new data
-            for sleepTime in sendingInterval:
-                time.sleep(sleepTime)
+
 
     except:
         error = sys.exc_info()

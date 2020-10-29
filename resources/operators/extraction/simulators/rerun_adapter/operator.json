@@ -1,5 +1,5 @@
 {
-  "name": "RERUN_",
+  "name": "RERUN_OPERATOR",
   "description": "Rerun operator simulating the last generated values of a real sensor in a test.",
   "unit": "No Unit",
   "files": [

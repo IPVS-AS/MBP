@@ -80,9 +80,9 @@ public class TestingController {
     @Secured({Constants.ADMIN})
     @ApiOperation(value = "Loads default operators from the resource directory of the MBP and makes them available for usage in actuators and sensors by all users.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
-    public ResponseEntity<ActionResponse> addRerunOperators(String sensorName) {
+    public ResponseEntity<ActionResponse> addRerunOperators() {
         //Call corresponding service function
-        ActionResponse response = rerunOperatorService.addDefaultOperators(sensorName);
+        ActionResponse response = rerunOperatorService.addDefaultOperators();
 
         //Check for success
         if (response.isSuccess()) {
@@ -113,7 +113,7 @@ public class TestingController {
         List<Rule> rulesbefore = testEngine.getStatRulesBefore(testDetails);
 
         // Start the test and get Map of sensor values
-        Map<String, Map<Long, Double>> valueListTest = testEngine.executeTest(testDetails);
+        Map<String, LinkedHashMap<Long, Double>> valueListTest = testEngine.executeTest(testDetails);
 
         // Check the test for success
         testEngine.testSuccess(testId);
@@ -211,11 +211,13 @@ public class TestingController {
         List<List<ParameterInstance>> configList = testDetails.getConfig();
 
         if (Boolean.valueOf(useNewData) == false) {
+            testDetails.setUseNewData(false);
+            testDetailsRepository.save(testDetails);
+            addRerunOperators();
             for (List<ParameterInstance> config : configList) {
                 for (ParameterInstance parameterInstance : config) {
                     if (parameterInstance.getName().equals("ConfigName")) {
                         if(!sensorSimulators.contains(parameterInstance.getValue())){
-                            addRerunOperators(parameterInstance.getValue().toString());
                             testEngine.addRerunSensor(parameterInstance.getValue().toString());
 
                         }
@@ -223,17 +225,19 @@ public class TestingController {
                 }
             }
         } else{
+            testDetails.setUseNewData(true);
+            testDetailsRepository.save(testDetails);
             // Delete the Reuse Adapters and Sensors for each real sensor if the data should not be reused
             for (List<ParameterInstance> config : configList) {
+                Adapter adapterReuse = adapterRepository.findByName("RERUN_OPERATOR");
+                adapterRepository.delete(adapterReuse);
                 for (ParameterInstance parameterInstance : config) {
                     if (parameterInstance.getName().equals("ConfigName")) {
                         if(!sensorSimulators.contains(parameterInstance.getValue())){
                             // Delete Reuse Operator
                             String reuseName = "RERUN_" + parameterInstance.getValue();
-                            Adapter adapterReuse = adapterRepository.findByName(reuseName);
                             Sensor sensorReuse = sensorRepository.findByName(reuseName);
-                            if(adapterReuse != null){
-                                adapterRepository.delete(adapterReuse);
+                            if(sensorReuse != null){
                                 sensorRepository.delete(sensorReuse);
                             }
                         }

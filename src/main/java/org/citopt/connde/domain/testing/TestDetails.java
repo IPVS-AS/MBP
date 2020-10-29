@@ -2,6 +2,7 @@ package org.citopt.connde.domain.testing;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import net.bytebuddy.dynamic.scaffold.MethodGraph;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.rules.Rule;
@@ -14,6 +15,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,7 +62,7 @@ public class TestDetails {
 
     private List<String> rulesExecuted;
 
-    private Map<String, Map<Long, Double>> simulationList;
+    private Map<String, LinkedHashMap<Long, Double>> simulationList;
 
     private boolean triggerRules;
 
@@ -130,7 +132,7 @@ public class TestDetails {
      *
      * @return simulationList
      */
-    public Map<String, Map<Long,Double>> getSimulationList() {
+    public Map<String, LinkedHashMap<Long,Double>> getSimulationList() {
         return simulationList;
     }
 
@@ -139,7 +141,7 @@ public class TestDetails {
      *
      * @param simulationList list of simulated values of the sensors
      */
-    public void setSimulationList(Map<String, Map<Long, Double>> simulationList) {
+    public void setSimulationList(Map<String, LinkedHashMap<Long, Double>> simulationList) {
         this.simulationList = simulationList;
     }
 

@@ -1367,6 +1367,7 @@ app.controller('TestingController',
                                 console.log("catched error")
                             }
 
+                            newTestObject.useNewData = true;
 
                             newTestObject.rules = vm.rules;
                             const radios = document.getElementsByName('executeRules');
