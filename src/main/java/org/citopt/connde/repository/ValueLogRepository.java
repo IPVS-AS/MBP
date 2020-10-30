@@ -1,6 +1,7 @@
 package org.citopt.connde.repository;
 
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,8 +65,7 @@ public class ValueLogRepository {
 	@Autowired
 	private ValueLogRepository(MongoClient mongoClient) {
 		// Fetch coded registry for mapping value log objects from and to BSON documents
-		CodecRegistry codecRegistry = fromProviders(PojoCodecProvider.builder().automatic(true).build());
-//        CodecRegistry codecRegistry = fromRegistries(com.mongodb.client.MongoClientFactory., fromProviders(PojoCodecProvider.builder().automatic(true).build()));
+		CodecRegistry codecRegistry = fromRegistries(com.mongodb.MongoClient.getDefaultCodecRegistry(), fromProviders(PojoCodecProvider.builder().automatic(true).build()));
 
 		// Get value log database and collection with codec registry
 		this.valueLogDatabase = mongoClient.getDatabase(DATABASE_NAME).withCodecRegistry(codecRegistry);
