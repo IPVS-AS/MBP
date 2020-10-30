@@ -34,9 +34,6 @@ public class Device extends UserEntity {
     @ApiModelProperty(notes = "Device type", example = "Raspberry Pi", required = true)
     private String componentType;
 
-    @ApiModelProperty(notes = "MAC address", example = "ABCABCABCABC")
-    private String macAddress;
-
     @ApiModelProperty(notes = "Network IP address", example = "192.168.209.174", required = true)
     private String ipAddress;
 
@@ -59,72 +56,72 @@ public class Device extends UserEntity {
         return this.id;
     }
 
-    public void setId(String id) {
+    public Device setId(String id) {
         this.id = id;
+        return this;
     }
 
     public String getIpAddress() {
         return ipAddress;
     }
 
-    public void setIpAddress(String ip) {
+    public Device setIpAddress(String ip) {
         this.ipAddress = ip;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public Device setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getComponentType() {
         return componentType;
     }
 
-    public void setComponentType(String componentType) {
+    public Device setComponentType(String componentType) {
         this.componentType = componentType;
-    }
-
-    public String getMacAddress() {
-        return macAddress;
-    }
-
-    public void setMacAddress(String macAddress) {
-        this.macAddress = macAddress;
+        return this;
     }
 
     public String getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public Device setDate(String date) {
         this.date = date;
+        return this;
     }
 
     public String getUsername() {
         return username;
     }
 
-    public void setUsername(String username) {
+    public Device setUsername(String username) {
         this.username = username;
+        return this;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public Device setPassword(String password) {
         this.password = password;
+        return this;
     }
 
     public KeyPair getKeyPair() {
         return keyPair;
     }
 
-    public void setKeyPair(KeyPair keyPair) {
+    public Device setKeyPair(KeyPair keyPair) {
         this.keyPair = keyPair;
+        return this;
     }
 
     @JsonProperty("usesPassword")
@@ -139,8 +136,4 @@ public class Device extends UserEntity {
         return (keyPair != null) && (keyPair.hasPrivateKey());
     }
 
-//    @Override
-//    public UserEntityPolicy getUserEntityPolicy() {
-//        return DEVICE_POLICY;
-//    }
 }

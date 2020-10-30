@@ -17,7 +17,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	
 	@ExceptionHandler(IllegalArgumentException.class)
 	public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException e) {
-		ApiError error = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, LocalDateTime.now(), "An internal error occurred due to an illegal argument. Please contact Pascal Hirmer.");
+		ApiError error = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, LocalDateTime.now(), "An internal error occurred due to an illegal argument. Exception message: " + e.getMessage());
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
 	}
 	

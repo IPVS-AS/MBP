@@ -191,7 +191,7 @@
                                 <div class="form-line"
                                      ng-class="{'focused error' : addDeviceCtrl.item.errors.keypair }">
                                     <select class="form-control show-tick" ng-model="addDeviceCtrl.item.keyPair"
-                                            ng-options="t._links.self.href as (t.name) for t in ctrl.keyPairList">
+                                            ng-options="t.id as (t.name) for t in ctrl.keyPairList">
                                         <option value="">Select SSH key pair
                                         </option>
                                     </select>

@@ -293,7 +293,7 @@ public class UserEntityService {
     }
 
     public <E extends IACRequestedEntity> void requirePermission(E entity, ACAccessType accessType, ACAccessRequest accessRequest) throws MissingPermissionException {
-        if (!checkPermission(entity, accessType, accessRequest)) {
+        if (!checkAdmin() && !checkOwner(entity) && !checkPermission(entity, accessType, accessRequest)) {
             throw new MissingPermissionException("Entity", entity.getId(), accessType);
         }
     }

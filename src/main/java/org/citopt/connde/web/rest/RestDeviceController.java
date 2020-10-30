@@ -3,6 +3,7 @@ package org.citopt.connde.web.rest;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -10,6 +11,7 @@ import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.domain.device.DeviceRequestDTO;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.error.MissingPermissionException;
@@ -122,7 +124,17 @@ public class RestDeviceController {
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 409, message = "Device already exists!") })
     public ResponseEntity<EntityModel<Device>> create(
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@RequestBody Device device) throws EntityAlreadyExistsException, EntityNotFoundException {
+    		@RequestBody DeviceRequestDTO requestDto) throws EntityAlreadyExistsException, EntityNotFoundException {
+    	// Create device from request dto
+    	Device device = new Device()
+    			.setName(requestDto.getName())
+    			.setComponentType(requestDto.getComponentType())
+    			.setIpAddress(requestDto.getIpAddress())
+    			.setDate(LocalDateTime.now().toString())
+    			.setUsername(requestDto.getUsername())
+    			.setPassword(requestDto.getPassword() == null ? null : requestDto.getPassword())
+    			.setKeyPair(requestDto.getKeyPairId() == null ? null : userEntityService.getForId(keyPairRepository, requestDto.getKeyPairId()));
+    	
     	// Save device in the database
     	Device createdDevice = userEntityService.create(deviceRepository, device);
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(createdDevice));
