@@ -4,6 +4,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
@@ -13,6 +14,7 @@ import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.DeviceRepository;
+import org.citopt.connde.repository.KeyPairRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +50,9 @@ public class RestDeviceController {
 	
     @Autowired
     private DeviceRepository deviceRepository;
+    
+    @Autowired
+    private KeyPairRepository keyPairRepository;
     
     @Autowired
     private UserEntityService userEntityService;
@@ -88,6 +93,28 @@ public class RestDeviceController {
     	// Retrieve the corresponding device (includes access-control)
     	Device device = userEntityService.getForIdWithAccessControlCheck(deviceRepository, deviceId, ACAccessType.READ, accessRequest);
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(device));
+    }
+    
+    @GetMapping("/by-key/{id}")
+    @ApiOperation(value = "Retrieves the devices which use a certain key-pair and for which the user is authorized", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
+            @ApiResponse(code = 404, message = "Key-pair or requesting user not found!")})
+    public ResponseEntity<List<Device>> byKeyPair(
+            @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+            @PathVariable(value = "id") @ApiParam(value = "ID of the key-pair", example = "5c97dc2583aeb6078c5ab672", required = true) String keyPairId) throws EntityNotFoundException, MissingPermissionException {
+        // Parse the access-request information
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+        // Check permission for key-pair
+        userEntityService.requirePermission(keyPairRepository, keyPairId, ACAccessType.READ, accessRequest);
+
+        // Retrieve all devices from the database (includes access-control)
+        List<Device> devices = userEntityService.getAllWithAccessControlCheck(deviceRepository, ACAccessType.READ, accessRequest)
+                .stream()
+                // Filter devices that do not use the key-pair
+                .filter(d -> d.hasRSAKey() && d.getKeyPair().getId().equals(keyPairId))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(devices);
     }
     
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")

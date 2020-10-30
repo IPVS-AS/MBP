@@ -69,6 +69,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 			mbpUser.put("first_name", "MBP");
 			mbpUser.put("last_name", "Platform");
 			mbpUser.put("username", "mbp");
+			mbpUser.put("isAdmin", false);
 			mbpUser.put("password", passwordEncoder.encode("mbp-platform"));
 
 			documents.add(mbpUser);
@@ -79,6 +80,7 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
 			deviceUser.put("first_name", "Device");
 			deviceUser.put("last_name", "Client");
 			deviceUser.put("username", "device-client");
+			deviceUser.put("isAdmin", false);
 			deviceUser.put("password", passwordEncoder.encode("device"));
 
 			documents.add(deviceUser);

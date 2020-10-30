@@ -12,14 +12,12 @@ import org.citopt.connde.domain.access_control.ACAttributeValue;
 import org.citopt.connde.domain.access_control.ACConditionSimpleAttributeArgument;
 import org.citopt.connde.domain.access_control.ACEntityType;
 import org.citopt.connde.domain.access_control.IACEntity;
-import org.springframework.stereotype.Service;
 
 /**
  * Service that provides additional attributes used for evaluating access requests.
  * 
  * @author Jakob Benz
  */
-@Service
 public class ACAttributeProvider {
 	
 	@SuppressWarnings("unchecked")

@@ -185,17 +185,22 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
                     return null;
                 }
 
-                //Check for message field
-                if ((response.hasOwnProperty('message'))
-                    && ((typeof response.message === 'string') || (response.message instanceof String))) {
-                    return response.message;
+                try {
+                    //Check for message field
+                    if ((response.hasOwnProperty('message'))
+                        && ((typeof response.message === 'string') || (response.message instanceof String))) {
+                        return response.message;
+                    }
+    
+                    //Check for responseJSON
+                    if ((response.hasOwnProperty('responseJSON') && response.responseJSON.hasOwnProperty('message')) &&
+                        (typeof response.responseJSON.message === 'string') || (response.responseJSON.message instanceof String)) {
+                        return response.responseJSON.message;
+                    }
+                } catch (error) {
+                    return null;
                 }
 
-                //Check for responseJSON
-                if ((response.hasOwnProperty('responseJSON')) &&
-                    (typeof response.responseJSON.message === 'string') || (response.responseJSON.message instanceof String)) {
-                    return response.responseJSON.message;
-                }
 
                 return null;
             }

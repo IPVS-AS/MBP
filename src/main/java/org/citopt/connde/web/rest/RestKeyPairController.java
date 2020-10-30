@@ -148,26 +148,4 @@ public class RestKeyPairController {
         return ResponseEntity.status(HttpStatus.CREATED).body(keyPair);
     }
 
-
-    @GetMapping("/devices/by-key/{id}")
-    @ApiOperation(value = "Retrieves the devices which use a certain key-pair and for which the user is authorized", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
-            @ApiResponse(code = 404, message = "Key-pair or requesting user not found!")})
-    public ResponseEntity<List<Device>> getDevicesByKeyPair(
-            @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-            @PathVariable(value = "id") @ApiParam(value = "ID of the key-pair", example = "5c97dc2583aeb6078c5ab672", required = true) String keyPairId) throws EntityNotFoundException, MissingPermissionException {
-        // Parse the access-request information
-        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
-
-        // Check permission for key-pair
-        userEntityService.requirePermission(keyPairRepository, keyPairId, ACAccessType.READ, accessRequest);
-
-        // Retrieve all devices from the database (includes access-control)
-        List<Device> devices = userEntityService.getAllWithAccessControlCheck(deviceRepository, ACAccessType.READ, accessRequest)
-                .stream()
-                // Filter devices that do not use the key-pair
-                .filter(d -> d.hasRSAKey() && d.getKeyPair().getId().equals(keyPairId))
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(devices);
-    }
 }

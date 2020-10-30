@@ -219,6 +219,9 @@ public class UserEntityService {
         if (user.isAdmin()) {
             return entities;
         }
+        
+        // FIXME: REMOVE AFTER TESTING
+        entities.forEach(e -> ((UserEntity) e).setOwner(userService.getForUsername("admin")));
 
         // Requesting user is a non-admin user
         List<E> filteredEntities = new ArrayList<>();

@@ -1,5 +1,8 @@
 package org.citopt.connde.service.access_control;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Optional;
 
 import org.citopt.connde.domain.access_control.ACAccess;
@@ -9,7 +12,6 @@ import org.citopt.connde.domain.access_control.ACConditionSimpleAttributeArgumen
 import org.citopt.connde.domain.access_control.ACConditionSimpleValueArgument;
 import org.citopt.connde.domain.access_control.ACSimpleCondition;
 import org.citopt.connde.domain.access_control.IACConditionArgument;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Evaluator for simple {@link ACSimpleCondition conditions}.
@@ -19,8 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ACSimpleConditionEvaluator<T extends Comparable<T>> extends ACAbstractConditionEvaluator<ACSimpleCondition<T>> {
 	
-	@Autowired
-	private ACAttributeProvider attributeProvider;
+	private ACAttributeProvider attributeProvider = new ACAttributeProvider();
 	
  	@Override
 	public boolean evaluate(ACSimpleCondition<T> condition, ACAccess access, ACAccessRequest request) {
@@ -47,9 +48,25 @@ public class ACSimpleConditionEvaluator<T extends Comparable<T>> extends ACAbstr
 	@SuppressWarnings("unchecked")
 	private Optional<T> getValueForArgument(IACConditionArgument argument, ACAccess access, ACAccessRequest request) {
 		if (argument instanceof ACConditionSimpleAttributeArgument<?>) {
+			String filename = "/Users/jakob/Desktop/log1.txt";
+			if (new File(filename).exists()) {
+				new File(filename).delete();
+			}
 			try {
+				FileWriter fw = new FileWriter(filename);
+				fw.write("Attribute Provider: " + (attributeProvider == null));
+				fw.write("Argument: " + (argument == null));
+				fw.write("Access: " + (access == null));
+				fw.write("Access Request: " + (request == null));
+//				fw.append("Result: " + (attributeProvider.getValueForAttributeArgument((ACConditionSimpleAttributeArgument<T>) argument, access, request) == null));
+				fw.flush();
+				fw.close();
 				return attributeProvider.getValueForAttributeArgument((ACConditionSimpleAttributeArgument<T>) argument, access, request);
 			} catch (ACAttributeNotAvailableException e) {
+				return Optional.empty();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block -> REMOVE AFTER TESTING
+				e.printStackTrace();
 				return Optional.empty();
 			}
 		} else if (argument instanceof ACConditionSimpleValueArgument<?>) {

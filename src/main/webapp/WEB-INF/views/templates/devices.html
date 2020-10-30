@@ -64,18 +64,25 @@
                         <td>{{item.componentType}}</td>
                         <td>{{item.ipAddress}}</td>
                         <td>
-                            <div ng-if="item.acc">
-                                <a class="clickable" data-toggle="collapse" data-target="#humanReadableDescription-{{item.id}}">
-                                    Show Condition
+                            <div ng-if="item.accessControlPolicyIds">
+                                <a class="clickable" data-toggle="collapse" data-target="#policy-{{item.id}}">
+                                    Show Policies
                                 </a>
-                                <div id="humanReadableDescription-{{item.id}}" class="collapse">
-                                    <span>{{item.humanReadableDescription}}</span>
+                                <div id="policy-{{item.id}}" class="collapse">
+                                    <p ng-repeat="id in item.accessControlPolicyIds">{{id}}</p>
                                 </div>
                             </div>
-                            <div ng-if="!item.humanReadableDescription">
+                            <div ng-if="!item.accessControlPolicyIds">
                                 <span>None</span>
                             </div>
                         </td>
+                        <!-- <td>
+                            <button ng-repeat-start="id as (p.id) for p in item.accessControlPolicyIds" class="btn btn-default"
+                                role="button">
+                                {{id}}
+                            </button>
+                            <span ng-repeat-end="">&nbsp;</span>
+                        </td> -->
                         <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
                             <form ng-submit="deleteDeviceCtrl.deleteItem()"
@@ -186,7 +193,7 @@
                                     <select class="form-control show-tick" ng-model="addDeviceCtrl.item.keyPair"
                                             ng-options="t._links.self.href as (t.name) for t in ctrl.keyPairList">
                                         <option value="">Select SSH key pair
-                                        <option/>
+                                        </option>
                                     </select>
                                 </div>
                                 <span class="help-block" ng-show="addDeviceCtrl.item.errors.keypair">{{addDeviceCtrl.item.errors.keypair.message}}</span>
@@ -200,7 +207,7 @@
                                             ng-model="addDeviceCtrl.item.accessControlPolicyIds"
                                             ng-options="p.id as (p.name) for p in ctrl.accessControlPolicyList">
                                         <option value="">Select access control policies
-                                        <option/>
+                                        </option>
                                     </select>
                                 </div>
                                 <span class="help-block" ng-show="addDeviceCtrl.item.errors.accessControlPolicyIds">{{addDeviceCtrl.item.errors.accessControlPolicyIds.message}}</span>
