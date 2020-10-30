@@ -128,7 +128,7 @@ app.controller('AdapterListController',
                     var affectedWarning = "";
 
                     //If the list is not empty, create a message that contains the names of all affected components
-                    if (result.data.length > 0) {
+                    if (result.length > 0) {
 
                         affectedWarning = "<br/><br/>The following components are currently " +
                             "using this operator and <strong>will be deleted as well</strong>:<br/>";

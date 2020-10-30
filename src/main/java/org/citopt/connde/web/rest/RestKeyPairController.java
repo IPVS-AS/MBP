@@ -4,18 +4,15 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
-import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.error.MBPException;
 import org.citopt.connde.error.MissingPermissionException;
-import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.KeyPairRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.citopt.connde.service.UserService;
@@ -55,9 +52,6 @@ public class RestKeyPairController {
 
     @Autowired
     private KeyPairRepository keyPairRepository;
-
-    @Autowired
-    private DeviceRepository deviceRepository;
 
     @Autowired
     private UserService userService;

@@ -117,7 +117,7 @@ public class UserEntityService {
         E entity = repository.findById(entityId).orElseThrow(() -> new EntityNotFoundException("Entity", entityId));
 
         // Check owner
-        if (!checkOwner(entity)) {
+        if (!checkAdmin() && !checkOwner(entity)) {
             // Not the owner -> check policies
             requirePermission(repository, entityId, accessType, accessRequest);
         }
@@ -170,17 +170,16 @@ public class UserEntityService {
      * @throws MissingPermissionException
      */
     public <E extends UserEntity> void deleteWithAccessControlCheck(UserEntityRepository<E> repository, String entityId, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
-        // Retrieve the entity from the database
-        E entity = getForIdWithAccessControlCheck(repository, entityId, ACAccessType.READ, accessRequest);
+    	// Retrieve the entity from the database
+    	E entity = getForId(repository, entityId);
+    	
+    	if (!checkAdmin() && !checkOwner(entity)) {    		
+    		// Not the owner -> check policies
+    		requirePermission(repository, entityId, ACAccessType.DELETE, accessRequest);
+    	}
 
         // Check whether entity actually can be deleted (may still be in use)
         requireDeletable(entity);
-
-        // Check owner
-        if (!checkOwner(entity)) {
-            // Not the owner -> check policies
-            requirePermission(repository, entityId, ACAccessType.DELETE, accessRequest);
-        }
 
         // Everything checks out (user is owner or a policy grants the delete permission) -> delete the entity in the database
         repository.deleteById(entityId);
@@ -221,7 +220,7 @@ public class UserEntityService {
         }
         
         // FIXME: REMOVE AFTER TESTING
-        entities.forEach(e -> ((UserEntity) e).setOwner(userService.getForUsername("admin")));
+//        entities.forEach(e -> ((UserEntity) e).setOwner(userService.getForUsername("admin")));
 
         // Requesting user is a non-admin user
         List<E> filteredEntities = new ArrayList<>();
@@ -262,6 +261,18 @@ public class UserEntityService {
         if (!user.isAdmin()) {
             throw new MissingAdminPrivilegesException();
         }
+    }
+    
+    public <E extends IACRequestedEntity> boolean checkAdmin() {
+    	return checkAdmin(userService.getLoggedInUser());
+    }
+
+    public <E extends IACRequestedEntity> boolean checkAdmin(String userId) {
+    	return checkAdmin(userService.getForId(userId));
+    }
+
+    public <E extends IACRequestedEntity> boolean checkAdmin(User user) {
+        return user.isAdmin();
     }
 
     public <E extends IACRequestedEntity> boolean checkOwner(E entity) {
