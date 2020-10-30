@@ -38,40 +38,45 @@ public abstract class Component extends UserEntity {
         return id;
     }
 
-    public void setId(String id) {
+    public Component setId(String id) {
         this.id = id;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public Component setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getComponentType() {
         return componentType;
     }
 
-    public void setComponentType(String componentType) {
+    public Component setComponentType(String componentType) {
         this.componentType = componentType;
+        return this;
     }
 
     public Adapter getAdapter() {
         return adapter;
     }
 
-    public void setAdapter(Adapter adapter) {
+    public Component setAdapter(Adapter adapter) {
         this.adapter = adapter;
+        return this;
     }
 
     public Device getDevice() {
         return device;
     }
 
-    public void setDevice(Device address) {
+    public Component setDevice(Device address) {
         this.device = address;
+        return this;
     }
 
     public String getTopicName() {

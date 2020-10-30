@@ -64,8 +64,8 @@
                             </div>
                         </td>
                         <td>{{item.componentType}}</td>
-                        <td>{{item._embedded.adapter.name}}</td>
-                        <td>{{item._embedded.device.name}}</td>
+                        <td>{{item.adapter.name}}</td>
+                        <td>{{item.device.name}}</td>
                         <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
                             <form ng-submit="deleteSensorCtrl.deleteItem()" style="display:inline-block">
@@ -142,8 +142,8 @@
                                 <div class="form-line"
                                      ng-class="{'focused error' : addSensorCtrl.item.errors.adapter }">
                                     <select class="form-control show-tick" id="sensor-form-select-adapter"
-                                            ng-model="addSensorCtrl.item.adapter"
-                                            ng-options="t._links.self.href as (t.name) for t in ctrl.adapterList">
+                                            ng-model="addSensorCtrl.item.adapterId"
+                                            ng-options="t.id as (t.name) for t in ctrl.adapterList">
                                         <option value="">Select extraction operator *
                                         <option/>
                                     </select>
@@ -154,8 +154,8 @@
                             <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.device }">
                                 <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.device }">
                                     <select class="form-control show-tick" id="sensor-form-select-device"
-                                            ng-model="addSensorCtrl.item.device"
-                                            ng-options="d._links.self.href as (d.name) for d in ctrl.deviceList">
+                                            ng-model="addSensorCtrl.item.deviceId"
+                                            ng-options="d.id as (d.name) for d in ctrl.deviceList">
                                         <option value="">Select device *
                                         <option/>
                                     </select>

@@ -190,7 +190,7 @@
                             <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.keypair }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addDeviceCtrl.item.errors.keypair }">
-                                    <select class="form-control show-tick" ng-model="addDeviceCtrl.item.keyPair"
+                                    <select class="form-control show-tick" ng-model="addDeviceCtrl.item.keyPairId"
                                             ng-options="t.id as (t.name) for t in ctrl.keyPairList">
                                         <option value="">Select SSH key pair
                                         </option>

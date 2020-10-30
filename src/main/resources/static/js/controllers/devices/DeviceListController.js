@@ -140,7 +140,7 @@ app.controller('DeviceListController',
 
                 //Perform server request and set state of the device object accordingly
                 DeviceService.getDeviceState(device.id).then(function (response) {
-                    device.state = response.data.content;
+                    device.state = response.content;
                 }, function (response) {
                     device.state = 'UNKNOWN';
                     NotificationService.notify("Could not retrieve the device state.", "error");
@@ -155,15 +155,15 @@ app.controller('DeviceListController',
             function loadDeviceStates() {
                 //Perform server request
                 DeviceService.getAllDeviceStates().then(function (response) {
-                    var statesMap = response.data;
+                    let statesMap = response;
 
                     //Iterate over all devices in deviceList and update the states of all devices accordingly
-                    for (var i in deviceList) {
-                        var deviceId = deviceList[i].id;
+                    for (let i in deviceList) {
+                        let deviceId = deviceList[i].id;
                         deviceList[i].state = statesMap[deviceId];
                     }
                 }, function (response) {
-                    for (var i in deviceList) {
+                    for (let i in deviceList) {
                         deviceList[i].state = 'UNKNOWN';
                     }
                     NotificationService.notify("Could not retrieve device states.", "error");

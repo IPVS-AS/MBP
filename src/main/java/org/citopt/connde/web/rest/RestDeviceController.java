@@ -125,15 +125,16 @@ public class RestDeviceController {
     public ResponseEntity<EntityModel<Device>> create(
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
     		@RequestBody DeviceRequestDTO requestDto) throws EntityAlreadyExistsException, EntityNotFoundException {
-    	// Create device from request dto
-    	Device device = new Device()
+    	// Create device from request DTO
+    	Device device = (Device) new Device()
     			.setName(requestDto.getName())
     			.setComponentType(requestDto.getComponentType())
     			.setIpAddress(requestDto.getIpAddress())
     			.setDate(LocalDateTime.now().toString())
     			.setUsername(requestDto.getUsername())
     			.setPassword(requestDto.getPassword() == null ? null : requestDto.getPassword())
-    			.setKeyPair(requestDto.getKeyPairId() == null ? null : userEntityService.getForId(keyPairRepository, requestDto.getKeyPairId()));
+    			.setKeyPair(requestDto.getKeyPairId() == null ? null : userEntityService.getForId(keyPairRepository, requestDto.getKeyPairId()))
+    			.setAccessControlPolicyIds(requestDto.getAccessControlPolicyIds());
     	
     	// Save device in the database
     	Device createdDevice = userEntityService.create(deviceRepository, device);

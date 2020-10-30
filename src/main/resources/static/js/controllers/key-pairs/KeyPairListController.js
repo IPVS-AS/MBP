@@ -107,10 +107,10 @@ app.controller('KeyPairListController',
             function generateKeyPair() {
                 KeyPairService.generate(vm.generation.name).then(function (response) {
                     //Sanity check
-                    if (!response.data) {
+                    if (!response) {
                         return;
                     }
-                    vm.keyPairListCtrl.pushItem(response.data);
+                    vm.keyPairListCtrl.pushItem(response);
                     vm.generation.error = false;
 
                     NotificationService.notify("Successfully generated a new key.", "success");

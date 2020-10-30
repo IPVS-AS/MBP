@@ -8,10 +8,13 @@ import java.util.List;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
+import org.citopt.connde.domain.component.ComponentRequestDTO;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.error.MissingPermissionException;
+import org.citopt.connde.repository.AdapterRepository;
+import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +51,12 @@ public class RestSensorController {
 	
     @Autowired
     private SensorRepository sensorRepository;
+    
+    @Autowired
+    private AdapterRepository adapterRepository;
+    
+    @Autowired
+    private DeviceRepository deviceRepository;
     
     @Autowired
     private UserEntityService userEntityService;
@@ -93,7 +102,15 @@ public class RestSensorController {
     public ResponseEntity<EntityModel<Sensor>> create(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@RequestBody Sensor sensor) throws EntityAlreadyExistsException, EntityNotFoundException {
+    		@RequestBody ComponentRequestDTO requestDto) throws EntityAlreadyExistsException, EntityNotFoundException {
+    	// Create sensor from request DTO
+    	Sensor sensor = (Sensor) new Sensor()
+    			.setName(requestDto.getName())
+    			.setComponentType(requestDto.getComponentType())
+    			.setAdapter(requestDto.getAdapterId() == null ? null : userEntityService.getForId(adapterRepository, requestDto.getAdapterId()))
+    			.setDevice(requestDto.getDeviceId() == null ? null : userEntityService.getForId(deviceRepository, requestDto.getDeviceId()))
+    			.setAccessControlPolicyIds(requestDto.getAccessControlPolicyIds());
+    	
     	// Save sensor in the database
     	Sensor createdSensor = userEntityService.create(sensorRepository, sensor);
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(createdSensor));

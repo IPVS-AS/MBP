@@ -64,8 +64,8 @@
                             </div>
                         </td>
                         <td>{{item.componentType}}</td>
-                        <td>{{item._embedded.adapter.name}}</td>
-                        <td>{{item._embedded.device.name}}</td>
+                        <td>{{item.adapter.name}}</td>
+                        <td>{{item.device.name}}</td>
                         <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
                             <form ng-submit="deleteActuatorCtrl.deleteItem()" style="display:inline-block">
@@ -143,8 +143,8 @@
                                 <div class="form-line"
                                      ng-class="{'focused error' : addActuatorCtrl.item.errors.adapter }">
                                     <select class="form-control show-tick" id="actuator-form-select-adapter"
-                                            ng-model="addActuatorCtrl.item.adapter"
-                                            ng-options="t._links.self.href as (t.name) for t in ctrl.adapterList">
+                                            ng-model="addActuatorCtrl.item.adapterId"
+                                            ng-options="t.id as (t.name) for t in ctrl.adapterList">
                                         <option value="">Select control operator *
                                         <option/>
                                     </select>
@@ -156,8 +156,8 @@
                                 <div class="form-line"
                                      ng-class="{'focused error' : addActuatorCtrl.item.errors.device }">
                                     <select class="form-control show-tick" id="actuator-form-select-device"
-                                            ng-model="addActuatorCtrl.item.device"
-                                            ng-options="d._links.self.href as (d.name) for d in ctrl.deviceList">
+                                            ng-model="addActuatorCtrl.item.deviceId"
+                                            ng-options="d.id as (d.name) for d in ctrl.deviceList">
                                         <option value="">Select device *
                                         <option/>
                                     </select>

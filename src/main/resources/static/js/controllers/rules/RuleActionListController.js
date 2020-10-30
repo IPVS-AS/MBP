@@ -50,7 +50,7 @@ app.controller('RuleActionListController',
             function testRuleAction(actionId) {
                 //Execute request
                 RuleService.testRuleAction(actionId).then(function (response) {
-                    if (response.data && response.data.success) {
+                    if (response && response.success) {
                         //Test succeeded
                         NotificationService.notify("Action test succeeded.", "success")
                     } else {

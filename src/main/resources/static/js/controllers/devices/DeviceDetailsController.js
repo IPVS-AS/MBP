@@ -130,7 +130,7 @@ app.controller('DeviceDetailsController',
                     //Return resulting promise
                     return MonitoringService.getMonitoringValueLogStats(DEVICE_ID, monitoringAdapterId, unit).then(function (response) {
                         //Success, pass statistics data
-                        return response.data;
+                        return response;
                     }, function (response) {
                         //Failure
                         NotificationService.notify('Could not load monitoring value log statistics.', 'error');
@@ -218,7 +218,7 @@ app.controller('DeviceDetailsController',
 
                     //Perform server request and set state of the adapter object accordingly
                     MonitoringService.getMonitoringState(DEVICE_ID, adapter.id).then(function (response) {
-                        adapter.state = response.data.content;
+                        adapter.state = response.content;
                         adapter.enable = (adapter.state === "RUNNING");
                     }, function (response) {
                         adapter.state = 'UNKNOWN';
@@ -246,7 +246,7 @@ app.controller('DeviceDetailsController',
                     //Check whether the entered unit is compatible with the adapter unit
                     UnitService.checkUnitsForCompatibility(adapter.unit, adapter.displayUnitInput).then(function (response) {
                         //Check compatibility according to server response
-                        if (!response.data) {
+                        if (!response) {
                             NotificationService.notify("The entered unit is not compatible to the adapter unit.", "error");
                             return;
                         }
@@ -345,7 +345,7 @@ app.controller('DeviceDetailsController',
             function loadMonitoringAdaptersStates() {
                 //Perform server request
                 MonitoringService.getDeviceMonitoringState(DEVICE_ID).then(function (response) {
-                    var statesMap = response.data;
+                    var statesMap = response;
 
                     //Iterate over all compatible adapters and update all states accordingly
                     for (var i in compatibleAdapters) {
@@ -375,9 +375,9 @@ app.controller('DeviceDetailsController',
                 MonitoringService.enableMonitoring(DEVICE_ID, adapter.id, parameterValuesList).then(
                     function (response) {
                         //Success, check if every thing worked well
-                        if (!response.data.success) {
+                        if (!response.success) {
                             adapter.state = 'UNKNOWN';
-                            NotificationService.notify('Error during monitoring enabling: ' + response.data.globalMessage, 'error');
+                            NotificationService.notify('Error during monitoring enabling: ' + response.globalMessage, 'error');
                             return;
                         }
                         //Notify user
@@ -408,9 +408,9 @@ app.controller('DeviceDetailsController',
                 MonitoringService.disableMonitoring(DEVICE_ID, adapter.id).then(
                     function (response) {
                         //Success, check if every thing worked well
-                        if (!response.data.success) {
+                        if (!response.success) {
                             adapter.state = 'UNKNOWN';
-                            NotificationService.notify('Error during monitoring disabling: ' + response.data.globalMessage, 'error');
+                            NotificationService.notify('Error during monitoring disabling: ' + response.globalMessage, 'error');
                             return;
                         }
                         //Notify user
@@ -563,7 +563,7 @@ app.controller('DeviceDetailsController',
                 //Retrieve the state of the current device
                 DeviceService.getDeviceState(DEVICE_ID).then(function (response) {
                     //Success
-                    vm.deviceState = response.data.content;
+                    vm.deviceState = response.content;
                 }, function (response) {
                     //Failure
                     vm.deviceState = 'UNKNOWN';

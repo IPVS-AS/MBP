@@ -203,9 +203,12 @@ public class RestValueLogController {
 	 * @throws EntityNotFoundException 
 	 */
 	private <C extends Component> Page<ValueLog> getValueLogs(C component, String unit, Pageable pageable, ACAccessRequest accessRequest) throws MissingPermissionException, EntityNotFoundException {
-		// Check permission (if access is granted, the policy that grants access is returned)
-		ACPolicy policy = userEntityService.getFirstPolicyGrantingAccess(component, ACAccessType.READ_VALUE_LOGS, accessRequest)
-				.orElseThrow(() -> new MissingPermissionException("Component", component.getId(), ACAccessType.READ_VALUE_LOGS));
+		ACPolicy policy = null;
+		if (!userEntityService.checkAdmin() && userEntityService.checkOwner(component)) {			
+			// Check permission (if access is granted, the policy that grants access is returned)
+			policy = userEntityService.getFirstPolicyGrantingAccess(component, ACAccessType.READ_VALUE_LOGS, accessRequest)
+					.orElseThrow(() -> new MissingPermissionException("Component", component.getId(), ACAccessType.READ_VALUE_LOGS));
+		}
 		
 		// Retrieve the value logs from the database (already paged)
 		Page<ValueLog> page = valueLogRepository.findAllByIdRef(component.getId(), pageable);
@@ -231,7 +234,7 @@ public class RestValueLogController {
 		}
 		
 		// Apply effect (constraints)
-		if (policy.getEffectId() != null) {
+		if (policy != null && policy.getEffectId() != null) {
 			ACAbstractEffect effect = effectService.getForId(policy.getEffectId());
 			page.forEach(effect::apply);
 		}

@@ -29,7 +29,7 @@
       UserService.GetAll()
         .then(function(response) {
           if (response.success) {
-            vm.users = response.data;
+            vm.users = response;
             vm.dataLoading = false;
           } else {
             if (response.status === 403) {

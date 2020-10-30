@@ -145,7 +145,7 @@ app.controller('EnvModelListController',
                 //Perform request to load the entity states
                 EnvModelService.getEntityStates(currentModelID).then(function (response) {
                     //Get entity states
-                    let entityStates = response.data;
+                    let entityStates = response;
 
                     //Iterate over all entities
                     for (let nodeId of Object.keys(entityStates)) {
@@ -245,7 +245,7 @@ app.controller('EnvModelListController',
              */
             function handleActionRequestFailure(response, defaultMessage) {
                 //Get field errors
-                let fieldErrors = response.data.fieldErrors;
+                let fieldErrors = response.fieldErrors;
 
                 //Check if there are field errors
                 if (fieldErrors && (!$.isEmptyObject(fieldErrors))) {
@@ -255,8 +255,8 @@ app.controller('EnvModelListController',
                 }
 
                 //Check if global error message was provided
-                if (response.data.globalMessage) {
-                    NotificationService.notify(response.data.globalMessage, "error");
+                if (response.globalMessage) {
+                    NotificationService.notify(response.globalMessage, "error");
                 } else {
                     //Failure
                     NotificationService.notify(defaultMessage, "error");

@@ -161,7 +161,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }],
                     ruleActionTypesList: ['RuleService', function (RuleService) {
                         return RuleService.getRuleActionTypes().then(function (response) {
-                            return response.data || [];
+                            return response || [];
                         });
                     }],
                     actuatorList: ['HttpService', function (HttpService) {
@@ -202,8 +202,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }],
                     monitoringComponentList: ['MonitoringService', function (MonitoringService) {
                         return MonitoringService.getMonitoringComponents().then(function (response) {
-                            if (response.data) {
-                                return response.data;
+                            if (response) {
+                                return response;
                             } else {
                                 return [];
                             }
@@ -373,7 +373,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     }],
                     compatibleAdapters: ['$route', 'MonitoringService', function ($route, MonitoringService) {
                         return MonitoringService.getCompatibleMonitoringAdapters($route.current.params.id).then(function (response) {
-                            return response.data;
+                            return response;
                         }, function () {
                             return null;
                         });
@@ -493,13 +493,13 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     settings: ['SettingsService', function (SettingsService) {
                         //Retrieve settings initially
                         return SettingsService.getSettings().then(function (response) {
-                            return response.data;
+                            return response;
                         });
                     }],
                     documentationMetaData: ['SettingsService', function (SettingsService) {
                         //Retrieve settings initially
                         return SettingsService.getDocumentationMetaData().then(function (response) {
-                            return response.data;
+                            return response;
                         });
                     }]
                 }

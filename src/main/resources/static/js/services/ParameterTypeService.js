@@ -17,7 +17,7 @@ app.factory('ParameterTypeService', ['HttpService', 'ENDPOINT_URI', function (Ht
     function handleSuccess(response) {
         return {
             success: true,
-            data: response.data
+            data: response
         };
     }
 

@@ -125,7 +125,7 @@ app.controller('SensorListController',
 
                 //Perform server request and set state of the sensor object accordingly
                 ComponentService.getComponentState(sensor.id, 'sensors').then(function (response) {
-                    sensor.state = response.data.content;
+                    sensor.state = response.content;
                 }, function (response) {
                     sensor.state = 'UNKNOWN';
                     NotificationService.notify("Could not retrieve the sensor state.", "error");
@@ -140,7 +140,7 @@ app.controller('SensorListController',
             function loadSensorStates() {//Perform server request
 
                 ComponentService.getAllComponentStates('sensors').then(function (response) {
-                    var statesMap = response.data;
+                    var statesMap = response;
 
                     //Iterate over all sensors in sensorList and update the states of all sensors accordingly
                     for (var i in sensorList) {

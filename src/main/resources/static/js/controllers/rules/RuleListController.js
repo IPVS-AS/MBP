@@ -106,10 +106,10 @@ app.controller('RuleListController',
                             //Enable rule
                             RuleService.enableRule(rule.id).then(function (response) {
                                 //Success, check if every thing worked well
-                                if (!response.data.success) {
+                                if (!response.success) {
                                     rule.enabled = false;
                                     NotificationService.notify('Error while enabling rule: '
-                                        + response.data.globalMessage, 'error');
+                                        + response.globalMessage, 'error');
                                     return;
                                 }
                                 //Notify user
@@ -124,10 +124,10 @@ app.controller('RuleListController',
                             //Disable rule
                             RuleService.disableRule(rule.id).then(function (response) {
                                 //Success, check if every thing worked well
-                                if (!response.data.success) {
+                                if (!response.success) {
                                     rule.enabled = true;
                                     NotificationService.notify('Error while disabling rule: '
-                                        + response.data.globalMessage, 'error');
+                                        + response.globalMessage, 'error');
                                     return;
                                 }
                                 //Notify user

@@ -119,7 +119,7 @@ app.controller('ActuatorListController',
 
                 //Perform server request and set state of the actuator object accordingly
                 ComponentService.getComponentState(actuator.id, 'actuators').then(function (response) {
-                    actuator.state = response.data.content;
+                    actuator.state = response.content;
                 }, function (response) {
                     actuator.state = 'UNKNOWN';
                     NotificationService.notify("Could not retrieve the actuator state.", "error");
@@ -134,7 +134,7 @@ app.controller('ActuatorListController',
             function loadActuatorStates() {//Perform server request
 
                 ComponentService.getAllComponentStates('actuators').then(function (response) {
-                    var statesMap = response.data;
+                    var statesMap = response;
 
                     //Iterate over all actuators in actuatorList and update the states of all actuators accordingly
                     for (var i in actuatorList) {

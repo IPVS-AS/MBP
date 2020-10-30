@@ -9,10 +9,14 @@ import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.component.Actuator;
+import org.citopt.connde.domain.component.ComponentRequestDTO;
+import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.ActuatorRepository;
+import org.citopt.connde.repository.AdapterRepository;
+import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +52,12 @@ public class RestActuatorController {
 	
     @Autowired
     private ActuatorRepository actuatorRepository;
+    
+    @Autowired
+    private AdapterRepository adapterRepository;
+    
+    @Autowired
+    private DeviceRepository deviceRepository;
     
     @Autowired
     private UserEntityService userEntityService;
@@ -90,7 +100,15 @@ public class RestActuatorController {
     @ApiOperation(value = "Retrieves an existing actuator entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
     		@ApiResponse(code = 409, message = "Actuator already exists!") })
-    public ResponseEntity<EntityModel<Actuator>> create(@RequestBody Actuator actuator) throws EntityAlreadyExistsException, EntityNotFoundException {
+    public ResponseEntity<EntityModel<Actuator>> create(@RequestBody ComponentRequestDTO requestDto) throws EntityAlreadyExistsException, EntityNotFoundException {
+    	// Create actuator from request DTO
+    	Actuator actuator = (Actuator) new Sensor()
+    			.setName(requestDto.getName())
+    			.setComponentType(requestDto.getComponentType())
+    			.setAdapter(requestDto.getAdapterId() == null ? null : userEntityService.getForId(adapterRepository, requestDto.getAdapterId()))
+    			.setDevice(requestDto.getDeviceId() == null ? null : userEntityService.getForId(deviceRepository, requestDto.getDeviceId()))
+    			.setAccessControlPolicyIds(requestDto.getAccessControlPolicyIds());
+    	
     	// Save actuator in the database
     	Actuator createdActuator = userEntityService.create(actuatorRepository, actuator);
     	return ResponseEntity.ok(userEntityService.entityToEntityModel(createdActuator));

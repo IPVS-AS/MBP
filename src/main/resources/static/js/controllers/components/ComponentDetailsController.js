@@ -15,7 +15,7 @@ app.controller('ComponentDetailsController',
             const COMPONENT_ID = $routeParams.id;
             const COMPONENT_TYPE = componentDetails.componentTypeName;
             const COMPONENT_TYPE_URL = COMPONENT_TYPE + 's';
-            const COMPONENT_ADAPTER_UNIT = componentDetails._embedded.adapter.unit;
+            const COMPONENT_ADAPTER_UNIT = componentDetails.adapter.unit;
 
             //Initialization of variables that are used in the frontend by angular
             var vm = this;
@@ -77,7 +77,7 @@ app.controller('ComponentDetailsController',
                 //Retrieve the state of the current component
                 ComponentService.getComponentState(COMPONENT_ID, COMPONENT_TYPE_URL).then(function (response) {
                     //Success
-                    vm.deploymentState = response.data.content;
+                    vm.deploymentState = response.content;
                 }, function (response) {
                     //Failure
                     vm.deploymentState = 'UNKNOWN';
@@ -97,9 +97,9 @@ app.controller('ComponentDetailsController',
                 vm.deviceState = 'LOADING';
 
                 //Retrieve device state
-                DeviceService.getDeviceState(componentDetails._embedded.device.id).then(function (response) {
+                DeviceService.getDeviceState(componentDetails.device.id).then(function (response) {
                     //Success
-                    vm.deviceState = response.data.content;
+                    vm.deviceState = response.content;
                 }, function (response) {
                     //Failure
                     vm.deviceState = 'UNKNOWN';
@@ -119,7 +119,7 @@ app.controller('ComponentDetailsController',
                 //Check whether the entered unit is compatible with the adapter unit
                 UnitService.checkUnitsForCompatibility(COMPONENT_ADAPTER_UNIT, inputUnit).then(function (response) {
                     //Check compatibility according to server response
-                    if (!response.data) {
+                    if (!response) {
                         NotificationService.notify("The entered unit is not compatible to the adapter unit.", "error");
                         return;
                     }
@@ -144,9 +144,9 @@ app.controller('ComponentDetailsController',
                 ComponentService.deploy(componentDetails._links.deploy.href).then(
                     function (response) {
                         //Success, check if everything worked well
-                        if (!response.data.success) {
+                        if (!response.success) {
                             vm.deploymentState = 'UNKNOWN';
-                            NotificationService.notify('Error during deployment: ' + response.data.globalMessage, 'error');
+                            NotificationService.notify('Error during deployment: ' + response.globalMessage, 'error');
                             return;
                         }
                         //Notify user
@@ -175,9 +175,9 @@ app.controller('ComponentDetailsController',
                 ComponentService.undeploy(componentDetails._links.deploy.href).then(
                     function (response) {
                         //Success, check if everything worked well
-                        if (!response.data.success) {
+                        if (!response.success) {
                             vm.deploymentState = 'UNKNOWN';
-                            NotificationService.notify('Error during undeployment: ' + response.data.globalMessage, 'error');
+                            NotificationService.notify('Error during undeployment: ' + response.globalMessage, 'error');
                             return;
                         }
                         //Notify user
@@ -207,9 +207,9 @@ app.controller('ComponentDetailsController',
                 ComponentService.startComponent(COMPONENT_ID, COMPONENT_TYPE, vm.parameterValues)
                     .then(function (response) {
                             //Success, check if everything worked well
-                            if (!response.data.success) {
+                            if (!response.success) {
                                 vm.deploymentState = 'UNKNOWN';
-                                NotificationService.notify('Error during starting: ' + response.data.globalMessage, 'error');
+                                NotificationService.notify('Error during starting: ' + response.globalMessage, 'error');
                                 return;
                             }
                             //Notify user
@@ -237,9 +237,9 @@ app.controller('ComponentDetailsController',
                 //Execute stop request
                 ComponentService.stopComponent(COMPONENT_ID, COMPONENT_TYPE).then(function (response) {
                         //Success, check if everything worked well
-                        if (!response.data.success) {
+                        if (!response.success) {
                             vm.deploymentState = 'UNKNOWN';
-                            NotificationService.notify('Error during stopping: ' + response.data.globalMessage, 'error');
+                            NotificationService.notify('Error during stopping: ' + response.globalMessage, 'error');
                             return;
                         }
                         //Notify user
@@ -360,7 +360,7 @@ app.controller('ComponentDetailsController',
                 function getStats(unit) {
                     return ComponentService.getValueLogStats(COMPONENT_ID, COMPONENT_TYPE_URL, unit).then(function (response) {
                         //Success, pass statistics data
-                        return response.data;
+                        return response;
                     }, function (response) {
                         //Failure
                         NotificationService.notify('Could not load value log statistics.', 'error');
@@ -456,7 +456,7 @@ app.controller('ComponentDetailsController',
              */
             function initParameters() {
                 //Retrieve all formal parameters for this component
-                var requiredParams = componentDetails._embedded.adapter.parameters;
+                var requiredParams = componentDetails.adapter.parameters;
 
                 //Iterate over all parameters
                 for (var i = 0; i < requiredParams.length; i++) {

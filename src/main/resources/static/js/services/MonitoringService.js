@@ -134,7 +134,7 @@ app.factory('MonitoringService', ['HttpService', '$resource', '$q', 'ENDPOINT_UR
             //Execute request
             return HttpService.getRequest(URL_MONITORING_PREFIX + deviceId + URL_VALUE_LOGS_SUFFIX, parameters).then(function (response) {
                 //Process received logs in order to be able to display them in a chart
-                return ComponentService.processValueLogs(response.data.content);
+                return ComponentService.processValueLogs(response.content);
             });
         }
 

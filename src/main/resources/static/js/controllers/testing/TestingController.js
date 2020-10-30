@@ -93,9 +93,9 @@ app.controller('TestingController',
 
                 $http.get(ENDPOINT_URI + '/test-details/pdfExists/' + testId).then(function (response) {
 
-                    if (response.data === "true") {
+                    if (response === "true") {
                         document.getElementById(testName).disabled = false;
-                    } else if (response.data === "false") {
+                    } else if (response === "false") {
 
                         document.getElementById(testName).disabled = true;
                     }

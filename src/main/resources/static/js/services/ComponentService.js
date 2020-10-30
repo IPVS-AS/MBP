@@ -118,7 +118,7 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
                 params: parameters
             }).then(function (response) {
                 //Process received logs in order to be able to display them in a chart
-                return processValueLogs(response.data.content);
+                return processValueLogs(response.content);
             });
         }
 

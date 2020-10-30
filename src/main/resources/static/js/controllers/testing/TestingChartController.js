@@ -93,7 +93,7 @@ app.controller('TestingChartController',
                 //Retrieve the state of the current component
                 ComponentService.getComponentState(COMPONENT_ID, COMPONENT_TYPE_URL).then(function (response) {
                     //Success
-                    vm.deploymentState = response.data.content;
+                    vm.deploymentState = response.content;
                 }, function (response) {
                     //Failure
                     vm.deploymentState = 'UNKNOWN';
@@ -115,7 +115,7 @@ app.controller('TestingChartController',
                 //Retrieve device state
                 DeviceService.getDeviceState(vm.sensor._embedded.device.id).then(function (response) {
                     //Success
-                    vm.deviceState = response.data.content;
+                    vm.deviceState = response.content;
                 }, function (response) {
                     //Failure
                     vm.deviceState = 'UNKNOWN';
@@ -136,7 +136,7 @@ app.controller('TestingChartController',
                 //Check whether the entered unit is compatible with the adapter unit
                 UnitService.checkUnitsForCompatibility(COMPONENT_ADAPTER_UNIT, inputUnit).then(function (response) {
                     //Check compatibility according to server response
-                    if (!response.data) {
+                    if (!response) {
                         NotificationService.notify("The entered unit is not compatible to the adapter unit.", "error");
                         return;
                     }
@@ -159,8 +159,8 @@ app.controller('TestingChartController',
                     var pdfList = {};
                     vm.pdfDetails = [];
 
-                    if (Object.keys(response.data).length > 0) {
-                        angular.forEach(response.data, function (value, key) {
+                    if (Object.keys(response).length > 0) {
+                        angular.forEach(response, function (value, key) {
                             vm.pdfDetails.push({
                                 "date": key,
                                 "path": value
@@ -322,7 +322,7 @@ app.controller('TestingChartController',
                 function getStats(unit) {
                     return ComponentService.getValueLogStats(COMPONENT_ID, COMPONENT_TYPE_URL, unit).then(function (response) {
                         //Success, pass statistics data
-                        return response.data;
+                        return response;
                     }, function (response) {
                         //Failure
                         NotificationService.notify('Could not load value log statistics.', 'error');
