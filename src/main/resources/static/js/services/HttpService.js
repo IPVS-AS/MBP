@@ -79,26 +79,37 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
 
         /**
          * [Private]
-         * Performs a POST request with a given payload and returns the resulting promise.
+         * Performs a POST request with a given payload and returns the resulting promise. Optionally,
+         * an expected data type for the request response can be provided.
          * @param url The URl of the request
          * @param payload The payload of the POST request
+         * @param dataType Optional expected data type of the request response.
+         * If not set, 'json' will be used as default. If null, jQuery will try to guess the type of the response
          * @returns {*|void} The resulting promise
          */
-        function postRequest(url, payload) {
+        function postRequest(url, payload, dataType) {
             //Sanitize payload
             payload = payload || {};
 
             //Debug message
             debug("Initiating POST request at " + url + " with payload:", payload);
 
-            //Perform request
-            return $.ajax({
+            //Define request options
+            let requestOptions = {
                 type: "POST",
                 url: url,
                 data: JSON.stringify(payload),
                 dataType: "json",
                 headers: generateHeader()
-            }).done(function (response) {
+            };
+
+            //Set data type if not null
+            if (dataType != null) {
+                requestOptions.dataType = dataType || 'json';
+            }
+
+            //Perform request
+            return $.ajax(requestOptions).done(function (response) {
                 //Debug message
                 debug("Request succeeded, response:", response);
 
@@ -191,7 +202,7 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
                         && ((typeof response.message === 'string') || (response.message instanceof String))) {
                         return response.message;
                     }
-    
+
                     //Check for responseJSON
                     if ((response.hasOwnProperty('responseJSON') && response.responseJSON.hasOwnProperty('message')) &&
                         (typeof response.responseJSON.message === 'string') || (response.responseJSON.message instanceof String)) {
