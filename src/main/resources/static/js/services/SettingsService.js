@@ -36,7 +36,7 @@ app.factory('SettingsService', ['HttpService', 'ENDPOINT_URI',
          * @returns {*}
          */
         function saveSettings(settings) {
-            return HttpService.postRequest(url, settings);
+            return HttpService.postRequest(URL_SETTINGS, settings);
         }
 
         /**
