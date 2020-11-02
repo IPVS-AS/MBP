@@ -136,12 +136,17 @@
                                     ng-class="{'focused error' : addPolicyCtrl.item.errors.accessTypes }">
                                     <select multiple class="form-control show-tick" ng-model="addPolicyCtrl.item.accessTypes">
                                         <!-- <option disabled selected value>Access Types *</option> -->
-                                        <option value="READ">READ</option>
-                                        <option value="UPDATE">UPDATE</option>
-                                        <option value="DELETE">DELETE</option>
-                                        <option value="START">START</option>
-                                        <option value="STOP">STOP</option>
-                                        <option value="EXECUTE">EXECUTE</option>
+                                        <option value="READ">Read</option>
+                                        <option value="READ_VALUE_LOGS">Read Value Logs</option>
+                                        <option value="READ_VALUE_LOG_STATS">Read Value Log Stats</option>
+                                        <option value="DELETE_VALUE_LOGS">Delete Value Logs</option>
+                                        <option value="UPDATE">Update</option>
+                                        <option value="DELETE">Delete</option>
+                                        <option value="MONITOR">Monitor</option>
+                                        <option value="DEPLOY">Deploy</option>
+                                        <option value="UNDEPLOY">Undeploy</option>
+                                        <option value="START">Start</option>
+                                        <option value="STOP">Stop</option>
                                     </select>
                                 </div>
                                 <span class="help-block"
