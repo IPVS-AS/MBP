@@ -373,6 +373,7 @@ public class SSHDeployer {
 			String returnValue = stdOutStream.toString().toLowerCase();
 			return returnValue.contains("true");
 		} catch (Exception e) {
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
 			LOGGER.log(Level.INFO, "Adapter has not been deployed yet or is not running");
 		}
 		return false;
