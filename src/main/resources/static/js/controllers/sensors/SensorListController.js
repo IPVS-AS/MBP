@@ -9,7 +9,7 @@ app.controller('SensorListController',
         function ($scope, $controller, $interval, sensorList, addSensor, deleteSensor,
                   deviceList, adapterList, sensorTypesList, accessControlPolicyList, ComponentService,
                   NotificationService) {
-            var vm = this;
+            let vm = this;
 
             vm.adapterList = adapterList;
             vm.deviceList = deviceList;
@@ -37,7 +37,7 @@ app.controller('SensorListController',
             })();
 
             //Extend each sensor in sensorList for a state and a reload function
-            for (var i in sensorList) {
+            for (let i in sensorList) {
                 sensorList[i].state = 'LOADING';
                 sensorList[i].reloadState = createReloadStateFunction(sensorList[i].id);
             }
@@ -66,7 +66,7 @@ app.controller('SensorListController',
                 let sensorName = "";
 
                 //Determines the sensor's name by checking all sensors in the sensor list
-                for (var i = 0; i < sensorList.length; i++) {
+                for (let i = 0; i < sensorList.length; i++) {
                     if (sensorId === sensorList[i].id) {
                         sensorName = sensorList[i].name;
                         break;
@@ -108,8 +108,8 @@ app.controller('SensorListController',
              */
             function getSensorState(id) {
                 //Resolve sensor object of the affected sensor
-                var sensor = null;
-                for (var i = 0; i < sensorList.length; i++) {
+                let sensor = null;
+                for (let i = 0; i < sensorList.length; i++) {
                     if (sensorList[i].id === id) {
                         sensor = sensorList[i];
                     }
@@ -129,6 +129,8 @@ app.controller('SensorListController',
                 }, function (response) {
                     sensor.state = 'UNKNOWN';
                     NotificationService.notify("Could not retrieve the sensor state.", "error");
+                }).then(function () {
+                    $scope.$apply()
                 });
             }
 
@@ -139,19 +141,19 @@ app.controller('SensorListController',
              */
             function loadSensorStates() {//Perform server request
 
-                ComponentService.getAllComponentStates('sensors').then(function (response) {
-                    var statesMap = response;
-
+                ComponentService.getAllComponentStates('sensors').then(function (statesMap) {
                     //Iterate over all sensors in sensorList and update the states of all sensors accordingly
-                    for (var i in sensorList) {
-                        var sensorId = sensorList[i].id;
+                    for (let i in sensorList) {
+                        let sensorId = sensorList[i].id;
                         sensorList[i].state = statesMap[sensorId];
                     }
                 }, function (response) {
-                    for (var i in sensorList) {
+                    for (let i in sensorList) {
                         sensorList[i].state = 'UNKNOWN';
                     }
                     NotificationService.notify("Could not retrieve sensor states.", "error");
+                }).then(function () {
+                    $scope.$apply();
                 });
             }
 
@@ -183,7 +185,7 @@ app.controller('SensorListController',
                 },
                 function () {
                     //Callback
-                    var sensor = vm.addSensorCtrl.result;
+                    let sensor = vm.addSensorCtrl.result;
 
                     if (sensor) {
                         //Close modal on success
@@ -209,7 +211,7 @@ app.controller('SensorListController',
                     return vm.deleteSensorCtrl.result;
                 },
                 function () {
-                    var id = vm.deleteSensorCtrl.result;
+                    let id = vm.deleteSensorCtrl.result;
 
                     vm.sensorListCtrl.removeItem(id);
                 }

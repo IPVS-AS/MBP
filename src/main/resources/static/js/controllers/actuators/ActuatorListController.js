@@ -7,7 +7,7 @@ app.controller('ActuatorListController',
     ['$scope', '$controller', '$interval', 'actuatorList', 'addActuator', 'deleteActuator',
         'accessControlPolicyList', 'deviceList', 'adapterList', 'actuatorTypesList', 'ComponentService', 'NotificationService',
         function ($scope, $controller, $interval, actuatorList, addActuator, deleteActuator,
-            accessControlPolicyList, deviceList, adapterList, actuatorTypesList, ComponentService, NotificationService) {
+                  accessControlPolicyList, deviceList, adapterList, actuatorTypesList, ComponentService, NotificationService) {
             let vm = this;
 
             vm.adapterList = adapterList;
@@ -31,7 +31,7 @@ app.controller('ActuatorListController',
             })();
 
             //Extend each actuator in actuatorList for a state and a reload function
-            for (var i in actuatorList) {
+            for (let i in actuatorList) {
                 actuatorList[i].state = 'LOADING';
                 actuatorList[i].reloadState = createReloadStateFunction(actuatorList[i].id);
             }
@@ -60,7 +60,7 @@ app.controller('ActuatorListController',
                 let actuatorName = "";
 
                 //Determines the actuator's name by checking all actuators in the actuator list
-                for (var i = 0; i < actuatorList.length; i++) {
+                for (let i = 0; i < actuatorList.length; i++) {
                     if (actuatorId === actuatorList[i].id) {
                         actuatorName = actuatorList[i].name;
                         break;
@@ -102,8 +102,8 @@ app.controller('ActuatorListController',
              */
             function getActuatorState(id) {
                 //Resolve actuator object of the affected actuator
-                var actuator = null;
-                for (var i = 0; i < actuatorList.length; i++) {
+                let actuator = null;
+                for (let i = 0; i < actuatorList.length; i++) {
                     if (actuatorList[i].id === id) {
                         actuator = actuatorList[i];
                     }
@@ -123,6 +123,8 @@ app.controller('ActuatorListController',
                 }, function (response) {
                     actuator.state = 'UNKNOWN';
                     NotificationService.notify("Could not retrieve the actuator state.", "error");
+                }).then(function () {
+                    $scope.$apply();
                 });
             }
 
@@ -133,19 +135,19 @@ app.controller('ActuatorListController',
              */
             function loadActuatorStates() {//Perform server request
 
-                ComponentService.getAllComponentStates('actuators').then(function (response) {
-                    var statesMap = response;
-
+                ComponentService.getAllComponentStates('actuators').then(function (statesMap) {
                     //Iterate over all actuators in actuatorList and update the states of all actuators accordingly
-                    for (var i in actuatorList) {
-                        var actuatorId = actuatorList[i].id;
+                    for (let i in actuatorList) {
+                        let actuatorId = actuatorList[i].id;
                         actuatorList[i].state = statesMap[actuatorId];
                     }
                 }, function (response) {
-                    for (var i in actuatorList) {
+                    for (let i in actuatorList) {
                         actuatorList[i].state = 'UNKNOWN';
                     }
                     NotificationService.notify("Could not retrieve actuator states.", "error");
+                }).then(function () {
+                    $scope.$apply();
                 });
             }
 
@@ -177,7 +179,7 @@ app.controller('ActuatorListController',
                 },
                 function () {
                     //Callback
-                    var actuator = vm.addActuatorCtrl.result;
+                    let actuator = vm.addActuatorCtrl.result;
 
                     if (actuator) {
                         //Close modal on success

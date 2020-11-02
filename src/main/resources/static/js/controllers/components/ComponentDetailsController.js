@@ -85,6 +85,7 @@ app.controller('ComponentDetailsController',
                 }).then(function () {
                     //Finally hide the waiting screen again
                     hideDeploymentWaitingScreen();
+                    $scope.$apply();
                 });
             }
 
@@ -104,6 +105,8 @@ app.controller('ComponentDetailsController',
                     //Failure
                     vm.deviceState = 'UNKNOWN';
                     NotificationService.notify('Could not load device state.', 'error');
+                }).then(function () {
+                    $scope.$apply();
                 });
             }
 
@@ -160,6 +163,7 @@ app.controller('ComponentDetailsController',
                     }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
+                    $scope.$apply();
                 });
             }
 
@@ -191,6 +195,7 @@ app.controller('ComponentDetailsController',
                     }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
+                    $scope.$apply();
                 });
             }
 
@@ -223,6 +228,7 @@ app.controller('ComponentDetailsController',
                         }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
+                    $scope.$apply();
                 });
             }
 
@@ -253,6 +259,7 @@ app.controller('ComponentDetailsController',
                     }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
+                    $scope.$apply();
                 });
             }
 

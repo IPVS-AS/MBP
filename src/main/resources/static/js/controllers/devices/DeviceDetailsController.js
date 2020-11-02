@@ -37,9 +37,9 @@ app.controller('DeviceDetailsController',
                 vm.compatibleAdapters = compatibleAdapters;
 
                 //Prepare monitoring adapter objects
-                for (var i = 0; i < compatibleAdapters.length; i++) {
+                for (let i = 0; i < compatibleAdapters.length; i++) {
                     //Retrieve adapter
-                    var adapter = vm.compatibleAdapters[i];
+                    let adapter = vm.compatibleAdapters[i];
 
                     //Add required properties
                     adapter.enable = false;
@@ -67,7 +67,7 @@ app.controller('DeviceDetailsController',
                 initParameters();
 
                 //Interval for updating states on a regular basis
-                var interval = $interval(function () {
+                let interval = $interval(function () {
                     updateDeviceState(true);
                     loadMonitoringAdaptersStates();
                 }, 2 * 60 * 1000);
@@ -93,12 +93,12 @@ app.controller('DeviceDetailsController',
                 //Create function and return it
                 return function () {
                     //Try to find an monitoring adapter with this id
-                    var adapter = getMonitoringAdapterById(monitoringAdapterId);
+                    let adapter = getMonitoringAdapterById(monitoringAdapterId);
                     if (adapter == null) {
                         return;
                     }
 
-                    return adapter.state == 'RUNNING';
+                    return adapter.state === 'RUNNING';
                 }
             }
 
@@ -181,13 +181,13 @@ app.controller('DeviceDetailsController',
                 //Create function and return it
                 return function () {
                     //Try to find an monitoring adapter with this id
-                    var adapter = getMonitoringAdapterById(monitoringAdapterId);
+                    let adapter = getMonitoringAdapterById(monitoringAdapterId);
                     if (adapter == null) {
                         return;
                     }
 
                     //Get index of adapter in adapter list
-                    var index = compatibleAdapters.indexOf(adapter)
+                    let index = compatibleAdapters.indexOf(adapter)
 
                     //Check what the user wants
                     if (adapter.enable) {
@@ -208,7 +208,7 @@ app.controller('DeviceDetailsController',
                 //Create function and return it
                 return function () {
                     //Try to find an monitoring adapter with this id
-                    var adapter = getMonitoringAdapterById(monitoringAdapterId);
+                    let adapter = getMonitoringAdapterById(monitoringAdapterId);
                     if (adapter == null) {
                         return;
                     }
@@ -223,6 +223,8 @@ app.controller('DeviceDetailsController',
                     }, function (response) {
                         adapter.state = 'UNKNOWN';
                         NotificationService.notify("Could not retrieve monitoring state.", "error");
+                    }).then(function () {
+                        $scope.$apply();
                     });
                 };
             }
@@ -238,7 +240,7 @@ app.controller('DeviceDetailsController',
                 //Create function and return it
                 return function () {
                     //Try to find an monitoring adapter with this id
-                    var adapter = getMonitoringAdapterById(monitoringAdapterId);
+                    let adapter = getMonitoringAdapterById(monitoringAdapterId);
                     if (adapter == null) {
                         return;
                     }
@@ -288,7 +290,7 @@ app.controller('DeviceDetailsController',
                     }
 
                     //Try to find an monitoring adapter with this id
-                    var adapter = getMonitoringAdapterById(monitoringAdapterId);
+                    let adapter = getMonitoringAdapterById(monitoringAdapterId);
                     if (adapter == null) {
                         return;
                     }
@@ -324,10 +326,10 @@ app.controller('DeviceDetailsController',
              * @returns {*}
              */
             function getMonitoringAdapterById(monitoringAdapterId) {
-                var adapter = null;
+                let adapter = null;
 
                 //Iterate over all adapters and find the matching one
-                for (var i = 0; i < compatibleAdapters.length; i++) {
+                for (let i = 0; i < compatibleAdapters.length; i++) {
                     if (monitoringAdapterId === compatibleAdapters[i].id) {
                         adapter = compatibleAdapters[i];
                         break;
@@ -344,17 +346,15 @@ app.controller('DeviceDetailsController',
              */
             function loadMonitoringAdaptersStates() {
                 //Perform server request
-                MonitoringService.getDeviceMonitoringState(DEVICE_ID).then(function (response) {
-                    var statesMap = response;
-
+                MonitoringService.getDeviceMonitoringState(DEVICE_ID).then(function (statesMap) {
                     //Iterate over all compatible adapters and update all states accordingly
-                    for (var i in compatibleAdapters) {
-                        var componentId = compatibleAdapters[i].id + "@" + DEVICE_ID;
+                    for (let i in compatibleAdapters) {
+                        let componentId = compatibleAdapters[i].id + "@" + DEVICE_ID;
                         compatibleAdapters[i].state = statesMap[componentId];
-                        compatibleAdapters[i].enable = (compatibleAdapters[i].state == "RUNNING");
+                        compatibleAdapters[i].enable = (compatibleAdapters[i].state === "RUNNING");
                     }
                 }, function (response) {
-                    for (var i in compatibleAdapters) {
+                    for (let i in compatibleAdapters) {
                         compatibleAdapters[i].state = 'UNKNOWN';
                     }
                     NotificationService.notify("Could not retrieve monitoring adapter states.", "error");
@@ -392,6 +392,7 @@ app.controller('DeviceDetailsController',
                     }).then(function () {
                     //Finally hide the waiting screen
                     hideMonitoringControlWaitingScreen();
+                    $scope.$apply();
                 });
             }
 
@@ -425,6 +426,7 @@ app.controller('DeviceDetailsController',
                     }).then(function () {
                     //Finally hide the waiting screen
                     hideMonitoringControlWaitingScreen();
+                    $scope.$apply()
                 });
             }
 
@@ -443,7 +445,7 @@ app.controller('DeviceDetailsController',
              */
             function retrieveMonitoringData(monitoringAdapterId, numberLogs, descending, unit) {
                 //Set default order
-                var order = 'asc';
+                let order = 'asc';
 
                 //Check for user option
                 if (descending) {
@@ -451,7 +453,7 @@ app.controller('DeviceDetailsController',
                 }
 
                 //Initialize parameters for the server request
-                var pageDetails = {
+                let pageDetails = {
                     sort: 'time,' + order,
                     size: numberLogs
                 };
@@ -466,18 +468,18 @@ app.controller('DeviceDetailsController',
              */
             function initParameters() {
                 //Extend parameter array for one array per compatible adapter
-                for (var i = 0; i < compatibleAdapters.length; i++) {
+                for (let i = 0; i < compatibleAdapters.length; i++) {
                     //Get formal parameters for the current adapter
-                    var formalParams = compatibleAdapters[i].parameters;
+                    let formalParams = compatibleAdapters[i].parameters;
 
                     //Array for the parameters of the current adapter
-                    var adapterParameterArray = [];
+                    let adapterParameterArray = [];
 
                     //Iterate over all formal parameters
-                    for (var j = 0; j < formalParams.length; j++) {
+                    for (let j = 0; j < formalParams.length; j++) {
                         //Set empty default values for the current parameter
-                        var value = "";
-                        if (formalParams[j].type == "Switch") {
+                        let value = "";
+                        if (formalParams[j].type === "Switch") {
                             value = false;
                         }
 
@@ -571,6 +573,7 @@ app.controller('DeviceDetailsController',
                 }).then(function () {
                     //Finally hide the waiting screen again
                     hideDetailsWaitingScreen();
+                    $scope.$apply()
                 });
             }
 
