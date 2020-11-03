@@ -69,18 +69,21 @@ public class GraphPlotter {
         Map<String, LinkedHashMap<Long,Double>> simulationLists = test.getSimulationList();
         Iterator it = simulationLists.entrySet().iterator();
 
-        while (it.hasNext()) {
-            double counter = 0.0;
-            Map.Entry pair = (Map.Entry) it.next();
-            String object = String.valueOf(pair.getKey());
-            XYSeries series = new XYSeries(object);
-            Map<Long, Double> simVal = (Map<Long, Double>) pair.getValue();
-            for (Map.Entry<Long, Double> entry : simVal.entrySet()) {
-                series.add(counter, entry.getValue());
-                counter +=1.0;
+        if(test.isUseNewData()){
+            while (it.hasNext()) {
+                double counter = 0.0;
+                Map.Entry pair = (Map.Entry) it.next();
+                String object = String.valueOf(pair.getKey());
+                XYSeries series = new XYSeries(object);
+                Map<Long, Double> simVal = (Map<Long, Double>) pair.getValue();
+                for (Map.Entry<Long, Double> entry : simVal.entrySet()) {
+                    series.add(counter, entry.getValue());
+                    counter +=1.0;
+                }
+                dataSet.addSeries(series);
             }
-            dataSet.addSeries(series);
         }
+
 
 
         return dataSet;

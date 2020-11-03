@@ -6,6 +6,7 @@ from datetime import datetime
 import time
 import os
 import json
+import ast
 
 ########## Config ##########
 PORT = 1883
@@ -49,7 +50,9 @@ class mqttClient(object):
 
 
 def main(argv):
-    print(argv[0])
+    #print(argv)
+    #print(argv[0])
+
 
     # default interval for sending data
     sendingInterval = [30]
@@ -57,14 +60,23 @@ def main(argv):
 
     # Read other interval informations from parameter data
     paramArray = json.loads(argv[0])
+    print(paramArray)
+    test =[]
+
+    #stringReplacement = str(param3["value"])
+    #replacedStr = stringReplacement.replace("-", ", ")
+    #print(replacedStr)
+
+
     for param in paramArray:
+        print(param)
         if not ('name' in param and 'value' in param):
             continue
         else:
             if(param["name"] == 'interval'):
-                sendingInterval = param["value"]
+                sendingInterval = str(param["value"]).replace("-", ", ")
             elif(param["name"] == 'value'):
-                sensorVals = param["value"]
+                sensorVals = str(param["value"]).replace("-", ", ")
 
 
     configFileName = "connections.txt"
@@ -105,13 +117,14 @@ def main(argv):
 
     # --- Begin start mqtt client
     id = "id_%s" % (datetime.utcnow().strftime('%H_%M_%S'))
-    print(id)
     publisher = mqttClient(hostname, 1883, id)
     publisher.start()
 
 
 
     try:
+        sensorVals = eval(sensorVals)
+        sendingInterval = eval(sendingInterval)
         startTime = sendingInterval[0]
         counter = 1
         # This loop ensures your code runs continuously,

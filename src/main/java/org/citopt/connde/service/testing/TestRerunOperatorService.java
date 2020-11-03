@@ -38,10 +38,6 @@ public class TestRerunOperatorService {
     @Autowired
     private AdapterRepository adapterRepository;
 
-    @Autowired
-    private TestDetailsRepository testDetailsRepository;
-
-
     private static final String DESCRIPTOR_FILE = "operator.json";
 
     /**

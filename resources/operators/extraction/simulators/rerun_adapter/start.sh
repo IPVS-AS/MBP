@@ -1,3 +1,4 @@
 #!/bin/bash
 cd $1
-nohup python3 rerun.py > start.log &
+sudo nohup python3 rerun.py $2> start.log &
+

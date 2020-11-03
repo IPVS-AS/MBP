@@ -248,44 +248,64 @@ public class TestEngine implements ValueLogReceiverObserver {
 
         if(!testDetails.isUseNewData()){
 
-            List<ParameterInstance> parameters = new ArrayList<>();
-            List<Long> intervals = new ArrayList<>();
-            List<Double> values = new ArrayList<>();
 
             for (Sensor sensor : testingSensor) {
+                List<ParameterInstance> parameters = new ArrayList<>();
+
+                List<ParameterInstance> parametersWrapper = new ArrayList<>();
+                List<Long> intervals = new ArrayList<>();
+                List<Double> values = new ArrayList<>();
+
                 // If not a sensor simulator
                 if(!sensorSimulators.contains(sensor)){
-                    /**
-                    if( !restDeploymentController.isRunningSensor(sensor.getId()).getBody()){
-                        //if not deploy Sensor
-                            restDeploymentController.deploySensor((sensor.getId()));
-                    }**/
 
                     restDeploymentController.stopSensor(sensor.getId());
 
-                    Map<String, LinkedHashMap<Long, Double>> entry3 =  testDetails.getSimulationList();
                     for (Map.Entry<String, LinkedHashMap<Long, Double>> entry : testDetails.getSimulationList().entrySet()) {
                         if (entry.getKey().equals(sensor.getName())) {
-                            ParameterInstance intervalParam = new ParameterInstance();
-                            intervalParam.setName("interval");
-                            ParameterInstance valueParam = new ParameterInstance();
-                            valueParam.setName("value");
-                            for (Map.Entry<Long, Double> interval : entry.getValue().entrySet()) {
-                                intervals.add(interval.getKey());
-                                values.add(interval.getValue());
+                            String intervalString = "[";
+                            String valueString = "[";
+                            String wholeString ="";
+                            String comma = "-";
+
+
+
+                            for (Iterator<Map.Entry<Long, Double>> iterator = entry.getValue().entrySet().iterator(); iterator.hasNext(); ) {
+
+                                Map.Entry<Long, Double> interval = iterator.next();
+                                if(!iterator.hasNext()){
+                                    comma = "";
+                                }
+                                intervalString = intervalString + interval.getKey().toString() + comma;
+                                valueString = valueString + interval.getValue().toString() + comma;
+
+
                             }
-                            intervalParam.setValue(intervals);
-                            valueParam.setValue(values);
-                            if (parameters != null) {
-                                parameters.add(intervalParam);
-                                parameters.add(valueParam);
-                            }
+                            intervalString = intervalString + "]";
+                            valueString = valueString + "]";
+                            ParameterInstance interval = new ParameterInstance();
+                            interval.setName("interval");
+                            interval.setValue(intervalString);
+                            ParameterInstance value= new ParameterInstance();
+                            value.setName("value");
+                            value.setValue(valueString);
+                            parametersWrapper.add(interval);
+                            parametersWrapper.add(value);
+
+
 
 
                         }
                     }
+
+
                     Sensor rerunSensor = sensorRepository.findByName("RERUN_"+sensor.getName());
-                    restDeploymentController.startSensor(rerunSensor.getId(),parameters);
+                    ResponseEntity<Boolean> sensorDeployed = restDeploymentController.isRunningSensor(rerunSensor.getId());
+                    if (!sensorDeployed.getBody()) {
+                        //if not deploy Sensor
+                        restDeploymentController.deploySensor((rerunSensor.getId()));
+                    }
+                    restDeploymentController.startSensor(rerunSensor.getId(),parametersWrapper);
                 }
             }
 
@@ -595,6 +615,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      * @param realSensorName
      */
     public void addRerunSensor(String realSensorName) {
+        //TODO Just add sensor if operator exists
         Sensor newSensor = new Sensor();
         // New sensor is nor owned by anyone
         newSensor.setOwner(null);
