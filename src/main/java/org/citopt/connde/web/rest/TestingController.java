@@ -210,7 +210,7 @@ public class TestingController {
         TestDetails testDetails = testDetailsRepository.findById(testId);
         List<List<ParameterInstance>> configList = testDetails.getConfig();
 
-        if (Boolean.valueOf(useNewData) == false) {
+        if (!Boolean.valueOf(useNewData)) {
             testDetails.setUseNewData(false);
             testDetailsRepository.save(testDetails);
             addRerunOperators();
@@ -218,7 +218,7 @@ public class TestingController {
                 for (ParameterInstance parameterInstance : config) {
                     if (parameterInstance.getName().equals("ConfigName")) {
                         if(!sensorSimulators.contains(parameterInstance.getValue())){
-                            testEngine.addRerunSensor(parameterInstance.getValue().toString());
+                            testEngine.addRerunSensor(parameterInstance.getValue().toString(), testDetails);
 
                         }
                     }
@@ -239,6 +239,9 @@ public class TestingController {
                             Sensor sensorReuse = sensorRepository.findByName(reuseName);
                             if(sensorReuse != null){
                                 sensorRepository.delete(sensorReuse);
+                                testDetails.getSensor().remove(sensorReuse);
+                                testDetailsRepository.save(testDetails);
+                                //TODO schau ob das so geht
                             }
                         }
                     }
