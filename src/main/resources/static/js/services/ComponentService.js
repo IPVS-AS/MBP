@@ -49,6 +49,13 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             return HttpService.postRequest(URL_STOP_COMPONENT + componentType + '/' + componentId, null, null);
         }
 
+        function deployComponent(url) {
+            return HttpService.postRequest(url, {}, null);
+        }
+
+        function undeployComponent(url) {
+            return HttpService.deleteRequest(url);
+        }
 
         /**
          * [Public]
@@ -207,14 +214,8 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             deleteValueLogs: deleteValueLogs,
             startComponent: startComponent,
             stopComponent: stopComponent,
-
-            deploy: function (url) {
-                return HttpService.postRequest(url);
-            },
-
-            undeploy: function (url) {
-                return HttpService.deleteRequest(url);
-            }
+            deploy: deployComponent,
+            undeploy: undeployComponent
         };
     }
 ]);
