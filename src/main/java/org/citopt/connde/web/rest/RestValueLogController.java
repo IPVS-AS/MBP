@@ -1,5 +1,8 @@
 package org.citopt.connde.web.rest;
 
+import java.io.File;
+import java.io.FileWriter;
+
 import javax.measure.converter.UnitConverter;
 import javax.measure.quantity.Quantity;
 import javax.measure.unit.Unit;
@@ -204,7 +207,7 @@ public class RestValueLogController {
 	 */
 	private <C extends Component> Page<ValueLog> getValueLogs(C component, String unit, Pageable pageable, ACAccessRequest accessRequest) throws MissingPermissionException, EntityNotFoundException {
 		ACPolicy policy = null;
-		if (!userEntityService.checkAdmin() && userEntityService.checkOwner(component)) {			
+		if (!userEntityService.checkAdmin() && !userEntityService.checkOwner(component)) {			
 			// Check permission (if access is granted, the policy that grants access is returned)
 			policy = userEntityService.getFirstPolicyGrantingAccess(component, ACAccessType.READ_VALUE_LOGS, accessRequest)
 					.orElseThrow(() -> new MissingPermissionException("Component", component.getId(), ACAccessType.READ_VALUE_LOGS));
@@ -233,11 +236,46 @@ public class RestValueLogController {
 			}
 		}
 		
-		// Apply effect (constraints)
-		if (policy != null && policy.getEffectId() != null) {
-			ACAbstractEffect effect = effectService.getForId(policy.getEffectId());
-			page.forEach(effect::apply);
+		String filename = "/Users/jakob/Desktop/log3.txt";
+		if (new File(filename).exists()) {
+			new File(filename).delete();
 		}
+		try {
+			FileWriter fw = new FileWriter(filename);
+			try { fw.write("1: " + (policy == null) + "\n"); } catch (Exception e) { e.printStackTrace(); }
+			try { fw.write("2: " + (policy.getEffectId() == null) + "\n"); } catch (Exception e) { e.printStackTrace(); }
+			
+			
+			// - - -
+			// Keep this
+			for (ValueLog l : page) {
+				try { fw.write("V1: " + l.getValue() + "\n"); } catch (Exception e) { e.printStackTrace(); }
+			}
+			
+			// Apply effect (constraints)
+			if (policy != null && policy.getEffectId() != null) {
+				ACAbstractEffect effect = effectService.getForId(policy.getEffectId());
+				try { fw.write("3: " + (effect == null) + "\n"); } catch (Exception e) { e.printStackTrace(); }
+				page.forEach(effect::apply);
+				for (ValueLog l : page) {
+					try { fw.write("4: " + effect.apply(l) + "\n"); } catch (Exception e) { e.printStackTrace(); fw.write("4.1: " + e.getMessage() + "\n"); }
+				}
+			}
+			// - - -
+			
+			for (ValueLog l : page) {
+				try { fw.write("V3: " + l.getValue() + "\n"); } catch (Exception e) { e.printStackTrace(); }
+			}
+			
+			fw.flush();
+			fw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+		
+		
 		
 		return page;
 	}

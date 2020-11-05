@@ -33,7 +33,7 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
          * @returns {*}
          */
         function startComponent(componentId, componentType, parameterList) {
-            return HttpService.postRequest(URL_START_COMPONENT + componentType + '/' + componentId, parameterList);
+            return HttpService.postRequest(URL_START_COMPONENT + componentType + '/' + componentId, parameterList, null);
         }
 
 
@@ -46,7 +46,7 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
          * @returns {*}
          */
         function stopComponent(componentId, componentType) {
-            return HttpService.postRequest(URL_STOP_COMPONENT + componentType + '/' + componentId);
+            return HttpService.postRequest(URL_STOP_COMPONENT + componentType + '/' + componentId, null, null);
         }
 
 
@@ -133,7 +133,7 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
          */
         function deleteValueLogs(componentId, component) {
             //Execute request
-            return HttpService.deleteRequest(URL_PREFIX + component + 's/' + componentId + URL_VALUE_LOGS_SUFFIX);
+            return HttpService.deleteRequest(URL_PREFIX + component + 's/' + componentId + URL_VALUE_LOGS_SUFFIX, null, null);
         }
 
 

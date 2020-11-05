@@ -10,27 +10,22 @@ public enum ACAttributeKey {
 	/**
 	 * The username of the requesting entity.
 	 */
-	REQUESTING_ENTITY_USERNAME("username", "The username of the requesting entity (user).", String.class, "username", ACEntityType.REQUESTING_ENTITY),
+	REQUESTING_ENTITY_USERNAME("requesting-entity-username", "The username of the requesting entity (user).", String.class, "username", ACEntityType.REQUESTING_ENTITY),
 	
 	/**
 	 * The first name of the requesting entity.
 	 */
-	REQUESTING_ENTITY_FIRSTNAME("firstname", "The first name of the requesting entity (user).", String.class, "firstName", ACEntityType.REQUESTING_ENTITY),
+	REQUESTING_ENTITY_FIRSTNAME("requesting-entity-firstname", "The first name of the requesting entity (user).", String.class, "firstName", ACEntityType.REQUESTING_ENTITY),
 	
 	/**
 	 * The last name of the requesting entity.
 	 */
-	REQUESTING_ENTITY_LASTNAME("lastname", "The last name of the requesting entity (user).", String.class, "lastName", ACEntityType.REQUESTING_ENTITY),
-	
-//	/**
-//	 * The last name of the requesting entity.
-//	 */
-//	REQUESTING_ENTITY_DEMO_1("lastname", "The last name of the requesting entity (user).", String.class, "lastName", ACEntityType.REQUESTING_ENTITY),
+	REQUESTING_ENTITY_LASTNAME("requesting-entity-lastname", "The last name of the requesting entity (user).", String.class, "lastName", ACEntityType.REQUESTING_ENTITY),
 	
 	/**
 	 * The last name of the requesting entity.
 	 */
-	REQUESTING_ENTITY_IS_ADMIN("isAdmin", "The admin status of the equesting entity (user).", String.class, "isAdmin", ACEntityType.REQUESTING_ENTITY),
+	REQUESTING_ENTITY_IS_ADMIN("requesting-entity-isAdmin", "The admin status of the equesting entity (user).", String.class, "isAdmin", ACEntityType.REQUESTING_ENTITY),
 	
 	/**
 	 * <b>NOT INTENDED FOR USE!</b>

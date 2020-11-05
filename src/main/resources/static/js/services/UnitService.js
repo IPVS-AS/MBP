@@ -31,7 +31,7 @@ app.factory('UnitService', ['HttpService', 'ENDPOINT_URI', function (HttpService
             url = URL_UNITS_COMPATIBLE;
         }
 
-        return HttpService.getRequest(url, {params: parameters});
+        return HttpService.getRequest(url, parameters);
     }
 
     /**
@@ -49,7 +49,7 @@ app.factory('UnitService', ['HttpService', 'ENDPOINT_URI', function (HttpService
             second: secondUnit
         };
 
-        return HttpService.getRequest(URL_UNITS_COMPATIBLE_CHECK, {params: parameters});
+        return HttpService.getRequest(URL_UNITS_COMPATIBLE_CHECK, parameters);
     }
 
 

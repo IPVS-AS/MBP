@@ -59,6 +59,7 @@ public class RestUnitController {
 
             return new ResponseEntity<>(quantitiesList, HttpStatus.OK);
         } catch (Exception e) {
+        	
             //Catch parsing exceptions
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }

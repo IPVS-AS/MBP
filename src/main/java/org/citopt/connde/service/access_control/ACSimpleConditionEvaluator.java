@@ -54,11 +54,8 @@ public class ACSimpleConditionEvaluator<T extends Comparable<T>> extends ACAbstr
 			}
 			try {
 				FileWriter fw = new FileWriter(filename);
-				fw.write("Attribute Provider: " + (attributeProvider == null));
-				fw.write("Argument: " + (argument == null));
-				fw.write("Access: " + (access == null));
-				fw.write("Access Request: " + (request == null));
-//				fw.append("Result: " + (attributeProvider.getValueForAttributeArgument((ACConditionSimpleAttributeArgument<T>) argument, access, request) == null));
+				fw.append("Result: " + (attributeProvider.getValueForAttributeArgument((ACConditionSimpleAttributeArgument<T>) argument, access, request) == null) + "\n");
+				fw.append("Result: " + (attributeProvider.getValueForAttributeArgument((ACConditionSimpleAttributeArgument<T>) argument, access, request)));
 				fw.flush();
 				fw.close();
 				return attributeProvider.getValueForAttributeArgument((ACConditionSimpleAttributeArgument<T>) argument, access, request);

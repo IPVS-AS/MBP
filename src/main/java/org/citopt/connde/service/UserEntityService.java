@@ -219,9 +219,6 @@ public class UserEntityService {
             return entities;
         }
         
-        // FIXME: REMOVE AFTER TESTING
-//        entities.forEach(e -> ((UserEntity) e).setOwner(userService.getForUsername("admin")));
-
         // Requesting user is a non-admin user
         List<E> filteredEntities = new ArrayList<>();
         // Add all entities without owner or owned by the requesting user
@@ -288,7 +285,7 @@ public class UserEntityService {
     }
 
     public <E extends UserEntity> void requirePermission(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
-        E entity = getForIdWithAccessControlCheck(repository, entityId, ACAccessType.READ, accessRequest);
+        E entity = getForId(repository, entityId);
         requirePermission(entity, accessType, accessRequest);
     }
 
