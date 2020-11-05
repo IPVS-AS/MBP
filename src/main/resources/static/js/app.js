@@ -510,6 +510,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     ruleList: ['CrudService', function (CrudService) {
                         return CrudService.fetchAllItems('rules');
                     }],
+                    sensorList: ['CrudService', function (CrudService) {
+                        return CrudService.fetchAllItems('sensors');
+                    }],
                     deleteTest: ['CrudService', function (CrudService) {
                         // bind category parameter
                         return angular.bind(this, CrudService.deleteItem, 'test-details');

@@ -361,7 +361,7 @@ app.controller('ComponentDetailsController',
                     return ComponentService.getValueLogStats(COMPONENT_ID, COMPONENT_TYPE_URL, unit).then(function (response) {
                         //Success, pass statistics data
                         return response.data;
-                    }, function (response) {
+                    }, function () {
                         //Failure
                         NotificationService.notify('Could not load value log statistics.', 'error');
                         return {};
@@ -457,6 +457,7 @@ app.controller('ComponentDetailsController',
             function initParameters() {
                 //Retrieve all formal parameters for this component
                 var requiredParams = componentDetails._embedded.adapter.parameters;
+
 
                 //Iterate over all parameters
                 for (var i = 0; i < requiredParams.length; i++) {

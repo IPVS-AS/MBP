@@ -38,9 +38,9 @@ public class TestDetails {
     @DBRef
     private List<Rule> rules;
 
-    private List<ParameterInstance> config;
+    private List<List<ParameterInstance>> config;
 
-    private String type;
+    private List<String> type;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy HH:mm:ss")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -308,7 +308,7 @@ public class TestDetails {
      *
      * @return type
      */
-    public String getType() {
+    public List<String> getType() {
         return type;
     }
 
@@ -317,7 +317,7 @@ public class TestDetails {
      *
      * @param type of the sensor-simulator used in the test
      */
-    public void setType(String type) {
+    public void setType(List<String> type) {
         this.type = type;
     }
 
@@ -362,7 +362,7 @@ public class TestDetails {
      *
      * @return config
      */
-    public List<ParameterInstance> getConfig() {
+    public List<List<ParameterInstance>> getConfig() {
         return config;
     }
 
@@ -371,7 +371,7 @@ public class TestDetails {
      *
      * @param config configurations of the sensor-simulator
      */
-    public void setConfig(List<ParameterInstance> config) {
+    public void setConfig(List<List<ParameterInstance>> config) {
         this.config = config;
     }
 

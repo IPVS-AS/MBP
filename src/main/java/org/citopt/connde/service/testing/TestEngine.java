@@ -29,14 +29,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static java.util.Map.Entry.comparingByKey;
-import static java.util.stream.Collectors.toMap;
 
 @Component
 public class TestEngine implements ValueLogReceiverObserver {
@@ -215,7 +211,7 @@ public class TestEngine implements ValueLogReceiverObserver {
 
         List<Sensor> testingSensor = testDetails.getSensor();
         List<Rule> rules = testDetails.getRules();
-        List<ParameterInstance> config = testDetails.getConfig();
+        List<List<ParameterInstance>> config = testDetails.getConfig();
 
         //activate the selected rules for the test
         for (Rule rule : rules) {
@@ -239,19 +235,25 @@ public class TestEngine implements ValueLogReceiverObserver {
         restDeploymentController.startActuator(testingActuator.getId(), new ArrayList<>());
 
 
+
         // check if the sensor/s are currently running
         for (Sensor sensor : testingSensor) {
             ResponseEntity<Boolean> sensorDeployed = restDeploymentController.isRunningSensor(sensor.getId());
-            // check if sensor is deployed
-            if (!sensorDeployed.getBody()) {
-                //if not deploy Sensor
-                restDeploymentController.deploySensor((sensor.getId()));
+            String sensorName = sensor.getName();
+            for (List<ParameterInstance> configSensor : config) {
+                for (ParameterInstance parameterInstance : configSensor) {
+                    if (parameterInstance.getName().equals("ConfigName") && parameterInstance.getValue().equals(sensorName)) {
+                        // check if sensor is deployed
+                        if (!sensorDeployed.getBody()) {
+                            //if not deploy Sensor
+                            restDeploymentController.deploySensor((sensor.getId()));
+                        }
+                        restDeploymentController.stopSensor(sensor.getId());
+                        restDeploymentController.startSensor(sensor.getId(), configSensor);
+                    }
+                }
             }
-
-            restDeploymentController.stopSensor(sensor.getId());
-            restDeploymentController.startSensor(sensor.getId(), config);
         }
-
 
         return new ResponseEntity<>("Test successfully started.", HttpStatus.OK);
     }
@@ -349,8 +351,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      */
     public List<Rule> getStatRulesBefore(TestDetails test) {
         // Get the rules selected by the user with their informations about the last execution,.. before the sensor is started
-        List<Rule> rulesbefore = new ArrayList<>();
-        rulesbefore.addAll(test.getRules());
+        List<Rule> rulesbefore = new ArrayList<>(test.getRules());
 
         List<RuleTrigger> allRules = ruleTriggerRepository.findAll();
         // Get Informations for all rules of the IoT-Applikation
@@ -429,8 +430,9 @@ public class TestEngine implements ValueLogReceiverObserver {
      * Method to download a specific Test Report
      *
      * @param path to the specific Test Report to download
+     * @return
      */
-    public ResponseEntity<String> downloadPDF(String path) throws IOException {
+    public ResponseEntity downloadPDF(String path) throws IOException {
         TestDetails test = null;
         Pattern pattern = Pattern.compile("(.*?)_");
         Matcher m = pattern.matcher(path);
@@ -439,6 +441,7 @@ public class TestEngine implements ValueLogReceiverObserver {
         }
 
 
+        assert test != null;
         File result = new File(test.getPathPDF() + "/" + path + ".pdf");
 
         ResponseEntity respEntity;
@@ -467,8 +470,8 @@ public class TestEngine implements ValueLogReceiverObserver {
      * @param testId ID of the test from which all reports are to be found
      * @return hashmap with the date and path to every report regarding to the specific test
      */
-    public ResponseEntity<Map<Long, String>> getPDFList(String testId) {
-        ResponseEntity pdfList = null;
+    public ResponseEntity getPDFList(String testId) {
+        ResponseEntity pdfList;
         Map<Long, String> nullList = new TreeMap<>();
         TestDetails testDetails = testDetailsRepository.findOne(testId);
         try {
@@ -536,13 +539,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      */
     private Map<Long, String> sortMap(Map<Long, String> unsortedMap) {
 
-        Map<Long, String> treeMap = new TreeMap<Long, String>(new Comparator<Long>() {
-            @Override
-            public int compare(Long o1, Long o2) {
-                return o1.compareTo(o2);
-            }
-
-        });
+        Map<Long, String> treeMap = new TreeMap<>((o1, o2) -> o1.compareTo(o2));
 
         treeMap.putAll(unsortedMap);
 
