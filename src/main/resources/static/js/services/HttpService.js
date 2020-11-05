@@ -62,6 +62,10 @@ app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'Notifica
             return xhr;
         }
 
+        /**
+         * [Private]
+         * Called when a new HTTP request was issued.
+         */
         function onRequestStart() {
             requestCounter++;
 
@@ -69,6 +73,10 @@ app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'Notifica
             $rootScope.$emit("requestsProgressing", requestCounter);
         }
 
+        /**
+         * [Private]
+         * Called when a HTTP request concluded.
+         */
         function onRequestFinished() {
             requestCounter--;
 
@@ -79,6 +87,9 @@ app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'Notifica
 
                 //Emit event indicating that all HTTP requests have concluded
                 $rootScope.$emit("requestsFinished");
+            } else {
+                //Emit event indicating HTTP requests in progress
+                $rootScope.$emit("requestsProgressing", requestCounter);
             }
         }
 
