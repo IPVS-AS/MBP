@@ -99,7 +99,6 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
                 type: "POST",
                 url: url,
                 data: JSON.stringify(payload),
-                dataType: "json",
                 headers: generateHeader()
             };
 
@@ -166,7 +165,6 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
             return $.ajax({
                 type: "DELETE",
                 url: url,
-                dataType: "json",
                 headers: generateHeader()
             }).done(function (response) {
                 //Debug message

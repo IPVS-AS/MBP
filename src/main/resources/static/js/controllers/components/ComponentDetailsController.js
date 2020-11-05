@@ -130,6 +130,9 @@ app.controller('ComponentDetailsController',
                     //Units are compatible, take user input as new unit
                     vm.displayUnit = vm.displayUnitInput;
 
+                    //Update UI
+                    $scope.$apply();
+
                 }, function () {
                     NotificationService.notify("The entered unit is invalid.", "error");
                 });
@@ -146,12 +149,6 @@ app.controller('ComponentDetailsController',
                 //Execute deployment request
                 ComponentService.deploy(componentDetails._links.deploy.href).then(
                     function (response) {
-                        //Success, check if everything worked well
-                        if (!response.success) {
-                            vm.deploymentState = 'UNKNOWN';
-                            NotificationService.notify('Error during deployment: ' + response.globalMessage, 'error');
-                            return;
-                        }
                         //Notify user
                         vm.deploymentState = 'DEPLOYED';
                         NotificationService.notify('Component deployed successfully.', 'success');
@@ -178,12 +175,6 @@ app.controller('ComponentDetailsController',
                 //Execute undeployment request
                 ComponentService.undeploy(componentDetails._links.deploy.href).then(
                     function (response) {
-                        //Success, check if everything worked well
-                        if (!response.success) {
-                            vm.deploymentState = 'UNKNOWN';
-                            NotificationService.notify('Error during undeployment: ' + response.globalMessage, 'error');
-                            return;
-                        }
                         //Notify user
                         vm.deploymentState = 'READY';
                         NotificationService.notify('Component undeployed successfully.', 'success');
@@ -211,12 +202,6 @@ app.controller('ComponentDetailsController',
                 //Execute start request
                 ComponentService.startComponent(COMPONENT_ID, COMPONENT_TYPE, vm.parameterValues)
                     .then(function (response) {
-                            //Success, check if everything worked well
-                            if (!response.success) {
-                                vm.deploymentState = 'UNKNOWN';
-                                NotificationService.notify('Error during starting: ' + response.globalMessage, 'error');
-                                return;
-                            }
                             //Notify user
                             vm.deploymentState = 'RUNNING';
                             NotificationService.notify('Component started successfully.', 'success');
@@ -242,12 +227,6 @@ app.controller('ComponentDetailsController',
 
                 //Execute stop request
                 ComponentService.stopComponent(COMPONENT_ID, COMPONENT_TYPE).then(function (response) {
-                        //Success, check if everything worked well
-                        if (!response.success) {
-                            vm.deploymentState = 'UNKNOWN';
-                            NotificationService.notify('Error during stopping: ' + response.globalMessage, 'error');
-                            return;
-                        }
                         //Notify user
                         vm.deploymentState = 'DEPLOYED';
                         NotificationService.notify('Component stopped successfully.', 'success');
