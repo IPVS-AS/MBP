@@ -75,9 +75,6 @@
     <!-- Event pattern creator -->
     <link th:href="@{/css/cep-query-editor.css}" rel="stylesheet"/>
 
-    <!-- Angular loading bar -->
-    <link th:href="@{/plugins/angular-loading-bar/loading-bar.min.css}" rel="stylesheet"/>
-
     <!-- waitMe plugin -->
     <link th:href="@{/plugins/waitme/waitMe.min.css}" rel="stylesheet"/>
 
@@ -98,6 +95,13 @@
 </head>
 
 <body class="theme-blue" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
+<!-- Progress bar for HTTP requests -->
+<div id="requestLoadingBar" class="progress" ng-show="ctrl.loadingBarDisplay">
+    <div class="progress-bar progress-bar-primary progress-bar-striped active" role="progressbar">
+        <span>{{ctrl.requestCount}} active {{(ctrl.requestCount === 1) ? 'request' : 'requests'}}</span>
+    </div>
+</div>
+
 <!-- Overlay For Sidebars -->
 <div class="overlay"></div>
 <!-- #END# Overlay For Sidebars -->
@@ -314,9 +318,6 @@
 
 <!-- Bootstrap notify plugin -->
 <script th:src="@{/plugins/bootstrap-notify/bootstrap-notify.min.js}"></script>
-
-<!-- Angular loading bar -->
-<script th:src="@{/plugins/angular-loading-bar/loading-bar.min.js}"></script>
 
 <!-- waitMe plugin -->
 <script th:src="@{/plugins/waitme/waitMe.min.js}"></script>

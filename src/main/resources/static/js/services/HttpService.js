@@ -3,10 +3,13 @@
 /**
  * Provides services for HTTP requests.
  */
-app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
-    function ($rootScope, ENDPOINT_URI, NotificationService) {
+app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'NotificationService',
+    function ($rootScope, $interval, ENDPOINT_URI, NotificationService) {
         //Enables or disables the debug mode
         const debugMode = true;
+
+        //Counter for concurrently running requests
+        let requestCounter = 0;
 
         /**
          * Returns a string of user attributes.
@@ -47,6 +50,51 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
 
         /**
          * [Private]
+         * Creates a new XMLHttpRequest object with progress listeners that can be used for HTTP requests.
+         * @returns The created XMLHttpRequest
+         */
+        function createXHR() {
+            let xhr = new window.XMLHttpRequest();
+
+            xhr.addEventListener("loadstart", onRequestStart, false);
+            xhr.addEventListener("loadend", onRequestFinished, false);
+
+            return xhr;
+        }
+
+        /**
+         * [Private]
+         * Called when a new HTTP request was issued.
+         */
+        function onRequestStart() {
+            requestCounter++;
+
+            //Emit event indicating HTTP requests in progress
+            $rootScope.$emit("requestsProgressing", requestCounter);
+        }
+
+        /**
+         * [Private]
+         * Called when a HTTP request concluded.
+         */
+        function onRequestFinished() {
+            requestCounter--;
+
+            //Check if requests are remaining
+            if (requestCounter <= 0) {
+                //Avoid negative counts
+                requestCounter = 0;
+
+                //Emit event indicating that all HTTP requests have concluded
+                $rootScope.$emit("requestsFinished");
+            } else {
+                //Emit event indicating HTTP requests in progress
+                $rootScope.$emit("requestsProgressing", requestCounter);
+            }
+        }
+
+        /**
+         * [Private]
          * Performs a GET request with given URL parameters and returns the resulting promise.
          * @param url The URl of the request
          * @param params The URL parameters
@@ -63,6 +111,7 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
 
             //Perform request
             return $.ajax({
+                xhr: createXHR,
                 url: url,
                 data: params,
                 headers: generateHeader()
@@ -96,6 +145,7 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
 
             //Define request options
             let requestOptions = {
+                xhr: createXHR,
                 type: "POST",
                 url: url,
                 data: JSON.stringify(payload),
@@ -135,6 +185,7 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
 
             //Perform request
             return $.ajax({
+                xhr: createXHR,
                 type: "PUT",
                 url: url,
                 data: JSON.stringify(payload),
@@ -163,6 +214,7 @@ app.factory('HttpService', ['$rootScope', 'ENDPOINT_URI', 'NotificationService',
 
             //Perform request
             return $.ajax({
+                xhr: createXHR,
                 type: "DELETE",
                 url: url,
                 headers: generateHeader()
