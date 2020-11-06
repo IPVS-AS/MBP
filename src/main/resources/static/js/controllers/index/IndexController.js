@@ -19,14 +19,12 @@ app.controller('IndexController', ['$scope', '$rootScope', function ($scope, $ro
         $rootScope.$on("requestsProgressing", function (event, requestCount) {
             vm.loadingBarDisplay = true;
             vm.requestCount = requestCount;
-            $scope.$apply();
         });
 
         //All requests have concluded
         $rootScope.$on("requestsFinished", function () {
             vm.loadingBarDisplay = false;
             vm.requestCount = 0;
-            $scope.$apply();
         });
     })();
 
