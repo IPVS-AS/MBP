@@ -125,7 +125,7 @@ app.controller('TestingController',
              * Check if Test-Device is already registered or not.
              */
             function getDevice() {
-                $http.get(ENDPOINT_URI + '/devices/search/findAll').success(function (response) {
+                $http.get(ENDPOINT_URI + '/devices').success(function (response) {
 
                     $scope.device = 'LOADING';
 
@@ -163,7 +163,7 @@ app.controller('TestingController',
              * Check if Actuator simulator is already registered or not.
              */
             function checkActuatorReg() {
-                $http.get(ENDPOINT_URI + '/actuators/search/findAll').success(function (response) {
+                $http.get(ENDPOINT_URI + '/actuators').success(function (response) {
                     registered = "NOT_REGISTERED";
                     angular.forEach(response._embedded.actuators, function (value) {
                         if (value.name === "TestingActuator") {
@@ -183,7 +183,7 @@ app.controller('TestingController',
                 deviceExists = false;
 
                 // Check if the required Adapter for the actuator simulator exists
-                $http.get(ENDPOINT_URI + '/adapters/search/findAll').success(function (response) {
+                $http.get(ENDPOINT_URI + '/adapters').success(function (response) {
                     angular.forEach(response._embedded.adapters, function (value) {
                         if (value.name === "TestingActuator") {
                             adapterLink = value._links.self.href;
@@ -192,7 +192,7 @@ app.controller('TestingController',
                     });
 
                     // Check if the required Testing device for the actuator simulator exists
-                    $http.get(ENDPOINT_URI + '/devices/search/findAll').success(function (response) {
+                    $http.get(ENDPOINT_URI + '/devices').success(function (response) {
                         angular.forEach(response._embedded.devices, function (value) {
                             if (value.name === "TestingDevice") {
                                 deviceLink = value._links.self.href;
@@ -244,7 +244,7 @@ app.controller('TestingController',
              */
             function checkSensorReg(sensor) {
                 try {
-                    $http.get(ENDPOINT_URI + '/sensors/search/findAll').success(function (response) {
+                    $http.get(ENDPOINT_URI + '/sensors').success(function (response) {
                         sensorX = false;
                         sensorY = false;
                         sensorZ = false;
@@ -411,7 +411,7 @@ app.controller('TestingController',
                 deviceExists = false;
 
                 // Check if the required Adapter for the specific sensor exists
-                $http.get(ENDPOINT_URI + '/adapters/search/findAll').success(function (response) {
+                $http.get(ENDPOINT_URI + '/adapters').success(function (response) {
                     angular.forEach(response._embedded.adapters, function (value) {
                         if (value.name === sensor) {
                             sensorName = sensor;
@@ -421,7 +421,7 @@ app.controller('TestingController',
                     });
 
                     // Check if the required Testing device for the specific sensor exists
-                    $http.get(ENDPOINT_URI + '/devices/search/findAll').success(function (response) {
+                    $http.get(ENDPOINT_URI + '/devices').success(function (response) {
                             angular.forEach(response._embedded.devices, function (value) {
                                 if (value.name === "TestingDevice") {
                                     deviceLink = value._links.self.href;
@@ -505,7 +505,7 @@ app.controller('TestingController',
                 }
 
                 // Check if the required Adapters for the three dimensional sensor simulators exists
-                $http.get(ENDPOINT_URI + '/adapters/search/findAll').success(function (response) {
+                $http.get(ENDPOINT_URI + '/adapters').success(function (response) {
                     angular.forEach(response._embedded.adapters, function (value) {
                         if (value.name === sensorX) {
                             adapterLinkX = value._links.self.href;
@@ -520,7 +520,7 @@ app.controller('TestingController',
                     });
 
                     // Check if the required Testing device for the sensor simulators exists
-                    $http.get(ENDPOINT_URI + '/devices/search/findAll').success(function (response) {
+                    $http.get(ENDPOINT_URI + '/devices').success(function (response) {
                             angular.forEach(response._embedded.devices, function (value) {
                                 if (value.name === "TestingDevice") {
                                     deviceLink = value._links.self.href;
