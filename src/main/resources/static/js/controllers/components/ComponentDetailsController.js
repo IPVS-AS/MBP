@@ -444,6 +444,7 @@ app.controller('ComponentDetailsController',
                 //Retrieve all formal parameters for this component
                 var requiredParams = componentDetails.adapter.parameters;
 
+
                 //Iterate over all parameters
                 for (var i = 0; i < requiredParams.length; i++) {
                     //Set empty default values for these parameters

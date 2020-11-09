@@ -520,8 +520,13 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     ruleList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('rules');
                     }],
-                    deleteTest: ['HttpService', function (HttpService) {
-                        return angular.bind(this, HttpService.deleteOne, 'test-details');
+                    sensorList: ['CrudService', function (CrudService) {
+                        return HttpService.getAll('sensors');
+                    }],
+                    deleteTest: ['CrudService', function (CrudService) {
+                        // bind category parameter
+                        return angular.bind(this, CrudService.deleteItem, 'test-details');
+
                     }]
                 }
             })

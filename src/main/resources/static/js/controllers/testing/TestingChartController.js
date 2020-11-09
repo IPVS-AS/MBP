@@ -10,37 +10,18 @@ app.controller('TestingChartController',
             const DEPLOYMENT_CARD_SELECTOR = ".deployment-card";
             const STATS_CARD_SELECTOR = ".stats-card";
 
+            const vm = this;
+            vm.sensorList = sensorList;
 
-            var vm = this;
-
-
-            for (var i in sensorList) {
-                if (sensorList[i].name === testingDetails.type) {
-                    vm.sensor = sensorList[i];
-                    vm.component_id = sensorList[i].id;
-                    vm.component_type = sensorList[i].componentTypeName;
-                    vm.component_type_url = vm.component_type + 's';
-                    vm.component_adapter_unit = sensorList[i]._embedded.adapter.unit;
-
-                }
-            }
 
             const COMPONENT_ID = vm.component_id;
             const COMPONENT_TYPE = vm.component_type;
             const COMPONENT_TYPE_URL = vm.component_type_url;
             const COMPONENT_ADAPTER_UNIT = vm.component_adapter_unit;
 
-            vm.component = vm.sensor;
-            vm.isLoading = false;
-            vm.deploymentState = 'UNKNOWN';
-            vm.deviceState = 'UNKNOWN';
-            vm.displayUnit = COMPONENT_ADAPTER_UNIT;
-            vm.displayUnitInput = COMPONENT_ADAPTER_UNIT;
-
-
             //Stores the parameters and their values as assigned by the user
             vm.parameterValues = [];
-
+            vm.deploymentState = '';
             /**
              * Initializing function, sets up basic things.
              */
@@ -50,7 +31,6 @@ app.controller('TestingChartController',
                 $rootScope.showLoading = false;
 
                 //Initialize parameters and retrieve states and stats
-                initParameters();
                 updateDeploymentState();
                 updateDeviceState();
 
@@ -64,10 +44,10 @@ app.controller('TestingChartController',
 
 
                 //Interval for updating states on a regular basis
-                var interval = $interval(function () {
+                const interval = $interval(function () {
                     updateDeploymentState(true);
                     updateDeviceState();
-                }, 1000);
+                }, 500);
 
                 //Cancel interval on route change and enable the loading bar again
                 $scope.$on('$destroy', function () {
@@ -89,19 +69,37 @@ app.controller('TestingChartController',
                 if (!noWaitingScreen) {
                     showDeploymentWaitingScreen("Retrieving component state...");
                 }
+                vm.deploymentStateTemp = [];
+                try {
+                    for (var i = 0; i < sensorList.length; i++) {
+                        //Retrieve the state of the current component
 
-                //Retrieve the state of the current component
-                ComponentService.getComponentState(COMPONENT_ID, COMPONENT_TYPE_URL).then(function (response) {
-                    //Success
-                    vm.deploymentState = response.content;
-                }, function (response) {
-                    //Failure
-                    vm.deploymentState = 'UNKNOWN';
-                    NotificationService.notify('Could not retrieve deployment state.', 'error');
-                }).then(function () {
+                        ComponentService.getComponentState(vm.sensorList[i].id, vm.sensorList[i].componentTypeName + 's').then(function (response) {
+                            //Success
+                            vm.deploymentStateTemp.push(response.content);
+
+
+                            if (vm.deploymentStateTemp.includes('NOT_READY')) {
+                                vm.deploymentState = 'NOT_READY';
+                            } else if (vm.deploymentStateTemp.includes('UNKNOWN')) {
+                                vm.deploymentState = 'UNKNOWN';
+                            } else if (vm.deploymentStateTemp.includes('RUNNING')) {
+                                vm.deploymentState = 'RUNNING';
+                            } else if (vm.deploymentStateTemp.includes('READY') || vm.deploymentStateTemp.includes('DEPLOYED')) {
+                                vm.deploymentState = 'READY';
+                            }
+
+                        }, function () {
+                            //Failure
+                            vm.deploymentStateTemp.push('UNKNOWN');
+                            NotificationService.notify('Could not retrieve deployment state.', 'error');
+                        })
+                    }
+                } finally {
                     //Finally hide the waiting screen again
                     hideDeploymentWaitingScreen();
-                });
+                }
+
             }
 
             /**
@@ -113,7 +111,7 @@ app.controller('TestingChartController',
                 vm.deviceState = 'LOADING';
 
                 //Retrieve device state
-                DeviceService.getDeviceState(vm.sensor._embedded.device.id).then(function (response) {
+                DeviceService.getDeviceState(vm.sensorList[0]._embedded.device.id).then(function (response) {
                     //Success
                     vm.deviceState = response.content;
                 }, function (response) {
@@ -131,7 +129,7 @@ app.controller('TestingChartController',
              */
             function onDisplayUnitChange() {
                 //Retrieve entered unit
-                var inputUnit = vm.displayUnitInput;
+                const inputUnit = vm.displayUnitInput;
 
                 //Check whether the entered unit is compatible with the adapter unit
                 UnitService.checkUnitsForCompatibility(COMPONENT_ADAPTER_UNIT, inputUnit).then(function (response) {
@@ -156,7 +154,7 @@ app.controller('TestingChartController',
              */
             function getPDFList() {
                 $http.get(ENDPOINT_URI + '/test-details/pdfList/' + testingDetails.id).then(function (response) {
-                    var pdfList = {};
+                    const pdfList = {};
                     vm.pdfDetails = [];
 
                     if (Object.keys(response).length > 0) {
@@ -185,15 +183,15 @@ app.controller('TestingChartController',
                 vm.startTest = 'STARTING_TEST';
 
                 //Execute start request
-                $http.post(ENDPOINT_URI + '/test-details/test/' + testingDetails.id, testingDetails.id.toString()).success(function (responseTest) {
+                $http.post(ENDPOINT_URI + '/test-details/test/' + testingDetails.id, testingDetails.id.toString()).success(function () {
                     // If test completed successfully, update List of Test-Reports
                     getPDFList();
                     vm.startTest = "END_TEST";
                     NotificationService.notify('Test completed successfully.', 'success');
                 }).error(function () {
                     vm.startTest = "ERROR_TEST";
-                    NotificationService.notify('Error during start of test.', 'error');
-                    return;
+                    NotificationService.notify('Error during the test.', 'error');
+
                 }).finally(function () {
                     hideDeploymentWaitingScreen();
                 });
@@ -230,9 +228,9 @@ app.controller('TestingChartController',
              * @param unit The unit in which the values are supposed to be retrieved
              * @returns A promise that passes the logs as a parameter
              */
-            function retrieveComponentData(numberLogs, descending, unit) {
+            function retrieveComponentData(numberLogs, descending, unit, sensor) {
                 //Set default order
-                var order = 'asc';
+                let order = 'asc';
 
                 //Check for user option
                 if (descending) {
@@ -240,13 +238,13 @@ app.controller('TestingChartController',
                 }
 
                 //Initialize parameters for the server request
-                var pageDetails = {
+                const pageDetails = {
                     sort: 'time,' + order,
                     size: numberLogs
                 };
 
                 //Perform the server request in order to retrieve the data
-                return ComponentService.getValueLogs(COMPONENT_ID, COMPONENT_TYPE, pageDetails, unit);
+                return ComponentService.getValueLogs(sensor.id, sensor.componentTypeName, pageDetails, unit);
             }
 
             /**
@@ -259,13 +257,13 @@ app.controller('TestingChartController',
                  * Executes the deletion of the value logs by performing the server request.
                  */
                 function executeDeletion() {
-                    ComponentService.deleteValueLogs(COMPONENT_ID, COMPONENT_TYPE).then(function (response) {
+                    ComponentService.deleteValueLogs(COMPONENT_ID, COMPONENT_TYPE).then(function () {
                         //Update historical chart and stats
                         $scope.historicalChartApi.updateChart();
                         $scope.valueLogStatsApi.updateStats();
 
                         NotificationService.notify("Value logs were deleted successfully.", "success");
-                    }, function (response) {
+                    }, function () {
                         NotificationService.notify("Could not delete value logs.", "error");
                     });
                 }
@@ -412,34 +410,6 @@ app.controller('TestingChartController',
                 };
             }
 
-            /**
-             * [Private]
-             * Initializes the data structures that are required for the deployment parameters.
-             */
-            function initParameters() {
-                //Retrieve all formal parameters for this component
-
-                var requiredParams = vm.sensor._embedded.adapter.parameters;
-                //Iterate over all parameters
-                for (var i = 0; i < requiredParams.length; i++) {
-                    //Set empty default values for these parameters
-                    var value = "";
-
-                    if (requiredParams[i].type == "Switch") {
-                        value = false;
-                    }
-                    if (requiredParams[i].name == "device_code") {
-                        value = getDeviceCode();
-                        continue;
-                    }
-
-                    //For each parameter, add a tuple (name, value) to the globally accessible parameter array
-                    vm.parameterValues.push({
-                        "name": requiredParams[i].name,
-                        "value": value
-                    });
-                }
-            }
 
             /**
              * Retrieve authorization code for the device from the OAuth Authorization server.
@@ -487,6 +457,26 @@ app.controller('TestingChartController',
                 $(DEPLOYMENT_CARD_SELECTOR).waitMe("hide");
             }
 
+            function specifyChart(sensor) {
+
+                vm.sensor = sensor;
+                vm.component_id = sensor.id;
+                vm.component_type = sensor.componentTypeName;
+                vm.component_type_url = vm.component_type + 's';
+                vm.component_adapter_unit = sensor._embedded.adapter.unit;
+
+
+                vm.component = vm.sensor;
+                vm.isLoading = false;
+                vm.deploymentState = 'UNKNOWN';
+                vm.deviceState = 'UNKNOWN';
+                vm.displayUnit = COMPONENT_ADAPTER_UNIT;
+                vm.displayUnitInput = COMPONENT_ADAPTER_UNIT;
+
+
+            }
+
+
             //Extend the controller object for the public functions to make them available from outside
             angular.extend(vm, {
                 updateDeploymentState: updateDeploymentState,
@@ -494,6 +484,7 @@ app.controller('TestingChartController',
                 onDisplayUnitChange: onDisplayUnitChange,
                 startComponent: startComponent,
                 stopComponent: stopComponent,
-                deleteValueLogs: deleteValueLogs
+                deleteValueLogs: deleteValueLogs,
+                specifyChart: specifyChart
             });
         }]);
