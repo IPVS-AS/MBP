@@ -60,22 +60,6 @@ public abstract class ACAbstractEffect extends ACAbstractEntity {
 	
 	// - - -
 
-//	/**
-//	 * TODO: Method comment.
-//	 * 
-//	 * @param inputValue
-//	 * @return
-//	 */
-//	public abstract T applyToValue(T inputValue);
-//
-//	/**
-//	 * TODO: Method comment.
-//	 * 
-//	 * @param inputValueLog
-//	 * @return
-//	 */
-//	public abstract T applyToValueLog(IACValueLog<T> inputValueLog);
-	
 	public abstract ValueLog apply(ValueLog valueLog);
 	
 	// - - -

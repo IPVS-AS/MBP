@@ -139,7 +139,6 @@ public class RestRuleController {
 			throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "Rule could not be enabled. Do all required components still exist?");
 		}
 		
-		// TODO: Adjust frontend since response content changed
 		return ResponseEntity.ok().build();
 	}
 
@@ -174,7 +173,6 @@ public class RestRuleController {
 		// Test action
 		boolean result = ruleExecutor.testRuleAction(ruleAction);
 
-		// TODO: Adjust frontend since response content changed
 		return ResponseEntity.ok(result);
 	}
 }

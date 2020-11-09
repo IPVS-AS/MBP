@@ -8,7 +8,8 @@ import java.lang.annotation.Target;
 import org.citopt.connde.service.access_control.ACAbstractConditionEvaluator;
 
 /**
- * TODO: Comment.
+ * Annotation used for {@link ACAbstractCondition conditions} to indicate
+ * the which evaluator to used for evaluation.
  * 
  * @author Jakob Benz
  */

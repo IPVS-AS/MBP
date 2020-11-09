@@ -1,8 +1,5 @@
 package org.citopt.connde.service.access_control;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Optional;
 
 import org.citopt.connde.domain.access_control.ACAccess;
@@ -37,33 +34,12 @@ public class ACSimpleConditionEvaluator<T extends Comparable<T>> extends ACAbstr
 		return condition.getFunction().apply(leftValue.get(), rightValue.get());
 	}
 	
-	/**
-	 * TODO: Comment
-	 * 
-	 * @param argument
-	 * @param access
-	 * @param request
-	 * @return
-	 */
 	@SuppressWarnings("unchecked")
 	private Optional<T> getValueForArgument(IACConditionArgument argument, ACAccess access, ACAccessRequest request) {
 		if (argument instanceof ACConditionSimpleAttributeArgument<?>) {
-			String filename = "/Users/jakob/Desktop/log1.txt";
-			if (new File(filename).exists()) {
-				new File(filename).delete();
-			}
 			try {
-				FileWriter fw = new FileWriter(filename);
-				fw.append("Result: " + (attributeProvider.getValueForAttributeArgument((ACConditionSimpleAttributeArgument<T>) argument, access, request) == null) + "\n");
-				fw.append("Result: " + (attributeProvider.getValueForAttributeArgument((ACConditionSimpleAttributeArgument<T>) argument, access, request)));
-				fw.flush();
-				fw.close();
 				return attributeProvider.getValueForAttributeArgument((ACConditionSimpleAttributeArgument<T>) argument, access, request);
 			} catch (ACAttributeNotAvailableException e) {
-				return Optional.empty();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block -> REMOVE AFTER TESTING
-				e.printStackTrace();
 				return Optional.empty();
 			}
 		} else if (argument instanceof ACConditionSimpleValueArgument<?>) {

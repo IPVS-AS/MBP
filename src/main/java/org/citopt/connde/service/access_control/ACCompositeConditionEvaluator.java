@@ -42,20 +42,4 @@ public class ACCompositeConditionEvaluator extends ACAbstractConditionEvaluator<
 		return expression.getValue(context, Boolean.class);
 	}
 	
-//	public static void main(String[] args) {
-//		ACSimpleCondition<Integer> s1 = new ACSimpleCondition<Integer>(ACArgumentFunction.EQUALS, new ACConditionSimpleValueArgument<>(1), new ACConditionSimpleValueArgument<>(1));
-//		ACSimpleCondition<Integer> s2 = new ACSimpleCondition<Integer>(ACArgumentFunction.EQUALS, new ACConditionSimpleValueArgument<>(1), new ACConditionSimpleValueArgument<>(2));
-//		List<IACCondition> conditions = new ArrayList<>();
-//		conditions.add(s1);
-//		conditions.add(s2);
-//		
-//		ACCompositeCondition compositeCondition = new ACCompositeCondition(ACLogicalOperator.AND, conditions);
-//		try {
-//			System.out.println(compositeCondition.evaluate(null, null));
-//		} catch (ACConditionEvaluatorNotAvailableException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
-	
 }

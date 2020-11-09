@@ -56,9 +56,8 @@
                             </td>
                             <td>
                                 <form ng-submit="deletePolicyConditionCtrl.deleteItem()" style="display: inline-block">
-                                    <button type="submit" class="btn btn-danger m-t-0 waves-effect"
-                                        ng-click="deletePolicyConditionCtrl.item.id = item.id">
-                                        Delete
+                                    <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float" ng-click="deletePolicyConditionCtrl.item.id = item.id">
+                                        <i class="material-icons" style="font-size:14px;">delete</i>
                                     </button>
                                 </form>
                             </td>
@@ -155,14 +154,8 @@
                                         $(function () {
                                             $('#register').on("click", function () {
                                                 var result = JSON.stringify($('#condition-builder').queryBuilder('getRules'), null, 2);
-                                                alert(result);
                                                 $("#policy-condition-form-input-condition").val(result).trigger("input");
                                             });
-
-                                            // $("#closemodal").on('click', function () {
-                                            //     $("#addPolicyConditionModal").modal().hide();
-                                            //     // $('#addPolicyConditionModal').modal('toggle');
-                                            // });
                                         });
                                     </script>
                                 </div>

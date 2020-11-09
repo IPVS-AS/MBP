@@ -4,8 +4,10 @@ import javax.measure.quantity.Quantity;
 import javax.measure.unit.Unit;
 
 import org.citopt.connde.RestConfiguration;
+import org.citopt.connde.domain.access_control.ACAbstractEffect;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
+import org.citopt.connde.domain.access_control.ACPolicy;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.component.Sensor;
@@ -16,6 +18,7 @@ import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.UserEntityService;
+import org.citopt.connde.service.access_control.ACEffectService;
 import org.citopt.connde.service.stats.ValueLogStatsService;
 import org.citopt.connde.service.stats.model.ValueLogStats;
 import org.citopt.connde.util.S;
@@ -49,6 +52,9 @@ public class RestValueLogStatsController {
 
 	@Autowired
 	private SensorRepository sensorRepository;
+	
+	@Autowired
+	private ACEffectService effectService;
 
 	@Autowired
 	private ValueLogStatsService valueLogStatsService;
@@ -84,7 +90,7 @@ public class RestValueLogStatsController {
 		Actuator actuator = userEntityService.getForIdWithAccessControlCheck(actuatorRepository, actuatorId, ACAccessType.READ_VALUE_LOG_STATS, ACAccessRequest.valueOf(accessRequestHeader));
 
 		// Calculate value log stats
-		return ResponseEntity.ok(calculateValueLogStats(actuator, unit));
+		return ResponseEntity.ok(calculateValueLogStats(actuator, unit, ACAccessRequest.valueOf(accessRequestHeader)));
 	}
 
 	/**
@@ -111,7 +117,7 @@ public class RestValueLogStatsController {
 		Sensor sensor = userEntityService.getForIdWithAccessControlCheck(sensorRepository, sensorId, ACAccessType.READ_VALUE_LOG_STATS, ACAccessRequest.valueOf(accessRequestHeader));
 
 		// Calculate value log stats
-		return ResponseEntity.ok(calculateValueLogStats(sensor, unit));
+		return ResponseEntity.ok(calculateValueLogStats(sensor, unit, ACAccessRequest.valueOf(accessRequestHeader)));
 	}
 
 	/**
@@ -145,7 +151,7 @@ public class RestValueLogStatsController {
 		userEntityService.requirePermission(monitoringComponent.getDevice(), ACAccessType.MONITOR, ACAccessRequest.valueOf(accessRequestHeader));
 
 		// Retrieve value log statistics
-		return ResponseEntity.ok(calculateValueLogStats(monitoringComponent, unit));
+		return ResponseEntity.ok(calculateValueLogStats(monitoringComponent, unit, ACAccessRequest.valueOf(accessRequestHeader)));
 	}
 
 	/**
@@ -155,8 +161,18 @@ public class RestValueLogStatsController {
 	 * @param component the {@link Component}.
 	 * @param unitString the unit specification as {@code String}.
 	 * @return the {@link ValueLogStats}.
+	 * @throws MissingPermissionException 
+	 * @throws EntityNotFoundException 
 	 */
-	private <C extends Component> ValueLogStats calculateValueLogStats(C component, String unitString) {
+	private <C extends Component> ValueLogStats calculateValueLogStats(C component, String unitString, ACAccessRequest accessRequest) throws MissingPermissionException, EntityNotFoundException {
+		ACAbstractEffect effect = null;
+		if (!userEntityService.checkAdmin() && !userEntityService.checkOwner(component)) {			
+			// Check permission (if access is granted, the policy that grants access is returned)
+			ACPolicy policy = userEntityService.getFirstPolicyGrantingAccess(component, ACAccessType.READ_VALUE_LOG_STATS, accessRequest)
+					.orElseThrow(() -> new MissingPermissionException("Component", component.getId(), ACAccessType.READ_VALUE_LOGS));
+			effect = effectService.getForId(policy.getEffectId());
+		}
+		
 		// Parse unit
 		Unit<? extends Quantity> unit = null;
 		if (S.notEmpty(unitString)) {
@@ -168,6 +184,6 @@ public class RestValueLogStatsController {
 		}
 
 		// Calculate stats
-		return valueLogStatsService.calculateValueLogStats(component, unit);
+		return valueLogStatsService.calculateValueLogStats(component, unit, effect);
 	}
 }

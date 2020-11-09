@@ -50,20 +50,15 @@ public abstract class ACAbstractCondition extends ACAbstractEntity {
 	
 	// - - -
 	
-	/**
-	 * TODO: Method comment.
-	 * 
-	 * @return
-	 */
 	@JsonIgnore
 	public abstract String toHumanReadableString();
 	
 	/**
-	 * TODO: Method comment (check params).
+	 * Evaluates this condition for a specific access request.
 	 * 
-	 * @param access
-	 * @param request
-	 * @return
+	 * @param access the {@link ACAccess}.
+	 * @param request the {@link ACAccessRequest}.
+	 * @return the result of the condition evaluation.
 	 * @throws ACConditionEvaluatorNotAvailableException 
 	 */
 	public boolean evaluate(ACAccess access, ACAccessRequest request) throws ACConditionEvaluatorNotAvailableException {
@@ -71,9 +66,9 @@ public abstract class ACAbstractCondition extends ACAbstractEntity {
 	}
 	
 	/**
-	 * TODO: Method comment (check params).
+	 * Performs a lookup for the corresponding condition evaluator.
 	 * 
-	 * @return
+	 * @return the {@link ACAbstractConditionEvaluator}.
 	 * @throws ACConditionEvaluatorNotAvailableException
 	 */
 	ACAbstractConditionEvaluator<ACAbstractCondition> findEvaluator() throws ACConditionEvaluatorNotAvailableException {

@@ -5,19 +5,19 @@ import org.citopt.connde.domain.access_control.ACAccess;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 
 /**
- * TODO: Class comment!
+ * Abstract base class for all {@link ACAbstractCondition} evaluator implementations.
  * 
  * @author Jakob Benz
  */
 public abstract class ACAbstractConditionEvaluator<T extends ACAbstractCondition> {
 	
 	/**
-	 * TODO: Method comment!
+	 * Evaluates a condition.
 	 * 
-	 * @param condition
-	 * @param access
-	 * @param request
-	 * @return
+	 * @param condition the condition.
+	 * @param access the {@link ACAccess}.
+	 * @param requestthe {@link ACAccessRequest}.
+	 * @return the evaluation result.
 	 */
 	public abstract boolean evaluate(T condition, ACAccess access, ACAccessRequest request);
 	

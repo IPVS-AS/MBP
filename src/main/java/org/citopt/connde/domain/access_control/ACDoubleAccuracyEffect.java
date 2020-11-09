@@ -1,6 +1,5 @@
 package org.citopt.connde.domain.access_control;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Map;
@@ -24,23 +23,6 @@ public class ACDoubleAccuracyEffect extends ACAbstractEffect {
 	
 	public static final String PARAM_KEY_ACCURACY = "accuracy";
 	public static final String PARAM_KEY_PRECISION = "precision";
-	
-//	/**
-//	 * The accuracy the application of this effect will result in. For example,
-//	 * an accuracy of 10 with an input of 87.5 would result in 90.
-//	 */
-//	@Nonnull
-//	private double accuracy; // implicitly final due to omitted setter
-//	
-//	
-//	/**
-//	 * The number of decimal digits to keep when rounding the result.
-//	 * If -1 is specified, the original (result) value will be used.
-//	 */
-//	@Nonnull
-//	@Min(-1)
-//	@Max(10)
-//	private int precision; // implicitly final due to omitted setter
 	
 	// - - -
 	
@@ -92,18 +74,6 @@ public class ACDoubleAccuracyEffect extends ACAbstractEffect {
 	private Double round(Double value) {
 		String format = "0." + IntStream.range(0, getPrecision()).mapToObj(i -> "0").collect(Collectors.joining());
 		DecimalFormat df = new DecimalFormat(format);
-		String filename = "/Users/jakob/Desktop/log5.txt";
-		FileWriter fw;
-		try {
-			fw = new FileWriter(filename);
-			fw.write(df + "\n");
-			fw.write(df.format(value) + "\n");
-			fw.write(df.format(value).substring(0, df.format(value).length() - 1) + "\n");
-			fw.flush();fw.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		String formattedValue = df.format(value);
 		if (formattedValue.endsWith(",")) {
 			formattedValue = formattedValue.substring(0, formattedValue.length() - 1);
