@@ -1,5 +1,7 @@
 package org.citopt.connde.domain.access_control;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -85,11 +87,28 @@ public class ACDoubleAccuracyEffect extends ACAbstractEffect {
 	 * 
 	 * @param value the input {@link Double} value.
 	 * @return the rounded and formatted value.
+	 * @throws IOException 
 	 */
 	private Double round(Double value) {
 		String format = "0." + IntStream.range(0, getPrecision()).mapToObj(i -> "0").collect(Collectors.joining());
 		DecimalFormat df = new DecimalFormat(format);
-		return Double.parseDouble(df.format(value));
+		String filename = "/Users/jakob/Desktop/log5.txt";
+		FileWriter fw;
+		try {
+			fw = new FileWriter(filename);
+			fw.write(df + "\n");
+			fw.write(df.format(value) + "\n");
+			fw.write(df.format(value).substring(0, df.format(value).length() - 1) + "\n");
+			fw.flush();fw.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String formattedValue = df.format(value);
+		if (formattedValue.endsWith(",")) {
+			formattedValue = formattedValue.substring(0, formattedValue.length() - 1);
+		}
+		return Double.parseDouble(formattedValue);
 	}
 	
 	private double getAccuracy() {

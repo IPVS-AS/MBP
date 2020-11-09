@@ -45,7 +45,8 @@ public class ACAttributeProvider {
 		
 		
 		// Retrieve entity associated with the attribute argument
-		IACEntity associatedEntity = access.getEntityForType(attributeArgument.getEntityType());
+		IACEntity associatedEntity = access.getEntityForType(attributeArgument.getKey().getEntityType());
+		try { fw.write("10: " + associatedEntity.getClass().getName() + "\n"); } catch (Exception e) { e.printStackTrace(); }
 		
 		// 1) Check whether the corresponding attribute value can be found in the list of attributes from the access request (only if attribute of requesting entity)
 		Optional<T> valueFromRequest = Optional.empty();
@@ -67,32 +68,18 @@ public class ACAttributeProvider {
 		try {
 			// Get all attribute value candidate fields
 			List<Field> fieldsWithAttributeAnnotation = FieldUtils.getFieldsListWithAnnotation(associatedEntity.getClass(), ACAttributeValue.class);
-			topLevelFieldLoop: for (Field field : fieldsWithAttributeAnnotation) {
+			for (Field field : fieldsWithAttributeAnnotation) {
 				try { fw.write("9.1: " + field.getName() + "\n"); } catch (Exception e) { e.printStackTrace(); }
+				
+				// NOTE: Currently only one-step value lookup paths are supported (more is not needed at the moment)
+				
 				// Match the field name against the first value path step
 				if (field.getName().equals(valuePathSteps[0])) {					
 					// Lookup the field via the lookup path
 					Field currentField = field;
 					// Make (private) field accessible (only) via reflection
 					currentField.setAccessible(true);
-					
-					// Iterate over the value lookup path until the value is found
-					Object tempValue = null;
-					for (String valuePathStep : valuePathSteps) {
-						tempValue = currentField.get(associatedEntity);
-						try {
-							// Try to go one step further in the lookup path
-							currentField = tempValue.getClass().getDeclaredField(valuePathStep);
-						} catch (NoSuchFieldException nsfe) {
-							try { fw.write("9.1: " + "No field!" + "\n"); } catch (Exception e) { e.printStackTrace(); }
-							// No such field exists -> continue with the next attribute field in the associated entity
-							continue topLevelFieldLoop;
-						}
-					}
-					
-					// Make (private) field accessible (only) via reflection
-					currentField.setAccessible(true);
-					valueFromRecords = Optional.of((T) currentField.get(tempValue));
+					valueFromRecords = Optional.of((T) currentField.get(associatedEntity));
 				}
 			}
 		} catch (Exception e) {
@@ -114,6 +101,7 @@ public class ACAttributeProvider {
 		} else if (valueFromRequest.isPresent() ^ valueFromRecords.isPresent()) {
 			return valueFromRecords.isPresent() ? valueFromRecords : valueFromRequest;
 		} else {
+			try { fw.write("11: " + "\n"); } catch (Exception e1) { e1.printStackTrace(); }
 			return Optional.empty();
 		}
 		

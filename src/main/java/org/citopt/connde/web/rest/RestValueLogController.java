@@ -2,6 +2,8 @@ package org.citopt.connde.web.rest;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.measure.converter.UnitConverter;
 import javax.measure.quantity.Quantity;
@@ -240,8 +242,17 @@ public class RestValueLogController {
 		if (new File(filename).exists()) {
 			new File(filename).delete();
 		}
+		FileWriter fw = null;
+		PrintWriter pw = null;
 		try {
-			FileWriter fw = new FileWriter(filename);
+			fw = new FileWriter(filename);
+			pw = new PrintWriter("/Users/jakob/Desktop/log4.txt");
+			try { fw.write("Hello from ValueLogController \n"); } catch (Exception e) { e.printStackTrace(); }
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
 			try { fw.write("1: " + (policy == null) + "\n"); } catch (Exception e) { e.printStackTrace(); }
 			try { fw.write("2: " + (policy.getEffectId() == null) + "\n"); } catch (Exception e) { e.printStackTrace(); }
 			
@@ -270,6 +281,10 @@ public class RestValueLogController {
 			fw.flush();
 			fw.close();
 		} catch (Exception e) {
+			e.printStackTrace(pw);
+			pw.flush();
+			pw.close();
+			try { fw.write("1: " + e.getMessage() + "\n"); fw.flush(); fw.close(); } catch (Exception ee) { ee.printStackTrace(); }
 			e.printStackTrace();
 		}
 		
