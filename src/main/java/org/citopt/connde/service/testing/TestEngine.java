@@ -335,7 +335,7 @@ public class TestEngine implements ValueLogReceiverObserver {
 
 
     /**
-     * Saved informations about the success, executed Rules and the trigger-values
+     * Saved information about the success, executed Rules and the trigger-values
      *
      * @param testId ID of the executed test
      */
@@ -346,9 +346,16 @@ public class TestEngine implements ValueLogReceiverObserver {
         List<Rule> ruleList = testDetails.getRules();
 
         // add all  names and triggerIDs of the rules of the application  tested
-        for (Rule rule : ruleList) {
-            ruleNames.add(rule.getName());
+        if (testDetails.isUseNewData()) {
+            for (Rule rule : ruleList) {
+                ruleNames.add(rule.getName());
+            }
+        } else {
+            for (Rule rule : ruleList) {
+                ruleNames.add("RERUN_" + rule.getName());
+            }
         }
+
 
         Map<String, List<Double>> triggerValues = getTriggerValues(testId);
         String sucessResponse = testEngine.checkSuccess(testDetails, triggerValues, ruleNames);
@@ -425,16 +432,16 @@ public class TestEngine implements ValueLogReceiverObserver {
      * @return list of informations about the rules of the tested application before execution
      */
     public List<Rule> getStatRulesBefore(TestDetails test) {
-        // Get the rules selected by the user with their informations about the last execution,.. before the sensor is started
+        // Get the rules selected by the user with their information about the last execution,.. before the sensor is started
         List<Rule> rulesbefore = new ArrayList<>(test.getRules());
 
         List<RuleTrigger> allRules = ruleTriggerRepository.findAll();
-        // Get Informations for all rules of the IoT-Applikation
+        // Get information for all rules of the IoT-Application
         for (int i = 0; i < test.getSensor().size(); i++) {
             for (RuleTrigger trigger : allRules) {
                 Sensor sensor = test.getSensor().get(i);
-                String s = sensor.getId();
-                if (trigger.getQuery().contains(s)) {
+                String sensorID = sensor.getId();
+                if (trigger.getQuery().contains(sensorID)) {
                     for (Rule nextRule : ruleRepository.findAll()) {
                         if (nextRule.getTrigger().getId().equals(trigger.getId())) {
                             if (!rulesbefore.contains(nextRule)) {
@@ -445,6 +452,22 @@ public class TestEngine implements ValueLogReceiverObserver {
                 }
             }
         }
+
+
+        //TODO: WARUM INVOCE TARGET INCEPTION
+        if (!test.isUseNewData()) {
+            for (int i = 0; i < rulesbefore.size(); i++) {
+                Rule rule = rulesbefore.get(i);
+                String rulename = "RERUN_" + rule.getName();
+                Rule rule2 = ruleRepository.findByName(rulename);
+                if (rule2 != null) {
+                    rulesbefore.add(rule2);
+                }
+
+            }
+
+        }
+
 
         return rulesbefore;
     }
@@ -489,14 +512,14 @@ public class TestEngine implements ValueLogReceiverObserver {
         valueList = testEngine.isFinished(test.getId());
         TestDetails testDetails2 = testDetailsRepository.findOne(test.getId());
         for (Sensor sensor : test.getSensor()) {
-            if(testDetails2.isUseNewData()){
+            if (testDetails2.isUseNewData()) {
                 LinkedHashMap<Long, Double> temp = valueList.get(sensor.getId());
                 valueList.put(sensor.getName(), temp);
                 valueListTest.put(sensor.getName(), temp);
                 list.remove(sensor.getId());
-            }else {
-                if(!sensor.getName().contains("RERUN_")){
-                    Sensor rerunSensor = sensorRepository.findByName("RERUN_"+sensor.getName());
+            } else {
+                if (!sensor.getName().contains("RERUN_")) {
+                    Sensor rerunSensor = sensorRepository.findByName("RERUN_" + sensor.getName());
                     LinkedHashMap<Long, Double> temp = valueList.get(rerunSensor.getId());
                     valueList.put(sensor.getName(), temp);
                     valueListTest.put(sensor.getName(), temp);
@@ -679,25 +702,52 @@ public class TestEngine implements ValueLogReceiverObserver {
 
     }
 
-    // TODO: Get every integrate Rule (the not selected ones to observe, too) -> get the trigger of them -> adjust the query (change Sensor-ID) -> save
-    public void addRerunRule(TestDetails testDetails){
+    public void addRerunRule(TestDetails testDetails) {
+        // Get a list of every rule belonging to the IoT-Application
         List<Rule> applicationRules = getStatRulesBefore(testDetails);
 
-        for(Rule rule : applicationRules){
-            rule.getTrigger().getQuery();
-            // Sensor ID's richtig zuordnen (RealSensor mit RERUN_RealSensor ID tauschen)
-            // ID aus dem String extrahieren -> sensorRepo.findById(ID).getName
-            // sensorRepo.findByName("RERUN_"+sensorName).getID
-            // String replace id
-            // Dafür geeignetes Regex finden
+        for (Rule rule : applicationRules) {
+            if (ruleRepository.findByName("RERUN_" + rule.getName()) == null) {
+                Rule rerunRule = new Rule();
+                rerunRule.setName("RERUN_" + rule.getName());
+                rerunRule.setOwner(null);
+                rerunRule.setActions(rule.getActions());
+
+                if (ruleTriggerRepository.findByName("RERUN_" + rule.getTrigger().getName()) == null) {
+                    RuleTrigger newTrigger = new RuleTrigger();
+                    newTrigger.setDescription(rule.getTrigger().getDescription());
+                    newTrigger.setName("RERUN_" + rule.getTrigger().getName());
 
 
+                    String triggerQuery = rule.getTrigger().getQuery();
+                    // Regex to get out the sensor ID
+                    Pattern pattern = Pattern.compile("(?<=sensor_)(.*)(?=\\)\\])");
+                    Matcher matcher = pattern.matcher(triggerQuery);
+                    while (matcher.find()) {
+                        String sensorID = matcher.group();
+                        List<Sensor> realSensors = sensorRepository.findAll();
+                        for (Sensor realSensor : realSensors) {
+                            if (realSensor.getId().equals(sensorID)) {
+                                Sensor rerunSensor = sensorRepository.findByName("RERUN_" + realSensor.getName());
+                                triggerQuery = triggerQuery.replace(realSensor.getId(), rerunSensor.getId());
+                                newTrigger.setQuery(triggerQuery);
+                                ruleTriggerRepository.insert(newTrigger);
 
+                            }
+                        }
+                        rerunRule.setTrigger(newTrigger);
+                    }
+                } else {
+                    rerunRule.setTrigger(ruleTriggerRepository.findByName("RERUN_" + rule.getTrigger().getName()));
+                }
+
+                ruleRepository.insert(rerunRule);
+            }
         }
-
     }
 
-
+    public void deleteRerunRules(TestDetails testDetails) {
+    }
 
     /**
      * Sorts the timestamps of the List of Test-Reports.
@@ -713,6 +763,8 @@ public class TestEngine implements ValueLogReceiverObserver {
 
         return treeMap;
     }
+
+
 }
 
     

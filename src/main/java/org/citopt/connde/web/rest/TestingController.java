@@ -148,7 +148,7 @@ public class TestingController {
     public List<Rule> ruleList(@PathVariable(value = "testId") String testId) throws IOException {
         TestDetails testDetails = testDetailsRepository.findOne(testId);
 
-        // get  informations about the status of the rules before the execution of the test
+        // get  information about the status of the rules before the execution of the test
         return testEngine.getStatRulesBefore(testDetails);
     }
 
@@ -219,7 +219,7 @@ public class TestingController {
                     if (parameterInstance.getName().equals("ConfigName")) {
                         if(!sensorSimulators.contains(parameterInstance.getValue())){
                             testEngine.addRerunSensor(parameterInstance.getValue().toString(), testDetails);
-
+                            testEngine.addRerunRule(testDetails);
                         }
                     }
                 }
@@ -234,6 +234,9 @@ public class TestingController {
                 for (ParameterInstance parameterInstance : config) {
                     if (parameterInstance.getName().equals("ConfigName")) {
                         if(!sensorSimulators.contains(parameterInstance.getValue())){
+                            //Delete rerun rules
+                            testEngine.deleteRerunRules(testDetails);
+
                             // Delete Reuse Operator
                             String reuseName = "RERUN_" + parameterInstance.getValue();
                             Sensor sensorReuse = sensorRepository.findByName(reuseName);
