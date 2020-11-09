@@ -138,7 +138,7 @@ public class TestEngine implements ValueLogReceiverObserver {
             return;
         }
         if (!testValues.containsKey(valueLog.getIdref())) {
-            LinkedHashMap<Long, Double> newList = new LinkedHashMap<Long, Double>();
+            LinkedHashMap<Long, Double> newList = new LinkedHashMap<>();
             newList.put(valueLog.getTime().getEpochSecond(), valueLog.getValue());
             testValues.put(valueLog.getIdref(), newList);
         } else {
@@ -419,7 +419,7 @@ public class TestEngine implements ValueLogReceiverObserver {
 
 
     /**
-     * Returns all informations about the rules of the tested application before the execution
+     * Returns all information about the rules of the tested application before the execution
      *
      * @param test to be executed test
      * @return list of informations about the rules of the tested application before execution
@@ -460,7 +460,6 @@ public class TestEngine implements ValueLogReceiverObserver {
         Map<String, LinkedHashMap<Long, Double>> list = testEngine.getTestValues();
 
 
-        //TODO 2 füge die sensoren zun test hinzu , wenn use new Data geändert wird!!
         if (test.isUseNewData()) {
             for (Sensor sensor : test.getSensor()) {
                 if (!sensor.getName().contains("RERUN_")) {
@@ -490,13 +489,21 @@ public class TestEngine implements ValueLogReceiverObserver {
         valueList = testEngine.isFinished(test.getId());
         TestDetails testDetails2 = testDetailsRepository.findOne(test.getId());
         for (Sensor sensor : test.getSensor()) {
-            if(!sensor.getName().contains("RERUN_")){
-                Sensor rerunSensor = sensorRepository.findByName("RERUN_"+sensor.getName());
-                LinkedHashMap<Long, Double> temp = valueList.get(rerunSensor.getId());
+            if(testDetails2.isUseNewData()){
+                LinkedHashMap<Long, Double> temp = valueList.get(sensor.getId());
                 valueList.put(sensor.getName(), temp);
                 valueListTest.put(sensor.getName(), temp);
-                list.remove(rerunSensor.getId());
+                list.remove(sensor.getId());
+            }else {
+                if(!sensor.getName().contains("RERUN_")){
+                    Sensor rerunSensor = sensorRepository.findByName("RERUN_"+sensor.getName());
+                    LinkedHashMap<Long, Double> temp = valueList.get(rerunSensor.getId());
+                    valueList.put(sensor.getName(), temp);
+                    valueListTest.put(sensor.getName(), temp);
+                    list.remove(rerunSensor.getId());
+                }
             }
+
 
         }
 
@@ -671,6 +678,26 @@ public class TestEngine implements ValueLogReceiverObserver {
         }
 
     }
+
+    // TODO: Get every integrate Rule (the not selected ones to observe, too) -> get the trigger of them -> adjust the query (change Sensor-ID) -> save
+    public void addRerunRule(TestDetails testDetails){
+        List<Rule> applicationRules = getStatRulesBefore(testDetails);
+
+        for(Rule rule : applicationRules){
+            rule.getTrigger().getQuery();
+            // Sensor ID's richtig zuordnen (RealSensor mit RERUN_RealSensor ID tauschen)
+            // ID aus dem String extrahieren -> sensorRepo.findById(ID).getName
+            // sensorRepo.findByName("RERUN_"+sensorName).getID
+            // String replace id
+            // Dafür geeignetes Regex finden
+
+
+
+        }
+
+    }
+
+
 
     /**
      * Sorts the timestamps of the List of Test-Reports.

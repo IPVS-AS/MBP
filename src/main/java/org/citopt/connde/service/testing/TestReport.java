@@ -144,20 +144,32 @@ public class TestReport {
      */
     private PdfPTable getSucessInfo(TestDetails test) {
         String startTestTime;
-        String endTestTime;// Test-Success
+        String endTestTime;
         Font fontConfig = new Font();
         Chunk bullet = new Chunk("\u2022", fontConfig);
         List successful = new List(List.UNORDERED);
         successful.setListSymbol(bullet);
         String success;
+        PdfPTable successInfo = new PdfPTable(4);
+        successInfo.setWidthPercentage(100f);
+
         if (test.getSuccessful().equals("Successful")) {
             success = "Yes";
         } else {
             success = "No";
         }
 
-        PdfPTable successInfo = new PdfPTable(4);
-        successInfo.setWidthPercentage(100f);
+        if(!test.isUseNewData()){
+            PdfPCell rerun = new PdfPCell(new Phrase("This was a Test rerun."));
+            rerun.setColspan(4);
+            rerun.setHorizontalAlignment(Element.ALIGN_CENTER);
+            rerun.setBackgroundColor(new BaseColor(191, 220, 227));
+            successInfo.addCell(rerun);
+        }
+
+
+
+
         PdfPCell c1 = new PdfPCell(new Phrase("Successful"));
         c1.setColspan(2);
         c1.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -213,8 +225,8 @@ public class TestReport {
      */
     private PdfPTable getSimulationConfig(TestDetails test) {
         int counter = 0;
-        PdfPCell c1;
-        PdfPCell c2;
+        PdfPCell c1 = null;
+        PdfPCell c2 = null;
         String simTime;
         String amountEvents;
         String amountOutliers;
@@ -318,6 +330,12 @@ public class TestReport {
 
 
         }
+        if(c1 == null && c2 == null){
+            c1 = new PdfPCell(new Phrase("No Sensor-Simulator was integrated into the test."));
+            c1.setColspan(4);
+            c1.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(c1);
+        }
         return table;
     }
 
@@ -330,8 +348,8 @@ public class TestReport {
      */
     private PdfPTable getRealSensorConfig(TestDetails test) {
         int counter = 0;
-        PdfPCell c1;
-        PdfPCell c2;
+        PdfPCell c1 = null;
+        PdfPCell c2 = null;
         PdfPTable table = new PdfPTable(4);
         table.setWidthPercentage(100f);
         Chunk text = new Chunk("Real Sensor(s)", white);

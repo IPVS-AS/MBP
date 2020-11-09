@@ -137,6 +137,10 @@ app.controller('TestingDetailsController',
 
                 });
 
+
+                $scope.config.useNewData = !testingDetails.useNewData;
+                console.log(testingDetails)
+
                 if (testingDetails.type.includes('TestingTemperaturSensor')) {
                     testingDetails.config.forEach(function (config) {
                         config.forEach(function (parameterInstance) {
@@ -155,7 +159,6 @@ app.controller('TestingDetailsController',
 
                                 $rootScope.config.eventTemp = eventTemp;
                                 $rootScope.config.anomalyTemp = anomalyTemp;
-                                $rootScope.config.useNewData = useNewData;
                             } else {
                                 testingDetails.config.forEach(function (config) {
                                     config.forEach(function (parameterInstance) {
@@ -174,7 +177,6 @@ app.controller('TestingDetailsController',
 
                                 $rootScope.config.eventTemp = eventTemp;
                                 $rootScope.config.anomalyTemp = anomalyTemp;
-                                $rootScope.config.useNewData = useNewData;
                                 $rootScope.config.roomTemp = roomTemp;
 
 
@@ -202,7 +204,6 @@ app.controller('TestingDetailsController',
 
                                 $rootScope.config.eventHum = eventHum;
                                 $rootScope.config.anomalyHum = anomalyHum;
-                                $rootScope.config.useNewData = useNewData;
                             } else {
                                 testingDetails.config.forEach(function (config) {
                                     config.forEach(function (parameterInstance) {
@@ -220,7 +221,6 @@ app.controller('TestingDetailsController',
 
                                 $rootScope.config.eventHum = eventHum;
                                 $rootScope.config.anomalyHum = anomalyHum;
-                                $rootScope.config.useNewData = useNewData;
                                 $rootScope.config.roomHum = roomHum;
 
                             }
@@ -256,7 +256,6 @@ app.controller('TestingDetailsController',
 
                                 $rootScope.config.eventTempPl = eventTempPl;
                                 $rootScope.config.anomalyTempPl = anomalyTempPl;
-                                $rootScope.config.useNewData = useNewData;
                                 $rootScope.config.simTime = simTime;
                                 $rootScope.config.amountEvents = amountEvents;
                                 $rootScope.config.amountAnomalies = amountAnomalies;
@@ -285,7 +284,6 @@ app.controller('TestingDetailsController',
                                 $rootScope.config.eventTempPl = eventTempPl;
                                 $rootScope.config.anomalyTempPl = anomalyTempPl;
                                 $rootScope.config.roomTempPl = roomTempPl;
-                                $rootScope.config.useNewData = useNewData;
                                 $rootScope.config.simTime = simTime;
                                 $rootScope.config.amountEvents = amountEvents;
                                 $rootScope.config.amountAnomalies = amountAnomalies;
@@ -318,7 +316,6 @@ app.controller('TestingDetailsController',
                                 })
                                 $rootScope.config.eventHumPl = eventHumPl;
                                 $rootScope.config.anomalyHumPl = anomalyHumPl;
-                                $rootScope.config.useNewData = useNewData;
                                 $rootScope.config.simTime = simTime;
                                 $rootScope.config.amountEvents = amountEvents;
                                 $rootScope.config.amountAnomalies = amountAnomalies;
@@ -346,7 +343,6 @@ app.controller('TestingDetailsController',
                                 $rootScope.config.eventHumPl = eventHumPl;
                                 $rootScope.config.anomalyHumPl = anomalyHumPl;
                                 $rootScope.config.roomHumPl = roomHumPl;
-                                $rootScope.config.useNewData = useNewData;
                                 $rootScope.config.simTime = simTime;
                                 $rootScope.config.amountEvents = amountEvents;
                                 $rootScope.config.amountAnomalies = amountAnomalies;
@@ -381,7 +377,7 @@ app.controller('TestingDetailsController',
 
                     $rootScope.config.eventGPS = eventGPS;
                     $rootScope.config.anomalyGPS = anomalyGPS;
-                    $rootScope.config.useNewData = useNewData;
+
                     $rootScope.config.latitudeGPS = latitudeGPS;
                     $rootScope.config.longitudeGPS = longitudeGPS;
                     $rootScope.config.hightGPS = hightGPS;
@@ -423,7 +419,6 @@ app.controller('TestingDetailsController',
 
                     $rootScope.config.eventGPS = eventGPS;
                     $rootScope.config.anomalyGPS = anomalyGPS;
-                    $rootScope.config.useNewData = useNewData;
                     $rootScope.config.latitudeGPS = latitudeGPS;
                     $rootScope.config.longitudeGPS = longitudeGPS;
                     $rootScope.config.hightGPS = hightGPS;
@@ -456,7 +451,6 @@ app.controller('TestingDetailsController',
                     })
                     $rootScope.config.eventAcc = eventAcc;
                     $rootScope.config.anomalyAcc = anomalyAcc;
-                    $rootScope.config.useNewData = useNewData;
                     $rootScope.config.reactionMetersAcc = reactionMetersAcc;
                     $rootScope.config.weightObjectAcc = weightObjectAcc;
                     $rootScope.config.sensitivityClassAcc = sensitivityClassAcc;
@@ -493,7 +487,7 @@ app.controller('TestingDetailsController',
 
                     $rootScope.config.eventAccPl = eventAccPl;
                     $rootScope.config.anomalyAccPl = anomalyAccPl;
-                    $rootScope.config.useNewData = useNewData;
+
                     $rootScope.config.reactionMetersAccPl = reactionMetersAccPl;
                     $rootScope.config.weightObjectAccPl = weightObjectAccPl;
                     $rootScope.config.sensitivityClassAccPl = sensitivityClassAccPl;
@@ -503,6 +497,7 @@ app.controller('TestingDetailsController',
 
 
                 }
+
 
 
                 $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
