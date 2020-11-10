@@ -134,8 +134,7 @@
                             <div class="form-group" ng-class="{'has-error' : addPolicyCtrl.item.errors.accessTypes }">
                                 <div class="form-line"
                                     ng-class="{'focused error' : addPolicyCtrl.item.errors.accessTypes }">
-                                    <select multiple class="form-control show-tick" ng-model="addPolicyCtrl.item.accessTypes">
-                                        <!-- <option disabled selected value>Access Types *</option> -->
+                                    <select multiple class="form-control selectpicker" ng-model="addPolicyCtrl.item.accessTypes">
                                         <option value="READ">Read</option>
                                         <option value="READ_VALUE_LOGS">Read Value Logs</option>
                                         <option value="READ_VALUE_LOG_STATS">Read Value Log Stats</option>

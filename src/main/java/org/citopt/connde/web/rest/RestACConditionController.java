@@ -124,26 +124,4 @@ public class RestACConditionController {
     	return new PagedModel<>(conditionEntityModels, Pages.metaDataOf(pageable, conditionEntityModels.size()), C.listOf(link));
     }
     
-	// ------------------------------------------------------------------------------------------------------------------------------------------
-	
-	@GetMapping(path = "/1")
-    public ResponseEntity<Void> test1() {
-//		IACCondition sc1 = new ACSimpleCondition<Double>("Simple condition 1", ACArgumentFunction.EQUALS, new ACConditionSimpleValueArgument<Double>(1D), new ACConditionSimpleValueArgument<Double>(1D));
-//		IACCondition sc2 = new ACSimpleCondition<Double>("Simple condition 2", ACArgumentFunction.EQUALS, new ACConditionSimpleValueArgument<Double>(2D), new ACConditionSimpleValueArgument<Double>(2D));
-//		
-//		IACCondition cc1 = new ACCompositeCondition("Composite condition 1", ACLogicalOperator.AND, C.listOf(sc1, sc2));
-//		
-//		conditionRepository.save(sc1);
-//		conditionRepository.save(sc2);
-//		conditionRepository.save(cc1);
-		
-		// - - -
-		
-//		ACAbstractCondition c = conditionRepository.findAll().get(0);
-//		ACPolicy p = new ACPolicy("Test Policy 1", 1, C.listOf(ACAccessType.READ), c, new ArrayList<>(), userRepository.findOneByUsername("admin").get());
-//		p = policyRepository.save(p);
-		
-    	return ResponseEntity.ok().build();
-    }
-	
 }
