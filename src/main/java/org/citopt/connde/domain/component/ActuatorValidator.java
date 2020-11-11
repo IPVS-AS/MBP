@@ -47,7 +47,7 @@ public class ActuatorValidator implements Validator {
                 "The device cannot be empty!");
 
         ValidationUtils.rejectIfEmptyOrWhitespace(
-                errors, "adapter", "component.adapter.empty",
-                "The adapter cannot be empty!");
+                errors, "operator", "component.operator.empty",
+                "The operator cannot be empty!");
     }
 }

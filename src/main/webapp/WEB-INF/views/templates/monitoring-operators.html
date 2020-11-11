@@ -1,5 +1,5 @@
 <div class="row clearfix" ng-hide>
-    <!-- List of Adapters Card -->
+    <!-- List of Operators Card -->
     <div class="col-lg-12">
         <div class="card">
             <div class="header">
@@ -10,25 +10,25 @@
                 <div class="align-right">
                     <button id="add-button" type="button"
                             class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
-                            data-toggle="modal" data-target="#addAdapterModal" data-backdrop="static"
+                            data-toggle="modal" data-target="#addOperatorModal" data-backdrop="static"
                             data-keyboard="false">
                         <i class="material-icons">add</i>
                     </button>
                 </div>
             </div>
             <div class="body">
-                <ul class="nav nav-tabs tab-nav-right" role="tablist" id="adapterFilter">
+                <ul class="nav nav-tabs tab-nav-right" role="tablist" id="operatorFilter">
                     <li role="presentation" class="active">
-                        <a data-target="#adapterTable-all" data-toggle="tab"><strong>All</strong></a>
+                        <a data-target="#operatorTable-all" data-toggle="tab"><strong>All</strong></a>
                     </li>
                     <li role="presentation" ng-repeat="deviceType in ctrl.deviceTypesList">
-                        <a data-target="#adapterTable-{{deviceType.id}}" data-toggle="tab">{{deviceType.name}}</a>
+                        <a data-target="#operatorTable-{{deviceType.id}}" data-toggle="tab">{{deviceType.name}}</a>
                     </li>
                 </ul>
                 <div class="tab-content">
-                    <div id="adapterTable-all" class="tab-pane fade in active">
+                    <div id="operatorTable-all" class="tab-pane fade in active">
                         <table class="table table-hover" st-table="displayedCollection"
-                               st-safe-src="adapterListCtrl.items">
+                               st-safe-src="operatorListCtrl.items">
                             <thead>
                             <tr>
                                 <th>Name</th>
@@ -50,16 +50,16 @@
                                 <td>{{item.unit ? item.unit : 'None'}}</td>
                                 <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                                 <td>
-                                    <form ng-submit="deleteAdapterCtrl.deleteItem()"
+                                    <form ng-submit="deleteOperatorCtrl.deleteItem()"
                                           style="display: inline-block">
                                         <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
-                                                ng-click="deleteAdapterCtrl.item.id = item.id">
+                                                ng-click="deleteOperatorCtrl.item.id = item.id">
                                             <i class="material-icons" style="font-size:14px;">delete</i>
                                         </button>
                                     </form>
                                 </td>
                             </tr>
-                            <tr ng-show="adapterListCtrl.items.length === 0">
+                            <tr ng-show="operatorListCtrl.items.length === 0">
                                 <td>No operators registered.</td>
                                 <td></td>
                                 <td></td>
@@ -74,10 +74,10 @@
                             </tfoot>
                         </table>
                     </div>
-                    <div ng-repeat="deviceType in ctrl.deviceTypesList" id="adapterTable-{{deviceType.id}}"
+                    <div ng-repeat="deviceType in ctrl.deviceTypesList" id="operatorTable-{{deviceType.id}}"
                          class="tab-pane fade in">
                         <table class="table table-hover" st-table="displayedCollection"
-                               st-safe-src="adapterListCtrl.items">
+                               st-safe-src="operatorListCtrl.items">
                             <thead>
                             <tr>
                                 <th>Name</th>
@@ -92,9 +92,9 @@
                                 <td>{{item.description}}</td>
                                 <td><span ng-repeat="par in item.parameters">{{par.name}} ({{par.type}}) </span></td>
                                 <td>
-                                    <form ng-submit="deleteAdapterCtrl.deleteItem()">
+                                    <form ng-submit="deleteOperatorCtrl.deleteItem()">
                                         <button type="submit" class="btn btn-danger m-t-0 waves-effect"
-                                                ng-click="deleteAdapterCtrl.item.id = item.id"> Delete
+                                                ng-click="deleteOperatorCtrl.item.id = item.id"> Delete
                                         </button>
                                     </form>
                                 </td>
@@ -112,9 +112,9 @@
             </div>
         </div>
     </div>
-    <!-- #END# List of Monitoring Adapters Card -->
+    <!-- #END# List of Monitoring Operators Card -->
     <!-- Modal -->
-    <div class="modal fade" id="addAdapterModal" tabindex="-1" role="dialog">
+    <div class="modal fade" id="addOperatorModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -125,58 +125,58 @@
                     </h5>
 
                 </div>
-                <form id="addAdapterForm" ng-submit="addAdapterCtrl.addItem()">
-                    <fieldset id="adapter-form">
+                <form id="addOperatorForm" ng-submit="addOperatorCtrl.addItem()">
+                    <fieldset id="operator-form">
                         <div class="modal-body">
                             <!-- "global" error for addItem -->
-                            <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.global}">
-                                <span class="alert alert-danger" ng-show="addAdapterCtrl.item.errors.global"> {{addAdapterCtrl.item.errors.global}} </span>
+                            <div class="form-group" ng-class="{'has-error' : addOperatorCtrl.item.errors.global}">
+                                <span class="alert alert-danger" ng-show="addOperatorCtrl.item.errors.global"> {{addOperatorCtrl.item.errors.global}} </span>
                             </div>
                             <!-- item.name group -->
-                            <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.name }">
+                            <div class="form-group" ng-class="{'has-error' : addOperatorCtrl.item.errors.name }">
                                 <div class="form-line"
-                                     ng-class="{'focused error' : addAdapterCtrl.item.errors.name }">
-                                    <input class="form-control" id="adapter-form-input-name" type="text"
-                                           placeholder="Name *" ng-model="addAdapterCtrl.item.name"/>
+                                     ng-class="{'focused error' : addOperatorCtrl.item.errors.name }">
+                                    <input class="form-control" id="operator-form-input-name" type="text"
+                                           placeholder="Name *" ng-model="addOperatorCtrl.item.name"/>
                                 </div>
-                                <span class="help-block" ng-show="addAdapterCtrl.item.errors.name">{{addAdapterCtrl.item.errors.name.message}}</span>
+                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.name">{{addOperatorCtrl.item.errors.name.message}}</span>
                             </div>
                             <!-- item.deviceTypes group -->
-                            <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.deviceTypes }">
+                            <div class="form-group" ng-class="{'has-error' : addOperatorCtrl.item.errors.deviceTypes }">
                                 <div class="form-line"
-                                     ng-class="{'focused error' : addAdapterCtrl.item.errors.deviceTypes }">
+                                     ng-class="{'focused error' : addOperatorCtrl.item.errors.deviceTypes }">
                                     <select class="form-control selectpicker" title="Device types *"
                                             data-header="Device types *"
                                             ng-options="deviceType.href as deviceType.name for deviceType in ctrl.deviceTypesList"
-                                            ng-model="addAdapterCtrl.item.deviceTypes" multiple>
+                                            ng-model="addOperatorCtrl.item.deviceTypes" multiple>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addAdapterCtrl.item.errors.deviceTypes">{{addAdapterCtrl.item.errors.deviceTypes.message}}</span>
+                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.deviceTypes">{{addOperatorCtrl.item.errors.deviceTypes.message}}</span>
                             </div>
                             <!-- item.description group -->
                             <div class="form-group"
-                                 ng-class="{'has-error' : addAdapterCtrl.item.errors.description }">
+                                 ng-class="{'has-error' : addOperatorCtrl.item.errors.description }">
                                 <div class="form-line"
-                                     ng-class="{'focused error' : addAdapterCtrl.item.errors.description }">
+                                     ng-class="{'focused error' : addOperatorCtrl.item.errors.description }">
                                     <input class="form-control no-resize" placeholder="Describe this operator..."
-                                           ng-model="addAdapterCtrl.item.description">
+                                           ng-model="addOperatorCtrl.item.description">
                                 </div>
-                                <span class="help-block" ng-show="addAdapterCtrl.item.errors.description">{{addAdapterCtrl.item.errors.description.message}}</span>
+                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.description">{{addOperatorCtrl.item.errors.description.message}}</span>
                             </div>
                             <!-- item.unit group -->
                             <div class="form-group"
-                                 ng-class="{'has-error' : addAdapterCtrl.item.errors.unit }">
+                                 ng-class="{'has-error' : addOperatorCtrl.item.errors.unit }">
                                 <div class="form-line"
-                                     ng-class="{'focused error' : addAdapterCtrl.item.errors.unit }">
-                                    <unit-input ng-model="addAdapterCtrl.item.unit"></unit-input>
+                                     ng-class="{'focused error' : addOperatorCtrl.item.errors.unit }">
+                                    <unit-input ng-model="addOperatorCtrl.item.unit"></unit-input>
                                 </div>
-                                <span class="help-block" ng-show="addAdapterCtrl.item.errors.unit">{{addAdapterCtrl.item.errors.unit.message}}</span>
+                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.unit">{{addOperatorCtrl.item.errors.unit.message}}</span>
                             </div>
                             <!-- item.routine group -->
                             <label>Operator scripts: *</label>
-                            <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.routines }">
+                            <div class="form-group" ng-class="{'has-error' : addOperatorCtrl.item.errors.routines }">
                                 <div class="form-line"
-                                     ng-class="{'focused error' : addAdapterCtrl.item.errors.routines }">
+                                     ng-class="{'focused error' : addOperatorCtrl.item.errors.routines }">
                                     <div class="dropzone row" options="ctrl.dzRoutinesOptions"
                                          callbacks="ctrl.dzRoutinesCallbacks" methods="ctrl.dzMethods"
                                          ng-dropzone></div>
@@ -193,7 +193,7 @@
                                        </div>
                                      </div>
                                 </div>
-                                <span class="help-block" ng-show="addAdapterCtrl.item.errors.routines">{{addAdapterCtrl.item.errors.routines.message}}</span>
+                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.routines">{{addOperatorCtrl.item.errors.routines.message}}</span>
                             </div>
                             <!-- item.parameters group -->
                             <label>Parameters:</label>
@@ -250,8 +250,8 @@
                                     </tr>
                                     </tbody>
                                 </table>
-                                <div class="has-error" ng-show="addAdapterCtrl.item.errors.parameters">
-                                    <span class="help-block">{{addAdapterCtrl.item.errors.parameters.message}}</span>
+                                <div class="has-error" ng-show="addOperatorCtrl.item.errors.parameters">
+                                    <span class="help-block">{{addOperatorCtrl.item.errors.parameters.message}}</span>
                                 </div>
                                 <div class="align-right">
                                     <button type="button"
@@ -262,18 +262,18 @@
                                 </div>
                             </div>
                             <!-- item.accessControlPolicyIds group -->
-                            <div class="form-group" ng-class="{'has-error' : addAdapterCtrl.item.errors.accessControlPolicyIds }">
+                            <div class="form-group" ng-class="{'has-error' : addOperatorCtrl.item.errors.accessControlPolicyIds }">
                                 <div class="form-line"
-                                     ng-class="{'focused error' : addAdapterCtrl.item.errors.accessControlPolicyIds }">
+                                     ng-class="{'focused error' : addOperatorCtrl.item.errors.accessControlPolicyIds }">
                                     <select multiple class="form-control selectpicker" title="Access Control Policies"
                                             data-header="Access Control Policies"
-                                            ng-model="addAdapterCtrl.item.accessControlPolicyIds"
+                                            ng-model="addOperatorCtrl.item.accessControlPolicyIds"
                                             ng-options="p.id as (p.name) for p in ctrl.accessControlPolicyList">
                                         <option value="">Select access control policies
                                         <option/>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addAdapterCtrl.item.errors.accessControlPolicyIds">{{addAdapterCtrl.item.errors.accessControlPolicyIds.message}}</span>
+                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.accessControlPolicyIds">{{addOperatorCtrl.item.errors.accessControlPolicyIds.message}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>

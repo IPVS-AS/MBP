@@ -1,4 +1,4 @@
-package org.citopt.connde.domain.adapter;
+package org.citopt.connde.domain.operator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ import javax.measure.quantity.Quantity;
 import javax.measure.unit.Unit;
 import javax.persistence.GeneratedValue;
 
-import org.citopt.connde.domain.adapter.parameters.Parameter;
+import org.citopt.connde.domain.operator.parameters.Parameter;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -16,10 +16,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Document class for Adapters.
+ * Document class for operators.
  */
 @Document
-public class Adapter extends UserEntity {
+public class Operator extends UserEntity {
 
     @Id
     @GeneratedValue
@@ -36,7 +36,7 @@ public class Adapter extends UserEntity {
 
     private List<Parameter> parameters;
 
-    public Adapter() {
+    public Operator() {
         this.routines = new ArrayList<>();
         this.parameters = new ArrayList<>();
     }

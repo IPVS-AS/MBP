@@ -5,7 +5,7 @@ import java.util.List;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
-import org.citopt.connde.domain.adapter.Adapter;
+import org.citopt.connde.domain.operator.Operator;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.rules.Rule;
@@ -37,7 +37,7 @@ import io.swagger.annotations.ApiResponses;
 
 /**
  * REST Controller that exposes methods that allow the filtering for certain
- * components, e.g. by adapter/device id.
+ * components, e.g. by operator/device id.
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH)
@@ -123,25 +123,25 @@ public class RestComponentFilterController {
 	}
 
 	/**
-	 * Retrieves all components that use a given adapter.
+	 * Retrieves all components that use a given operator.
 	 *
-	 * @param adapterId the id of the {@link Adapter}.
+	 * @param operatorId the id of the {@link Operator}.
 	 * @return the list of {@link Component}s.
 	 */
-	@GetMapping("/components/by-adapter/{id}")
-	@ApiOperation(value = "Retrieves the components which use a certain adapter and for which the user is authorized.", produces = "application/hal+json")
+	@GetMapping("/components/by-operator/{id}")
+	@ApiOperation(value = "Retrieves the components which use a certain operator and for which the user is authorized.", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
-			@ApiResponse(code = 401, message = "Not authorized to access the adapter!"),
-			@ApiResponse(code = 404, message = "Adapter or requesting user not found!") })
-	public ResponseEntity<List<ComponentExcerpt>> getComponentsByAdapterId(
+			@ApiResponse(code = 401, message = "Not authorized to access the operator!"),
+			@ApiResponse(code = 404, message = "Operator or requesting user not found!") })
+	public ResponseEntity<List<ComponentExcerpt>> getComponentsByOperatorId(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-			@PathVariable(value = "id") @ApiParam(value = "ID of the adapter", example = "5c97dc2583aeb6078c5ab672", required = true) String adapterId) {
+			@PathVariable(value = "id") @ApiParam(value = "ID of the operator", example = "5c97dc2583aeb6078c5ab672", required = true) String operatorId) {
 		// Parse the access-request information
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
 		// Retrieve actuator and sensor excerpts from the database
-		List<ComponentExcerpt> componentExcerpts = userEntityService.filterForAdminOwnerAndPolicies(() -> actuatorRepository.findAllByAdapterId(adapterId), ACAccessType.READ, accessRequest);
-		componentExcerpts.addAll(userEntityService.filterForAdminOwnerAndPolicies(() -> sensorRepository.findAllByAdapterId(adapterId), ACAccessType.READ, accessRequest));
+		List<ComponentExcerpt> componentExcerpts = userEntityService.filterForAdminOwnerAndPolicies(() -> actuatorRepository.findAllByOperatorId(operatorId), ACAccessType.READ, accessRequest);
+		componentExcerpts.addAll(userEntityService.filterForAdminOwnerAndPolicies(() -> sensorRepository.findAllByOperatorId(operatorId), ACAccessType.READ, accessRequest));
 		return ResponseEntity.ok(componentExcerpts);
 	}
 
@@ -154,8 +154,8 @@ public class RestComponentFilterController {
 	@GetMapping("/components/by-device/{id}")
 	@ApiOperation(value = "Retrieves the components which make use of a certain device and for which the user is authorized", produces = "application/hal+json")
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
-			@ApiResponse(code = 401, message = "Not authorized to access the adapter!"),
-			@ApiResponse(code = 404, message = "Adapter or requesting user not found!") })
+			@ApiResponse(code = 401, message = "Not authorized to access the operator!"),
+			@ApiResponse(code = 404, message = "Operator or requesting user not found!") })
 	public ResponseEntity<List<ComponentExcerpt>> getComponentsByDeviceID(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "id") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId) {
@@ -163,8 +163,8 @@ public class RestComponentFilterController {
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
 		// Retrieve actuator and sensor excerpts from the database
-		List<ComponentExcerpt> componentExcerpts = userEntityService.filterForAdminOwnerAndPolicies(() -> actuatorRepository.findAllByAdapterId(deviceId), ACAccessType.READ, accessRequest);
-		componentExcerpts.addAll(userEntityService.filterForAdminOwnerAndPolicies(() -> sensorRepository.findAllByAdapterId(deviceId), ACAccessType.READ, accessRequest));
+		List<ComponentExcerpt> componentExcerpts = userEntityService.filterForAdminOwnerAndPolicies(() -> actuatorRepository.findAllByOperatorId(deviceId), ACAccessType.READ, accessRequest);
+		componentExcerpts.addAll(userEntityService.filterForAdminOwnerAndPolicies(() -> sensorRepository.findAllByOperatorId(deviceId), ACAccessType.READ, accessRequest));
 		return ResponseEntity.ok(componentExcerpts);
 	}
 

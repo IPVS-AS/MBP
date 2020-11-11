@@ -77,7 +77,7 @@ app.directive('envModelTool',
                 //Class for data of the actuator/sensor details modal
                 const ComponentDetails = function () {
                     this.name = '';
-                    this.adapter = null;
+                    this.operator = null;
                 };
 
                 /*
@@ -873,7 +873,7 @@ app.directive('envModelTool',
                             scope.clickedComponent.id = element.data("id");
                             scope.clickedComponent.name = element.data("name");
                             scope.clickedComponent.type = element.data("type");
-                            scope.clickedComponent.adapter = element.data("adapter");
+                            scope.clickedComponent.operator = element.data("operator");
                             scope.clickedComponent.device = element.data("device");
                             scope.clickedComponent.regError = element.data("regError");
                             scope.clickedComponent.depError = element.data("depError");
@@ -884,7 +884,7 @@ app.directive('envModelTool',
                             scope.clickedComponent.id = element.data("id");
                             scope.clickedComponent.name = element.data("name");
                             scope.clickedComponent.type = element.data("type");
-                            scope.clickedComponent.adapter = element.data("adapter");
+                            scope.clickedComponent.operator = element.data("operator");
                             scope.clickedComponent.device = element.data("device");
                             scope.clickedComponent.regError = element.data("regError");
                             scope.clickedComponent.depError = element.data("depError");
@@ -1641,7 +1641,7 @@ app.directive('envModelTool',
                     '<div class="form-group"><div class="form-line">' +
                     '<input class="form-control" type="text" placeholder="Name" ng-model="modalElementDetails.name"/></div></div>' +
                     '<div class="form-group"><div class="form-line">' +
-                    '<select class="form-control show-tick" ng-model="modalElementDetails.adapter" ng-options="t.id as (t.name) for t in adapterList">' +
+                    '<select class="form-control show-tick" ng-model="modalElementDetails.operator" ng-options="t.id as (t.name) for t in operatorList">' +
                     '<option value="">Select operator<option/>' +
                     '</select></div></div></div>' +
                     '<div class="modal-footer">' +
@@ -1661,7 +1661,7 @@ app.directive('envModelTool',
 
                     //Input
                     keyPairList: '=keyPairList',
-                    adapterList: '=adapterList',
+                    operatorList: '=operatorList',
                     deviceTypes: '=deviceTypes',
                     actuatorTypes: '=actuatorTypes',
                     sensorTypes: '=sensorTypes',

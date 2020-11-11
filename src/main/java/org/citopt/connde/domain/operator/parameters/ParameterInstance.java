@@ -1,4 +1,4 @@
-package org.citopt.connde.domain.adapter.parameters;
+package org.citopt.connde.domain.operator.parameters;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

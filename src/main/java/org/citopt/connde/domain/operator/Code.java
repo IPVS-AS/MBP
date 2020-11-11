@@ -1,4 +1,4 @@
-package org.citopt.connde.domain.adapter;
+package org.citopt.connde.domain.operator;
 
 import org.apache.commons.codec.binary.Base64;
 import org.citopt.connde.util.CryptoUtils;

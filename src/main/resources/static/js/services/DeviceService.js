@@ -14,8 +14,8 @@ app.factory('DeviceService', ['HttpService', 'ENDPOINT_URI', function (HttpServi
     const URL_GET_DEVICE_STATE = ENDPOINT_URI + '/devices/{0}/state/';
 
     //Performs a server request in order to retrieve a list of all using components.
-    function getUsingComponents(adapterId) {
-        return HttpService.getRequest(URL_GET_USING_COMPONENTS + adapterId);
+    function getUsingComponents(operatorId) {
+        return HttpService.getRequest(URL_GET_USING_COMPONENTS + operatorId);
     }
 
     //Performs a server request in order to retrieve the availability states of all devices.

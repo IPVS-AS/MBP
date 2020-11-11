@@ -92,7 +92,7 @@ public class EnvironmentModelValueReceiver implements ValueLogReceiverObserver {
         }
 
         //Get adapter unit
-        String adapterUnit = component.getAdapter().getUnit();
+        String adapterUnit = component.getOperator().getUnit();
 
         //Create corresponding event
         ComponentValueEvent event = new ComponentValueEvent(nodeId, adapterUnit, valueLog.getValue());

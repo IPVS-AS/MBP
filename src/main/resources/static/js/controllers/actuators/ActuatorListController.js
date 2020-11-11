@@ -5,12 +5,12 @@
  */
 app.controller('ActuatorListController',
     ['$scope', '$controller', '$interval', 'actuatorList', 'addActuator', 'deleteActuator',
-        'accessControlPolicyList', 'deviceList', 'adapterList', 'actuatorTypesList', 'ComponentService', 'NotificationService',
+        'accessControlPolicyList', 'deviceList', 'operatorList', 'actuatorTypesList', 'ComponentService', 'NotificationService',
         function ($scope, $controller, $interval, actuatorList, addActuator, deleteActuator,
-                  accessControlPolicyList, deviceList, adapterList, actuatorTypesList, ComponentService, NotificationService) {
+                  accessControlPolicyList, deviceList, operatorList, actuatorTypesList, ComponentService, NotificationService) {
             let vm = this;
 
-            vm.adapterList = adapterList;
+            vm.operatorList = operatorList;
             vm.deviceList = deviceList;
 
             /**

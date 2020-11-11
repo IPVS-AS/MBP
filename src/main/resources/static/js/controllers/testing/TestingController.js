@@ -171,15 +171,15 @@ app.controller('TestingController',
              * Register the Actuator-Simulator for the Test of IoT-Applications.
              */
             function registerTestingActuator() {
-                adaptersExists = false;
+                operatorsExists = false;
                 deviceExists = false;
 
-                // Check if the required Adapter for the actuator simulator exists
-                $http.get(ENDPOINT_URI + '/adapters/search/findAll').success(function (response) {
-                    angular.forEach(response._embedded.adapters, function (value) {
+                // Check if the required operator for the actuator simulator exists
+                $http.get(ENDPOINT_URI + '/operators/search/findAll').success(function (response) {
+                    angular.forEach(response._embedded.operators, function (value) {
                         if (value.name === "TestingActuator") {
-                            adapterLink = value._links.self.href;
-                            adaptersExists = true;
+                            operatorLink = value._links.self.href;
+                            operatorsExists = true;
                         }
                     });
 
@@ -192,14 +192,14 @@ app.controller('TestingController',
                             }
                         });
 
-                        // if the specific adapter and the Testing device exists a server request for the registration is performed
-                        if (deviceExists && adaptersExists) {
+                        // if the specific operator and the Testing device exists a server request for the registration is performed
+                        if (deviceExists && operatorsExists) {
 
                             // Parameters for the actuator simulator registration
                             param = {
                                 "name": "TestingActuator",
                                 "componentType": "Buzzer",
-                                "adapter": adapterLink,
+                                "operator": operatorLink,
                                 "device": deviceLink,
                                 "errors": {}
                             };
@@ -212,15 +212,15 @@ app.controller('TestingController',
                                 NotificationService.notify('Entity successfully created.', 'success')
                             });
 
-                        } else if (!deviceExists && adaptersExists) {
+                        } else if (!deviceExists && operatorsExists) {
                             // Notify the user if the required Test device for the registration doesn't exist
                             NotificationService.notify("Please register the Testing device first.", "error");
-                        } else if (deviceExists && !adaptersExists) {
-                            // Notify the user if the required Adapter for the registration doesn't exist
-                            NotificationService.notify("Please register the corresponding adapter first.", "error");
-                        } else if (!deviceExists && !adaptersExists) {
-                            // Notify the user if the required Adapter and Test device for the registration doesn't exist
-                            NotificationService.notify("Please register the corresponding adapter and Testing device first.", "error");
+                        } else if (deviceExists && !operatorsExists) {
+                            // Notify the user if the required operator for the registration doesn't exist
+                            NotificationService.notify("Please register the corresponding operator first.", "error");
+                        } else if (!deviceExists && !operatorsExists) {
+                            // Notify the user if the required operator and Test device for the registration doesn't exist
+                            NotificationService.notify("Please register the corresponding operator and Testing device first.", "error");
                         }
                     });
 
@@ -330,16 +330,16 @@ app.controller('TestingController',
              * Register the one dimensional Sensor-Simulator for the Test of IoT-Applications.
              */
             function registerOneDimSensor(sensor) {
-                adaptersExists = false;
+                operatorsExists = false;
                 deviceExists = false;
 
-                // Check if the required Adapter for the specific sensor exists
-                $http.get(ENDPOINT_URI + '/adapters/search/findAll').success(function (response) {
-                    angular.forEach(response._embedded.adapters, function (value) {
+                // Check if the required operator for the specific sensor exists
+                $http.get(ENDPOINT_URI + '/operators/search/findAll').success(function (response) {
+                    angular.forEach(response._embedded.operators, function (value) {
                         if (value.name === sensor) {
                             sensorName = sensor;
-                            adapterLink = value._links.self.href;
-                            adaptersExists = true;
+                            operatorLink = value._links.self.href;
+                            operatorsExists = true;
                         }
                     });
 
@@ -352,8 +352,8 @@ app.controller('TestingController',
                                 }
                             });
 
-                            // if the specific adapter and the Testing device exists a server request for the registration is performed
-                            if (deviceExists && adaptersExists) {
+                            // if the specific operator and the Testing device exists a server request for the registration is performed
+                            if (deviceExists && operatorsExists) {
                                 if (sensor === "TestingTemperaturSensor" || sensor === "TestingTemperaturSensorPl") {
                                     componentType = "Temperature";
                                 } else if (sensor === "TestingFeuchtigkeitsSensor" || sensor === "TestingFeuchtigkeitsSensorPl") {
@@ -364,7 +364,7 @@ app.controller('TestingController',
                                 param = {
                                     "name": sensorName,
                                     "componentType": componentType,
-                                    "adapter": adapterLink,
+                                    "operator": operatorLink,
                                     "device": deviceLink,
                                     "errors": {}
                                 };
@@ -377,15 +377,15 @@ app.controller('TestingController',
                                     NotificationService.notify('Entity successfully created.', 'success')
                                 });
 
-                            } else if (!deviceExists && adaptersExists) {
+                            } else if (!deviceExists && operatorsExists) {
                                 // Notify the user if the required Test device for the registration doesn't exist
                                 NotificationService.notify("Please register the Testing device first.", "error");
-                            } else if (deviceExists && !adaptersExists) {
-                                // Notify the user if the required Adapter for the registration doesn't exist
-                                NotificationService.notify("Please register the corresponding adapter first.", "error");
-                            } else if (!deviceExists && !adaptersExists) {
-                                // Notify the user if the required Adapter and Test device for the registration doesn't exist
-                                NotificationService.notify("Please register the corresponding adapter and Testing device first.", "error");
+                            } else if (deviceExists && !operatorsExists) {
+                                // Notify the user if the required operator for the registration doesn't exist
+                                NotificationService.notify("Please register the corresponding operator first.", "error");
+                            } else if (!deviceExists && !operatorsExists) {
+                                // Notify the user if the required operator and Test device for the registration doesn't exist
+                                NotificationService.notify("Please register the corresponding operator and Testing device first.", "error");
                             }
                         }
                     );
@@ -397,9 +397,9 @@ app.controller('TestingController',
              */
             function registerThreeDimSensor(sensor) {
                 deviceExists = false;
-                adaptersExistsX = false;
-                adaptersExistsY = false;
-                adaptersExistsZ = false;
+                operatorsExistsX = false;
+                operatorsExistsY = false;
+                operatorsExistsZ = false;
                 if (sensor === "TestingBeschleunigungsSensor") {
                     sensorX = "TestingAccelerationX";
                     sensorY = "TestingAccelerationY";
@@ -422,18 +422,18 @@ app.controller('TestingController',
                     componentType = "Location";
                 }
 
-                // Check if the required Adapters for the three dimensional sensor simulators exists
-                $http.get(ENDPOINT_URI + '/adapters/search/findAll').success(function (response) {
-                    angular.forEach(response._embedded.adapters, function (value) {
+                // Check if the required operator for the three dimensional sensor simulators exists
+                $http.get(ENDPOINT_URI + '/operators/search/findAll').success(function (response) {
+                    angular.forEach(response._embedded.operators, function (value) {
                         if (value.name === sensorX) {
-                            adapterLinkX = value._links.self.href;
-                            adaptersExistsX = true;
+                            operatorLinkX = value._links.self.href;
+                            operatorsExistsX = true;
                         } else if (value.name === sensorY) {
-                            adapterLinkY = value._links.self.href;
-                            adaptersExistsY = true;
+                            operatorLinkY = value._links.self.href;
+                            operatorsExistsY = true;
                         } else if (value.name === sensorZ) {
-                            adapterLinkZ = value._links.self.href;
-                            adaptersExistsZ = true;
+                            operatorLinkZ = value._links.self.href;
+                            operatorsExistsZ = true;
                         }
                     });
 
@@ -446,14 +446,14 @@ app.controller('TestingController',
                                 }
                             });
 
-                            // if the specific adapter for one dimension and the Testing device exists a server request for the registration is performed
-                            if (deviceExists && adaptersExistsX) {
+                            // if the specific operator for one dimension and the Testing device exists a server request for the registration is performed
+                            if (deviceExists && operatorsExistsX) {
 
                                 // Parameters for one of the sensor simulators of the three dimensional sensor registration
                                 param = {
                                     "name": sensorX,
                                     "componentType": componentType,
-                                    "adapter": adapterLinkX,
+                                    "operator": operatorLinkX,
                                     "device": deviceLink,
                                     "errors": {}
                                 };
@@ -467,14 +467,14 @@ app.controller('TestingController',
                                 });
                             }
 
-                            // if the specific adapter for one dimension and the Testing device exists a server request for the registration is performed
-                            if (deviceExists && adaptersExistsY) {
+                            // if the specific operator for one dimension and the Testing device exists a server request for the registration is performed
+                            if (deviceExists && operatorsExistsY) {
 
                                 // Parameters for one of the sensor simulators of the three dimesional sensor registration
                                 param = {
                                     "name": sensorY,
                                     "componentType": componentType,
-                                    "adapter": adapterLinkY,
+                                    "operator": operatorLinkY,
                                     "device": deviceLink,
                                     "errors": {}
                                 };
@@ -488,14 +488,14 @@ app.controller('TestingController',
                                 });
                             }
 
-                            // if the specific adapter for one dimension and the Testing device exists a server request for the registration is performed
-                            if (deviceExists && adaptersExistsZ) {
+                            // if the specific operator for one dimension and the Testing device exists a server request for the registration is performed
+                            if (deviceExists && operatorsExistsZ) {
 
                                 // Parameters for one of the sensor simulators of the three dimensional sensor registration
                                 param = {
                                     "name": sensorZ,
                                     "componentType": componentType,
-                                    "adapter": adapterLinkZ,
+                                    "operator": operatorLinkZ,
                                     "device": deviceLink,
                                     "errors": {}
                                 };
@@ -508,15 +508,15 @@ app.controller('TestingController',
                                     NotificationService.notify('Entity successfully created.', 'success')
                                 });
 
-                            } else if (!deviceExists && (adaptersExistsY || adaptersExistsX || adaptersExistsZ)) {
+                            } else if (!deviceExists && (operatorsExistsY || operatorsExistsX || operatorsExistsZ)) {
                                 // Notify the user if the required Test device for the registration doesn't exist
                                 NotificationService.notify("Please register the Testing device first.", "error");
-                            } else if (deviceExists && (!adaptersExistsY || !adaptersExistsX || !adaptersExistsZ)) {
-                                // Notify the user if one of the required Adapters for the registration doesn't exist
-                                NotificationService.notify("Please register the corresponding adapters first.", "error");
-                            } else if (!deviceExists && (!adaptersExistsY || !adaptersExistsX || !adaptersExistsZ)) {
-                                // Notify the user if one of the required Adapters and Test device for the registration doesn't exist
-                                NotificationService.notify("Please register the corresponding adapters and Testing device first.", "error");
+                            } else if (deviceExists && (!operatorsExistsY || !operatorsExistsX || !operatorsExistsZ)) {
+                                // Notify the user if one of the required operator for the registration doesn't exist
+                                NotificationService.notify("Please register the corresponding operators first.", "error");
+                            } else if (!deviceExists && (!operatorsExistsY || !operatorsExistsX || !operatorsExistsZ)) {
+                                // Notify the user if one of the required operator and Test device for the registration doesn't exist
+                                NotificationService.notify("Please register the corresponding operators and Testing device first.", "error");
                             }
                         }
                     );

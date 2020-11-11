@@ -1,11 +1,11 @@
 /* global app */
 
 /**
- * Controller for the monitoring adapter list page which extends the AdapterListController.
+ * Controller for the monitoring operator list page which extends the OperatorListController.
  */
-app.controller('MonitoringAdapterListController',
-    ['$scope', '$controller', '$timeout', 'deviceTypesList', 'monitoringAdapterList', 'addMonitoringAdapter', 'deleteMonitoringAdapter', 'parameterTypesList', 'NotificationService',
-        function ($scope, $controller, $timeout, deviceTypesList, monitoringAdapterList, addMonitoringAdapter, deleteMonitoringAdapter, parameterTypesList, NotificationService) {
+app.controller('MonitoringOperatorListController',
+    ['$scope', '$controller', '$timeout', 'deviceTypesList', 'monitoringOperatorList', 'addMonitoringOperator', 'deleteMonitoringOperator', 'parameterTypesList', 'NotificationService',
+        function ($scope, $controller, $timeout, deviceTypesList, monitoringOperatorList, addMonitoringOperator, deleteMonitoringOperator, parameterTypesList, NotificationService) {
             //Array of colors to be used for the different device types
             const DEVICE_TYPES_COLORS = ['bg-pink', 'bg-purple', 'bg-deep-purple', 'bg-indigo', 'bg-blue',
                 'bg-light-blue', 'bg-cyan', 'bg-teal', 'bg-green', 'bg-light-green', 'bg-lime', 'bg-yellow',
@@ -41,44 +41,44 @@ app.controller('MonitoringAdapterListController',
 
             /**
              * [Private]
-             * Creates an array of device types of an adapter and adds it to the adapter object.
+             * Creates an array of device types of an operator and adds it to the operator object.
              *
-             * @param adapter The adapter to preprocess
+             * @param operator The operator to preprocess
              */
-            function monitoringAdapterPreprocessing(adapter) {
-                //Check where the device types for this adapter are stored
-                if (!adapter.deviceTypes) {
-                    adapter.deviceTypes = adapter._embedded.deviceTypes;
+            function monitoringOperatorPreprocessing(operator) {
+                //Check where the device types for this operator are stored
+                if (!operator.deviceTypes) {
+                    operator.deviceTypes = operator._embedded.deviceTypes;
                 }
 
                 //List to collect all type ids
                 var typesIdList = [];
 
-                //Iterate over all device type objects of this adapter
-                for (var i = 0; i < adapter.deviceTypes.length; i++) {
+                //Iterate over all device type objects of this operator
+                for (var i = 0; i < operator.deviceTypes.length; i++) {
                     //Add device type id to list
-                    typesIdList.push(adapter.deviceTypes[i].id);
+                    typesIdList.push(operator.deviceTypes[i].id);
 
                     //Find and add matching color for this device type
-                    adapter.deviceTypes[i].color = 'label-default';
+                    operator.deviceTypes[i].color = 'label-default';
                     for (var j = 0; j < deviceTypesList.length; j++) {
-                        if (deviceTypesList[j].id === adapter.deviceTypes[i].id) {
-                            adapter.deviceTypes[i].color = deviceTypesList[j].color;
+                        if (deviceTypesList[j].id === operator.deviceTypes[i].id) {
+                            operator.deviceTypes[i].color = deviceTypesList[j].color;
                             break;
                         }
                     }
                 }
-                adapter.deviceTypesList = typesIdList;
+                operator.deviceTypesList = typesIdList;
             }
 
-            //Extend the controller for the AdapterListController and pass all relevant data
-            angular.extend(vm, $controller('AdapterListController',
+            //Extend the controller for the OperatorListController and pass all relevant data
+            angular.extend(vm, $controller('OperatorListController',
                 {
                     $scope: $scope,
-                    adapterList: monitoringAdapterList,
-                    adapterPreprocessing: monitoringAdapterPreprocessing,
-                    addAdapter: addMonitoringAdapter,
-                    deleteAdapter: deleteMonitoringAdapter,
+                    operatorList: monitoringOperatorList,
+                    operatorPreprocessing: monitoringOperatorPreprocessing,
+                    addOperator: addMonitoringOperator,
+                    deleteOperator: deleteMonitoringOperator,
                     parameterTypesList: parameterTypesList
                 })
             );

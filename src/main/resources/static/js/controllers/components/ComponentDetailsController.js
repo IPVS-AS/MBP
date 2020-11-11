@@ -15,7 +15,7 @@ app.controller('ComponentDetailsController',
             const COMPONENT_ID = $routeParams.id;
             const COMPONENT_TYPE = componentDetails.componentTypeName;
             const COMPONENT_TYPE_URL = COMPONENT_TYPE + 's';
-            const COMPONENT_ADAPTER_UNIT = componentDetails.adapter.unit;
+            const COMPONENT_OPERATOR_UNIT = componentDetails.operator.unit;
 
             //Initialization of variables that are used in the frontend by angular
             var vm = this;
@@ -23,8 +23,8 @@ app.controller('ComponentDetailsController',
             vm.isLoading = false;
             vm.deploymentState = 'UNKNOWN';
             vm.deviceState = 'UNKNOWN';
-            vm.displayUnit = COMPONENT_ADAPTER_UNIT;
-            vm.displayUnitInput = COMPONENT_ADAPTER_UNIT;
+            vm.displayUnit = COMPONENT_OPERATOR_UNIT;
+            vm.displayUnitInput = COMPONENT_OPERATOR_UNIT;
 
             //Stores the parameters and their values as assigned by the user
             vm.parameterValues = [];
@@ -119,11 +119,11 @@ app.controller('ComponentDetailsController',
                 //Retrieve entered unit
                 var inputUnit = vm.displayUnitInput;
 
-                //Check whether the entered unit is compatible with the adapter unit
-                UnitService.checkUnitsForCompatibility(COMPONENT_ADAPTER_UNIT, inputUnit).then(function (response) {
+                //Check whether the entered unit is compatible with the operator unit
+                UnitService.checkUnitsForCompatibility(COMPONENT_OPERATOR_UNIT, inputUnit).then(function (response) {
                     //Check compatibility according to server response
                     if (!response) {
-                        NotificationService.notify("The entered unit is not compatible to the adapter unit.", "error");
+                        NotificationService.notify("The entered unit is not compatible to the operator unit.", "error");
                         return;
                     }
 
@@ -442,17 +442,17 @@ app.controller('ComponentDetailsController',
              */
             function initParameters() {
                 //Retrieve all formal parameters for this component
-                var requiredParams = componentDetails.adapter.parameters;
+                var requiredParams = componentDetails.operator.parameters;
 
                 //Iterate over all parameters
                 for (var i = 0; i < requiredParams.length; i++) {
                     //Set empty default values for these parameters
                     var value = "";
 
-                    if (requiredParams[i].type == "Switch") {
+                    if (requiredParams[i].type === "Switch") {
                         value = false;
                     }
-                    if (requiredParams[i].name == "device_code") {
+                    if (requiredParams[i].name === "device_code") {
                         console.log("Requesting code for required parameter device_code.");
                         value = getDeviceCode();
                         continue;

@@ -20,7 +20,7 @@ app.controller('TestingChartController',
                     vm.component_id = sensorList[i].id;
                     vm.component_type = sensorList[i].componentTypeName;
                     vm.component_type_url = vm.component_type + 's';
-                    vm.component_adapter_unit = sensorList[i]._embedded.adapter.unit;
+                    vm.component_operator_unit = sensorList[i]._embedded.operator.unit;
 
                 }
             }
@@ -28,14 +28,14 @@ app.controller('TestingChartController',
             const COMPONENT_ID = vm.component_id;
             const COMPONENT_TYPE = vm.component_type;
             const COMPONENT_TYPE_URL = vm.component_type_url;
-            const COMPONENT_ADAPTER_UNIT = vm.component_adapter_unit;
+            const COMPONENT_OPERATOR_UNIT = vm.component_operator_unit;
 
             vm.component = vm.sensor;
             vm.isLoading = false;
             vm.deploymentState = 'UNKNOWN';
             vm.deviceState = 'UNKNOWN';
-            vm.displayUnit = COMPONENT_ADAPTER_UNIT;
-            vm.displayUnitInput = COMPONENT_ADAPTER_UNIT;
+            vm.displayUnit = COMPONENT_OPERATOR_UNIT;
+            vm.displayUnitInput = COMPONENT_OPERATOR_UNIT;
 
 
             //Stores the parameters and their values as assigned by the user
@@ -133,11 +133,11 @@ app.controller('TestingChartController',
                 //Retrieve entered unit
                 var inputUnit = vm.displayUnitInput;
 
-                //Check whether the entered unit is compatible with the adapter unit
-                UnitService.checkUnitsForCompatibility(COMPONENT_ADAPTER_UNIT, inputUnit).then(function (response) {
+                //Check whether the entered unit is compatible with the operator unit
+                UnitService.checkUnitsForCompatibility(COMPONENT_OPERATOR_UNIT, inputUnit).then(function (response) {
                     //Check compatibility according to server response
                     if (!response) {
-                        NotificationService.notify("The entered unit is not compatible to the adapter unit.", "error");
+                        NotificationService.notify("The entered unit is not compatible to the operator unit.", "error");
                         return;
                     }
 
@@ -419,7 +419,7 @@ app.controller('TestingChartController',
             function initParameters() {
                 //Retrieve all formal parameters for this component
 
-                var requiredParams = vm.sensor._embedded.adapter.parameters;
+                var requiredParams = vm.sensor._embedded.operator.parameters;
                 //Iterate over all parameters
                 for (var i = 0; i < requiredParams.length; i++) {
                     //Set empty default values for these parameters

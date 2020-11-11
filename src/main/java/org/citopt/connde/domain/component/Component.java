@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import javax.persistence.GeneratedValue;
 
-import org.citopt.connde.domain.adapter.Adapter;
+import org.citopt.connde.domain.operator.Operator;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
@@ -29,7 +29,7 @@ public abstract class Component extends UserEntity {
     private String componentType;
 
     @DBRef
-    private Adapter adapter;
+    private Operator operator;
 
     @DBRef
     private Device device;
@@ -61,12 +61,12 @@ public abstract class Component extends UserEntity {
         return this;
     }
 
-    public Adapter getAdapter() {
-        return adapter;
+    public Operator getOperator() {
+        return operator;
     }
 
-    public Component setAdapter(Adapter adapter) {
-        this.adapter = adapter;
+    public Component setOperator(Operator operator) {
+        this.operator = operator;
         return this;
     }
 
@@ -87,7 +87,7 @@ public abstract class Component extends UserEntity {
 
     @Override
     public String toString() {
-        return "Component{" + "id=" + id + ", name=" + name + ", type=" + adapter + '}';
+        return "Component{" + "id=" + id + ", name=" + name + ", type=" + operator + '}';
     }
 
 

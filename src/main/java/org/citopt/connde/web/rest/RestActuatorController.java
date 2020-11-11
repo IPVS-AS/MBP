@@ -15,7 +15,7 @@ import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.error.MissingPermissionException;
 import org.citopt.connde.repository.ActuatorRepository;
-import org.citopt.connde.repository.AdapterRepository;
+import org.citopt.connde.repository.OperatorRepository;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +54,7 @@ public class RestActuatorController {
     private ActuatorRepository actuatorRepository;
     
     @Autowired
-    private AdapterRepository adapterRepository;
+    private OperatorRepository operatorRepository;
     
     @Autowired
     private DeviceRepository deviceRepository;
@@ -105,7 +105,7 @@ public class RestActuatorController {
     	Actuator actuator = (Actuator) new Sensor()
     			.setName(requestDto.getName())
     			.setComponentType(requestDto.getComponentType())
-    			.setAdapter(requestDto.getAdapterId() == null ? null : userEntityService.getForId(adapterRepository, requestDto.getAdapterId()))
+    			.setOperator(requestDto.getOperatorId() == null ? null : userEntityService.getForId(operatorRepository, requestDto.getOperatorId()))
     			.setDevice(requestDto.getDeviceId() == null ? null : userEntityService.getForId(deviceRepository, requestDto.getDeviceId()))
     			.setAccessControlPolicyIds(requestDto.getAccessControlPolicyIds());
     	

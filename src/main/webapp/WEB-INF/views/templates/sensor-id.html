@@ -31,12 +31,12 @@
                     </tr>
                     <tr>
                         <th>Operator:</th>
-                        <td>{{componentDetailsCtrl.component.adapter.name}}</td>
+                        <td>{{componentDetailsCtrl.component.operator.name}}</td>
                     </tr>
                     <tr>
                         <th>Unit:</th>
-                        <td>{{componentDetailsCtrl.component.adapter.unit ?
-                                componentDetailsCtrl.component.adapter.unit : 'None'}}
+                        <td>{{componentDetailsCtrl.component.operator.unit ?
+                                componentDetailsCtrl.component.operator.unit : 'None'}}
                         </td>
                     </tr>
                     <tr>
@@ -84,7 +84,7 @@
                 <table class="table parameter-table">
                     <thead></thead>
                     <tbody>
-                    <tr ng-repeat="parameter in componentDetailsCtrl.component.adapter.parameters">
+                    <tr ng-repeat="parameter in componentDetailsCtrl.component.operator.parameters">
                         <td>
                             <label>{{parameter.name}}:</label><br/>
                             <small ng-show="parameter.mandatory">(required)</small>
@@ -113,7 +113,7 @@
                             <span class="label bg-grey" ng-show="parameter.unit">{{parameter.unit}}</span>
                         </td>
                     </tr>
-                    <tr ng-show="componentDetailsCtrl.component.adapter.parameters.length === 0">
+                    <tr ng-show="componentDetailsCtrl.component.operator.parameters.length === 0">
                         <td colspan="2">No required parameters</td>
                     </tr>
                     </tbody>
@@ -174,7 +174,7 @@
                 <div class="form-group align-right">
                     <div class="form-line">
                         <unit-input ng-model="componentDetailsCtrl.displayUnitInput"
-                                    unit-filter="{{componentDetailsCtrl.component.adapter.unit}}"></unit-input>
+                                    unit-filter="{{componentDetailsCtrl.component.operator.unit}}"></unit-input>
                     </div>
                 <span class="help-block" ng-show="false"></span><br/>
                 <button class="btn btn-primary m-t-0 waves-effect" ng-click="ctrl.onDisplayUnitChange()">

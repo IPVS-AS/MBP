@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.citopt.connde.domain.adapter.Adapter;
-import org.citopt.connde.domain.adapter.parameters.Parameter;
-import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
+import org.citopt.connde.domain.operator.Operator;
+import org.citopt.connde.domain.operator.parameters.Parameter;
+import org.citopt.connde.domain.operator.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.error.DeploymentException;
 import org.citopt.connde.service.deploy.ComponentState;
@@ -52,9 +52,9 @@ public class DeploymentWrapper {
 	 */
     public void startComponent(Component component, List<ParameterInstance> parameterInstances) throws DeploymentException {
         // Get adapter for parameter comparison
-        Adapter adapter = component.getAdapter();
+        Operator operator = component.getOperator();
 
-        for (Parameter parameter : adapter.getParameters()) {
+        for (Parameter parameter : operator.getParameters()) {
             // Ignore parameter if not mandatory
             if (!parameter.isMandatory()) {
                 continue;

@@ -11,11 +11,11 @@ import java.util.Set;
 import javax.servlet.ServletContext;
 
 import org.apache.commons.io.IOUtils;
-import org.citopt.connde.domain.adapter.Adapter;
-import org.citopt.connde.domain.adapter.Code;
-import org.citopt.connde.domain.adapter.parameters.Parameter;
-import org.citopt.connde.domain.adapter.parameters.ParameterType;
-import org.citopt.connde.repository.AdapterRepository;
+import org.citopt.connde.domain.operator.Operator;
+import org.citopt.connde.domain.operator.Code;
+import org.citopt.connde.domain.operator.parameters.Parameter;
+import org.citopt.connde.domain.operator.parameters.ParameterType;
+import org.citopt.connde.repository.OperatorRepository;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ public class DefaultOperatorService {
     private List<String> defaultOperatorWhitelist;
 
     @Autowired
-    private AdapterRepository adapterRepository;
+    private OperatorRepository operatorRepository;
 
     private static final String DESCRIPTOR_FILE = "operator.json";
 
@@ -53,7 +53,7 @@ public class DefaultOperatorService {
         //Iterate over all default operator paths
         for (String operatorPath : defaultOperatorWhitelist) {
             //Create new operator object to add it later to the repository
-            Adapter newOperator = new Adapter();
+            Operator newOperator = new Operator();
 
             //New operator is not owned by anyone
             newOperator.setOwner(null);
@@ -149,7 +149,7 @@ public class DefaultOperatorService {
                 }
 
                 //Insert new operator into repository
-                adapterRepository.insert(newOperator);
+                operatorRepository.insert(newOperator);
                 inserted = true;
 
             } catch (Exception e) {

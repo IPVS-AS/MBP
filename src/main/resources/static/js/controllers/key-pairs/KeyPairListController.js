@@ -156,7 +156,7 @@ app.controller('KeyPairListController',
                             "using this key pair and will be deleted as well:</strong><br/>";
 
                         //Iterate over all affected components
-                        for (var i = 0; i < result.data.length; i++) {
+                        for (let i = 0; i < result.data.length; i++) {
                             affectedWarning += "- ";
                             affectedWarning += result.data[i].name;
                             affectedWarning += "<br/>";
@@ -165,7 +165,7 @@ app.controller('KeyPairListController',
 
                     //Show the alert to the user and return the resulting promise
                     return Swal.fire({
-                        title: 'Delete adapter',
+                        title: 'Delete key pair',
                         type: 'warning',
                         html: "Are you sure you want to delete the key pair \"" +
                             keyPairName + "\"?" + affectedWarning,

@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.citopt.connde.domain.adapter.Adapter;
-import org.citopt.connde.domain.adapter.Code;
-import org.citopt.connde.domain.adapter.parameters.Parameter;
-import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
+import org.citopt.connde.domain.operator.Operator;
+import org.citopt.connde.domain.operator.Code;
+import org.citopt.connde.domain.operator.parameters.Parameter;
+import org.citopt.connde.domain.operator.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.error.MBPException;
@@ -182,10 +182,10 @@ public class SSHDeployer {
 		String deploymentPath = getDeploymentPath(component);
 
 		// Retrieve adapter
-		Adapter adapter = component.getAdapter();
+		Operator operator = component.getOperator();
 
 		// Validity check
-		if (adapter == null) {
+		if (operator == null) {
 			throw new IllegalArgumentException("Adapter must not be null.");
 		}
 
@@ -196,7 +196,7 @@ public class SSHDeployer {
 		SSHSession sshSession = sshSessionPool.getSSHSession(device);
 
 		// Create JSON string from parameters
-		JSONArray parameterArray = convertParametersToJSON(adapter, parameterInstanceList);
+		JSONArray parameterArray = convertParametersToJSON(operator, parameterInstanceList);
 		String jsonString = convertJSONToCmdLineString(parameterArray);
 
 		// Execute start script with parameters
@@ -252,10 +252,10 @@ public class SSHDeployer {
 				new Object[] { component.getId(), component.getComponentTypeName() });
 
 		// Retrieve adapter
-		Adapter adapter = component.getAdapter();
+		Operator operator = component.getOperator();
 
 		// Validity check
-		if (adapter == null) {
+		if (operator == null) {
 			throw new IllegalArgumentException("Adapter must not be null.");
 		}
 
@@ -276,7 +276,7 @@ public class SSHDeployer {
 		LOGGER.log(Level.FINE, "Copying adapter files to target device....");
 
 		// Iterate over all adapter files and copy them
-		for (Code file : adapter.getRoutines()) {
+		for (Code file : operator.getRoutines()) {
 			// Check whether content is encoded as base64
 			if (file.isBase64Encoded()) {
 				// Create file from base64
@@ -483,16 +483,16 @@ public class SSHDeployer {
 	/**
 	 * Converts a list of parameter instances into a JSON array.
 	 *
-	 * @param adapter               The adapter that specifies the parameters
+	 * @param operator               The adapter that specifies the parameters
 	 * @param parameterInstanceList A list of parameter instances that correspond to
 	 *                              the adapter parameters
 	 * @return A JSON array that contains the parameter instances
 	 */
-	private JSONArray convertParametersToJSON(Adapter adapter, List<ParameterInstance> parameterInstanceList) {
+	private JSONArray convertParametersToJSON(Operator operator, List<ParameterInstance> parameterInstanceList) {
 		JSONArray parameterArray = new JSONArray();
 
 		// Sanity check
-		if (adapter == null) {
+		if (operator == null) {
 			throw new IllegalArgumentException("Adapter must not be null.");
 		} else if ((parameterInstanceList == null) || parameterInstanceList.isEmpty()) {
 			// Return empty array
@@ -500,7 +500,7 @@ public class SSHDeployer {
 		}
 
 		// Get specified parameters from adapter
-		List<Parameter> parameters = adapter.getParameters();
+		List<Parameter> parameters = operator.getParameters();
 
 		// Iterate over all specified parameters
 		for (Parameter parameter : parameters) {

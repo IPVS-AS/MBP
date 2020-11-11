@@ -2,8 +2,9 @@ package org.citopt.connde;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
-import org.citopt.connde.domain.adapter.Adapter;
-import org.citopt.connde.domain.adapter.AdapterValidator;
+import org.citopt.connde.domain.monitoring.MonitoringOperator;
+import org.citopt.connde.domain.operator.Operator;
+import org.citopt.connde.domain.operator.OperatorValidator;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.ActuatorValidator;
 import org.citopt.connde.domain.component.Sensor;
@@ -14,8 +15,7 @@ import org.citopt.connde.domain.entity_type.*;
 import org.citopt.connde.domain.env_model.EnvironmentModel;
 import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.domain.key_pair.KeyPairValidator;
-import org.citopt.connde.domain.monitoring.MonitoringAdapter;
-import org.citopt.connde.domain.monitoring.MonitoringAdapterValidator;
+import org.citopt.connde.domain.monitoring.MonitoringOperatorValidator;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.domain.rules.RuleActionValidator;
@@ -75,7 +75,7 @@ public class RestConfiguration implements RepositoryRestConfigurer {
         //Include entity IDs of the following entity types into REST request responses
         config.exposeIdsFor(KeyPair.class,
                 Device.class,
-                Adapter.class, MonitoringAdapter.class,
+                Operator.class, MonitoringOperator.class,
                 Actuator.class, Sensor.class,
                 User.class, Authority.class,
                 EntityType.class,
@@ -94,12 +94,12 @@ public class RestConfiguration implements RepositoryRestConfigurer {
     public void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener v) {
 
         //Adapters
-        v.addValidator("beforeSave", new AdapterValidator());
-        v.addValidator("beforeCreate", new AdapterValidator());
+        v.addValidator("beforeSave", new OperatorValidator());
+        v.addValidator("beforeCreate", new OperatorValidator());
 
         //Monitoring adapters
-        v.addValidator("beforeSave", new MonitoringAdapterValidator());
-        v.addValidator("beforeCreate", new MonitoringAdapterValidator());
+        v.addValidator("beforeSave", new MonitoringOperatorValidator());
+        v.addValidator("beforeCreate", new MonitoringOperatorValidator());
 
         //Sensors
         v.addValidator("beforeSave", new SensorValidator());

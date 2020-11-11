@@ -1,8 +1,8 @@
-package org.citopt.connde.domain.adapter.parameters;
+package org.citopt.connde.domain.operator.parameters;
 
 /**
- * Objects of this class represent deployment parameters that can be added to adapters. If a sensor is
- * supposed to be deployed that uses such an adapter, the values for the parameters need to be provided
+ * Objects of this class represent deployment parameters that can be added to operators. If a sensor is
+ * supposed to be deployed that uses such an operator, the values for the parameters need to be provided
  * as parameter instances by the user.
  */
 public class Parameter {
@@ -12,7 +12,7 @@ public class Parameter {
     private boolean mandatory;
 
     /**
-     * Creates a new empty deployment parameter that may be added to an adapter.
+     * Creates a new empty deployment parameter that may be added to an operator.
      */
     public Parameter() {
 

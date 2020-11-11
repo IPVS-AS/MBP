@@ -18,7 +18,7 @@ public interface ComponentRepository<C extends Component> extends UserEntityRepo
 //	Optional<C> findByName(@Param("name") String name);
 
 	@RestResource(exported = false)
-	List<ComponentExcerpt> findAllByAdapterId(@Param("adapter.id") String adapterId);
+	List<ComponentExcerpt> findAllByOperatorId(@Param("adapter.id") String adapterId);
 
 	@RestResource(exported = false)
 	List<ComponentExcerpt> findAllByDeviceId(@Param("device.id") String deviceId);
