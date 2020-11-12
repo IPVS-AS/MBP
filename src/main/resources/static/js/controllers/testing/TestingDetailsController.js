@@ -12,12 +12,37 @@ app.controller('TestingDetailsController',
             const COMPONENT_ID = $routeParams.id;
 
             vm.sensorListTest = [];
+            vm.sensorListTestNames =[];
             //Extend each sensor in sensorList for a state and a reload function
             for (const i in sensorList) {
                 if (testingDetails.type.indexOf(sensorList[i].name) !== -1) {
-                    vm.sensorListTest.push(sensorList[i]);
+                    vm.sensorListTestNames.push(sensorList[i].name);
                 }
             }
+
+            console.log(testingDetails.useNewData)
+            if(testingDetails.useNewData === false){
+                for (const sensorName in vm.sensorListTestNames){
+                    console.log(vm.sensorListTestNames[sensorName]);
+                    for (const y in sensorList){
+                        const test = "RERUN_"+vm.sensorListTestNames[sensorName];
+                        if(sensorList[y].name === "RERUN_"+vm.sensorListTestNames[sensorName]){
+                            vm.sensorListTest.push(sensorList[y]);
+                        }
+                    }
+                }
+            } else {
+                for (const i in sensorList) {
+                    if (testingDetails.type.indexOf(sensorList[i].name) !== -1) {
+                        vm.sensorListTest.push(sensorList[i]);
+                        vm.sensorListTestNames.push(sensorList[i].name);
+                    }
+                }
+            }
+
+
+            console.log(sensorList);
+            console.log(vm.sensorListTest);
 
 
             vm.ruleList = ruleList;

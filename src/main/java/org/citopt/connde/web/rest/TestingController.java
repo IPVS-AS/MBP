@@ -210,7 +210,7 @@ public class TestingController {
         TestDetails testDetails = testDetailsRepository.findById(testId);
         List<List<ParameterInstance>> configList = testDetails.getConfig();
 
-        if (!Boolean.valueOf(useNewData)) {
+        if (!Boolean.parseBoolean(useNewData)) {
             testDetails.setUseNewData(false);
             testDetailsRepository.save(testDetails);
             addRerunOperators();
@@ -219,24 +219,28 @@ public class TestingController {
                     if (parameterInstance.getName().equals("ConfigName")) {
                         if(!sensorSimulators.contains(parameterInstance.getValue())){
                             testEngine.addRerunSensor(parameterInstance.getValue().toString(), testDetails);
-                            testEngine.addRerunRule(testDetails);
                         }
                     }
                 }
             }
+            testEngine.addRerunRule(testDetails);
         } else{
             testDetails.setUseNewData(true);
             testDetailsRepository.save(testDetails);
+
+            //Delete rerun rules
+            testEngine.deleteRerunRules(testDetails);
+
+            // Delete Adapter
+            Adapter adapterReuse = adapterRepository.findByName("RERUN_OPERATOR");
+            adapterRepository.delete(adapterReuse);
+
             // Delete the Reuse Adapters and Sensors for each real sensor if the data should not be reused
             for (List<ParameterInstance> config : configList) {
-                Adapter adapterReuse = adapterRepository.findByName("RERUN_OPERATOR");
-                adapterRepository.delete(adapterReuse);
+
                 for (ParameterInstance parameterInstance : config) {
                     if (parameterInstance.getName().equals("ConfigName")) {
                         if(!sensorSimulators.contains(parameterInstance.getValue())){
-                            //Delete rerun rules
-                            testEngine.deleteRerunRules(testDetails);
-
                             // Delete Reuse Operator
                             String reuseName = "RERUN_" + parameterInstance.getValue();
                             Sensor sensorReuse = sensorRepository.findByName(reuseName);
@@ -244,7 +248,7 @@ public class TestingController {
                                 sensorRepository.delete(sensorReuse);
                                 testDetails.getSensor().remove(sensorReuse);
                                 testDetailsRepository.save(testDetails);
-                                //TODO schau ob das so geht
+
                             }
                         }
                     }

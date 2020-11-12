@@ -108,7 +108,8 @@ public class DeploymentWrapper {
         }
 
         //Start component
-        try { sshDeployer.startComponent(component, parameterInstances);
+        try {
+            sshDeployer.startComponent(component, parameterInstances);
         } catch (IOException e) {
             ActionResponse response = new ActionResponse(false, "An unknown error occurred");
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -454,19 +454,20 @@ public class TestEngine implements ValueLogReceiverObserver {
         }
 
 
-        //TODO: WARUM INVOCE TARGET INCEPTION
+/**
         if (!test.isUseNewData()) {
             for (int i = 0; i < rulesbefore.size(); i++) {
                 Rule rule = rulesbefore.get(i);
                 String rulename = "RERUN_" + rule.getName();
                 Rule rule2 = ruleRepository.findByName(rulename);
-                if (rule2 != null) {
+                if (rule2 != null && !rulesbefore.contains(rule2)) {
                     rulesbefore.add(rule2);
                 }
 
             }
 
         }
+ **/
 
 
         return rulesbefore;
@@ -517,7 +518,13 @@ public class TestEngine implements ValueLogReceiverObserver {
                 valueList.put(sensor.getName(), temp);
                 valueListTest.put(sensor.getName(), temp);
                 list.remove(sensor.getId());
-            } else {
+
+                // save list of sensor values to database
+                testDetails2.setSimulationList(valueListTest);
+            }
+            /**
+             *
+            else {
                 if (!sensor.getName().contains("RERUN_")) {
                     Sensor rerunSensor = sensorRepository.findByName("RERUN_" + sensor.getName());
                     LinkedHashMap<Long, Double> temp = valueList.get(rerunSensor.getId());
@@ -526,12 +533,11 @@ public class TestEngine implements ValueLogReceiverObserver {
                     list.remove(rerunSensor.getId());
                 }
             }
+             **/
 
 
         }
 
-        // save list of sensor values to database
-        testDetails2.setSimulationList(valueListTest);
         testDetailsRepository.save(testDetails2);
 
         return valueListTest;
@@ -747,6 +753,16 @@ public class TestEngine implements ValueLogReceiverObserver {
     }
 
     public void deleteRerunRules(TestDetails testDetails) {
+        List<Rule> testRules = getStatRulesBefore(testDetails);
+
+        for(Rule rule : testRules){
+            if(rule.getName().contains("RERUN_")){
+                ruleTriggerRepository.delete(rule.getTrigger());
+                ruleRepository.delete(rule);
+            }
+        }
+
+
     }
 
     /**

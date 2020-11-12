@@ -50,6 +50,7 @@ public class TestReport {
     String[] simSensors = {"TestingTemperaturSensor", "TestingTemperaturSensorPl", "TestingFeuchtigkeitsSensor", "TestingFeuchtigkeitsSensorPl", "TestingBeschleunigungsSensor", "TestingBeschleunigungsSensorPl", "TestingGPSSensor", "TestingGPSSensorPl"};
 
 
+
     /**
      * Generates the Test-Report with the Chart of the simulated Values and other important informations for the user.
      *
@@ -61,6 +62,7 @@ public class TestReport {
         int counterRules = 0;
         TestDetails test = testDetailsRepository.findById(testId);
         Document doc = new Document();
+
 
         // Create a new pdf, which is named with the ID of the specific test
         File tempFile = new File(testId + "_" + test.getEndTimeUnix() + ".pdf");
@@ -119,16 +121,23 @@ public class TestReport {
         doc.add(Chunk.NEWLINE);
         doc.add(actuatorInfos);
         doc.add(Chunk.NEWLINE);
-        // Rule-Informations
+        // Rule-Information
         PdfPTable ruleInfos = getRuleInfos(test);
         ruleInfos.setSpacingAfter(14f);
         doc.add(ruleInfos);
 
-
+        PdfPTable ruleDetails =  new PdfPTable(4);
+        ruleDetails.setSpacingAfter(15f);
         for (Rule rule : rulesBefore) {
-            counterRules += 1;
-            PdfPTable ruleDetails = getRuleDetails(test, rule, counterRules);
-            ruleDetails.setSpacingAfter(15f);
+            if(test.isUseNewData()){
+                 ruleDetails = getRuleDetails(test, rule, counterRules);
+                counterRules += 1;
+            } else {
+                if(rule.getName().contains("RERUN_")){
+                    ruleDetails = getRuleDetails(test, rule, counterRules);
+                    counterRules += 1;
+                }
+            }
             doc.add(ruleDetails);
         }
 
@@ -348,6 +357,13 @@ public class TestReport {
      */
     private PdfPTable getRealSensorConfig(TestDetails test) {
         int counter = 0;
+        String rerunInfo = "";
+        String rerunName ="";
+        if(!test.isUseNewData()){
+            rerunInfo = "(RERUN_)";
+            rerunName = "RERUN_";
+        }
+
         PdfPCell c1 = null;
         PdfPCell c2 = null;
         PdfPTable table = new PdfPTable(4);
@@ -359,8 +375,11 @@ public class TestReport {
         c0.setBackgroundColor(new BaseColor(117, 117, 117));
         table.addCell(c0);
 
+
+
+
         for (String type : test.getType()) {
-            if (!Arrays.asList(simSensors).contains(type)) {
+            if (!Arrays.asList(simSensors).contains(rerunName+type)) {
                 counter += 1;
 
                 //Sensor-Type
@@ -370,7 +389,7 @@ public class TestReport {
                 c1.setBackgroundColor(new BaseColor(157, 213, 227));
                 table.addCell(c1);
 
-                c2 = new PdfPCell(new Phrase(type));
+                c2 = new PdfPCell(new Phrase(rerunInfo + type));
                 c2.setColspan(2);
                 c2.setBackgroundColor(new BaseColor(157, 213, 227));
                 table.addCell(c2);
@@ -381,7 +400,7 @@ public class TestReport {
                         if (parameterInstance.getValue().equals(type)) {
                             for (ParameterInstance parameterInstance2 : configSensor) {
                                 if (!parameterInstance2.getName().equals("ConfigName")) {
-                                    c1 = new PdfPCell(new Phrase(parameterInstance2.getName().toString()));
+                                    c1 = new PdfPCell(new Phrase(parameterInstance2.getName()));
                                     c1.setColspan(2);
                                     c1.setHorizontalAlignment(Element.ALIGN_CENTER);
                                     c1.setBackgroundColor(new BaseColor(191, 220, 227));
@@ -641,12 +660,16 @@ public class TestReport {
         ruleInfos.addCell(c1);
 
         // get selected Rules from User
+        String rerunInfo = "";
+        if(!test.isUseNewData()){
+            rerunInfo = "RERUN_";
+        }
         for (int i = 0; i < test.getRules().size(); i++) {
             if (i != 0 && i != test.getRules().size()) {
                 rulesUser.append(", ");
             }
             rules.add(test.getRules().get(i).getName());
-            rulesUser.append(test.getRules().get(i).getName());
+            rulesUser.append(rerunInfo+test.getRules().get(i).getName());
         }
 
         PdfPCell c2 = new PdfPCell(new Phrase(rulesUser.toString()));
