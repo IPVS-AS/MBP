@@ -54,7 +54,6 @@ public class RestSettingsController {
      * @throws MissingAdminPrivilegesException 
      */
     @PostMapping(value = "/settings/default-operators")
-//    @Secured({Constants.ADMIN})
     @ApiOperation(value = "Loads default operators from the resource directory of the MBP and makes them available for usage in actuators and sensors by all users.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
     public ResponseEntity<Void> addDefaultOperators() throws MissingAdminPrivilegesException {
@@ -72,7 +71,6 @@ public class RestSettingsController {
      * @throws MissingAdminPrivilegesException 
      */
     @RequestMapping(value = "/settings", method = RequestMethod.GET)
-//    @Secured({Constants.ADMIN})
     @ApiOperation(value = "Retrieves the current settings of the platform", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access the settings")})
     public ResponseEntity<Settings> getSettings() throws MissingAdminPrivilegesException {
@@ -96,7 +94,6 @@ public class RestSettingsController {
      * @throws MissingAdminPrivilegesException 
      */
     @PostMapping("/settings")
-//    @Secured({Constants.ADMIN})
     @ApiOperation(value = "Modifies the current settings of the platform", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to modify the settings")})
     public ResponseEntity<Void> saveSettings(@RequestBody Settings settings) throws MissingAdminPrivilegesException {
