@@ -4,13 +4,13 @@ public class MonitoringComponentDTO {
 	
 	private String id;
 	private String name;
-	private String monitoringAdapterId;
+	private String monitoringOperatorId;
 	private String deviceId;
 
 	public MonitoringComponentDTO(MonitoringComponent monitoringComponent) {
 		this.id = monitoringComponent.getId();
 		this.name = monitoringComponent.getName();
-		this.monitoringAdapterId = monitoringComponent.getAdapter().getId();
+		this.monitoringOperatorId = monitoringComponent.getOperator().getId();
 		this.deviceId = monitoringComponent.getDevice().getId();
 	}
 
@@ -22,8 +22,8 @@ public class MonitoringComponentDTO {
 		return name;
 	}
 
-	public String getMonitoringAdapterId() {
-		return monitoringAdapterId;
+	public String getMonitoringOperatorId() {
+		return monitoringOperatorId;
 	}
 
 	public String getDeviceId() {

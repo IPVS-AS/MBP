@@ -5,13 +5,13 @@
  */
 app.controller('SensorListController',
     ['$scope', '$controller', '$interval', 'sensorList', 'addSensor', 'deleteSensor',
-        'deviceList', 'adapterList', 'sensorTypesList', 'accessControlPolicyList', 'ComponentService', 'NotificationService',
+        'deviceList', 'operatorList', 'sensorTypesList', 'accessControlPolicyList', 'ComponentService', 'NotificationService',
         function ($scope, $controller, $interval, sensorList, addSensor, deleteSensor,
-                  deviceList, adapterList, sensorTypesList, accessControlPolicyList, ComponentService,
+                  deviceList, operatorList, sensorTypesList, accessControlPolicyList, ComponentService,
                   NotificationService) {
             let vm = this;
 
-            vm.adapterList = adapterList;
+            vm.operatorList = operatorList;
             vm.deviceList = deviceList;
 
             /**

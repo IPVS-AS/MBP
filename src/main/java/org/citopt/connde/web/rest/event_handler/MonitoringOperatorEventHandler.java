@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.domain.monitoring.MonitoringAdapter;
+import org.citopt.connde.domain.monitoring.MonitoringOperator;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.service.cep.trigger.CEPTriggerService;
@@ -17,11 +17,11 @@ import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;
 
 /**
- * Event handler for operations that are performed on monitoring adapters.
+ * Event handler for operations that are performed on monitoring operators.
  */
 @Component
 @RepositoryEventHandler
-public class MonitoringAdapterEventHandler {
+public class MonitoringOperatorEventHandler {
 
     @Autowired
     private DeviceRepository deviceRepository;
@@ -36,38 +36,38 @@ public class MonitoringAdapterEventHandler {
     private SSHDeployer sshDeployer;
 
     /**
-     * Called in case a monitoring adapter was created. This method then takes care of registering corresponding
+     * Called in case a monitoring operator was created. This method then takes care of registering corresponding
      * event types for monitoring components at the CEP engine.
      *
-     * @param monitoringAdapter The created monitoring adapter
+     * @param monitoringOperator The created monitoring operator
      */
     @HandleAfterCreate
-    public void afterMonitoringAdapterCreate(MonitoringAdapter monitoringAdapter) {
+    public void afterMonitoringOperatorCreate(MonitoringOperator monitoringOperator) {
         //Get all devices
         List<Device> devices = deviceRepository.findAll();
 
         //Iterate over all devices and register an event type for the resulting monitoring component
         for (Device device : devices) {
-            MonitoringComponent monitoringComponent = new MonitoringComponent(monitoringAdapter, device);
+            MonitoringComponent monitoringComponent = new MonitoringComponent(monitoringOperator, device);
             triggerService.registerComponentEventType(monitoringComponent);
         }
     }
 
     /**
-     * Called in case a monitoring adapter is supposed to be deleted. This method then takes care of undeploying
+     * Called in case a monitoring operator is supposed to be deleted. This method then takes care of undeploying
      * the corresponding monitoring components (if necessary) and deleting the associated value logs.
      *
-     * @param adapter The adapter that is supposed to be deleted
+     * @param operator The operator that is supposed to be deleted
      */
     @HandleBeforeDelete
-    public void beforeMonitoringAdapterDelete(MonitoringAdapter adapter) throws IOException {
-        //Get all devices that are compatible to the monitoring adapter
-        List<Device> compatibleDevices = monitoringHelper.getCompatibleDevices(adapter);
+    public void beforeMonitoringOperatorDelete(MonitoringOperator operator) throws IOException {
+        //Get all devices that are compatible to the monitoring operator
+        List<Device> compatibleDevices = monitoringHelper.getCompatibleDevices(operator);
 
         //Iterate over all compatible devices
         for (Device device : compatibleDevices) {
-            //Create monitoring component from monitoring adapter and device
-            MonitoringComponent monitoringComponent = new MonitoringComponent(adapter, device);
+            //Create monitoring component from monitoring operator and device
+            MonitoringComponent monitoringComponent = new MonitoringComponent(operator, device);
 
             //Undeploy monitoring component if necessary
             sshDeployer.undeployIfRunning(monitoringComponent);

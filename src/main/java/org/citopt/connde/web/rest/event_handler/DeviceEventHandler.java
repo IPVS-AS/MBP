@@ -6,10 +6,10 @@ import java.util.List;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.domain.monitoring.MonitoringAdapter;
+import org.citopt.connde.domain.monitoring.MonitoringOperator;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.repository.ActuatorRepository;
-import org.citopt.connde.repository.MonitoringAdapterRepository;
+import org.citopt.connde.repository.MonitoringOperatorRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.projection.ComponentExcerpt;
 import org.citopt.connde.service.cep.trigger.CEPTriggerService;
@@ -34,7 +34,7 @@ public class DeviceEventHandler {
 	private SensorRepository sensorRepository;
 
 	@Autowired
-	private MonitoringAdapterRepository monitoringAdapterRepository;
+	private MonitoringOperatorRepository monitoringOperatorRepository;
 
 	@Autowired
 	private CEPTriggerService triggerService;
@@ -56,11 +56,11 @@ public class DeviceEventHandler {
 	public void afterDeviceCreate(Device device) {
 		System.err.println("111");
 		// Get all monitoring adapters
-		List<MonitoringAdapter> monitoringAdapters = monitoringAdapterRepository.findAll();
+		List<MonitoringOperator> monitoringAdapters = monitoringOperatorRepository.findAll();
 
 		// Iterate over all monitoring adapters and register an event type for the
 		// resulting monitoring component
-		for (MonitoringAdapter monitoringAdapter : monitoringAdapters) {
+		for (MonitoringOperator monitoringAdapter : monitoringAdapters) {
 			MonitoringComponent monitoringComponent = new MonitoringComponent(monitoringAdapter, device);
 			triggerService.registerComponentEventType(monitoringComponent);
 		}
@@ -106,10 +106,10 @@ public class DeviceEventHandler {
 		}
 
 		// Get all monitoring adapters that are compatible to the device
-		List<MonitoringAdapter> compatibleMonitoringAdapters = monitoringHelper.getCompatibleAdapters(device);
+		List<MonitoringOperator> compatibleMonitoringAdapters = monitoringHelper.getCompatibleOperators(device);
 
 		// Iterate over the compatible monitoring adapters
-		for (MonitoringAdapter adapter : compatibleMonitoringAdapters) {
+		for (MonitoringOperator adapter : compatibleMonitoringAdapters) {
 			// Create monitoring component from monitoring adapter and device
 			MonitoringComponent monitoringComponent = new MonitoringComponent(adapter, device);
 

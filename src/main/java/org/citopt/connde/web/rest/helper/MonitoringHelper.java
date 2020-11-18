@@ -8,13 +8,12 @@ import java.util.stream.Collectors;
 import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.domain.entity_type.DeviceType;
-import org.citopt.connde.domain.monitoring.MonitoringAdapter;
+import org.citopt.connde.domain.monitoring.MonitoringOperator;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.repository.DeviceRepository;
-import org.citopt.connde.repository.MonitoringAdapterRepository;
-import org.citopt.connde.repository.projection.MonitoringAdapterExcerpt;
+import org.citopt.connde.repository.MonitoringOperatorRepository;
+import org.citopt.connde.repository.projection.MonitoringOperatorExcerpt;
 import org.citopt.connde.service.UserEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -32,26 +31,26 @@ public class MonitoringHelper {
     private DeviceRepository deviceRepository;
 
     @Autowired
-    private MonitoringAdapterRepository monitoringAdapterRepository;
+    private MonitoringOperatorRepository monitoringOperatorRepository;
 
     
     /**
-     * Creates a deployable monitoring component which wraps a device and a monitoring adapter. For this purpose,
+     * Creates a deployable monitoring component which wraps a device and a monitoring operator. For this purpose,
      * the objects for the provided ids are looked up in the dedicated repository.
      *
      * @param deviceId            The id of the device to wrap
-     * @param monitoringAdapterId The id of the monitoring adapter to wrap
-     * @return Null, if either the device or the monitoring adapter could not be found
+     * @param monitoringOperatorId The id of the monitoring operator to wrap
+     * @return Null, if either the device or the monitoring operator could not be found
      * in their repositories or the user is not authorized for them; otherwise the deployable monitoring component
      * @throws EntityNotFoundException 
      */
-    public MonitoringComponent createMonitoringComponent(String deviceId, String monitoringAdapterId) throws EntityNotFoundException {
-        // Retrieve corresponding device and adapter from the database
+    public MonitoringComponent createMonitoringComponent(String deviceId, String monitoringOperatorId) throws EntityNotFoundException {
+        // Retrieve corresponding device and operator from the database
     	Device device = userEntityService.getForId(deviceRepository, deviceId);
-    	MonitoringAdapter monitoringAdapter = userEntityService.getForId(monitoringAdapterRepository, monitoringAdapterId);
+    	MonitoringOperator monitoringOperator = userEntityService.getForId(monitoringOperatorRepository, monitoringOperatorId);
 
         // Create new monitoring component (wrapper)
-        MonitoringComponent monitoringComponent = new MonitoringComponent(monitoringAdapter, device);
+        MonitoringComponent monitoringComponent = new MonitoringComponent(monitoringOperator, device);
 
         // Set owner accordingly
         monitoringComponent.setOwner(device.getOwner());
@@ -60,87 +59,87 @@ public class MonitoringHelper {
     }
 
 	/**
-	 * Retrieves all monitoring adapters compatible with a given device.
+	 * Retrieves all monitoring operators compatible with a given device.
 	 *
 	 * @param device the {@link Device}.
-	 * @return all monitoring adapters compatible with a given device.
+	 * @return All monitoring operators compatible with a given device.
 	 */
-	public List<MonitoringAdapter> getCompatibleAdapters(Device device) {
+	public List<MonitoringOperator> getCompatibleOperators(Device device) {
 		if (device == null) {
 			throw new IllegalArgumentException("Device must not be null.");
 		}
 
-		// Get all compatible monitoring adapters
-		return monitoringAdapterRepository.findAll()
+		// Get all compatible monitoring operators
+		return monitoringOperatorRepository.findAll()
 				.stream().filter(a -> a.isCompatibleWith(device.getComponentType())).collect(Collectors.toList());
 	}
 
 	/**
-	 * Retrieves all monitoring adapters compatible with a given device
+	 * Retrieves all monitoring operators compatible with a given device
 	 * and available for the requesting user.
 	 *
 	 * @param device the {@link Device}.
 	 * @param accessRequest the {@link ACAccessRequest} required for policy evaluation.
-	 * @return all monitoring adapters compatible with a given device
+	 * @return all monitoring operators compatible with a given device
 	 * 		   and available for the requesting user.
 	 */
-	public List<MonitoringAdapter> getCompatibleAdapters(Device device, ACAccessRequest accessRequest) {
+	public List<MonitoringOperator> getCompatibleOperators(Device device, ACAccessRequest accessRequest) {
 		if (device == null) {
 			throw new IllegalArgumentException("Device must not be null.");
 		}
 
-		// Get all compatible monitoring adapters available for the requesting user
-		return userEntityService.getAllWithAccessControlCheck(monitoringAdapterRepository, ACAccessType.READ, accessRequest)
+		// Get all compatible monitoring operators available for the requesting user
+		return userEntityService.getAllWithAccessControlCheck(monitoringOperatorRepository, ACAccessType.READ, accessRequest)
 				.stream().filter(a -> a.isCompatibleWith(device.getComponentType())).collect(Collectors.toList());
 	}
 
 	/**
-	 * Retrieves all devices compatible with a given monitoring adapter.
+	 * Retrieves all devices compatible with a given monitoring operator.
 	 *
-	 * @param adapter the {@link MonitoringAdapter}.
-	 * @return all devices compatible with a given monitoring adapter.
+	 * @param operator the {@link MonitoringOperator}.
+	 * @return all devices compatible with a given monitoring operator
 	 */
-	public List<Device> getCompatibleDevices(MonitoringAdapter adapter) {
-		if (adapter == null) {
-			throw new IllegalArgumentException("Adapter must not be null.");
+	public List<Device> getCompatibleDevices(MonitoringOperator operator) {
+		if (operator == null) {
+			throw new IllegalArgumentException("Operator must not be null.");
 		}
 		
 		// Get all compatible devices
 		return deviceRepository.findAll()
-				.stream().filter(d -> adapter.isCompatibleWith(d.getComponentType())).collect(Collectors.toList());
+				.stream().filter(d -> operator.isCompatibleWith(d.getComponentType())).collect(Collectors.toList());
 	}
 
 	/**
-	 * Retrieves all devices compatible with a given monitoring adapter
+	 * Retrieves all devices compatible with a given monitoring operator
 	 * and available for the requesting user.
 	 *
-	 * @param adapter the {@link MonitoringAdapter}.
+	 * @param operator the {@link MonitoringOperator}.
 	 * @param accessRequest the {@link ACAccessRequest} required for policy evaluation.
-	 * @return all devices compatible with a given monitoring adapter
+	 * @return all devices compatible with a given monitoring operator
 	 * 		   and available for the requesting user.
 	 */
-	public List<Device> getCompatibleDevices(MonitoringAdapter adapter, ACAccessRequest accessRequest) {
-		if (adapter == null) {
-			throw new IllegalArgumentException("Adapter must not be null.");
+	public List<Device> getCompatibleDevices(MonitoringOperator operator, ACAccessRequest accessRequest) {
+		if (operator == null) {
+			throw new IllegalArgumentException("Operator must not be null.");
 		}
 		
 		// Get all compatible devices available for the requesting user
 		return userEntityService.getAllWithAccessControlCheck(deviceRepository, ACAccessType.READ, accessRequest)
-				.stream().filter(d -> adapter.isCompatibleWith(d.getComponentType())).collect(Collectors.toList());
+				.stream().filter(d -> operator.isCompatibleWith(d.getComponentType())).collect(Collectors.toList());
 	}
 
-	public List<MonitoringAdapterExcerpt> convertToListProjections(Iterable<MonitoringAdapter> monitoringAdapters) {
-		if (monitoringAdapters == null) {
-			throw new IllegalArgumentException("The list of monitoring adapters must not be null.");
+	public List<MonitoringOperatorExcerpt> convertToListProjections(Iterable<MonitoringOperator> monitoringOperators) {
+		if (monitoringOperators == null) {
+			throw new IllegalArgumentException("The list of monitoring operators must not be null.");
 		}
 		
-		// Extract excerpt from each adapter
-		List<MonitoringAdapterExcerpt> adapterExcerpts = new ArrayList<>();
-		monitoringAdapters.forEach(a -> monitoringAdapterRepository.findExcerptById(a.getId()).ifPresent(adapterExcerpts::add));
-		return adapterExcerpts;
+		// Extract excerpt from each operator
+		List<MonitoringOperatorExcerpt> operatorExcerpts = new ArrayList<>();
+		monitoringOperators.forEach(a -> monitoringOperatorRepository.findExcerptById(a.getId()).ifPresent(operatorExcerpts::add));
+		return operatorExcerpts;
 	}
 
-	public Optional<MonitoringAdapterExcerpt> adapterToExcerpt(MonitoringAdapter monitoringAdapter) {
-		return monitoringAdapterRepository.findExcerptById(monitoringAdapter.getId());
+	public Optional<MonitoringOperatorExcerpt> operatorToExcerpt(MonitoringOperator monitoringOperator) {
+		return monitoringOperatorRepository.findExcerptById(monitoringOperator.getId());
 	}
 }

@@ -13,7 +13,7 @@ import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.error.MissingPermissionException;
-import org.citopt.connde.repository.AdapterRepository;
+import org.citopt.connde.repository.OperatorRepository;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.UserEntityService;
@@ -53,7 +53,7 @@ public class RestSensorController {
     private SensorRepository sensorRepository;
     
     @Autowired
-    private AdapterRepository adapterRepository;
+    private OperatorRepository operatorRepository;
     
     @Autowired
     private DeviceRepository deviceRepository;
@@ -107,7 +107,7 @@ public class RestSensorController {
     	Sensor sensor = (Sensor) new Sensor()
     			.setName(requestDto.getName())
     			.setComponentType(requestDto.getComponentType())
-    			.setAdapter(requestDto.getAdapterId() == null ? null : userEntityService.getForId(adapterRepository, requestDto.getAdapterId()))
+    			.setOperator(requestDto.getOperatorId() == null ? null : userEntityService.getForId(operatorRepository, requestDto.getOperatorId()))
     			.setDevice(requestDto.getDeviceId() == null ? null : userEntityService.getForId(deviceRepository, requestDto.getDeviceId()))
     			.setAccessControlPolicyIds(requestDto.getAccessControlPolicyIds());
     	

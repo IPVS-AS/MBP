@@ -18,7 +18,7 @@ public class MonitoringComponent extends Component {
 	 * @param monitoringAdapter The monitoring adapter to use
 	 * @param device            The corresponding device
 	 */
-	public MonitoringComponent(MonitoringAdapter monitoringAdapter, Device device) {
+	public MonitoringComponent(MonitoringOperator monitoringAdapter, Device device) {
 		// Create id
 		String adapterId = monitoringAdapter.getId();
 		String deviceId = device.getId();
@@ -28,7 +28,7 @@ public class MonitoringComponent extends Component {
 		setName(monitoringAdapter.getName() + " (" + device.getName() + ")");
 
 		// Use given adapter and device
-		setAdapter(monitoringAdapter);
+		setOperator(monitoringAdapter);
 		setDevice(device);
 	}
 

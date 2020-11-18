@@ -1,4 +1,4 @@
-package org.citopt.connde.domain.adapter.parameters;
+package org.citopt.connde.domain.operator.parameters;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

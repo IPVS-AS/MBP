@@ -1,8 +1,8 @@
 /* global app */
 
-app.controller('AdapterListController',
-    ['$scope', '$controller', '$q', 'adapterList', 'adapterPreprocessing', 'addAdapter', 'deleteAdapter', 'FileReader', 'parameterTypesList', 'AdapterService', 'NotificationService',
-        function ($scope, $controller, $q, adapterList, adapterPreprocessing, addAdapter, deleteAdapter, FileReader, parameterTypesList, AdapterService, NotificationService) {
+app.controller('OperatorListController',
+    ['$scope', '$controller', '$q', 'operatorList', 'operatorPreprocessing', 'addOperator', 'deleteOperator', 'FileReader', 'parameterTypesList', 'OperatorService', 'NotificationService',
+        function ($scope, $controller, $q, operatorList, operatorPreprocessing, addOperator, deleteOperator, FileReader, parameterTypesList, OperatorService, NotificationService) {
             var vm = this;
 
             vm.dzServiceOptions = {
@@ -13,7 +13,7 @@ app.controller('AdapterListController',
 
             vm.dzServiceCallbacks = {
                 'addedfile': function (file) {
-                    vm.addAdapterCtrl.item.serviceFile = file;
+                    vm.addOperatorCtrl.item.serviceFile = file;
                 }
             };
             vm.dzRoutinesOptions = {
@@ -27,13 +27,13 @@ app.controller('AdapterListController',
 
             vm.dzRoutinesCallbacks = {
                 'addedfile': function (file) {
-                    if (!vm.addAdapterCtrl.item.routineFiles) {
-                        vm.addAdapterCtrl.item.routineFiles = [];
+                    if (!vm.addOperatorCtrl.item.routineFiles) {
+                        vm.addOperatorCtrl.item.routineFiles = [];
                     }
-                    vm.addAdapterCtrl.item.routineFiles.push(file);
+                    vm.addOperatorCtrl.item.routineFiles.push(file);
                 },
                 'removedfile': function (file) {
-                    vm.addAdapterCtrl.item.routineFiles.splice(vm.addAdapterCtrl.item.routineFiles.indexOf(file), 1);
+                    vm.addOperatorCtrl.item.routineFiles.splice(vm.addOperatorCtrl.item.routineFiles.indexOf(file), 1);
                 },
 
             };
@@ -41,7 +41,7 @@ app.controller('AdapterListController',
             vm.dzMethods = {};
 
             /**
-             * The device code parameter is necessary for every adapter.
+             * The device code parameter is necessary for every operator.
              * @type {{unit: string, name: string, type: string, mandatory: boolean}}
              */
             var deviceCodeParameter = {
@@ -62,10 +62,10 @@ app.controller('AdapterListController',
                     NotificationService.notify("Could not load parameter types.", "error");
                 }
 
-                //Modify each adapter according to the preprocessing function (if provided)
-                if (adapterPreprocessing) {
-                    for (var i = 0; i < adapterList.length; i++) {
-                        adapterPreprocessing(adapterList[i]);
+                //Modify each operator according to the preprocessing function (if provided)
+                if (operatorPreprocessing) {
+                    for (var i = 0; i < operatorList.length; i++) {
+                        operatorPreprocessing(operatorList[i]);
                     }
                 }
             })();
@@ -105,26 +105,26 @@ app.controller('AdapterListController',
 
             /**
              * [Public]
-             * Shows an alert that asks the user if he is sure that he wants to delete a certain adapter. It also
+             * Shows an alert that asks the user if he is sure that he wants to delete a certain operator. It also
              * shows a list of all components that are affected by this deletion.
              *
-             * @param data A data object that contains the id of the adapter that is supposed to be deleted
+             * @param data A data object that contains the id of the operator that is supposed to be deleted
              * @returns A promise of the user's decision
              */
             function confirmDelete(data) {
-                var adapterId = data.id;
-                var adapterName = "";
+                var operatorId = data.id;
+                var operatorName = "";
 
-                //Determines the adapter's name by checking all adapters in the adapter list
-                for (var i = 0; i < adapterList.length; i++) {
-                    if (adapterId === adapterList[i].id) {
-                        adapterName = adapterList[i].name;
+                //Determines the operator's name by checking all operators in the operator list
+                for (var i = 0; i < operatorList.length; i++) {
+                    if (operatorId === operatorList[i].id) {
+                        operatorName = operatorList[i].name;
                         break;
                     }
                 }
 
-                //Ask the server for all components that use this adapter
-                return AdapterService.getUsingComponents(data.id).then(function (result) {
+                //Ask the server for all components that use this operator
+                return OperatorService.getUsingComponents(data.id).then(function (result) {
                     var affectedWarning = "";
 
                     //If the list is not empty, create a message that contains the names of all affected components
@@ -147,7 +147,7 @@ app.controller('AdapterListController',
                         title: 'Delete operator',
                         type: 'warning',
                         html: "Are you sure you want to delete the operator <strong>" +
-                            adapterName + "</strong>?" + affectedWarning,
+                            operatorName + "</strong>?" + affectedWarning,
                         showCancelButton: true,
                         confirmButtonText: 'Delete',
                         confirmButtonClass: 'bg-red',
@@ -161,12 +161,12 @@ app.controller('AdapterListController',
             angular.extend(vm, {
                 addParameter: addParameter,
                 deleteParameter: deleteParameter,
-                adapterListCtrl: $controller('ItemListController as adapterListCtrl',
+                operatorListCtrl: $controller('ItemListController as operatorListCtrl',
                     {
                         $scope: $scope,
-                        list: adapterList
+                        list: operatorList
                     }),
-                addAdapterCtrl: $controller('AddItemController as addAdapterCtrl',
+                addOperatorCtrl: $controller('AddItemController as addOperatorCtrl',
                     {
                         $scope: $scope,
                         addItem: function (data) {
@@ -176,16 +176,16 @@ app.controller('AdapterListController',
                                     data.unit = data.unit || "";
                                     data.routines = response;
                                     data.parameters = vm.parameters;
-                                    return addAdapter(data);
+                                    return addOperator(data);
                                 }, function (response) {
                                     return $q.reject(response);
                                 });
                         }
                     }),
-                deleteAdapterCtrl: $controller('DeleteItemController as deleteAdapterCtrl',
+                deleteOperatorCtrl: $controller('DeleteItemController as deleteOperatorCtrl',
                     {
                         $scope: $scope,
-                        deleteItem: deleteAdapter,
+                        deleteItem: deleteOperator,
                         confirmDeletion: confirmDelete
                     }),
             });
@@ -194,22 +194,22 @@ app.controller('AdapterListController',
             $scope.$watch(
                 function () {
                     //Value being watched
-                    return vm.addAdapterCtrl.result;
+                    return vm.addOperatorCtrl.result;
                 },
                 function () {
                     //Callback
-                    var data = vm.addAdapterCtrl.result;
+                    var data = vm.addOperatorCtrl.result;
                     if (data) {
                         //Close modal on success
-                        $("#addAdapterModal").modal('toggle');
+                        $("#addOperatorModal").modal('toggle');
 
                         //Call pre processing function
-                        if (adapterPreprocessing) {
-                            adapterPreprocessing(data);
+                        if (operatorPreprocessing) {
+                            operatorPreprocessing(data);
                         }
 
                         //Add new item to list
-                        vm.adapterListCtrl.pushItem(data);
+                        vm.operatorListCtrl.pushItem(data);
 
                         //Clear parameter array
                         vm.parameters.length = 0;
@@ -221,11 +221,11 @@ app.controller('AdapterListController',
             $scope.$watch(
                 function () {
                     // value being watched
-                    return vm.deleteAdapterCtrl.result;
+                    return vm.deleteOperatorCtrl.result;
                 },
                 function () {
-                    var id = vm.deleteAdapterCtrl.result;
-                    vm.adapterListCtrl.removeItem(id);
+                    var id = vm.deleteOperatorCtrl.result;
+                    vm.operatorListCtrl.removeItem(id);
                 }
             );
 

@@ -8,7 +8,7 @@ public class ComponentRequestDTO extends UserEntityRequestDTO {
 
     private String componentType;
 
-    private String adapterId;
+    private String operatorId;
 
     private String deviceId;
     
@@ -22,8 +22,8 @@ public class ComponentRequestDTO extends UserEntityRequestDTO {
         return componentType;
     }
     
-    public String getAdapterId() {
-		return adapterId;
+    public String getOperatorId() {
+		return operatorId;
 	}
     
     public String getDeviceId() {

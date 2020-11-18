@@ -64,7 +64,7 @@
                             </div>
                         </td>
                         <td>{{item.componentType}}</td>
-                        <td>{{item.adapter.name}}</td>
+                        <td>{{item.operator.name}}</td>
                         <td>{{item.device.name}}</td>
                         <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
@@ -138,18 +138,18 @@
                                 </div>
                                 <span class="help-block" ng-show="addActuatorCtrl.item.errors.componentType">{{addActuatorCtrl.item.errors.componentType.message}}</span>
                             </div>
-                            <!-- item.adapter group -->
-                            <div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.adapter }">
+                            <!-- item.operator group -->
+                            <div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.operator }">
                                 <div class="form-line"
-                                     ng-class="{'focused error' : addActuatorCtrl.item.errors.adapter }">
-                                    <select class="form-control show-tick" id="actuator-form-select-adapter"
-                                            ng-model="addActuatorCtrl.item.adapterId"
-                                            ng-options="t.id as (t.name) for t in ctrl.adapterList">
+                                     ng-class="{'focused error' : addActuatorCtrl.item.errors.operator }">
+                                    <select class="form-control show-tick" id="actuator-form-select-operator"
+                                            ng-model="addActuatorCtrl.item.operatorId"
+                                            ng-options="t.id as (t.name) for t in ctrl.operatorList">
                                         <option value="">Select control operator *
                                         <option/>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addActuatorCtrl.item.errors.adapter">{{addActuatorCtrl.item.errors.adapter.message}}</span>
+                                <span class="help-block" ng-show="addActuatorCtrl.item.errors.operator">{{addActuatorCtrl.item.errors.operator.message}}</span>
                             </div>
                             <!-- item.device group -->
                             <div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.device }">

@@ -93,8 +93,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     keyPairList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('key-pairs');
                     }],
-                    adapterList: ['HttpService', function (HttpService) {
-                        return HttpService.getAll('adapters');
+                    operatorList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('operators');
                     }],
                     deviceTypesList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('device-types');
@@ -230,8 +230,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     deviceList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('devices');
                     }],
-                    adapterList: ['HttpService', function (HttpService) {
-                        return HttpService.getAll('adapters');
+                    operatorList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('operators');
                     }],
                     actuatorTypesList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('actuator-types');
@@ -311,8 +311,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     deviceList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('devices');
                     }],
-                    adapterList: ['HttpService', function (HttpService) {
-                        return HttpService.getAll('adapters');
+                    operatorList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('operators');
                     }],
                     sensorTypesList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('sensor-types');
@@ -371,8 +371,8 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     deviceDetails: ['$route', '$location', 'HttpService', function ($route, $location, HttpService) {
                         return HttpService.getOne('devices', $route.current.params.id);
                     }],
-                    compatibleAdapters: ['$route', 'MonitoringService', function ($route, MonitoringService) {
-                        return MonitoringService.getCompatibleMonitoringAdapters($route.current.params.id).then(function (response) {
+                    compatibleOperators: ['$route', 'MonitoringService', function ($route, MonitoringService) {
+                        return MonitoringService.getCompatibleMonitoringOperators($route.current.params.id).then(function (response) {
                             return response;
                         }, function () {
                             return null;
@@ -381,45 +381,45 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            //Adapters list
-            .when(viewPrefix + '/adapters', {
-                category: 'adapters',
-                templateUrl: 'templates/adapters',
-                controller: 'AdapterListController as ctrl',
+            //Operators list
+            .when(viewPrefix + '/operators', {
+                category: 'operators',
+                templateUrl: 'templates/operators',
+                controller: 'OperatorListController as ctrl',
                 resolve: {
-                    adapterPreprocessing: function () {
+                    operatorPreprocessing: function () {
                     },
                     parameterTypesList: () => parameterTypes,
-                    adapterList: ['HttpService', function (HttpService) {
-                        return HttpService.getAll('adapters');
+                    operatorList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('operators');
                     }],
-                    addAdapter: ['HttpService', function (HttpService) {
-                        return angular.bind(this, HttpService.addOne, 'adapters');
+                    addOperator: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.addOne, 'operators');
                     }],
-                    deleteAdapter: ['HttpService', function (HttpService) {
-                        return angular.bind(this, HttpService.deleteOne, 'adapters');
+                    deleteOperator: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.deleteOne, 'operators');
                     }]
                 }
             })
 
-            //Monitoring adapters
-            .when(viewPrefix + '/monitoring-adapters', {
-                category: 'monitoring-adapters',
-                templateUrl: 'templates/monitoring-adapters',
-                controller: 'MonitoringAdapterListController as ctrl',
+            //Monitoring operators
+            .when(viewPrefix + '/monitoring-operators', {
+                category: 'monitoring-operators',
+                templateUrl: 'templates/monitoring-operators',
+                controller: 'MonitoringOperatorListController as ctrl',
                 resolve: {
                     deviceTypesList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('device-types');
                     }],
                     parameterTypesList: () => parameterTypes,
-                    monitoringAdapterList: ['HttpService', function (HttpService) {
-                        return HttpService.getAll('monitoring-adapters');
+                    monitoringOperatorList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('monitoring-operators');
                     }],
-                    addMonitoringAdapter: ['HttpService', function (HttpService) {
-                        return angular.bind(this, HttpService.addOne, 'monitoring-adapters');
+                    addMonitoringOperator: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.addOne, 'monitoring-operators');
                     }],
-                    deleteMonitoringAdapter: ['HttpService', function (HttpService) {
-                        return angular.bind(this, HttpService.deleteOne, 'monitoring-adapters');
+                    deleteMonitoringOperator: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.deleteOne, 'monitoring-operators');
                     }]
                 }
             })

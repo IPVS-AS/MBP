@@ -4,8 +4,8 @@
  * Controller for the device details page.
  */
 app.controller('DeviceDetailsController',
-    ['$scope', '$controller', '$routeParams', '$interval', 'deviceDetails', 'compatibleAdapters', 'DeviceService', 'MonitoringService', 'UnitService', 'NotificationService',
-        function ($scope, $controller, $routeParams, $interval, deviceDetails, compatibleAdapters, DeviceService, MonitoringService, UnitService, NotificationService) {
+    ['$scope', '$controller', '$routeParams', '$interval', 'deviceDetails', 'compatibleOperators', 'DeviceService', 'MonitoringService', 'UnitService', 'NotificationService',
+        function ($scope, $controller, $routeParams, $interval, deviceDetails, compatibleOperators, DeviceService, MonitoringService, UnitService, NotificationService) {
 
             //Selectors that allow the selection of different ui cards
             const DETAILS_CARD_SELECTOR = ".details-card";
@@ -24,40 +24,40 @@ app.controller('DeviceDetailsController',
              * Initializing function, sets up basic things.
              */
             (function initController() {
-                //Check if the compatible adapters were retrieved successfully
-                if (compatibleAdapters == null) {
-                    NotificationService.notify("Could not retrieve compatible adapters.", "error");
+                //Check if the compatible operators were retrieved successfully
+                if (compatibleOperators == null) {
+                    NotificationService.notify("Could not retrieve compatible operators.", "error");
                 }
 
                 //Initialize device state
                 vm.deviceState = 'UNKNOWN';
 
-                //Make device details and list of compatible adapters available
+                //Make device details and list of compatible operators available
                 vm.device = deviceDetails;
-                vm.compatibleAdapters = compatibleAdapters;
+                vm.compatibleOperators = compatibleOperators;
 
-                //Prepare monitoring adapter objects
-                for (let i = 0; i < compatibleAdapters.length; i++) {
-                    //Retrieve adapter
-                    let adapter = vm.compatibleAdapters[i];
+                //Prepare monitoring operator objects
+                for (let i = 0; i < compatibleOperators.length; i++) {
+                    //Retrieve operator
+                    let operator = vm.compatibleOperators[i];
 
                     //Add required properties
-                    adapter.enable = false;
-                    adapter.state = 'LOADING';
-                    adapter.displayUnit = adapter.unit;
-                    adapter.reloadState = createReloadStateFunction(compatibleAdapters[i].id);
-                    adapter.onMonitoringToggle = createMonitoringToggleFunction(compatibleAdapters[i].id);
-                    adapter.getData = createDataRetrievalFunction(compatibleAdapters[i].id);
-                    adapter.isUpdateable = createUpdateCheckFunction(compatibleAdapters[i].id);
-                    adapter.getStats = createStatsRetrievalFunction(compatibleAdapters[i].id);
-                    adapter.loadingLive = createLoadingFunctions(compatibleAdapters[i].id, LIVE_CHART_SELECTOR_PREFIX,
+                    operator.enable = false;
+                    operator.state = 'LOADING';
+                    operator.displayUnit = operator.unit;
+                    operator.reloadState = createReloadStateFunction(compatibleOperators[i].id);
+                    operator.onMonitoringToggle = createMonitoringToggleFunction(compatibleOperators[i].id);
+                    operator.getData = createDataRetrievalFunction(compatibleOperators[i].id);
+                    operator.isUpdateable = createUpdateCheckFunction(compatibleOperators[i].id);
+                    operator.getStats = createStatsRetrievalFunction(compatibleOperators[i].id);
+                    operator.loadingLive = createLoadingFunctions(compatibleOperators[i].id, LIVE_CHART_SELECTOR_PREFIX,
                         "Loading live chart...");
-                    adapter.loadingHistorical = createLoadingFunctions(compatibleAdapters[i].id,
+                    operator.loadingHistorical = createLoadingFunctions(compatibleOperators[i].id,
                         HISTORICAL_CHART_SELECTOR_PREFIX, "Loading historical chart...");
-                    adapter.loadingStats = createLoadingFunctions(compatibleAdapters[i].id, STATS_SELECTOR_PREFIX,
+                    operator.loadingStats = createLoadingFunctions(compatibleOperators[i].id, STATS_SELECTOR_PREFIX,
                         "Loading value statistics...");
-                    adapter.onDisplayUnitChange = createOnDisplayUnitChangeFunction(compatibleAdapters[i].id);
-                    adapter.deleteValueLogs = createValueLogDeletionFunction(compatibleAdapters[i].id);
+                    operator.onDisplayUnitChange = createOnDisplayUnitChangeFunction(compatibleOperators[i].id);
+                    operator.deleteValueLogs = createValueLogDeletionFunction(compatibleOperators[i].id);
                 }
 
                 //Stores the parameters and their values as assigned by the user
@@ -69,7 +69,7 @@ app.controller('DeviceDetailsController',
                 //Interval for updating states on a regular basis
                 let interval = $interval(function () {
                     updateDeviceState(true);
-                    loadMonitoringAdaptersStates();
+                    loadMonitoringOperatorsStates();
                 }, 2 * 60 * 1000);
 
                 //Cancel interval on route change
@@ -77,28 +77,28 @@ app.controller('DeviceDetailsController',
                     $interval.cancel(interval);
                 });
 
-                //Load device and adapters states for the first time
+                //Load device and operators states for the first time
                 updateDeviceState();
-                loadMonitoringAdaptersStates()
+                loadMonitoringOperatorsStates()
             })();
 
             /**
              * [Private]
-             * Returns a function that checks whether the live chart of an adapter is allowed to update its data.
+             * Returns a function that checks whether the live chart of an operator is allowed to update its data.
              *
-             * @param monitoringAdapterId The id of the affected monitoring adapter
+             * @param monitoringOperatorId The id of the affected monitoring operator
              * @returns {Function}
              */
-            function createUpdateCheckFunction(monitoringAdapterId) {
+            function createUpdateCheckFunction(monitoringOperatorId) {
                 //Create function and return it
                 return function () {
-                    //Try to find an monitoring adapter with this id
-                    let adapter = getMonitoringAdapterById(monitoringAdapterId);
-                    if (adapter == null) {
+                    //Try to find an monitoring operator with this id
+                    let operator = getMonitoringOperatorById(monitoringOperatorId);
+                    if (operator == null) {
                         return;
                     }
 
-                    return adapter.state === 'RUNNING';
+                    return operator.state === 'RUNNING';
                 }
             }
 
@@ -106,13 +106,13 @@ app.controller('DeviceDetailsController',
              * [Private]
              * Returns a function that allows the retrieval of monitoring log data.
              *
-             * @param monitoringAdapterId The id of the affected monitoring adapter
+             * @param monitoringOperatorId The id of the affected monitoring operator
              * @returns {Function}
              */
-            function createDataRetrievalFunction(monitoringAdapterId) {
+            function createDataRetrievalFunction(monitoringOperatorId) {
                 //Create function and return it
                 return function (numberLogs, descending, unit) {
-                    return retrieveMonitoringData(monitoringAdapterId, numberLogs, descending, unit);
+                    return retrieveMonitoringData(monitoringOperatorId, numberLogs, descending, unit);
                 }
             }
 
@@ -121,14 +121,14 @@ app.controller('DeviceDetailsController',
              * [Private]
              * Returns a function that allows the retrieval of value log statistics data.
              *
-             * @param monitoringAdapterId The id of the affected monitoring adapter
+             * @param monitoringOperatorId The id of the affected monitoring operator
              * @returns {Function}
              */
-            function createStatsRetrievalFunction(monitoringAdapterId) {
+            function createStatsRetrievalFunction(monitoringOperatorId) {
                 //Create function and return it
                 return function (unit) {
                     //Return resulting promise
-                    return MonitoringService.getMonitoringValueLogStats(DEVICE_ID, monitoringAdapterId, unit).then(function (response) {
+                    return MonitoringService.getMonitoringValueLogStats(DEVICE_ID, monitoringOperatorId, unit).then(function (response) {
                         //Success, pass statistics data
                         return response;
                     }, function (response) {
@@ -146,18 +146,18 @@ app.controller('DeviceDetailsController',
              * Returns an object of functions that display a waiting screen when the chart wants to load data
              * and hide the waiting screen again after loading has finished.
              *
-             * @param monitoringAdapterId The id of the affected monitoring adapter
+             * @param monitoringOperatorId The id of the affected monitoring operator
              * @param chartSelectorPrefix The selector prefix for the chart container for which the waiting screen
              * is supposed to be displayed
              * @param displayText The text to display on the waiting screen
              * @returns {{start: DeviceDetailsController.start, finish: DeviceDetailsController.finish}}
              */
-            function createLoadingFunctions(monitoringAdapterId, chartSelectorPrefix, displayText) {
+            function createLoadingFunctions(monitoringOperatorId, chartSelectorPrefix, displayText) {
                 //Create object of functions and return it
                 return {
                     start: function () {
                         //Show waiting screen
-                        $(chartSelectorPrefix + monitoringAdapterId).waitMe({
+                        $(chartSelectorPrefix + monitoringOperatorId).waitMe({
                             effect: 'bounce',
                             text: displayText,
                             bg: 'rgba(255,255,255,0.85)'
@@ -165,7 +165,7 @@ app.controller('DeviceDetailsController',
                     },
                     finish: function () {
                         //Hide waiting screen
-                        $(chartSelectorPrefix + monitoringAdapterId).waitMe("hide");
+                        $(chartSelectorPrefix + monitoringOperatorId).waitMe("hide");
                     }
                 }
             }
@@ -174,54 +174,54 @@ app.controller('DeviceDetailsController',
             /**
              * [Private]
              * Returns a function that handles monitoring toggle events triggered by the user.
-             * @param monitoringAdapterId The id of the affected monitoring adapter
+             * @param monitoringOperatorId The id of the affected monitoring operator
              * @returns {Function}
              */
-            function createMonitoringToggleFunction(monitoringAdapterId) {
+            function createMonitoringToggleFunction(monitoringOperatorId) {
                 //Create function and return it
                 return function () {
-                    //Try to find an monitoring adapter with this id
-                    let adapter = getMonitoringAdapterById(monitoringAdapterId);
-                    if (adapter == null) {
+                    //Try to find an monitoring operator with this id
+                    let operator = getMonitoringOperatorById(monitoringOperatorId);
+                    if (operator == null) {
                         return;
                     }
 
-                    //Get index of adapter in adapter list
-                    let index = compatibleAdapters.indexOf(adapter)
+                    //Get index of operator in operator list
+                    let index = compatibleOperators.indexOf(operator)
 
                     //Check what the user wants
-                    if (adapter.enable) {
-                        enableMonitoring(adapter, vm.parameterValues[index]);
+                    if (operator.enable) {
+                        enableMonitoring(operator, vm.parameterValues[index]);
                     } else {
-                        disableMonitoring(adapter);
+                        disableMonitoring(operator);
                     }
                 };
             }
 
             /**
              * [Private]
-             * Returns a function that retrieves the monitoring state for an adapter with a certain id.
-             * @param monitoringAdapterId The id of the monitoring adapter
+             * Returns a function that retrieves the monitoring state for an operator with a certain id.
+             * @param monitoringOperatorId The id of the monitoring operator
              * @returns {Function}
              */
-            function createReloadStateFunction(monitoringAdapterId) {
+            function createReloadStateFunction(monitoringOperatorId) {
                 //Create function and return it
                 return function () {
-                    //Try to find an monitoring adapter with this id
-                    let adapter = getMonitoringAdapterById(monitoringAdapterId);
-                    if (adapter == null) {
+                    //Try to find an monitoring operator with this id
+                    let operator = getMonitoringOperatorById(monitoringOperatorId);
+                    if (operator == null) {
                         return;
                     }
 
                     //Enable spinner
-                    adapter.state = 'LOADING';
+                    operator.state = 'LOADING';
 
-                    //Perform server request and set state of the adapter object accordingly
-                    MonitoringService.getMonitoringState(DEVICE_ID, adapter.id).then(function (response) {
-                        adapter.state = response.content;
-                        adapter.enable = (adapter.state === "RUNNING");
+                    //Perform server request and set state of the operator object accordingly
+                    MonitoringService.getMonitoringState(DEVICE_ID, operator.id).then(function (response) {
+                        operator.state = response.content;
+                        operator.enable = (operator.state === "RUNNING");
                     }, function (response) {
-                        adapter.state = 'UNKNOWN';
+                        operator.state = 'UNKNOWN';
                         NotificationService.notify("Could not retrieve monitoring state.", "error");
                     }).then(function () {
                         $scope.$apply();
@@ -233,28 +233,28 @@ app.controller('DeviceDetailsController',
              * [Private]
              * Returns a function that handles display unit changes triggered by the user.
              *
-             * @param monitoringAdapterId The id of the affected monitoring adapter
+             * @param monitoringOperatorId The id of the affected monitoring operator
              * @returns {Function}
              */
-            function createOnDisplayUnitChangeFunction(monitoringAdapterId) {
+            function createOnDisplayUnitChangeFunction(monitoringOperatorId) {
                 //Create function and return it
                 return function () {
-                    //Try to find an monitoring adapter with this id
-                    let adapter = getMonitoringAdapterById(monitoringAdapterId);
-                    if (adapter == null) {
+                    //Try to find an monitoring operator with this id
+                    let operator = getMonitoringOperatorById(monitoringOperatorId);
+                    if (operator == null) {
                         return;
                     }
 
-                    //Check whether the entered unit is compatible with the adapter unit
-                    UnitService.checkUnitsForCompatibility(adapter.unit, adapter.displayUnitInput).then(function (response) {
+                    //Check whether the entered unit is compatible with the operator unit
+                    UnitService.checkUnitsForCompatibility(operator.unit, operator.displayUnitInput).then(function (response) {
                         //Check compatibility according to server response
                         if (!response) {
-                            NotificationService.notify("The entered unit is not compatible to the adapter unit.", "error");
+                            NotificationService.notify("The entered unit is not compatible to the operator unit.", "error");
                             return;
                         }
 
                         //Units are compatible, take user input as new unit
-                        adapter.displayUnit = adapter.displayUnitInput;
+                        operator.displayUnit = operator.displayUnitInput;
 
                     }, function () {
                         NotificationService.notify("The entered unit is invalid.", "error");
@@ -267,21 +267,21 @@ app.controller('DeviceDetailsController',
              * Returns a function that allows the deletion of all recorded value logs of the corresponding
              * monitoring component after the user confirmed the decision.
              *
-             * @param monitoringAdapterId The id of the affected monitoring adapter
+             * @param monitoringOperatorId The id of the affected monitoring operator
              * @returns {Function}
              */
-            function createValueLogDeletionFunction(monitoringAdapterId) {
+            function createValueLogDeletionFunction(monitoringOperatorId) {
                 //Create function and return it
                 return function () {
                     /**
                      * Executes the deletion of the value logs by performing the server request.
                      */
-                    function executeDeletion(adapter) {
-                        MonitoringService.deleteMonitoringValueLogs(DEVICE_ID, monitoringAdapterId)
+                    function executeDeletion(operator) {
+                        MonitoringService.deleteMonitoringValueLogs(DEVICE_ID, monitoringOperatorId)
                             .then(function (response) {
                                 //Update historical chart and stats
-                                adapter.historicalChartApi.updateChart();
-                                adapter.valueLogStatsApi.updateStats();
+                                operator.historicalChartApi.updateChart();
+                                operator.valueLogStatsApi.updateStats();
 
                                 NotificationService.notify("Monitoring data was deleted successfully.", "success");
                             }, function (response) {
@@ -289,9 +289,9 @@ app.controller('DeviceDetailsController',
                             });
                     }
 
-                    //Try to find an monitoring adapter with this id
-                    let adapter = getMonitoringAdapterById(monitoringAdapterId);
-                    if (adapter == null) {
+                    //Try to find an monitoring operator with this id
+                    let operator = getMonitoringOperatorById(monitoringOperatorId);
+                    if (operator == null) {
                         return;
                     }
 
@@ -309,7 +309,7 @@ app.controller('DeviceDetailsController',
                     }).then(function (result) {
                         //Check if the user confirmed the deletion
                         if (result.value) {
-                            executeDeletion(adapter);
+                            executeDeletion(operator);
                         }
                     });
 
@@ -319,75 +319,75 @@ app.controller('DeviceDetailsController',
 
 
             /**
-             * Returns the monitoring adapter object that corresponds to a certain adapter id, as
-             * it is contained in the list of compatible adapters.
+             * Returns the monitoring operator object that corresponds to a certain operator id, as
+             * it is contained in the list of compatible operators.
              *
-             * @param monitoringAdapterId
+             * @param monitoringOperatorId
              * @returns {*}
              */
-            function getMonitoringAdapterById(monitoringAdapterId) {
-                let adapter = null;
+            function getMonitoringOperatorById(monitoringOperatorId) {
+                let operator = null;
 
-                //Iterate over all adapters and find the matching one
-                for (let i = 0; i < compatibleAdapters.length; i++) {
-                    if (monitoringAdapterId === compatibleAdapters[i].id) {
-                        adapter = compatibleAdapters[i];
+                //Iterate over all operators and find the matching one
+                for (let i = 0; i < compatibleOperators.length; i++) {
+                    if (monitoringOperatorId === compatibleOperators[i].id) {
+                        operator = compatibleOperators[i];
                         break;
                     }
                 }
-                return adapter;
+                return operator;
             }
 
 
             /**
              * [Private]
-             * Sends a server request in order to retrieve the monitoring states of all compatible monitoring adapters.
-             * The states are then stored in the corresponding adapter objects.
+             * Sends a server request in order to retrieve the monitoring states of all compatible monitoring operators.
+             * The states are then stored in the corresponding operator objects.
              */
-            function loadMonitoringAdaptersStates() {
+            function loadMonitoringOperatorsStates() {
                 //Perform server request
                 MonitoringService.getDeviceMonitoringState(DEVICE_ID).then(function (statesMap) {
-                    //Iterate over all compatible adapters and update all states accordingly
-                    for (let i in compatibleAdapters) {
-                        let componentId = compatibleAdapters[i].id + "@" + DEVICE_ID;
-                        compatibleAdapters[i].state = statesMap[componentId];
-                        compatibleAdapters[i].enable = (compatibleAdapters[i].state === "RUNNING");
+                    //Iterate over all compatible operators and update all states accordingly
+                    for (let i in compatibleOperators) {
+                        let componentId = compatibleOperators[i].id + "@" + DEVICE_ID;
+                        compatibleOperators[i].state = statesMap[componentId];
+                        compatibleOperators[i].enable = (compatibleOperators[i].state === "RUNNING");
                     }
                 }, function (response) {
-                    for (let i in compatibleAdapters) {
-                        compatibleAdapters[i].state = 'UNKNOWN';
+                    for (let i in compatibleOperators) {
+                        compatibleOperators[i].state = 'UNKNOWN';
                     }
-                    NotificationService.notify("Could not retrieve monitoring adapter states.", "error");
+                    NotificationService.notify("Could not retrieve monitoring operator states.", "error");
                 });
             }
 
             /**
              * [Public]
-             * Enables monitoring of the device with a certain monitoring adapter and a parameter list for this adapter.
-             * @param adapter The monitoring adapter to enable
-             * @param parameterValuesList List of parameter values to use for the adapter.
+             * Enables monitoring of the device with a certain monitoring operator and a parameter list for this operator.
+             * @param operator The monitoring operator to enable
+             * @param parameterValuesList List of parameter values to use for the operator.
              */
-            function enableMonitoring(adapter, parameterValuesList) {
+            function enableMonitoring(operator, parameterValuesList) {
                 //Show waiting screen
                 showMonitoringControlWaitingScreen("Enabling monitoring...");
 
                 //Execute enable request
-                MonitoringService.enableMonitoring(DEVICE_ID, adapter.id, parameterValuesList).then(
+                MonitoringService.enableMonitoring(DEVICE_ID, operator.id, parameterValuesList).then(
                     function (response) {
                         //Success, check if every thing worked well
                         if (!response.success) {
-                            adapter.state = 'UNKNOWN';
+                            operator.state = 'UNKNOWN';
                             NotificationService.notify('Error during monitoring enabling: ' + response.globalMessage, 'error');
                             return;
                         }
                         //Notify user
-                        adapter.state = 'RUNNING';
-                        adapter.enable = true;
+                        operator.state = 'RUNNING';
+                        operator.enable = true;
                         NotificationService.notify('Monitoring enabled successfully.', 'success');
                     },
                     function (response) {
                         //Failure
-                        adapter.state = 'UNKNOWN';
+                        operator.state = 'UNKNOWN';
                         NotificationService.notify('Enabling of monitoring failed.', 'error');
                     }).then(function () {
                     //Finally hide the waiting screen
@@ -398,30 +398,30 @@ app.controller('DeviceDetailsController',
 
             /**
              * [Private]
-             * Disables monitoring of the device with a certain monitoring adapter.
-             * @param adapter The monitoring adapter to disable
+             * Disables monitoring of the device with a certain monitoring operator.
+             * @param operator The monitoring operator to disable
              */
-            function disableMonitoring(adapter) {
+            function disableMonitoring(operator) {
                 //Show waiting screen
                 showMonitoringControlWaitingScreen("Disabling monitoring...");
 
                 //Execute disable request
-                MonitoringService.disableMonitoring(DEVICE_ID, adapter.id).then(
+                MonitoringService.disableMonitoring(DEVICE_ID, operator.id).then(
                     function (response) {
                         //Success, check if every thing worked well
                         if (!response.success) {
-                            adapter.state = 'UNKNOWN';
+                            operator.state = 'UNKNOWN';
                             NotificationService.notify('Error during monitoring disabling: ' + response.globalMessage, 'error');
                             return;
                         }
                         //Notify user
-                        adapter.state = 'READY';
-                        adapter.enable = false;
+                        operator.state = 'READY';
+                        operator.enable = false;
                         NotificationService.notify('Monitoring disabled successfully.', 'success');
                     },
                     function (response) {
                         //Failure
-                        adapter.state = 'UNKNOWN';
+                        operator.state = 'UNKNOWN';
                         NotificationService.notify('Disabling of monitoring failed.', 'error');
                     }).then(function () {
                     //Finally hide the waiting screen
@@ -435,7 +435,7 @@ app.controller('DeviceDetailsController',
              * Retrieves a certain number of monitoring value log data (in a specific order) for the current component
              * as a promise.
              *
-             * @param monitoringAdapterId The id of the monitoring adapter for which data is supposed to be retrieved
+             * @param monitoringOperatorId The id of the monitoring operator for which data is supposed to be retrieved
              * @param numberLogs The number of logs to retrieve
              * @param descending The order in which the value logs should be retrieved. True results in descending
              * order, false in ascending order. By default, the logs are retrieved in ascending
@@ -443,7 +443,7 @@ app.controller('DeviceDetailsController',
              * @param unit The unit in which the values are supposed to be retrieved
              * @returns {*}
              */
-            function retrieveMonitoringData(monitoringAdapterId, numberLogs, descending, unit) {
+            function retrieveMonitoringData(monitoringOperatorId, numberLogs, descending, unit) {
                 //Set default order
                 let order = 'asc';
 
@@ -459,21 +459,21 @@ app.controller('DeviceDetailsController',
                 };
 
                 //Perform the server request in order to retrieve the data
-                return MonitoringService.getMonitoringValueLogs(DEVICE_ID, monitoringAdapterId, pageDetails, unit);
+                return MonitoringService.getMonitoringValueLogs(DEVICE_ID, monitoringOperatorId, pageDetails, unit);
             }
 
             /**
              * [Private]
-             * Initializes the data structures that are required for the deployment parameters of the monitoring adapters.
+             * Initializes the data structures that are required for the deployment parameters of the monitoring operators.
              */
             function initParameters() {
-                //Extend parameter array for one array per compatible adapter
-                for (let i = 0; i < compatibleAdapters.length; i++) {
-                    //Get formal parameters for the current adapter
-                    let formalParams = compatibleAdapters[i].parameters;
+                //Extend parameter array for one array per compatible operator
+                for (let i = 0; i < compatibleOperators.length; i++) {
+                    //Get formal parameters for the current operator
+                    let formalParams = compatibleOperators[i].parameters;
 
-                    //Array for the parameters of the current adapter
-                    let adapterParameterArray = [];
+                    //Array for the parameters of the current operator
+                    let operatorParameterArray = [];
 
                     //Iterate over all formal parameters
                     for (let j = 0; j < formalParams.length; j++) {
@@ -483,15 +483,15 @@ app.controller('DeviceDetailsController',
                             value = false;
                         }
 
-                        //Add a tuple (name, value) for the current parameter to the adapter array
-                        adapterParameterArray.push({
+                        //Add a tuple (name, value) for the current parameter to the operator array
+                        operatorParameterArray.push({
                             "name": formalParams[j].name,
                             "value": value
                         });
                     }
 
-                    //Add parameter array for this adapter to the global array
-                    vm.parameterValues.push(adapterParameterArray);
+                    //Add parameter array for this operator to the global array
+                    vm.parameterValues.push(operatorParameterArray);
                 }
             }
 

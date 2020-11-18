@@ -1,10 +1,10 @@
 package org.citopt.connde.repository;
 
-import org.citopt.connde.domain.adapter.Adapter;
+import org.citopt.connde.domain.operator.Operator;
 
 //@RepositoryRestResource(collectionResourceRel = "adapters", path = "adapters", excerptProjection = AdapterExcerpt.class)
 //@Api(tags = {"Adapter entities"}, description = "CRUD for adapter entities")
-public interface AdapterRepository extends UserEntityRepository<Adapter> {
+public interface OperatorRepository extends UserEntityRepository<Operator> {
 //    @RestResource(exported = false)
 //    Adapter findByName(@Param("name") String name);
 //

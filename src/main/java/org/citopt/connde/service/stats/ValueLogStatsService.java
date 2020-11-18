@@ -59,7 +59,7 @@ public class ValueLogStatsService {
         }
 
         //Get adapter unit object
-        Unit<?> adapterUnit = component.getAdapter().getUnitObject();
+        Unit<?> adapterUnit = component.getOperator().getUnitObject();
 
         //Check if value conversion is desired and possible
         if ((unit != null) && adapterUnit.isCompatible(unit)) {

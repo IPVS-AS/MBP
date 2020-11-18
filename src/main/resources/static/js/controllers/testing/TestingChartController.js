@@ -17,7 +17,7 @@ app.controller('TestingChartController',
             const COMPONENT_ID = vm.component_id;
             const COMPONENT_TYPE = vm.component_type;
             const COMPONENT_TYPE_URL = vm.component_type_url;
-            const COMPONENT_ADAPTER_UNIT = vm.component_adapter_unit;
+            const COMPONENT_OPERATOR_UNIT = vm.component_operator_unit;
 
             //Stores the parameters and their values as assigned by the user
             vm.parameterValues = [];
@@ -131,11 +131,11 @@ app.controller('TestingChartController',
                 //Retrieve entered unit
                 const inputUnit = vm.displayUnitInput;
 
-                //Check whether the entered unit is compatible with the adapter unit
-                UnitService.checkUnitsForCompatibility(COMPONENT_ADAPTER_UNIT, inputUnit).then(function (response) {
+                //Check whether the entered unit is compatible with the operator unit
+                UnitService.checkUnitsForCompatibility(COMPONENT_OPERATOR_UNIT, inputUnit).then(function (response) {
                     //Check compatibility according to server response
                     if (!response) {
-                        NotificationService.notify("The entered unit is not compatible to the adapter unit.", "error");
+                        NotificationService.notify("The entered unit is not compatible to the operator unit.", "error");
                         return;
                     }
 
@@ -463,15 +463,15 @@ app.controller('TestingChartController',
                 vm.component_id = sensor.id;
                 vm.component_type = sensor.componentTypeName;
                 vm.component_type_url = vm.component_type + 's';
-                vm.component_adapter_unit = sensor._embedded.adapter.unit;
+                vm.component_operator_unit = sensor._embedded.operator.unit;
 
 
                 vm.component = vm.sensor;
                 vm.isLoading = false;
                 vm.deploymentState = 'UNKNOWN';
                 vm.deviceState = 'UNKNOWN';
-                vm.displayUnit = COMPONENT_ADAPTER_UNIT;
-                vm.displayUnitInput = COMPONENT_ADAPTER_UNIT;
+                vm.displayUnit = COMPONENT_OPERATOR_UNIT;
+                vm.displayUnitInput = COMPONENT_OPERATOR_UNIT;
 
 
             }

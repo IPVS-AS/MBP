@@ -224,7 +224,7 @@ public class RestValueLogController {
 			}
 
 			// Get source unit
-			Unit<? extends Quantity> sourceUnit = component.getAdapter().getUnitObject();
+			Unit<? extends Quantity> sourceUnit = component.getOperator().getUnitObject();
 
 			// Convert value logs using corresponding converter
 			UnitConverter converter = sourceUnit.getConverterTo(targetUnit);

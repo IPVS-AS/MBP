@@ -1,5 +1,5 @@
 /**
- * Provides services for dealing with adapter objects and retrieving a list of components which use a certain adapter.
+ * Provides services for managing users.
  */
 app.factory('UserService', ['$rootScope', 'HttpService', 'ENDPOINT_URI', 'BASE_URI',
     function ($rootScope, HttpService, ENDPOINT_URI, BASE_URI) {

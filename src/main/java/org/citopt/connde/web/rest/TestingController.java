@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
+import org.citopt.connde.domain.operator.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.testing.TestDetails;
@@ -241,7 +241,7 @@ public class TestingController {
                     JSONArray singleConfig = (JSONArray) configEntries.get(i);
                     List<ParameterInstance> newConfigInner = new ArrayList<>();
                     for (int j = 0; j < singleConfig.length(); j++) {
-                        String edÃ¶fn = singleConfig.getJSONObject(j).getString("value");
+                        String edöfn = singleConfig.getJSONObject(j).getString("value");
                         instance = new ParameterInstance(singleConfig.getJSONObject(j).getString("name"), singleConfig.getJSONObject(j).getString("value"));
                         newConfigInner.add(instance);
                     }

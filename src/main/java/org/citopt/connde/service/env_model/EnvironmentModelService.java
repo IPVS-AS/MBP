@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.citopt.connde.domain.adapter.Adapter;
+import org.citopt.connde.domain.operator.Operator;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.ActuatorValidator;
 import org.citopt.connde.domain.component.Component;
@@ -22,7 +22,7 @@ import org.citopt.connde.error.DeploymentException;
 import org.citopt.connde.error.EnvironmentModelParseException;
 import org.citopt.connde.error.MBPException;
 import org.citopt.connde.repository.ActuatorRepository;
-import org.citopt.connde.repository.AdapterRepository;
+import org.citopt.connde.repository.OperatorRepository;
 import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.repository.EnvironmentModelRepository;
 import org.citopt.connde.repository.KeyPairRepository;
@@ -63,7 +63,7 @@ public class EnvironmentModelService {
     private KeyPairRepository keyPairRepository;
 
     @Autowired
-    private AdapterRepository adapterRepository;
+    private OperatorRepository operatorRepository;
 
     @Autowired
     private DeviceRepository deviceRepository;
@@ -94,7 +94,7 @@ public class EnvironmentModelService {
     private static final String MODEL_JSON_KEY_DEVICE_USERNAME = "username";
     private static final String MODEL_JSON_KEY_DEVICE_PASSWORD = "password";
     private static final String MODEL_JSON_KEY_DEVICE_KEYPAIR = "keyPair";
-    private static final String MODEL_JSON_KEY_COMPONENT_ADAPTER = "adapter";
+    private static final String MODEL_JSON_KEY_COMPONENT_OPERATOR = "operator";
     private static final String MODEL_JSON_KEY_CONNECTIONS = "connections";
     private static final String MODEL_JSON_KEY_CONNECTION_SOURCE = "sourceId";
     private static final String MODEL_JSON_KEY_CONNECTION_TARGET = "targetId";
@@ -869,9 +869,9 @@ public class EnvironmentModelService {
         component.setName(componentDetails.getString(MODEL_JSON_KEY_NODE_DETAILS_NAME));
         component.setComponentType(nodeObject.getString(MODEL_JSON_KEY_NODE_COMPONENT_TYPE));
 
-        //Find adapter from repository and set it
-        Adapter adapter = adapterRepository.findById(componentDetails.optString(MODEL_JSON_KEY_COMPONENT_ADAPTER)).get();
-        component.setAdapter(adapter);
+        //Find operator from repository and set it
+        Operator operator = operatorRepository.findById(componentDetails.optString(MODEL_JSON_KEY_COMPONENT_OPERATOR)).get();
+        component.setOperator(operator);
 
         //Set a fake device for passing validation
         component.setDevice(new Device());

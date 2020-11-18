@@ -1,13 +1,13 @@
 package org.citopt.connde.repository.projection;
 
-import org.citopt.connde.domain.adapter.Adapter;
-import org.citopt.connde.domain.adapter.parameters.Parameter;
+import org.citopt.connde.domain.operator.Operator;
+import org.citopt.connde.domain.operator.parameters.Parameter;
 import org.springframework.data.rest.core.config.Projection;
 
 import java.util.List;
 
-@Projection(name = "list", types = Adapter.class)
-public interface AdapterExcerpt extends UserEntityExcerpt {
+@Projection(name = "list", types = Operator.class)
+public interface OperatorExcerpt extends UserEntityExcerpt {
 
     String getId();
 
