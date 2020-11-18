@@ -159,6 +159,7 @@ app.controller('ActuatorListController',
                 }),
                 addActuatorCtrl: $controller('AddItemController as addActuatorCtrl', {
                     $scope: $scope,
+                    entity: 'actuator',
                     addItem: addActuator
                 }),
                 deleteActuatorCtrl: $controller('DeleteItemController as deleteActuatorCtrl', {

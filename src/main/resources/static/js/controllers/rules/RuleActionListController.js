@@ -140,6 +140,7 @@ app.controller('RuleActionListController',
                 }),
                 addRuleActionCtrl: $controller('AddItemController as addRuleActionCtrl', {
                     $scope: $scope,
+                    entity: 'rule action',
                     addItem: addRuleAction
                 }),
                 deleteRuleActionCtrl: $controller('DeleteItemController as deleteRuleActionCtrl', {

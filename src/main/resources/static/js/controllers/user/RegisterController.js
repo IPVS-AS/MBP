@@ -13,13 +13,7 @@ app.controller('RegisterController', ['$scope', 'UserService', '$location', 'Not
                 //Redirect
                 $location.path('/login');
             }, function (response) {
-                //Check why the request failed
-                /*
-                if (response.status === 409) {
-                    NotificationService.showError("The name is already in use.")
-                } else {
-                    NotificationService.showError("Login failed.")
-                }*/
+
             }).then(function () {
                 vm.dataLoading = false;
                 $scope.$apply();

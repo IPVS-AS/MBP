@@ -768,6 +768,7 @@ app.controller('TestingController',
                 addTestCtrl: $controller('AddItemController as addTestCtrl',
                     {
                         $scope: $scope,
+                        entity: 'test',
                         addItem: function (data) {
                             const newTestObject = {};
 

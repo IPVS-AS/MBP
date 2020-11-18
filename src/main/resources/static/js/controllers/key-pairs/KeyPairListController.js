@@ -188,6 +188,7 @@ app.controller('KeyPairListController',
                 addKeyPairCtrl: $controller('AddItemController as addKeyPairCtrl',
                     {
                         $scope: $scope,
+                        entity: 'key pair',
                         addItem: addKeyPair
                     }),
                 deleteKeyPairCtrl: $controller('DeleteItemController as deleteKeyPairCtrl',

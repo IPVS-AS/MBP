@@ -68,6 +68,7 @@ app.controller('PolicyListController',
                 }),
                 addPolicyCtrl: $controller('AddItemController as addPolicyCtrl', {
                     $scope: $scope,
+                    entity: 'policy',
                     addItem: addPolicy
                 }),
                 deletePolicyCtrl: $controller('DeleteItemController as deletePolicyCtrl', {

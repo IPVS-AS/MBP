@@ -180,6 +180,7 @@ app.controller('DeviceListController',
                 }),
                 addDeviceCtrl: $controller('AddItemController as addDeviceCtrl', {
                     $scope: $scope,
+                    entity: 'device',
                     addItem: function (data) {
                         let deviceObject = {};
 

@@ -537,6 +537,7 @@ app.controller('EnvModelListController',
                 }),
                 addEnvModelCtrl: $controller('AddItemController as addEnvModelCtrl', {
                     $scope: $scope,
+                    entity: 'environment model',
                     addItem: addEnvModel
                 }),
                 updateEnvModelCtrl: $controller('UpdateItemController as updateEnvModelCtrl', {

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
+import org.citopt.connde.domain.operator.parameters.ParameterInstance;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.domain.testing.TestDetails;

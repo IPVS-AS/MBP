@@ -49,6 +49,7 @@ app.controller('PolicyConditionListController',
                 }),
                 addPolicyConditionCtrl: $controller('AddItemController as addPolicyConditionCtrl', {
                     $scope: $scope,
+                    entity: 'policy condition',
                     addItem: addPolicyCondition
                 }),
                 deletePolicyConditionCtrl: $controller('DeleteItemController as deletePolicyConditionCtrl', {

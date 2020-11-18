@@ -241,7 +241,6 @@ public class TestingController {
                     JSONArray singleConfig = (JSONArray) configEntries.get(i);
                     List<ParameterInstance> newConfigInner = new ArrayList<>();
                     for (int j = 0; j < singleConfig.length(); j++) {
-                        String edöfn = singleConfig.getJSONObject(j).getString("value");
                         instance = new ParameterInstance(singleConfig.getJSONObject(j).getString("name"), singleConfig.getJSONObject(j).getString("value"));
                         newConfigInner.add(instance);
                     }

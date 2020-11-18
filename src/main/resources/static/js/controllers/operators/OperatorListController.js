@@ -169,6 +169,7 @@ app.controller('OperatorListController',
                 addOperatorCtrl: $controller('AddItemController as addOperatorCtrl',
                     {
                         $scope: $scope,
+                        entity: 'operator',
                         addItem: function (data) {
                             //Extend request parameters for routines, their hashes and parameters
                             return readFiles(data.routineFiles)

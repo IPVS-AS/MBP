@@ -165,6 +165,7 @@ app.controller('SensorListController',
                 }),
                 addSensorCtrl: $controller('AddItemController as addSensorCtrl', {
                     $scope: $scope,
+                    entity: 'sensor',
                     addItem: addSensor
                 }),
                 deleteSensorCtrl: $controller('DeleteItemController as deleteSensorCtrl', {

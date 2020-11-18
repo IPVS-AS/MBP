@@ -129,6 +129,7 @@ app.controller('EntityTypesListController',
                 }),
                 addDeviceTypeCtrl: $controller('AddItemController as addDeviceTypeCtrl', {
                     $scope: $scope,
+                    entity: 'device type',
                     addItem: function (data) {
                         //Extend request for icon
                         return readFile(data.icon[0]).then(function (response) {
@@ -141,6 +142,7 @@ app.controller('EntityTypesListController',
                 }),
                 addActuatorTypeCtrl: $controller('AddItemController as addActuatorTypeCtrl', {
                     $scope: $scope,
+                    entity: 'actuator type',
                     addItem: function (data) {
                         //Extend request for icon
                         return readFile(data.icon[0]).then(function (response) {
@@ -153,6 +155,7 @@ app.controller('EntityTypesListController',
                 }),
                 addSensorTypeCtrl: $controller('AddItemController as addSensorTypeCtrl', {
                     $scope: $scope,
+                    entity: 'sensor type',
                     addItem: function (data) {
                         //Extend request for icon
                         return readFile(data.icon[0]).then(function (response) {

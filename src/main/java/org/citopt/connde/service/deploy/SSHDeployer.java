@@ -30,9 +30,7 @@ import org.springframework.http.HttpStatus;
  * This component provides features for deploying components onto a remote
  * device. Furthermore it is possible to check the current state of a deployed
  * component and to undeploy the component again.
- *
- * @author rafaelkperes, Jan
- */
+ * */
 @org.springframework.stereotype.Component
 public class SSHDeployer {
 	// Deployment location on remote devices
