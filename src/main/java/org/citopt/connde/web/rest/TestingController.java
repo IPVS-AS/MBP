@@ -1,31 +1,21 @@
 package org.citopt.connde.web.rest;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.constants.Constants;
-import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.testing.TestDetails;
-import org.citopt.connde.repository.AdapterRepository;
 import org.citopt.connde.repository.RuleRepository;
-import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.service.testing.GraphPlotter;
 import org.citopt.connde.service.testing.TestEngine;
 import org.citopt.connde.service.testing.TestReport;
-import org.citopt.connde.service.testing.TestRerunOperatorService;
-import org.citopt.connde.web.rest.response.ActionResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -56,42 +46,9 @@ public class TestingController {
     @Autowired
     private TestReport testReport;
 
-    @Autowired
-    private AdapterRepository adapterRepository;
-
-    @Autowired
-    private SensorRepository sensorRepository;
-
-    @Autowired
-    private TestRerunOperatorService rerunOperatorService;
 
     String[] sensorSim = {"TestingTemperaturSensor", "TestingTemperaturSensorPl", "TestingFeuchtigkeitsSensor", "TestingFeuchtigkeitsSensorPl", "TestingGPSSensorPl", "TestingGPSSensor", "TestingBeschleunigungsSensor", "TestingBeschleunigungsSensorPl"};
     List<String> sensorSimulators = Arrays.asList(sensorSim);
-
-
-
-    /**
-     * Called when the client wants to load default operators and make them available for usage
-     * in actuators and sensorss by all users.
-     *
-     * @return An action response containing the result of the request
-     */
-    @PostMapping(value = "/test-details/rerun-operators")
-    @Secured({Constants.ADMIN})
-    @ApiOperation(value = "Loads default operators from the resource directory of the MBP and makes them available for usage in actuators and sensors by all users.", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
-    public ResponseEntity<ActionResponse> addRerunOperators() {
-        //Call corresponding service function
-        ActionResponse response = rerunOperatorService.addDefaultOperators();
-
-        //Check for success
-        if (response.isSuccess()) {
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-
-        //No success
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
 
 
     /**
@@ -105,11 +62,13 @@ public class TestingController {
     public String executeTest(@PathVariable(value = "testId") String testId) throws Exception {
         TestDetails testDetails = testDetailsRepository.findOne(testId);
 
+        //testEngine.checkComponents(testDetails);
+
         // Set the exact start time of the test
         testDetails.setStartTestTimeNow();
         testDetailsRepository.save(testDetails);
 
-        // get  informations about the status of the rules before the execution of the test
+        // get  information about the status of the rules before the execution of the test
         List<Rule> rulesbefore = testEngine.getStatRulesBefore(testDetails);
 
         // Start the test and get Map of sensor values
@@ -130,6 +89,28 @@ public class TestingController {
 
         //return new ResponseEntity<>(valueListTest, HttpStatus.OK); Map<String, List<Double>>
         return pdfPath;
+    }
+
+
+    /**
+     * Adds or deletes the rerun Components for the specific test.
+     *
+     * @param testId ID of the specific test
+     * @return ResponseEntity (if successful or not)
+     */
+    @PostMapping(value = "/test-details/rerun-components/{testId}")
+    public ResponseEntity checkRerunComponents(@PathVariable(value = "testId") String testId) {
+        TestDetails testDetails = testDetailsRepository.findOne(testId);
+        ResponseEntity responseEntity;
+        try {
+            // Add or deletes Rerun Components for the specific test
+            testEngine.checkComponents(testDetails);
+            responseEntity = new ResponseEntity(HttpStatus.OK);
+        } catch (Exception e) {
+            responseEntity = new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+
+        return responseEntity;
     }
 
 
@@ -206,56 +187,20 @@ public class TestingController {
                                                                     @RequestBody String useNewData) {
 
 
-
         TestDetails testDetails = testDetailsRepository.findById(testId);
         List<List<ParameterInstance>> configList = testDetails.getConfig();
+
 
         if (!Boolean.parseBoolean(useNewData)) {
             testDetails.setUseNewData(false);
             testDetailsRepository.save(testDetails);
-            addRerunOperators();
-            for (List<ParameterInstance> config : configList) {
-                for (ParameterInstance parameterInstance : config) {
-                    if (parameterInstance.getName().equals("ConfigName")) {
-                        if(!sensorSimulators.contains(parameterInstance.getValue())){
-                            testEngine.addRerunSensor(parameterInstance.getValue().toString(), testDetails);
-                        }
-                    }
-                }
-            }
-            testEngine.addRerunRule(testDetails);
-        } else{
+
+        } else {
             testDetails.setUseNewData(true);
             testDetailsRepository.save(testDetails);
-
-            //Delete rerun rules
-            testEngine.deleteRerunRules(testDetails);
-
-            // Delete Adapter
-            Adapter adapterReuse = adapterRepository.findByName("RERUN_OPERATOR");
-            adapterRepository.delete(adapterReuse);
-
-            // Delete the Reuse Adapters and Sensors for each real sensor if the data should not be reused
-            for (List<ParameterInstance> config : configList) {
-
-                for (ParameterInstance parameterInstance : config) {
-                    if (parameterInstance.getName().equals("ConfigName")) {
-                        if(!sensorSimulators.contains(parameterInstance.getValue())){
-                            // Delete Reuse Operator
-                            String reuseName = "RERUN_" + parameterInstance.getValue();
-                            Sensor sensorReuse = sensorRepository.findByName(reuseName);
-                            if(sensorReuse != null){
-                                sensorRepository.delete(sensorReuse);
-                                testDetails.getSensor().remove(sensorReuse);
-                                testDetailsRepository.save(testDetails);
-
-                            }
-                        }
-                    }
-                }
-            }
         }
 
+        testEngine.checkComponents(testDetails);
 
         // Change value for the configuration of every sensor simulator of the test
         for (List<ParameterInstance> config : configList) {
@@ -267,13 +212,12 @@ public class TestingController {
         }
         // save the changes in the database
         testDetails.setConfig(configList);
-        testDetails.setUseNewData(Boolean.valueOf(useNewData));
+        testDetails.setUseNewData(Boolean.parseBoolean(useNewData));
         testDetailsRepository.save(testDetails);
 
 
         return new ResponseEntity<>(configList, HttpStatus.OK);
     }
-
 
 
     @PostMapping(value = "/test-details/deleteTestreport/{testId}")
@@ -305,6 +249,15 @@ public class TestingController {
 
     }
 
+    /**
+     * Changes the value "UseNewData", changed with the switch button, in the database.
+     *
+     * @return edited configuration
+     */
+    @RequestMapping(value = "/test-details/addRerunOperator", method = RequestMethod.POST)
+    public ResponseEntity<String> addRerunOperator() {
+        return testEngine.addRerunOperators();
+    }
 
     @RequestMapping(value = "/test-details/updateTest/{testId}", method = RequestMethod.POST)
     public HttpEntity<Object> updateTest(@PathVariable(value = "testId") String testId, @RequestBody String test) {
@@ -364,5 +317,7 @@ public class TestingController {
 
 
     }
+
+
 
 }

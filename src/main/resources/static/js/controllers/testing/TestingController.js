@@ -25,8 +25,6 @@ app.controller('TestingController',
             vm.addRealSensor = false;
 
 
-            console.log(ENDPOINT_URI );
-
             /**
              * Initializing function, sets up basic things.
              */
@@ -41,6 +39,7 @@ app.controller('TestingController',
                 // initParameters();
 
                 getDevice();
+                getRerunOperator();
                 checkActuatorReg();
                 for (let i = 0; i < sensorListSim.length; i++) {
                     checkSensorReg(sensorListSim[i]);
@@ -142,6 +141,35 @@ app.controller('TestingController',
             }
 
             /**
+             * Check if Test-Device is already registered or not.
+             */
+            function getRerunOperator() {
+                $http.get(ENDPOINT_URI + '/adapters/search/findAll').success(function (response) {
+
+                    $scope.rerunOperator = 'LOADING';
+
+                    $scope.rerunOperator = "NOT_REGISTERED";
+                    angular.forEach(response._embedded.adapters, function (value) {
+                        if (value.name === "RERUN_OPERATOR") {
+                            $scope.rerunOperator = "REGISTERED";
+                        }
+                    });
+                });
+            }
+
+            function registerRerunOperator(){
+                $http.post(ENDPOINT_URI + '/test-details/addRerunOperator').success(function success(response) {
+                    console.log("bin angelegt")
+                    getRerunOperator();
+                    //Notify the user
+                    NotificationService.notify('Entity successfully created.', 'success')
+                }).catch(function onError(){
+                    //Notify the user
+                    NotificationService.notify('Error during creation of the Rerun Operator.', 'error')
+                });
+            }
+
+            /**
              * Register Test Device and update the registered status.
              */
             function registerTestDevice() {
@@ -155,7 +183,6 @@ app.controller('TestingController',
                         "errors": {}
                     };
                 $http.post(ENDPOINT_URI + '/devices/', param).then(function success(response) {
-                    console.log(response)
                     getDevice();
                     //Notify the user
                     NotificationService.notify('Entity successfully created.', 'success')
@@ -452,7 +479,6 @@ app.controller('TestingController',
 
                                 // Server request for the registration of the specific sensor
                                 $http.post(ENDPOINT_URI + '/sensors/', param).then(function success(response) {
-                                    console.log(response)
                                     checkSensorReg(sensor);
 
                                     //Notify the user if specific sensor is successfully registered
@@ -1406,6 +1432,8 @@ app.controller('TestingController',
                 downloadPDF: downloadPDF,
                 refreshTestEntry: refreshTestEntry,
                 getDevice: getDevice,
+                getRerunOperator: getRerunOperator,
+                registerRerunOperator: registerRerunOperator,
                 registerTestDevice: registerTestDevice,
                 checkSensorReg: checkSensorReg,
                 registerOneDimSensor: registerOneDimSensor,

@@ -12,7 +12,7 @@ app.controller('TestingDetailsController',
             const COMPONENT_ID = $routeParams.id;
 
             vm.sensorListTest = [];
-            vm.sensorListTestNames =[];
+            vm.sensorListTestNames = [];
             //Extend each sensor in sensorList for a state and a reload function
             for (const i in sensorList) {
                 if (testingDetails.type.indexOf(sensorList[i].name) !== -1) {
@@ -20,13 +20,11 @@ app.controller('TestingDetailsController',
                 }
             }
 
-            console.log(testingDetails.useNewData)
-            if(testingDetails.useNewData === false){
-                for (const sensorName in vm.sensorListTestNames){
-                    console.log(vm.sensorListTestNames[sensorName]);
-                    for (const y in sensorList){
-                        const test = "RERUN_"+vm.sensorListTestNames[sensorName];
-                        if(sensorList[y].name === "RERUN_"+vm.sensorListTestNames[sensorName]){
+            if (testingDetails.useNewData === false) {
+                for (const sensorName in vm.sensorListTestNames) {
+                    for (const y in sensorList) {
+                        const test = "RERUN_" + vm.sensorListTestNames[sensorName];
+                        if (sensorList[y].name === "RERUN_" + vm.sensorListTestNames[sensorName]) {
                             vm.sensorListTest.push(sensorList[y]);
                         }
                     }
@@ -39,11 +37,6 @@ app.controller('TestingDetailsController',
                     }
                 }
             }
-
-
-            console.log(sensorList);
-            console.log(vm.sensorListTest);
-
 
             vm.ruleList = ruleList;
             vm.test = testingDetails;
@@ -69,6 +62,7 @@ app.controller('TestingDetailsController',
                 getTestSensors();
                 getTestRules();
                 getConfig();
+                disableReuse();
 
 
                 //Refresh test select picker when the modal is opened
@@ -82,6 +76,18 @@ app.controller('TestingDetailsController',
                 return arr.some(function (arrVal) {
                     return val === arrVal;
                 });
+            }
+
+            function disableReuse(){
+                console.log(testingDetails.simulationList.length)
+                if(testingDetails.simulationList === null){
+                    console.log("in if")
+                    document.getElementById("ReuseSwitch").disabled = true;
+                } else{
+                    console.log("else")
+                    document.getElementById("ReuseSwitch").removeAttribute('disabled');
+                }
+                console.log(document.getElementById("ReuseSwitch"))
             }
 
 
@@ -164,7 +170,6 @@ app.controller('TestingDetailsController',
 
 
                 $scope.config.useNewData = !testingDetails.useNewData;
-                console.log(testingDetails)
 
                 if (testingDetails.type.includes('TestingTemperaturSensor')) {
                     testingDetails.config.forEach(function (config) {
@@ -524,7 +529,6 @@ app.controller('TestingDetailsController',
                 }
 
 
-
                 $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
                     for (let i = 0; i < responseRules._embedded.rules.length; i++) {
                         vm.rules.push(responseRules._embedded.rules[i]._links.self.href);
@@ -541,10 +545,6 @@ app.controller('TestingDetailsController',
                 }
 
             }
-
-
-
-
 
 
             /**
@@ -596,6 +596,20 @@ app.controller('TestingDetailsController',
                 });
             }
 
+
+            /**
+             * [Public]
+             * Performs a server request in order to start a test given by its id.
+             */
+            async function executeTest() {
+                $http.post(ENDPOINT_URI + '/test-details/test/' + COMPONENT_ID, COMPONENT_ID.toString()).success(function successCallback() {
+                    // If the test was completed successfully, enable the download Test Report Button
+                    getPDFList();
+                });
+
+
+            }
+
             /**
              * [Public]
              * Creates a server request to get a list of all generated Test Reports regarding to the Test of the IoT-Application.
@@ -618,17 +632,6 @@ app.controller('TestingDetailsController',
                     } else {
                         document.getElementById("pdfTable").innerHTML = "There is no Test Report for this Test yet.";
                     }
-                });
-            }
-
-            /**
-             * [Public]
-             * Performs a server request in order to start a test given by its id.
-             */
-            function executeTest() {
-                $http.post(ENDPOINT_URI + '/test-details/test/' + COMPONENT_ID, COMPONENT_ID.toString()).success(function successCallback() {
-                    // If the test was completed successfully, enable the download Test Report Button
-                    getPDFList();
                 });
             }
 
@@ -658,14 +661,19 @@ app.controller('TestingDetailsController',
              */
             function editConfig(useNewData) {
                 if (useNewData === true) {
-                    $http.post(ENDPOINT_URI + '/test-details/editConfig/' + COMPONENT_ID, "false").then(function success(response) {
+                    $http.post(ENDPOINT_URI + '/test-details/editConfig/' + COMPONENT_ID, "false").success(function success(response) {
                         $scope.erfolgreich = response.success;
-                    });
-                } else if (useNewData === false) {
-                    $http.post(ENDPOINT_URI + '/test-details/editConfig/' + COMPONENT_ID, "true").then(function success(response) {
+                        window.location.reload();
+                });
+                }else if (useNewData === false) {
+                    $http.post(ENDPOINT_URI + '/test-details/editConfig/' + COMPONENT_ID, "true").success(function success(response) {
                         $scope.erfolgreich = response.success;
+                        window.location.reload();
                     });
                 }
+
+
+
             }
 
 
@@ -719,7 +727,7 @@ app.controller('TestingDetailsController',
                     vm.newTestObject.config = [];
 
 
-                    if(!angular.isUndefined(vm.parameterVal)){
+                    if (!angular.isUndefined(vm.parameterVal)) {
                         angular.forEach(vm.parameterVal, function (parameters, key) {
                             for (let i = 0; i < vm.selectedRealSensor.length; i++) {
                                 if (vm.selectedRealSensor[i].name === key) {

@@ -55,7 +55,7 @@
                         <td>
                             <div class="switch" style="margin-left: 0px;" >
                                 <label>
-                                    <input id="switch" type="checkbox" ng-model="config.useNewData"
+                                    <input id="ReuseSwitch" type="checkbox" ng-model="config.useNewData"
                                            ng-click="ctrl.editConfig(config.useNewData)">
                                     <span class="lever"></span>
                                 </label>
@@ -130,7 +130,7 @@
                         <thead>
                         <tr>
                             <th>Date and Time</th>
-                            <th>Test
+                            <th>Test Report
                                 <Report></Report>
                             </th>
                         </tr>
@@ -140,9 +140,13 @@
                             <td>{{pdf.date * 1000 | date:'dd.MM.yyyy HH:mm:ss'}}</td>
                             <td>
                                 <form ng-submit="ctrl.downloadPDF(pdf.path)">
-                                    <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect"
+                                    <button type="submit" class="btn btn-primary btn-lg"
                                             id="downloadReport">
-                                        DownloadPDF
+                                        <i class="material-icons">get_app</i>
+                                        <span>
+
+                                        </span>
+                                        <span>Download PDF</span>
                                     </button>
                                 </form>
                             </td>

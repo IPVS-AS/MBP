@@ -24,11 +24,11 @@ public class RuleEngine {
 
     private CEPTriggerService triggerService;
 
-    private RuleExecutor ruleExecutor;
+    private static RuleExecutor ruleExecutor;
 
-    private Map<RuleTrigger, Set<Rule>> triggerMap;
+    private static Map<RuleTrigger, Set<Rule>> triggerMap;
 
-    private TestRepository testRepo;
+    private static TestRepository testRepo;
 
     /**
      * Initializes the rule engine component and activates all already enabled rules.
@@ -146,7 +146,7 @@ public class RuleEngine {
      * @param ruleTrigger The rule trigger
      * @param output      The CEP output to pass
      */
-    public void induceRuleExecution(RuleTrigger ruleTrigger, CEPOutput output) {
+    public static void induceRuleExecution(RuleTrigger ruleTrigger, CEPOutput output) {
         //Sanity check
         if (ruleTrigger == null) {
             throw new IllegalArgumentException("Rule object most not be null.");

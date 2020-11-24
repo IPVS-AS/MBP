@@ -961,6 +961,47 @@
                                             </div>
                                         </td>
                                         </tr>
+
+                                        <tr>
+                                            <td>Testing Rerun-Operator</td>
+                                            <td>
+                                                <div style="padding: 0px;  display: inline-block;" ng-switch="rerunOperator"
+                                                     ng-click="ctrl.getRerunOperator()" class="clickable">
+                                                    <div ng-switch-when="LOADING">
+                                                        <div class="preloader pl-size-xs">
+                                                            <div class="spinner-layer pl-blue">
+                                                                <div class="circle-clipper left">
+                                                                    <div class="circle"></div>
+                                                                </div>
+                                                                <div class="circle-clipper right">
+                                                                    <div class="circle"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div ng-switch-when="NOT_REGISTERED">
+                                                        <span class="label label-danger">Not Registered</span>
+                                                    </div>
+                                                    <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
+                                                        <form ng-submit="ctrl.registerRerunOperator()">
+                                                            <button type="submit"
+                                                                    class="btn bg-blue m-t-0 waves-effect"
+                                                                    ng-click="ctrl.registerRerunOperator()">
+                                                                Register Rerun Operator
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                    <div ng-switch-when="REGISTERED">
+                                                        <span class="label label-success">Registered</span>
+                                                    </div>
+                                                    <div ng-switch-default>
+                                                        <span class="label label-default">Unknown</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+
                                         <tr>
                                             <td>Temperature Sensor Simulator</td>
                                             <td>

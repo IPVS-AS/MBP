@@ -1,10 +1,12 @@
 package org.citopt.connde.service.testing;
 
 
+import javolution.io.Struct;
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
+import org.citopt.connde.domain.component.SensorValidator;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleTrigger;
@@ -14,14 +16,19 @@ import org.citopt.connde.domain.valueLog.ValueLog;
 import org.citopt.connde.repository.*;
 import org.citopt.connde.service.receiver.ValueLogReceiver;
 import org.citopt.connde.service.receiver.ValueLogReceiverObserver;
+import org.citopt.connde.service.rules.RuleEngine;
 import org.citopt.connde.web.rest.RestDeploymentController;
 import org.citopt.connde.web.rest.RestRuleController;
+import org.citopt.connde.web.rest.event_handler.SensorEventHandler;
+import org.citopt.connde.web.rest.response.ActionResponse;
 import org.json.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
 
 
 import java.io.*;
@@ -72,6 +79,15 @@ public class TestEngine implements ValueLogReceiverObserver {
     @Autowired
     private RestRuleController restRuleController;
 
+    @Autowired
+    private TestRerunOperatorService rerunOperatorService;
+
+
+    @Autowired
+    private SensorValidator sensorValidator;
+
+    @Autowired
+    private SensorEventHandler sensorEventHandler;
 
     // List of all active Tests/testValues
     Map<String, TestDetails> activeTests = new HashMap<>();
@@ -224,7 +240,8 @@ public class TestEngine implements ValueLogReceiverObserver {
         Actuator testingActuator = actuatorRepository.findByName("TestingActuator");
 
         List<Sensor> testingSensor = testDetails.getSensor();
-        List<Rule> rules = testDetails.getRules();
+        // Get a list of every rule corresponding to the application
+        List<Rule> rules = getStatRulesBefore(testDetails);
         List<List<ParameterInstance>> config = testDetails.getConfig();
 
         //activate the selected rules for the test
@@ -232,6 +249,7 @@ public class TestEngine implements ValueLogReceiverObserver {
             // check if selected rules are active --> if not active Rules
             restRuleController.enableRule(rule.getId());
         }
+
 
         //check if test exists
         if (!testDetailsRepository.exists(testDetails.getId())) {
@@ -361,7 +379,7 @@ public class TestEngine implements ValueLogReceiverObserver {
         String sucessResponse = testEngine.checkSuccess(testDetails, triggerValues, ruleNames);
         List<String> rulesExecuted = testEngine.getRulesExecuted(triggerValues);
 
-        // save informations about the success and rules of the executed test
+        // save information about the success and rules of the executed test
         testDetails.setTriggerValues(triggerValues);
         testDetails.setSuccessful(sucessResponse);
         testDetails.setRulesExecuted(rulesExecuted);
@@ -371,6 +389,7 @@ public class TestEngine implements ValueLogReceiverObserver {
     /**
      * Returns a list of all values that triggered the selected rules in the test, between start and end time.
      *
+     * @param testId ID of the executed test
      * @param testId ID of the executed test
      * @return List of trigger-values
      */
@@ -401,25 +420,30 @@ public class TestEngine implements ValueLogReceiverObserver {
             }
         }
 
+
         for (int i = 0; i < ruleNames.size(); i++) {
             List<Double> values = new ArrayList<>();
             String rulename = ruleNames.get(i);
-            List<Testing> test = testRepo.findAllByTriggerId(triggerID.get(i));
-            for (Testing testing : test) {
-                if (testing.getRule().contains(rulename)) {
-                    LinkedHashMap<String, Double> timeTiggerValue = (LinkedHashMap<String, Double>) testing.getOutput().getOutputMap().get("event_0");
-                    LinkedHashMap<String, Long> timeTiggerValMp = (LinkedHashMap<String, Long>) testing.getOutput().getOutputMap().get("event_0");
-                    long timeTiggerVal = timeTiggerValMp.get("time");
-                    if (timeTiggerVal >= startTime && timeTiggerVal <= endTime) {
-                        values.add(timeTiggerValue.get("value"));
+            if (testRepo.findAllByTriggerId(triggerID.get(i)) != null) {
+                List<Testing> test = testRepo.findAllByTriggerId(triggerID.get(i));
+                for (Testing testing : test) {
+                    //TODO beachte RERUN RULES
+                    if (testing.getRule().contains(rulename)) {
+                        LinkedHashMap<String, Double> timeTiggerValue = (LinkedHashMap<String, Double>) testing.getOutput().getOutputMap().get("event_0");
+                        LinkedHashMap<String, Long> timeTiggerValMp = (LinkedHashMap<String, Long>) testing.getOutput().getOutputMap().get("event_0");
+                        long timeTiggerVal = timeTiggerValMp.get("time");
+                        if (timeTiggerVal >= startTime && timeTiggerVal <= endTime) {
+                            values.add(timeTiggerValue.get("value"));
+                        }
+
+
                     }
-
-
+                }
+                if (values.size() > 0) {
+                    testValues.put(rulename, values);
                 }
             }
-            if (values.size() > 0) {
-                testValues.put(rulename, values);
-            }
+
         }
         return testValues;
     }
@@ -452,22 +476,6 @@ public class TestEngine implements ValueLogReceiverObserver {
                 }
             }
         }
-
-
-/**
-        if (!test.isUseNewData()) {
-            for (int i = 0; i < rulesbefore.size(); i++) {
-                Rule rule = rulesbefore.get(i);
-                String rulename = "RERUN_" + rule.getName();
-                Rule rule2 = ruleRepository.findByName(rulename);
-                if (rule2 != null && !rulesbefore.contains(rule2)) {
-                    rulesbefore.add(rule2);
-                }
-
-            }
-
-        }
- **/
 
 
         return rulesbefore;
@@ -524,15 +532,15 @@ public class TestEngine implements ValueLogReceiverObserver {
             }
             /**
              *
-            else {
-                if (!sensor.getName().contains("RERUN_")) {
-                    Sensor rerunSensor = sensorRepository.findByName("RERUN_" + sensor.getName());
-                    LinkedHashMap<Long, Double> temp = valueList.get(rerunSensor.getId());
-                    valueList.put(sensor.getName(), temp);
-                    valueListTest.put(sensor.getName(), temp);
-                    list.remove(rerunSensor.getId());
-                }
-            }
+             else {
+             if (!sensor.getName().contains("RERUN_")) {
+             Sensor rerunSensor = sensorRepository.findByName("RERUN_" + sensor.getName());
+             LinkedHashMap<Long, Double> temp = valueList.get(rerunSensor.getId());
+             valueList.put(sensor.getName(), temp);
+             valueListTest.put(sensor.getName(), temp);
+             list.remove(rerunSensor.getId());
+             }
+             }
              **/
 
 
@@ -694,6 +702,11 @@ public class TestEngine implements ValueLogReceiverObserver {
 
                     //Insert new sensor into repository
                     sensorRepository.insert(newSensor);
+                    //Validation errors
+                    Errors errors = new BeanPropertyBindingResult(newSensor, "component");
+                    sensorValidator.validate(newSensor, errors);
+                    sensorRepository.save(newSensor);
+                    sensorEventHandler.afterSensorCreate(newSensor);
 
                 }
             }
@@ -711,6 +724,7 @@ public class TestEngine implements ValueLogReceiverObserver {
     public void addRerunRule(TestDetails testDetails) {
         // Get a list of every rule belonging to the IoT-Application
         List<Rule> applicationRules = getStatRulesBefore(testDetails);
+        Boolean notRegister = false;
 
         for (Rule rule : applicationRules) {
             if (ruleRepository.findByName("RERUN_" + rule.getName()) == null) {
@@ -735,30 +749,52 @@ public class TestEngine implements ValueLogReceiverObserver {
                         for (Sensor realSensor : realSensors) {
                             if (realSensor.getId().equals(sensorID)) {
                                 Sensor rerunSensor = sensorRepository.findByName("RERUN_" + realSensor.getName());
-                                triggerQuery = triggerQuery.replace(realSensor.getId(), rerunSensor.getId());
-                                newTrigger.setQuery(triggerQuery);
-                                ruleTriggerRepository.insert(newTrigger);
+                                if (rerunSensor != null) {
+                                    triggerQuery = triggerQuery.replace(realSensor.getId(), rerunSensor.getId());
+                                    newTrigger.setQuery(triggerQuery);
+                                    ruleTriggerRepository.insert(newTrigger);
+                                } else {
+                                    notRegister = true;
+                                    break;
+                                }
+
 
                             }
                         }
-                        rerunRule.setTrigger(newTrigger);
+                        if (notRegister) {
+                            break;
+                        } else {
+                            rerunRule.setTrigger(newTrigger);
+                            rerunRule.setTrigger(newTrigger);
+                        }
                     }
                 } else {
                     rerunRule.setTrigger(ruleTriggerRepository.findByName("RERUN_" + rule.getTrigger().getName()));
                 }
+                if(!notRegister){
+                    ruleRepository.insert(rerunRule);
+                }
 
-                ruleRepository.insert(rerunRule);
+
+
             }
         }
     }
 
+
     public void deleteRerunRules(TestDetails testDetails) {
         List<Rule> testRules = getStatRulesBefore(testDetails);
 
-        for(Rule rule : testRules){
-            if(rule.getName().contains("RERUN_")){
-                ruleTriggerRepository.delete(rule.getTrigger());
-                ruleRepository.delete(rule);
+        for (Rule rule : testRules) {
+            if (rule.getName().contains("RERUN_")) {
+                if (rule != null) {
+                    if (rule.getTrigger() != null) {
+                        ruleTriggerRepository.delete(rule.getTrigger());
+                    }
+                    ruleRepository.delete(rule);
+                }
+
+
             }
         }
 
@@ -780,6 +816,87 @@ public class TestEngine implements ValueLogReceiverObserver {
         return treeMap;
     }
 
+
+    public void checkComponents(TestDetails testDetails) {
+        // Get the configurations for the different Sensors included into the test
+        List<List<ParameterInstance>> configList = testDetails.getConfig();
+
+
+        if (!testDetails.isUseNewData()) {
+            addRerunOperators();
+
+            for (List<ParameterInstance> config : configList) {
+                for (ParameterInstance parameterInstance : config) {
+                    if (parameterInstance.getName().equals("ConfigName")) {
+                        if (!sensorSimulators.contains(parameterInstance.getValue())) {
+                            addRerunSensor(parameterInstance.getValue().toString(), testDetails);
+                        }
+                    }
+                }
+            }
+
+            addRerunRule(testDetails);
+        } else {
+            //Delete rerun rules
+            deleteRerunRules(testDetails);
+
+            /**
+             *
+             * Don't delete the adapter all the time
+            // Delete Adapter
+            Adapter adapterReuse = adapterRepository.findByName("RERUN_OPERATOR");
+            if (adapterReuse != null) {
+                adapterRepository.delete(adapterReuse);
+            }
+             **/
+
+            // Delete the Reuse Adapters and Sensors for each real sensor if the data should not be reused
+            for (List<ParameterInstance> config : configList) {
+                for (ParameterInstance parameterInstance : config) {
+                    if (parameterInstance.getName().equals("ConfigName")) {
+                        if (!sensorSimulators.contains(parameterInstance.getValue())) {
+                            // Delete Reuse Operator
+                            String reuseName = "RERUN_" + parameterInstance.getValue();
+                            Sensor sensorReuse = sensorRepository.findByName(reuseName);
+                            if (sensorReuse != null) {
+                                sensorRepository.delete(sensorReuse);
+                                testDetails.getSensor().remove(sensorReuse);
+                                testDetailsRepository.save(testDetails);
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+
+    /**
+     * Called when the client wants to load default operators and make them available for usage
+     * in actuators and sensors by all users.
+     *
+     * @return An action response containing the result of the request
+     */
+
+    public ResponseEntity<String> addRerunOperators() {
+        ResponseEntity<String> response;
+        try {
+            if (adapterRepository.findByName("RERUN_OPERATOR") == null) {
+                //Call corresponding service function
+                rerunOperatorService.addDefaultOperators();
+                response = new ResponseEntity<>("Adapter successfully created", HttpStatus.OK);
+            } else {
+                response = new ResponseEntity<>("Adapter already exists.", HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            response = new ResponseEntity<>("Error during creation of the Adapter.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+
+        return response;
+    }
 
 }
 
