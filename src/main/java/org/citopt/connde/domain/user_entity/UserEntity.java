@@ -1,9 +1,8 @@
 package org.citopt.connde.domain.user_entity;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
 import org.citopt.connde.domain.access_control.ACAttributeValue;
 import org.citopt.connde.domain.access_control.ACPolicy;
 import org.citopt.connde.domain.access_control.IACRequestedEntity;
@@ -13,10 +12,9 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import io.swagger.annotations.ApiModelProperty;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Base class for entity classes that require user management. It adds support for
@@ -25,11 +23,13 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public abstract class UserEntity implements IACRequestedEntity {
 
-	// The environment model for which the entity was created (null if none)
-	@ACAttributeValue
+    // The environment model for which the entity was created (null if none)
+    @ACAttributeValue
     @JsonIgnore
     @DBRef
     private EnvironmentModel environmentModel = null;
+
+    private boolean defaultEntity = false;
 
     // Owner of the entity
     @ACAttributeValue
@@ -71,6 +71,24 @@ public abstract class UserEntity implements IACRequestedEntity {
      */
     public void setEnvironmentModel(EnvironmentModel environmentModel) {
         this.environmentModel = environmentModel;
+    }
+
+    /**
+     * Returns whether the entity is a default entity that was generated and not created by a user.
+     *
+     * @return True, if it is a default entity; false otherwise
+     */
+    public boolean isDefaultEntity() {
+        return defaultEntity;
+    }
+
+    /**
+     * Sets whether the entity is a default entity that was generated and not created by a user.
+     *
+     * @param defaultEntity True, if it is a default entity; false otherwise
+     */
+    public void setDefaultEntity(boolean defaultEntity) {
+        this.defaultEntity = defaultEntity;
     }
 
     /**
