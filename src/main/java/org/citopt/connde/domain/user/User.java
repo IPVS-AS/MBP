@@ -61,7 +61,7 @@ public class User implements Serializable, IACRequestingEntity {
     @ACAttributeValue
     @ApiModelProperty(notes = "Indicates whether the user is an admin user.", required = true)
     private boolean isAdmin;
-    
+
     public String getId() {
         return id;
     }

@@ -1,7 +1,9 @@
 package org.citopt.connde.web.rest;
 
-import java.io.IOException;
-
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.citopt.connde.RestConfiguration;
 import org.citopt.connde.error.MissingAdminPrivilegesException;
 import org.citopt.connde.service.UserEntityService;
@@ -13,16 +15,9 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import java.io.IOException;
 
 /**
  * REST Controller for settings related REST requests.
@@ -42,7 +37,7 @@ public class RestSettingsController {
 
     @Autowired
     private MQTTService mqttService;
-    
+
     @Autowired
     private UserEntityService userEntityService;
 
@@ -51,16 +46,18 @@ public class RestSettingsController {
      * in actuators and sensors by all users.
      *
      * @return An action response containing the result of the request
-     * @throws MissingAdminPrivilegesException 
+     * @throws MissingAdminPrivilegesException
      */
     @PostMapping(value = "/settings/default-operators")
     @ApiOperation(value = "Loads default operators from the resource directory of the MBP and makes them available for usage in actuators and sensors by all users.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
     public ResponseEntity<Void> addDefaultOperators() throws MissingAdminPrivilegesException {
-    	userEntityService.requireAdmin();
-    	
+        userEntityService.requireAdmin();
+
         // Call corresponding service function
         boolean success = defaultOperatorService.addDefaultOperators();
+
+        // Respond
         return ResponseEntity.status(success ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
@@ -68,14 +65,14 @@ public class RestSettingsController {
      * Called when the client wants to retrieve the settings.
      *
      * @return The settings object
-     * @throws MissingAdminPrivilegesException 
+     * @throws MissingAdminPrivilegesException
      */
     @RequestMapping(value = "/settings", method = RequestMethod.GET)
     @ApiOperation(value = "Retrieves the current settings of the platform", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to access the settings")})
     public ResponseEntity<Settings> getSettings() throws MissingAdminPrivilegesException {
-    	userEntityService.requireAdmin();
-    	
+        userEntityService.requireAdmin();
+
         //Get settings from settings service and return them
         Settings settings;
         try {
@@ -91,14 +88,14 @@ public class RestSettingsController {
      *
      * @param settings The settings to update
      * @return OK (200) in case everything was successful
-     * @throws MissingAdminPrivilegesException 
+     * @throws MissingAdminPrivilegesException
      */
     @PostMapping("/settings")
     @ApiOperation(value = "Modifies the current settings of the platform", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to modify the settings")})
     public ResponseEntity<Void> saveSettings(@RequestBody Settings settings) throws MissingAdminPrivilegesException {
-    	userEntityService.requireAdmin();
-    	
+        userEntityService.requireAdmin();
+
         // Save settings and re-initialize MQTT service, since it needs to use a different IP address now
         try {
             settingsService.saveSettings(settings);
