@@ -77,7 +77,7 @@ app.directive('envModelTool',
                 //Class for data of the actuator/sensor details modal
                 const ComponentDetails = function () {
                     this.name = '';
-                    this.adapter = null;
+                    this.operator = null;
                 };
 
                 /*
@@ -134,6 +134,7 @@ app.directive('envModelTool',
                      * @param className A CSS class name representing the component type
                      */
                     function addElementsToPalette(elements, palette, className) {
+
                         $.each(elements, function (index, elementObject) {
                             //Create DOM element
                             let element = $('<div>').addClass('window').addClass(className);
@@ -145,6 +146,11 @@ app.directive('envModelTool',
                             //Check if element specifies free resizability
                             if (((typeof elementObject.freeResize) !== 'undefined') && elementObject.freeResize) {
                                 element.addClass('free-resize');
+                            }
+
+                            //Add icon if existing
+                            if (elementObject.hasOwnProperty("icon")) {
+                                element.css('background-image', 'url("' + elementObject.icon.content + '")')
                             }
 
                             //Create list item
@@ -277,6 +283,7 @@ app.directive('envModelTool',
                     element.draggable({
                         start: (event, ui) => {
                             createElementProperties.classes = element.attr('class');
+                            createElementProperties.background = element.css('background-image');
                             createElementProperties.type = type;
                         },
                         helper: () => {
@@ -418,7 +425,8 @@ app.directive('envModelTool',
                         'top': createElementProperties.top,
                         'left': createElementProperties.left,
                         'width': '50px',
-                        'height': '50px'
+                        'height': '50px',
+                        'background-image': createElementProperties.background
                     });
 
                     // Increase the size of room
@@ -865,7 +873,7 @@ app.directive('envModelTool',
                             scope.clickedComponent.id = element.data("id");
                             scope.clickedComponent.name = element.data("name");
                             scope.clickedComponent.type = element.data("type");
-                            scope.clickedComponent.adapter = element.data("adapter");
+                            scope.clickedComponent.operator = element.data("operator");
                             scope.clickedComponent.device = element.data("device");
                             scope.clickedComponent.regError = element.data("regError");
                             scope.clickedComponent.depError = element.data("depError");
@@ -876,7 +884,7 @@ app.directive('envModelTool',
                             scope.clickedComponent.id = element.data("id");
                             scope.clickedComponent.name = element.data("name");
                             scope.clickedComponent.type = element.data("type");
-                            scope.clickedComponent.adapter = element.data("adapter");
+                            scope.clickedComponent.operator = element.data("operator");
                             scope.clickedComponent.device = element.data("device");
                             scope.clickedComponent.regError = element.data("regError");
                             scope.clickedComponent.depError = element.data("depError");
@@ -1517,7 +1525,7 @@ app.directive('envModelTool',
                     '</ul>' +
                     '</div>' +
                     '</div>' +
-                    '</div>' +        
+                    '</div>' +
                     '<div class="panel panel-default">' +
                     '<div class="panel-heading" style="overflow-x: hidden;">' +
                     '<h4 class="panel-title">' +
@@ -1633,7 +1641,7 @@ app.directive('envModelTool',
                     '<div class="form-group"><div class="form-line">' +
                     '<input class="form-control" type="text" placeholder="Name" ng-model="modalElementDetails.name"/></div></div>' +
                     '<div class="form-group"><div class="form-line">' +
-                    '<select class="form-control show-tick" ng-model="modalElementDetails.adapter" ng-options="t.id as (t.name) for t in adapterList">' +
+                    '<select class="form-control show-tick" ng-model="modalElementDetails.operator" ng-options="t.id as (t.name) for t in operatorList">' +
                     '<option value="">Select operator<option/>' +
                     '</select></div></div></div>' +
                     '<div class="modal-footer">' +
@@ -1653,7 +1661,7 @@ app.directive('envModelTool',
 
                     //Input
                     keyPairList: '=keyPairList',
-                    adapterList: '=adapterList',
+                    operatorList: '=operatorList',
                     deviceTypes: '=deviceTypes',
                     actuatorTypes: '=actuatorTypes',
                     sensorTypes: '=sensorTypes',

@@ -1,34 +1,46 @@
 package org.citopt.connde.domain.valueLog;
 
+import java.time.Instant;
+
+import org.citopt.connde.domain.access_control.IACValueLog;
+import org.influxdb.annotation.Column;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-
-import java.text.SimpleDateFormat;
-import java.time.Instant;
 
 /**
  * Objects of this class represent value logs that were received by the MQTT broker and
  * are recorded by this application.
  */
 @ApiModel(description = "Model for value logs of components")
-public class ValueLog {
+public class ValueLog implements IACValueLog<Double> {
 
     @ApiModelProperty(notes = "Receive time", example = "{\"nano\":0,\"epochSecond\":1570635657}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private Instant time;
 
-    //Default MQTT fields
+    // Default MQTT fields
+    @Column(name = "qos")
     @ApiModelProperty(notes = "MQTT Quality of Service", example = "0", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private Integer qos;
+    
+    @Column(name = "topic")
     @ApiModelProperty(notes = "MQTT topic", example = "sensor/5c97dc2583aeb6078c5ab672", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String topic;
+    
+    @Column(name = "message")
     @ApiModelProperty(notes = "Full received MQTT message", example = "{ \"component\": \"SENSOR\", \"id\": \"5d9dfeafb1c4d32a86e5b73d\", \"value\": \"434880.000000\"}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String message;
 
-    //Fields parsed from the MQTT message
+    // Fields parsed from the MQTT message
+    @Column(name = "idref")
     @ApiModelProperty(notes = "ID of the pertaining component", example = "5c97dc2583aeb6078c5ab672", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String idref;
+    
+    @Column(name = "component")
     @ApiModelProperty(notes = "Type of the pertaining component", example = "SENSOR", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String component; //Component type
+    
+    @Column(name = "value")
     @ApiModelProperty(notes = "Received value", example = "27.5", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private double value;
 
@@ -46,8 +58,9 @@ public class ValueLog {
      *
      * @param time The time to set
      */
-    public void setTime(Instant time) {
+    public ValueLog setTime(Instant time) {
         this.time = time;
+        return this;
     }
 
     /**
@@ -64,8 +77,9 @@ public class ValueLog {
      *
      * @param qos The quality of service to set
      */
-    public void setQos(Integer qos) {
+    public ValueLog setQos(Integer qos) {
         this.qos = qos;
+        return this;
     }
 
     /**
@@ -82,8 +96,9 @@ public class ValueLog {
      *
      * @param topic The topic to set
      */
-    public void setTopic(String topic) {
+    public ValueLog setTopic(String topic) {
         this.topic = topic;
+        return this;
     }
 
     /**
@@ -100,8 +115,9 @@ public class ValueLog {
      *
      * @param message The message to set
      */
-    public void setMessage(String message) {
+    public ValueLog setMessage(String message) {
         this.message = message;
+        return this;
     }
 
     public String getIdref() {
@@ -113,8 +129,9 @@ public class ValueLog {
      *
      * @param idref The component id to set
      */
-    public void setIdref(String idref) {
+    public ValueLog setIdref(String idref) {
         this.idref = idref;
+        return this;
     }
 
     /**
@@ -131,8 +148,9 @@ public class ValueLog {
      *
      * @param component The component type to set
      */
-    public void setComponent(String component) {
+    public ValueLog setComponent(String component) {
         this.component = component;
+        return this;
     }
 
     /**
@@ -140,7 +158,7 @@ public class ValueLog {
      *
      * @return The value
      */
-    public double getValue() {
+    public Double getValue() {
         return value;
     }
 
@@ -149,7 +167,8 @@ public class ValueLog {
      *
      * @param value The value to set
      */
-    public void setValue(double value) {
+    public ValueLog setValue(double value) {
         this.value = value;
+        return this;
     }
 }

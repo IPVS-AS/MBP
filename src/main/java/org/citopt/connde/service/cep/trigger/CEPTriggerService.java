@@ -1,14 +1,18 @@
 package org.citopt.connde.service.cep.trigger;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.device.Device;
-import org.citopt.connde.domain.monitoring.MonitoringAdapter;
+import org.citopt.connde.domain.monitoring.MonitoringOperator;
 import org.citopt.connde.domain.monitoring.MonitoringComponent;
 import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.domain.valueLog.ValueLog;
 import org.citopt.connde.repository.ActuatorRepository;
 import org.citopt.connde.repository.DeviceRepository;
-import org.citopt.connde.repository.MonitoringAdapterRepository;
+import org.citopt.connde.repository.MonitoringOperatorRepository;
 import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.cep.engine.core.CEPEngine;
 import org.citopt.connde.service.cep.engine.core.events.CEPEventType;
@@ -20,11 +24,6 @@ import org.citopt.connde.service.receiver.ValueLogReceiver;
 import org.citopt.connde.service.receiver.ValueLogReceiverObserver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * This service provides means for registering rule triggers with callbacks at the CEP engine. Furthermore,
@@ -195,12 +194,12 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
      *
      * @param actuatorRepository          The actuator repository
      * @param sensorRepository            The sensor repository
-     * @param monitoringAdapterRepository The monitoring adapter repository
+     * @param monitoringOperatorRepository The monitoring adapter repository
      * @param deviceRepository            The device repository
      */
     @Autowired
     private void registerAvailableEventTypes(ActuatorRepository actuatorRepository, SensorRepository sensorRepository,
-                                             MonitoringAdapterRepository monitoringAdapterRepository,
+                                             MonitoringOperatorRepository monitoringOperatorRepository,
                                              DeviceRepository deviceRepository) {
         //Create set of available components
         Set<Component> componentSet = new HashSet<>();
@@ -210,11 +209,11 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
         componentSet.addAll(sensorRepository.findAll());
 
         //Get all monitoring adapters and devices
-        List<MonitoringAdapter> monitoringAdapters = monitoringAdapterRepository.findAll();
+        List<MonitoringOperator> monitoringAdapters = monitoringOperatorRepository.findAll();
         List<Device> deviceAdapters = deviceRepository.findAll();
 
         //Iterate over all monitoring adapters and devices and create monitoring components for them
-        for (MonitoringAdapter monitoringAdapter : monitoringAdapters) {
+        for (MonitoringOperator monitoringAdapter : monitoringAdapters) {
             for (Device device : deviceAdapters) {
                 //Create monitoring component
                 MonitoringComponent monitoringComponent = new MonitoringComponent(monitoringAdapter, device);

@@ -3,8 +3,8 @@ package org.citopt.connde;
 import javax.servlet.Filter;
 
 import org.springframework.web.filter.CharacterEncodingFilter;
+import org.springframework.web.filter.FormContentFilter;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
-import org.springframework.web.filter.HttpPutFormContentFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 /**
@@ -37,7 +37,7 @@ public class Initializer
         charFilter.setEncoding("UTF-8");
         charFilter.setForceEncoding(true);
         return new Filter[]{new HiddenHttpMethodFilter(), charFilter,
-            new HttpPutFormContentFilter()};
+            new FormContentFilter()};
     }
 
 }

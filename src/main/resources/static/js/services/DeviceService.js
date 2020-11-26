@@ -3,7 +3,7 @@
 /**
  * Provides services for dealing with device objects and retrieving a list of components which use a certain device.
  */
-app.factory('DeviceService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT_URI) {
+app.factory('DeviceService', ['HttpService', 'ENDPOINT_URI', function (HttpService, ENDPOINT_URI) {
     //URL under which the using components can be retrieved
     const URL_GET_USING_COMPONENTS = ENDPOINT_URI + '/components/by-device/';
 
@@ -11,21 +11,21 @@ app.factory('DeviceService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT
     const URL_GET_ALL_DEVICE_STATES = ENDPOINT_URI + '/devices/state';
 
     //URL under which the availability state of a certain device can be retrieved
-    const URL_GET_DEVICE_STATE = ENDPOINT_URI + '/devices/state/';
+    const URL_GET_DEVICE_STATE = ENDPOINT_URI + '/devices/{0}/state/';
 
     //Performs a server request in order to retrieve a list of all using components.
-    function getUsingComponents(adapterId) {
-        return $http.get(URL_GET_USING_COMPONENTS + adapterId);
+    function getUsingComponents(operatorId) {
+        return HttpService.getRequest(URL_GET_USING_COMPONENTS + operatorId);
     }
 
     //Performs a server request in order to retrieve the availability states of all devices.
     function getAllDeviceStates() {
-        return $http.get(URL_GET_ALL_DEVICE_STATES);
+        return HttpService.getRequest(URL_GET_ALL_DEVICE_STATES);
     }
 
     //Performs a server request in order to retrieve the availability state of a certain device.
     function getDeviceState(deviceId) {
-        return $http.get(URL_GET_DEVICE_STATE + deviceId);
+        return HttpService.getRequest(URL_GET_DEVICE_STATE.format(deviceId));
     }
 
     //public

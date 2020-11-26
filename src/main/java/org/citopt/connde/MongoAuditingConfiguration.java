@@ -1,5 +1,7 @@
 package org.citopt.connde;
 
+import java.util.Optional;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
@@ -35,10 +37,10 @@ public class MongoAuditingConfiguration {
         //Check if the authentication exists
         if(authentication == null){
             //No authentication, return default name
-            return () -> DEFAULT_AUDITING_NAME;
+            return () -> Optional.of(DEFAULT_AUDITING_NAME);
         }
 
         //Return the user name of the current authentication
-        return () -> authentication.getName();
+        return () -> Optional.ofNullable(authentication.getName());
     }
 }

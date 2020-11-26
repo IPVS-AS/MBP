@@ -4,7 +4,7 @@ import org.citopt.connde.domain.device.Device;
 import org.springframework.data.rest.core.config.Projection;
 
 @Projection(name = "list", types = Device.class)
-public interface DeviceExcerpt extends UserEntityExcerpt{
+public interface DeviceExcerpt extends UserEntityExcerpt {
 
     String getId();
 

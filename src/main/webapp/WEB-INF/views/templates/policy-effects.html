@@ -1,0 +1,188 @@
+<div class="row clearfix" ng-hide>
+    <!-- List of Policy Effects Card -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>Access-Control Policy Effects
+                        <small>These policies control who can access what and to what extent</small>
+                    </h2>
+                </div>
+                <div class="align-right">
+                    <button id="add-button" type="button"
+                        class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0" data-toggle="modal"
+                        data-target="#addPolicyEffectModal" data-backdrop="static" data-keyboard="false">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
+            </div>
+            <div class="body">
+                <table class="table table-hover" st-table="displayedCollection" st-safe-src="policyEffectListCtrl.items">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Parameters</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                            <td>{{item.name}}</td>
+                            <td>
+                                <div ng-if="item.description">
+                                    <a class="clickable" data-toggle="collapse" data-target="#description-{{item.id}}">
+                                        Show Description
+                                    </a>
+                                    <div id="description-{{item.id}}" class="collapse">
+                                        <span>{{item.description}}</span>
+                                    </div>
+                                </div>
+                                <div ng-if="!item.description">
+                                    <span>None</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div ng-if="item.parameters">
+                                    <a class="clickable" data-toggle="collapse" data-target="#parameters-{{item.id}}">
+                                        Show Parameters
+                                    </a>
+                                    <div id="parameters-{{item.id}}" class="collapse">
+                                        <p ng-repeat="(key, value) in item.parameters">{{key}}: {{value}}</p>
+                                    </div>
+                                </div>
+                                <div ng-if="!item.parameters">
+                                    <span>None</span>
+                                </div>
+                            </td>
+                            <td>
+                                <form ng-submit="deletePolicyEffectCtrl.deleteItem()" style="display: inline-block">
+                                    <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float" ng-click="deletePolicyEffectCtrl.item.id = item.id">
+                                        <i class="material-icons" style="font-size:14px;">delete</i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr ng-show="policyEffectListCtrl.items.length === 0">
+                            <td>No policy effects registered.</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- #END# List of Policies Card -->
+    <!-- Modal -->
+    <div class="modal fade" id="addPolicyEffectModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register a new Policy Effect
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form id="addPolicyEffectForm" ng-submit="addPolicyEffectCtrl.addItem()">
+                    <fieldset id="policy-effect-form">
+                        <div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <div class="form-group" ng-class="{'has-error' : addPolicyEffectCtrl.item.errors.global}">
+                                <span class="alert alert-danger" ng-show="addPolicyEffectCtrl.item.errors.global">
+                                    {{addPolicyEffectCtrl.item.errors.global}} </span>
+                            </div>
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : addPolicyEffectCtrl.item.errors.name }">
+                                <div class="form-line" ng-class="{'focused error' : addPolicyEffectCtrl.item.errors.name }">
+                                    <input class="form-control" id="policy-form-input-name" type="text"
+                                        placeholder="Name *" ng-model="addPolicyEffectCtrl.item.name" />
+                                </div>
+                                <span class="help-block"
+                                    ng-show="addPolicyEffectCtrl.item.errors.name">{{addPolicyEffectCtrl.item.errors.name.message}}</span>
+                            </div>
+                            <!-- item.description group -->
+                            <div class="form-group" ng-class="{'has-error' : addPolicyEffectCtrl.item.errors.description }">
+                                <div class="form-line"
+                                    ng-class="{'focused error' : addPolicyEffectCtrl.item.errors.description }">
+                                    <input class="form-control" id="policy-form-input-description" type="text"
+                                        placeholder="Description" ng-model="addPolicyEffectCtrl.item.description" />
+                                </div>
+                                <span class="help-block"
+                                    ng-show="addPolicyEffectCtrl.item.errors.description">{{addPolicyEffectCtrl.item.errors.description.message}}</span>
+                            </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                            <!-- item.type group -->
+                            <div class="form-group" ng-class="{'has-error' : addPolicyEffectCtrl.item.errors.type }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addPolicyEffectCtrl.item.errors.type }">
+                                    <select class="form-control show-tick" ng-model="addPolicyEffectCtrl.item.type">
+                                        <option disabled selected value>Select action type *</option>
+                                        <option id="NUMERIC_ACCURACY_MODIFICATION" value="NUMERIC_ACCURACY_MODIFICATION">Numeric Accuracy Modification</option>
+                                        <!-- <option id="LOCATION_ACCURACY_MODIFICATION" value="LOCATION_ACCURACY_MODIFICATION">Location Accuracy Modification</option> -->
+                                    </select>
+                                </div>
+                                <span class="help-block" ng-show="addPolicyEffectCtrl.item.errors.type">{{addPolicyEffectCtrl.item.errors.type.message}}</span>
+                            </div>
+                            <!-- Switch for parameters of different action types -->
+                            <div ng-switch="addPolicyEffectCtrl.item.type">
+                                <div ng-switch-when="NUMERIC_ACCURACY_MODIFICATION">
+                                    <p>This effect allows manipulating the accuracy and precision of a decimal value.</p>
+                                    <br/>
+                                    <!-- item.parameters[accuracy] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input class="form-control" type="number" placeholder="Accuracy *"
+                                                   ng-model="addPolicyEffectCtrl.item.parameters['accuracy']"/>
+                                        </div>
+                                        <span class="help-block">The accuracy the application of this effect will result in. For example, an accuracy of 10 with an input of 87.5 would result in 90.</span>
+                                    </div>
+                                    <!-- item.parameters[precision] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input class="form-control" type="number" placeholder="Precision *"
+                                                   ng-model="addPolicyEffectCtrl.item.parameters['precision']"/>
+                                        </div>
+                                        <span class="help-block">The number of decimal digits to keep when rounding the result. If -1 is specified, the original (result) value will be used.</span>
+                                    </div>
+                                </div>
+                                <div ng-switch-when="LOCATION_ACCURACY_MODIFICATION">
+                                    <p>This effect allows manipulating the accuary of a location value.</p>
+                                    <br/>
+                                    <!-- item.parameters[accuracy] group -->
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input class="form-control" type="number" placeholder="Accuracy *"
+                                                   ng-model="addPolicyEffectCtrl.item.parameters['accuracy']"/>
+                                        </div>
+                                        <span class="help-block">The accuracy the application of this effect will result in specified in meters. The resulting location value is anywhere within the specified radius of the actual location value.</span>
+                                    </div>
+                                </div>
+                                <div ng-switch-default></div>
+                            </div>
+                            <div class="form-group has-error" ng-show="addPolicyEffectCtrl.item.errors.parameters">
+                                <span class="help-block">
+                                    {{addPolicyEffectCtrl.item.errors.parameters.message}}
+                                </span>
+                            </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect"
+                                data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- #END# Modal -->
+</div>

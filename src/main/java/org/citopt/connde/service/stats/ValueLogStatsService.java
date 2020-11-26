@@ -1,5 +1,6 @@
 package org.citopt.connde.service.stats;
 
+import org.citopt.connde.domain.access_control.ACAbstractEffect;
 import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.valueLog.ValueLog;
 import org.citopt.connde.repository.ValueLogRepository;
@@ -24,7 +25,7 @@ public class ValueLogStatsService {
     private static final int ROUNDING_DECIMAL_PLACES = 2;
 
     @Autowired
-    UnitConverterService unitConverterService;
+    private UnitConverterService unitConverterService;
 
     @Autowired
     private ValueLogRepository valueLogRepository;
@@ -36,9 +37,10 @@ public class ValueLogStatsService {
      *
      * @param component The component whose value logs should be used to calculate the data
      * @param unit      The unit to which the values are supposed to be converted (null for default)
+     * @param effect	The (optional) effect to apply to the value logs before calculating the stats.
      * @return ValueLogStats object that holds the calculated data
      */
-    public ValueLogStats calculateValueLogStats(Component component, Unit unit) {
+    public ValueLogStats calculateValueLogStats(Component component, Unit<?> unit, ACAbstractEffect effect) {
         //Create empty stats object
         ValueLogStats stats = new ValueLogStats();
 
@@ -50,10 +52,14 @@ public class ValueLogStatsService {
         if (valueLogList.isEmpty()) {
             return stats;
         }
-
+        
+        // Apply effect (if required, i.e., no admin or owner) to the value logs before calculating the stats 
+        if (effect != null) {
+        	valueLogList.forEach(effect::apply);
+        }
 
         //Get adapter unit object
-        Unit adapterUnit = component.getAdapter().getUnitObject();
+        Unit<?> adapterUnit = component.getOperator().getUnitObject();
 
         //Check if value conversion is desired and possible
         if ((unit != null) && adapterUnit.isCompatible(unit)) {

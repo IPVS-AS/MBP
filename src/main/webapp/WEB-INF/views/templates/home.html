@@ -2,68 +2,68 @@
     <div class="col-lg-12">
         <div class="row clearfix">
 
-            <!-- MODELS COUNT -->
+            <!-- Models Count -->
             <a href="view/env-models">
                 <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-                    <div class="info-box" style="cursor: pointer;">
+                    <div class="info-box hover-zoom-effect" style="cursor: pointer;">
                         <div class="icon bg-mbp-blue">
                             <i class="material-icons">view_quilt</i>
                         </div>
                         <div class="content">
                             <div class="text">Environment Models</div>
-                            <div class="number count-to" data-from="0" data-to="125"
-                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countEnvModels}}
+                            <div class="number count-to" data-from="0" data-to="{{ctrl.countEnvModels}}"
+                                 data-speed="1000">
                             </div>
                         </div>
                     </div>
                 </div>
             </a>
 
-            <!-- DEVICES COUNT -->
+            <!-- Devices Count -->
             <a href="view/devices">
                 <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-                    <div class="info-box" style="cursor: pointer;">
+                    <div class="info-box hover-zoom-effect" style="cursor: pointer;">
                         <div class="icon bg-mbp-mid-blue">
                             <i class="material-icons">devices</i>
                         </div>
                         <div class="content">
                             <div class="text">Devices</div>
-                            <div class="number count-to" data-from="0" data-to="125"
-                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countDevices}}
+                            <div class="number count-to" data-from="0" data-to="{{ctrl.countDevices}}"
+                                 data-speed="1000">
                             </div>
                         </div>
                     </div>
                 </div>
             </a>
 
-            <!-- SENSORS COUNT -->
+            <!-- Sensors Count -->
             <a href="view/sensors">
                 <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-                    <div class="info-box" style="cursor: pointer;">
+                    <div class="info-box hover-zoom-effect" style="cursor: pointer;">
                         <div class="icon bg-mbp-light-salmon">
                             <i class="material-icons">settings_remote</i>
                         </div>
                         <div class="content">
                             <div class="text">Sensors</div>
-                            <div class="number count-to" data-from="0" data-to="125"
-                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countSensors}}
+                            <div class="number count-to" data-from="0" data-to="{{ctrl.countSensors}}"
+                                 data-speed="1000">
                             </div>
                         </div>
                     </div>
-               </div>
+                </div>
             </a>
 
-            <!-- ACTUATORS COUNT -->
+            <!-- Actuators Count -->
             <a href="view/actuators">
                 <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
-                    <div class="info-box" style="cursor: pointer;">
+                    <div class="info-box hover-zoom-effect" style="cursor: pointer;">
                         <div class="icon bg-mbp-mid-champagne">
                             <i class="material-icons">wb_incandescent</i>
                         </div>
                         <div class="content">
                             <div class="text">Actuators</div>
-                            <div class="number count-to" data-from="0" data-to="125"
-                                 data-speed="1000" data-fresh-interval="20">{{ctrl.countActuators}}
+                            <div class="number count-to" data-from="0" data-to="{{ctrl.countActuators}}"
+                                 data-speed="1000">
                             </div>
                         </div>
                     </div>
@@ -90,16 +90,18 @@
                         devices!</p><br/>
                     <p>Let's start to set up your IoT environment in only six steps:</p>
                     <p> 1. <a href="view/devices" target="_blank"><i class="material-icons">devices</i>&nbsp;
-                        Register the IoT devices</a> of your environment. Optionally, you can register <a href="view/key-pairs" target="_blank"><i class="material-icons">vpn_key</i>&nbsp;
+                        Register the IoT devices</a> of your environment. Optionally, you can register <a
+                            href="view/key-pairs" target="_blank"><i class="material-icons">vpn_key</i>&nbsp;
                         Key Pairs</a> to be used by the MBP to access your IoT devices remotely.</p>
-                    <p> 2. <a href="view/adapters" target="_blank"><i class="material-icons">description</i>&nbsp;
+                    <p> 2. <a href="view/operators" target="_blank"><i class="material-icons">description</i>&nbsp;
                         Create extraction/control operators</a> for your sensors and actuators. Control operators are
                         only required if there are actuators in your environment.</p>
                     <p> 3. <a href="view/sensors" target="_blank"><i class="material-icons">settings_remote</i>&nbsp;
                         Register sensors</a> and <a href="view/actuators" target="_blank"><i class="material-icons">wb_incandescent</i>&nbsp;actuators</a>
                         that are connected to your devices, by selecting a target device and an operator.</p>
                     <p> 4. <a href="view/sensors" target="_blank"><i class="material-icons">file_download</i>&nbsp;Install
-                        operators for your sensors</a> and <a href="view/actuators" target="_blank">actuators</a> on target devices.</p>
+                        operators for your sensors</a> and <a href="view/actuators" target="_blank">actuators</a> on
+                        target devices.</p>
                     <p> 5. <a href="view/sensors" target="_blank"><i class="material-icons">play_arrow</i>&nbsp;Start
                         your sensors</a> and <a href="view/actuators" target="_blank">actuators</a>.</p>
                     <p> 6. <a href="view/rules" target="_blank"><i class="material-icons">call_split</i>&nbsp;Define

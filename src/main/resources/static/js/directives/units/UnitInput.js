@@ -25,7 +25,7 @@ app.directive('unitInput', ['UnitService', function (UnitService) {
             //Execute server request
             UnitService.getPredefinedUnits(scope.unitFilter).then(function (response) {
                 //Success, set array
-                scope.unitList = response.data;
+                scope.unitList = response;
             }, function () {
                 //Failure, no suggestions
                 scope.unitList = [];

@@ -1,32 +1,22 @@
 package org.citopt.connde.domain.component;
 
-import org.citopt.connde.domain.adapter.Adapter;
+import java.util.Objects;
+
+import javax.persistence.GeneratedValue;
+
+import org.citopt.connde.domain.operator.Operator;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.user_entity.UserEntity;
-import org.citopt.connde.domain.user_entity.UserEntityPolicy;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import javax.persistence.GeneratedValue;
-
-import java.util.Objects;
-
-import static org.citopt.connde.domain.user_entity.UserEntityRole.ADMIN;
-import static org.citopt.connde.domain.user_entity.UserEntityRole.APPROVED_USER;
 
 /**
  * Document super class for components (actuators, sensors, ...).
  */
 @Document
 public abstract class Component extends UserEntity {
-    //Permission name for deployment
-    private static final String PERMISSION_NAME_DEPLOY = "deploy";
-
-    //Extend default policy by deployment permission
-    private static final UserEntityPolicy COMPONENT_POLICY = new UserEntityPolicy(DEFAULT_POLICY)
-            .addPermission(PERMISSION_NAME_DEPLOY).addRole(APPROVED_USER).addRole(ADMIN).lock();
 
     @Id
     @GeneratedValue
@@ -39,7 +29,7 @@ public abstract class Component extends UserEntity {
     private String componentType;
 
     @DBRef
-    private Adapter adapter;
+    private Operator operator;
 
     @DBRef
     private Device device;
@@ -48,40 +38,45 @@ public abstract class Component extends UserEntity {
         return id;
     }
 
-    public void setId(String id) {
+    public Component setId(String id) {
         this.id = id;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public Component setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getComponentType() {
         return componentType;
     }
 
-    public void setComponentType(String componentType) {
+    public Component setComponentType(String componentType) {
         this.componentType = componentType;
+        return this;
     }
 
-    public Adapter getAdapter() {
-        return adapter;
+    public Operator getOperator() {
+        return operator;
     }
 
-    public void setAdapter(Adapter adapter) {
-        this.adapter = adapter;
+    public Component setOperator(Operator operator) {
+        this.operator = operator;
+        return this;
     }
 
     public Device getDevice() {
         return device;
     }
 
-    public void setDevice(Device address) {
+    public Component setDevice(Device address) {
         this.device = address;
+        return this;
     }
 
     public String getTopicName() {
@@ -92,14 +87,9 @@ public abstract class Component extends UserEntity {
 
     @Override
     public String toString() {
-        return "Component{" + "id=" + id + ", name=" + name + ", type=" + adapter + '}';
+        return "Component{" + "id=" + id + ", name=" + name + ", type=" + operator + '}';
     }
 
-
-    @Override
-    public UserEntityPolicy getUserEntityPolicy() {
-        return COMPONENT_POLICY;
-    }
 
     @Override
     public boolean equals(Object o) {

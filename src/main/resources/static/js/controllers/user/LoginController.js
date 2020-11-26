@@ -1,46 +1,44 @@
-(function() {
-  'use strict';
+app.controller('LoginController', ['$scope', '$location', '$rootScope', 'AuthenticationService', 'NotificationService',
+    function ($scope, $location, $rootScope, AuthenticationService, NotificationService) {
+        let vm = this;
 
-  angular
-    .module('app')
-    .controller('LoginController', LoginController);
+        vm.dataLoading = false;
 
-  LoginController.$inject = ['$location', 'AuthenticationService', 'FlashService'];
+        /**
+         * Initializing function, sets up basic things.
+         */
+        (function initController() {
+            //Reset login status
+            AuthenticationService.ClearCredentials();
+            AuthenticationService.Logout();
+        })();
 
-  function LoginController($location, AuthenticationService, FlashService) {
-    var vm = this;
+        /**
+         * [Public]
+         * Performs user login with the form data from the template.
+         */
+        function login() {
+            vm.dataLoading = true;
+            AuthenticationService.Login(vm.username, vm.password).then(function (userData) {
+                //Sanitize user data
+                userData = userData || [];
 
-    vm.login = login;
+                //Enable authorization locally
+                AuthenticationService.SetCredentials(vm.username, vm.password, userData);
 
-    (function initController() {
-      // reset login status
-      AuthenticationService.ClearCredentials();
-      AuthenticationService.Logout();
-    })();
+                //Redirect
+                $location.path('/');
+            }, function (response) {
 
-    function login() {
-      vm.dataLoading = true;
-      AuthenticationService.Login(vm.username, vm.password, function(response) {
-        if (response.success) {
-          //Get user object
-          let userData = response.data || {};
-
-          //Enable authorization locally
-          AuthenticationService.SetCredentials(vm.username, vm.password, userData);
-
-          //Redirect
-          $location.path('/');
-
-        } else {
-          if (response.status === 403) {
-            FlashService.Error("Authorization error!");
-          } else {
-            FlashService.Error(response.message);
-          }
-          vm.dataLoading = false;
+            }).then(function () {
+                vm.dataLoading = false;
+                $scope.$apply();
+            });
         }
-      });
-    };
-  }
 
-})();
+        //Expose
+        angular.extend(vm, {
+            login: login
+        });
+    }]
+);

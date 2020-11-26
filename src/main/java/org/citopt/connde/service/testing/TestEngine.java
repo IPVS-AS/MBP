@@ -1,26 +1,5 @@
 package org.citopt.connde.service.testing;
 
-
-import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
-import org.citopt.connde.domain.component.Actuator;
-import org.citopt.connde.domain.component.Sensor;
-import org.citopt.connde.domain.rules.Rule;
-import org.citopt.connde.domain.rules.RuleTrigger;
-import org.citopt.connde.domain.testing.TestDetails;
-import org.citopt.connde.domain.testing.Testing;
-import org.citopt.connde.domain.valueLog.ValueLog;
-import org.citopt.connde.repository.*;
-import org.citopt.connde.service.receiver.ValueLogReceiver;
-import org.citopt.connde.service.receiver.ValueLogReceiverObserver;
-import org.citopt.connde.web.rest.RestDeploymentController;
-import org.citopt.connde.web.rest.RestRuleController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,14 +7,47 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.citopt.connde.domain.operator.parameters.ParameterInstance;
+import org.citopt.connde.domain.component.Actuator;
+import org.citopt.connde.domain.component.Sensor;
+import org.citopt.connde.domain.rules.Rule;
+import org.citopt.connde.domain.rules.RuleTrigger;
+import org.citopt.connde.domain.testing.TestDetails;
+import org.citopt.connde.domain.testing.Testing;
+import org.citopt.connde.domain.valueLog.ValueLog;
+import org.citopt.connde.repository.ActuatorRepository;
+import org.citopt.connde.repository.RuleRepository;
+import org.citopt.connde.repository.RuleTriggerRepository;
+import org.citopt.connde.repository.TestDetailsRepository;
+import org.citopt.connde.repository.TestRepository;
+import org.citopt.connde.service.receiver.ValueLogReceiver;
+import org.citopt.connde.service.receiver.ValueLogReceiverObserver;
+import org.citopt.connde.service.rules.RuleEngine;
+import org.citopt.connde.web.rest.RestDeploymentController;
+import org.citopt.connde.web.rest.RestRuleController;
+import org.citopt.connde.web.rest.helper.DeploymentWrapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+
+
 @Component
 public class TestEngine implements ValueLogReceiverObserver {
+	
     @Autowired
     private TestDetailsRepository testDetailsRepository;
 
@@ -48,7 +60,6 @@ public class TestEngine implements ValueLogReceiverObserver {
     @Autowired
     private ActuatorRepository actuatorRepository;
 
-
     @Autowired
     private TestRepository testRepo;
 
@@ -59,8 +70,10 @@ public class TestEngine implements ValueLogReceiverObserver {
     private RuleRepository ruleRepository;
 
     @Autowired
-    private RestRuleController restRuleController;
-
+    private RuleEngine ruleEngine;
+    
+    @Autowired
+    private DeploymentWrapper deploymentWrapper;
 
     // List of all active Tests/testValues
     Map<String, TestDetails> activeTests = new HashMap<>();
@@ -143,9 +156,13 @@ public class TestEngine implements ValueLogReceiverObserver {
         List<Sensor> testingSensors = testDetails.getSensor();
         boolean response = false;
         for (Sensor sensor : testingSensors) {
-            ResponseEntity<Boolean> sensorRunning = restDeploymentController.isRunningSensor(sensor.getId());
-            response = sensorRunning.getBody();
-        }
+			// TODO: I don't think this implementation is correct: test running = LAST
+			// sensor running
+			// Not sure what the criteria are for running tests - i guess all sensors have
+			// to run -> use a logical AND (&&) to create the response:
+//        	response = response && deploymentWrapper.isComponentRunning(sensor);
+			response = deploymentWrapper.isComponentRunning(sensor);
+		}
 
         return response;
     }
@@ -158,7 +175,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      */
     public Map<String, List<Double>> isFinished(String testId) {
         boolean response = true;
-        TestDetails testDetails = testDetailsRepository.findById(testId);
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
         while (response) {
             response = testEngine.testRunning(testDetails);
         }
@@ -207,7 +224,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      * @param testDetails specific test to be executed
      */
     public ResponseEntity<String> startTest(TestDetails testDetails) {
-        Actuator testingActuator = actuatorRepository.findByName("TestingActuator");
+        Actuator testingActuator = actuatorRepository.findByName("TestingActuator").get();
 
         List<Sensor> testingSensor = testDetails.getSensor();
         List<Rule> rules = testDetails.getRules();
@@ -216,44 +233,44 @@ public class TestEngine implements ValueLogReceiverObserver {
         //activate the selected rules for the test
         for (Rule rule : rules) {
             // check if selected rules are active --> if not active Rules
-            restRuleController.enableRule(rule.getId());
+            ruleEngine.enableRule(rule);
         }
 
         //check if test exists
-        if (!testDetailsRepository.exists(testDetails.getId())) {
-
+        if (!testDetailsRepository.existsById(testDetails.getId())) {
             return new ResponseEntity<>("Test does not exists.", HttpStatus.NOT_FOUND);
         }
 
         //check if actuator is deployed
-        ResponseEntity<Boolean> actuatorDeployed = restDeploymentController.isRunningActuator(testingActuator.getId());
-        if (!actuatorDeployed.getBody()) {
+        boolean actuatorDeployed = deploymentWrapper.isComponentRunning(testingActuator);
+        if (!actuatorDeployed) {
             //if false deploy actuator
-            restDeploymentController.deployActuator(testingActuator.getId());
+            deploymentWrapper.deployComponent(testingActuator);
         }
         // start the Actuator
-        restDeploymentController.startActuator(testingActuator.getId(), new ArrayList<>());
+        deploymentWrapper.startComponent(testingActuator, new ArrayList<>());
 
 
 
-        // check if the sensor/s are currently running
-        for (Sensor sensor : testingSensor) {
-            ResponseEntity<Boolean> sensorDeployed = restDeploymentController.isRunningSensor(sensor.getId());
-            String sensorName = sensor.getName();
-            for (List<ParameterInstance> configSensor : config) {
-                for (ParameterInstance parameterInstance : configSensor) {
-                    if (parameterInstance.getName().equals("ConfigName") && parameterInstance.getValue().equals(sensorName)) {
-                        // check if sensor is deployed
-                        if (!sensorDeployed.getBody()) {
-                            //if not deploy Sensor
-                            restDeploymentController.deploySensor((sensor.getId()));
-                        }
-                        restDeploymentController.stopSensor(sensor.getId());
-                        restDeploymentController.startSensor(sensor.getId(), configSensor);
-                    }
-                }
-            }
-        }
+		// check if the sensor/s are currently running
+		for (Sensor sensor : testingSensor) {
+			boolean sensorDeployed = deploymentWrapper.isComponentRunning(sensor);
+			String sensorName = sensor.getName();
+			for (List<ParameterInstance> configSensor : config) {
+				for (ParameterInstance parameterInstance : configSensor) {
+					if (parameterInstance.getName().equals("ConfigName")
+							&& parameterInstance.getValue().equals(sensorName)) {
+						// check if sensor is deployed
+						if (!sensorDeployed) {
+							// if not deploy Sensor
+							deploymentWrapper.deployComponent((sensor));
+						}
+						deploymentWrapper.stopComponent(sensor);
+						deploymentWrapper.startComponent(sensor, configSensor);
+					}
+				}
+			}
+		}
 
         return new ResponseEntity<>("Test successfully started.", HttpStatus.OK);
     }
@@ -265,7 +282,7 @@ public class TestEngine implements ValueLogReceiverObserver {
      * @param testId ID of the executed test
      */
     public void testSuccess(String testId) {
-        TestDetails testDetails = testDetailsRepository.findById(testId);
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
         List<String> ruleNames = new ArrayList<>();
 
         List<Rule> ruleList = testDetails.getRules();
@@ -296,7 +313,7 @@ public class TestEngine implements ValueLogReceiverObserver {
         Map<String, List<Double>> testValues = new HashMap<>();
 
 
-        TestDetails testDetails = testDetailsRepository.findById(testId);
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
         List<String> ruleNames = new ArrayList<>();
         List<String> triggerID = new ArrayList<>();
 
@@ -389,14 +406,14 @@ public class TestEngine implements ValueLogReceiverObserver {
         }
         testEngine.setActiveTests(activeTests);
         testEngine.setTestValues(list);
-        testEngine.startTest(testDetailsRepository.findById(test.getId()));
+        testEngine.startTest(testDetailsRepository.findById(test.getId()).get());
 
         Map<String, List<Double>> valueList;
         Map<String, List<Double>> valueListTest = new HashMap<>();
 
         // Get List of all simulated Values
         valueList = testEngine.isFinished(test.getId());
-        TestDetails testDetails2 = testDetailsRepository.findOne(test.getId());
+        TestDetails testDetails2 = testDetailsRepository.findById(test.getId()).get();
         for (Sensor sensor : test.getSensor()) {
             List<Double> temp = valueList.get(sensor.getId());
             valueList.put(sensor.getName(), temp);
@@ -437,7 +454,7 @@ public class TestEngine implements ValueLogReceiverObserver {
         Pattern pattern = Pattern.compile("(.*?)_");
         Matcher m = pattern.matcher(path);
         if (m.find()) {
-            test = testDetailsRepository.findById(m.group(1));
+            test = testDetailsRepository.findById(m.group(1)).get();
         }
 
 
@@ -473,7 +490,7 @@ public class TestEngine implements ValueLogReceiverObserver {
     public ResponseEntity getPDFList(String testId) {
         ResponseEntity pdfList;
         Map<Long, String> nullList = new TreeMap<>();
-        TestDetails testDetails = testDetailsRepository.findOne(testId);
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
         try {
             if (testDetails.isPdfExists()) {
                 Stream<Path> pathStream = Files.find(Paths.get(testDetails.getPathPDF()), 10, (path, basicFileAttributes) -> {
@@ -546,5 +563,3 @@ public class TestEngine implements ValueLogReceiverObserver {
         return treeMap;
     }
 }
-
-    

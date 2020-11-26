@@ -3,8 +3,8 @@
 /**
  * Provides services for managing environment models.
  */
-app.factory('EnvModelService', ['$http', '$resource', '$q', '$timeout', 'ENDPOINT_URI',
-    function ($http, $resource, $q, $timeout, ENDPOINT_URI) {
+app.factory('EnvModelService', ['HttpService', '$resource', '$q', '$timeout', 'ENDPOINT_URI',
+    function (HttpService, $resource, $q, $timeout, ENDPOINT_URI) {
         //URLs for server requests
         const URL_BASE = ENDPOINT_URI + '/env-models/';
         const URL_SUFFIX_SUBSCRIBE = '/subscribe';
@@ -63,7 +63,7 @@ app.factory('EnvModelService', ['$http', '$resource', '$q', '$timeout', 'ENDPOIN
          * @returns {*}
          */
         function registerComponents(modelID) {
-            return $http.post(URL_BASE + modelID + URL_SUFFIX_REGISTER);
+            return HttpService.postRequest(URL_BASE + modelID + URL_SUFFIX_REGISTER);
         }
 
         /**
@@ -73,7 +73,7 @@ app.factory('EnvModelService', ['$http', '$resource', '$q', '$timeout', 'ENDPOIN
          * @returns {*}
          */
         function deployComponents(modelID) {
-            return $http.post(URL_BASE + modelID + URL_SUFFIX_DEPLOY);
+            return HttpService.postRequest(URL_BASE + modelID + URL_SUFFIX_DEPLOY);
         }
 
         /**
@@ -83,7 +83,7 @@ app.factory('EnvModelService', ['$http', '$resource', '$q', '$timeout', 'ENDPOIN
          * @returns {*}
          */
         function undeployComponents(modelID) {
-            return $http.post(URL_BASE + modelID + URL_SUFFIX_UNDEPLOY);
+            return HttpService.postRequest(URL_BASE + modelID + URL_SUFFIX_UNDEPLOY);
         }
 
         /**
@@ -93,7 +93,7 @@ app.factory('EnvModelService', ['$http', '$resource', '$q', '$timeout', 'ENDPOIN
          * @returns {*}
          */
         function startComponents(modelID) {
-            return $http.post(URL_BASE + modelID + URL_SUFFIX_START);
+            return HttpService.postRequest(URL_BASE + modelID + URL_SUFFIX_START);
         }
 
         /**
@@ -103,7 +103,7 @@ app.factory('EnvModelService', ['$http', '$resource', '$q', '$timeout', 'ENDPOIN
          * @returns {*}
          */
         function stopComponents(modelID) {
-            return $http.post(URL_BASE + modelID + URL_SUFFIX_STOP);
+            return HttpService.postRequest(URL_BASE + modelID + URL_SUFFIX_STOP);
         }
 
         /**
@@ -113,7 +113,7 @@ app.factory('EnvModelService', ['$http', '$resource', '$q', '$timeout', 'ENDPOIN
          * @returns {*}
          */
         function getEntityStates(modelID) {
-            return $http.get(URL_BASE + modelID + URL_SUFFIX_ENTITY_STATES);
+            return HttpService.getRequest(URL_BASE + modelID + URL_SUFFIX_ENTITY_STATES);
         }
 
         //Expose public methods

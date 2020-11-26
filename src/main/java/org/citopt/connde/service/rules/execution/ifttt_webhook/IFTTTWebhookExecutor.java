@@ -24,15 +24,11 @@ public class IFTTTWebhookExecutor implements RuleActionExecutor {
     //Parameter keys
     private static final String PARAM_KEY_IFTTT_KEY = "ifttt_key";
     private static final String PARAM_KEY_EVENT_NAME = "ifttt_name";
-    private static final String PARAM_KEY_JSON_DATA = "ifttt_json";
 
     //Regular expression describing permissible personal IFTTT keys
     private static final String REGEX_IFTTT_KEY = "[A-z0-9_\\-]{10,}";
     //Regular expression describing permissible event names
     private static final String REGEX_EVENT_NAME = "[A-z0-9_\\-]+";
-
-    //Name of the key under which the CEP output is stored in the JSON data object
-    private static final String JSON_DATA_OUTPUT_KEY = "value1";
 
     /**
      * Validates a parameters map for the corresponding rule action type and updates

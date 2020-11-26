@@ -3,7 +3,7 @@
 /*
  * Provides services for executing unit-related server requests.
  */
-app.factory('UnitService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT_URI) {
+app.factory('UnitService', ['HttpService', 'ENDPOINT_URI', function (HttpService, ENDPOINT_URI) {
 
     //URL at which predefined quantities and their units may be requested
     const URL_UNITS = ENDPOINT_URI + '/units';
@@ -31,7 +31,7 @@ app.factory('UnitService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT_U
             url = URL_UNITS_COMPATIBLE;
         }
 
-        return $http.get(url, {params: parameters});
+        return HttpService.getRequest(url, parameters);
     }
 
     /**
@@ -49,7 +49,7 @@ app.factory('UnitService', ['$http', 'ENDPOINT_URI', function ($http, ENDPOINT_U
             second: secondUnit
         };
 
-        return $http.get(URL_UNITS_COMPATIBLE_CHECK, {params: parameters});
+        return HttpService.getRequest(URL_UNITS_COMPATIBLE_CHECK, parameters);
     }
 
 

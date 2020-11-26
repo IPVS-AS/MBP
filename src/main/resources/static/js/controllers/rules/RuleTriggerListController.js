@@ -312,6 +312,7 @@ app.controller('RuleTriggerListController',
                 }),
                 addRuleTriggerCtrl: $controller('AddItemController as addRuleTriggerCtrl', {
                     $scope: $scope,
+                    entity: 'rule trigger',
                     addItem: addRuleTrigger
                 }),
                 deleteRuleTriggerCtrl: $controller('DeleteItemController as deleteRuleTriggerCtrl', {

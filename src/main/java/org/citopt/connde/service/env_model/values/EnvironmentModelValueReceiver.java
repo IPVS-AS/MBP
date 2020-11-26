@@ -56,9 +56,9 @@ public class EnvironmentModelValueReceiver implements ValueLogReceiverObserver {
         //Get component from repository
         Component component = null;
         if (componentType.equals("actuator")) {
-            component = actuatorRepository.get(valueLog.getIdref());
+            component = actuatorRepository.findById(valueLog.getIdref()).get();
         } else if (componentType.equals("sensor")) {
-            component = sensorRepository.get(valueLog.getIdref());
+            component = sensorRepository.findById(valueLog.getIdref()).get();
         }
 
         //Check if component could be found
@@ -92,7 +92,7 @@ public class EnvironmentModelValueReceiver implements ValueLogReceiverObserver {
         }
 
         //Get adapter unit
-        String adapterUnit = component.getAdapter().getUnit();
+        String adapterUnit = component.getOperator().getUnit();
 
         //Create corresponding event
         ComponentValueEvent event = new ComponentValueEvent(nodeId, adapterUnit, valueLog.getValue());

@@ -1,14 +1,10 @@
 package org.citopt.connde;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.citopt.connde.domain.adapter.Adapter;
-import org.citopt.connde.repository.AdapterRepository;
-import org.springframework.beans.BeansException;
+import java.util.List;
+
+import org.citopt.connde.constants.Constants;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -22,18 +18,12 @@ import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.spring4.SpringTemplateEngine;
-import org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver;
-import org.thymeleaf.spring4.view.ThymeleafViewResolver;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
+import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ITemplateResolver;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  *
@@ -43,13 +33,12 @@ import java.util.regex.Pattern;
 @EnableWebMvc
 @EnableSpringDataWebSupport
 @ComponentScan(basePackages = {
-    "org.citopt.connde"
+    Constants.ROOT_PACKAGE
 })
 @EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
-public class WebServletConfiguration
-        extends WebMvcConfigurerAdapter
-        implements ApplicationContextAware {
+public class WebServletConfiguration implements WebMvcConfigurer {
 
+	@Autowired
     private ApplicationContext applicationContext;
 
     private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {
@@ -62,15 +51,17 @@ public class WebServletConfiguration
         configurer.defaultContentType(MediaTypes.HAL_JSON);
     }
 
-    @Override
-    public void setApplicationContext(ApplicationContext ac)
-            throws BeansException {
-        this.applicationContext = ac;
-    }
+//    @Override
+//    public void setApplicationContext(ApplicationContext ac)
+//            throws BeansException {
+//        this.applicationContext = ac;
+//    }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         System.out.println("load addResourceHandlers");
+        registry.addResourceHandler("swagger-ui.html")
+        	.addResourceLocations("classpath:/META-INF/resources/");
         if (!registry.hasMappingForPattern("/webjars/**")) {
             registry.addResourceHandler("/webjars/**").addResourceLocations(
                     "classpath:/META-INF/resources/webjars/");
@@ -84,9 +75,8 @@ public class WebServletConfiguration
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers){
         PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
-        resolver.setFallbackPageable(new PageRequest(0, Integer.MAX_VALUE));
+        resolver.setFallbackPageable(PageRequest.of(0, Integer.MAX_VALUE));
         argumentResolvers.add(resolver);
-        super.addArgumentResolvers(argumentResolvers);
     }
 
     /* start Thymeleaf */
@@ -99,7 +89,7 @@ public class WebServletConfiguration
     }
 
     @Bean
-    public TemplateEngine templateEngine() {
+    public SpringTemplateEngine templateEngine() {
         SpringTemplateEngine engine = new SpringTemplateEngine();
         engine.setEnableSpringELCompiler(true);
         engine.setTemplateResolver(templateResolver());

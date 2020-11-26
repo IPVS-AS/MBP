@@ -1,0 +1,178 @@
+<div>
+    <!-- List Card -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>Access-Control Policy Conditions</h2>
+                </div>
+                <div class="align-right">
+                    <button id="add-button" type="button" data-toggle="collapse" data-target="#addPolicyConditionModal"
+                        class="btn bg-blue btn-circle waves-effect waves-circle waves-float">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
+            </div>
+            <div class="body">
+                <table class="table table-hover" st-table="displayedCollection"
+                    st-safe-src="policyConditionListCtrl.items">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Condition</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                            <td>
+                                {{item.name}}
+                            </td>
+                            <td>
+                                <div ng-if="item.description">
+                                    <a class="clickable" data-toggle="collapse" data-target="#description-{{item.id}}">
+                                        Show Description
+                                    </a>
+                                    <div id="description-{{item.id}}" class="collapse">
+                                        <span>{{item.description}}</span>
+                                    </div>
+                                </div>
+                                <div ng-if="!item.description">
+                                    <span>None</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div ng-if="item.humanReadableDescription">
+                                    <a class="clickable" data-toggle="collapse" data-target="#humanReadableDescription-{{item.id}}">
+                                        Show Condition
+                                    </a>
+                                    <div id="humanReadableDescription-{{item.id}}" class="collapse">
+                                        <span>{{item.humanReadableDescription}}</span>
+                                    </div>
+                                </div>
+                                <div ng-if="!item.humanReadableDescription">
+                                    <span>None</span>
+                                </div>
+                            </td>
+                            <td>
+                                <form ng-submit="deletePolicyConditionCtrl.deleteItem()" style="display: inline-block">
+                                    <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float" ng-click="deletePolicyConditionCtrl.item.id = item.id">
+                                        <i class="material-icons" style="font-size:14px;">delete</i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr ng-show="policyConditionListCtrl.items.length === 0">
+                            <td>No rule conditions registered.</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="addPolicyConditionModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Register a new Policy Condition
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form id="addPolicyConditionForm" ng-submit="addPolicyConditionCtrl.addItem()">
+                    <fieldset id="policy-condition-form">
+                        <div class="modal-body">
+                            <!-- "global" error for addItem -->
+                            <div class="form-group" ng-class="{'has-error' : addPolicyConditionCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addPolicyConditionCtrl.item.errors.global">
+			                      {{addPolicyConditionCtrl.item.errors.global}}
+			                    </span>
+                            </div>
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : addPolicyConditionCtrl.item.errors.name }">
+                                <div class="form-line" ng-class="{'focused error' : addPolicyConditionCtrl.item.errors.name }">
+                                    <input class="form-control" id="policy-condition-form-input-name" type="text"
+                                           placeholder="Name *" ng-model="addPolicyConditionCtrl.item.name"/>
+                                </div>
+                                <span class="help-block" ng-show="addPolicyConditionCtrl.item.errors.name">{{addPolicyConditionCtrl.item.errors.name.message}}</span>
+                            </div>
+                            <!-- item.description group -->
+                            <div class="form-group" ng-class="{'has-error' : addPolicyConditionCtrl.item.errors.description }">
+                                <div class="form-line" ng-class="{'focused error' : addPolicyConditionCtrl.item.errors.description }">
+                                    <input class="form-control" id="policy-condition-form-input-description" type="text"
+                                           placeholder="Description *" ng-model="addPolicyConditionCtrl.item.description"/>
+                                </div>
+                                <span class="help-block" ng-show="addPolicyConditionCtrl.item.errors.description">{{addPolicyConditionCtrl.item.errors.description.message}}</span>
+                            </div>
+                            <!-- item.condition group -->
+                            <div class="form-group" ng-class="{'has-error' : addPolicyConditionCtrl.item.errors.condition }">
+                                <div class="form-line" ng-class="{'focused error' : addPolicyConditionCtrl.item.errors.condition }">
+                                    <input type="text" id="policy-condition-form-input-condition" name="query-builder-output" class="form-control" ng-model="addPolicyConditionCtrl.item.condition"></input>
+                                    <div id="condition-builder"></div>
+                                    <script>
+                                        $.fn.queryBuilder.define("extension", function (options) {
+                                            this.on('afterUpdateGroupCondition.queryBuilder', function (event, rule) {
+                                                $('div.group-conditions > label').each(function () {
+                                                    var _this = $(this);
+                                                    if (_this.hasClass('active')) {
+                                                        _this.css('opacity', '1');
+                                                    } else {
+                                                        _this.css('opacity', '0.7');
+                                                    }
+                                                });
+                                            });
+                                        });
+
+                                        $('#condition-builder').queryBuilder({
+                                            filters: [{
+                                                id: 'requesting-entity-firstname',
+                                                label: 'First Name (Requesting Entity)',
+                                                type: 'string'
+                                            }, {
+                                                id: 'requesting-entity-lastname',
+                                                label: 'Last Name (Requesting Entity)',
+                                                type: 'string'
+                                            }, {
+                                                id: 'requesting-entity-username',
+                                                label: 'Username (Requesting Entity)',
+                                                type: 'string'
+                                            }],
+                                            operators: ['equal', 'not_equal', 'less', 'less_or_equal', 'greater', 'greater_or_equal', 'begins_with', 'not_begins_with', 'contains', 'not_contains', 'ends_with', 'not_ends_with'],
+                                            plugins: {
+                                                extension: {}
+                                            }
+                                        });
+
+                                        $(function () {
+                                            $('#register').on("click", function () {
+                                                var result = JSON.stringify($('#condition-builder').queryBuilder('getRules'), null, 2);
+                                                $("#policy-condition-form-input-condition").val(result).trigger("input");
+                                            });
+                                        });
+                                    </script>
+                                </div>
+                                <span class="help-block" ng-show="addPolicyConditionCtrl.item.errors.condition">{{addPolicyConditionCtrl.item.errors.condition.message}}</span>
+                            </div>
+                            <span class="help-block" style="font-style: italic">* Mandatory fields</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="closemodal" type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button id="register" type="submit" class="btn btn-primary m-t-0 waves-effect">Register</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- #END# Modal -->
+</div>

@@ -1,9 +1,9 @@
 package org.citopt.connde.service.cep.engine.core.output;
 
-import com.espertech.esper.event.map.MapEventBean;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.espertech.esper.event.map.MapEventBean;
 
 /**
  * Objects of this class represent the result of CEP queries and consist out of
@@ -58,7 +58,7 @@ public class CEPOutput {
             if (value instanceof MapEventBean) {
                 //Replace MapEventBean object with its properties map
                 MapEventBean mapEventBean = (MapEventBean) value;
-                Map propertiesMap = mapEventBean.getProperties();
+                Map<String, Object> propertiesMap = mapEventBean.getProperties();
                 outputMap.put(key, propertiesMap);
             }
         }

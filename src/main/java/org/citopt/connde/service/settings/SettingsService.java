@@ -1,18 +1,18 @@
 package org.citopt.connde.service.settings;
 
-import org.citopt.connde.service.settings.model.BrokerLocation;
-import org.citopt.connde.service.settings.model.Settings;
-import org.citopt.connde.web.rest.response.ActionResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.servlet.ServletContext;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 import java.util.Properties;
-import java.util.Set;
+
+import org.citopt.connde.service.settings.model.BrokerLocation;
+import org.citopt.connde.service.settings.model.Settings;
+import org.springframework.stereotype.Service;
 
 /**
  * This service provides features for the management of application-wide settings that may be changed by the users.
@@ -41,6 +41,8 @@ public class SettingsService {
             settingsFile = new File(fileURL.toURI());
         } catch (URISyntaxException e) {
             System.err.println("Error while reading the properties file.");
+        } catch (Exception e) {
+        	System.err.println("Error while reading the properties file: "  + e.getMessage() + ".");
         }
     }
 

@@ -1,35 +1,31 @@
 package org.citopt.connde.domain.device;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import javax.persistence.GeneratedValue;
+
+import org.citopt.connde.domain.access_control.ACAttributeValue;
 import org.citopt.connde.domain.key_pair.KeyPair;
+import org.citopt.connde.domain.user_entity.MBPEntity;
 import org.citopt.connde.domain.user_entity.UserEntity;
-import org.citopt.connde.domain.user_entity.UserEntityPolicy;
+import org.citopt.connde.service.DeviceDeleteValidator;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
-import javax.persistence.GeneratedValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import static org.citopt.connde.domain.user_entity.UserEntityRole.ADMIN;
-import static org.citopt.connde.domain.user_entity.UserEntityRole.APPROVED_USER;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
+@MBPEntity(deleteValidator = DeviceDeleteValidator.class)
 @ApiModel(description = "Model for device entities")
 public class Device extends UserEntity {
-
-    //Permission name for monitoring
-    private static final String PERMISSION_NAME_MONITORING = "monitor";
-
-    //Extend default policy by monitoring permission
-    private static final UserEntityPolicy DEVICE_POLICY = new UserEntityPolicy(DEFAULT_POLICY)
-            .addPermission(PERMISSION_NAME_MONITORING).addRole(APPROVED_USER).addRole(ADMIN).lock();
 
     @Id
     @GeneratedValue
     @ApiModelProperty(notes = "Device ID", example = "5c8f7ad66f9e3c1bacb0fa99", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String id;
 
+    @ACAttributeValue
     @Indexed(unique = true)
     @ApiModelProperty(notes = "Device name", example = "My Device", required = true)
     private String name;
@@ -37,9 +33,6 @@ public class Device extends UserEntity {
     @Indexed
     @ApiModelProperty(notes = "Device type", example = "Raspberry Pi", required = true)
     private String componentType;
-
-    @ApiModelProperty(notes = "MAC address", example = "ABCABCABCABC")
-    private String macAddress;
 
     @ApiModelProperty(notes = "Network IP address", example = "192.168.209.174", required = true)
     private String ipAddress;
@@ -63,72 +56,72 @@ public class Device extends UserEntity {
         return this.id;
     }
 
-    public void setId(String id) {
+    public Device setId(String id) {
         this.id = id;
+        return this;
     }
 
     public String getIpAddress() {
         return ipAddress;
     }
 
-    public void setIpAddress(String ip) {
+    public Device setIpAddress(String ip) {
         this.ipAddress = ip;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public Device setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getComponentType() {
         return componentType;
     }
 
-    public void setComponentType(String componentType) {
+    public Device setComponentType(String componentType) {
         this.componentType = componentType;
-    }
-
-    public String getMacAddress() {
-        return macAddress;
-    }
-
-    public void setMacAddress(String macAddress) {
-        this.macAddress = macAddress;
+        return this;
     }
 
     public String getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public Device setDate(String date) {
         this.date = date;
+        return this;
     }
 
     public String getUsername() {
         return username;
     }
 
-    public void setUsername(String username) {
+    public Device setUsername(String username) {
         this.username = username;
+        return this;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public Device setPassword(String password) {
         this.password = password;
+        return this;
     }
 
     public KeyPair getKeyPair() {
         return keyPair;
     }
 
-    public void setKeyPair(KeyPair keyPair) {
+    public Device setKeyPair(KeyPair keyPair) {
         this.keyPair = keyPair;
+        return this;
     }
 
     @JsonProperty("usesPassword")
@@ -143,8 +136,4 @@ public class Device extends UserEntity {
         return (keyPair != null) && (keyPair.hasPrivateKey());
     }
 
-    @Override
-    public UserEntityPolicy getUserEntityPolicy() {
-        return DEVICE_POLICY;
-    }
 }

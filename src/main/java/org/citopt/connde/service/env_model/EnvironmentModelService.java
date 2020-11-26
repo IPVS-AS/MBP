@@ -1,33 +1,45 @@
 package org.citopt.connde.service.env_model;
 
-import org.citopt.connde.domain.adapter.Adapter;
-import org.citopt.connde.domain.component.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import org.citopt.connde.domain.operator.Operator;
+import org.citopt.connde.domain.component.Actuator;
+import org.citopt.connde.domain.component.ActuatorValidator;
+import org.citopt.connde.domain.component.Component;
+import org.citopt.connde.domain.component.Sensor;
+import org.citopt.connde.domain.component.SensorValidator;
 import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.env_model.EnvironmentModel;
 import org.citopt.connde.domain.key_pair.KeyPair;
 import org.citopt.connde.domain.user.User;
 import org.citopt.connde.domain.user_entity.UserEntity;
-import org.citopt.connde.repository.*;
+import org.citopt.connde.error.DeploymentException;
+import org.citopt.connde.error.EnvironmentModelParseException;
+import org.citopt.connde.error.MBPException;
+import org.citopt.connde.repository.ActuatorRepository;
+import org.citopt.connde.repository.OperatorRepository;
+import org.citopt.connde.repository.DeviceRepository;
+import org.citopt.connde.repository.EnvironmentModelRepository;
+import org.citopt.connde.repository.KeyPairRepository;
+import org.citopt.connde.repository.SensorRepository;
 import org.citopt.connde.service.UserService;
 import org.citopt.connde.service.deploy.ComponentState;
 import org.citopt.connde.service.deploy.SSHDeployer;
 import org.citopt.connde.service.env_model.events.EnvironmentModelEventService;
 import org.citopt.connde.service.env_model.events.types.EntityStateEvent;
-import org.citopt.connde.web.rest.response.ActionResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Service for tasks related to environment models.
@@ -51,7 +63,7 @@ public class EnvironmentModelService {
     private KeyPairRepository keyPairRepository;
 
     @Autowired
-    private AdapterRepository adapterRepository;
+    private OperatorRepository operatorRepository;
 
     @Autowired
     private DeviceRepository deviceRepository;
@@ -82,7 +94,7 @@ public class EnvironmentModelService {
     private static final String MODEL_JSON_KEY_DEVICE_USERNAME = "username";
     private static final String MODEL_JSON_KEY_DEVICE_PASSWORD = "password";
     private static final String MODEL_JSON_KEY_DEVICE_KEYPAIR = "keyPair";
-    private static final String MODEL_JSON_KEY_COMPONENT_ADAPTER = "adapter";
+    private static final String MODEL_JSON_KEY_COMPONENT_OPERATOR = "operator";
     private static final String MODEL_JSON_KEY_CONNECTIONS = "connections";
     private static final String MODEL_JSON_KEY_CONNECTION_SOURCE = "sourceId";
     private static final String MODEL_JSON_KEY_CONNECTION_TARGET = "targetId";
@@ -98,11 +110,12 @@ public class EnvironmentModelService {
      *
      * @param model The environment model for which the entity states are supposed to be determined
      * @return The map (node id -> entity state) holding the states of all entities
+     * @throws EnvironmentModelParseException 
      */
-    public Map<String, EntityState> determineEntityStates(EnvironmentModel model) {
+    public Map<String, EntityState> determineEntityStates(EnvironmentModel model) throws EnvironmentModelParseException {
         //Sanity check
         if (model == null) {
-            throw new IllegalArgumentException("Model must not be null.");
+        	throw new EnvironmentModelParseException("Model must not be null.");
         }
 
         //Create new map (node id -> state) holding the states for each entity
@@ -151,11 +164,12 @@ public class EnvironmentModelService {
      * Unregisters (deletes) the entities of an environment model.
      *
      * @param model The model whose entities are supposed to be unregistered.
+     * @throws EnvironmentModelParseException 
      */
-    public void unregisterEntities(EnvironmentModel model) {
+    public void unregisterEntities(EnvironmentModel model) throws EnvironmentModelParseException {
         //Sanity check
         if (model == null) {
-            throw new IllegalArgumentException("Model must not be null.");
+        	throw new EnvironmentModelParseException("Model must not be null.");
         }
 
         //Get entities that are associated with the model
@@ -173,11 +187,11 @@ public class EnvironmentModelService {
 
             //Check entity type
             if (entity instanceof Device) {
-                deviceRepository.delete(((Device) entity).getId());
+                deviceRepository.deleteById(((Device) entity).getId());
             } else if (entity instanceof Actuator) {
-                actuatorRepository.delete(((Actuator) entity).getId());
+                actuatorRepository.deleteById(((Actuator) entity).getId());
             } else if (entity instanceof Sensor) {
-                sensorRepository.delete(((Sensor) entity).getId());
+                sensorRepository.deleteById(((Sensor) entity).getId());
             }
         }
     }
@@ -186,29 +200,19 @@ public class EnvironmentModelService {
      * Registers the components of an environment model.
      *
      * @param model The model whose components are supposed to be registered
-     * @return An action response containing the result of the registration
+     * @throws EnvironmentModelParseException 
      */
-    public ActionResponse registerComponents(EnvironmentModel model) {
+    public void registerComponents(EnvironmentModel model) throws EnvironmentModelParseException {
         //Sanity check
         if (model == null) {
-            throw new IllegalArgumentException("Model must not be null.");
+        	throw new EnvironmentModelParseException("Model must not be null.");
         }
 
         //Try to parse the model
-        EnvironmentModelParseResult parseResult;
-        try {
-            parseResult = parseModel(model);
-        } catch (Exception e) {
-            //Parsing failed
-            return new ActionResponse(false, "Could not parse model.");
-        }
-
+        EnvironmentModelParseResult parseResult = parseModel(model);
         //Check if errors occurred while parsing
-        if (parseResult.hasErrors()) {
-            //Transform errors to action response
-            return getActionResponseFromParseResult(parseResult);
-        }
-
+        checkParseResult(parseResult);
+        
         //Unregister all components that have been previously registered
         unregisterEntities(model);
 
@@ -222,14 +226,7 @@ public class EnvironmentModelService {
             Device device = entry.getValue();
 
             //Register device and obtain ID
-            String deviceId;
-            try {
-                deviceId = registerDevice(device);
-            } catch (Exception e) {
-                //Unregister all entities on failure
-                unregisterEntities(model);
-                return new ActionResponse(false, "Failed to register entities.");
-            }
+            String deviceId = registerDevice(device);
 
             //Update device ID
             device.setId(deviceId);
@@ -265,7 +262,7 @@ public class EnvironmentModelService {
             } catch (Exception e) {
                 //Unregister all entities on failure
                 unregisterEntities(model);
-                return new ActionResponse(false, "Failed to register entities.");
+                throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "The environment model could not be created.");
             }
 
             //Set component ID
@@ -284,27 +281,21 @@ public class EnvironmentModelService {
 
         //Check if something was registered
         if (registeredEntities.isEmpty()) {
-            return new ActionResponse(false, "There are no valid components to register.");
+        	throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "The environment model could not be created.");
         }
-
-        //Success
-        return new ActionResponse(true);
     }
 
     /**
      * Deploys the components of an environment model.
      *
      * @param model The model whose components are supposed to be deployed
-     * @return An action response containing the result of the deployment
+     * @throws DeploymentException 
      */
-    public ActionResponse deployComponents(EnvironmentModel model) {
+    public void deployComponents(EnvironmentModel model) throws DeploymentException {
         //Sanity check
         if (model == null) {
             throw new IllegalArgumentException("Model must not be null.");
         }
-
-        //Remember if deployment was successful (at least one component could be deployed)
-        boolean success = false;
 
         //Map holding all occurred errors
         Map<String, String> deploymentErrors = new HashMap<>();
@@ -346,14 +337,16 @@ public class EnvironmentModelService {
                     //Update deployment error map
                     deploymentErrors.put(nodeId, "Impossible to deploy, device is not available.");
                     continue;
+                case READY:
+                	// TODO: Something to do here?
+                	break;
+                default:
+                	break;
             }
 
             //Try to deploy component
             try {
                 sshDeployer.deployComponent(component);
-
-                //Deployment succeeded
-                success = true;
 
                 //Publish update event
                 publishEntityState(model, nodeId, component, EntityState.DEPLOYED);
@@ -362,28 +355,23 @@ public class EnvironmentModelService {
                 deploymentErrors.put(nodeId, "Deployment failed unexpectedly.");
             }
         }
-
-        //Create action response
-        ActionResponse response = new ActionResponse(success);
-        response.setFieldErrors(deploymentErrors);
-
-        return response;
+        
+        if (!deploymentErrors.isEmpty()) {
+        	throw new DeploymentException("Environment model could not be deployed.", deploymentErrors);
+        }
     }
 
     /**
      * Undeploys the components of an environment model.
      *
      * @param model The model whose components are supposed to be undeployed
-     * @return An action response containing the result of the undeployment
+     * @throws DeploymentException 
      */
-    public ActionResponse undeployComponents(EnvironmentModel model) {
+    public void undeployComponents(EnvironmentModel model) throws DeploymentException {
         //Sanity check
         if (model == null) {
             throw new IllegalArgumentException("Model must not be null.");
         }
-
-        //Remember if undeployment was successful (at least one component could be undeployed)
-        boolean success = false;
 
         //Map holding all occurred errors
         Map<String, String> undeploymentErrors = new HashMap<>();
@@ -415,14 +403,19 @@ public class EnvironmentModelService {
                     //Impossible to undeploy component
                     publishEntityState(model, nodeId, component, EntityState.REGISTERED);
                     continue;
+                case DEPLOYED:
+                	// TODO: Something to do here?
+                	break;
+                case RUNNING:
+                	// TODO: Something to do here?
+                	break;
+                default:
+                	break;
             }
 
             //Try to undeploy component
             try {
                 sshDeployer.undeployComponent(component);
-
-                //Undeployment succeeded
-                success = true;
 
                 //Publish update event
                 publishEntityState(model, nodeId, component, EntityState.REGISTERED);
@@ -432,27 +425,22 @@ public class EnvironmentModelService {
             }
         }
 
-        //Create action response
-        ActionResponse response = new ActionResponse(success);
-        response.setFieldErrors(undeploymentErrors);
-
-        return response;
+        if (!undeploymentErrors.isEmpty()) {
+        	throw new DeploymentException("Environment model could not be undeployed.", undeploymentErrors);
+        }
     }
 
     /**
      * Starts the components of an environment model.
      *
      * @param model The model whose components are supposed to be started
-     * @return An action response containing the result of the starting
+     * @throws DeploymentException 
      */
-    public ActionResponse startComponents(EnvironmentModel model) {
+    public void startComponents(EnvironmentModel model) throws DeploymentException {
         //Sanity check
         if (model == null) {
             throw new IllegalArgumentException("Model must not be null.");
         }
-
-        //Remember if start was successful (at least one component could be started)
-        boolean success = false;
 
         //Map holding all occurred errors
         Map<String, String> startErrors = new HashMap<>();
@@ -491,14 +479,16 @@ public class EnvironmentModelService {
                     //Update deployment error map
                     startErrors.put(nodeId, "Impossible to start, device is not available.");
                     continue;
+                case DEPLOYED:
+                	// TODO: Something to do here?
+                	break;
+                default:
+                	break;
             }
 
             //Try to start component
             try {
                 sshDeployer.startComponent(component, new ArrayList<>());
-
-                //Start succeeded
-                success = true;
 
                 //Publish update event
                 publishEntityState(model, nodeId, component, EntityState.STARTED);
@@ -508,27 +498,22 @@ public class EnvironmentModelService {
             }
         }
 
-        //Create action response
-        ActionResponse response = new ActionResponse(success);
-        response.setFieldErrors(startErrors);
-
-        return response;
+        if (!startErrors.isEmpty()) {
+        	throw new DeploymentException("One or more components of the environment model could not be started.", startErrors);
+        }
     }
 
     /**
      * Stops the components of an environment model.
      *
      * @param model The model whose components are supposed to be stopped
-     * @return An action response containing the result of the stopping
+     * @throws DeploymentException 
      */
-    public ActionResponse stopComponents(EnvironmentModel model) {
+    public void stopComponents(EnvironmentModel model) throws DeploymentException {
         //Sanity check
         if (model == null) {
             throw new IllegalArgumentException("Model must not be null.");
         }
-
-        //Remember if stop was successful (at least one component could be stopped)
-        boolean success = false;
 
         //Map holding all occurred errors
         Map<String, String> stopErrors = new HashMap<>();
@@ -564,50 +549,47 @@ public class EnvironmentModelService {
                     //Impossible to undeploy component
                     publishEntityState(model, nodeId, component, EntityState.REGISTERED);
                     continue;
+                case RUNNING:	
+                	// TODO: Something to do here?
+                	break;
+                default:
+                	break;
             }
 
             //Try to stop component
             try {
                 sshDeployer.stopComponent(component);
 
-                //Stop succeeded
-                success = true;
-
                 //Publish update event
                 publishEntityState(model, nodeId, component, EntityState.DEPLOYED);
             } catch (IOException e) {
                 //Remember error
-                stopErrors.put(nodeId, "Starting failed unexpectedly.");
+                stopErrors.put(nodeId, "Stopping failed unexpectedly.");
             }
         }
 
-        //Create action response
-        ActionResponse response = new ActionResponse(success);
-        response.setFieldErrors(stopErrors);
-
-        return response;
+        if (!stopErrors.isEmpty()) {
+        	throw new DeploymentException("One or more components of the environment model could not be stopped.", stopErrors);
+        }
     }
 
     /**
      * Converts a given parse result object into an action response object by transforming all parse errors.
      *
      * @param parseResult The parse result object to transform
-     * @return The generated action response object
+     * @throws EnvironmentModelParseException 
      */
-    private ActionResponse getActionResponseFromParseResult(EnvironmentModelParseResult parseResult) {
+    private void checkParseResult(EnvironmentModelParseResult parseResult) throws EnvironmentModelParseException {
         //Sanity check
         if (parseResult == null) {
-            throw new IllegalArgumentException("Parse result must not be null.");
+        	throw new MBPException(HttpStatus.BAD_REQUEST, "Could not parse model.");
         }
 
         //Check for errors
         if (!parseResult.hasErrors()) {
             //No errors
-            return new ActionResponse(true);
+            return;
         }
-
-        //Create new action response object
-        ActionResponse actionResponse = new ActionResponse(false);
 
         //Get parse errors
         Map<UserEntity, Errors> parseErrors = parseResult.getErrors();
@@ -634,6 +616,7 @@ public class EnvironmentModelService {
             }
 
             //Iterate over the errors
+            EnvironmentModelParseException e = new EnvironmentModelParseException("One or more errors occurred while parsing the environment model.");
             while (errorIterator.hasNext()) {
                 //Get next error
                 FieldError error = errorIterator.next();
@@ -642,11 +625,12 @@ public class EnvironmentModelService {
                 String fieldName = nodeId + "." + error.getField();
 
                 //Add error to action response
-                actionResponse.addFieldError(fieldName, error.getDefaultMessage());
+                e.addParseError(fieldName, error.getDefaultMessage());
             }
+            throw e;
         }
 
-        return actionResponse;
+        
     }
 
     /**
@@ -665,131 +649,135 @@ public class EnvironmentModelService {
         eventService.publishEvent(model.getId(), updateEvent);
     }
 
-    private EnvironmentModelParseResult parseModel(EnvironmentModel model) throws JSONException {
-        //Sanity check
-        if (model == null) {
-            throw new IllegalArgumentException("Model must not be null.");
-        }
-
-        //Create new result object
-        EnvironmentModelParseResult result = new EnvironmentModelParseResult();
-
-        //Read JSON from model
-        JSONObject jsonObject = new JSONObject(model.getModelJSON());
-
-        //Get all nodes
-        JSONArray nodes = jsonObject.getJSONArray(MODEL_JSON_KEY_NODES);
-
-        //Create entity mapping (node id -> entity object) which is required for parsing connections
-        Map<String, UserEntity> entityMapping = new HashMap<>();
-
-        //Iterate over all nodes to get all devices
-        for (int i = 0; i < nodes.length(); i++) {
-            //Get current node object
-            JSONObject nodeObject = nodes.getJSONObject(i);
-
-            //Ensure that details are available
-            if (!nodeObject.has(MODEL_JSON_KEY_NODE_DETAILS)) {
-                continue;
-            }
-
-            //Get node ID
-            String nodeID = nodeObject.getString(MODEL_JSON_KEY_NODE_ID);
-
-            //Get node type
-            String nodeType = nodeObject.optString(MODEL_JSON_KEY_NODE_TYPE, "");
-
-            //Unmarshalled user entity
-            UserEntity entity;
-
-            //Validation errors
-            Errors errors;
-
-            //Differentiate between node types
-            if (nodeType.equals(MODEL_NODE_TYPE_DEVICE)) {
-                //Create device object from node object
-                Device device = unmarshallDevice(nodeObject);
-                entity = device;
-
-                //Add device to map
-                entityMapping.put(nodeID, device);
-
-                //Add device to result
-                result.addDevice(device, nodeID);
-
-                //Validate device
-                errors = new BeanPropertyBindingResult(device, "device");
-                deviceValidator.validate(device, errors);
-            } else if (nodeType.equals(MODEL_NODE_TYPE_ACTUATOR) || nodeType.equals(MODEL_NODE_TYPE_SENSOR)) {
-                //Create device object from node object
-                Component component = unmarshallComponent(nodeObject);
-                entity = component;
-
-                //Add component to map
-                entityMapping.put(nodeID, component);
-
-                //Add component to result
-                result.addComponent(component, nodeID);
-
-                //Validate component
-                errors = new BeanPropertyBindingResult(component, "component");
-                if (nodeType.equals(MODEL_NODE_TYPE_ACTUATOR)) {
-                    actuatorValidator.validate(component, errors);
-                } else {
-                    sensorValidator.validate(component, errors);
-                }
-            } else {
-                //Ignore other node types
-                continue;
-            }
-
-            //Set entity owner
-            User owner = userService.getUserWithAuthorities();
-            entity.setOwner(owner);
-
-            //Mark entity as modelled
-            entity.setEnvironmentModel(model);
-
-            //CHeck for errors
-            if (errors.hasErrors()) {
-                result.addErrors(entity, errors);
-            }
-        }
-
-        //Return already if there were errors
-        if (result.hasErrors()) {
-            return result;
-        }
-
-        //Get all connections
-        JSONArray connections = jsonObject.optJSONArray(MODEL_JSON_KEY_CONNECTIONS);
-
-        //Iterate over the connections and parse them one by one
-        for (int i = 0; i < connections.length(); i++) {
-            //Get current connection object
-            JSONObject connectionObject = connections.getJSONObject(i);
-
-            //Get source and target ID
-            String sourceId = connectionObject.optString(MODEL_JSON_KEY_CONNECTION_SOURCE, "");
-            String targetId = connectionObject.optString(MODEL_JSON_KEY_CONNECTION_TARGET, "");
-
-            //Only remember connection if source device and target component exist
-            if (entityMapping.containsKey(sourceId) && entityMapping.containsKey(targetId)) {
-                //Get source and target entity
-                UserEntity sourceEntity = entityMapping.get(sourceId);
-                UserEntity targetEntity = entityMapping.get(targetId);
-
-                //Skip connection if entities are of wrong type
-                if ((!(sourceEntity instanceof Device) || (!(targetEntity instanceof Component)))) {
-                    continue;
-                }
-
-                //Add connection
-                result.addConnection((Device) sourceEntity, (Component) targetEntity);
-            }
-        }
-
-        return result;
+    private EnvironmentModelParseResult parseModel(EnvironmentModel model) throws EnvironmentModelParseException {
+    	try {    		 
+    		//Sanity check
+    		if (model == null) {
+    			throw new IllegalArgumentException("Model must not be null.");
+    		}
+    		
+    		//Create new result object
+    		EnvironmentModelParseResult result = new EnvironmentModelParseResult();
+    		
+    		//Read JSON from model
+    		JSONObject jsonObject = new JSONObject(model.getModelJSON());
+    		
+    		//Get all nodes
+    		JSONArray nodes = jsonObject.getJSONArray(MODEL_JSON_KEY_NODES);
+    		
+    		//Create entity mapping (node id -> entity object) which is required for parsing connections
+    		Map<String, UserEntity> entityMapping = new HashMap<>();
+    		
+    		//Iterate over all nodes to get all devices
+    		for (int i = 0; i < nodes.length(); i++) {
+    			//Get current node object
+    			JSONObject nodeObject = nodes.getJSONObject(i);
+    			
+    			//Ensure that details are available
+    			if (!nodeObject.has(MODEL_JSON_KEY_NODE_DETAILS)) {
+    				continue;
+    			}
+    			
+    			//Get node ID
+    			String nodeID = nodeObject.getString(MODEL_JSON_KEY_NODE_ID);
+    			
+    			//Get node type
+    			String nodeType = nodeObject.optString(MODEL_JSON_KEY_NODE_TYPE, "");
+    			
+    			//Unmarshalled user entity
+    			UserEntity entity;
+    			
+    			//Validation errors
+    			Errors errors;
+    			
+    			//Differentiate between node types
+    			if (nodeType.equals(MODEL_NODE_TYPE_DEVICE)) {
+    				//Create device object from node object
+    				Device device = unmarshallDevice(nodeObject);
+    				entity = device;
+    				
+    				//Add device to map
+    				entityMapping.put(nodeID, device);
+    				
+    				//Add device to result
+    				result.addDevice(device, nodeID);
+    				
+    				//Validate device
+    				errors = new BeanPropertyBindingResult(device, "device");
+    				deviceValidator.validate(device, errors);
+    			} else if (nodeType.equals(MODEL_NODE_TYPE_ACTUATOR) || nodeType.equals(MODEL_NODE_TYPE_SENSOR)) {
+    				//Create device object from node object
+    				Component component = unmarshallComponent(nodeObject);
+    				entity = component;
+    				
+    				//Add component to map
+    				entityMapping.put(nodeID, component);
+    				
+    				//Add component to result
+    				result.addComponent(component, nodeID);
+    				
+    				//Validate component
+    				errors = new BeanPropertyBindingResult(component, "component");
+    				if (nodeType.equals(MODEL_NODE_TYPE_ACTUATOR)) {
+    					actuatorValidator.validate(component, errors);
+    				} else {
+    					sensorValidator.validate(component, errors);
+    				}
+    			} else {
+    				//Ignore other node types
+    				continue;
+    			}
+    			
+    			//Set entity owner
+    			User owner = userService.getLoggedInUser();
+    			entity.setOwner(owner);
+    			
+    			//Mark entity as modelled
+    			entity.setEnvironmentModel(model);
+    			
+    			//CHeck for errors
+    			if (errors.hasErrors()) {
+    				result.addErrors(entity, errors);
+    			}
+    		}
+    		
+    		//Return already if there were errors
+    		if (result.hasErrors()) {
+    			return result;
+    		}
+    		
+    		//Get all connections
+    		JSONArray connections = jsonObject.optJSONArray(MODEL_JSON_KEY_CONNECTIONS);
+    		
+    		//Iterate over the connections and parse them one by one
+    		for (int i = 0; i < connections.length(); i++) {
+    			//Get current connection object
+    			JSONObject connectionObject = connections.getJSONObject(i);
+    			
+    			//Get source and target ID
+    			String sourceId = connectionObject.optString(MODEL_JSON_KEY_CONNECTION_SOURCE, "");
+    			String targetId = connectionObject.optString(MODEL_JSON_KEY_CONNECTION_TARGET, "");
+    			
+    			//Only remember connection if source device and target component exist
+    			if (entityMapping.containsKey(sourceId) && entityMapping.containsKey(targetId)) {
+    				//Get source and target entity
+    				UserEntity sourceEntity = entityMapping.get(sourceId);
+    				UserEntity targetEntity = entityMapping.get(targetId);
+    				
+    				//Skip connection if entities are of wrong type
+    				if ((!(sourceEntity instanceof Device) || (!(targetEntity instanceof Component)))) {
+    					continue;
+    				}
+    				
+    				//Add connection
+    				result.addConnection((Device) sourceEntity, (Component) targetEntity);
+    			}
+    		}
+    		
+    		return result;
+    	} catch (JSONException e) {
+    		throw new EnvironmentModelParseException("Environment model could not be parsed.");
+    	}
     }
 
     /**
@@ -801,7 +789,7 @@ public class EnvironmentModelService {
     private String registerDevice(Device device) {
         //Sanity check
         if (device == null) {
-            throw new IllegalArgumentException("Device must not be null.");
+        	throw new IllegalArgumentException("Device must not be null.");
         }
 
         //Insert device into repository
@@ -854,7 +842,7 @@ public class EnvironmentModelService {
         //Check if a key pair was provided
         if(!deviceDetails.isNull(MODEL_JSON_KEY_DEVICE_KEYPAIR)){
             //Get key pair from repository and set it
-            KeyPair keyPair = keyPairRepository.findOne(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_KEYPAIR));
+            KeyPair keyPair = keyPairRepository.findById(deviceDetails.optString(MODEL_JSON_KEY_DEVICE_KEYPAIR)).get();
             device.setKeyPair(keyPair);
         }
 
@@ -881,9 +869,9 @@ public class EnvironmentModelService {
         component.setName(componentDetails.getString(MODEL_JSON_KEY_NODE_DETAILS_NAME));
         component.setComponentType(nodeObject.getString(MODEL_JSON_KEY_NODE_COMPONENT_TYPE));
 
-        //Find adapter from repository and set it
-        Adapter adapter = adapterRepository.findOne(componentDetails.optString(MODEL_JSON_KEY_COMPONENT_ADAPTER));
-        component.setAdapter(adapter);
+        //Find operator from repository and set it
+        Operator operator = operatorRepository.findById(componentDetails.optString(MODEL_JSON_KEY_COMPONENT_OPERATOR)).get();
+        component.setOperator(operator);
 
         //Set a fake device for passing validation
         component.setDevice(new Device());

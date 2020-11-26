@@ -582,8 +582,8 @@ app.controller('TestingDetailsController',
                     vm.pdfDetails = [];
 
 
-                    if (Object.keys(response.data).length > 0) {
-                        angular.forEach(response.data, function (value, key) {
+                    if (Object.keys(response).length > 0) {
+                        angular.forEach(response, function (value, key) {
                             vm.pdfDetails.push({
                                 "date": key,
                                 "path": value

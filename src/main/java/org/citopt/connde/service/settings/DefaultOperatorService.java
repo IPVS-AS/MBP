@@ -1,18 +1,5 @@
 package org.citopt.connde.service.settings;
 
-import org.apache.commons.io.IOUtils;
-import org.citopt.connde.domain.adapter.Adapter;
-import org.citopt.connde.domain.adapter.Code;
-import org.citopt.connde.domain.adapter.parameters.Parameter;
-import org.citopt.connde.domain.adapter.parameters.ParameterType;
-import org.citopt.connde.repository.AdapterRepository;
-import org.citopt.connde.web.rest.response.ActionResponse;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -20,6 +7,19 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
+
+import javax.servlet.ServletContext;
+
+import org.apache.commons.io.IOUtils;
+import org.citopt.connde.domain.operator.Operator;
+import org.citopt.connde.domain.operator.Code;
+import org.citopt.connde.domain.operator.parameters.Parameter;
+import org.citopt.connde.domain.operator.parameters.ParameterType;
+import org.citopt.connde.repository.OperatorRepository;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * This service provides means for the management of default operators that may be added to the operator repository
@@ -35,7 +35,7 @@ public class DefaultOperatorService {
     private List<String> defaultOperatorWhitelist;
 
     @Autowired
-    private AdapterRepository adapterRepository;
+    private OperatorRepository operatorRepository;
 
     private static final String DESCRIPTOR_FILE = "operator.json";
 
@@ -45,7 +45,7 @@ public class DefaultOperatorService {
      *
      * @return An action response containing the result of this operation
      */
-    public ActionResponse addDefaultOperators() {
+    public boolean addDefaultOperators() {
 
         //Remembers if an operator was inserted
         boolean inserted = false;
@@ -53,7 +53,7 @@ public class DefaultOperatorService {
         //Iterate over all default operator paths
         for (String operatorPath : defaultOperatorWhitelist) {
             //Create new operator object to add it later to the repository
-            Adapter newOperator = new Adapter();
+            Operator newOperator = new Operator();
 
             //New operator is not owned by anyone
             newOperator.setOwner(null);
@@ -149,7 +149,7 @@ public class DefaultOperatorService {
                 }
 
                 //Insert new operator into repository
-                adapterRepository.insert(newOperator);
+                operatorRepository.insert(newOperator);
                 inserted = true;
 
             } catch (Exception e) {
@@ -157,6 +157,6 @@ public class DefaultOperatorService {
             }
         }
 
-        return new ActionResponse(inserted);
+        return inserted;
     }
 }

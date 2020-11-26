@@ -1,8 +1,6 @@
 package org.citopt.connde.domain.device;
 
-import org.citopt.connde.repository.DeviceRepository;
 import org.citopt.connde.util.Validation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
@@ -14,13 +12,6 @@ import org.springframework.validation.Validator;
  */
 @org.springframework.stereotype.Component
 public class DeviceValidator implements Validator {
-
-    private static DeviceRepository deviceRepository;
-
-    @Autowired
-    public void setDeviceRepository(DeviceRepository deviceRepository) {
-        DeviceValidator.deviceRepository = deviceRepository;
-    }
 
     /**
      * Checks whether the validator can be applied to objects of a given class. However, this validator can
@@ -41,7 +32,7 @@ public class DeviceValidator implements Validator {
      * @param errors The errors object to add the error messages to
      */
     @Override
-    public void validate(Object o, Errors errors) {
+    public void validate(Object o, Errors errors) { // userData
         //Cast to device
         Device device = (Device) o;
 

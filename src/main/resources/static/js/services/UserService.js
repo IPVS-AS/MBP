@@ -1,69 +1,45 @@
-(function() {
-  'use strict';
+/**
+ * Provides services for managing users.
+ */
+app.factory('UserService', ['$rootScope', 'HttpService', 'ENDPOINT_URI', 'BASE_URI',
+    function ($rootScope, HttpService, ENDPOINT_URI, BASE_URI) {
 
-  angular
-    .module('app')
-    .factory('UserService', UserService);
+        function authenticate(user) {
+            return HttpService.postRequest(ENDPOINT_URI + '/users/authenticate', user);
+        }
 
-  UserService.$inject = ['$http', 'ENDPOINT_URI', 'BASE_URI'];
+        function logout() {
+            return HttpService.getRequest(BASE_URI + 'logout');
+        }
 
-  function UserService($http, ENDPOINT_URI, BASE_URI) {
-    var service = {};
+        function getAll() {
+            return HttpService.getRequest(ENDPOINT_URI + '/users');
+        }
 
-    service.Authenticate = Authenticate;
-    service.Logout = Logout;
-    service.GetAll = GetAll;
-    service.GetByUsername = GetByUsername;
-    service.Create = Create;
-    service.Update = Update;
-    service.Delete = Delete;
+        function getByUsername(username) {
+            return HttpService.getRequest(ENDPOINT_URI + '/users/' + username);
+        }
 
-    return service;
+        function createUser(user) {
+            return HttpService.postRequest(ENDPOINT_URI + '/users', user);
+        }
 
-    function Authenticate(user) {
-      return $http.post(ENDPOINT_URI + '/authenticate', user).then(handleSuccess, handleError);
-    }
+        function updateUser(user) {
+            return HttpService.putRequest(ENDPOINT_URI + '/users/', user);
+        }
 
-    function Logout() {
-      return $http.get(BASE_URI + 'logout').then(handleSuccess, handleError);
-    }
+        function deleteUser(username) {
+            return HttpService.deleteRequest(ENDPOINT_URI + '/users/' + username);
+        }
 
-    function GetAll() {
-      return $http.get(ENDPOINT_URI + '/users').then(handleSuccess, handleError);
-    }
-
-    function GetByUsername(username) {
-      return $http.get(ENDPOINT_URI + '/users/' + username).then(handleSuccess, handleError);
-    }
-
-    function Create(user) {
-      return $http.post(ENDPOINT_URI + '/users', user).then(handleSuccess, handleError);
-    }
-
-    function Update(user) {
-      return $http.put(ENDPOINT_URI + '/users/', user).then(handleSuccess, handleError);
-    }
-
-    function Delete(username) {
-      return $http.delete(ENDPOINT_URI + '/users/' + username).then(handleSuccess, handleError);
-    }
-
-    function handleSuccess(res) {
-      return {
-        success: true,
-        message: res.headers('X-MBP-alert'),
-        data: res.data
-      };
-    }
-
-    function handleError(res) {
-      return {
-        success: false,
-        message: res.headers('X-MBP-error'),
-        status: res.status
-      };
-
-    }
-  }
-
-})();
+        //Expose
+        return {
+            Authenticate: authenticate,
+            Logout: logout,
+            GetAll: getAll,
+            GetByUsername: getByUsername,
+            Create: createUser,
+            Update: updateUser,
+            Delete: deleteUser
+        };
+    }]);

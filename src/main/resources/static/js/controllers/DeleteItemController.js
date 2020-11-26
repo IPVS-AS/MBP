@@ -2,9 +2,9 @@
 
 'use strict';
 
-app.controller('DeleteItemController', ['deleteItem', 'confirmDeletion', 'NotificationService',
-    function (deleteItem, confirmDeletion, NotificationService) {
-        var vm = this;
+app.controller('DeleteItemController', ['$rootScope', 'deleteItem', 'confirmDeletion', 'NotificationService',
+    function ($rootScope, deleteItem, confirmDeletion, NotificationService) {
+        let vm = this;
 
         /**
          * [Public]
@@ -37,7 +37,7 @@ app.controller('DeleteItemController', ['deleteItem', 'confirmDeletion', 'Notifi
             vm.item.errors = {};
 
             //Create deletion request and return the resulting promise
-            return deleteItem(vm.item).then(
+            return deleteItem(vm.item.id).then(
                 function (data) {
                     //Success
                     vm.result = data;
@@ -54,9 +54,11 @@ app.controller('DeleteItemController', ['deleteItem', 'confirmDeletion', 'Notifi
                     vm.item.errors = errors;
 
                     //Notify the user
-                    NotificationService.notify('Could not delete entity', 'error');
+                    //NotificationService.notify('Could not delete entity.', 'error');
                 }
-            );
+            ).then(function (){
+                $rootScope.$digest();
+            });
         }
 
         //Expose

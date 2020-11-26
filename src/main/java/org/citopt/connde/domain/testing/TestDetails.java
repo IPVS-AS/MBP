@@ -2,7 +2,7 @@ package org.citopt.connde.domain.testing;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
+import org.citopt.connde.domain.operator.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.rules.Rule;
 import org.springframework.data.annotation.Id;

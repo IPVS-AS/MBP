@@ -107,10 +107,10 @@ app.controller('KeyPairListController',
             function generateKeyPair() {
                 KeyPairService.generate(vm.generation.name).then(function (response) {
                     //Sanity check
-                    if (!response.data) {
+                    if (!response) {
                         return;
                     }
-                    vm.keyPairListCtrl.pushItem(response.data);
+                    vm.keyPairListCtrl.pushItem(response);
                     vm.generation.error = false;
 
                     NotificationService.notify("Successfully generated a new key.", "success");
@@ -156,7 +156,7 @@ app.controller('KeyPairListController',
                             "using this key pair and will be deleted as well:</strong><br/>";
 
                         //Iterate over all affected components
-                        for (var i = 0; i < result.data.length; i++) {
+                        for (let i = 0; i < result.data.length; i++) {
                             affectedWarning += "- ";
                             affectedWarning += result.data[i].name;
                             affectedWarning += "<br/>";
@@ -165,7 +165,7 @@ app.controller('KeyPairListController',
 
                     //Show the alert to the user and return the resulting promise
                     return Swal.fire({
-                        title: 'Delete adapter',
+                        title: 'Delete key pair',
                         type: 'warning',
                         html: "Are you sure you want to delete the key pair \"" +
                             keyPairName + "\"?" + affectedWarning,
@@ -188,6 +188,7 @@ app.controller('KeyPairListController',
                 addKeyPairCtrl: $controller('AddItemController as addKeyPairCtrl',
                     {
                         $scope: $scope,
+                        entity: 'key pair',
                         addItem: addKeyPair
                     }),
                 deleteKeyPairCtrl: $controller('DeleteItemController as deleteKeyPairCtrl',

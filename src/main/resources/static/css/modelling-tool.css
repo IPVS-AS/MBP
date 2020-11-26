@@ -1,0 +1,530 @@
+/* ---------------------------------------------------------------------------------------------------- */
+/* --- Tool --------------------------------------------------------------------------------------------*/
+/* ---------------------------------------------------------------------------------------------------- */
+#modelingToolView {
+    width: 100%;
+    white-space: nowrap;
+    /* box-shadow: 1px 1px 1px 1px grey; */
+    height: 100%;
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* --- tool-header -------------------------------------------------------------------------------------*/
+/* ---------------------------------------------------------------------------------------------------- */
+/* Style the tool-header with a grey background and some padding */
+.tool-header {
+    overflow: hidden;
+    /*   box-shadow: 1px 1px 1px 1px #e9e8e4; */
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center center;
+    /*   background-image: url('../images/model/white-background.jpg'); */
+    margin-bottom: 15px;
+    padding: 2px;
+}
+
+/* Float the link section to the right */
+.tool-header-right {
+    float: right;
+}
+
+.tool-header-left {
+    float: left;
+}
+
+.tool-button {
+    position: relative;
+    z-index: 2;
+    padding: 1px 14px;
+    margin: 10px auto;
+    transition: transform 0.3s;
+    border-radius: 50px;
+    background-color: transparent;
+    font-size: 12px;
+}
+
+/* Add media queries for responsiveness - when the screen is 500px wide or less, stack the links on top of each other */
+@media screen and (max-width: 500px) {
+    .tool-header-right {
+        float: none;
+    }
+}
+
+.tool-header-navbar-brand {
+    height: 50px;
+    padding: 15px 15px;
+    font-size: 18px;
+    line-height: 50px;
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* --- jsPlumb ---------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------------- */
+.jtk-main {
+    background-color: #dce0e8;
+    font-family: Arial, sans-serif;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 1500px;
+    position: relative;
+}
+
+.jtk-main .description {
+    font-size: 13px;
+    margin-top: 25px;
+    padding: 13px;
+    margin-bottom: 22px;
+    background-color: #f4f5ef;
+}
+
+.jtk-main .description li {
+    list-style-type: disc !important;
+}
+
+.jtk-canvas {
+    height: 442px;
+    max-height: 700px;
+    border: 1px solid #CCC;
+    background-color: white;
+}
+
+.canvas-wide {
+    margin-left: 0;
+}
+
+li {
+    list-style-type: none;
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* --- jquery-ui -------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------------- */
+.ui-icon {
+    background-image: none !important;
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* --- Font Awesome icons ----------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------------- */
+.icon-stack {
+    position: relative;
+    display: inline-block;
+    width: 1.3em;
+    height: 1.3em;
+    line-height: 1.3em;
+    vertical-align: middle;
+}
+
+.icon-stack-1x,
+.icon-stack-2x,
+.icon-stack-3x {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.icon-stack-1x {
+    line-height: inherit;
+    font-size: 0.9em;
+}
+
+.icon-stack-2x {
+    font-size: 1.2em;
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* --- jsPlumb modeling-tool -------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------------- */
+.demo {
+    /* for IE10+ touch devices */
+    touch-action: none;
+}
+
+#canvas {
+    z-index: 1;
+}
+
+.canvasPalette {
+    overflow: scroll;
+}
+
+.modeling-tool .window {
+    width: 50px;
+    height: 50px;
+    line-height: 40px;
+    cursor: move;
+}
+
+.modeling-tool .window .ui-resizable-handle {
+    width: 12px;
+    height: 12px;
+    border-radius: 20px;
+    background-color: #2196f3;
+    border: 1px solid white;
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-n {
+    left: calc(50% - 6px);
+    top: -7px;
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-e {
+    right: -7px;
+    top: calc(50% - 6px);
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-s {
+    left: calc(50% - 6px);
+    bottom: -7px;
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-w {
+    left: -7px;
+    top: calc(50% - 6px);
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-ne {
+    right: -7px;
+    top: -7px;
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-se {
+    right: -7px;
+    bottom: -7px;
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-sw {
+    left: -7px;
+    bottom: -7px;
+}
+
+.modeling-tool .window .ui-resizable-handle.ui-resizable-nw {
+    left: -7px;
+    top: -7px;
+}
+
+.modeling-tool .window.clicked-element {
+    outline: 2px dashed #2196f3;
+}
+
+.modeling-tool .jtk-connector {
+    z-index: 22;
+}
+
+.modeling-tool .jtk-endpoint, path {
+    z-index: 21;
+    cursor: pointer;
+}
+
+.aLabel {
+    -webkit-transition: background-color 0.25s ease-in;
+    -moz-transition: background-color 0.25s ease-in;
+    transition: background-color 0.25s ease-in;
+    -webkit-user-modify: read-write;
+    -moz-user-modify: read-write;
+    user-modify: read-write;
+}
+
+.aLabel {
+    background-color: white;
+    opacity: 0.8;
+    padding: 0.2em;
+    border-radius: 0.5em;
+    border: 1px solid grey;
+    cursor: text;
+    font-size: 10px;
+    z-index: 23;
+}
+
+.error-element {
+    box-shadow: 2px 2px 19px #444;
+    -o-box-shadow: 2px 2px 19px #444;
+    -webkit-box-shadow: 2px 2px 19px #444;
+    -moz-box-shadow: 2px 2px 19px #444;
+    border: 2px solid red;
+}
+
+.success-element {
+    box-shadow: 2px 2px 19px #444;
+    -o-box-shadow: 2px 2px 19px #444;
+    -webkit-box-shadow: 2px 2px 19px #444;
+    -moz-box-shadow: 2px 2px 19px #444;
+    border: 2px solid green;
+}
+
+.deployed-element {
+    box-shadow: 2px 2px 19px #444;
+    -o-box-shadow: 2px 2px 19px #444;
+    -webkit-box-shadow: 2px 2px 19px #444;
+    -moz-box-shadow: 2px 2px 19px #444;
+    border: 2px solid orange;
+}
+
+.ep {
+    position: absolute;
+    bottom: 37%;
+    right: 0;
+    width: 30%;
+    height: 30%;
+    background-color: green;
+    cursor: pointer;
+    box-shadow: 0 0 2px black;
+    -webkit-transition: -webkit-box-shadow 0.25s ease-in;
+    -moz-transition: -moz-box-shadow 0.25s ease-in;
+    transition: box-shadow 0.25s ease-in;
+}
+
+.ep:hover {
+    box-shadow: 2px 2px 19px black;
+}
+
+.modeling-tool .status-indicator {
+    margin-left: 1px;
+    margin-top: 1px;
+    width: 8px;
+    height: 8px;
+    border-radius: 12px;
+    background-color: black;
+    box-shadow: 1px 1px 5px black;
+}
+
+.modeling-tool .status-indicator.registered {
+    background-color: yellow;
+}
+
+.modeling-tool .status-indicator.deployed {
+    background-color: blue;
+}
+
+.modeling-tool .status-indicator.started {
+    background-color: green;
+    animation: pulse 2s infinite;
+}
+
+.modeling-tool .status-indicator.error {
+    background-color: red;
+}
+
+.modeling-tool .component-value {
+    position: absolute;
+    width: 50px;
+    height: 20px;
+    font-size: 20px;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+    }
+
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+    }
+
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+/* --- Floorplans --------------------------------------------------------------------------------------- */
+.floorplan {
+}
+
+.room-floorplan {
+    text-align: center;
+    display: inline-block;
+    z-index: 2;
+    border: 7px solid black;
+}
+
+.room-floorplan .ui-resizable-handle.ui-resizable-n, .room-floorplan .ui-resizable-handle.ui-resizable-ne, .room-floorplan .ui-resizable-handle.ui-resizable-nw {
+    top: -14px !important;
+}
+
+.room-floorplan .ui-resizable-handle.ui-resizable-s, .room-floorplan .ui-resizable-handle.ui-resizable-se, .room-floorplan .ui-resizable-handle.ui-resizable-sw {
+    bottom: -14px !important;
+}
+
+.room-floorplan .ui-resizable-handle.ui-resizable-e, .room-floorplan .ui-resizable-handle.ui-resizable-ne, .room-floorplan .ui-resizable-handle.ui-resizable-se {
+    right: -14px !important;
+}
+
+.room-floorplan .ui-resizable-handle.ui-resizable-w, .room-floorplan .ui-resizable-handle.ui-resizable-nw, .room-floorplan .ui-resizable-handle.ui-resizable-sw {
+    left: -14px !important;
+}
+
+.wall-floorplan {
+    background-color: black;
+    text-align: center;
+    display: inline-block;
+    z-index: 3;
+}
+
+.door-floorplan {
+    background-image: url("../images/model/door-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 9;
+}
+
+.window-floorplan {
+    background-image: url("../images/model/window-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 9;
+}
+
+.stairs-floorplan {
+    background-image: url("../images/model/stairs-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 3;
+}
+
+.table-floorplan {
+    background-image: url("../images/model/table-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 8;
+}
+
+.chair-floorplan {
+    background-image: url("../images/model/chair-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 7;
+}
+
+.couch-floorplan {
+    background-image: url("../images/model/couch-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 6;
+}
+
+.bed-floorplan {
+    background-image: url("../images/model/bed-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 6;
+}
+
+.kitchen-sink-floorplan {
+    background-image: url("../images/model/kitchen-sink-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 6;
+}
+
+.bathtub-floorplan {
+    background-image: url("../images/model/bathtub-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 6;
+}
+
+.bath-sink-floorplan {
+    background-image: url("../images/model/bath-sink-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 6;
+}
+
+.toilet-floorplan {
+    background-image: url("../images/model/toilet-floorplan.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 6;
+}
+
+/* --- device, actuator, sensor --------------------------------------------------------------------------- */
+.device, .actuator, .sensor {
+    border-radius: 10px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    text-align: center;
+    display: inline-block;
+    z-index: 11;
+}
+
+/* ---------------------------------------------------------------------------------------------------- */
+/* --- Remainder -------------------------------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------------------------------- */
+#toolPalette .panel-body {
+    height: 270px;
+}
+
+#toolPalette .panel-footer {
+    height: 50px;
+}
+
+#toolCanvasContainer {
+    position: relative;
+    width: calc(100% - 220px);
+    display: inline-block;
+    vertical-align: top;
+}
+
+.markingRectContainer {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 9999999;
+}
+
+.markingRect {
+    position: absolute;
+    pointer-events: none;
+    z-index: 99999;
+    border: 1px solid #0000FF;
+    background-color: #0077FF;
+    opacity: 0.3;
+}
+
+.dragList {
+    padding: 2px;
+}
+
+.dragList li {
+    margin-bottom: 10px;
+    text-align: center;
+}

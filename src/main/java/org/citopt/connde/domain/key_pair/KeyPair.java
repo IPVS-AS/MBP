@@ -1,18 +1,24 @@
 package org.citopt.connde.domain.key_pair;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import javax.persistence.GeneratedValue;
+
+import org.citopt.connde.domain.user_entity.MBPEntity;
 import org.citopt.connde.domain.user_entity.UserEntity;
+import org.citopt.connde.service.KeyPairDeleteValidator;
 import org.springframework.data.annotation.Id;
 
-import javax.persistence.GeneratedValue;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * Document class for RSA key pairs. Key pairs are named user entities and consist out of a public and a private key.
  */
+@MBPEntity(deleteValidator = KeyPairDeleteValidator.class)
 @ApiModel(description = "Model for RSA key pairs")
 public class KeyPair extends UserEntity {
+	
     @Id
     @GeneratedValue
     @ApiModelProperty(notes = "Key pair ID", example = "5c8f7ad66f9e3c1bacb0fa99", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
@@ -43,8 +49,9 @@ public class KeyPair extends UserEntity {
      *
      * @param id The ID to set
      */
-    public void setId(String id) {
+    public KeyPair setId(String id) {
         this.id = id;
+        return this;
     }
 
     /**
@@ -61,8 +68,9 @@ public class KeyPair extends UserEntity {
      *
      * @param name The name to set
      */
-    public void setName(String name) {
+    public KeyPair setName(String name) {
         this.name = name;
+        return this;
     }
 
     /**
@@ -79,8 +87,9 @@ public class KeyPair extends UserEntity {
      *
      * @param publicKey The public key to set
      */
-    public void setPublicKey(String publicKey) {
+    public KeyPair setPublicKey(String publicKey) {
         this.publicKey = publicKey;
+        return this;
     }
 
     /**
@@ -97,8 +106,9 @@ public class KeyPair extends UserEntity {
      *
      * @param privateKey The private key to set
      */
-    public void setPrivateKey(String privateKey) {
+    public KeyPair setPrivateKey(String privateKey) {
         this.privateKey = privateKey;
+        return this;
     }
 
     /**

@@ -1,7 +1,17 @@
 package org.citopt.connde.web.rest;
 
-import org.citopt.connde.RestConfiguration;
-import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.citopt.connde.domain.operator.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.testing.TestDetails;
@@ -10,26 +20,27 @@ import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.service.testing.GraphPlotter;
 import org.citopt.connde.service.testing.TestEngine;
 import org.citopt.connde.service.testing.TestReport;
+import org.citopt.connde.web.rest.helper.DeploymentWrapper;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
-@RestController
-@RequestMapping(value = RestConfiguration.BASE_PATH)
+
+
 public class TestingController {
     @Autowired
-    private RestDeploymentController restDeploymentController;
+    private DeploymentWrapper deploymentWrapper;
 
     @Autowired
     private TestDetailsRepository testDetailsRepository;
@@ -57,7 +68,7 @@ public class TestingController {
     @PostMapping(value = "/test-details/test/{testId}")
     public String executeTest(@PathVariable(value = "testId") String testId) throws Exception {
 
-        TestDetails testDetails = testDetailsRepository.findOne(testId);
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
 
         // Set the exact start time of the test
         testDetails.setStartTestTimeNow();
@@ -71,7 +82,7 @@ public class TestingController {
 
         // Check the test for success
         testEngine.testSuccess(testId);
-        TestDetails testDetails3 = testDetailsRepository.findOne(testId);
+        TestDetails testDetails3 = testDetailsRepository.findById(testId).get();
 
         // Create test report with graph of sensor values and pdf
         graphPlotter.createTestReport(testDetails3);
@@ -100,7 +111,7 @@ public class TestingController {
 
     @GetMapping(value = "/test-details/ruleList/{testId}")
     public List<Rule> ruleList(@PathVariable(value = "testId") String testId) throws IOException {
-        TestDetails testDetails = testDetailsRepository.findOne(testId);
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
 
         // get  informations about the status of the rules before the execution of the test
         return testEngine.getStatRulesBefore(testDetails);
@@ -125,7 +136,7 @@ public class TestingController {
      */
     @GetMapping(value = "/test-details/pdfExists/{testId}")
     public boolean pdfExists(@PathVariable(value = "testId") String testId) {
-        TestDetails test = testDetailsRepository.findById(testId);
+        TestDetails test = testDetailsRepository.findById(testId).get();
         return test.isPdfExists();
     }
 
@@ -138,10 +149,10 @@ public class TestingController {
      */
     @PostMapping(value = "/test-details/test/stop/{testId}")
     public ResponseEntity<Boolean> stopTest(@PathVariable(value = "testId") String testId) {
-        TestDetails test = testDetailsRepository.findById(testId);
+        TestDetails test = testDetailsRepository.findById(testId).get();
         // Stop every sensor running for the specific test
         for (Sensor sensor : test.getSensor()) {
-            restDeploymentController.stopSensor(sensor.getId());
+            deploymentWrapper.stopComponent(sensor);
         }
 
         return new ResponseEntity<>(true, HttpStatus.OK);
@@ -160,7 +171,7 @@ public class TestingController {
                                                                     @RequestBody String useNewData) {
 
 
-        TestDetails testDetails = testDetailsRepository.findById(testId);
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
         List<List<ParameterInstance>> configList = testDetails.getConfig();
 
         // Change value for the configuration of every sensor simulator of the test
@@ -182,7 +193,7 @@ public class TestingController {
     public ResponseEntity deleteTestReport(@PathVariable(value = "testId") String testId) {
         ResponseEntity response;
 
-        TestDetails testDetails = testDetailsRepository.findById(testId);
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
 
         if (testDetails.isPdfExists()) {
             Path pathTestReport = Paths.get(testDetails.getPathPDF());
@@ -212,7 +223,7 @@ public class TestingController {
     public HttpEntity<Object> updateTest(@PathVariable(value = "testId") String testId, @RequestBody String test) {
         try {
             ParameterInstance instance;
-            TestDetails testToUpdate = testDetailsRepository.findById(testId);
+            TestDetails testToUpdate = testDetailsRepository.findById(testId).get();
 
             // Clear the configuration and rules field of the specific test
             testToUpdate.getConfig().clear();
@@ -230,7 +241,6 @@ public class TestingController {
                     JSONArray singleConfig = (JSONArray) configEntries.get(i);
                     List<ParameterInstance> newConfigInner = new ArrayList<>();
                     for (int j = 0; j < singleConfig.length(); j++) {
-                        String edöfn = singleConfig.getJSONObject(j).getString("value");
                         instance = new ParameterInstance(singleConfig.getJSONObject(j).getString("name"), singleConfig.getJSONObject(j).getString("value"));
                         newConfigInner.add(instance);
                     }
@@ -248,7 +258,7 @@ public class TestingController {
                 for (int i = 0; i < rules.length(); i++) {
                     Matcher m = pattern.matcher(rules.getString(i));
                     if (m.find()) {
-                        newRules.add(ruleRepository.findById(m.group(1)));
+                        newRules.add(ruleRepository.findById(m.group(1)).get());
                     }
                 }
             }

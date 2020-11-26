@@ -1,9 +1,16 @@
 package org.citopt.connde.service.testing;
 
 
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.PdfWriter;
-import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
+
+import org.citopt.connde.domain.operator.parameters.ParameterInstance;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleAction;
 import org.citopt.connde.domain.testing.TestDetails;
@@ -12,16 +19,19 @@ import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.service.receiver.ValueLogReceiver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.List;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
-
-import java.io.*;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
+import com.itextpdf.text.pdf.PdfWriter;
 
 /**
  * The component TestReport is used for the creation of test reports for tests of applications using the testing-tool
@@ -58,8 +68,8 @@ public class TestReport {
      * @return path where the TestReport can be found
      */
     public String generateTestreport(String testId, java.util.List<Rule> rulesBefore) throws Exception {
-        int counterRules = 0;
-        TestDetails test = testDetailsRepository.findById(testId);
+    	int counterRules = 0;
+    	TestDetails test = testDetailsRepository.findById(testId).get();
         Document doc = new Document();
 
         // Create a new pdf, which is named with the ID of the specific test
@@ -432,7 +442,7 @@ public class TestReport {
         ruleInfos.setWidthPercentage(100f);
         PdfPCell c0;
 
-        Rule ruleAfter = ruleRepository.findByName(rule.getName());
+        Rule ruleAfter = ruleRepository.findByName(rule.getName()).get();
         c0 = new PdfPCell(new Phrase(counterRules + ". Rule: " + rule.getName()));
         c0.setHorizontalAlignment(Element.ALIGN_CENTER);
         c0.setColspan(4);

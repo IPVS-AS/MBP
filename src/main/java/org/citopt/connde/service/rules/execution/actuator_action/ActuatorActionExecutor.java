@@ -69,7 +69,7 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
             String actuatorId = parameters.get(PARAM_KEY_ACTUATOR);
 
             //Check if actuator id is valid
-            if ((actuatorId == null) || actuatorId.isEmpty() || (!actuatorRepository.exists(actuatorId))) {
+            if ((actuatorId == null) || actuatorId.isEmpty() || (!actuatorRepository.existsById(actuatorId))) {
                 errors.rejectValue("parameters", "ruleAction.parameters.invalid",
                         "Invalid actuator selected.");
             }
@@ -120,7 +120,7 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
         String data = parameters.get(PARAM_KEY_DATA);
 
         //Get actuator from repository
-        Actuator actuator = actuatorRepository.get(actuatorId);
+        Actuator actuator = actuatorRepository.findById(actuatorId).get();
 
         //Sanity check
         if (actuator == null) {
