@@ -1,26 +1,23 @@
 package de.ipvs.as.mbp.domain.user;
 
-import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
-
-import java.io.Serializable;
-import java.util.Locale;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.ipvs.as.mbp.constants.Constants;
+import de.ipvs.as.mbp.domain.access_control.ACAttributeValue;
+import de.ipvs.as.mbp.domain.access_control.IACRequestingEntity;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import javax.persistence.GeneratedValue;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
+import java.util.Locale;
 
-import de.ipvs.as.mbp.constants.Constants;
-import de.ipvs.as.mbp.domain.access_control.ACAttributeValue;
-import de.ipvs.as.mbp.domain.access_control.IACRequestingEntity;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 
 /**
  * A user of the MBP.
@@ -60,12 +57,10 @@ public class User implements Serializable, IACRequestingEntity {
     @Field("last_name")
     @ApiModelProperty(notes = "Last name of the user", example = "Doe")
     private String lastName;
-    
+
     @ACAttributeValue
     @ApiModelProperty(notes = "Indicates whether the user is an admin user.", required = true)
     private boolean isAdmin;
-    
-    // - - -
 
     public String getId() {
         return id;
@@ -73,7 +68,7 @@ public class User implements Serializable, IACRequestingEntity {
 
     public User setId(String id) {
         this.id = id;
-		return this;
+        return this;
     }
 
     public String getUsername() {
@@ -81,9 +76,9 @@ public class User implements Serializable, IACRequestingEntity {
     }
 
     public User setUsername(String username) {
-    	// Lowercase the username before saving it in database
+        // Lowercase the username before saving it in database
         this.username = username.toLowerCase(Locale.ENGLISH);
-		return this;
+        return this;
     }
 
     public String getPassword() {
@@ -92,7 +87,7 @@ public class User implements Serializable, IACRequestingEntity {
 
     public User setPassword(String password) {
         this.password = password;
-		return this;
+        return this;
     }
 
     public String getFirstName() {
@@ -101,7 +96,7 @@ public class User implements Serializable, IACRequestingEntity {
 
     public User setFirstName(String firstName) {
         this.firstName = firstName;
-		return this;
+        return this;
     }
 
     public String getLastName() {
@@ -110,17 +105,18 @@ public class User implements Serializable, IACRequestingEntity {
 
     public User setLastName(String lastName) {
         this.lastName = lastName;
-		return this;
+        return this;
     }
-    
+
+    @JsonProperty("isAdmin")
     public boolean isAdmin() {
-    	return isAdmin;
+        return isAdmin;
     }
-    
+
     public User setAdmin(boolean isAdmin) {
-		this.isAdmin = isAdmin;
-		return this;
-	}
+        this.isAdmin = isAdmin;
+        return this;
+    }
 
     @Override
     public boolean equals(Object o) {
