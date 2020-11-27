@@ -79,7 +79,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 controller: 'EnvModelListController as ctrl',
                 resolve: {
                     envModelList: ['HttpService', function (HttpService) {
-                        return HttpService.getAll('env-models');
+                        return HttpService.getAll('env-models', 'environmentModels');
                     }],
                     addEnvModel: ['HttpService', function (HttpService) {
                         return angular.bind(this, HttpService.addOne, 'env-models');

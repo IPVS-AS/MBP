@@ -10,7 +10,6 @@ import org.citopt.connde.domain.access_control.ACAccessRequest;
 import org.citopt.connde.domain.access_control.ACAccessType;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.ComponentRequestDTO;
-import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.error.EntityAlreadyExistsException;
 import org.citopt.connde.error.EntityNotFoundException;
 import org.citopt.connde.error.MissingPermissionException;
@@ -102,7 +101,7 @@ public class RestActuatorController {
     		@ApiResponse(code = 409, message = "Actuator already exists!") })
     public ResponseEntity<EntityModel<Actuator>> create(@RequestBody ComponentRequestDTO requestDto) throws EntityAlreadyExistsException, EntityNotFoundException {
     	// Create actuator from request DTO
-    	Actuator actuator = (Actuator) new Sensor()
+    	Actuator actuator = (Actuator) new Actuator()
     			.setName(requestDto.getName())
     			.setComponentType(requestDto.getComponentType())
     			.setOperator(requestDto.getOperatorId() == null ? null : userEntityService.getForId(operatorRepository, requestDto.getOperatorId()))

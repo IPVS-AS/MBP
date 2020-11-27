@@ -86,8 +86,8 @@ app.controller('EnvModelListController',
                 vm.updateEnvModelCtrl.updateItem().then(function (data) {
                     //Check for success
                     if (vm.updateEnvModelCtrl.success) {
-              //          console.log(data);
-                //        console.log(vm.updateEnvModelCtrl.result)
+                        //          console.log(data);
+                        //        console.log(vm.updateEnvModelCtrl.result)
                     } else {
                         //Failure handling
                         //TODO

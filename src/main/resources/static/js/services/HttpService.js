@@ -318,14 +318,23 @@ app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'Notifica
         /**
          * [Public]
          * Retrieves all entities for a given category and returns the resulting promise.
+         * In general, this function tries to automatically resolve the entity key under which
+         * the embedded entities are included in the server response. However, if this is not possible for
+         * a certain entity type, the matching entity key can be provided as a parameter to this function.
          * @param category The category to retrieve the entities for
+         * @param entityKey The key of the embedded entities in the server response (optional)
          * @returns {*} The resulting promise
          */
-        function getAll(category) {
+        function getAll(category, entityKey) {
             //Perform GET request
             return getRequest(ENDPOINT_URI + "/" + category).then(function (data) {
                 //Extend received object for empty list if none available
                 data._embedded = data._embedded || {};
+
+                //Check if an entity key was provided
+                if ((typeof entityKey !== 'undefined') && data._embedded.hasOwnProperty(entityKey)) {
+                    return data._embedded[entityKey] || [];
+                }
 
                 //Iterate over all properties of the embedded objects
                 for (let key in data._embedded) {

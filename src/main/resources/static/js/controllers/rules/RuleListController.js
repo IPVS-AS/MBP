@@ -9,7 +9,7 @@ app.controller('RuleListController',
         function ($scope, $controller, $interval, ruleList, addRule, deleteRule, ruleActionList, ruleTriggerList,
                   RuleService, NotificationService) {
 
-            var vm = this;
+            let vm = this;
 
             //Expose rule action and trigger lists
             vm.ruleActionList = ruleActionList;
@@ -39,9 +39,9 @@ app.controller('RuleListController',
              */
             function prepareRuleList() {
                 //Extend rule list with further functions
-                for (var i = 0; i < ruleList.length; i++) {
+                for (let i = 0; i < ruleList.length; i++) {
                     //Get current rule
-                    var rule = ruleList[i];
+                    let rule = ruleList[i];
 
                     //Extend rule for toggle function
                     rule.onToggle = createOnToggleFunction(rule.id);
@@ -57,11 +57,11 @@ app.controller('RuleListController',
              * @returns A promise of the user's decision
              */
             function confirmDelete(data) {
-                var ruleId = data.id;
-                var ruleName = "";
+                let ruleId = data.id;
+                let ruleName = "";
 
                 //Determines the rule's name by checking the list
-                for (var i = 0; i < ruleList.length; i++) {
+                for (let i = 0; i < ruleList.length; i++) {
                     if (ruleId === ruleList[i].id) {
                         ruleName = ruleList[i].name;
                         break;
@@ -79,123 +79,123 @@ app.controller('RuleListController',
                         cancelButtonText: 'Cancel'
                     });
                 }
-
-                /**
-                 * [Private]
-                 * Returns a function that toggles the enable state for a rule with a certain id.
-                 * @param ruleId The id of rule
-                 * @returns {Function}
-                 */
-                function createOnToggleFunction(ruleId) {
-                    //Create function and return it
-                    return function () {
-                        //Try to find a rule with this id
-                        var rule = null;
-                        for (var i = 0; i < ruleList.length; i++) {
-                            if (ruleList[i].id == ruleId) {
-                                rule = ruleList[i];
-                            }
-                        }
-                        //Rule not found?
-                        if (rule == null) {
-                            return;
-                        }
-
-                        //Check what the user wants
-                        if (rule.enabled) {
-                            //Enable rule
-                            RuleService.enableRule(rule.id).then(function (response) {
-                                //Success, check if every thing worked well
-                                if (!response.success) {
-                                    rule.enabled = false;
-                                    NotificationService.notify('Error while enabling rule: '
-                                        + response.globalMessage, 'error');
-                                    return;
-                                }
-                                //Notify user
-                                rule.enabled = true;
-                                NotificationService.notify('Rule enabled successfully.', 'success');
-                            }, function () {
-                                //Failure
-                                rule.enabled = false;
-                                NotificationService.notify('Failed to enable rule. Do all components still exist?', 'error');
-                            });
-                        } else {
-                            //Disable rule
-                            RuleService.disableRule(rule.id).then(function (response) {
-                                //Success, check if every thing worked well
-                                if (!response.success) {
-                                    rule.enabled = true;
-                                    NotificationService.notify('Error while disabling rule: '
-                                        + response.globalMessage, 'error');
-                                    return;
-                                }
-                                //Notify user
-                                rule.enabled = false;
-                                NotificationService.notify('Rule disabled successfully.', 'success');
-                            }, function () {
-                                //Failure
-                                rule.enabled = true;
-                                NotificationService.notify('Failed to disable rule.', 'error');
-                            });
-                        }
-                    };
-                }
-
-                //Expose controllers
-                angular.extend(vm, {
-                    ruleListCtrl: $controller('ItemListController as ruleListCtrl', {
-                        $scope: $scope,
-                        list: ruleList
-                    }),
-                    addRuleCtrl: $controller('AddItemController as addRuleCtrl', {
-                        $scope: $scope,
-                        entity: 'rule',
-                        addItem: addRule
-                    }),
-                    deleteRuleCtrl: $controller('DeleteItemController as deleteRuleCtrl', {
-                        $scope: $scope,
-                        deleteItem: deleteRule,
-                        confirmDeletion: confirmDelete
-                    })
-                });
-
-                //Watch addition of rules and add them to the list
-                $scope.$watch(
-                    function () {
-                        //Value being watched
-                        return vm.addRuleCtrl.result;
-                    },
-                    function () {
-                        //Callback
-                        var rule = vm.addRuleCtrl.result;
-
-                        //Make sure the result is valid
-                        if (rule) {
-                            //Extend rule for toggle function
-                            rule.onToggle = createOnToggleFunction(rule.id);
-
-                            //Close modal on success
-                            $("#addRuleModal").modal('toggle');
-
-                            //Add rule to list
-                            vm.ruleListCtrl.pushItem(rule);
-                        }
-                    }
-                );
-
-                //Watch deletion of rules and remove them from the list
-                $scope.$watch(
-                    function () {
-                        //Value being watched
-                        return vm.deleteRuleCtrl.result;
-                    },
-                    function () {
-                        //Callback
-                        var id = vm.deleteRuleCtrl.result;
-                        vm.ruleListCtrl.removeItem(id);
-                    }
-                );
             }
+
+            /**
+             * [Private]
+             * Returns a function that toggles the enable state for a rule with a certain id.
+             * @param ruleId The id of rule
+             * @returns {Function}
+             */
+            function createOnToggleFunction(ruleId) {
+                //Create function and return it
+                return function () {
+                    //Try to find a rule with this id
+                    let rule = null;
+                    for (let i = 0; i < ruleList.length; i++) {
+                        if (ruleList[i].id === ruleId) {
+                            rule = ruleList[i];
+                        }
+                    }
+                    //Rule not found?
+                    if (rule == null) {
+                        return;
+                    }
+
+                    //Check what the user wants
+                    if (rule.enabled) {
+                        //Enable rule
+                        RuleService.enableRule(rule.id).then(function (response) {
+                            //Success, check if every thing worked well
+                            if (!response.success) {
+                                rule.enabled = false;
+                                NotificationService.notify('Error while enabling rule: '
+                                    + response.globalMessage, 'error');
+                                return;
+                            }
+                            //Notify user
+                            rule.enabled = true;
+                            NotificationService.notify('Rule enabled successfully.', 'success');
+                        }, function () {
+                            //Failure
+                            rule.enabled = false;
+                            NotificationService.notify('Failed to enable rule. Do all components still exist?', 'error');
+                        });
+                    } else {
+                        //Disable rule
+                        RuleService.disableRule(rule.id).then(function (response) {
+                            //Success, check if every thing worked well
+                            if (!response.success) {
+                                rule.enabled = true;
+                                NotificationService.notify('Error while disabling rule: '
+                                    + response.globalMessage, 'error');
+                                return;
+                            }
+                            //Notify user
+                            rule.enabled = false;
+                            NotificationService.notify('Rule disabled successfully.', 'success');
+                        }, function () {
+                            //Failure
+                            rule.enabled = true;
+                            NotificationService.notify('Failed to disable rule.', 'error');
+                        });
+                    }
+                };
+            }
+
+            //Expose controllers
+            angular.extend(vm, {
+                ruleListCtrl: $controller('ItemListController as ruleListCtrl', {
+                    $scope: $scope,
+                    list: ruleList
+                }),
+                addRuleCtrl: $controller('AddItemController as addRuleCtrl', {
+                    $scope: $scope,
+                    entity: 'rule',
+                    addItem: addRule
+                }),
+                deleteRuleCtrl: $controller('DeleteItemController as deleteRuleCtrl', {
+                    $scope: $scope,
+                    deleteItem: deleteRule,
+                    confirmDeletion: confirmDelete
+                })
+            });
+
+            //Watch addition of rules and add them to the list
+            $scope.$watch(
+                function () {
+                    //Value being watched
+                    return vm.addRuleCtrl.result;
+                },
+                function () {
+                    //Callback
+                    let rule = vm.addRuleCtrl.result;
+
+                    //Make sure the result is valid
+                    if (rule) {
+                        //Extend rule for toggle function
+                        rule.onToggle = createOnToggleFunction(rule.id);
+
+                        //Close modal on success
+                        $("#addRuleModal").modal('toggle');
+
+                        //Add rule to list
+                        vm.ruleListCtrl.pushItem(rule);
+                    }
+                }
+            );
+
+            //Watch deletion of rules and remove them from the list
+            $scope.$watch(
+                function () {
+                    //Value being watched
+                    return vm.deleteRuleCtrl.result;
+                },
+                function () {
+                    //Callback
+                    let id = vm.deleteRuleCtrl.result;
+                    vm.ruleListCtrl.removeItem(id);
+                }
+            );
         }
     ]);
