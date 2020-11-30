@@ -1,5 +1,19 @@
 package org.citopt.connde.service.settings;
 
+import org.apache.commons.io.IOUtils;
+import org.citopt.connde.domain.operator.Code;
+import org.citopt.connde.domain.operator.Operator;
+import org.citopt.connde.domain.operator.parameters.Parameter;
+import org.citopt.connde.domain.operator.parameters.ParameterType;
+import org.citopt.connde.error.MBPException;
+import org.citopt.connde.repository.OperatorRepository;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -7,19 +21,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Set;
-
-import javax.servlet.ServletContext;
-
-import org.apache.commons.io.IOUtils;
-import org.citopt.connde.domain.operator.Operator;
-import org.citopt.connde.domain.operator.Code;
-import org.citopt.connde.domain.operator.parameters.Parameter;
-import org.citopt.connde.domain.operator.parameters.ParameterType;
-import org.citopt.connde.repository.OperatorRepository;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * This service provides means for the management of default operators that may be added to the operator repository
@@ -42,10 +43,8 @@ public class DefaultOperatorService {
     /**
      * Loads default operators from the resources directory and adds them to the operator repository so that they
      * can be used in actuators and sensors by all users.
-     *
-     * @return An action response containing the result of this operation
      */
-    public boolean addDefaultOperators() {
+    public void addDefaultOperators() {
 
         //Remembers if an operator was inserted
         boolean inserted = false;
@@ -75,10 +74,21 @@ public class DefaultOperatorService {
                 String descriptorContent = IOUtils.toString(stream, StandardCharsets.UTF_8);
                 JSONObject descriptorJSON = new JSONObject(descriptorContent);
 
+                //Get operator name
+                String operatorName = descriptorJSON.optString("name");
+
+                //Check if a default entity with this name already exists
+                if (operatorRepository.existsByNameAndDefaultEntity(operatorName, true)) {
+                    continue;
+                }
+
                 //Set operator properties from the descriptor
-                newOperator.setName(descriptorJSON.optString("name"));
+                newOperator.setName(operatorName);
                 newOperator.setDescription(descriptorJSON.optString("description"));
                 newOperator.setUnit(descriptorJSON.optString("unit"));
+
+                //Flag operator as default operator
+                newOperator.setDefaultEntity(true);
 
                 //Get parameters
                 JSONArray parameterArray = descriptorJSON.optJSONArray("parameters");
@@ -126,7 +136,7 @@ public class DefaultOperatorService {
                     //Determine mime type of the file
                     String operatorFileMime = servletContext.getMimeType(operatorFilePath);
 
-                    if((operatorFileMime == null) || (operatorFileMime.isEmpty())){
+                    if ((operatorFileMime == null) || (operatorFileMime.isEmpty())) {
                         operatorFileMime = "application/octet-stream";
                     }
 
@@ -137,7 +147,6 @@ public class DefaultOperatorService {
                     //Convert file content to base64 with mime type prefix
                     String base64String = Base64.getEncoder().encodeToString(operatorFileBytes);
                     base64String = "data:" + operatorFileMime + ";base64," + base64String;
-                    //data:text/x-sh;base64,
 
                     //Create new code object for this file
                     Code newCode = new Code();
@@ -157,6 +166,10 @@ public class DefaultOperatorService {
             }
         }
 
-        return inserted;
+        //Check for failure
+        if (!inserted) {
+            throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "There are no default operators remaining " +
+                    "that could be added.");
+        }
     }
 }

@@ -55,10 +55,10 @@ public class RestSettingsController {
         userEntityService.requireAdmin();
 
         // Call corresponding service function
-        boolean success = defaultOperatorService.addDefaultOperators();
+        defaultOperatorService.addDefaultOperators();
 
         // Respond
-        return ResponseEntity.status(success ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR).build();
+        return ResponseEntity.ok().build();
     }
 
     /**

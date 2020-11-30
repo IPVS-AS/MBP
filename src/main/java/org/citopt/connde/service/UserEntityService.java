@@ -173,7 +173,7 @@ public class UserEntityService {
     	// Retrieve the entity from the database
     	E entity = getForId(repository, entityId);
     	
-    	if (!checkAdmin() && !checkOwner(entity)) {    		
+    	if ((!checkAdmin() && !checkOwner(entity))) {
     		// Not the owner -> check policies
     		requirePermission(repository, entityId, ACAccessType.DELETE, accessRequest);
     	}

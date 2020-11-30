@@ -39,9 +39,7 @@ app.controller('SettingsController',
                     //Success callback
                     NotificationService.notify('The default operators were added successfully.', 'success');
                 }, function (response) {
-                    //Error callback
-                    NotificationService.notify('The default operators could not be added.', 'error');
-                    return $q.reject(response);
+
                 });
             }
 

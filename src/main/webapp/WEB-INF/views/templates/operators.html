@@ -19,57 +19,62 @@
             </div>
             <div class="body">
                 <table class="table table-hover" st-table="displayedCollection" st-safe-src="operatorListCtrl.items">
-                <table class="table table-hover" st-table="displayedCollection" st-safe-src="operatorListCtrl.items">
-                    <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Unit</th>
-                        <th>Parameters</th>
-                        <th>Owner</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
-                        <td>{{item.name}}</td>
-                        <td>{{item.description}}</td>
-                        <td>{{item.unit ? item.unit : 'None'}}</td>
-                        <td>
-                            <button ng-repeat-start="parameter in item.parameters"
-                                    class="btn btn-default" role="button"
-                                    data-html="true" data-toggle="popover"
-                                    data-placement="top" title="{{parameter.name}}"
-                                    data-content="<strong>Type:</strong> {{parameter.type}}<br/>
+                    <table class="table table-hover" st-table="displayedCollection"
+                           st-safe-src="operatorListCtrl.items">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Unit</th>
+                            <th>Parameters</th>
+                            <th>Owner</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                            <td>
+                                <span>{{item.name}}</span>&nbsp;
+                                <i ng-show="item.defaultEntity" title="Default operator"
+                                   class="material-icons" style="vertical-align: bottom;">lock</i>
+                            </td>
+                            <td>{{item.description}}</td>
+                            <td>{{item.unit ? item.unit : 'None'}}</td>
+                            <td>
+                                <button ng-repeat-start="parameter in item.parameters"
+                                        class="btn btn-default" role="button"
+                                        data-html="true" data-toggle="popover"
+                                        data-placement="top" title="{{parameter.name}}"
+                                        data-content="<strong>Type:</strong> {{parameter.type}}<br/>
                                     <strong>Unit:</strong> {{parameter.unit ? parameter.unit : 'None'}}">
-                                {{parameter.name}}
-                            </button>
-                            <span ng-repeat-end="">&nbsp;</span>
-                        </td>
-                        <td>{{item.ownerName ? item.ownerName : "None"}}</td>
-                        <td>
-                            <form ng-submit="deleteOperatorCtrl.deleteItem()"
-                                  style="display: inline-block">
-                                <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
-                                        ng-click="deleteOperatorCtrl.item.id = item.id">
-                                    <i class="material-icons" style="font-size:14px;">delete</i>
+                                    {{parameter.name}}
                                 </button>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr ng-show="operatorListCtrl.items.length === 0">
-                        <td>No operators registered.</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    </tbody>
-                    <tfoot>
-                    <tr>
-                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
-                        </td>
-                    </tr>
-                    </tfoot>
-                </table>
+                                <span ng-repeat-end="">&nbsp;</span>
+                            </td>
+                            <td>{{item.ownerName ? item.ownerName : "None"}}</td>
+                            <td>
+                                <form ng-submit="deleteOperatorCtrl.deleteItem()" style="display: inline-block">
+                                    <button type="submit" ng-hide="item.defaultEntity"
+                                            class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                            ng-click="deleteOperatorCtrl.item.id = item.id">
+                                        <i class="material-icons" style="font-size:14px;">delete</i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr ng-show="operatorListCtrl.items.length === 0">
+                            <td>No operators registered.</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
+                            </td>
+                        </tr>
+                        </tfoot>
+                    </table>
             </div>
         </div>
     </div>
@@ -90,7 +95,8 @@
                         <div class="modal-body">
                             <!-- "global" error for addItem -->
                             <div class="form-group" ng-class="{'has-error' : addOperatorCtrl.item.errors.global}">
-                                <span class="alert alert-danger" ng-show="addOperatorCtrl.item.errors.global"> {{addOperatorCtrl.item.errors.global}} </span>
+                                <span class="alert alert-danger"
+                                      ng-show="addOperatorCtrl.item.errors.global"> {{addOperatorCtrl.item.errors.global}} </span>
                             </div>
                             <!-- item.name group -->
                             <div class="form-group" ng-class="{'has-error' : addOperatorCtrl.item.errors.name }">
@@ -99,7 +105,8 @@
                                     <input class="form-control" id="operator-form-input-name" type="text"
                                            placeholder="Name *" ng-model="addOperatorCtrl.item.name"/>
                                 </div>
-                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.name">{{addOperatorCtrl.item.errors.name.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addOperatorCtrl.item.errors.name">{{addOperatorCtrl.item.errors.name.message}}</span>
                             </div>
                             <!-- item.description group -->
                             <div class="form-group"
@@ -109,7 +116,8 @@
                                     <input class="form-control no-resize" placeholder="Describe this operator..."
                                            ng-model="addOperatorCtrl.item.description">
                                 </div>
-                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.description">{{addOperatorCtrl.item.errors.description.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addOperatorCtrl.item.errors.description">{{addOperatorCtrl.item.errors.description.message}}</span>
                             </div>
                             <!-- item.unit group -->
                             <div class="form-group"
@@ -118,7 +126,8 @@
                                      ng-class="{'focused error' : addOperatorCtrl.item.errors.unit }">
                                     <unit-input ng-model="addOperatorCtrl.item.unit"></unit-input>
                                 </div>
-                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.unit">{{addOperatorCtrl.item.errors.unit.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addOperatorCtrl.item.errors.unit">{{addOperatorCtrl.item.errors.unit.message}}</span>
                             </div>
                             <!-- item.routine group -->
                             <label>Operator scripts: *</label>
@@ -128,20 +137,22 @@
                                     <div class="dropzone" options="ctrl.dzRoutinesOptions"
                                          callbacks="ctrl.dzRoutinesCallbacks" methods="ctrl.dzMethods"
                                          ng-dropzone></div>
-                                     <div style="display:none;">
-                                       <div id='tpl' class="dz-preview dz-file-preview ">
-                                         <div class="dz-details col-lg-4 col-sm-6 col-12">
-                                             <div class="dz-filename"><span data-dz-name></span></div>
-                                             <img data-dz-thumbnail />
-                                         </div>
-                                         <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
-                                         <div class="dz-success-mark"><span>✔</span></div>
-                                         <div class="dz-error-mark"><span>✘</span></div>
-                                         <div class="dz-error-message"><span data-dz-errormessage></span></div>
+                                    <div style="display:none;">
+                                        <div id='tpl' class="dz-preview dz-file-preview ">
+                                            <div class="dz-details col-lg-4 col-sm-6 col-12">
+                                                <div class="dz-filename"><span data-dz-name></span></div>
+                                                <img data-dz-thumbnail/>
+                                            </div>
+                                            <div class="dz-progress"><span class="dz-upload"
+                                                                           data-dz-uploadprogress></span></div>
+                                            <div class="dz-success-mark"><span>✔</span></div>
+                                            <div class="dz-error-mark"><span>✘</span></div>
+                                            <div class="dz-error-message"><span data-dz-errormessage></span></div>
                                         </div>
-                                      </div>
+                                    </div>
                                 </div>
-                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.routines">{{addOperatorCtrl.item.errors.routines.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addOperatorCtrl.item.errors.routines">{{addOperatorCtrl.item.errors.routines.message}}</span>
                             </div>
                             <!-- item.parameters group -->
                             <label>Parameters:</label>
@@ -210,7 +221,8 @@
                                 </div>
                             </div>
                             <!-- item.accessControlPolicyIds group -->
-                            <div class="form-group" ng-class="{'has-error' : addOperatorCtrl.item.errors.accessControlPolicyIds }">
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addOperatorCtrl.item.errors.accessControlPolicyIds }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addOperatorCtrl.item.errors.accessControlPolicyIds }">
                                     <select multiple class="form-control selectpicker" title="Access Control Policies"
@@ -221,7 +233,8 @@
                                         <option/>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.accessControlPolicyIds">{{addOperatorCtrl.item.errors.accessControlPolicyIds.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addOperatorCtrl.item.errors.accessControlPolicyIds">{{addOperatorCtrl.item.errors.accessControlPolicyIds.message}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>
