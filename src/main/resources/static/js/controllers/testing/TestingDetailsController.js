@@ -79,7 +79,6 @@ app.controller('TestingDetailsController',
             }
 
             function disableReuse(){
-                console.log(testingDetails.simulationList.length)
                 if(testingDetails.simulationList === null){
                     console.log("in if")
                     document.getElementById("ReuseSwitch").disabled = true;
