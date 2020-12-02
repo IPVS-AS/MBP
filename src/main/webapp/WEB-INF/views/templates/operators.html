@@ -18,79 +18,63 @@
                 </div>
             </div>
             <div class="body">
-                <div class="row">
-                    <div class="col-lg-8"></div>
-                    <div class="col-lg-4">
-                        <div class="form-group list-filter">
-                            <div class="input-group">
-                                <div class="form-line">
-                                    <input class="form-control ng-pristine ng-valid ng-touched"
-                                           type="text" placeholder="Filter by name..."
-                                           ng-model="operatorListCtrl.filterTerm">
-                                </div>
-                                <span class="input-group-addon">
-                                    <button type="button" class="list-filter-clear"
-                                            ng-show="operatorListCtrl.filterTerm.length > 0"
-                                            ng-click="operatorListCtrl.filterTerm = ''">
-                                        <i class="material-icons">clear</i>
-                                    </button>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <table class="table table-hover" st-table="displayedCollection" st-safe-src="operatorListCtrl.items">
-                    <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th>Unit</th>
-                        <th>Parameters</th>
-                        <th>Owner</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection | filter:operatorListCtrl.nameFilter">
-                        <td>{{item.name}}</td>
-                        <td>{{item.description}}</td>
-                        <td>{{item.unit ? item.unit : 'None'}}</td>
-                        <td>
-                            <button ng-repeat-start="parameter in item.parameters"
-                                    class="btn btn-default" role="button"
-                                    data-html="true" data-toggle="popover"
-                                    data-placement="top" title="{{parameter.name}}"
-                                    data-content="<strong>Type:</strong> {{parameter.type}}<br/>
+                    <table class="table table-hover" st-table="displayedCollection"
+                           st-safe-src="operatorListCtrl.items">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Unit</th>
+                            <th>Parameters</th>
+                            <th>Owner</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                            <td>
+                                <span>{{item.name}}</span>&nbsp;
+                                <i ng-show="item.defaultEntity" title="Default operator"
+                                   class="material-icons" style="vertical-align: bottom;">lock</i>
+                            </td>
+                            <td>{{item.description}}</td>
+                            <td>{{item.unit ? item.unit : 'None'}}</td>
+                            <td>
+                                <button ng-repeat-start="parameter in item.parameters"
+                                        class="btn btn-default" role="button"
+                                        data-html="true" data-toggle="popover"
+                                        data-placement="top" title="{{parameter.name}}"
+                                        data-content="<strong>Type:</strong> {{parameter.type}}<br/>
                                     <strong>Unit:</strong> {{parameter.unit ? parameter.unit : 'None'}}">
-                                {{parameter.name}}
-                            </button>
-                            <span ng-repeat-end="">&nbsp;</span>
-                        </td>
-                        <td>{{item.ownerName ? item.ownerName : "None"}}</td>
-                        <td>
-                            <form ng-submit="deleteOperatorCtrl.deleteItem()"
-                                  style="display: inline-block">
-                                <button type="submit"
-                                        class="btn bg-red btn-circle waves-effect waves-circle waves-float"
-                                        ng-click="deleteOperatorCtrl.item.id = item.id">
-                                    <i class="material-icons" style="font-size:14px;">delete</i>
+                                    {{parameter.name}}
                                 </button>
-                            </form>
-                        </td>
-                    </tr>
-                    <tr ng-show="operatorListCtrl.items.length === 0">
-                        <td>No operators registered.</td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    </tbody>
-                    <tfoot>
-                    <tr>
-                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
-                        </td>
-                    </tr>
-                    </tfoot>
-                </table>
+                                <span ng-repeat-end="">&nbsp;</span>
+                            </td>
+                            <td>{{item.ownerName ? item.ownerName : "None"}}</td>
+                            <td>
+                                <form ng-submit="deleteOperatorCtrl.deleteItem()" style="display: inline-block">
+                                    <button type="submit" ng-hide="item.defaultEntity"
+                                            class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                            ng-click="deleteOperatorCtrl.item.id = item.id">
+                                        <i class="material-icons" style="font-size:14px;">delete</i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr ng-show="operatorListCtrl.items.length === 0">
+                            <td>No operators registered.</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
+                            </td>
+                        </tr>
+                        </tfoot>
+                    </table>
             </div>
         </div>
     </div>
