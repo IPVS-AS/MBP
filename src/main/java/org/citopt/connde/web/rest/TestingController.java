@@ -79,8 +79,8 @@ public class TestingController {
         TestDetails testDetails3 = testDetailsRepository.findOne(testId);
 
         // Create test report with graph of sensor values and pdf
-        graphPlotter.createTestReport(testDetails3);
-        String pdfPath = testReport.generateTestreport(testDetails3.getId(), rulesbefore);
+        graphPlotter.createGraph(testDetails3);
+        String pdfPath = testReport.generateTestReport(testDetails3.getId(), rulesbefore);
         testDetails3.setPathPDF(pdfPath);
         testDetails3.setPdfExists(true);
 

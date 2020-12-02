@@ -530,18 +530,6 @@ public class TestEngine implements ValueLogReceiverObserver {
                 // save list of sensor values to database
                 testDetails2.setSimulationList(valueListTest);
             }
-            /**
-             *
-             else {
-             if (!sensor.getName().contains("RERUN_")) {
-             Sensor rerunSensor = sensorRepository.findByName("RERUN_" + sensor.getName());
-             LinkedHashMap<Long, Double> temp = valueList.get(rerunSensor.getId());
-             valueList.put(sensor.getName(), temp);
-             valueListTest.put(sensor.getName(), temp);
-             list.remove(rerunSensor.getId());
-             }
-             }
-             **/
 
 
         }

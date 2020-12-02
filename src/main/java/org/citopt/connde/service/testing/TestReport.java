@@ -19,9 +19,7 @@ import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * The component TestReport is used for the creation of test reports for tests of applications using the testing-tool
@@ -31,7 +29,7 @@ public class TestReport {
 
 
     @Autowired
-    private TestDetailsRepository testDetailsRepository;
+    TestDetailsRepository testDetailsRepository;
 
     @Autowired
     TestReport testEngine;
@@ -46,33 +44,35 @@ public class TestReport {
     // Date formatter
     final String datePattern = "dd-MM-yyyy HH:mm:ss";
     final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(datePattern);
+
+    // TODO add to a config file?
+    final String[] simSensors = {"TestingTemperaturSensor", "TestingTemperaturSensorPl", "TestingFeuchtigkeitsSensor", "TestingFeuchtigkeitsSensorPl", "TestingBeschleunigungsSensor", "TestingBeschleunigungsSensorPl", "TestingGPSSensor", "TestingGPSSensorPl"};
+
+    // final background colors and fonts
+    final BaseColor lightBlue = new BaseColor(191, 220, 227);
+    final BaseColor darkBlue = new BaseColor(157, 213, 227);
+    final BaseColor darkGrey = new BaseColor(117, 117, 117);
     final Font white = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
-    String[] simSensors = {"TestingTemperaturSensor", "TestingTemperaturSensorPl", "TestingFeuchtigkeitsSensor", "TestingFeuchtigkeitsSensorPl", "TestingBeschleunigungsSensor", "TestingBeschleunigungsSensorPl", "TestingGPSSensor", "TestingGPSSensorPl"};
-
-
+    final Font titleFont = new Font(Font.FontFamily.HELVETICA, 22, Font.BOLD, BaseColor.BLACK);
+    final Font boldUnderlined = new Font(Font.FontFamily.HELVETICA, 17, Font.BOLD | Font.UNDERLINE, BaseColor.BLACK);
 
     /**
-     * Generates the Test-Report with the Chart of the simulated Values and other important informations for the user.
+     * Generates the Test-Report with the Chart of the simulated Values and other important information for the user.
      *
      * @param testId      id of the specific test
      * @param rulesBefore detail information of the selected rules before the test
      * @return path where the TestReport can be found
      */
-    public String generateTestreport(String testId, java.util.List<Rule> rulesBefore) throws Exception {
+    public String generateTestReport(String testId, java.util.List<Rule> rulesBefore) throws Exception {
         int counterRules = 0;
         TestDetails test = testDetailsRepository.findById(testId);
         Document doc = new Document();
 
 
         // Create a new pdf, which is named with the ID of the specific test
-        File tempFile = new File(testId + "_" + test.getEndTimeUnix() + ".pdf");
-        if (tempFile.exists() && tempFile.isFile()) {
-            tempFile.delete();
-        }
         File testReport = new File(testId + "_" + test.getEndTimeUnix() + ".pdf");
         Path wholePath = Paths.get(testReport.getAbsolutePath());
         String path = wholePath.getParent().toString();
-
 
         FileOutputStream pdfFileout = new FileOutputStream(testReport);
         PdfWriter.getInstance(doc, pdfFileout);
@@ -80,40 +80,45 @@ public class TestReport {
 
 
         // Title of the test report
-        String title = "Test-Report: " + test.getName();
-        Font titleFont = new Font(Font.FontFamily.HELVETICA, 22, Font.BOLD, BaseColor.BLACK);
-        Paragraph titel = new Paragraph(title, titleFont);
-        titel.setAlignment(Element.ALIGN_CENTER);
+        Paragraph title = new Paragraph("Test-Report: " + test.getName(), titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
 
 
         // Creating an ImageData object from the graph of sensor values, which was previously created with the GraphPlotter
         Image graphSensorVal = Image.getInstance(testId + ".gif");
         graphSensorVal.setAlignment(Element.ALIGN_CENTER);
 
-        // get information about the success of the test and the start/end times
-        PdfPTable successInfo = getSucessInfo(test);
+        // information about the success of the test and the start/end times
+        PdfPTable successInfo = getGeneralInfo(test);
 
         // Test-Details
-        Font testDetails = new Font(Font.FontFamily.HELVETICA, 17, Font.BOLD | Font.UNDERLINE, BaseColor.BLACK);
-        Paragraph para3 = new Paragraph("Test-Details: ", testDetails);
-        para3.setAlignment(Element.ALIGN_CENTER);
+        Paragraph subtitle = new Paragraph("Test-Details: ", boldUnderlined);
+        subtitle.setAlignment(Element.ALIGN_CENTER);
 
+        // Sensor information
         PdfPTable simulationSensors = getSimulationConfig(test);
         PdfPTable realSensors = getRealSensorConfig(test);
 
-        // Actuator informations
+        // Actuator information
         PdfPTable actuatorInfos = getActuatorInfos();
 
+        // Rule information
+        PdfPTable ruleInfos = getRuleInfos(test);
+        ruleInfos.setSpacingAfter(14f);
+
+        // Rule details
+        PdfPTable ruleDetails = new PdfPTable(4);
+        ruleDetails.setSpacingAfter(15f);
 
         // add all components to the test report pdf
-        doc.add(titel);
+        doc.add(title);
         doc.add(Chunk.NEWLINE);
         doc.add(successInfo);
         doc.add(Chunk.NEWLINE);
         doc.add(Chunk.NEWLINE);
         doc.add(graphSensorVal);
         doc.newPage();
-        doc.add(para3);
+        doc.add(subtitle);
         doc.add(Chunk.NEWLINE);
         doc.add(simulationSensors);
         doc.add(Chunk.NEWLINE);
@@ -121,19 +126,15 @@ public class TestReport {
         doc.add(Chunk.NEWLINE);
         doc.add(actuatorInfos);
         doc.add(Chunk.NEWLINE);
-        // Rule-Information
-        PdfPTable ruleInfos = getRuleInfos(test);
-        ruleInfos.setSpacingAfter(14f);
         doc.add(ruleInfos);
 
-        PdfPTable ruleDetails =  new PdfPTable(4);
-        ruleDetails.setSpacingAfter(15f);
+        // Add new table to get the details for each rule
         for (Rule rule : rulesBefore) {
-            if(test.isUseNewData()){
-                 ruleDetails = getRuleDetails(test, rule, counterRules);
+            if (test.isUseNewData()) {
+                ruleDetails = getRuleDetails(test, rule, counterRules);
                 counterRules += 1;
             } else {
-                if(rule.getName().contains("RERUN_")){
+                if (rule.getName().contains("RERUN_")) {
                     ruleDetails = getRuleDetails(test, rule, counterRules);
                     counterRules += 1;
                 }
@@ -146,268 +147,240 @@ public class TestReport {
     }
 
     /**
-     * Return a table with the success information of the test and the start/end time.
+     * Return a table with the general information of the test (test rerun, success, start/end time).
      *
      * @param test test for which the test report is created
-     * @return table with success and time informations
+     * @return table with general information of the test
      */
-    private PdfPTable getSucessInfo(TestDetails test) {
-        String startTestTime;
-        String endTestTime;
-        Font fontConfig = new Font();
-        Chunk bullet = new Chunk("\u2022", fontConfig);
-        List successful = new List(List.UNORDERED);
-        successful.setListSymbol(bullet);
+    private PdfPTable getGeneralInfo(TestDetails test) {
         String success;
-        PdfPTable successInfo = new PdfPTable(4);
-        successInfo.setWidthPercentage(100f);
+        PdfPTable generalInfo = new PdfPTable(4);
+        generalInfo.setWidthPercentage(100f);
 
+        // information if test was a rerun 
+        if (!test.isUseNewData()) {
+            generalInfo.addCell(tableCell("This was a Test rerun.", lightBlue, 4));
+        }
+
+        // Success of the Test
         if (test.getSuccessful().equals("Successful")) {
             success = "Yes";
         } else {
             success = "No";
         }
 
-        if(!test.isUseNewData()){
-            PdfPCell rerun = new PdfPCell(new Phrase("This was a Test rerun."));
-            rerun.setColspan(4);
-            rerun.setHorizontalAlignment(Element.ALIGN_CENTER);
-            rerun.setBackgroundColor(new BaseColor(191, 220, 227));
-            successInfo.addCell(rerun);
-        }
-
-
-
-
-        PdfPCell c1 = new PdfPCell(new Phrase("Successful"));
-        c1.setColspan(2);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-        successInfo.addCell(c1);
-
-        PdfPCell c2 = new PdfPCell(new Phrase(success));
-        c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c2.setColspan(2);
-        successInfo.addCell(c2);
-
-
-        // List of test times
-        List testTimes = new List(List.UNORDERED);
-        testTimes.setListSymbol(bullet);
-
-        // get the times saved for the specific test
-        startTestTime = simpleDateFormat.format(test.getStartTestTime());
-        endTestTime = simpleDateFormat.format(test.getEndTestTime());
+        generalInfo.addCell(tableCell("Successful", lightBlue, 2));
+        generalInfo.addCell(tableCell(success, null, 2));
 
         //Start-Time pdf
-        c1 = new PdfPCell(new Phrase("Start-Time"));
-        c1.setColspan(2);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-        successInfo.addCell(c1);
-
-        c2 = new PdfPCell(new Phrase(startTestTime));
-        c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c2.setColspan(2);
-        successInfo.addCell(c2);
+        String startTestTime = simpleDateFormat.format(test.getStartTestTime());
+        generalInfo.addCell(tableCell("Start-Time", lightBlue, 2));
+        generalInfo.addCell(tableCell(startTestTime, null, 2));
 
         // End-Time pdf
-        successInfo.setWidthPercentage(100f);
-        c1 = new PdfPCell(new Phrase("End-Time"));
-        c1.setColspan(2);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-        successInfo.addCell(c1);
+        String endTestTime = simpleDateFormat.format(test.getEndTestTime());
+        generalInfo.setWidthPercentage(100f);
+        generalInfo.addCell(tableCell("End-Time", lightBlue, 2));
+        generalInfo.addCell(tableCell(endTestTime, null, 2));
 
-        c2 = new PdfPCell(new Phrase(endTestTime));
-        c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c2.setColspan(2);
-        successInfo.addCell(c2);
-        return successInfo;
+
+        return generalInfo;
+    }
+
+
+    /**
+     * Returns a table with the included sensor simulators within the test and the user defined configurations of them or
+     * a short information if no simulator was included.
+     *
+     * @param test test for which the test report is created
+     * @return table with all sensor simulators and the configurations of them
+     **/
+    private PdfPTable getSimulationConfig(TestDetails test) {
+        boolean sensorSimulation = false;
+        int counter = 0;
+        String rerunInfo = "";
+        String originalName = "";
+
+        if (!test.isUseNewData()) {
+            rerunInfo = "(RERUN_)";
+        }
+
+        // Table configurations
+        PdfPTable tableSensorSim = new PdfPTable(4);
+        tableSensorSim.setWidthPercentage(100f);
+
+        tableSensorSim.addCell(headerCell("Simulated Sensor(s)"));
+
+        for (String type : test.getType()) {
+
+            // Get the original name of the rerun sensor
+            if (type.contains("RERUN_")) {
+                String[] split = type.split("RERUN_");
+                originalName = split[1];
+            }
+            // Check if (rerun) sensor is simulated sensor
+            if (Arrays.asList(simSensors).contains(type) || Arrays.asList(simSensors).contains(originalName)) {
+                sensorSimulation = true;
+                counter += 1;
+
+                // Get general config aspects for every simulated sensor
+                ArrayList<String> generalConfig = getGeneralConfig(test, type);
+
+                //Sensor-Type
+                tableSensorSim.addCell(tableCell(counter + ".: Sensor-Type", darkBlue, 2));
+                tableSensorSim.addCell(tableCell(rerunInfo + generalConfig.get(0), darkBlue, 2));
+
+                //Event
+                tableSensorSim.addCell(tableCell("Event", lightBlue, 2));
+                tableSensorSim.addCell(tableCell(generalConfig.get(1), null, 2));
+
+                //Anomaly
+                tableSensorSim.addCell(tableCell("Anomaly", lightBlue, 2));
+                tableSensorSim.addCell(tableCell(generalConfig.get(2), null, 2));
+
+
+                // Planned simulation
+                // Get config aspects available for the planned simulations
+                Map<String, String> plannedConfig = plannedSim(test, type);
+
+                // Check if simulation was planned
+                if (!plannedConfig.isEmpty()) {
+
+                    // Simulation time
+                    tableSensorSim.addCell(tableCell("Simulation-Time", lightBlue, 2));
+                    tableSensorSim.addCell(tableCell(plannedConfig.get("simTime") + " hours", null, 2));
+
+                    // Amount Events
+                    tableSensorSim.addCell(tableCell("Amount Events", lightBlue, 2));
+                    tableSensorSim.addCell(tableCell(plannedConfig.get("amountEvents"), null, 2));
+
+                    // Amount Anomalies
+                    tableSensorSim.addCell(tableCell("Amount Anomalies", lightBlue, 2));
+                    tableSensorSim.addCell(tableCell(plannedConfig.get("amountAnomalies"), null, 2));
+                }
+            }
+        }
+
+        // Information if no sensor simulator was included in the test
+        if (!sensorSimulation) {
+            tableSensorSim.addCell(tableCell("No Sensor-Simulator was integrated into the test.", null, 4));
+        }
+
+        return tableSensorSim;
     }
 
     /**
-     * Returns a table with the user defined configurations of the simulated Sensors of the test
+     * Converts the general configuration of a simulated sensor into a readable output for the test report.
      *
-     * @param test test for which the test report is created
-     * @return table with user configurations of the test
+     * @param test       test for which the test report is created
+     * @param sensorType of the sensor to get out the configuration
+     * @return List of general configurations (without planned sensor configurations)
      */
-    private PdfPTable getSimulationConfig(TestDetails test) {
-        int counter = 0;
-        PdfPCell c1 = null;
-        PdfPCell c2 = null;
-        String simTime;
-        String amountEvents;
-        String amountOutliers;
-        PdfPTable table = new PdfPTable(4);
-        table.setWidthPercentage(100f);
-        Chunk text = new Chunk("Simulated Sensor(s)", white);
-        PdfPCell c0 = new PdfPCell(new Phrase(text));
-        c0.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c0.setColspan(4);
-        c0.setBackgroundColor(new BaseColor(117, 117, 117));
-        table.addCell(c0);
+    public ArrayList<String> getGeneralConfig(TestDetails test, String sensorType) {
+
+        int event = 0;
+        int anomaly = 0;
+        java.util.List<ParameterInstance> config = null;
 
 
-        for (String type : test.getType()) {
-            if (Arrays.asList(simSensors).contains(type)) {
-                counter += 1;
-                ArrayList<String> simDet = getSensorTypePDF(test, type);
+        // Get the configurations especially for the given type of sensor
+        for (java.util.List<ParameterInstance> configSensor : test.getConfig()) {
+            for (ParameterInstance parameterInstance : configSensor) {
+                if (parameterInstance.getName().equals("ConfigName") && parameterInstance.getValue().equals(sensorType)) {
+                    config = configSensor;
+                    break;
+                }
+            }
+        }
 
-                //Sensor-Type
-                c1 = new PdfPCell(new Phrase(counter + ".: Sensor-Type"));
-                c1.setColspan(2);
-                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                c1.setBackgroundColor(new BaseColor(157, 213, 227));
-                table.addCell(c1);
+        // Get the kind of event and anomaly as a number
+        for (ParameterInstance parameterInstance : Objects.requireNonNull(config)) {
+            if (parameterInstance.getName().equals("event")) {
+                event = Integer.parseInt(String.valueOf(parameterInstance.getValue()));
+            }
+            if (parameterInstance.getName().equals("anomaly")) {
+                anomaly = Integer.parseInt(String.valueOf(parameterInstance.getValue()));
+            }
+        }
 
-                c2 = new PdfPCell(new Phrase(simDet.get(0)));
-                c2.setColspan(2);
-                c2.setBackgroundColor(new BaseColor(157, 213, 227));
-                table.addCell(c2);
 
-                //TestCase
-                c1 = new PdfPCell(new Phrase("Event"));
-                c1.setColspan(2);
-                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                c1.setBackgroundColor(new BaseColor(191, 220, 227));
-                table.addCell(c1);
-                c2 = new PdfPCell(new Phrase(simDet.get(1)));
-                c2.setColspan(2);
-                table.addCell(c2);
+        return convertGeneralConfig(sensorType, event, anomaly);
+    }
 
-                //Combination
-                c1 = new PdfPCell(new Phrase("Anomaly"));
-                c1.setColspan(2);
-                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                c1.setBackgroundColor(new BaseColor(191, 220, 227));
-                table.addCell(c1);
-                c2 = new PdfPCell(new Phrase(simDet.get(2)));
-                c2.setColspan(2);
-                table.addCell(c2);
 
-                // Planned simulation adds informations about the simulation time, amount of events and outliers
-                if (type.equals("TestingTemperaturSensorPl") || type.equals("TestingFeuchtigkeitsSensorPl") || type.equals("TestingGPSSensorPl") || type.equals("TestingBeschleunigungsSensorPl")) {
-                    for (java.util.List<ParameterInstance> configSensor : test.getConfig()) {
-                        for (ParameterInstance parameterInstance : configSensor) {
-                            switch (parameterInstance.getName()) {
-                                case "simTime":
-                                    simTime = String.valueOf(parameterInstance.getValue());
-                                    c1 = new PdfPCell(new Phrase("Simulation-Time"));
-                                    c1.setColspan(2);
-                                    c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                                    c1.setBackgroundColor(new BaseColor(191, 220, 227));
-                                    table.addCell(c1);
+    /**
+     * Returns a Map with the configurations time and amount of events/anomalies of a planned simulation.
+     *
+     * @param test       for which the test report is created
+     * @param sensorType of the sensor to get out the configuration
+     * @return empty map or map with configurations of a planned sensor
+     */
+    private Map<String, String> plannedSim(TestDetails test, String sensorType) {
+        Map<String, String> plannedConfig = new HashMap<>();
 
-                                    c2 = new PdfPCell(new Phrase(simTime + " hours"));
-                                    c2.setColspan(2);
-                                    table.addCell(c2);
-
-                                    break;
-                                case "amountEvents":
-                                    amountEvents = String.valueOf(parameterInstance.getValue());
-                                    c1 = new PdfPCell(new Phrase("Amount Events"));
-                                    c1.setColspan(2);
-                                    c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                                    c1.setBackgroundColor(new BaseColor(191, 220, 227));
-                                    table.addCell(c1);
-
-                                    c2 = new PdfPCell(new Phrase(amountEvents));
-                                    c2.setColspan(2);
-                                    table.addCell(c2);
-
-                                    break;
-                                case "amountAnomalies":
-                                    amountOutliers = String.valueOf(parameterInstance.getValue());
-                                    c1 = new PdfPCell(new Phrase("Amount Anomalies"));
-                                    c1.setColspan(2);
-                                    c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                                    c1.setBackgroundColor(new BaseColor(191, 220, 227));
-                                    table.addCell(c1);
-
-                                    c2 = new PdfPCell(new Phrase(amountOutliers));
-                                    c2.setColspan(2);
-                                    table.addCell(c2);
-
-                                    break;
-                            }
-
-                        }
+        if (sensorType.equals("TestingTemperaturSensorPl") || sensorType.equals("TestingFeuchtigkeitsSensorPl") || sensorType.equals("TestingGPSSensorPl") || sensorType.equals("TestingBeschleunigungsSensorPl")) {
+            for (java.util.List<ParameterInstance> configSensor : test.getConfig()) {
+                for (ParameterInstance parameterInstance : configSensor) {
+                    switch (parameterInstance.getName()) {
+                        case "simTime":
+                            plannedConfig.put("simTime", String.valueOf(parameterInstance.getValue()));
+                            break;
+                        case "amountEvents":
+                            plannedConfig.put("amountEvents", String.valueOf(parameterInstance.getValue()));
+                            break;
+                        case "amountAnomalies":
+                            plannedConfig.put("amountAnomalies", String.valueOf(parameterInstance.getValue()));
+                            break;
                     }
                 }
             }
-
-
         }
-        if(c1 == null && c2 == null){
-            c1 = new PdfPCell(new Phrase("No Sensor-Simulator was integrated into the test."));
-            c1.setColspan(4);
-            c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-            table.addCell(c1);
-        }
-        return table;
+        return plannedConfig;
     }
 
 
     /**
-     * Returns a table with the user defined configurations of the real Sensors of the test
+     * Returns a table with the included real sensors within the test and the user defined configurations of them or
+     * a short information if no real sensor was included.
      *
      * @param test test for which the test report is created
      * @return table with user configurations of the test
      */
     private PdfPTable getRealSensorConfig(TestDetails test) {
         int counter = 0;
+        boolean realSensors = false;
         String rerunInfo = "";
-        String rerunName ="";
-        if(!test.isUseNewData()){
+        String rerunName = "";
+        if (!test.isUseNewData()) {
             rerunInfo = "(RERUN_)";
             rerunName = "RERUN_";
         }
 
-        PdfPCell c1 = null;
-        PdfPCell c2 = null;
-        PdfPTable table = new PdfPTable(4);
-        table.setWidthPercentage(100f);
-        Chunk text = new Chunk("Real Sensor(s)", white);
-        PdfPCell c0 = new PdfPCell(new Phrase(text));
-        c0.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c0.setColspan(4);
-        c0.setBackgroundColor(new BaseColor(117, 117, 117));
-        table.addCell(c0);
+        // Table configurations
+        PdfPTable tableRealSensors = new PdfPTable(4);
+        tableRealSensors.setWidthPercentage(100f);
 
-
-
+        tableRealSensors.addCell(headerCell("Real Sensor(s)"));
 
         for (String type : test.getType()) {
-            if (!Arrays.asList(simSensors).contains(rerunName+type)) {
+            // Check if sensor is no sensor simulator
+            if (!Arrays.asList(simSensors).contains(rerunName + type)) {
+                realSensors = true;
                 counter += 1;
 
                 //Sensor-Type
-                c1 = new PdfPCell(new Phrase(counter + ".: Sensor-Type"));
-                c1.setColspan(2);
-                c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                c1.setBackgroundColor(new BaseColor(157, 213, 227));
-                table.addCell(c1);
-
-                c2 = new PdfPCell(new Phrase(rerunInfo + type));
-                c2.setColspan(2);
-                c2.setBackgroundColor(new BaseColor(157, 213, 227));
-                table.addCell(c2);
+                tableRealSensors.addCell(tableCell(counter + ".: Sensor-Type", darkBlue, 2));
+                tableRealSensors.addCell(tableCell(rerunInfo + type, darkBlue, 2));
 
 
+                // Get sensor parameters and their values
                 for (java.util.List<ParameterInstance> configSensor : test.getConfig()) {
                     for (ParameterInstance parameterInstance : configSensor) {
                         if (parameterInstance.getValue().equals(type)) {
                             for (ParameterInstance parameterInstance2 : configSensor) {
                                 if (!parameterInstance2.getName().equals("ConfigName")) {
-                                    c1 = new PdfPCell(new Phrase(parameterInstance2.getName()));
-                                    c1.setColspan(2);
-                                    c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-                                    c1.setBackgroundColor(new BaseColor(191, 220, 227));
-                                    table.addCell(c1);
-                                    c2 = new PdfPCell(new Phrase(parameterInstance2.getValue().toString()));
-                                    c2.setColspan(2);
-                                    table.addCell(c2);
+                                    tableRealSensors.addCell(tableCell(parameterInstance2.getName(), lightBlue, 2));
+                                    tableRealSensors.addCell(tableCell(parameterInstance2.getValue().toString(), null, 2));
                                 }
 
                             }
@@ -417,37 +390,30 @@ public class TestReport {
             }
         }
 
-        if(counter==0){
-            PdfPCell realSens = new PdfPCell(new Phrase("No Real Sensor was integrated into the test."));
-            realSens.setColspan(4);
-            realSens.setHorizontalAlignment(Element.ALIGN_CENTER);
-            table.addCell(realSens);
+        // Information if no real sensor was included in the test
+        if (!realSensors) {
+            tableRealSensors.addCell(tableCell("No Real Sensor was integrated into the test.", null, 4));
         }
-        return table;
+        return tableRealSensors;
     }
 
 
     /**
-     * Retruns a table with the Actuator informations of the Test.
+     * Returns a table with the Actuator information of the Test.
      *
      * @return table with the actuator information
      */
     private PdfPTable getActuatorInfos() {
-        // Dummy-Actuator
-        PdfPTable actuatorInfos = new PdfPTable(4);
-        actuatorInfos.setWidthPercentage(100f);
+        String infoText = "The actuator used for the tests does not trigger any actions if the corresponding rule is triggered. It functions as a dummy.";
 
-        Chunk chunkActuatorInf = new Chunk("Simulated actuator", white);
-        PdfPCell actuatorInf = new PdfPCell(new Phrase(chunkActuatorInf));
-        actuatorInf.setHorizontalAlignment(Element.ALIGN_CENTER);
-        actuatorInf.setColspan(4);
-        actuatorInf.setBackgroundColor(new BaseColor(117, 117, 117));
-        actuatorInfos.addCell(actuatorInf);
-        PdfPCell actuatorInf2 = new PdfPCell(new Phrase("The actuator used for the tests does not trigger any actions if the corresponding rule is triggered. It functions as a dummy."));
-        actuatorInf2.setColspan(4);
-        actuatorInf2.setHorizontalAlignment(Element.ALIGN_CENTER);
-        actuatorInfos.addCell(actuatorInf2);
-        return actuatorInfos;
+        // Table configurations
+        PdfPTable actuatorInfo = new PdfPTable(4);
+        actuatorInfo.setWidthPercentage(100f);
+
+        actuatorInfo.addCell(headerCell("Simulated actuator"));
+        actuatorInfo.addCell(tableCell(infoText, null, 4));
+
+        return actuatorInfo;
     }
 
 
@@ -458,148 +424,87 @@ public class TestReport {
      * @param rule detail information of the selected rules before the test
      * @return PDFTable with all important informations about the rules in the test of a specific application
      */
-    @SuppressWarnings("DuplicatedCode")
     private PdfPTable getRuleDetails(TestDetails test, Rule rule, int counterRules) {
+        int executionsAfter;
+        String lastExecutionBefore = "NEVER";
+        String lastExecutionAfter = "NEVER";
+        String triggerValues ="Rule not triggered";
 
         // get executed Rules
         String rulesExecuted = test.getRulesExecuted().toString().replace("[", "")  //remove the right bracket
                 .replace("]", "");  //remove the left bracket
 
+        // Table configurations
         PdfPTable ruleInfos = new PdfPTable(4);
         ruleInfos.setWidthPercentage(100f);
-        PdfPCell c0;
 
-        Rule ruleAfter = ruleRepository.findByName(rule.getName());
-        c0 = new PdfPCell(new Phrase(counterRules + ". Rule: " + rule.getName()));
-        c0.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c0.setColspan(4);
-        c0.setBackgroundColor(new BaseColor(157, 213, 227));
-        ruleInfos.addCell(c0);
 
+        ruleInfos.addCell(tableCell(counterRules + ". Rule: " + rule.getName(), darkBlue, 4));
 
         // Rule: Condition (Trigger Querey)
-        PdfPCell c1 = new PdfPCell(new Phrase("Rule: Condition"));
-        c1.setColspan(4);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-        ruleInfos.addCell(c1);
-
-        c1 = new PdfPCell(new Phrase(ruleAfter.getTrigger().getQuery()));
-        c1.setColspan(4);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        ruleInfos.addCell(c1);
+        ruleInfos.addCell(tableCell("Rule: Condition", lightBlue, 4));
+        Rule ruleAfter = ruleRepository.findByName(rule.getName());
+        ruleInfos.addCell(tableCell(ruleAfter.getTrigger().getQuery(), null, 4));
 
         // Rule: Action (Actuator)
-        c1 = new PdfPCell(new Phrase("Rule: Action"));
-        c1.setColspan(4);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-        ruleInfos.addCell(c1);
+        ruleInfos.addCell(tableCell("Rule: Action", lightBlue, 4));
 
-
-        ArrayList ruleActions = new ArrayList();
+        ArrayList<String> ruleActions = new ArrayList<>();
         for (RuleAction action : ruleAfter.getActions()) {
             ruleActions.add(action.getName());
         }
 
-
         // get executed Rules
         String ruleAction = ruleActions.toString().replace("[", "")  //remove the right bracket
                 .replace("]", "");  //remove the left bracket
-
-
-        c1 = new PdfPCell(Phrase.getInstance(ruleAction));
-        c1.setColspan(4);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        ruleInfos.addCell(c1);
+        ruleInfos.addCell(tableCell(ruleAction, null, 4));
 
 
         // # Rule Executions before/after
-        c1 = new PdfPCell(new Phrase("Number of executions before the test"));
-        c1.setColspan(2);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-        ruleInfos.addCell(c1);
-
-        c1 = new PdfPCell(new Phrase("Number of executions after the test"));
-        c1.setColspan(2);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-        ruleInfos.addCell(c1);
+        ruleInfos.addCell(tableCell("Number of executions before the test", lightBlue, 2));
+        ruleInfos.addCell(tableCell("Number of executions after the test", lightBlue, 2));
 
         int executionsBefore = rule.getExecutions();
-        PdfPCell c2 = new PdfPCell(new Phrase(Integer.toString(executionsBefore)));
-        c2.setColspan(2);
-        c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-        ruleInfos.addCell(c2);
-        int executionsAfter;
+        ruleInfos.addCell(tableCell(Integer.toString(executionsBefore), null, 2));
+
         if (!rulesExecuted.contains(rule.getName())) {
             executionsAfter = rule.getExecutions();
         } else {
             executionsAfter = ruleAfter.getExecutions();
         }
-        c2 = new PdfPCell(new Phrase(Integer.toString(executionsAfter)));
-        c2.setColspan(2);
-        c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-        ruleInfos.addCell(c2);
+        ruleInfos.addCell(tableCell(Integer.toString(executionsAfter), null, 2));
 
 
         // Last Execution time before/after
-        c1 = new PdfPCell(new Phrase("Last execution before the test"));
-        c1.setColspan(2);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-        ruleInfos.addCell(c1);
-
-        c1 = new PdfPCell(new Phrase("Last execution after the test"));
-        c1.setColspan(2);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-        ruleInfos.addCell(c1);
+        ruleInfos.addCell(tableCell("Last execution before the test", lightBlue, 2));
+        ruleInfos.addCell(tableCell("Last execution after the test", lightBlue, 2));
 
 
-        if (rule.getLastExecution() == null) {
-            c2 = new PdfPCell(new Phrase("NEVER"));
-        } else {
-            c2 = new PdfPCell(new Phrase(simpleDateFormat.format(rule.getLastExecution())));
+        // if never executed before "NEVER"
+        if (rule.getLastExecution() != null) {
+            lastExecutionBefore = simpleDateFormat.format(rule.getLastExecution());
         }
+        ruleInfos.addCell(tableCell(lastExecutionBefore, null, 2));
 
-        c2.setColspan(2);
-        c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-        ruleInfos.addCell(c2);
-
-
-        if (ruleAfter.getLastExecution() == null) {
-            c2 = new PdfPCell(new Phrase("NEVER"));
-        } else {
-            c2 = new PdfPCell(new Phrase(simpleDateFormat.format(ruleAfter.getLastExecution())));
+        // If never executed after the test "NEVER"
+        if (ruleAfter.getLastExecution() != null) {
+            lastExecutionAfter = simpleDateFormat.format(ruleAfter.getLastExecution());
         }
-        c2.setColspan(2);
-        c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-        ruleInfos.addCell(c2);
+        ruleInfos.addCell(tableCell(lastExecutionAfter, null, 2));
+
 
         // Trigger-Values of the Rule
-        c1 = new PdfPCell(new Phrase("Trigger-Values"));
-        c1.setColspan(4);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-        ruleInfos.addCell(c1);
+        ruleInfos.addCell(tableCell("Trigger-Values", lightBlue, 2));
 
         // get Trigger Values for specific rules
         if (test.getTriggerValues().containsKey(ruleAfter.getName())) {
-            if (test.getTriggerValues().get(ruleAfter.getName()).size() == 0) {
-                c1 = new PdfPCell(new Phrase("Rule not triggered"));
-            } else {
-                String tiggerValues = test.getTriggerValues().get(ruleAfter.getName()).toString().replace("[", "")  //remove the right bracket
+            if (test.getTriggerValues().get(ruleAfter.getName()).size() > 0) {
+                triggerValues = test.getTriggerValues().get(ruleAfter.getName()).toString().replace("[", "")  //remove the right bracket
                         .replace("]", "");  //remove the left bracket
-                c1 = new PdfPCell(new Phrase(tiggerValues));
             }
-        } else {
-            c1 = new PdfPCell(new Phrase("Rule not triggered"));
         }
-        c1.setColspan(4);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        ruleInfos.addCell(c1);
+
+        ruleInfos.addCell(tableCell(triggerValues, null, 4));
 
 
         return ruleInfos;
@@ -607,29 +512,26 @@ public class TestReport {
     }
 
     /**
-     * Returns a table with detailed informations of the rules belonging to the IoT-Application of the Test
+     * Returns a table with detailed information of the rules belonging to the IoT-Application of the Test
      *
      * @param test test for which the test report is created
-     * @return table with detailed rule informations
+     * @return table with detailed rule information
      */
     public PdfPTable getRuleInfos(TestDetails test) {
-        //noinspection MismatchedQueryAndUpdateOfCollection
-        ArrayList rules = new ArrayList();
         StringBuilder rulesUser = new StringBuilder();
         String rulesExecuted;
         String triggerRules;
         String infoSelectedRules;
+        String rerunInfo = "";
 
+        // Table configurations
         PdfPTable ruleInfos = new PdfPTable(4);
         ruleInfos.setWidthPercentage(100f);
-        Chunk text = new Chunk("Rule-Informations", white);
-        PdfPCell c0 = new PdfPCell(new Phrase(text));
-        c0.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c0.setColspan(4);
-        c0.setBackgroundColor(new BaseColor(117, 117, 117));
-        ruleInfos.addCell(c0);
 
+        //Set header
+        ruleInfos.addCell(headerCell("Rule-Information"));
 
+        // Creates a text depending on whether the rules chosen by the user should be triggered or not
         if (test.isTriggerRules()) {
             triggerRules = "The selected rules should be executed by the test";
             infoSelectedRules = "Rules, which should be triggered";
@@ -638,100 +540,54 @@ public class TestReport {
             infoSelectedRules = "Rules which shouldn't be triggered";
         }
 
-        c0 = new PdfPCell(new Phrase(triggerRules));
-        c0.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c0.setColspan(4);
-        ruleInfos.addCell(c0);
+        ruleInfos.addCell(tableCell(triggerRules, null, 4));
 
-
-        // Rules which should be triggered by the values of the sensor simulation
-        PdfPCell c1 = new PdfPCell(new Phrase(infoSelectedRules));
-        c1.setColspan(2);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-        ruleInfos.addCell(c1);
-
-
-        // Rules which were  triggered by the simulated sensor values
-        c1 = new PdfPCell(new Phrase("Rules, which were triggered"));
-        c1.setColspan(2);
-        c1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        c1.setBackgroundColor(new BaseColor(191, 220, 227));
-        ruleInfos.addCell(c1);
-
-        // get selected Rules from User
-        String rerunInfo = "";
-        if(!test.isUseNewData()){
+        // Rules which should be triggered by the values of the sensor generated through the test defined by the user
+        ruleInfos.addCell(tableCell(infoSelectedRules, lightBlue, 2));
+        // get an format
+        if (!test.isUseNewData()) {
             rerunInfo = "RERUN_";
         }
         for (int i = 0; i < test.getRules().size(); i++) {
             if (i != 0 && i != test.getRules().size()) {
                 rulesUser.append(", ");
             }
-            rules.add(test.getRules().get(i).getName());
-            rulesUser.append(rerunInfo+test.getRules().get(i).getName());
+            rulesUser.append(rerunInfo).append(test.getRules().get(i).getName());
         }
+        ruleInfos.addCell(tableCell(rulesUser.toString(), null, 2));
 
-        PdfPCell c2 = new PdfPCell(new Phrase(rulesUser.toString()));
-        c2.setColspan(2);
-        c2.setHorizontalAlignment(Element.ALIGN_CENTER);
-        ruleInfos.addCell(c2);
 
-        // get executed Rules
+        // Rules which were triggered by the values of the sensors through the test
+        ruleInfos.addCell(tableCell("Rules, which were triggered", lightBlue, 2));
+        // get and format
         rulesExecuted = test.getRulesExecuted().toString().replace("[", "")  //remove the right bracket
                 .replace("]", "");  //remove the left bracket
 
-        PdfPCell c3;
-        if (!rulesExecuted.equals("")) {
-            c3 = new PdfPCell(new Phrase(rulesExecuted));
-        } else {
-            c3 = new PdfPCell(new Phrase("-"));
+
+        if (rulesExecuted.equals("")) {
+            rulesExecuted = "-";
         }
 
-        c3.setColspan(2);
-        c3.setHorizontalAlignment(Element.ALIGN_CENTER);
-        ruleInfos.addCell(c3);
+        ruleInfos.addCell(tableCell(rulesExecuted, null, 2));
 
         return ruleInfos;
     }
 
+
     /**
-     * Converts the configuration of the Test Sensor into a readable output for the test report
+     * Converts the general configuration of a simulated sensor into a readable output for the test report.
      *
-     * @param test test for which the test report is created
-     * @return List of configurations readable for the test report
+     * @param sensorType type of the simulated sensor
+     * @param event      that has been simulated
+     * @param anomaly    that was integrated
+     * @return ArrayList
      */
-    public ArrayList<String> getSensorTypePDF(TestDetails test, String sensorType) {
-
+    private ArrayList<String> convertGeneralConfig(String sensorType, int event, int anomaly) {
         ArrayList<String> simDet = new ArrayList<>();
+        boolean basicAnomaly = true;
         String kindOfSensor = "";
-        String testCaseStr = "";
-        String combiStr = "";
-        int testCase = 0;
-        int combination = 0;
-        java.util.List<ParameterInstance> config = null;
-
-
-        for (java.util.List<ParameterInstance> configSensor : test.getConfig()) {
-            for (ParameterInstance parameterInstance : configSensor) {
-                if (parameterInstance.getName().equals("ConfigName") && parameterInstance.getValue().equals(sensorType)) {
-                    config = configSensor;
-                    break;
-                }
-            }
-        }
-
-
-        for (ParameterInstance parameterInstance : Objects.requireNonNull(config)) {
-            if (parameterInstance.getName().equals("event")) {
-                Object dd = parameterInstance.getValue();
-                testCase = Integer.parseInt(String.valueOf(parameterInstance.getValue()));
-            }
-            if (parameterInstance.getName().equals("anomaly")) {
-                combination = Integer.parseInt(String.valueOf(parameterInstance.getValue()));
-            }
-        }
-
+        String eventStr = "";
+        String anomalyDtr = "";
 
         switch (sensorType) {
             case "TestingTemperaturSensor":
@@ -754,131 +610,153 @@ public class TestReport {
                 break;
             case "TestingBeschleunigungsSensor":
                 kindOfSensor = "Acceleration Sensor";
+                basicAnomaly = false;
                 break;
             case "TestingBeschleunigungsSensorPl":
                 kindOfSensor = "Acceleration Sensor (planned)";
+                basicAnomaly = false;
                 break;
         }
 
         simDet.add(0, kindOfSensor);
 
+        if (anomaly == 6) {
+            anomalyDtr = "-";
+        } else if (anomaly == 5) {
+            anomalyDtr = "Wrong value type";
+        } else if (basicAnomaly) {
+            if (anomaly == 4) {
+                anomalyDtr = "Missing values";
+            } else if (anomaly == 5) {
+                anomalyDtr = "Wrong value type";
+            }
+            } else if (!basicAnomaly) {
+            if (anomaly == 3) {
+                anomalyDtr = "Fly bumps into the Object";
+            } else if (anomaly == 4) {
+                anomalyDtr = "Outliers";
+            }
+        }
+
         switch (sensorType) {
             case "TestingTemperaturSensor":
             case "TestingTemperaturSensorPl":
-                if (testCase == 1) {
-                    testCaseStr = "Temperature rise";
-                } else if (testCase == 2) {
-                    testCaseStr = "Temperature drop";
-                } else if (testCase == 3) {
-                    testCaseStr = "-";
-                    combiStr = "Outliers";
-                } else if (testCase == 4) {
-                    testCaseStr = "-";
-                    combiStr = "Missing values";
-                } else if (testCase == 5 || combination == 5) {
-                    testCaseStr = "-";
-                    combiStr = "Wrong value type";
+                if (event == 1) {
+                    eventStr = "Temperature rise";
+                } else if (event == 2) {
+                    eventStr = "Temperature drop";
+                } else if (event == 3) {
+                    eventStr = "-";
+                    anomalyDtr = "Outliers";
+                } else if (event == 4) {
+                    eventStr = "-";
+                    anomalyDtr = "Missing values";
+                } else if (event == 5 || anomaly == 6) {
+                    eventStr = "-";
+                    anomalyDtr = "Wrong value type";
                 }
 
-                if (combination == 6) {
-                    combiStr = "-";
-                } else if (combination == 3) {
-                    combiStr = "Outliers";
-                } else if (combination == 4) {
-                    combiStr = "Missing values";
-                } else if (combination == 5) {
-                    combiStr = "Wrong value type";
-                }
+
                 break;
             case "TestingFeuchtigkeitsSensor":
             case "TestingFeuchtigkeitsSensorPl":
-                if (testCase == 1) {
-                    testCaseStr = "Humidity rise";
-                } else if (testCase == 2) {
-                    testCaseStr = "Humidity decrease";
-                } else if (testCase == 3) {
-                    testCaseStr = "-";
-                    combiStr = "Outlier";
-                } else if (testCase == 4) {
-                    testCaseStr = "-";
-                    combiStr = "Missing values";
-                } else if (testCase == 5 || combination == 5) {
-                    testCaseStr = "-";
-                    combiStr = "Wrong value type";
+                if (event == 1) {
+                    eventStr = "Humidity rise";
+                } else if (event == 2) {
+                    eventStr = "Humidity decrease";
+                } else if (event == 3) {
+                    eventStr = "-";
+                    anomalyDtr = "Outlier";
+                } else if (event == 4) {
+                    eventStr = "-";
+                    anomalyDtr = "Missing values";
+                } else if (event == 5 || anomaly == 5) {
+                    eventStr = "-";
+                    anomalyDtr = "Wrong value type";
                 }
 
-                if (combination == 6) {
-                    combiStr = "-";
-                } else if (combination == 3) {
-                    combiStr = "Outlier";
-                } else if (combination == 4) {
-                    combiStr = "Missing values";
-                } else if (combination == 5) {
-                    combiStr = "Wrong value type";
-                }
                 break;
             case "TestingGPSSensorPl":
             case "TestingGPSSensor":
-                if (testCase == 1) {
-                    testCaseStr = "Approach";
-                } else if (testCase == 2) {
-                    testCaseStr = "Moving away";
-                } else if (testCase == 3) {
-                    testCaseStr = "-";
-                    combiStr = "Outliers";
-                } else if (testCase == 4) {
-                    testCaseStr = "-";
-                    combiStr = "Missing values";
-                } else if (testCase == 5 || combination == 5) {
-                    testCaseStr = "-";
-                    combiStr = "Wrong value type";
+                if (event == 1) {
+                    eventStr = "Approach";
+                } else if (event == 2) {
+                    eventStr = "Moving away";
+                } else if (event == 3) {
+                    eventStr = "-";
+                    anomalyDtr = "Outliers";
+                } else if (event == 4) {
+                    eventStr = "-";
+                    anomalyDtr = "Missing values";
+                } else if (event == 5 || anomaly == 5) {
+                    eventStr = "-";
+                    anomalyDtr = "Wrong value type";
                 }
 
-                if (combination == 6) {
-                    combiStr = "-";
-                } else if (combination == 3) {
-                    combiStr = "Outliers";
-                } else if (combination == 4) {
-                    combiStr = "Missing values";
-                } else if (combination == 5) {
-                    combiStr = "Wrong value type";
-                }
                 break;
             case "TestingBeschleunigungsSensor":
             case "TestingBeschleunigungsSensorPl":
-                if (testCase == 1) {
-                    testCaseStr = "Object is not moving";
-                } else if (testCase == 2) {
-                    testCaseStr = "Object is moving";
-                } else if (testCase == 3) {
-                    testCaseStr = "-";
-                    combiStr = "Fly bumps into the Object";
-                } else if (testCase == 4) {
-                    testCaseStr = "-";
-                    combiStr = "Outliers";
-                } else if (testCase == 5 || combination == 5) {
-                    testCaseStr = "-";
-                    combiStr = "Wrong value type";
+                if (event == 1) {
+                    eventStr = "Object is not moving";
+                } else if (event == 2) {
+                    eventStr = "Object is moving";
+                } else if (event == 3) {
+                    eventStr = "-";
+                    anomalyDtr = "Fly bumps into the Object";
+                } else if (event == 4) {
+                    eventStr = "-";
+                    anomalyDtr = "Outliers";
+                } else if (event == 5 || anomaly == 5) {
+                    eventStr = "-";
+                    anomalyDtr = "Wrong value type";
                 }
 
-                if (combination == 6) {
-                    combiStr = "-";
-                } else if (combination == 3) {
-                    combiStr = "Fly bumps into the Object";
-                } else if (combination == 4) {
-                    combiStr = "Outliers";
-                } else if (combination == 5) {
-                    combiStr = "Wrong value type";
-                }
                 break;
         }
 
-        simDet.add(1, testCaseStr);
-        simDet.add(2, combiStr);
+        simDet.add(1, eventStr);
+        simDet.add(2, anomalyDtr);
 
 
         return simDet;
     }
-}
 
-    
+
+    /**
+     * Creates a table cell with the requested phase, color and colspan.
+     *
+     * @param phrase     that the cell should contain
+     * @param background color of the cell
+     * @param colspan    of the cell
+     * @return PdfPCell
+     */
+    public PdfPCell tableCell(String phrase, BaseColor background, int colspan) {
+
+        PdfPCell cell = new PdfPCell(new Phrase(phrase));
+        cell.setColspan(colspan);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+
+        if (background != null) {
+            cell.setBackgroundColor(background);
+        }
+        return cell;
+    }
+
+    /**
+     * Creates a header cell with the requested phase, dark grey background and colspan 4.
+     *
+     * @param phrase of the header
+     * @return PdfPCell as header
+     */
+    public PdfPCell headerCell(String phrase) {
+        Chunk text = new Chunk(phrase, white);
+        PdfPCell headerCell = new PdfPCell(new Phrase(text));
+        headerCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        headerCell.setColspan(4);
+        headerCell.setBackgroundColor(darkGrey);
+
+        return headerCell;
+    }
+
+
+}

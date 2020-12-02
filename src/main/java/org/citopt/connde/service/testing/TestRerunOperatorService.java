@@ -6,7 +6,6 @@ import org.citopt.connde.domain.adapter.Code;
 import org.citopt.connde.domain.adapter.parameters.Parameter;
 import org.citopt.connde.domain.adapter.parameters.ParameterType;
 import org.citopt.connde.repository.AdapterRepository;
-import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.web.rest.response.ActionResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
