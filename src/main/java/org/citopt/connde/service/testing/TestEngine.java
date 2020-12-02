@@ -1,13 +1,9 @@
 package org.citopt.connde.service.testing;
 
 
-import javolution.io.Struct;
-import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
-import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.component.SensorValidator;
-import org.citopt.connde.domain.device.Device;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.domain.testing.TestDetails;
@@ -16,23 +12,23 @@ import org.citopt.connde.domain.valueLog.ValueLog;
 import org.citopt.connde.repository.*;
 import org.citopt.connde.service.receiver.ValueLogReceiver;
 import org.citopt.connde.service.receiver.ValueLogReceiverObserver;
-import org.citopt.connde.service.rules.RuleEngine;
 import org.citopt.connde.web.rest.RestDeploymentController;
 import org.citopt.connde.web.rest.RestRuleController;
 import org.citopt.connde.web.rest.event_handler.SensorEventHandler;
-import org.citopt.connde.web.rest.response.ActionResponse;
-import org.json.Test;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.validation.Errors;
 
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -46,14 +42,7 @@ import java.util.Map;
 
 @Component
 public class TestEngine implements ValueLogReceiverObserver {
-    @Autowired
-    private DeviceRepository deviceRepository;
 
-    @Autowired
-    private SensorRepository sensorRepository;
-
-    @Autowired
-    private AdapterRepository adapterRepository;
 
     @Autowired
     private TestDetailsRepository testDetailsRepository;
@@ -64,8 +53,6 @@ public class TestEngine implements ValueLogReceiverObserver {
     @Autowired
     private RuleTriggerRepository ruleTriggerRepository;
 
-    @Autowired
-    private ActuatorRepository actuatorRepository;
 
     @Autowired
     private TestRepository testRepo;
@@ -77,43 +64,14 @@ public class TestEngine implements ValueLogReceiverObserver {
     private RuleRepository ruleRepository;
 
     @Autowired
-    private RestRuleController restRuleController;
+    private TestExecutor testExecutor;
 
     @Autowired
-    private TestRerunOperatorService rerunOperatorService;
-
-
-    @Autowired
-    private SensorValidator sensorValidator;
-
-    @Autowired
-    private SensorEventHandler sensorEventHandler;
+    private TestRerunService testRerunService;
 
     // List of all active Tests/testValues
-    Map<String, TestDetails> activeTests = new HashMap<>();
     Map<String, LinkedHashMap<Long, Double>> testValues = new HashMap<>();
 
-    String[] sensorSim = {"TestingTemperaturSensor", "TestingTemperaturSensorPl", "TestingFeuchtigkeitsSensor", "TestingFeuchtigkeitsSensorPl", "TestingGPSSensorPl", "TestingGPSSensor", "TestingBeschleunigungsSensor", "TestingBeschleunigungsSensorPl"};
-    List<String> sensorSimulators = Arrays.asList(sensorSim);
-
-
-    /**
-     * Returns a list of all active tests.
-     *
-     * @return activeTests
-     */
-    public Map<String, TestDetails> getActiveTests() {
-        return activeTests;
-    }
-
-    /**
-     * Sets a list of all active tests
-     *
-     * @param activeTests active/running tests
-     */
-    public void setActiveTests(Map<String, TestDetails> activeTests) {
-        this.activeTests = activeTests;
-    }
 
     /**
      * Returns a list of all incomming values of the sensors of the activeted tests.
@@ -133,6 +91,7 @@ public class TestEngine implements ValueLogReceiverObserver {
         this.testValues = testValues;
     }
 
+
     /**
      * Registers the TestEngine as an Observer to the ValueLogReceiver which then will be notified about incoming value logs.
      *
@@ -150,7 +109,8 @@ public class TestEngine implements ValueLogReceiverObserver {
      */
     @Override
     public void onValueReceived(ValueLog valueLog) {
-        if (!activeTests.containsKey(valueLog.getIdref())) {
+
+        if (!testExecutor.getActiveTests().containsKey(valueLog.getIdref())) {
             return;
         }
         if (!testValues.containsKey(valueLog.getIdref())) {
@@ -229,126 +189,6 @@ public class TestEngine implements ValueLogReceiverObserver {
         }
 
         return success;
-    }
-
-    /**
-     * Enable selected Rules, Deploy and Start the Actuator and Sensors of the test
-     *
-     * @param testDetails specific test to be executed
-     */
-    public ResponseEntity<String> startTest(TestDetails testDetails) {
-        Actuator testingActuator = actuatorRepository.findByName("TestingActuator");
-
-        List<Sensor> testingSensor = testDetails.getSensor();
-        // Get a list of every rule corresponding to the application
-        List<Rule> rules = getStatRulesBefore(testDetails);
-        List<List<ParameterInstance>> config = testDetails.getConfig();
-
-        //activate the selected rules for the test
-        for (Rule rule : rules) {
-            // check if selected rules are active --> if not active Rules
-            restRuleController.enableRule(rule.getId());
-        }
-
-
-        //check if test exists
-        if (!testDetailsRepository.exists(testDetails.getId())) {
-
-            return new ResponseEntity<>("Test does not exists.", HttpStatus.NOT_FOUND);
-        }
-
-        //check if actuator is deployed
-        ResponseEntity<Boolean> actuatorDeployed = restDeploymentController.isRunningActuator(testingActuator.getId());
-        if (!actuatorDeployed.getBody()) {
-            //if false deploy actuator
-            restDeploymentController.deployActuator(testingActuator.getId());
-        }
-        // start the Actuator
-        restDeploymentController.startActuator(testingActuator.getId(), new ArrayList<>());
-
-
-        if (!testDetails.isUseNewData()) {
-
-
-            for (Sensor sensor : testingSensor) {
-
-                List<ParameterInstance> parametersWrapper = new ArrayList<>();
-
-                // If not a sensor simulator
-                if (!sensorSimulators.contains(sensor) && !sensor.getName().contains("RERUN_")) {
-
-                    restDeploymentController.stopSensor(sensor.getId());
-
-                    for (Map.Entry<String, LinkedHashMap<Long, Double>> entry : testDetails.getSimulationList().entrySet()) {
-                        if (entry.getKey().equals(sensor.getName())) {
-                            String intervalString = "[";
-                            String valueString = "[";
-                            String comma = "-";
-
-
-                            for (Iterator<Map.Entry<Long, Double>> iterator = entry.getValue().entrySet().iterator(); iterator.hasNext(); ) {
-
-                                Map.Entry<Long, Double> interval = iterator.next();
-                                if (!iterator.hasNext()) {
-                                    comma = "";
-                                }
-                                intervalString = intervalString + interval.getKey().toString() + comma;
-                                valueString = valueString + interval.getValue().toString() + comma;
-
-
-                            }
-                            intervalString = intervalString + "]";
-                            valueString = valueString + "]";
-                            ParameterInstance interval = new ParameterInstance();
-                            interval.setName("interval");
-                            interval.setValue(intervalString);
-                            ParameterInstance value = new ParameterInstance();
-                            value.setName("value");
-                            value.setValue(valueString);
-                            parametersWrapper.add(interval);
-                            parametersWrapper.add(value);
-
-
-                        }
-                    }
-
-
-                    Sensor rerunSensor = sensorRepository.findByName("RERUN_" + sensor.getName());
-                    ResponseEntity<Boolean> sensorDeployed = restDeploymentController.isRunningSensor(rerunSensor.getId());
-
-                    if (!sensorDeployed.getBody()) {
-                        //if not deploy Sensor
-                        restDeploymentController.deploySensor((rerunSensor.getId()));
-                    }
-                    restDeploymentController.stopSensor(rerunSensor.getId());
-                    restDeploymentController.startSensor(rerunSensor.getId(), parametersWrapper);
-                }
-            }
-
-
-        } else {
-            // check if the sensor/s are currently running
-            for (Sensor sensor : testingSensor) {
-                ResponseEntity<Boolean> sensorDeployed = restDeploymentController.isRunningSensor(sensor.getId());
-                String sensorName = sensor.getName();
-                for (List<ParameterInstance> configSensor : config) {
-                    for (ParameterInstance parameterInstance : configSensor) {
-                        if (parameterInstance.getName().equals("ConfigName") && parameterInstance.getValue().equals(sensorName)) {
-                            // check if sensor is deployed
-                            if (!sensorDeployed.getBody()) {
-                                //if not deploy Sensor
-                                restDeploymentController.deploySensor((sensor.getId()));
-                            }
-                            restDeploymentController.stopSensor(sensor.getId());
-                            restDeploymentController.startSensor(sensor.getId(), configSensor);
-                        }
-                    }
-                }
-            }
-        }
-
-
-        return new ResponseEntity<>("Test successfully started.", HttpStatus.OK);
     }
 
 
@@ -453,11 +293,11 @@ public class TestEngine implements ValueLogReceiverObserver {
      * Returns all information about the rules of the tested application before the execution
      *
      * @param test to be executed test
-     * @return list of informations about the rules of the tested application before execution
+     * @return list of information about the rules of the tested application before execution
      */
-    public List<Rule> getStatRulesBefore(TestDetails test) {
+    public List<Rule> getCorrespondingRules(TestDetails test) {
         // Get the rules selected by the user with their information about the last execution,.. before the sensor is started
-        List<Rule> rulesbefore = new ArrayList<>(test.getRules());
+        List<Rule> rulesBefore = new ArrayList<>(test.getRules());
 
         List<RuleTrigger> allRules = ruleTriggerRepository.findAll();
         // Get information for all rules of the IoT-Application
@@ -468,8 +308,8 @@ public class TestEngine implements ValueLogReceiverObserver {
                 if (trigger.getQuery().contains(sensorID)) {
                     for (Rule nextRule : ruleRepository.findAll()) {
                         if (nextRule.getTrigger().getId().equals(trigger.getId())) {
-                            if (!rulesbefore.contains(nextRule)) {
-                                rulesbefore.add(nextRule);
+                            if (!rulesBefore.contains(nextRule)) {
+                                rulesBefore.add(nextRule);
                             }
                         }
                     }
@@ -478,70 +318,12 @@ public class TestEngine implements ValueLogReceiverObserver {
         }
 
 
-        return rulesbefore;
-    }
-
-    /**
-     * Starts the test and saves all values form the sensor.
-     *
-     * @param test test to be executed
-     */
-    public Map<String, LinkedHashMap<Long, Double>> executeTest(TestDetails test) {
-
-        Map<String, TestDetails> activeTests = testEngine.getActiveTests();
-        Map<String, LinkedHashMap<Long, Double>> list = testEngine.getTestValues();
-
-
-        if (test.isUseNewData()) {
-            for (Sensor sensor : test.getSensor()) {
-                if (!sensor.getName().contains("RERUN_")) {
-                    activeTests.put(sensor.getId(), test);
-                    list.remove(sensor.getId());
-                }
-
-            }
-        } else {
-            for (Sensor sensor : test.getSensor()) {
-                if (sensor.getName().contains("RERUN_")) {
-                    activeTests.put(sensor.getId(), test);
-                    list.remove(sensor.getId());
-                }
-            }
-        }
-
-
-        testEngine.setActiveTests(activeTests);
-        testEngine.setTestValues(list);
-        testEngine.startTest(testDetailsRepository.findById(test.getId()));
-
-        Map<String, LinkedHashMap<Long, Double>> valueList;
-        Map<String, LinkedHashMap<Long, Double>> valueListTest = new HashMap<>();
-
-        // Get List of all simulated Values
-        valueList = testEngine.isFinished(test.getId());
-        TestDetails testDetails2 = testDetailsRepository.findOne(test.getId());
-        for (Sensor sensor : test.getSensor()) {
-            if (testDetails2.isUseNewData()) {
-                LinkedHashMap<Long, Double> temp = valueList.get(sensor.getId());
-                valueList.put(sensor.getName(), temp);
-                valueListTest.put(sensor.getName(), temp);
-                list.remove(sensor.getId());
-
-                // save list of sensor values to database
-                testDetails2.setSimulationList(valueListTest);
-            }
-
-
-        }
-
-        testDetailsRepository.save(testDetails2);
-
-        return valueListTest;
+        return rulesBefore;
     }
 
 
     /**
-     * Gets all Rules executed by the test
+     * Gets all Rules executed by the test.
      *
      * @param triggerValues map of all trigger values of a specific test
      * @return a list of all executed rules
@@ -554,14 +336,102 @@ public class TestEngine implements ValueLogReceiverObserver {
         return executedRules;
     }
 
+
+    public HttpEntity<Object> editTestConfig(String testID, String changes) {
+        try {
+            TestDetails testToUpdate = testDetailsRepository.findById(testID);
+
+            // Clear the configuration and rules field of the specific test
+            testToUpdate.getConfig().clear();
+            testToUpdate.getRules().clear();
+
+            // convert the string of the request body to a JSONObject in order to continue working with it
+            JSONObject updateInfos = new JSONObject(changes);
+
+            editSenorConfig(testToUpdate, updateInfos.get("config"));
+
+            // Update the rules to be observed in the test
+            updateRuleInformation(testToUpdate, updateInfos);
+
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Updates the rules that should be observed within the test and whether they should be triggered or not
+     *
+     * @param test        to be updated
+     * @param updateInfos update/editUseNewData information for the rules and the trigger rules
+     * @throws JSONException
+     */
+    private void updateRuleInformation(TestDetails test, JSONObject updateInfos) throws JSONException {
+        Pattern pattern = Pattern.compile("rules/(.*)$");
+        JSONArray rules = (JSONArray) updateInfos.get("rules");
+        List<Rule> newRules = new ArrayList<>();
+        if (rules != null) {
+            for (int i = 0; i < rules.length(); i++) {
+                Matcher m = pattern.matcher(rules.getString(i));
+                if (m.find()) {
+                    newRules.add(ruleRepository.findById(m.group(1)));
+                }
+            }
+        }
+        test.setRules(newRules);
+
+        // Update the information if the selected rules be triggered during the test or not
+        test.setTriggerRules(updateInfos.getBoolean("triggerRules"));
+
+        //save updates
+        testDetailsRepository.save(test);
+    }
+
+
+    /**
+     * Updates the sensor configurations.
+     *
+     * @param test   to be updated
+     * @param config update/editUseNewData information for the sensor configuration
+     * @throws JSONException In case of parsing problems
+     */
+    void editSenorConfig(TestDetails test, Object config) throws JSONException {
+        ParameterInstance instance;
+        // Get updates for the sensor config
+        JSONArray configEntries = (JSONArray) config;
+
+        // Create a new List of Parameter Instances for the updates
+        List<List<ParameterInstance>> newConfig = new ArrayList<>();
+        if (configEntries != null) {
+            for (int i = 0; i < configEntries.length(); i++) {
+                // get out single configurations for the different sensors
+                JSONArray singleConfig = (JSONArray) configEntries.get(i);
+                List<ParameterInstance> newConfigInner = new ArrayList<>();
+                for (int j = 0; j < singleConfig.length(); j++) {
+                    // get out the name and values of the update Parameter Instances
+                    instance = new ParameterInstance(singleConfig.getJSONObject(j).getString("name"), singleConfig.getJSONObject(j).getString("value"));
+                    newConfigInner.add(instance);
+                }
+                newConfig.add(newConfigInner);
+
+            }
+        }
+        // set the updated configuration to the test
+        test.setConfig(newConfig);
+
+        //save updates
+        testDetailsRepository.save(test);
+    }
+
     /**
      * Method to download a specific Test Report
      *
      * @param path to the specific Test Report to download
-     * @return
+     * @return ResponseEntity
      */
     public ResponseEntity downloadPDF(String path) throws IOException {
         TestDetails test = null;
+        ResponseEntity respEntity;
         Pattern pattern = Pattern.compile("(.*?)_");
         Matcher m = pattern.matcher(path);
         if (m.find()) {
@@ -572,7 +442,6 @@ public class TestEngine implements ValueLogReceiverObserver {
         assert test != null;
         File result = new File(test.getPathPDF() + "/" + path + ".pdf");
 
-        ResponseEntity respEntity;
 
         if (result.exists()) {
             InputStream inputStream = new FileInputStream(result);
@@ -593,10 +462,41 @@ public class TestEngine implements ValueLogReceiverObserver {
     }
 
     /**
-     * Returns a Hashmap with date and path to of all Test Reports regarding to a specific test.
+     * Deletes the last Test report and the corresponding graph if existing.
+     *
+     * @param testId of the test the report to be deleted belongs to
+     * @return if files could be deleted successfully or not
+     */
+    public ResponseEntity deleteReport(String testId) {
+        ResponseEntity response;
+
+        TestDetails testDetails = testDetailsRepository.findById(testId);
+
+        if (testDetails.isPdfExists()) {
+            Path pathTestReport = Paths.get(testDetails.getPathPDF());
+            Path pathDiagram = Paths.get(pathTestReport.getParent().toString(), testId + ".gif");
+
+            try {
+                Files.delete(pathTestReport);
+                Files.delete(pathDiagram);
+                response = new ResponseEntity<>("Test report successfully deleted", HttpStatus.OK);
+            } catch (NoSuchFileException x) {
+                response = new ResponseEntity<>("Test report doesn't exist.", HttpStatus.NOT_FOUND);
+            } catch (IOException x) {
+                response = new ResponseEntity<>(x, HttpStatus.CONFLICT);
+            }
+        } else {
+            response = new ResponseEntity<>("No available Test report for this Test.", HttpStatus.NOT_FOUND);
+        }
+        return response;
+    }
+
+
+    /**
+     * Returns a HashMap with date and path to of all Test Reports regarding to a specific test.
      *
      * @param testId ID of the test from which all reports are to be found
-     * @return hashmap with the date and path to every report regarding to the specific test
+     * @return hashMap with the date and path to every report regarding to the specific test
      */
     public ResponseEntity getPDFList(String testId) {
         ResponseEntity pdfList;
@@ -657,138 +557,6 @@ public class TestEngine implements ValueLogReceiverObserver {
         return sortMap(pdfEntry);
     }
 
-    public void addSensor(String newSensorName, TestDetails testDetails) {
-        List<Sensor> sensors = testDetails.getSensor();
-        sensors.add(sensorRepository.findByName(newSensorName));
-        testDetails.setSensor(sensors);
-        testDetailsRepository.save(testDetails);
-    }
-
-
-    /**
-     * Adds the Sensors for the Test Rerun with real Sensors.
-     *
-     * @param realSensorName
-     */
-    public void addRerunSensor(String realSensorName, TestDetails testDetails) {
-
-        Sensor newSensor = new Sensor();
-        // New sensor is nor owned by anyone
-        newSensor.setOwner(null);
-        Adapter rerunOperator = adapterRepository.findByName("RERUN_OPERATOR");
-        Device testingDevice = deviceRepository.findByName("TestingDevice");
-        String newSensorName = "RERUN_" + realSensorName;
-
-        try {
-            if (sensorRepository.findByName(newSensorName) == null) {
-                if (rerunOperator != null && testingDevice != null) {
-                    // Set all relevant information
-                    newSensor.setName(newSensorName);
-                    newSensor.setComponentType("Computer");
-                    newSensor.setDevice(testingDevice);
-                    newSensor.setAdapter(rerunOperator);
-
-                    //Insert new sensor into repository
-                    sensorRepository.insert(newSensor);
-                    //Validation errors
-                    Errors errors = new BeanPropertyBindingResult(newSensor, "component");
-                    sensorValidator.validate(newSensor, errors);
-                    sensorRepository.save(newSensor);
-                    sensorEventHandler.afterSensorCreate(newSensor);
-
-                }
-            }
-            if (!testDetails.getSensor().contains(sensorRepository.findByName(newSensorName))) {
-                addSensor(newSensorName, testDetails);
-            }
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void addRerunRule(TestDetails testDetails) {
-        // Get a list of every rule belonging to the IoT-Application
-        List<Rule> applicationRules = getStatRulesBefore(testDetails);
-        Boolean notRegister = false;
-
-        for (Rule rule : applicationRules) {
-            if (ruleRepository.findByName("RERUN_" + rule.getName()) == null) {
-                Rule rerunRule = new Rule();
-                rerunRule.setName("RERUN_" + rule.getName());
-                rerunRule.setOwner(null);
-                rerunRule.setActions(rule.getActions());
-
-                if (ruleTriggerRepository.findByName("RERUN_" + rule.getTrigger().getName()) == null) {
-                    RuleTrigger newTrigger = new RuleTrigger();
-                    newTrigger.setDescription(rule.getTrigger().getDescription());
-                    newTrigger.setName("RERUN_" + rule.getTrigger().getName());
-
-
-                    String triggerQuery = rule.getTrigger().getQuery();
-                    // Regex to get out the sensor ID
-                    Pattern pattern = Pattern.compile("(?<=sensor_)(.*)(?=\\)\\])");
-                    Matcher matcher = pattern.matcher(triggerQuery);
-                    while (matcher.find()) {
-                        String sensorID = matcher.group();
-                        List<Sensor> realSensors = sensorRepository.findAll();
-                        for (Sensor realSensor : realSensors) {
-                            if (realSensor.getId().equals(sensorID)) {
-                                Sensor rerunSensor = sensorRepository.findByName("RERUN_" + realSensor.getName());
-                                if (rerunSensor != null) {
-                                    triggerQuery = triggerQuery.replace(realSensor.getId(), rerunSensor.getId());
-                                    newTrigger.setQuery(triggerQuery);
-                                    ruleTriggerRepository.insert(newTrigger);
-                                } else {
-                                    notRegister = true;
-                                    break;
-                                }
-
-
-                            }
-                        }
-                        if (notRegister) {
-                            break;
-                        } else {
-                            rerunRule.setTrigger(newTrigger);
-                            rerunRule.setTrigger(newTrigger);
-                        }
-                    }
-                } else {
-                    rerunRule.setTrigger(ruleTriggerRepository.findByName("RERUN_" + rule.getTrigger().getName()));
-                }
-                if(!notRegister){
-                    ruleRepository.insert(rerunRule);
-                }
-
-
-
-            }
-        }
-    }
-
-
-    public void deleteRerunRules(TestDetails testDetails) {
-        List<Rule> testRules = getStatRulesBefore(testDetails);
-
-        for (Rule rule : testRules) {
-            if (rule.getName().contains("RERUN_")) {
-                if (rule != null) {
-                    if (rule.getTrigger() != null) {
-                        ruleTriggerRepository.delete(rule.getTrigger());
-                    }
-                    ruleRepository.delete(rule);
-                }
-
-
-            }
-        }
-
-
-    }
-
     /**
      * Sorts the timestamps of the List of Test-Reports.
      *
@@ -800,92 +568,8 @@ public class TestEngine implements ValueLogReceiverObserver {
         Map<Long, String> treeMap = new TreeMap<>(Long::compareTo);
 
         treeMap.putAll(unsortedMap);
-
         return treeMap;
     }
-
-
-    public void checkComponents(TestDetails testDetails) {
-        // Get the configurations for the different Sensors included into the test
-        List<List<ParameterInstance>> configList = testDetails.getConfig();
-
-
-        if (!testDetails.isUseNewData()) {
-            addRerunOperators();
-
-            for (List<ParameterInstance> config : configList) {
-                for (ParameterInstance parameterInstance : config) {
-                    if (parameterInstance.getName().equals("ConfigName")) {
-                        if (!sensorSimulators.contains(parameterInstance.getValue())) {
-                            addRerunSensor(parameterInstance.getValue().toString(), testDetails);
-                        }
-                    }
-                }
-            }
-
-            addRerunRule(testDetails);
-        } else {
-            //Delete rerun rules
-            deleteRerunRules(testDetails);
-
-            /**
-             *
-             * Don't delete the adapter all the time
-            // Delete Adapter
-            Adapter adapterReuse = adapterRepository.findByName("RERUN_OPERATOR");
-            if (adapterReuse != null) {
-                adapterRepository.delete(adapterReuse);
-            }
-             **/
-
-            // Delete the Reuse Adapters and Sensors for each real sensor if the data should not be reused
-            for (List<ParameterInstance> config : configList) {
-                for (ParameterInstance parameterInstance : config) {
-                    if (parameterInstance.getName().equals("ConfigName")) {
-                        if (!sensorSimulators.contains(parameterInstance.getValue())) {
-                            // Delete Reuse Operator
-                            String reuseName = "RERUN_" + parameterInstance.getValue();
-                            Sensor sensorReuse = sensorRepository.findByName(reuseName);
-                            if (sensorReuse != null) {
-                                sensorRepository.delete(sensorReuse);
-                                testDetails.getSensor().remove(sensorReuse);
-                                testDetailsRepository.save(testDetails);
-
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-    }
-
-
-    /**
-     * Called when the client wants to load default operators and make them available for usage
-     * in actuators and sensors by all users.
-     *
-     * @return An action response containing the result of the request
-     */
-
-    public ResponseEntity<String> addRerunOperators() {
-        ResponseEntity<String> response;
-        try {
-            if (adapterRepository.findByName("RERUN_OPERATOR") == null) {
-                //Call corresponding service function
-                rerunOperatorService.addDefaultOperators();
-                response = new ResponseEntity<>("Adapter successfully created", HttpStatus.OK);
-            } else {
-                response = new ResponseEntity<>("Adapter already exists.", HttpStatus.OK);
-            }
-        } catch (Exception e) {
-            response = new ResponseEntity<>("Error during creation of the Adapter.", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-
-        return response;
-    }
-
 }
 
     

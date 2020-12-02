@@ -43,12 +43,8 @@ public class TestRerunOperatorService {
      * Loads default operators from the resources directory and adds them to the operator repository so that they
      * can be used in actuators and sensors by all users.
      *
-     * @return An action response containing the result of this operation
      */
-    public ActionResponse addDefaultOperators() {
-
-
-
+    public void addRerunOperators() {
         //Remembers if an operator was inserted
         boolean inserted = false;
 
@@ -159,6 +155,6 @@ public class TestRerunOperatorService {
             }
         }
 
-        return new ActionResponse(inserted);
+        new ActionResponse(inserted);
     }
 }
