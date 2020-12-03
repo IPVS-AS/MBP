@@ -30,7 +30,10 @@ public class TestingController {
     private TestExecutor testExecutor;
 
     @Autowired
-    TestRerunService testRerunService;
+    private TestRerunService testRerunService;
+
+    @Autowired
+    private TestAnalyzer testAnalyzer;
 
 
     /**
@@ -108,7 +111,7 @@ public class TestingController {
         TestDetails test = testDetailsRepository.findOne(testId);
 
         // get  information about the status of the rules before the execution of the test
-        return testEngine.getCorrespondingRules(test);
+        return testAnalyzer.getCorrespondingRules(test);
     }
 
 

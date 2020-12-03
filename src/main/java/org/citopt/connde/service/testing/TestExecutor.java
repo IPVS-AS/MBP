@@ -34,17 +34,16 @@ public class TestExecutor {
     private TestDetailsRepository testDetailsRepository;
 
     @Autowired
-    private TestEngine testEngine;
-
-    @Autowired
     private ActuatorRepository actuatorRepository;
 
     @Autowired
     private RestDeploymentController restDeploymentController;
 
-
     @Autowired
     private RestRuleController restRuleController;
+
+    @Autowired
+    private TestAnalyzer testAnalyzer;
 
 
     final String[] sensorSim = {"TestingTemperaturSensor", "TestingTemperaturSensorPl", "TestingFeuchtigkeitsSensor", "TestingFeuchtigkeitsSensorPl", "TestingGPSSensorPl", "TestingGPSSensor", "TestingBeschleunigungsSensor", "TestingBeschleunigungsSensorPl"};
@@ -80,7 +79,7 @@ public class TestExecutor {
      */
     public void activateTest(TestDetails test) {
         Map<String, TestDetails> activeTests = getActiveTests();
-        Map<String, LinkedHashMap<Long, Double>> list = testEngine.getTestValues();
+        Map<String, LinkedHashMap<Long, Double>> list = testAnalyzer.getTestValues();
 
         if (test.isUseNewData()) {
             for (Sensor sensor : test.getSensor()) {
@@ -100,7 +99,7 @@ public class TestExecutor {
         }
 
         setActiveTests(activeTests);
-        testEngine.setTestValues(list);
+        testAnalyzer.setTestValues(list);
     }
 
 
@@ -109,14 +108,14 @@ public class TestExecutor {
      *
      * @param test test to be executed
      */
-    public Map<String, LinkedHashMap<Long, Double>> executeTest(TestDetails test) throws Exception {
+    public void executeTest(TestDetails test) throws Exception {
 
         // Set the exact start time of the test
         test.setStartTestTimeNow();
         testDetailsRepository.save(test);
 
         // get  information about the status of the rules before the execution of the test
-        List<Rule> rulesBefore = testEngine.getCorrespondingRules(test);
+        List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(test);
 
         // add test and sensors to the activation list
         activateTest(test);
@@ -125,12 +124,12 @@ public class TestExecutor {
         startTest(testDetailsRepository.findById(test.getId()));
 
         // Get List of all simulated Values
-        Map<String, LinkedHashMap<Long, Double>> valueList = testEngine.isFinished(test.getId());
+        Map<String, LinkedHashMap<Long, Double>> valueList = testAnalyzer.isFinished(test.getId());
 
         analyzeTest(test, rulesBefore);
 
 
-        return saveValues(test, valueList);
+        saveValues(test, valueList);
     }
 
     /**
@@ -141,7 +140,7 @@ public class TestExecutor {
      */
     private void analyzeTest(TestDetails test, List<Rule> rulesBefore) throws Exception {
         // Check the test for success
-        testEngine.testSuccess(test.getId());
+        testAnalyzer.testSuccess(test.getId());
         TestDetails testDetails = testDetailsRepository.findOne(test.getId());
 
         // Create test report with graph of sensor values as a pdf
@@ -339,7 +338,7 @@ public class TestExecutor {
      */
     private void enableRules(TestDetails test) {
         // Get a list of every rule corresponding to the application
-        List<Rule> rules = testEngine.getCorrespondingRules(test);
+        List<Rule> rules = testAnalyzer.getCorrespondingRules(test);
 
         //enable the selected rules for the test
         for (Rule rule : rules) {

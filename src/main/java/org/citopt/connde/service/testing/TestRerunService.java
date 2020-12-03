@@ -40,7 +40,7 @@ public class TestRerunService {
     private TestDetailsRepository testDetailsRepository;
 
     @Autowired
-    private TestEngine testEngine;
+    private TestAnalyzer testAnalyzer;
 
     @Autowired
     private RuleTriggerRepository ruleTriggerRepository;
@@ -240,7 +240,7 @@ public class TestRerunService {
      */
     public void addRerunRule(TestDetails test) {
         // Get a list of every rule belonging to the IoT-Application
-        List<Rule> applicationRules = testEngine.getCorrespondingRules(test);
+        List<Rule> applicationRules = testAnalyzer.getCorrespondingRules(test);
         boolean notRegister = false;
 
         for (Rule rule : applicationRules) {
@@ -309,7 +309,7 @@ public class TestRerunService {
      * @param test for which the rerun rules should be deleted
      */
     public void deleteRerunRules(TestDetails test) {
-        List<Rule> testRules = testEngine.getCorrespondingRules(test);
+        List<Rule> testRules = testAnalyzer.getCorrespondingRules(test);
 
         for (Rule rule : testRules) {
             if (rule.getName().contains("RERUN_")) {
