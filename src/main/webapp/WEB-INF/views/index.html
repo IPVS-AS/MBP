@@ -144,6 +144,7 @@
     </div>
     <!-- #User Info -->
     <!-- Menu -->
+    <!-- Menu -->
     <div class="menu">
         <ul class="list">
             <li class="header">Main Navigation</li>
@@ -161,6 +162,40 @@
             </li>
             <li menu-item="menu-item">
                 <a class="menu-toggle">
+                    <i class="material-icons">devices</i>
+                    <span>IoT Hardware</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/devices" menu-item="menu-item">Devices</a>
+                    </li>
+                    <li>
+                        <a href="view/actuators" menu-item="menu-item">Actuators</a>
+                    </li>
+                    <li>
+                        <a href="view/sensors" menu-item="menu-item">Sensors</a>
+                    </li>
+                    <li>
+                        <a href="view/key-pairs" menu-item="menu-item">Key Pairs</a>
+                    </li>
+                </ul>
+            </li>
+            <li menu-item="menu-item">
+                <a class="menu-toggle">
+                    <i class="material-icons">description</i>
+                    <span>Operators</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/operators" menu-item="menu-item">Extraction/Control Operators</a>
+                    </li>
+                    <li>
+                        <a href="view/monitoring-operators" menu-item="menu-item">Monitoring Operators</a>
+                    </li>
+                </ul>
+            </li>
+            <li menu-item="menu-item">
+                <a class="menu-toggle">
                     <i class="material-icons">call_split</i>
                     <span>Rules</span>
                 </a>
@@ -174,48 +209,15 @@
                     <li>
                         <a href="view/rule-actions" menu-item="menu-item">Actions</a>
                     </li>
+                    <li>
+                        <a href="view/testing-tool" menu-item="menu-item">Testing-Tool</a>
+                    </li>
                 </ul>
-            </li>
-            <li href="view/key-pairs" menu-item="menu-item">
-                <a href="view/key-pairs">
-                    <i class="material-icons">vpn_key</i>
-                    <span>Key Pairs</span>
-                </a>
-            </li>
-            <li href="view/devices" menu-item="menu-item">
-                <a href="view/devices">
-                    <i class="material-icons">devices</i>
-                    <span>Devices</span>
-                </a>
-            </li>
-            <li href="view/sensors" menu-item="menu-item">
-                <a href="view/sensors">
-                    <i class="material-icons">settings_remote</i>
-                    <span>Sensors</span>
-                </a>
-            </li>
-            <li href="view/actuators" menu-item="menu-item">
-                <a href="view/actuators">
-                    <i class="material-icons">wb_incandescent</i>
-                    <span>Actuators</span>
-                </a>
             </li>
             <li href="view/entity-types" menu-item="menu-item">
                 <a href="view/entity-types">
                     <i class="material-icons">widgets</i>
                     <span>Entity Types</span>
-                </a>
-            </li>
-            <li href="view/operators" menu-item="menu-item">
-                <a href="view/operators">
-                    <i class="material-icons">description</i>
-                    <span>Extraction/Control Operators</span>
-                </a>
-            </li>
-            <li href="view/monitoring-operators" menu-item="menu-item">
-                <a href="view/monitoring-operators">
-                    <i class="material-icons">timeline</i>
-                    <span>Monitoring Operators</span>
                 </a>
             </li>
             <li menu-item="menu-item">
@@ -234,12 +236,6 @@
                         <a href="view/policy-effects" menu-item="menu-item">Effects</a>
                     </li>
                 </ul>
-            </li>
-            <li href="view/testing-tool" menu-item="menu-item">
-                <a href="view/testing-tool">
-                    <i class="material-icons">bug_report</i>
-                    <span>Testing-Tool</span>
-                </a>
             </li>
             <li href="view/settings" menu-item="menu-item" ng-show="userData.isAdmin">
                 <a href="view/settings">
@@ -294,9 +290,6 @@
 
 <!-- Custom Template Js -->
 <script th:src="@{/js/admin.js}"></script>
-
-<!-- Input Mask Plugin Js -->
-<script th:src="@{/plugins/jquery-inputmask/jquery.inputmask.bundle.js}"></script>
 
 <!-- AngularJS with resource and route - built by WRO -->
 <script th:src="@{/js/angular.js}"></script>
