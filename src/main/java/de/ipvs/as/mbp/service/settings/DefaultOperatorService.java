@@ -168,8 +168,7 @@ public class DefaultOperatorService {
 
         //Check for failure
         if (!inserted) {
-            throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "There are no default operators remaining " +
-                    "that could be added.");
+            throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "All available default operators have already been added.");
         }
     }
 }
