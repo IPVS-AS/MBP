@@ -5,9 +5,9 @@
  */
 app.controller('ActuatorListController',
     ['$scope', '$controller', '$interval', 'actuatorList', 'addActuator', 'deleteActuator',
-        'accessControlPolicyList', 'deviceList', 'operatorList', 'actuatorTypesList', 'ComponentService', 'NotificationService',
+        'deviceList', 'operatorList', 'actuatorTypesList', 'accessControlPolicyList', 'ComponentService', 'NotificationService',
         function ($scope, $controller, $interval, actuatorList, addActuator, deleteActuator,
-                  accessControlPolicyList, deviceList, operatorList, actuatorTypesList, ComponentService, NotificationService) {
+                  deviceList, operatorList, actuatorTypesList, accessControlPolicyList, ComponentService, NotificationService) {
             let vm = this;
 
             vm.operatorList = operatorList;
@@ -27,6 +27,11 @@ app.controller('ActuatorListController',
                 //Cancel interval on route change
                 $scope.$on('$destroy', function () {
                     $interval.cancel(interval);
+                });
+
+                // Refresh policy select picker when the modal is opened
+                $('.modal').on('shown.bs.modal', function (e) {
+                    $('.selectpicker').selectpicker('refresh');
                 });
             })();
 
@@ -167,9 +172,9 @@ app.controller('ActuatorListController',
                     deleteItem: deleteActuator,
                     confirmDeletion: confirmDelete
                 }),
-                accessControlPolicyList: accessControlPolicyList,
                 registeringDevice: false,
-                actuatorTypes: actuatorTypesList
+                actuatorTypes: actuatorTypesList,
+                accessControlPolicyList: accessControlPolicyList
             });
 
             //Watch 'addActuator' result and add to 'actuatorList'

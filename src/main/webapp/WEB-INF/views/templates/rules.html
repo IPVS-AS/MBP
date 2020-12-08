@@ -5,7 +5,7 @@
             <div class="header">
                 <div class="col-lg-6">
                     <h2>Rule Definitions
-                    <small>Rules for your IoT environments</small></h2>
+                        <small>Rules for your IoT environments</small></h2>
                 </div>
                 <div class="align-right">
                     <button id="add-button" type="button"
@@ -16,6 +16,27 @@
                 </div>
             </div>
             <div class="body">
+                <div class="row">
+                    <div class="col-lg-8"></div>
+                    <div class="col-lg-4">
+                        <div class="form-group list-filter">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    <input class="form-control ng-pristine ng-valid ng-touched"
+                                           type="text" placeholder="Filter by name..."
+                                           ng-model="ruleListCtrl.filterTerm">
+                                </div>
+                                <span class="input-group-addon">
+                                    <button type="button" class="list-filter-clear"
+                                            ng-show="ruleListCtrl.filterTerm.length > 0"
+                                            ng-click="ruleListCtrl.filterTerm = ''">
+                                        <i class="material-icons">clear</i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <table class="table table-hover" st-table="displayedCollection" st-safe-src="ruleListCtrl.items">
                     <thead>
                     <tr>
@@ -30,7 +51,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="{{rule.id}}" ng-repeat="rule in displayedCollection">
+                    <tr id="{{rule.id}}" ng-repeat="rule in displayedCollection | filter:ruleListCtrl.nameFilter">
                         <td>
                             {{rule.name}}
                         </td>
@@ -71,7 +92,8 @@
                         <td>
                             <form ng-submit="deleteRuleCtrl.deleteItem()"
                                   style="display: inline-block">
-                                <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                <button type="submit"
+                                        class="btn bg-red btn-circle waves-effect waves-circle waves-float"
                                         ng-click="deleteRuleCtrl.item.id = rule.id">
                                     <i class="material-icons" style="font-size:14px;">delete</i>
                                 </button>
@@ -118,7 +140,8 @@
                                     <input class="form-control" type="text" placeholder="Name *"
                                            ng-model="addRuleCtrl.item.name"/>
                                 </div>
-                                <span class="help-block" ng-show="addRuleCtrl.item.errors.name">{{addRuleCtrl.item.errors.name.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addRuleCtrl.item.errors.name">{{addRuleCtrl.item.errors.name.message}}</span>
                             </div>
                             <!-- item.trigger group -->
                             <div class="form-group" ng-class="{'has-error' : addRuleCtrl.item.errors.trigger }">
@@ -129,7 +152,8 @@
                                         <option disabled selected value>Select condition *</option>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addRuleCtrl.item.errors.trigger">{{addRuleCtrl.item.errors.trigger.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addRuleCtrl.item.errors.trigger">{{addRuleCtrl.item.errors.trigger.message}}</span>
                             </div>
                             <!-- item.actions group -->
                             <div class="form-group" ng-class="{'has-error' : addRuleCtrl.item.errors.actions }">
@@ -141,7 +165,8 @@
                                             ng-model="addRuleCtrl.item.actions" multiple>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addRuleCtrl.item.errors.actions">{{addRuleCtrl.item.errors.actions.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addRuleCtrl.item.errors.actions">{{addRuleCtrl.item.errors.actions.message}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>

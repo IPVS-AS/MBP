@@ -102,7 +102,7 @@ public class RestActuatorController {
     		@ApiResponse(code = 409, message = "Actuator already exists!") })
     public ResponseEntity<EntityModel<Actuator>> create(@RequestBody ComponentRequestDTO requestDto) throws EntityAlreadyExistsException, EntityNotFoundException {
     	// Create actuator from request DTO
-    	Actuator actuator = (Actuator) new Sensor()
+    	Actuator actuator = (Actuator) new Actuator()
     			.setName(requestDto.getName())
     			.setComponentType(requestDto.getComponentType())
     			.setOperator(requestDto.getOperatorId() == null ? null : userEntityService.getForId(operatorRepository, requestDto.getOperatorId()))

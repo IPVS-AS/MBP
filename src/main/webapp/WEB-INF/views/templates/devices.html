@@ -16,6 +16,27 @@
                 </div>
             </div>
             <div class="body">
+                <div class="row">
+                    <div class="col-lg-8"></div>
+                    <div class="col-lg-4">
+                        <div class="form-group list-filter">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    <input class="form-control ng-pristine ng-valid ng-touched"
+                                           type="text" placeholder="Filter by name..."
+                                           ng-model="deviceListCtrl.filterTerm">
+                                </div>
+                                <span class="input-group-addon">
+                                    <button type="button" class="list-filter-clear"
+                                            ng-show="deviceListCtrl.filterTerm.length > 0"
+                                            ng-click="deviceListCtrl.filterTerm = ''">
+                                        <i class="material-icons">clear</i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <table class="table table-hover" st-table="displayedCollection" st-safe-src="deviceListCtrl.items">
                     <thead>
                     <tr>
@@ -28,7 +49,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection | filter:deviceListCtrl.nameFilter">
                         <td>
                             <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>&nbsp;
                             <i ng-show="item.wasModelled" class="material-icons" style="vertical-align: bottom;">view_quilt</i>
@@ -80,7 +101,8 @@
                         <td>
                             <form ng-submit="deleteDeviceCtrl.deleteItem()"
                                   style="display: inline-block">
-                                <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                <button type="submit"
+                                        class="btn bg-red btn-circle waves-effect waves-circle waves-float"
                                         ng-click="deleteDeviceCtrl.item.id = item.id">
                                     <i class="material-icons" style="font-size:14px;">delete</i>
                                 </button>
@@ -134,7 +156,8 @@
                                     <input class="form-control" id="device-form-input-name" type="text"
                                            placeholder="Name *" ng-model="addDeviceCtrl.item.name"/>
                                 </div>
-                                <span class="help-block" ng-show="addDeviceCtrl.item.errors.name">{{addDeviceCtrl.item.errors.name.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addDeviceCtrl.item.errors.name">{{addDeviceCtrl.item.errors.name.message}}</span>
                             </div>
                             <!-- item.componentType group -->
                             <div class="form-group"
@@ -150,7 +173,8 @@
                                         </option>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addDeviceCtrl.item.errors.componentType">{{addDeviceCtrl.item.errors.componentType.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addDeviceCtrl.item.errors.componentType">{{addDeviceCtrl.item.errors.componentType.message}}</span>
                             </div>
                             <!-- item.ipAddress group -->
                             <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.ipAddress }">
@@ -159,7 +183,8 @@
                                     <input class="form-control" id="device-form-input-ipAddress" type="text"
                                            placeholder="IP address *" ng-model="addDeviceCtrl.item.ipAddress"/>
                                 </div>
-                                <span class="help-block" ng-show="addDeviceCtrl.item.errors.ipAddress">{{addDeviceCtrl.item.errors.ipAddress.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addDeviceCtrl.item.errors.ipAddress">{{addDeviceCtrl.item.errors.ipAddress.message}}</span>
                             </div>
                             <!-- item.username group -->
                             <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.username }">
@@ -168,16 +193,19 @@
                                     <input class="form-control" id="device-form-input-username" type="text"
                                            placeholder="User name *" ng-model="addDeviceCtrl.item.username"/>
                                 </div>
-                                <span class="help-block" ng-show="addDeviceCtrl.item.errors.username">{{addDeviceCtrl.item.errors.username.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addDeviceCtrl.item.errors.username">{{addDeviceCtrl.item.errors.username.message}}</span>
                             </div>
                             <!-- item.password group -->
                             <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.password }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addDeviceCtrl.item.errors.password }">
                                     <input class="form-control" id="device-form-input-password" type="password"
-                                           placeholder="Password" autocomplete="no" ng-model="addDeviceCtrl.item.password"/>
+                                           placeholder="Password" autocomplete="no"
+                                           ng-model="addDeviceCtrl.item.password"/>
                                 </div>
-                                <span class="help-block" ng-show="addDeviceCtrl.item.errors.password">{{addDeviceCtrl.item.errors.password.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addDeviceCtrl.item.errors.password">{{addDeviceCtrl.item.errors.password.message}}</span>
                             </div>
                             <!-- item.keyPair group -->
                             <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.keypair }">
@@ -189,10 +217,12 @@
                                         </option>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addDeviceCtrl.item.errors.keypair">{{addDeviceCtrl.item.errors.keypair.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addDeviceCtrl.item.errors.keypair">{{addDeviceCtrl.item.errors.keypair.message}}</span>
                             </div>
                             <!-- item.accessControlPolicyIds group -->
-                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.accessControlPolicyIds }">
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addDeviceCtrl.item.errors.accessControlPolicyIds }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addDeviceCtrl.item.errors.accessControlPolicyIds }">
                                     <select multiple class="form-control selectpicker" title="Access Control Policies"
@@ -203,7 +233,8 @@
                                         </option>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addDeviceCtrl.item.errors.accessControlPolicyIds">{{addDeviceCtrl.item.errors.accessControlPolicyIds.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addDeviceCtrl.item.errors.accessControlPolicyIds">{{addDeviceCtrl.item.errors.accessControlPolicyIds.message}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">* Mandatory field</span>
                         </div>

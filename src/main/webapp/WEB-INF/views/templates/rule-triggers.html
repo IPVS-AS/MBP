@@ -14,6 +14,27 @@
                 </div>
             </div>
             <div class="body">
+                <div class="row">
+                    <div class="col-lg-8"></div>
+                    <div class="col-lg-4">
+                        <div class="form-group list-filter">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    <input class="form-control ng-pristine ng-valid ng-touched"
+                                           type="text" placeholder="Filter by name..."
+                                           ng-model="ruleTriggerListCtrl.filterTerm">
+                                </div>
+                                <span class="input-group-addon">
+                                    <button type="button" class="list-filter-clear"
+                                            ng-show="ruleTriggerListCtrl.filterTerm.length > 0"
+                                            ng-click="ruleTriggerListCtrl.filterTerm = ''">
+                                        <i class="material-icons">clear</i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <table class="table table-hover" st-table="displayedCollection" st-safe-src="ruleTriggerListCtrl.items">
                     <thead>
                     <tr>
@@ -24,7 +45,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection | filter:ruleTriggerListCtrl.nameFilter">
                         <td>
                             {{item.name}}
                         </td>

@@ -213,7 +213,6 @@ app.controller('SensorListController',
                 },
                 function () {
                     let id = vm.deleteSensorCtrl.result;
-
                     vm.sensorListCtrl.removeItem(id);
                 }
             );

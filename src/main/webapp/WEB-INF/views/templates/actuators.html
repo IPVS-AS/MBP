@@ -15,6 +15,27 @@
                 </div>
             </div>
             <div class="body">
+                <div class="row">
+                    <div class="col-lg-8"></div>
+                    <div class="col-lg-4">
+                        <div class="form-group list-filter">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    <input class="form-control ng-pristine ng-valid ng-touched"
+                                           type="text" placeholder="Filter by name..."
+                                           ng-model="actuatorListCtrl.filterTerm">
+                                </div>
+                                <span class="input-group-addon">
+                                    <button type="button" class="list-filter-clear"
+                                            ng-show="actuatorListCtrl.filterTerm.length > 0"
+                                            ng-click="actuatorListCtrl.filterTerm = ''">
+                                        <i class="material-icons">clear</i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <table class="table table-hover" st-table="displayedCollection" st-safe-src="actuatorListCtrl.items">
                     <thead>
                     <tr>
@@ -27,7 +48,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection | filter:actuatorListCtrl.nameFilter">
                         <td>
                             <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>&nbsp;
                             <i ng-show="item.wasModelled" class="material-icons" style="vertical-align: bottom;">view_quilt</i>
@@ -69,7 +90,8 @@
                         <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
                             <form ng-submit="deleteActuatorCtrl.deleteItem()" style="display:inline-block">
-                                <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                <button type="submit"
+                                        class="btn bg-red btn-circle waves-effect waves-circle waves-float"
                                         ng-click="deleteActuatorCtrl.item.id = item.id">
                                     <i class="material-icons" style="font-size:14px;">delete</i>
                                 </button>
@@ -121,7 +143,8 @@
                                     <input class="form-control" id="actuator-form-input-name" type="text"
                                            placeholder="Name *" ng-model="addActuatorCtrl.item.name"/>
                                 </div>
-                                <span class="help-block" ng-show="addActuatorCtrl.item.errors.name">{{addActuatorCtrl.item.errors.name.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addActuatorCtrl.item.errors.name">{{addActuatorCtrl.item.errors.name.message}}</span>
                             </div>
                             <!-- item.componentType group -->
                             <div class="form-group"
@@ -136,7 +159,8 @@
                                         </option>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addActuatorCtrl.item.errors.componentType">{{addActuatorCtrl.item.errors.componentType.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addActuatorCtrl.item.errors.componentType">{{addActuatorCtrl.item.errors.componentType.message}}</span>
                             </div>
                             <!-- item.operator group -->
                             <div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.operator }">
@@ -149,7 +173,8 @@
                                         <option/>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addActuatorCtrl.item.errors.operator">{{addActuatorCtrl.item.errors.operator.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addActuatorCtrl.item.errors.operator">{{addActuatorCtrl.item.errors.operator.message}}</span>
                             </div>
                             <!-- item.device group -->
                             <div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.device }">
@@ -162,10 +187,12 @@
                                         <option/>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addActuatorCtrl.item.errors.device">{{addActuatorCtrl.item.errors.device.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addActuatorCtrl.item.errors.device">{{addActuatorCtrl.item.errors.device.message}}</span>
                             </div>
                             <!-- item.accessControlPolicyIds group -->
-                            <div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.accessControlPolicyIds }">
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addActuatorCtrl.item.errors.accessControlPolicyIds }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addActuatorCtrl.item.errors.accessControlPolicyIds }">
                                     <select multiple class="form-control selectpicker" title="Access Control Policies"
@@ -173,10 +200,10 @@
                                             ng-model="addActuatorCtrl.item.accessControlPolicyIds"
                                             ng-options="p.id as (p.name) for p in ctrl.accessControlPolicyList">
                                         <option value="">Select access control policies
-                                        <option/>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addActuatorCtrl.item.errors.accessControlPolicyIds">{{addActuatorCtrl.item.errors.accessControlPolicyIds.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addActuatorCtrl.item.errors.accessControlPolicyIds">{{addActuatorCtrl.item.errors.accessControlPolicyIds.message}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>

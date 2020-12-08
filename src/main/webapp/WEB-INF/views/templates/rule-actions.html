@@ -15,6 +15,27 @@
                 </div>
             </div>
             <div class="body">
+                <div class="row">
+                    <div class="col-lg-8"></div>
+                    <div class="col-lg-4">
+                        <div class="form-group list-filter">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    <input class="form-control ng-pristine ng-valid ng-touched"
+                                           type="text" placeholder="Filter by name..."
+                                           ng-model="ruleActionListCtrl.filterTerm">
+                                </div>
+                                <span class="input-group-addon">
+                                    <button type="button" class="list-filter-clear"
+                                            ng-show="ruleActionListCtrl.filterTerm.length > 0"
+                                            ng-click="ruleActionListCtrl.filterTerm = ''">
+                                        <i class="material-icons">clear</i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <table class="table table-hover" st-table="displayedCollection" st-safe-src="ruleActionListCtrl.items">
                     <thead>
                     <tr>
@@ -25,12 +46,13 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection | filter:ruleActionListCtrl.nameFilter">
                         <td>
                             {{item.name}}
                         </td>
                         <td>
-                            <span class="label label-success" ng-class="ctrl.getActionTypeColor(item.type.id)">{{item.type.name}}</span>
+                            <span class="label label-success"
+                                  ng-class="ctrl.getActionTypeColor(item.type.id)">{{item.type.name}}</span>
                         </td>
                         <td>
                             <form ng-submit="ctrl.testRuleAction(item.id)">
@@ -43,7 +65,8 @@
                         <td>
                             <form ng-submit="deleteRuleActionCtrl.deleteItem()"
                                   style="display: inline-block">
-                                <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                <button type="submit"
+                                        class="btn bg-red btn-circle waves-effect waves-circle waves-float"
                                         ng-click="deleteRuleActionCtrl.item.id = item.id">
                                     <i class="material-icons" style="font-size:14px;">delete</i>
                                 </button>
@@ -91,7 +114,8 @@
                                     <input class="form-control" type="text" placeholder="Action name *"
                                            ng-model="addRuleActionCtrl.item.name"/>
                                 </div>
-                                <span class="help-block" ng-show="addRuleActionCtrl.item.errors.name">{{addRuleActionCtrl.item.errors.name.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addRuleActionCtrl.item.errors.name">{{addRuleActionCtrl.item.errors.name.message}}</span>
                             </div>
                             <!-- item.type group -->
                             <div class="form-group" ng-class="{'has-error' : addRuleActionCtrl.item.errors.type }">
@@ -102,7 +126,8 @@
                                         <option disabled selected value>Select action type *</option>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addRuleActionCtrl.item.errors.type">{{addRuleActionCtrl.item.errors.type.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addRuleActionCtrl.item.errors.type">{{addRuleActionCtrl.item.errors.type.message}}</span>
                             </div>
                             <!-- Switch for parameters of different action types -->
                             <div ng-switch="addRuleActionCtrl.item.type">
