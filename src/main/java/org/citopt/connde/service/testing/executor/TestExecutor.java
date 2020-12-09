@@ -1,18 +1,27 @@
-package org.citopt.connde.service.testing;
+package org.citopt.connde.service.testing.executor;
 
+import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.testing.TestDetails;
 import org.citopt.connde.repository.*;
+import org.citopt.connde.service.testing.PropertiesService;
+import org.citopt.connde.service.testing.analyzer.GraphPlotter;
+import org.citopt.connde.service.testing.analyzer.TestAnalyzer;
+import org.citopt.connde.service.testing.analyzer.TestReport;
 import org.citopt.connde.web.rest.RestDeploymentController;
 import org.citopt.connde.web.rest.RestRuleController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -45,12 +54,32 @@ public class TestExecutor {
     @Autowired
     private TestAnalyzer testAnalyzer;
 
+    @Autowired
+    private PropertiesService propertiesService;
 
-    final String[] sensorSim = {"TestingTemperaturSensor", "TestingTemperaturSensorPl", "TestingFeuchtigkeitsSensor", "TestingFeuchtigkeitsSensorPl", "TestingGPSSensorPl", "TestingGPSSensor", "TestingBeschleunigungsSensor", "TestingBeschleunigungsSensorPl"};
-    final List<String> sensorSimulators = Arrays.asList(sensorSim);
+    @Value("#{'${testingTool.sensorSimulators}'.split(',')}")
+    private List<String> SIMULATOR_LIST;
+
+    //To resolve ${} in @Value
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
+
+
+    String RERUN_IDENTIFIER;
+    String TESTING_ACTUATOR;
+    String CONFIG_SENSOR_NAME_KEY;
 
     // List of all active Tests
     Map<String, TestDetails> activeTests = new HashMap<>();
+
+    public TestExecutor() throws IOException {
+        propertiesService = new PropertiesService();
+        this.RERUN_IDENTIFIER = propertiesService.getPropertiesString("testingTool.RerunIdentifier");
+        this.TESTING_ACTUATOR = propertiesService.getPropertiesString("testingTool.actuatorName");
+        this.CONFIG_SENSOR_NAME_KEY = propertiesService.getPropertiesString("testingTool.ConfigSensorNameKey");
+    }
 
 
     /**
@@ -83,7 +112,7 @@ public class TestExecutor {
 
         if (test.isUseNewData()) {
             for (Sensor sensor : test.getSensor()) {
-                if (!sensor.getName().contains("RERUN_")) {
+                if (!sensor.getName().contains(RERUN_IDENTIFIER)) {
                     activeTests.put(sensor.getId(), test);
                     list.remove(sensor.getId());
                 }
@@ -91,7 +120,7 @@ public class TestExecutor {
             }
         } else {
             for (Sensor sensor : test.getSensor()) {
-                if (sensor.getName().contains("RERUN_")) {
+                if (sensor.getName().contains(RERUN_IDENTIFIER)) {
                     activeTests.put(sensor.getId(), test);
                     list.remove(sensor.getId());
                 }
@@ -158,9 +187,8 @@ public class TestExecutor {
      *
      * @param test      executed test
      * @param valueList generated value list
-     * @return a list with all values generated though the test executing
      */
-    private Map<String, LinkedHashMap<Long, Double>> saveValues(TestDetails test, Map<String, LinkedHashMap<Long, Double>> valueList) {
+    private void saveValues(TestDetails test, Map<String, LinkedHashMap<Long, Double>> valueList) {
 
         Map<String, LinkedHashMap<Long, Double>> valueListTest = new HashMap<>();
         TestDetails testDetails = testDetailsRepository.findOne(test.getId());
@@ -176,7 +204,6 @@ public class TestExecutor {
         }
         testDetailsRepository.save(testDetails);
 
-        return valueListTest;
     }
 
 
@@ -218,7 +245,8 @@ public class TestExecutor {
             for (Sensor sensor : testingSensors) {
                 List<ParameterInstance> parametersWrapper = new ArrayList<>();
                 // If not a sensor simulator
-                if (!sensorSimulators.contains(sensor.getName()) && !sensor.getName().contains("RERUN_")) {
+
+                if (!SIMULATOR_LIST.contains(sensor.getName()) && !sensor.getName().contains(RERUN_IDENTIFIER)) {
                     restDeploymentController.stopSensor(sensor.getId());
                     for (Map.Entry<String, LinkedHashMap<Long, Double>> sensorValues : test.getSimulationList().entrySet()) {
                         if (sensorValues.getKey().equals(sensor.getName())) {
@@ -238,7 +266,7 @@ public class TestExecutor {
                 String sensorName = sensor.getName();
                 for (List<ParameterInstance> configSensor : test.getConfig()) {
                     for (ParameterInstance parameterInstance : configSensor) {
-                        if (parameterInstance.getName().equals("ConfigName") && parameterInstance.getValue().equals(sensorName)) {
+                        if (parameterInstance.getName().equals(CONFIG_SENSOR_NAME_KEY) && parameterInstance.getValue().equals(sensorName)) {
                             // start the sensor with the right corresponding configuration
                             startSensors(sensor, configSensor, test.isUseNewData());
                         }
@@ -258,7 +286,7 @@ public class TestExecutor {
     public void startSensors(Sensor testSensor, List<ParameterInstance> parameterValues, Boolean rerunSensor) {
         String rerun = "";
         if (rerunSensor) {
-            rerun = "RERUN_";
+            rerun = RERUN_IDENTIFIER;
         }
         Sensor startSensor = sensorRepository.findByName(rerun + testSensor.getName());
         ResponseEntity<Boolean> sensorDeployed = restDeploymentController.isRunningSensor(startSensor.getId());
@@ -320,7 +348,7 @@ public class TestExecutor {
      */
     private void startActuator() {
         //check if actuator is deployed
-        Actuator testingActuator = actuatorRepository.findByName("TestingActuator");
+        Actuator testingActuator = actuatorRepository.findByName(TESTING_ACTUATOR);
 
         ResponseEntity<Boolean> actuatorDeployed = restDeploymentController.isRunningActuator(testingActuator.getId());
         if (!actuatorDeployed.getBody()) {
@@ -348,9 +376,10 @@ public class TestExecutor {
 
     /**
      * Stops all sensors of a test, to stop the test.
+     *
      * @param testId of the test to be stopped
      */
-    public void stopTest(String testId){
+    public void stopTest(String testId) {
         TestDetails test = testDetailsRepository.findById(testId);
         // Stop every sensor running for the specific test
         for (Sensor sensor : test.getSensor()) {

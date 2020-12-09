@@ -1,4 +1,4 @@
-package org.citopt.connde.service.testing;
+package org.citopt.connde.service.testing.analyzer;
 
 import org.citopt.connde.domain.testing.TestDetails;
 import org.jfree.chart.ChartFactory;

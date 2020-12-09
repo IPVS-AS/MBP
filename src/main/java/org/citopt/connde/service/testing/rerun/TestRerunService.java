@@ -1,4 +1,4 @@
-package org.citopt.connde.service.testing;
+package org.citopt.connde.service.testing.rerun;
 
 import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
@@ -9,19 +9,21 @@ import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.domain.testing.TestDetails;
 import org.citopt.connde.repository.*;
+import org.citopt.connde.service.testing.PropertiesService;
+import org.citopt.connde.service.testing.analyzer.TestAnalyzer;
 import org.citopt.connde.web.rest.event_handler.SensorEventHandler;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,9 +62,35 @@ public class TestRerunService {
     @Autowired
     private SensorEventHandler sensorEventHandler;
 
+    @Autowired
+    private PropertiesService propertiesService;
 
-    String[] sensorSim = {"TestingTemperaturSensor", "TestingTemperaturSensorPl", "TestingFeuchtigkeitsSensor", "TestingFeuchtigkeitsSensorPl", "TestingGPSSensorPl", "TestingGPSSensor", "TestingBeschleunigungsSensor", "TestingBeschleunigungsSensorPl"};
-    List<String> sensorSimulators = Arrays.asList(sensorSim);
+
+
+    @Value("#{'${testingTool.sensorSimulators}'.split(',')}")
+    private List<String> SIMULATOR_LIST;
+
+    //To resolve ${} in @Value
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
+
+    String RERUN_IDENTIFIER;
+    String RERUN_OPERATOR;
+    String TESTING_ACTUATOR;
+    String TESTING_DEVICE;
+    String CONFIG_SENSOR_NAME_KEY;
+
+
+    public TestRerunService() throws IOException {
+        propertiesService = new PropertiesService();
+        this.SIMULATOR_LIST = propertiesService.getPropertiesList();
+        this.RERUN_IDENTIFIER = propertiesService.getPropertiesString("testingTool.RerunIdentifier");
+        this.RERUN_OPERATOR = propertiesService.getPropertiesString("testingTool.rerunOperator");
+        this.TESTING_ACTUATOR = propertiesService.getPropertiesString("testingTool.deviceName");
+        this.CONFIG_SENSOR_NAME_KEY = propertiesService.getPropertiesString("testingTool.ConfigSensorNameKey");
+    }
 
 
 
@@ -134,8 +162,8 @@ public class TestRerunService {
         // add rerun sensor for every sensor with a configuration in the test
         for (List<ParameterInstance> config : test.getConfig()) {
             for (ParameterInstance parameterInstance : config) {
-                if (parameterInstance.getName().equals("ConfigName")) {
-                    if (!sensorSimulators.contains(parameterInstance.getValue().toString())) {
+                if (parameterInstance.getName().equals(CONFIG_SENSOR_NAME_KEY)) {
+                    if (!SIMULATOR_LIST.contains(parameterInstance.getValue().toString())) {
                         addRerunSensors(parameterInstance.getValue().toString(), test);
                     }
                 }
@@ -157,10 +185,10 @@ public class TestRerunService {
         // Delete the Reuse Adapters and Sensors for each real sensor if the data should not be reused
         for (List<ParameterInstance> config : test.getConfig()) {
             for (ParameterInstance parameterInstance : config) {
-                if (parameterInstance.getName().equals("ConfigName")) {
-                    if (!sensorSimulators.contains(parameterInstance.getValue().toString())) {
+                if (parameterInstance.getName().equals(CONFIG_SENSOR_NAME_KEY)) {
+                    if (!SIMULATOR_LIST.contains(parameterInstance.getValue().toString())) {
                         // Delete Reuse Operator
-                        String reuseName = "RERUN_" + parameterInstance.getValue();
+                        String reuseName = RERUN_IDENTIFIER + parameterInstance.getValue();
                         Sensor sensorReuse = sensorRepository.findByName(reuseName);
                         if (sensorReuse != null) {
                             sensorRepository.delete(sensorReuse);
@@ -184,9 +212,9 @@ public class TestRerunService {
         Sensor newSensor = new Sensor();
         newSensor.setOwner(null);
 
-        Adapter rerunOperator = adapterRepository.findByName("RERUN_OPERATOR");
-        Device testingDevice = deviceRepository.findByName("TestingDevice");
-        String newSensorName = "RERUN_" + realSensorName;
+        Adapter rerunOperator = adapterRepository.findByName(RERUN_OPERATOR);
+        Device testingDevice = deviceRepository.findByName(TESTING_DEVICE);
+        String newSensorName = RERUN_IDENTIFIER + realSensorName;
 
         try {
             if (sensorRepository.findByName(newSensorName) == null) {
@@ -244,19 +272,19 @@ public class TestRerunService {
         boolean notRegister = false;
 
         for (Rule rule : applicationRules) {
-            if (ruleRepository.findByName("RERUN_" + rule.getName()) == null) {
+            if (ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()) == null) {
                 // create new rule
                 Rule rerunRule = new Rule();
-                rerunRule.setName("RERUN_" + rule.getName());
+                rerunRule.setName(RERUN_IDENTIFIER + rule.getName());
                 rerunRule.setOwner(null);
                 rerunRule.setActions(rule.getActions());
 
                 // create/adjust trigger querey
-                if (ruleTriggerRepository.findByName("RERUN_" + rule.getTrigger().getName()) == null) {
+                if (ruleTriggerRepository.findByName(RERUN_IDENTIFIER + rule.getTrigger().getName()) == null) {
                     // create new trigger
                     RuleTrigger newTrigger = new RuleTrigger();
                     newTrigger.setDescription(rule.getTrigger().getDescription());
-                    newTrigger.setName("RERUN_" + rule.getTrigger().getName());
+                    newTrigger.setName(RERUN_IDENTIFIER + rule.getTrigger().getName());
 
                     // adjust trigger query of the sensor of the test
                     String triggerQuery = rule.getTrigger().getQuery();
@@ -268,7 +296,7 @@ public class TestRerunService {
                         List<Sensor> realSensors = sensorRepository.findAll();
                         for (Sensor realSensor : realSensors) {
                             if (realSensor.getId().equals(sensorID)) {
-                                Sensor rerunSensor = sensorRepository.findByName("RERUN_" + realSensor.getName());
+                                Sensor rerunSensor = sensorRepository.findByName(RERUN_IDENTIFIER + realSensor.getName());
                                 if (rerunSensor != null) {
                                     // replace the sensor id in the trigger query with the rerun sensor id
                                     triggerQuery = triggerQuery.replace(realSensor.getId(), rerunSensor.getId());
@@ -291,7 +319,7 @@ public class TestRerunService {
                     }
                 } else {
                     // set existing trigger of the rerun rule
-                    rerunRule.setTrigger(ruleTriggerRepository.findByName("RERUN_" + rule.getTrigger().getName()));
+                    rerunRule.setTrigger(ruleTriggerRepository.findByName(RERUN_IDENTIFIER + rule.getTrigger().getName()));
                 }
                 if (!notRegister) {
                     ruleRepository.insert(rerunRule);
@@ -312,7 +340,7 @@ public class TestRerunService {
         List<Rule> testRules = testAnalyzer.getCorrespondingRules(test);
 
         for (Rule rule : testRules) {
-            if (rule.getName().contains("RERUN_")) {
+            if (rule.getName().contains(RERUN_IDENTIFIER)) {
                 if (rule.getTrigger() != null) {
                     ruleTriggerRepository.delete(rule.getTrigger());
                 }
@@ -331,7 +359,7 @@ public class TestRerunService {
     public ResponseEntity<String> addRerunOperators() {
         ResponseEntity<String> response;
         try {
-            if (adapterRepository.findByName("RERUN_OPERATOR") == null) {
+            if (adapterRepository.findByName(RERUN_OPERATOR) == null) {
                 //Call corresponding service function
                 rerunOperatorService.addRerunOperators();
                 response = new ResponseEntity<>("Adapter successfully created", HttpStatus.OK);

@@ -4,53 +4,31 @@
  * Controller for the test details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('TestingDetailsController',
-    ['$scope', '$controller', 'testingDetails', 'sensorList', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI', 'ruleList',
-        function ($scope, $controller, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, ENDPOINT_URI, ruleList) {
+    ['$scope', '$controller','TestService', 'testingDetails', 'sensorList', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI', 'ruleList',
+        function ($scope, $controller,TestService, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, ENDPOINT_URI, ruleList) {
             //Initialization of variables that are used in the frontend by angular
             const vm = this;
-            //Test ID
-            const COMPONENT_ID = $routeParams.id;
-
-            vm.sensorListTest = [];
-            vm.sensorListTestNames = [];
-            //Extend each sensor in sensorList for a state and a reload function
-            for (const i in sensorList) {
-                if (testingDetails.type.indexOf(sensorList[i].name) !== -1) {
-                    vm.sensorListTestNames.push(sensorList[i].name);
-                }
-            }
-
-            if (testingDetails.useNewData === false) {
-                for (const sensorName in vm.sensorListTestNames) {
-                    for (const y in sensorList) {
-                        const test = "RERUN_" + vm.sensorListTestNames[sensorName];
-                        if (sensorList[y].name === "RERUN_" + vm.sensorListTestNames[sensorName]) {
-                            vm.sensorListTest.push(sensorList[y]);
-                        }
-                    }
-                }
-            } else {
-                for (const i in sensorList) {
-                    if (testingDetails.type.indexOf(sensorList[i].name) !== -1) {
-                        vm.sensorListTest.push(sensorList[i]);
-                        vm.sensorListTestNames.push(sensorList[i].name);
-                    }
-                }
-            }
-
             vm.ruleList = ruleList;
             vm.test = testingDetails;
-            vm.ruleNames = "";
-            vm.actionNames = "";
-            vm.deviceNames = "";
-            vm.rules = [];
             vm.executeRules = true;
+            vm.sensorType = testingDetails.type;
+
+            // ID of the Test
+            const COMPONENT_ID = $routeParams.id;
+            const RERUN_PREFIX = "RERUN_";
+
+            // Storing variables
+            vm.sensorListTest = [];
+            vm.sensorListTestNames = [];
+            vm.rules = [];
             vm.updateValues = [];
             vm.configUpdate = [];
             vm.rulesUpdate = [];
-            vm.sensorType = testingDetails.type;
             vm.newTestObject = {};
             vm.newTestObject.config = [];
+            vm.ruleNames = "";
+            vm.actionNames = "";
+            vm.deviceNames = "";
 
 
             /**
@@ -59,10 +37,10 @@ app.controller('TestingDetailsController',
             (function initController() {
 
                 getPDFList();
-                getTestSensors();
                 getTestRules();
                 getConfig();
                 disableReuse();
+                getTestSensorList();
 
 
                 //Refresh test select picker when the modal is opened
@@ -72,18 +50,57 @@ app.controller('TestingDetailsController',
 
             })();
 
+
+            /**
+             * [Private]
+             * creates a list of sensors depending on whether the test is in rerun mode or not.
+             * If the test is in rerun mode, only the rerun sensors are added to the list. This list is then passed to the chart controller.
+             */
+            function getTestSensorList() {
+                // Saves the name of all registered sensors included in the test into a list
+                for (let sensor in sensorList) {
+                    // Check if sensor is included in the test
+                    if (testingDetails.type.indexOf(sensorList[sensor].name) !== -1) {
+                        vm.sensorListTestNames.push(sensorList[sensor].name);
+                    }
+                }
+
+                // Check if test is reusing data from the previous test
+                if (testingDetails.useNewData === false) {
+                    for (let sensorName in vm.sensorListTestNames) {
+                        for (let sensor in sensorList) {
+                            // If Test is in Rerun Mode only add the rerun sensors of the test to this list
+                            if (sensorList[sensor].name === RERUN_PREFIX + vm.sensorListTestNames[sensorName]) {
+                                vm.sensorListTest.push(sensorList[sensor]);
+                            }
+                        }
+                    }
+                } else {
+                    for (let sensor in sensorList) {
+                        if (testingDetails.type.indexOf(sensorList[sensor].name) !== -1) {
+                            vm.sensorListTest.push(sensorList[sensor]);
+                            vm.sensorListTestNames.push(sensorList[sensor].name);
+                        }
+                    }
+                }
+
+            }
+
             function checkAvailability(arr, val) {
                 return arr.some(function (arrVal) {
                     return val === arrVal;
                 });
             }
 
-            function disableReuse(){
-                if(testingDetails.simulationList === null){
-                    console.log("in if")
+            /**
+             * [Private]
+             * If no values have been generated for this test, the test cannot be repeated.
+             * The corresponding button becomes Disabled.
+             */
+            function disableReuse() {
+                if (testingDetails.simulationList === null) {
                     document.getElementById("ReuseSwitch").disabled = true;
-                } else{
-                    console.log("else")
+                } else {
                     document.getElementById("ReuseSwitch").removeAttribute('disabled');
                 }
                 console.log(document.getElementById("ReuseSwitch"))
@@ -116,7 +133,7 @@ app.controller('TestingDetailsController',
                 let whoGPS;
                 let latitudeGPS;
                 let longitudeGPS;
-                let hightGPS;
+                let heightGPS;
                 let reactionMetersGPS;
 
                 let eventGPSPl;
@@ -124,7 +141,7 @@ app.controller('TestingDetailsController',
                 let whoGPSPl;
                 let latitudeGPSPl;
                 let longitudeGPSPl;
-                let hightGPSPl;
+                let heightGPSPl;
                 let reactionMetersGPSPl;
 
                 let eventAcc;
@@ -143,7 +160,7 @@ app.controller('TestingDetailsController',
                 vm.selectedRealSensor = [];
                 $rootScope.config = {};
 
-                var arr = ['TestingTemperaturSensor', 'TestingTemperaturSensorPl', 'TestingFeuchtigkeitsSensor', 'TestingFeuchtigkeitsSensorPl', 'TestingGPSSensorPl', 'TestingGPSSensor', 'TestingBeschleunigungsSensor', 'TestingBeschleunigungsSensorPl']
+                const arr = ['TestingTemperatureSensor', 'TestingTemperatureSensorPl', 'TestingHumiditySensor', 'TestingHumiditySensorPl', 'TestingAccelerationSensor', 'TestingAccelerationSensorPl', 'TestingGPSSensor', 'TestingGPSSensorPl'];
 
                 for (let y = 0; y < testingDetails.type.length; y++) {
 
@@ -170,7 +187,7 @@ app.controller('TestingDetailsController',
 
                 $scope.config.useNewData = !testingDetails.useNewData;
 
-                if (testingDetails.type.includes('TestingTemperaturSensor')) {
+                if (testingDetails.type.includes('TestingTemperatureSensor')) {
                     testingDetails.config.forEach(function (config) {
                         config.forEach(function (parameterInstance) {
                             if (parameterInstance.name === "event" && parameterInstance.value === 3 || parameterInstance.name === "event" && parameterInstance.value === 4 || parameterInstance.name === "event" && parameterInstance.value === 5 || parameterInstance.name === "event" && parameterInstance.value === 6) {
@@ -184,7 +201,7 @@ app.controller('TestingDetailsController',
                                             useNewData = !parameterInstance.value;
                                         }
                                     })
-                                })
+                                });
 
                                 $rootScope.config.eventTemp = eventTemp;
                                 $rootScope.config.anomalyTemp = anomalyTemp;
@@ -201,7 +218,7 @@ app.controller('TestingDetailsController',
                                             roomTemp = parameterInstance.value;
                                         }
                                     })
-                                })
+                                });
 
 
                                 $rootScope.config.eventTemp = eventTemp;
@@ -215,7 +232,7 @@ app.controller('TestingDetailsController',
 
 
                 }
-                if (testingDetails.type.includes('TestingFeuchtigkeitsSensor')) {
+                if (testingDetails.type.includes('TestingHumiditySensor')) {
                     testingDetails.config.forEach(function (config) {
                         config.forEach(function (parameterInstance) {
                             if (parameterInstance.name === "event" && parameterInstance.value === '3' || parameterInstance.name === "event" && parameterInstance.value === '4' || parameterInstance.name === "event" && parameterInstance.value === '5' || parameterInstance.name === "event" && parameterInstance.value === '6') {
@@ -229,7 +246,7 @@ app.controller('TestingDetailsController',
                                             useNewData = !parameterInstance.value;
                                         }
                                     })
-                                })
+                                });
 
                                 $rootScope.config.eventHum = eventHum;
                                 $rootScope.config.anomalyHum = anomalyHum;
@@ -246,7 +263,7 @@ app.controller('TestingDetailsController',
                                             roomHum = parameterInstance.value;
                                         }
                                     })
-                                })
+                                });
 
                                 $rootScope.config.eventHum = eventHum;
                                 $rootScope.config.anomalyHum = anomalyHum;
@@ -260,7 +277,7 @@ app.controller('TestingDetailsController',
                 }
 
 
-                if (testingDetails.type.includes('TestingTemperaturSensorPl')) {
+                if (testingDetails.type.includes('TestingTemperatureSensorPl')) {
                     testingDetails.config.forEach(function (config) {
                         config.forEach(function (parameterInstance) {
                             if (parameterInstance.name === "event" && parameterInstance.value === '3' || parameterInstance.name === "event" && parameterInstance.value === '4' || parameterInstance.name === "event" && parameterInstance.value === '5' || parameterInstance.name === "event" && parameterInstance.value === '6') {
@@ -280,7 +297,7 @@ app.controller('TestingDetailsController',
                                             amountAnomalies = parameterInstance.value;
                                         }
                                     })
-                                })
+                                });
 
 
                                 $rootScope.config.eventTempPl = eventTempPl;
@@ -308,7 +325,7 @@ app.controller('TestingDetailsController',
                                             roomTempPl = parameterInstance.value;
                                         }
                                     })
-                                })
+                                });
 
                                 $rootScope.config.eventTempPl = eventTempPl;
                                 $rootScope.config.anomalyTempPl = anomalyTempPl;
@@ -322,7 +339,7 @@ app.controller('TestingDetailsController',
                         })
                     })
                 }
-                if (testingDetails.type.includes('TestingFeuchtigkeitsSensorPl')) {
+                if (testingDetails.type.includes('TestingHumiditySensorPl')) {
                     testingDetails.config.forEach(function (config) {
                         config.forEach(function (parameterInstance) {
                             if (parameterInstance.name === "event" && parameterInstance.value === '3' || parameterInstance.name === "event" && parameterInstance.value === '4' || parameterInstance.name === "event" && parameterInstance.value === '5' || parameterInstance.name === "event" && parameterInstance.value === '6') {
@@ -342,7 +359,7 @@ app.controller('TestingDetailsController',
                                             amountAnomalies = parameterInstance.value;
                                         }
                                     })
-                                })
+                                });
                                 $rootScope.config.eventHumPl = eventHumPl;
                                 $rootScope.config.anomalyHumPl = anomalyHumPl;
                                 $rootScope.config.simTime = simTime;
@@ -368,7 +385,7 @@ app.controller('TestingDetailsController',
                                             roomHumPl = parameterInstance.value;
                                         }
                                     })
-                                })
+                                });
                                 $rootScope.config.eventHumPl = eventHumPl;
                                 $rootScope.config.anomalyHumPl = anomalyHumPl;
                                 $rootScope.config.roomHumPl = roomHumPl;
@@ -394,23 +411,23 @@ app.controller('TestingDetailsController',
                                 latitudeGPS = parameterInstance.value;
                             } else if (parameterInstance.name === "longitude") {
                                 longitudeGPS = parameterInstance.value;
-                            } else if (parameterInstance.name === "hight") {
-                                hightGPS = parameterInstance.value;
+                            } else if (parameterInstance.name === "height") {
+                                heightGPS = parameterInstance.value;
                             } else if (parameterInstance.name === "who") {
                                 whoGPS = parameterInstance.value;
                             } else if (parameterInstance.name === "reactionMeters") {
                                 reactionMetersGPS = parameterInstance.value;
                             }
                         })
-                    })
+                    });
 
                     $rootScope.config.eventGPS = eventGPS;
                     $rootScope.config.anomalyGPS = anomalyGPS;
 
                     $rootScope.config.latitudeGPS = latitudeGPS;
                     $rootScope.config.longitudeGPS = longitudeGPS;
-                    $rootScope.config.hightGPS = hightGPS;
-                    $rootScope.config.whoGPS = whoGPS
+                    $rootScope.config.hightGPS = heightGPS;
+                    $rootScope.config.whoGPS = whoGPS;
                     $rootScope.config.reactionMetersGPS = reactionMetersGPS;
 
                 }
@@ -429,8 +446,8 @@ app.controller('TestingDetailsController',
                                 latitudeGPSPl = parameterInstance.value;
                             } else if (parameterInstance.name === "longitude") {
                                 longitudeGPSPl = parameterInstance.value;
-                            } else if (parameterInstance.name === "hight") {
-                                hightGPSPl = parameterInstance.value;
+                            } else if (parameterInstance.name === "height") {
+                                heightGPSPl = parameterInstance.value;
                             } else if (parameterInstance.name === "who") {
                                 whoGPSPl = parameterInstance.value;
                             } else if (parameterInstance.name === "reactionMeters") {
@@ -444,14 +461,14 @@ app.controller('TestingDetailsController',
 
                             }
                         })
-                    })
+                    });
 
                     $rootScope.config.eventGPS = eventGPS;
                     $rootScope.config.anomalyGPS = anomalyGPS;
                     $rootScope.config.latitudeGPS = latitudeGPS;
                     $rootScope.config.longitudeGPS = longitudeGPS;
-                    $rootScope.config.hightGPS = hightGPS;
-                    $rootScope.config.whoGPS = whoGPS
+                    $rootScope.config.hightGPS = heightGPS;
+                    $rootScope.config.whoGPS = whoGPS;
                     $rootScope.config.reactionMetersGPS = reactionMetersGPS;
                     $rootScope.config.simTime = simTime;
                     $rootScope.config.amountEvents = amountEvents;
@@ -460,7 +477,7 @@ app.controller('TestingDetailsController',
 
                 }
 
-                if (testingDetails.type.includes('TestingBeschleunigungsSensor')) {
+                if (testingDetails.type.includes('TestingAccelerationSensor')) {
                     testingDetails.config.forEach(function (config) {
                         config.forEach(function (parameterInstance) {
                             if (parameterInstance.name === "event") {
@@ -477,7 +494,7 @@ app.controller('TestingDetailsController',
                                 reactionMetersAcc = parameterInstance.value;
                             }
                         })
-                    })
+                    });
                     $rootScope.config.eventAcc = eventAcc;
                     $rootScope.config.anomalyAcc = anomalyAcc;
                     $rootScope.config.reactionMetersAcc = reactionMetersAcc;
@@ -487,7 +504,7 @@ app.controller('TestingDetailsController',
 
                 }
 
-                if (testingDetails.type === 'TestingBeschleunigungsSensorPl') {
+                if (testingDetails.type === 'TestingAccelerationSensorPl') {
                     testingDetails.config.forEach(function (config) {
                         config.forEach(function (parameterInstance) {
                             if (parameterInstance.name === "event") {
@@ -512,7 +529,7 @@ app.controller('TestingDetailsController',
                             }
 
                         })
-                    })
+                    });
 
                     $rootScope.config.eventAccPl = eventAccPl;
                     $rootScope.config.anomalyAccPl = anomalyAccPl;
@@ -549,17 +566,15 @@ app.controller('TestingDetailsController',
             /**
              * [Private]
              * Creates a server request to get all rules to be observed during the Test of the IoT-Application.
+             * The names and actions of this rules will be formatted for the user view
              */
             function getTestRules() {
-
                 $http.get(ENDPOINT_URI + "/test-details/ruleList/" + COMPONENT_ID).success(function (response) {
                     $scope.ruleList = response;
 
                 });
 
                 $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
-
-
                     for (let i = 0; i < responseRules._embedded.rules.length; i++) {
                         if (i === 0) {
                             vm.ruleNames = vm.ruleNames + responseRules._embedded.rules[i].name;
@@ -578,74 +593,21 @@ app.controller('TestingDetailsController',
                 });
             }
 
-            /**
-             * [Private]
-             * Creates a server request to get all sensors regarding to the Test of the IoT-Application.
-             */
-            function getTestSensors() {
-                $http.get(testingDetails._links.sensor.href).success(function successCallback(responseSensors) {
-                    for (let i = 0; i < responseSensors._embedded.sensors.length; i++) {
-                        if (i === 0) {
-
-                            vm.deviceNames = vm.deviceNames + responseSensors._embedded.sensors[i]._embedded.device.name;
-                        } else {
-                            vm.deviceNames = vm.deviceNames + ", " + responseSensors._embedded.sensors[i]._embedded.device.name;
-                        }
-                    }
-                });
-            }
-
-
-            /**
-             * [Public]
-             * Performs a server request in order to start a test given by its id.
-             */
-            async function executeTest() {
-                $http.post(ENDPOINT_URI + '/test-details/test/' + COMPONENT_ID, COMPONENT_ID.toString()).success(function successCallback() {
-                    // If the test was completed successfully, enable the download Test Report Button
-                    getPDFList();
-                });
-
-
-            }
 
             /**
              * [Public]
              * Creates a server request to get a list of all generated Test Reports regarding to the Test of the IoT-Application.
              */
             function getPDFList() {
-                $http.get(ENDPOINT_URI + '/test-details/pdfList/' + COMPONENT_ID).then(function (response) {
-                    const pdfList = {};
-                    vm.pdfDetails = [];
-
-
-                    if (Object.keys(response.data).length > 0) {
-                        angular.forEach(response.data, function (value, key) {
-                            vm.pdfDetails.push({
-                                "date": key,
-                                "path": value
-                            });
-                        });
-                        pdfList.pdfTable = vm.pdfDetails;
-                        $scope.pdfTable = pdfList.pdfTable;
-                    } else {
-                        document.getElementById("pdfTable").innerHTML = "There is no Test Report for this Test yet.";
-                    }
+                vm.pdfDetails = [];
+                TestService.getPDFList(COMPONENT_ID).then(function (response) {
+                    $scope.pdfTable = response;
                 });
             }
 
             /**
              * [Public]
-             * Performs a server request in order to stop a test given by its id.
-             */
-            function stopTest() {
-                vm.http = $http.post(ENDPOINT_URI + '/test-details/test/stop/' + COMPONENT_ID, COMPONENT_ID.toString());
-            }
-
-
-            /**
-             * [Public]
-             * Sends a server request to open the test report of a specific test fiven by its id.
+             * Sends a server request to open the test report of a specific test given by its id.
              */
             function downloadPDF(path) {
                 window.open('api/test-details/downloadPDF/' + path, '_blank');
@@ -653,23 +615,18 @@ app.controller('TestingDetailsController',
 
 
             /**
+             * [Public]
+             *
              * Sends a server request in order to edit the configurations of the test "useNewData",
              * so that the latest values of a specific test are reused in the new execution or not
              *
-             * @param useNewData
+             * @param useNewData boolean if the generated data should be reused
              */
             function editConfig(useNewData) {
-                if (useNewData === true) {
-                    $http.post(ENDPOINT_URI + '/test-details/editConfig/' + COMPONENT_ID, "false").success(function success(response) {
-                        $scope.erfolgreich = response.success;
-                        window.location.reload();
+                TestService.editConfig(COMPONENT_ID, useNewData).then(function (response) {
+                    window.location.reload();
+                    getTestSensorList();
                 });
-                }else if (useNewData === false) {
-                    $http.post(ENDPOINT_URI + '/test-details/editConfig/' + COMPONENT_ID, "true").success(function success(response) {
-                        $scope.erfolgreich = response.success;
-                        window.location.reload();
-                    });
-                }
 
 
 
@@ -681,11 +638,14 @@ app.controller('TestingDetailsController',
              *
              *
              */
-            function editTestConfiguration() {
+            function updateTest() {
                 vm.configUpdate = [];
                 vm.rulesUpdate = [];
 
+                // get updates to be integrated
                 getUpdateValues();
+
+                // save the new test configurations for performing the server Request
                 testingDetails.config = [];
                 testingDetails.config = vm.newTestObject.config;
                 testingDetails.rules = vm.rulesUpdate;
@@ -695,7 +655,7 @@ app.controller('TestingDetailsController',
                     testingDetails.triggerRules = false;
                 }
 
-
+                // Server Request with the updated test information in the request body
                 $http.post(ENDPOINT_URI + '/test-details/updateTest/' + COMPONENT_ID, JSON.stringify(testingDetails)).success(function successCallback() {
                     //Close modal on success
                     $("#editTestModal").modal('toggle');
@@ -735,21 +695,10 @@ app.controller('TestingDetailsController',
                                         "name": "ConfigName",
                                         "value": vm.selectedRealSensor[i].name
                                     });
-                                    var requiredParams = vm.selectedRealSensor[i]._embedded.adapter.parameters;
+                                    const requiredParams = vm.selectedRealSensor[i]._embedded.adapter.parameters;
 
                                     //Iterate over all parameters
                                     for (let i = 0; i < requiredParams.length; i++) {
-                                        //Set empty default values for these parameters
-                                        var value = "";
-
-                                        if (requiredParams[i].type === "Switch") {
-                                            value = true;
-                                        }
-                                        if (requiredParams[i].name === "device_code") {
-                                            console.log("Requesting code for required parameter device_code.");
-                                            value = getDeviceCode();
-                                            continue;
-                                        }
 
                                         //For each parameter, add a tuple (name, value) to the globally accessible parameter array
                                         vm.configUpdate.push({
@@ -764,11 +713,11 @@ app.controller('TestingDetailsController',
                         vm.newTestObject.config.push([{"name": "ConfigRealSensors", "value": vm.parameterVal}])
                     }
 
-                    if (testingDetails.type.includes('TestingTemperaturSensor')) {
+                    if (testingDetails.type.includes('TestingTemperatureSensor')) {
                         vm.configUpdate = [];
                         vm.configUpdate.push({
                             "name": "ConfigName",
-                            "value": 'TestingTemperaturSensor'
+                            "value": 'TestingTemperatureSensor'
                         });
                         if ($rootScope.config.eventTemp === '3' || $rootScope.config.eventTemp === '4' || $rootScope.config.eventTemp === '5' || $rootScope.config.eventTemp === '6') {
                             vm.configUpdate.push({
@@ -791,11 +740,11 @@ app.controller('TestingDetailsController',
                         }
                         vm.newTestObject.config.push(vm.configUpdate);
                     }
-                    if (testingDetails.type.includes('TestingFeuchtigkeitsSensor')) {
+                    if (testingDetails.type.includes('TestingHumiditySensor')) {
                         vm.configUpdate = [];
                         vm.configUpdate.push({
                             "name": "ConfigName",
-                            "value": 'TestingFeuchtigkeitsSensor'
+                            "value": 'TestingHumiditySensor'
                         });
                         if ($rootScope.config.eventHum === 3 || $rootScope.config.eventHum === 4 || $rootScope.config.eventHum === 5 || $rootScope.config.eventHum === 6) {
                             vm.configUpdate.push({
@@ -818,11 +767,11 @@ app.controller('TestingDetailsController',
                         }
                         vm.newTestObject.config.push(vm.configUpdate);
                     }
-                    if (testingDetails.type.includes('TestingTemperaturSensorPl')) {
+                    if (testingDetails.type.includes('TestingTemperatureSensorPl')) {
                         vm.configUpdate = [];
                         vm.configUpdate.push({
                             "name": "ConfigName",
-                            "value": 'TestingTemperaturSensorPl'
+                            "value": 'TestingTemperatureSensorPl'
                         });
                         if ($rootScope.config.eventTempPl === 3 || $rootScope.config.eventTempPl === 4 || $rootScope.config.eventTempPl === 5 || $rootScope.config.eventTempPl === 6) {
                             vm.configUpdate.push({
@@ -865,11 +814,11 @@ app.controller('TestingDetailsController',
                         vm.newTestObject.config.push(vm.configUpdate);
 
                     }
-                    if (testingDetails.type.includes('TestingFeuchtigkeitsSensorPl')) {
+                    if (testingDetails.type.includes('TestingHumiditySensorPl')) {
                         vm.configUpdate = [];
                         vm.configUpdate.push({
                             "name": "ConfigName",
-                            "value": 'TestingFeuchtigkeitsSensorPl'
+                            "value": 'TestingHumiditySensorPl'
                         });
                         if ($rootScope.config.eventHumPl === 3 || $rootScope.config.eventHumPl === 4 || $rootScope.config.eventHumPl === 5 || $rootScope.config.eventHumPl === 6) {
                             vm.configUpdate.push({
@@ -933,7 +882,7 @@ app.controller('TestingDetailsController',
                                 "name": "longitude",
                                 "value": $rootScope.config.longitudeGPS
                             });
-                            vm.configUpdate.push({"name": "hight", "value": $rootScope.config.hightGPS});
+                            vm.configUpdate.push({"name": "height", "value": $rootScope.config.hightGPS});
                             vm.configUpdate.push({
                                 "name": "reactionMeters",
                                 "value": $rootScope.config.reactionMetersGPS
@@ -955,7 +904,7 @@ app.controller('TestingDetailsController',
                                 "name": "longitude",
                                 "value": $rootScope.config.longitudeGPS
                             });
-                            vm.configUpdate.push({"name": "hight", "value": $rootScope.config.hightGPS});
+                            vm.configUpdate.push({"name": "height", "value": $rootScope.config.hightGPS});
                             vm.configUpdate.push({
                                 "name": "reactionMeters",
                                 "value": $rootScope.config.reactionMetersGPS
@@ -992,7 +941,7 @@ app.controller('TestingDetailsController',
                                 "name": "longitude",
                                 "value": $rootScope.config.longitudeGPS
                             });
-                            vm.configUpdate.push({"name": "hight", "value": $rootScope.config.hightGPS});
+                            vm.configUpdate.push({"name": "height", "value": $rootScope.config.hightGPS});
                             vm.configUpdate.push({
                                 "name": "reactionMeters",
                                 "value": $rootScope.config.reactionMetersGPS
@@ -1023,7 +972,7 @@ app.controller('TestingDetailsController',
                                 "name": "longitude",
                                 "value": $rootScope.config.longitudeGPS
                             });
-                            vm.configUpdate.push({"name": "hight", "value": $rootScope.config.hightGPS});
+                            vm.configUpdate.push({"name": "height", "value": $rootScope.config.hightGPS});
                             vm.configUpdate.push({
                                 "name": "reactionMeters",
                                 "value": $rootScope.config.reactionMetersGPS
@@ -1046,11 +995,11 @@ app.controller('TestingDetailsController',
                         }
                         vm.newTestObject.config.push(vm.configUpdate);
                     }
-                    if (testingDetails.type.includes('TestingBeschleunigungsSensor')) {
+                    if (testingDetails.type.includes('TestingAccelerationSensor')) {
                         vm.configUpdate = [];
                         vm.configUpdate.push({
                             "name": "ConfigName",
-                            "value": 'TestingBeschleunigungsSensor'
+                            "value": 'TestingAccelerationSensor'
                         });
                         if ($rootScope.config.eventAcc === 3 || $rootScope.config.eventAcc === 4 || $rootScope.config.eventAcc === 5) {
                             vm.configUpdate.push({
@@ -1126,11 +1075,11 @@ app.controller('TestingDetailsController',
                         }
                         vm.newTestObject.config.push(vm.configUpdate);
                     }
-                    if (testingDetails.type.includes('TestingBeschleunigungsSensorPl')) {
+                    if (testingDetails.type.includes('TestingAccelerationSensorPl')) {
                         vm.configUpdate = [];
                         vm.configUpdate.push({
                             "name": "ConfigName",
-                            "value": 'TestingBeschleunigungsSensorPl'
+                            "value": 'TestingAccelerationSensorPl'
                         });
                         if ($rootScope.config.eventAccPl === 3 || $rootScope.config.eventAccPl === 4 || $rootScope.config.eventAccPl === 5) {
                             vm.configUpdate.push({
@@ -1239,7 +1188,7 @@ app.controller('TestingDetailsController',
                     vm.newTestObject.type = "";
                     vm.configUpdate.push({
                         "name": "event",
-                        "value": parseInt(0)
+                        "value": 0
                     });
                     vm.configUpdate.push({"name": "anomaly", "value": 0});
                     vm.configUpdate.push({"name": "useNewData", "value": true});
@@ -1261,16 +1210,6 @@ app.controller('TestingDetailsController',
 
             }
 
-            /**
-             * [Public]
-             * Performs a server request in order to add default operators.
-             * @returns {*}
-             */
-            function addRerunOperators() {
-                return $.post(URL_DEFAULT_OPERATORS);
-            }
-
-
             //Extend the controller object for the public functions to make them available from outside
             angular.extend(vm, $controller('TestingChartController as testingChartCtrl',
                 {
@@ -1283,14 +1222,12 @@ app.controller('TestingDetailsController',
                 }), {
                 updateTestCtrl: $controller('UpdateItemController as updateTestCtrl', {
                     $scope: $scope,
-                    updateItem: editTestConfiguration
+                    updateItem: updateTest
                 }),
                 downloadPDF: downloadPDF,
-                executeTest: executeTest,
-                stopTest: stopTest,
                 getPDFList: getPDFList,
                 editConfig: editConfig,
-                editTestConfiguration: editTestConfiguration
+                editTestConfiguration: updateTest
             });
 
 

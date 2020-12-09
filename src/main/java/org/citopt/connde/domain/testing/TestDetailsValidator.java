@@ -12,6 +12,7 @@ import org.springframework.validation.Validator;
 public class TestDetailsValidator implements Validator {
 
     private static TestDetailsRepository repository;
+
     @Autowired
     public void setTypeRepository(TestDetailsRepository testDetailsRepository) {
         System.out.println("autowiring type to TypeValidator");
@@ -46,14 +47,6 @@ public class TestDetailsValidator implements Validator {
                     "At least one rule must be selected!");
         }
 
-        /**
-        // Check if the configuration for the sensor-simulator is empty
-        if (test.getConfig() == null || test.getConfig().isEmpty()) {
-            errors.rejectValue("config", "component.config.empty",
-                    "Config must be defined.");
-        }
-
-**/
 
     }
 }

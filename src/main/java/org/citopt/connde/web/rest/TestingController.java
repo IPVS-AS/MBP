@@ -6,6 +6,9 @@ import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.testing.TestDetails;
 import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.service.testing.*;
+import org.citopt.connde.service.testing.analyzer.TestAnalyzer;
+import org.citopt.connde.service.testing.executor.TestExecutor;
+import org.citopt.connde.service.testing.rerun.TestRerunService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -47,7 +50,7 @@ public class TestingController {
         TestDetails testDetails = testDetailsRepository.findOne(testId);
         try {
             // Start the test and get Map of sensor values
-             testExecutor.executeTest(testDetails);
+            testExecutor.executeTest(testDetails);
         } catch (Exception e) {
             return new ResponseEntity<>("An Error occurred during the test", HttpStatus.OK);
         }
@@ -155,6 +158,7 @@ public class TestingController {
 
     /**
      * Deletes the last test report of the specific test.
+     *
      * @param testId id of the test from which the report should be deleted
      * @return if deletion worked or not
      */
@@ -184,6 +188,59 @@ public class TestingController {
     @RequestMapping(value = "/test-details/updateTest/{testId}", method = RequestMethod.POST)
     public HttpEntity<Object> updateTest(@PathVariable(value = "testId") String testId, @RequestBody String updateInformation) {
         return testEngine.editTestConfig(testId, updateInformation);
+    }
+
+    /**
+     * Registers the test device used for testing purposes.
+     *
+     * @return response entity if the registration was successful or not
+     */
+    @PostMapping(value = "/test-details/registerTestDevice")
+    public ResponseEntity registerTestDevice() {
+        return testEngine.registerTestDevice();
+    }
+
+    /**
+     * Registers the test device used for testing purposes.
+     *
+     * @return response entity if the registration was successful or not
+     */
+    @PostMapping(value = "/test-details/registerTestActuator")
+    public ResponseEntity<String> registerTestActuator() {
+        return testEngine.registerTestActuator();
+    }
+
+    /**
+     * Register a one dimensional sensor simulator used for testing purposes.
+     *
+     * @return response entity if the registration was successful or not
+     */
+    @PostMapping(value = "/test-details/registerSensorSimulator")
+    public ResponseEntity<String> registerSensorSimulator(@RequestBody String sensorName) {
+        return testEngine.registerSensorSimulator(sensorName);
+    }
+
+
+    /**
+     * Register a three dimensional sensor simulator used for testing purposes.
+     *
+     * @return response entity if the registration was successful or not
+     */
+    @PostMapping(value = "/test-details/registerThreeDimSensorSimulator")
+    public ResponseEntity<String> registerThreeDimSensorSimulator(@RequestBody String sensorName) {
+        testEngine.registerThreeDimSensorSimulator(sensorName);
+        return new ResponseEntity<>("needs to be implemented", HttpStatus.OK);
+    }
+
+
+    /**
+     * Opens the selected Test-Report from the Testlist
+     *
+     * @return HttpStatus
+     */
+    @GetMapping(value = "/test-details/checkRegistration")
+    public Boolean checkRegistration(@RequestBody String sensorName) {
+        return testEngine.isSimulatorRegistr(sensorName);
     }
 
 

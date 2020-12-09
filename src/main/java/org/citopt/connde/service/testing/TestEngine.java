@@ -1,26 +1,32 @@
 package org.citopt.connde.service.testing;
 
 
+import org.citopt.connde.domain.adapter.Adapter;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
+import org.citopt.connde.domain.component.Actuator;
+import org.citopt.connde.domain.component.ActuatorValidator;
 import org.citopt.connde.domain.component.Sensor;
+import org.citopt.connde.domain.component.SensorValidator;
+import org.citopt.connde.domain.device.Device;
+import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.rules.Rule;
-import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.domain.testing.TestDetails;
-import org.citopt.connde.domain.testing.Testing;
-import org.citopt.connde.domain.valueLog.ValueLog;
 import org.citopt.connde.repository.*;
-import org.citopt.connde.service.receiver.ValueLogReceiver;
-import org.citopt.connde.service.receiver.ValueLogReceiverObserver;
-import org.citopt.connde.web.rest.RestDeploymentController;
+import org.citopt.connde.web.rest.RestRuleController;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
 
 
 import java.io.*;
@@ -41,12 +47,62 @@ public class TestEngine {
     @Autowired
     private TestDetailsRepository testDetailsRepository;
 
-
     @Autowired
     private RuleRepository ruleRepository;
 
+    @Autowired
+    private DeviceRepository deviceRepository;
+
+    @Autowired
+    private DeviceValidator deviceValidator;
+
+    @Autowired
+    private ActuatorValidator actuatorValidator;
+
+    @Autowired
+    private PropertiesService propertiesService;
+
+    @Autowired
+    ActuatorRepository actuatorRepository;
+
+    @Autowired
+    AdapterRepository adapterRepository;
+
+    @Autowired
+    SensorRepository sensorRepository;
+
+    @Autowired
+    SensorValidator sensorValidator;
+
+    @Value("#{'${testingTool.oneDimensionalSensors}'.split(',')}")
+    private List<String> ONE_DIM_SIMULATOR_LIST;
+
+    @Value("#{'${testingTool.threeDimensionalSensor}'.split(',')}")
+    private List<String> THREE_DIM_SIMULATOR_LIST;
+
+    //To resolve ${} in @Value
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
+
+    String TEST_DEVICE;
+    String TEST_DEVICE_IP;
+    String TEST_DEVICE_USERNAME;
+    String TEST_DEVICE_PASSWORD;
+    String ACTUATOR_NAME;
+
+
+    public TestEngine() throws IOException {
+        propertiesService = new PropertiesService();
+        this.TEST_DEVICE = propertiesService.getPropertiesString("testingTool.testDeviceName");
+        this.TEST_DEVICE_IP = propertiesService.getPropertiesString("testingTool.testDeviceUserName");
+        this.TEST_DEVICE_IP = propertiesService.getPropertiesString("testingTool.testDevicePassword");
+        this.ACTUATOR_NAME = propertiesService.getPropertiesString("testingTool.actuatorName");
+    }
+
+
     /**
-     *
      * @param testID
      * @param changes
      * @return
@@ -284,6 +340,196 @@ public class TestEngine {
         treeMap.putAll(unsortedMap);
         return treeMap;
     }
-}
 
-    
+    /**
+     * Registers the Testing Device which is used for testing purposes.
+     *
+     * @return response entity if insertion was successful or not
+     */
+    public ResponseEntity registerTestDevice() {
+        ResponseEntity responseEntity;
+        //Validation errors
+        Errors errors;
+
+        try {
+            // Check if device with this name is already registered
+            Device testDevice = deviceRepository.findByName(TEST_DEVICE);
+            if (testDevice == null) {
+                //Enrich device for details
+                testDevice = new Device();
+                testDevice.setName(TEST_DEVICE);
+                testDevice.setComponentType("Computer");
+                testDevice.setIpAddress(TEST_DEVICE_IP);
+                testDevice.setUsername(TEST_DEVICE_USERNAME);
+                testDevice.setPassword(TEST_DEVICE_PASSWORD);
+            }
+
+            // Insert the new testing device into the device repository
+            deviceRepository.insert(testDevice);
+
+            //Validate device
+            errors = new BeanPropertyBindingResult(testDevice, "device");
+            deviceValidator.validate(testDevice, errors);
+
+            responseEntity = new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception exception) {
+            responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return responseEntity;
+
+
+    }
+
+    /**
+     * Registers the Testing Actuator which is used for testing purposes and does't make any real actions.
+     *
+     * @return response entity if insertion was successful or not
+     */
+    public ResponseEntity<String> registerTestActuator() {
+        //Validation errors
+        Errors errors;
+        ResponseEntity responseEntity = null;
+
+        try {
+            Actuator testingActuator = actuatorRepository.findByName(ACTUATOR_NAME);
+            Device testDevice = deviceRepository.findByName(TEST_DEVICE);
+            Adapter testActuatorAdapter = adapterRepository.findByName(ACTUATOR_NAME);
+
+            // Check if testing device and actuator are already registered
+            if (testDevice == null) {
+                // Register the Testing device automatically if not existing
+                registerTestDevice();
+            } else {
+                // Check if Actuator is already existing
+                if (testingActuator == null) {
+                    // Check if the corresponding adapter is registered
+                    if (testActuatorAdapter != null) {
+                        //Enrich actuator for details
+                        testingActuator = new Actuator();
+                        testingActuator.setName(ACTUATOR_NAME);
+                        testingActuator.setOwner(null);
+                        testingActuator.setDevice(testDevice);
+                        testingActuator.setAdapter(testActuatorAdapter);
+                        testingActuator.setComponentType("Buzzer");
+
+                        //Validate device
+                        errors = new BeanPropertyBindingResult(testingActuator, "component");
+                        actuatorValidator.validate(testingActuator, errors);
+
+                        actuatorRepository.insert(testingActuator);
+
+                        responseEntity = new ResponseEntity("Testing Actuator successfully created.", HttpStatus.CREATED);
+
+                    }
+                    responseEntity = new ResponseEntity("Please register the Testing Actuator first.", HttpStatus.NOT_FOUND);
+                }
+                responseEntity = new ResponseEntity("Testing Actuator already exists.", HttpStatus.CONFLICT);
+            }
+
+
+        } catch (Exception e) {
+            responseEntity = new ResponseEntity("Error during creation of the Actuator.", HttpStatus.CONFLICT);
+        }
+        return responseEntity;
+    }
+
+    /**
+     * Registers the wished sensor simulator if the corresponding adapter is already registered
+     *
+     * @param sensorName Name of the sensor simulator to be registered
+     * @return ResponseEntity if the registration was successful or not
+     */
+    public ResponseEntity<String> registerSensorSimulator(String sensorName) {
+        ResponseEntity<String> responseEntity;
+
+        //Validation errors
+        Errors errors;
+
+        Adapter sensorAdapter = adapterRepository.findByName(sensorName);
+        Device testingDevice = deviceRepository.findByName(TEST_DEVICE);
+        Sensor sensorSimulator = sensorRepository.findByName(sensorName);
+
+        try {
+            // Check if corresponding adapter exists
+            if (sensorAdapter == null) {
+                return new ResponseEntity<>("Cloud not create Sensor.", HttpStatus.CONFLICT);
+            } else if (testingDevice == null) {
+                registerTestDevice();
+            } else if (sensorSimulator == null) {
+                //Enrich actuator for details
+                sensorSimulator = new Sensor();
+                sensorSimulator.setName(sensorName);
+                sensorSimulator.setOwner(null);
+
+                if (sensorName.contains("Temperature")) {
+                    sensorSimulator.setComponentType("Temperature");
+                } else if (sensorName.contains("Humidity")) {
+                    sensorSimulator.setComponentType("Humidity");
+                } else {
+                    sensorSimulator.setComponentType("Motion");
+                }
+
+                sensorSimulator.setAdapter(sensorAdapter);
+                sensorSimulator.setDevice(testingDevice);
+
+                //Validate device
+                errors = new BeanPropertyBindingResult(sensorSimulator, "component");
+                sensorValidator.validate(sensorSimulator, errors);
+
+                sensorRepository.insert(sensorSimulator);
+
+            }
+            responseEntity = new ResponseEntity<>("Sensor successfully created", HttpStatus.OK);
+        } catch (Exception e) {
+            responseEntity = new ResponseEntity<>("Error during creation of the Sensor.", HttpStatus.CONFLICT);
+        }
+
+        return responseEntity;
+    }
+
+    /**
+     * Checks if the one and three dimensional sensor simulators are already registered.
+     *
+     * @param sensor Name of the sensor to be checked
+     * @return Boolean if the sensor is already registered or not
+     */
+    public Boolean isSimulatorRegistr(String sensor) {
+        Boolean registered = false;
+        String dimX = sensor + "X";
+        String dimY = sensor + "Y";
+        String dimZ = sensor + "Z";
+
+        if (THREE_DIM_SIMULATOR_LIST.contains(sensor)) {
+            Sensor sensorX = sensorRepository.findByName(dimX);
+            Sensor sensorY = sensorRepository.findById(dimY);
+            Sensor sensorZ = sensorRepository.findByName(dimZ);
+
+            if (sensorX != null && sensorY != null && sensorZ != null) {
+                registered = true;
+            }
+        } else {
+            if (sensorRepository.findByName(sensor) != null) {
+                registered = true;
+            }
+        }
+
+        return registered;
+    }
+
+
+    /**
+     * Registers the wished three dimensional sensor simulator if the corresponding adapter is already registered.
+     *
+     * @param sensorName of the three dimensional sensor to be registered
+     * @return Response entity if registration was successful
+     */
+    public void registerThreeDimSensorSimulator(String sensorName) {
+       //TODO
+
+    }
+
+
+
+
+}

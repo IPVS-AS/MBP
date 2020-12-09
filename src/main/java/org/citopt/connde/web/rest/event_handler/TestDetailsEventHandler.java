@@ -8,7 +8,6 @@ import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +29,7 @@ public class TestDetailsEventHandler {
      * @param testDetails Test with details to be created
      */
     @HandleBeforeCreate
-    public void testStarted(TestDetails testDetails) throws IOException {
+    public void testStarted(TestDetails testDetails)  {
 
         List<Sensor> sensorArray = new ArrayList<>();
 
@@ -45,9 +44,6 @@ public class TestDetailsEventHandler {
             }
         }
 
-
-        // checks if the testing actuator is registered
-        //  Actuator actuator = actuatorRepository.findByName("TestingActuator");
 
         testDetails.setSensor(sensorArray);
     }

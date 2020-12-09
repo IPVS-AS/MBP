@@ -1,6 +1,5 @@
 package org.citopt.connde.domain.testing;
 
-import org.citopt.connde.domain.component.Component;
 import org.citopt.connde.domain.rules.RuleTrigger;
 import org.citopt.connde.service.cep.engine.core.output.CEPOutput;
 import org.springframework.data.annotation.Id;
@@ -23,7 +22,6 @@ public class Testing  {
 
     private Set<String> rule;
 
-    private static final String COMPONENT_TYPE_NAME = "testing-tool";
     /**
      * Returns the rule name the entry belongs to.
      *

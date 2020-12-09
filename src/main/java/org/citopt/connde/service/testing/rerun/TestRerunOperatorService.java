@@ -1,4 +1,4 @@
-package org.citopt.connde.service.testing;
+package org.citopt.connde.service.testing.rerun;
 
 import org.apache.commons.io.IOUtils;
 import org.citopt.connde.domain.adapter.Adapter;

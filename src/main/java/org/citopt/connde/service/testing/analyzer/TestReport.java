@@ -1,4 +1,4 @@
-package org.citopt.connde.service.testing;
+package org.citopt.connde.service.testing.analyzer;
 
 
 import com.itextpdf.text.*;
@@ -10,7 +10,11 @@ import org.citopt.connde.domain.testing.TestDetails;
 import org.citopt.connde.repository.RuleRepository;
 import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.service.receiver.ValueLogReceiver;
+import org.citopt.connde.service.testing.PropertiesService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.stereotype.Component;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
@@ -20,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 
 /**
  * The component TestReport is used for the creation of test reports for tests of applications using the testing-tool
@@ -40,13 +45,34 @@ public class TestReport {
     @Autowired
     RuleRepository ruleRepository;
 
+    @Autowired
+    private PropertiesService propertiesService;
+
+    @Value("#{'${testingTool.plannedSimulators}'.split(',')}")
+    private List<String> PLANNED_SIMULATORS;
+
+    @Value("#{'${testingTool.sensorSimulators}'.split(',')}")
+    private List<String> SIMULATOR_LIST;
+
+   //To resolve ${} in @Value
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
+
+    String RERUN_IDENTIFIER;
+    String CONFIG_SENSOR_NAME_KEY;
+    
+    public TestReport() throws IOException {
+        propertiesService = new PropertiesService();
+        this.RERUN_IDENTIFIER = propertiesService.getPropertiesString("testingTool.RerunIdentifier");
+        this.CONFIG_SENSOR_NAME_KEY = propertiesService.getPropertiesString("testingTool.ConfigSensorNameKey");
+
+    }
 
     // Date formatter
     final String datePattern = "dd-MM-yyyy HH:mm:ss";
     final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(datePattern);
-
-    // TODO add to a config file?
-    final String[] simSensors = {"TestingTemperaturSensor", "TestingTemperaturSensorPl", "TestingFeuchtigkeitsSensor", "TestingFeuchtigkeitsSensorPl", "TestingBeschleunigungsSensor", "TestingBeschleunigungsSensorPl", "TestingGPSSensor", "TestingGPSSensorPl"};
 
     // final background colors and fonts
     final BaseColor lightBlue = new BaseColor(191, 220, 227);
@@ -55,6 +81,7 @@ public class TestReport {
     final Font white = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
     final Font titleFont = new Font(Font.FontFamily.HELVETICA, 22, Font.BOLD, BaseColor.BLACK);
     final Font boldUnderlined = new Font(Font.FontFamily.HELVETICA, 17, Font.BOLD | Font.UNDERLINE, BaseColor.BLACK);
+
 
     /**
      * Generates the Test-Report with the Chart of the simulated Values and other important information for the user.
@@ -134,7 +161,7 @@ public class TestReport {
                 ruleDetails = getRuleDetails(test, rule, counterRules);
                 counterRules += 1;
             } else {
-                if (rule.getName().contains("RERUN_")) {
+                if (rule.getName().contains(RERUN_IDENTIFIER)) {
                     ruleDetails = getRuleDetails(test, rule, counterRules);
                     counterRules += 1;
                 }
@@ -202,7 +229,7 @@ public class TestReport {
         String originalName = "";
 
         if (!test.isUseNewData()) {
-            rerunInfo = "(RERUN_)";
+            rerunInfo = "("+RERUN_IDENTIFIER+")";
         }
 
         // Table configurations
@@ -214,12 +241,12 @@ public class TestReport {
         for (String type : test.getType()) {
 
             // Get the original name of the rerun sensor
-            if (type.contains("RERUN_")) {
-                String[] split = type.split("RERUN_");
+            if (type.contains(RERUN_IDENTIFIER)) {
+                String[] split = type.split(RERUN_IDENTIFIER);
                 originalName = split[1];
             }
             // Check if (rerun) sensor is simulated sensor
-            if (Arrays.asList(simSensors).contains(type) || Arrays.asList(simSensors).contains(originalName)) {
+            if (SIMULATOR_LIST.contains(type) || SIMULATOR_LIST.contains(originalName)) {
                 sensorSimulation = true;
                 counter += 1;
 
@@ -286,7 +313,7 @@ public class TestReport {
         // Get the configurations especially for the given type of sensor
         for (java.util.List<ParameterInstance> configSensor : test.getConfig()) {
             for (ParameterInstance parameterInstance : configSensor) {
-                if (parameterInstance.getName().equals("ConfigName") && parameterInstance.getValue().equals(sensorType)) {
+                if (parameterInstance.getName().equals(CONFIG_SENSOR_NAME_KEY) && parameterInstance.getValue().equals(sensorType)) {
                     config = configSensor;
                     break;
                 }
@@ -318,7 +345,7 @@ public class TestReport {
     private Map<String, String> plannedSim(TestDetails test, String sensorType) {
         Map<String, String> plannedConfig = new HashMap<>();
 
-        if (sensorType.equals("TestingTemperaturSensorPl") || sensorType.equals("TestingFeuchtigkeitsSensorPl") || sensorType.equals("TestingGPSSensorPl") || sensorType.equals("TestingBeschleunigungsSensorPl")) {
+        if(PLANNED_SIMULATORS.contains(sensorType)){
             for (java.util.List<ParameterInstance> configSensor : test.getConfig()) {
                 for (ParameterInstance parameterInstance : configSensor) {
                     switch (parameterInstance.getName()) {
@@ -352,8 +379,8 @@ public class TestReport {
         String rerunInfo = "";
         String rerunName = "";
         if (!test.isUseNewData()) {
-            rerunInfo = "(RERUN_)";
-            rerunName = "RERUN_";
+            rerunInfo = "("+ RERUN_IDENTIFIER+")";
+            rerunName = RERUN_IDENTIFIER;
         }
 
         // Table configurations
@@ -364,7 +391,7 @@ public class TestReport {
 
         for (String type : test.getType()) {
             // Check if sensor is no sensor simulator
-            if (!Arrays.asList(simSensors).contains(rerunName + type)) {
+            if (!SIMULATOR_LIST.contains(rerunName + type)) {
                 realSensors = true;
                 counter += 1;
 
@@ -378,7 +405,7 @@ public class TestReport {
                     for (ParameterInstance parameterInstance : configSensor) {
                         if (parameterInstance.getValue().equals(type)) {
                             for (ParameterInstance parameterInstance2 : configSensor) {
-                                if (!parameterInstance2.getName().equals("ConfigName")) {
+                                if (!parameterInstance2.getName().equals(CONFIG_SENSOR_NAME_KEY)) {
                                     tableRealSensors.addCell(tableCell(parameterInstance2.getName(), lightBlue, 2));
                                     tableRealSensors.addCell(tableCell(parameterInstance2.getValue().toString(), null, 2));
                                 }
@@ -418,17 +445,17 @@ public class TestReport {
 
 
     /**
-     * Creates a table with all important informations about the rules of the application which was tested
+     * Creates a table with all important information about the rules of the application which was tested
      *
      * @param test test for which the test report is created
      * @param rule detail information of the selected rules before the test
-     * @return PDFTable with all important informations about the rules in the test of a specific application
+     * @return PDFTable with all important information about the rules in the test of a specific application
      */
     private PdfPTable getRuleDetails(TestDetails test, Rule rule, int counterRules) {
         int executionsAfter;
         String lastExecutionBefore = "NEVER";
         String lastExecutionAfter = "NEVER";
-        String triggerValues ="Rule not triggered";
+        String triggerValues = "Rule not triggered";
 
         // get executed Rules
         String rulesExecuted = test.getRulesExecuted().toString().replace("[", "")  //remove the right bracket
@@ -546,7 +573,7 @@ public class TestReport {
         ruleInfos.addCell(tableCell(infoSelectedRules, lightBlue, 2));
         // get an format
         if (!test.isUseNewData()) {
-            rerunInfo = "RERUN_";
+            rerunInfo = RERUN_IDENTIFIER;
         }
         for (int i = 0; i < test.getRules().size(); i++) {
             if (i != 0 && i != test.getRules().size()) {
@@ -590,16 +617,16 @@ public class TestReport {
         String anomalyDtr = "";
 
         switch (sensorType) {
-            case "TestingTemperaturSensor":
+            case "TestingTemperatureSensor":
                 kindOfSensor = "Temperature Sensor";
                 break;
-            case "TestingTemperaturSensorPl":
+            case "TestingTemperatureSensorPl":
                 kindOfSensor = "Temperature Sensor (planned)";
                 break;
-            case "TestingFeuchtigkeitsSensor":
+            case "TestingHumiditySensor":
                 kindOfSensor = "Humidity sensor";
                 break;
-            case "TestingFeuchtigkeitsSensorPl":
+            case "TestingHumiditySensorPl":
                 kindOfSensor = "Humidity Sensor (planned)";
                 break;
             case "TestingGPSSensor":
@@ -608,11 +635,11 @@ public class TestReport {
             case "TestingGPSSensorPl":
                 kindOfSensor = "GPS Sensor (planned)";
                 break;
-            case "TestingBeschleunigungsSensor":
+            case "TestingAccelerationSensor":
                 kindOfSensor = "Acceleration Sensor";
                 basicAnomaly = false;
                 break;
-            case "TestingBeschleunigungsSensorPl":
+            case "TestingAccelerationSensorPl":
                 kindOfSensor = "Acceleration Sensor (planned)";
                 basicAnomaly = false;
                 break;
@@ -630,7 +657,7 @@ public class TestReport {
             } else if (anomaly == 5) {
                 anomalyDtr = "Wrong value type";
             }
-            } else if (!basicAnomaly) {
+        } else if (!basicAnomaly) {
             if (anomaly == 3) {
                 anomalyDtr = "Fly bumps into the Object";
             } else if (anomaly == 4) {
@@ -639,8 +666,8 @@ public class TestReport {
         }
 
         switch (sensorType) {
-            case "TestingTemperaturSensor":
-            case "TestingTemperaturSensorPl":
+            case "TestingTemperatureSensor":
+            case "TestingTemperatureSensorPl":
                 if (event == 1) {
                     eventStr = "Temperature rise";
                 } else if (event == 2) {
@@ -658,8 +685,8 @@ public class TestReport {
 
 
                 break;
-            case "TestingFeuchtigkeitsSensor":
-            case "TestingFeuchtigkeitsSensorPl":
+            case "TestingHumiditySensor":
+            case "TestingHumiditySensorPl":
                 if (event == 1) {
                     eventStr = "Humidity rise";
                 } else if (event == 2) {
@@ -694,8 +721,8 @@ public class TestReport {
                 }
 
                 break;
-            case "TestingBeschleunigungsSensor":
-            case "TestingBeschleunigungsSensorPl":
+            case "TestingAccelerationSensor":
+            case "TestingAccelerationSensorPl":
                 if (event == 1) {
                     eventStr = "Object is not moving";
                 } else if (event == 2) {

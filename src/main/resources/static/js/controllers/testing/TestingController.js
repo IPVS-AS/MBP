@@ -5,8 +5,22 @@
  * Controller for the sensor list page.
  */
 app.controller('TestingController',
-    ['$scope', '$controller', '$interval', '$http', 'testList', '$rootScope', 'addTest', 'deleteTest', 'ruleList', 'sensorList', '$q', 'ComponentService', 'FileReader', 'ENDPOINT_URI', 'NotificationService',
-        function ($scope, $controller, $interval, $http, testList, $rootScope, addTest, deleteTest, ruleList, sensorList, $q, ComponentService, FileReader, ENDPOINT_URI, NotificationService) {
+    ['$scope', '$controller', '$interval', '$http', 'TestService','testList', '$rootScope', 'addTest', 'deleteTest', 'ruleList', 'sensorList', '$q', 'ComponentService', 'FileReader', 'ENDPOINT_URI', 'NotificationService',
+        function ($scope, $controller, $interval, $http, TestService,testList, $rootScope, addTest, deleteTest, ruleList, sensorList, $q, ComponentService, FileReader, ENDPOINT_URI, NotificationService) {
+
+            // Constant list of the sensor simulators, that can be included in the test
+            const SIMULATOR_LIST = {
+                TEMPERATURE: 'TestingTemperatureSensor',
+                TEMPERATURE_PL: 'TestingTemperatureSensorPl',
+                HUMIDITY: 'TestingHumiditySensor',
+                HUMIDITY_PL: 'TestingHumiditySensorPl',
+                ACCELERATION: 'TestingAccelerationSensor',
+                ACCELERATION_PL: 'TestingAccelerationSensorPl',
+                GPS: 'TestingGPSSensor',
+                GPS_PL: 'TestingGPSSensorPl'
+            };
+
+            const TESTING_DEVICE = "TestingDevice";
 
             const vm = this;
             vm.ruleList = ruleList;
@@ -18,8 +32,6 @@ app.controller('TestingController',
             vm.rulesPDF = [];
             vm.availableSensors = [];
             vm.realSensorList = [];
-            const sensorListSim = ['TestingTemperaturSensor', 'TestingTemperaturSensorPl', 'TestingFeuchtigkeitsSensor', 'TestingFeuchtigkeitsSensorPl', 'TestingBeschleunigungsSensor', 'TestingBeschleunigungsSensorPl', 'TestingGPSSensor', 'TestingGPSSensorPl'];
-
             vm.test = "";
             vm.addSimulator = false;
             vm.addRealSensor = false;
@@ -35,21 +47,23 @@ app.controller('TestingController',
                     NotificationService.notify("Could not retrieve test list.", "error");
                 }
 
-                //Initialize parameters and retrieve states and stats
-                // initParameters();
-
-                getDevice();
-                getRerunOperator();
+                // Check the registration of the different testing components
+                getTestDevice();
                 checkActuatorReg();
-                for (let i = 0; i < sensorListSim.length; i++) {
-                    checkSensorReg(sensorListSim[i]);
-                }
+                angular.forEach(SIMULATOR_LIST, function (value) {
+                    checkSensorReg(String(value));
+                });
+                getRealSensors();
+                // Check the registration of the rerun operator for test repetition
+                getRerunOperator();
+
+
                 $scope.availableSensors = vm.availableSensors;
                 $scope.realSensorList = vm.realSensorList;
 
                 //Interval for updating sensor states on a regular basis
                 const interval = $interval(function () {
-                    getDevice();
+                    getTestDevice();
                     //   checkActuatorReg();
                     //  checkSensorReg();
                 }, 5 * 60 * 1000);
@@ -67,31 +81,28 @@ app.controller('TestingController',
 
 
             /**
+             * [Public]
              * Performs a server request in order to start a test given by its id.
              *
              * @param testId
-             * @param item
              */
-            function executeTest(testId, item) {
-                $http.post(ENDPOINT_URI + '/test-details/test/' + testId, testId.toString()).success(function successCallback(responseTest) {
-                }, function (response) {
-                });
+            function executeTest(testId) {
+                TestService.executeTest(testId)
             }
 
             /**
+             * [Public]
              * Performs a server request in order to stop a test given by its id.
              *
              * @param testId
              */
             function stopTest(testId) {
-                vm.http = $http.post(ENDPOINT_URI + '/test-details/test/stop/' + testId, testId.toString()).then(function (response) {
-                }, function (response) {
-                });
-
+               TestService.stopTest(testId);
             }
 
 
             /**
+             * [Public]
              * Sends a server request to find out if a test report is available for the specific test.
              *
              * @param testId
@@ -114,26 +125,17 @@ app.controller('TestingController',
 
 
             /**
-             * Sends a server request to open the test report of a specific test fiven by its id.
-             *
-             * @param testID
-             */
-            function downloadPDF(testID, endtimeUnix) {
-                window.open('api/test-details/downloadPDF/' + testID + "_" + endtimeUnix, '_blank');
-            }
-
-
-            /**
+             * [Public]
              * Check if Test-Device is already registered or not.
              */
-            function getDevice() {
+            function getTestDevice() {
                 $http.get(ENDPOINT_URI + '/devices/search/findAll').success(function (response) {
-
                     $scope.device = 'LOADING';
-
                     $scope.device = "NOT_REGISTERED";
+
+                    // go through every registered device and search for the test device
                     angular.forEach(response._embedded.devices, function (value) {
-                        if (value.name === "TestingDevice") {
+                        if (value.name === TESTING_DEVICE) {
                             $scope.device = "REGISTERED";
                         }
                     });
@@ -141,14 +143,16 @@ app.controller('TestingController',
             }
 
             /**
-             * Check if Test-Device is already registered or not.
+             * [Public]
+             * Check if the rerun operator for a test repetition is already registered.
              */
             function getRerunOperator() {
                 $http.get(ENDPOINT_URI + '/adapters/search/findAll').success(function (response) {
 
                     $scope.rerunOperator = 'LOADING';
-
                     $scope.rerunOperator = "NOT_REGISTERED";
+
+                    // Go through the list of every registered adapters
                     angular.forEach(response._embedded.adapters, function (value) {
                         if (value.name === "RERUN_OPERATOR") {
                             $scope.rerunOperator = "REGISTERED";
@@ -157,45 +161,44 @@ app.controller('TestingController',
                 });
             }
 
-            function registerRerunOperator(){
-                $http.post(ENDPOINT_URI + '/test-details/addRerunOperator').success(function success(response) {
-                    console.log("bin angelegt")
+            /**
+             * [Public]
+             * Server request for the registration of the Rerun Operator.
+             */
+            function registerRerunOperator() {
+                $http.post(ENDPOINT_URI + '/test-details/addRerunOperator').success(function success() {
                     getRerunOperator();
                     //Notify the user
                     NotificationService.notify('Entity successfully created.', 'success')
-                }).catch(function onError(){
+                }).catch(function onError() {
                     //Notify the user
                     NotificationService.notify('Error during creation of the Rerun Operator.', 'error')
                 });
             }
 
             /**
+             * [Public]
              * Register Test Device and update the registered status.
              */
             function registerTestDevice() {
-                param =
-                    {
-                        "name": "TestingDevice",
-                        "componentType": "Computer",
-                        "ipAddress": "192.168.221.167",
-                        "username": "ubuntu",
-                        "password": "simulation",
-                        "errors": {}
-                    };
-                $http.post(ENDPOINT_URI + '/devices/', param).then(function success(response) {
-                    getDevice();
+                $http.post(ENDPOINT_URI + '/test-details/registerTestDevice').success(function success() {
+                    getTestDevice();
                     //Notify the user
                     NotificationService.notify('Entity successfully created.', 'success')
+                }).catch(function onError() {
+                    //Notify the user
+                    NotificationService.notify('Error during creation of the Rerun Operator.', 'error')
                 });
 
             }
 
             /**
+             * [Public]
              * Check if Actuator simulator is already registered or not.
              */
             function checkActuatorReg() {
                 $http.get(ENDPOINT_URI + '/actuators/search/findAll').success(function (response) {
-                    registered = "NOT_REGISTERED";
+                    let registered = "NOT_REGISTERED";
                     angular.forEach(response._embedded.actuators, function (value) {
                         if (value.name === "TestingActuator") {
                             registered = "REGISTERED";
@@ -207,444 +210,120 @@ app.controller('TestingController',
 
 
             /**
+             * [Public]
              * Register the Actuator-Simulator for the Test of IoT-Applications.
              */
             function registerTestingActuator() {
-                adaptersExists = false;
-                deviceExists = false;
-
-                // Check if the required Adapter for the actuator simulator exists
-                $http.get(ENDPOINT_URI + '/adapters/search/findAll').success(function (response) {
-                    angular.forEach(response._embedded.adapters, function (value) {
-                        if (value.name === "TestingActuator") {
-                            adapterLink = value._links.self.href;
-                            adaptersExists = true;
-                        }
-                    });
-
-                    // Check if the required Testing device for the actuator simulator exists
-                    $http.get(ENDPOINT_URI + '/devices/search/findAll').success(function (response) {
-                        angular.forEach(response._embedded.devices, function (value) {
-                            if (value.name === "TestingDevice") {
-                                deviceLink = value._links.self.href;
-                                deviceExists = true;
-                            }
-                        });
-
-                        // if the specific adapter and the Testing device exists a server request for the registration is performed
-                        if (deviceExists && adaptersExists) {
-
-                            // Parameters for the actuator simulator registration
-                            param = {
-                                "name": "TestingActuator",
-                                "componentType": "Buzzer",
-                                "adapter": adapterLink,
-                                "device": deviceLink,
-                                "errors": {}
-                            };
-
-                            // Server request for the registration of the testing actuator
-                            $http.post(ENDPOINT_URI + '/actuators/', param).then(function success(response) {
-                                checkActuatorReg();
-
-                                //Notify the user if actuator is successfully registered
-                                NotificationService.notify('Entity successfully created.', 'success')
-                            });
-
-                        } else if (!deviceExists && adaptersExists) {
-                            // Notify the user if the required Test device for the registration doesn't exist
-                            NotificationService.notify("Please register the Testing device first.", "error");
-                        } else if (deviceExists && !adaptersExists) {
-                            // Notify the user if the required Adapter for the registration doesn't exist
-                            NotificationService.notify("Please register the corresponding adapter first.", "error");
-                        } else if (!deviceExists && !adaptersExists) {
-                            // Notify the user if the required Adapter and Test device for the registration doesn't exist
-                            NotificationService.notify("Please register the corresponding adapter and Testing device first.", "error");
-                        }
-                    });
-
+                $http.post(ENDPOINT_URI + '/test-details/registerTestDevice').then(function (response) {
+                    getTestDevice();
+                    //Notify the user
+                    NotificationService.notify(response.getBody(), 'success')
+                }).catch(function onError() {
+                    //Notify the user
+                    NotificationService.notify('Error during creation of the Testing Actuator.', 'error')
                 });
 
             }
 
 
             /**
+             * [Public]
              * Check if the Sensor-Simulator for the Test is registered.
              *
-             * @param sensor
+             * @param sensor to be checked
              */
             function checkSensorReg(sensor) {
-                try {
-                    $http.get(ENDPOINT_URI + '/sensors/search/findAll').success(function (response) {
-                        sensorX = false;
-                        sensorY = false;
-                        sensorZ = false;
-                        registered = "NOT_REGISTERED";
-                        angular.forEach(response._embedded.sensors, function (value) {
-                            if (sensor === 'TestingTemperaturSensor') {
-                                if (value.name === sensor) {
-                                    registered = "REGISTERED";
-                                    vm.availableSensors.push(sensor);
-                                }
-                            } else if (sensor === 'TestingTemperaturSensorPl') {
-                                if (value.name === sensor) {
-                                    registered = "REGISTERED";
-                                    vm.availableSensors.push(sensor);
-                                }
-                            } else if (sensor === 'TestingFeuchtigkeitsSensorPl') {
-                                if (value.name === sensor) {
-                                    registered = "REGISTERED";
-                                    vm.availableSensors.push(sensor);
-                                }
-                            } else if (sensor === 'TestingFeuchtigkeitsSensor') {
-                                if (value.name === sensor) {
-                                    registered = "REGISTERED";
-                                    vm.availableSensors.push(sensor);
-                                }
-                            } else if (sensor === 'TestingBeschleunigungsSensor') {
-                                switch (value.name) {
-                                    case "TestingAccelerationX":
-                                        sensorX = true;
-                                        break;
-                                    case "TestingAccelerationY":
-                                        sensorY = true;
-                                        break;
-                                    case "TestingAccelerationZ":
-                                        sensorZ = true;
-                                        break;
-                                }
+                let registered = "NOT_REGISTERED";
 
-                            } else if (sensor === 'TestingBeschleunigungsSensorPl') {
-                                switch (value.name) {
-                                    case "TestingAccelerationPlX":
-                                        sensorX = true;
-                                        break;
-                                    case "TestingAccelerationPlY":
-                                        sensorY = true;
-                                        break;
-                                    case "TestingAccelerationPlZ":
-                                        sensorZ = true;
-                                        break;
-                                }
-
-                            } else if (sensor === "TestingGPSSensor") {
-                                switch (value.name) {
-                                    case "TestingGPSLatitude":
-                                        sensorX = true;
-                                        break;
-                                    case "TestingGPSLongitude":
-                                        sensorY = true;
-                                        break;
-                                    case "TestingGPSHight":
-                                        sensorZ = true;
-                                        break;
-                                }
-                            } else if (sensor === "TestingGPSSensorPl") {
-                                switch (value.name) {
-                                    case "TestingGPSLatitudePl":
-                                        sensorX = true;
-                                        break;
-                                    case "TestingGPSLongitudePl":
-                                        sensorY = true;
-                                        break;
-                                    case "TestingGPSHightPl":
-                                        sensorZ = true;
-                                        break;
-                                }
-                            }
-                        });
-
-
-                        switch (sensor) {
-                            case 'TestingTemperaturSensor':
-                                $scope.temp = registered;
-                                break;
-                            case 'TestingTemperaturSensorPl':
-                                $scope.tempPl = registered;
-                                break;
-                            case 'TestingFeuchtigkeitsSensor':
-                                $scope.hum = registered;
-                                break;
-                            case 'TestingFeuchtigkeitsSensorPl':
-                                $scope.humPl = registered;
-                                break;
-                            case 'TestingBeschleunigungsSensor':
-                                if (sensorX && sensorY && sensorZ) {
-                                    $scope.acc = "REGISTERED";
-                                    vm.availableSensors.push(sensor);
-                                } else {
-                                    $scope.acc = "NOT_REGISTERED";
-                                }
-                                break;
-                            case 'TestingBeschleunigungsSensorPl':
-                                if (sensorX && sensorY && sensorZ) {
-                                    $scope.accPl = "REGISTERED";
-                                    vm.availableSensors.push(sensor);
-                                } else {
-                                    $scope.accPl = "NOT_REGISTERED";
-                                }
-                                break;
-                            case 'TestingGPSSensor':
-                                if (sensorX && sensorY && sensorZ) {
-                                    $scope.gps = "REGISTERED";
-                                    vm.availableSensors.push(sensor);
-                                } else {
-                                    $scope.gps = "NOT_REGISTERED";
-                                }
-                                break;
-                            case 'TestingGPSSensorPl':
-                                if (sensorX && sensorY && sensorZ) {
-                                    $scope.gpsPl = "REGISTERED";
-                                    vm.availableSensors.push(sensor);
-                                } else {
-                                    $scope.gpsPl = "NOT_REGISTERED";
-                                }
-                                break;
-                        }
-
-                    });
-
-                } finally {
-
-                    vm.realSensorList = [];
-                    for (let i = 0; i < sensorList.length; i++) {
-                        switch (sensorList[i].name) {
-                            case 'TestingTemperaturSensorPl':
-                                break;
-                            case 'TestingTemperaturSensor':
-                                break;
-                            case 'TestingFeuchtigkeitsSensor':
-                                break;
-                            case 'TestingFeuchtigkeitsSensorPl':
-                                break;
-                            case 'TestingBeschleunigungsSensor':
-                                break;
-                            case 'TestingBeschleunigungsSensorPl':
-                                break;
-                            case 'TestingGPSSensor':
-                                break;
-                            case 'TestingGPSSensorPl':
-                                break;
-                            default:
-                                vm.realSensorList.push(sensorList[i]);
-                        }
-
+                angular.forEach(sensorList, function (value) {
+                    if (value.name == sensor) {
+                        registered = "REGISTERED";
+                        vm.availableSensors.push(sensor);
                     }
+                });
+
+                // define the scope variable for the sensor simulators for the view
+                switch (sensor) {
+                    case SIMULATOR_LIST.TEMPERATURE:
+                        $scope.temp = registered;
+                        break;
+                    case SIMULATOR_LIST.TEMPERATURE_PL:
+                        $scope.tempPl = registered;
+                        break;
+                    case SIMULATOR_LIST.HUMIDITY:
+                        $scope.hum = registered;
+                        break;
+                    case SIMULATOR_LIST.HUMIDITY_PL:
+                        $scope.humPl = registered;
+                        break;
+                    case SIMULATOR_LIST.GPS:
+                        $scope.gps = registered;
+                        break;
+                    case SIMULATOR_LIST.GPS_PL:
+                        $scope.gpsPl = registered;
+                        break;
+                    case SIMULATOR_LIST.ACCELERATION:
+                        $scope.acc = registered;
+                        break;
+                    case SIMULATOR_LIST.ACCELERATION_PL:
+                        $scope.accPl = registered;
+                        break;
                 }
+
             }
 
 
             /**
+             * [Private]
+             * Creates a list of all real sensors that can be included in a test.
+             */
+            function getRealSensors() {
+                angular.forEach(sensorList, function (sensor) {
+                    let realSensor = true;
+                    // Check if sensor is a sensor simulator
+                    angular.forEach(SIMULATOR_LIST, function (simulator) {
+                        if (simulator == sensor.name) {
+                            realSensor = false;
+                        }
+                    });
+
+                    // Add to list if real sensor
+                    if (realSensor) {
+                        vm.realSensorList.push(sensor);
+                    }
+                });
+            }
+
+
+            /**
+             * [Public]
              * Register the one dimensional Sensor-Simulator for the Test of IoT-Applications.
              */
             function registerOneDimSensor(sensor) {
-                adaptersExists = false;
-                deviceExists = false;
-
-                // Check if the required Adapter for the specific sensor exists
-                $http.get(ENDPOINT_URI + '/adapters/search/findAll').success(function (response) {
-                    angular.forEach(response._embedded.adapters, function (value) {
-                        if (value.name === sensor) {
-                            sensorName = sensor;
-                            adapterLink = value._links.self.href;
-                            adaptersExists = true;
-                        }
-                    });
-
-                    // Check if the required Testing device for the specific sensor exists
-                    $http.get(ENDPOINT_URI + '/devices/search/findAll').success(function (response) {
-                            angular.forEach(response._embedded.devices, function (value) {
-                                if (value.name === "TestingDevice") {
-                                    deviceLink = value._links.self.href;
-                                    deviceExists = true;
-                                }
-                            });
-
-                            // if the specific adapter and the Testing device exists a server request for the registration is performed
-                            if (deviceExists && adaptersExists) {
-                                if (sensor === "TestingTemperaturSensor" || sensor === "TestingTemperaturSensorPl") {
-                                    componentType = "Temperature";
-                                } else if (sensor === "TestingFeuchtigkeitsSensor" || sensor === "TestingFeuchtigkeitsSensorPl") {
-                                    componentType = "Humidity";
-                                }
-
-                                // Parameters for the sensor simulator registration
-                                param = {
-                                    "name": sensorName,
-                                    "componentType": componentType,
-                                    "adapter": adapterLink,
-                                    "device": deviceLink,
-                                    "errors": {}
-                                };
-
-                                // Server request for the registration of the specific sensor
-                                $http.post(ENDPOINT_URI + '/sensors/', param).then(function success(response) {
-                                    checkSensorReg(sensor);
-
-                                    //Notify the user if specific sensor is successfully registered
-                                    NotificationService.notify('Entity successfully created.', 'success')
-                                });
-
-                            } else if (!deviceExists && adaptersExists) {
-                                // Notify the user if the required Test device for the registration doesn't exist
-                                NotificationService.notify("Please register the Testing device first.", "error");
-                            } else if (deviceExists && !adaptersExists) {
-                                // Notify the user if the required Adapter for the registration doesn't exist
-                                NotificationService.notify("Please register the corresponding adapter first.", "error");
-                            } else if (!deviceExists && !adaptersExists) {
-                                // Notify the user if the required Adapter and Test device for the registration doesn't exist
-                                NotificationService.notify("Please register the corresponding adapter and Testing device first.", "error");
-                            }
-                        }
-                    );
+                $http.post(ENDPOINT_URI + '/test-details/registerSensorSimulator', sensor).success(function (response) {
+                    checkSensorReg(sensor);
+                    //Notify the user
+                    NotificationService.notify(response.getBody(), 'success')
+                }).catch(function onError() {
+                    //Notify the user
+                    NotificationService.notify('Error during creation of the Sensor Simulator.', 'error')
                 });
+
             }
 
             /**
              * Register the three dimensional Sensor-Simulators for the Test of IoT-Applications.
              */
             function registerThreeDimSensor(sensor) {
-                deviceExists = false;
-                adaptersExistsX = false;
-                adaptersExistsY = false;
-                adaptersExistsZ = false;
-                switch (sensor) {
-                    case "TestingBeschleunigungsSensor":
-                        sensorX = "TestingAccelerationX";
-                        sensorY = "TestingAccelerationY";
-                        sensorZ = "TestingAccelerationZ";
-                        componentType = "Motion";
-                        break;
-                    case "TestingBeschleunigungsSensorPl":
-                        sensorX = "TestingAccelerationPlX";
-                        sensorY = "TestingAccelerationPlY";
-                        sensorZ = "TestingAccelerationPlZ";
-                        componentType = "Motion";
-                        break;
-                    case "TestingGPSSensor":
-                        sensorX = "TestingGPSLatitude";
-                        sensorY = "TestingGPSLongitude";
-                        sensorZ = "TestingGPSHight";
-                        componentType = "Location";
-                        break;
-                    case "TestingGPSSensorPl":
-                        sensorX = "TestingGPSLatitudePl";
-                        sensorY = "TestingGPSLongitudePl";
-                        sensorZ = "TestingGPSHightPl";
-                        componentType = "Location";
-                        break;
-                }
-
-                // Check if the required Adapters for the three dimensional sensor simulators exists
-                $http.get(ENDPOINT_URI + '/adapters/search/findAll').success(function (response) {
-                    angular.forEach(response._embedded.adapters, function (value) {
-                        if (value.name === sensorX) {
-                            adapterLinkX = value._links.self.href;
-                            adaptersExistsX = true;
-                        } else if (value.name === sensorY) {
-                            adapterLinkY = value._links.self.href;
-                            adaptersExistsY = true;
-                        } else if (value.name === sensorZ) {
-                            adapterLinkZ = value._links.self.href;
-                            adaptersExistsZ = true;
-                        }
-                    });
-
-                    // Check if the required Testing device for the sensor simulators exists
-                    $http.get(ENDPOINT_URI + '/devices/search/findAll').success(function (response) {
-                            angular.forEach(response._embedded.devices, function (value) {
-                                if (value.name === "TestingDevice") {
-                                    deviceLink = value._links.self.href;
-                                    deviceExists = true;
-                                }
-                            });
-
-                            // if the specific adapter for one dimension and the Testing device exists a server request for the registration is performed
-                            if (deviceExists && adaptersExistsX) {
-
-                                // Parameters for one of the sensor simulators of the three dimensional sensor registration
-                                param = {
-                                    "name": sensorX,
-                                    "componentType": componentType,
-                                    "adapter": adapterLinkX,
-                                    "device": deviceLink,
-                                    "errors": {}
-                                };
-
-                                // Server request for the registration for one sensor simulator of the three dimensional sensor
-                                $http.post(ENDPOINT_URI + '/sensors/', param).then(function success(response) {
-                                    checkSensorReg(sensor);
-
-                                    //Notify the user if sensor is successfully registered
-                                    NotificationService.notify('Entity successfully created.', 'success')
-                                });
-                            }
-
-                            // if the specific adapter for one dimension and the Testing device exists a server request for the registration is performed
-                            if (deviceExists && adaptersExistsY) {
-
-                                // Parameters for one of the sensor simulators of the three dimesional sensor registration
-                                param = {
-                                    "name": sensorY,
-                                    "componentType": componentType,
-                                    "adapter": adapterLinkY,
-                                    "device": deviceLink,
-                                    "errors": {}
-                                };
-
-                                // Server request for the registration for one sensor simulator of the three dimensional sensor
-                                $http.post(ENDPOINT_URI + '/sensors/', param).then(function success(response) {
-                                    checkSensorReg(sensor);
-
-                                    //Notify the user if sensor is successfully registered
-                                    NotificationService.notify('Entity successfully created.', 'success')
-                                });
-                            }
-
-                            // if the specific adapter for one dimension and the Testing device exists a server request for the registration is performed
-                            if (deviceExists && adaptersExistsZ) {
-
-                                // Parameters for one of the sensor simulators of the three dimensional sensor registration
-                                param = {
-                                    "name": sensorZ,
-                                    "componentType": componentType,
-                                    "adapter": adapterLinkZ,
-                                    "device": deviceLink,
-                                    "errors": {}
-                                };
-
-                                // Server request for the registration for one sensor simulator of the three dimensional sensor
-                                $http.post(ENDPOINT_URI + '/sensors/', param).then(function success(response) {
-                                    checkSensorReg(sensor);
-
-                                    //Notify the user if sensor is successfully registered
-                                    NotificationService.notify('Entity successfully created.', 'success')
-                                });
-
-                            } else if (!deviceExists && (adaptersExistsY || adaptersExistsX || adaptersExistsZ)) {
-                                // Notify the user if the required Test device for the registration doesn't exist
-                                NotificationService.notify("Please register the Testing device first.", "error");
-                            } else if (deviceExists && (!adaptersExistsY || !adaptersExistsX || !adaptersExistsZ)) {
-                                // Notify the user if one of the required Adapters for the registration doesn't exist
-                                NotificationService.notify("Please register the corresponding adapters first.", "error");
-                            } else if (!deviceExists && (!adaptersExistsY || !adaptersExistsX || !adaptersExistsZ)) {
-                                // Notify the user if one of the required Adapters and Test device for the registration doesn't exist
-                                NotificationService.notify("Please register the corresponding adapters and Testing device first.", "error");
-                            }
-                        }
-                    );
-
-
-                });
-
+                // TODO
             }
 
             /**
              * [Public]
-             *Manage the addition or removal of simulated sensors for creating a test.
+             * Manage the addition or removal of simulated sensors for creating a test.
              */
             function addSimulators() {
-                var elem = document.getElementById("addSimulator");
+                const elem = document.getElementById("addSimulator");
                 if (elem.value === "+") {
                     elem.value = "-";
                     vm.addSimulator = true;
@@ -669,7 +348,7 @@ app.controller('TestingController',
              *
              */
             function addRealSensor() {
-                var elemReal = document.getElementById("addRealSensor");
+                let elemReal = document.getElementById("addRealSensor");
                 vm.selectedRealSensor = [];
 
 
@@ -694,8 +373,8 @@ app.controller('TestingController',
              *
              * Sends a server request in order to open a window for downloading/open the specific test report
              *
-             * @param testID
-             * @param endtimeUnix
+             * @param testID ID of the test for which the test report should be opened.
+             * @param endtimeUnix endtime of the test to identify the specific report for the specific test
              */
             function downloadPDF(testID, endtimeUnix) {
                 window.open('api/test-details/downloadPDF/' + testID + "_" + endtimeUnix, '_blank');
@@ -704,7 +383,9 @@ app.controller('TestingController',
 
             /**
              * [Public]
-             * @param test
+             * Reference to the detailed page of a specific test.
+             *
+             * @param test for which the detailed page should be opened
              * @returns {*}
              */
             $scope.detailsLink = function (test) {
@@ -768,6 +449,8 @@ app.controller('TestingController',
             }
 
             /**
+             * [Public]
+             *
              * Sends a server request in order to edit the configurations of the test "useNewData",
              * so that the latest values of a specific test are reused in the new execution or not
              *
@@ -789,8 +472,6 @@ app.controller('TestingController',
 
             // expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {
-
-
                 testListCtrl: $controller('ItemListController as testListCtrl',
                     {
                         $scope: $scope,
@@ -800,6 +481,8 @@ app.controller('TestingController',
                     {
                         $scope: $scope,
                         addItem: function (data) {
+                            let checkSimSensor;
+                            let checkRealSensor;
                             const newTestObject = {};
 
                             newTestObject.config = [];
@@ -808,8 +491,8 @@ app.controller('TestingController',
 
                             try {
 
-                                var checkRealSensor = false;
-                                var checkSimSensor = false;
+                                checkRealSensor = false;
+                                checkSimSensor = false;
 
 
                                 if (!angular.isUndefined(vm.selectedRealSensor)) {
@@ -829,13 +512,13 @@ app.controller('TestingController',
                                                     });
 
                                                     vm.parameterValues.push({"name": "useNewData", "value": true});
-                                                    var requiredParams = vm.selectedRealSensor[i]._embedded.adapter.parameters;
+                                                    const requiredParams = vm.selectedRealSensor[i]._embedded.adapter.parameters;
 
 
                                                     //Iterate over all parameters
                                                     for (let i = 0; i < requiredParams.length; i++) {
                                                         //Set empty default values for these parameters
-                                                        var value = "";
+                                                        let value = "";
 
                                                         if (requiredParams[i].type === "Switch") {
                                                             value = true;
@@ -880,12 +563,12 @@ app.controller('TestingController',
                                     for (let z = 0; z < vm.selectedSensors.length; z++) {
                                         newTestObject.type.push(vm.selectedSensors[z]);
                                     }
-                                    if (vm.selectedSensors.includes('TestingTemperaturSensor')) {
+                                    if (vm.selectedSensors.includes('TestingTemperatureSensor')) {
 
                                         vm.parameterValues = [];
                                         vm.parameterValues.push({
                                             "name": "ConfigName",
-                                            "value": 'TestingTemperaturSensor'
+                                            "value": 'TestingTemperatureSensor'
                                         });
                                         if (vm.config.eventTemp === '3' || vm.config.eventTemp === '4' || vm.config.eventTemp === '5' || vm.config.eventTemp === '6') {
 
@@ -913,11 +596,11 @@ app.controller('TestingController',
 
                                     }
 
-                                    if (vm.selectedSensors.includes('TestingFeuchtigkeitsSensor')) {
+                                    if (vm.selectedSensors.includes('TestingHumiditySensor')) {
                                         vm.parameterValues = [];
                                         vm.parameterValues.push({
                                             "name": "ConfigName",
-                                            "value": 'TestingFeuchtigkeitsSensor'
+                                            "value": 'TestingHumiditySensor'
                                         });
                                         if (vm.config.eventHum === '3' || vm.config.eventHum === '4' || vm.config.eventHum === '5' || vm.config.eventHum === '6') {
 
@@ -944,11 +627,11 @@ app.controller('TestingController',
                                         newTestObject.config.push(vm.parameterValues);
                                     }
 
-                                    if (vm.selectedSensors.includes('TestingTemperaturSensorPl')) {
+                                    if (vm.selectedSensors.includes('TestingTemperatureSensorPl')) {
                                         vm.parameterValues = [];
                                         vm.parameterValues.push({
                                             "name": "ConfigName",
-                                            "value": 'TestingTemperaturSensorPl'
+                                            "value": 'TestingTemperatureSensorPl'
                                         });
                                         if (vm.config.eventTempPl === '3' || vm.config.eventTempPl === '4' || vm.config.eventTempPl === '5' || vm.config.eventTempPl === '6') {
                                             vm.parameterValues.push({
@@ -991,11 +674,11 @@ app.controller('TestingController',
                                         newTestObject.config.push(vm.parameterValues);
                                     }
 
-                                    if (vm.selectedSensors.includes('TestingFeuchtigkeitsSensorPl')) {
+                                    if (vm.selectedSensors.includes(SIMULATOR_LIST.HUMIDITY_PL)) {
                                         vm.parameterValues = [];
                                         vm.parameterValues.push({
                                             "name": "ConfigName",
-                                            "value": 'TestingFeuchtigkeitsSensorPl'
+                                            "value": SIMULATOR_LIST.HUMIDITY_PL
                                         });
                                         if (vm.config.eventHumPl === '3' || vm.config.eventHumPl === '4' || vm.config.eventHumPl === '5' || vm.config.eventHumPl === '6') {
                                             vm.parameterValues.push({
@@ -1038,11 +721,11 @@ app.controller('TestingController',
                                         newTestObject.config.push(vm.parameterValues);
                                     }
 
-                                    if (vm.selectedSensors.includes('TestingGPSSensor')) {
+                                    if (vm.selectedSensors.includes(SIMULATOR_LIST.GPS)) {
                                         vm.parameterValues = [];
                                         vm.parameterValues.push({
                                             "name": "ConfigName",
-                                            "value": 'TestingGPSSensor'
+                                            "value": SIMULATOR_LIST.GPS
                                         });
                                         if (vm.config.eventGPS === '3' || vm.config.eventGPS === '4' || vm.config.eventGPS === '5') {
                                             vm.parameterValues.push({"name": "who", "value": vm.config.whoGPS});
@@ -1097,11 +780,11 @@ app.controller('TestingController',
 
                                         newTestObject.config.push(vm.parameterValues);
                                     }
-                                    if (vm.selectedSensors.includes('TestingGPSSensorPl')) {
+                                    if (vm.selectedSensors.includes(SIMULATOR_LIST.GPS_PL)) {
                                         vm.parameterValues = [];
                                         vm.parameterValues.push({
                                             "name": "ConfigName",
-                                            "value": 'TestingGPSSensorPl'
+                                            "value": SIMULATOR_LIST.GPS_PL
                                         });
                                         if (vm.config.eventGPSPl === '3' || vm.config.eventGPSPl === '4' || vm.config.eventGPSPl === '5') {
 
@@ -1175,11 +858,11 @@ app.controller('TestingController',
 
                                         newTestObject.config.push(vm.parameterValues);
                                     }
-                                    if (vm.selectedSensors.includes('TestingBeschleunigungsSensor')) {
+                                    if (vm.selectedSensors.includes(SIMULATOR_LIST.ACCELERATION)) {
                                         vm.parameterValues = [];
                                         vm.parameterValues.push({
                                             "name": "ConfigName",
-                                            "value": 'TestingBeschleunigungsSensor'
+                                            "value": SIMULATOR_LIST.ACCELERATION
                                         });
                                         if (vm.config.eventAcc === '3' || vm.config.eventAcc === '4' || vm.config.eventAcc === '5') {
                                             vm.parameterValues.push({
@@ -1256,11 +939,11 @@ app.controller('TestingController',
                                         newTestObject.config.push(vm.parameterValues);
                                     }
 
-                                    if (vm.selectedSensors.includes('TestingBeschleunigungsSensorPl')) {
+                                    if (vm.selectedSensors.includes(SIMULATOR_LIST.ACCELERATION_PL)) {
                                         vm.parameterValues = [];
                                         vm.parameterValues.push({
                                             "name": "ConfigName",
-                                            "value": 'TestingBeschleunigungsSensorPl'
+                                            "value": SIMULATOR_LIST.ACCELERATION
                                         });
                                         if (vm.config.eventAccPl === '3' || vm.config.eventAccPl === '4' || vm.config.eventAccPl === '5') {
                                             vm.parameterValues.push({
@@ -1384,7 +1067,7 @@ app.controller('TestingController',
                                 });
                                 vm.parameterValues.push({
                                     "name": "event",
-                                    "value": parseInt(0)
+                                    "value": 0
                                 });
                                 vm.parameterValues.push({"name": "anomaly", "value": 0});
                                 vm.parameterValues.push({"name": "useNewData", "value": true});
@@ -1431,7 +1114,7 @@ app.controller('TestingController',
                 stopTest: stopTest,
                 downloadPDF: downloadPDF,
                 refreshTestEntry: refreshTestEntry,
-                getDevice: getDevice,
+                getDevice: getTestDevice,
                 getRerunOperator: getRerunOperator,
                 registerRerunOperator: registerRerunOperator,
                 registerTestDevice: registerTestDevice,

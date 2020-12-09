@@ -1,4 +1,4 @@
-package org.citopt.connde.service.testing;
+package org.citopt.connde.service.testing.analyzer;
 
 import org.citopt.connde.domain.component.Sensor;
 import org.citopt.connde.domain.rules.Rule;
@@ -12,11 +12,14 @@ import org.citopt.connde.repository.TestDetailsRepository;
 import org.citopt.connde.repository.TestRepository;
 import org.citopt.connde.service.receiver.ValueLogReceiver;
 import org.citopt.connde.service.receiver.ValueLogReceiverObserver;
+import org.citopt.connde.service.testing.PropertiesService;
+import org.citopt.connde.service.testing.executor.TestExecutor;
 import org.citopt.connde.web.rest.RestDeploymentController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.*;
 
 @Component
@@ -44,6 +47,18 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
 
     @Autowired
     private TestExecutor testExecutor;
+
+    @Autowired
+    private PropertiesService propertiesService;
+
+
+
+    String RERUN_IDENTIFIER;
+
+    public TestAnalyzer() throws IOException {
+        propertiesService = new PropertiesService();
+        this.RERUN_IDENTIFIER = propertiesService.getPropertiesString("testingTool.RerunIdentifier");
+    }
 
 
     // List of all active Tests/testValues
@@ -187,7 +202,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
             }
         } else {
             for (Rule rule : ruleList) {
-                ruleNames.add("RERUN_" + rule.getName());
+                ruleNames.add(RERUN_IDENTIFIER + rule.getName());
             }
         }
 
@@ -233,11 +248,11 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
         // Get all trigger values for  the test rules between start and end time
         for (int i = 0; i < ruleNames.size(); i++) {
             List<Double> values = new ArrayList<>();
-            String rulename = ruleNames.get(i);
+            String ruleName = ruleNames.get(i);
             if (testRepo.findAllByTriggerId(triggerID.get(i)) != null) {
                 List<Testing> test = testRepo.findAllByTriggerId(triggerID.get(i));
                 for (Testing testing : test) {
-                    if (testing.getRule().contains(rulename)) {
+                    if (testing.getRule().contains(ruleName)) {
                         LinkedHashMap<String, Double> timeTiggerValue = (LinkedHashMap<String, Double>) testing.getOutput().getOutputMap().get("event_0");
                         LinkedHashMap<String, Long> timeTiggerValMp = (LinkedHashMap<String, Long>) testing.getOutput().getOutputMap().get("event_0");
                         long timeTiggerVal = timeTiggerValMp.get("time");
@@ -249,7 +264,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
                     }
                 }
                 if (values.size() > 0) {
-                    testValues.put(rulename, values);
+                    testValues.put(ruleName, values);
                 }
             }
 
@@ -266,7 +281,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      */
     public List<Rule> getCorrespondingRules(TestDetails test) {
         // Get the rules selected by the user with their information about the last execution,..
-        List<Rule> rulesBefore = new ArrayList<>(test.getRules());
+        List<Rule> corresRules = new ArrayList<>(test.getRules());
 
 
         // go through all rule triggers and check if the sensor id is included
@@ -278,8 +293,8 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
                 if (trigger.getQuery().contains(sensorID)) {
                     for (Rule nextRule : ruleRepository.findAll()) {
                         if (nextRule.getTrigger().getId().equals(trigger.getId())) {
-                            if (!rulesBefore.contains(nextRule)) {
-                                rulesBefore.add(nextRule);
+                            if (!corresRules.contains(nextRule)) {
+                                corresRules.add(nextRule);
                             }
                         }
                     }
@@ -287,7 +302,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
             }
         }
 
-        return rulesBefore;
+        return corresRules;
     }
 
 
