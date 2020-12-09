@@ -4,9 +4,7 @@ package de.ipvs.as.mbp.error;
  * @author Jakob Benz
  */
 public abstract class EntityException extends Exception {
-	
-	private static final long serialVersionUID = 5611832137699036754L;
-	
+
 	private String entityType;
 	private String entityId;
 	

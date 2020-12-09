@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.service;
+package de.ipvs.as.mbp.service.validation;
 
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 
@@ -22,6 +22,6 @@ public interface IDeleteValidator<E extends UserEntity> {
 	 * 
 	 * @param entity the {@link UserEntity} to delete.
 	 */
-	public void validateDeletable(E entity);
+	void validateDeletable(E entity);
 
 }
