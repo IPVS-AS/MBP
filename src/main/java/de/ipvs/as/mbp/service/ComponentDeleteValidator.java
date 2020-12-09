@@ -1,5 +1,6 @@
 package de.ipvs.as.mbp.service;
 
+import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.service.deploy.SSHDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
