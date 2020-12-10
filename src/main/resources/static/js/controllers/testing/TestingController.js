@@ -5,8 +5,8 @@
  * Controller for the sensor list page.
  */
 app.controller('TestingController',
-    ['$scope', '$controller', '$interval', '$http', 'TestService', 'testList', '$rootScope', 'addTest', 'deleteTest', 'ruleList', 'sensorList', '$q', 'ComponentService', 'FileReader', 'ENDPOINT_URI', 'NotificationService',
-        function ($scope, $controller, $interval, $http, TestService, testList, $rootScope, addTest, deleteTest, ruleList, sensorList, $q, ComponentService, FileReader, ENDPOINT_URI, NotificationService) {
+    ['$scope', '$controller', '$interval', '$http', 'TestService','CrudService', 'testList', '$rootScope', 'addTest', 'deleteTest', 'ruleList', 'sensorList', '$q', 'ComponentService', 'FileReader', 'ENDPOINT_URI', 'NotificationService',
+        function ($scope, $controller, $interval, $http, TestService, CrudService, testList, $rootScope, addTest, deleteTest, ruleList, sensorList, $q, ComponentService, FileReader, ENDPOINT_URI, NotificationService) {
 
             // Constant list of the sensor simulators, that can be included in the test
             const SIMULATOR_LIST = {
@@ -22,6 +22,10 @@ app.controller('TestingController',
 
             const TESTING_DEVICE = "TestingDevice";
             const TESTING_ACTUATOR = "TestingActuator";
+            const RERUN_OPERATOR = "RERUN_OPERATOR";
+            const deviceList = CrudService.fetchAllItems('devices');
+            const adapterList = CrudService.fetchAllItems('adapters');
+            const actuatorList =CrudService.fetchAllItems('actuators');
 
             const vm = this;
             vm.ruleList = ruleList;
@@ -104,13 +108,14 @@ app.controller('TestingController',
 
             /**
              * [Public]
+             *
              * Sends a server request to find out if a test report is available for the specific test.
              *
              * @param testId
              * @param testName
              */
             function checkReportExists(testId, testName) {
-               TestService.pdfExists(testId).then(function (response) {
+                TestService.pdfExists(testId).then(function (response) {
                     switch (response.data) {
                         case "true":
                             document.getElementById(testName).disabled = false;
@@ -125,20 +130,24 @@ app.controller('TestingController',
 
             /**
              * [Public]
+             *
              * Check if Test-Device is already registered or not.
              */
             function getTestDevice() {
-                $http.get(ENDPOINT_URI + '/devices/search/findAll').success(function (response) {
-                    $scope.device = 'LOADING';
-                    $scope.device = "NOT_REGISTERED";
+                $scope.device = 'LOADING';
+                $scope.device = "NOT_REGISTERED";
 
-                    // go through every registered device and search for the test device
-                    angular.forEach(response._embedded.devices, function (value) {
-                        if (value.name === TESTING_DEVICE) {
+                // go through every registered device and search for the test device
+                angular.forEach(deviceList, function (deviceArray) {
+                    angular.forEach(deviceArray.value, function (device) {
+                        console.log(device);
+                        if (device.name === TESTING_DEVICE) {
                             $scope.device = "REGISTERED";
                         }
-                    });
+                    })
+
                 });
+
             }
 
             /**
@@ -146,18 +155,18 @@ app.controller('TestingController',
              * Check if the rerun operator for a test repetition is already registered.
              */
             function getRerunOperator() {
-                $http.get(ENDPOINT_URI + '/adapters/search/findAll').success(function (response) {
-
                     $scope.rerunOperator = 'LOADING';
                     $scope.rerunOperator = "NOT_REGISTERED";
 
                     // Go through the list of every registered adapters
-                    angular.forEach(response._embedded.adapters, function (value) {
-                        if (value.name === "RERUN_OPERATOR") {
-                            $scope.rerunOperator = "REGISTERED";
-                        }
+                    angular.forEach(adapterList, function (adapterArray) {
+                        angular.forEach(adapterArray.value, function (adapter) {
+                            if (adapter.name === RERUN_OPERATOR) {
+                                $scope.rerunOperator = "REGISTERED";
+                            }
+                        })
+
                     });
-                });
             }
 
             /**
@@ -165,7 +174,7 @@ app.controller('TestingController',
              * Server request for the registration of the Rerun Operator.
              */
             function registerRerunOperator() {
-                $http.post(ENDPOINT_URI + '/test-details/addRerunOperator').success(function success() {
+                TestService.registerRerunOperator().success(function success() {
                     getRerunOperator();
                     //Notify the user
                     NotificationService.notify('Entity successfully created.', 'success')
@@ -180,7 +189,7 @@ app.controller('TestingController',
              * Register Test Device and update the registered status.
              */
             function registerTestDevice() {
-                TestService.registerTestDevice.success(function success() {
+                TestService.registerTestDevice().success(function success() {
                     getTestDevice();
                     //Notify the user
                     NotificationService.notify('Entity successfully created.', 'success')
@@ -197,15 +206,17 @@ app.controller('TestingController',
              * Check if Actuator simulator is already registered or not.
              */
             function checkActuatorReg() {
-                $http.get(ENDPOINT_URI + '/actuators/search/findAll').success(function (response) {
+
                     let registered = "NOT_REGISTERED";
-                    angular.forEach(response._embedded.actuators, function (value) {
-                        if (value.name === TESTING_ACTUATOR) {
-                            registered = "REGISTERED";
-                        }
+                    angular.forEach(actuatorList, function (actuatorArray) {
+                        angular.forEach(actuatorArray.value, function (actuator) {
+                            if (actuator.name === TESTING_ACTUATOR) {
+                                registered = "REGISTERED";
+                            }
+                        })
+
                     });
                     $scope.testingActuator = registered;
-                });
             }
 
 
@@ -215,7 +226,7 @@ app.controller('TestingController',
              * Register the Actuator-Simulator for the Test of IoT-Applications.
              */
             function registerTestingActuator() {
-               TestService.registerTestActuator().then(function (response) {
+                TestService.registerTestActuator().then(function (response) {
                     getTestDevice();
                     //Notify the user
                     NotificationService.notify(response.getBody(), 'success')
@@ -376,10 +387,10 @@ app.controller('TestingController',
              * Sends a server request in order to open a window for downloading/open the specific test report
              *
              * @param testID ID of the test for which the test report should be opened.
-             * @param endtimeUnix endtime of the test to identify the specific report for the specific test
+             * @param endtimeUnix end time of the test to identify the specific report for the specific test
              */
             function downloadPDF(testID, endtimeUnix) {
-                window.open('api/test-details/downloadPDF/' + testID + "_" + endtimeUnix, '_blank');
+                TestService.downloadReport(testID, endtimeUnix);
             }
 
 
@@ -444,15 +455,14 @@ app.controller('TestingController',
              * @param useNewData
              */
             function editConfig(testId, useNewData) {
-                if (useNewData === true) {
-                    $http.post(ENDPOINT_URI + '/test-details/editConfig/' + testId, "false").then(function success(response) {
-                        $scope.erfolgreich = response.success;
-                    });
+                let useNewDataConfig;
+               if (useNewData === true) {
+                    useNewDataConfig = "false";
                 } else if (useNewData === false) {
-                    $http.post(ENDPOINT_URI + '/test-details/editConfig/' + testId, "true").then(function success(response) {
-                        $scope.erfolgreich = response.success;
-                    });
+                   useNewDataConfig = "true";
                 }
+               TestService.editConfig(testId, useNewDataConfig);
+
             }
 
             // expose controller ($controller will auto-add to $scope)
@@ -466,7 +476,10 @@ app.controller('TestingController',
                     {
                         $scope: $scope,
                         addItem: function (data) {
-                            const newTestObject = TestService.getTestData(vm.selectedSensors,vm.selectedRealSensor,vm.parameterVal ,vm.config, vm.rules, vm.executeRules, data);
+                            let selectedSensorsReal = vm.selectedRealSensor;
+                            let parameterValuesReal = vm.parameterVal;
+
+                            const newTestObject = TestService.getTestData(vm.selectedSensors, selectedSensorsReal,parameterValuesReal ,vm.config, vm.rules, vm.executeRules, data);
                             return addTest(newTestObject);
 
 

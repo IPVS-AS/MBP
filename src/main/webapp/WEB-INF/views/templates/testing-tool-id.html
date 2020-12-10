@@ -279,7 +279,7 @@
                                 </div>
                             </div>
 
-                            <div ng-repeat="realSensor in ctrl.selectedRealSensor" ng-init="row=$index" >
+                            <div ng-repeat="realSensor in selectedRealSensor" ng-init="row=$index" >
                                 <h3>Configuration Real Sensor: {{realSensor.name}}</h3>
                                 <table class="table parameter-table">
                                     <thead></thead>
@@ -322,6 +322,7 @@
                                     <span class="help-block focused error">{{ctrl.deployer.status.fieldErrors.parameters}}</span>
                                 </div>
                             </div>
+
 
 
 

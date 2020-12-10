@@ -7,14 +7,19 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
     function ($http, $resource, $q, ENDPOINT_URI, NotificationService) {
         //URLs for server requests
         const URL_TEST_START = ENDPOINT_URI + '/test-details/test/';
-        const URL_TEST_STOP = ENDPOINT_URI + 'test-details/test/stop/';
+        const URL_TEST_STOP = ENDPOINT_URI + '/test-details/test/stop/';
         const URL_REPORT_LIST = ENDPOINT_URI + '/test-details/pdfList/';
         const URL_REPORT_EXISTS = ENDPOINT_URI + '/test-details/pdfExists/';
         const URL_TESTDEVICE_REGISTER = ENDPOINT_URI + '/test-details/registerTestDevice';
-        const URL_TESTACTUATOR_REGISTER = ENDPOINT_URI +'/test-details/registerTestActuator';
+        const URL_TESTACTUATOR_REGISTER = ENDPOINT_URI + '/test-details/registerTestActuator';
         const URL_ONEDIM_SENSOR_REGISTER = ENDPOINT_URI + '/test-details/registerSensorSimulator';
+        const URL_RERUN_OPERATOR_REGISTER = ENDPOINT_URI + '/test-details/addRerunOperator';
+        const URL_RULE_LIST_TEST = ENDPOINT_URI + "/test-details/ruleList/";
+        const URL_DOWNLOAD_REPORT = 'api/test-details/downloadPDF/';
+        const URL_UPDATE_TEST = ENDPOINT_URI + '/test-details/updateTest/';
         const vm = this;
 
+        vm.parameterValues = [];
         // Constant list of the sensor simulators, that can be included in the test
         const SIMULATOR_LIST = {
             TEMPERATURE: 'TestingTemperatureSensor',
@@ -102,15 +107,12 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
          * @returns {*}
          */
         function editConfig(testId, useNewData) {
-            if (useNewData === true) {
-                return $http.post(ENDPOINT_URI + '/test-details/editConfig/' + testId, "false").success(function success(response) {
-                    return response.success; // Update the list of sensors included in the test for the Chart view
-                });
-            } else if (useNewData === false) {
-                return $http.post(ENDPOINT_URI + '/test-details/editConfig/' + testId, "true").success(function success(response) {
-                    return response.success; // Update the list of sensors included in the test for the Chart view
-                });
-            }
+
+            return $http.post(ENDPOINT_URI + '/test-details/editConfig/' + testId, useNewData).success(function success(response) {
+                NotificationService.notify('Successfully updated.', 'success');
+                return response.success;
+            });
+
         }
 
         /**
@@ -145,6 +147,48 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
 
         }
 
+        /**
+         * [Public]
+         *
+         * Performs a server request to register the operator for the test repetitions.
+         */
+        function registerRerunOperator() {
+            return $http.post(URL_RERUN_OPERATOR_REGISTER);
+        }
+
+        /**
+         * [Public]
+         *
+         * Performs a server Request to update the test configurations updated by the user.
+         *
+         * @param testId
+         * @param testDetails
+         */
+        function updateTest(testId, testDetails) {
+            return $http.post(URL_UPDATE_TEST + testId, testDetails);
+        }
+
+        /**
+         * [Public]
+         *
+         * Creates a server request to get all rules to be observed during the test.
+         */
+        function getRuleListTest(testId) {
+            return $http.get(URL_RULE_LIST_TEST + testId);
+        }
+
+        /**
+         * [Public]
+         *
+         * Sends a server request in order to open a window for downloading/open the specific test report
+         *
+         * @param testId Id from which a report should be opened
+         * @param endTimeUnix end time of the test report to be opened
+         * @returns {Window}
+         */
+        function downloadReport(testId, endTimeUnix) {
+            return window.open(URL_DOWNLOAD_REPORT + testId + "_" + endTimeUnix, '_blank');
+        }
 
         /**
          * [Private]
@@ -181,12 +225,7 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
          * @param executeRules information if rules should be triggered through the test
          * @param data object
          */
-        function getTestData(sensors, realSensors, parameterValues, config, rules, executeRules, data) {
-
-            console.log("Bin im TestService");
-            console.log(config);
-            console.log(sensors);
-
+        function getTestData(sensors, realSensors, realParameterValues, config, rules, executeRules, data) {
 
             // to check if the user has selected at least one sensor
             let checkRealSensor = false;
@@ -196,6 +235,7 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
             let newTestObject = {};
             newTestObject.config = [];
             newTestObject.type = [];
+            let parameterValues = [];
 
             // random values Angle and Axis for the GPS-Sensor
             const randomAngle = Math.floor((Math.random() * 361));
@@ -210,21 +250,23 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
             try {
 
                 if (!angular.isUndefined(realSensors)) {
-                    if (!angular.isUndefined(vm.parameterVal)) {
+
+                    checkRealSensor = true;
+                    if (!angular.isUndefined(realParameterValues)) {
                         for (let x = 0; x < realSensors.length; x++) {
                             newTestObject.type.push(realSensors[x].name);
                         }
 
-                        checkRealSensor = true;
-                        angular.forEach(vm.parameterVal, function (parameters, key) {
+                        angular.forEach(realParameterValues, function (parameters, key) {
                             for (let i = 0; i < realSensors.length; i++) {
+
                                 if (realSensors[i].name === key) {
-                                    vm.parameterValues = [];
-                                    vm.parameterValues.push({
+                                    parameterValues = [];
+                                    parameterValues.push({
                                         "name": "ConfigName",
                                         "value": realSensors[i].name
                                     });
-                                    const requiredParams = realSensors[i]._embedded.operator.parameters;
+                                    const requiredParams = realSensors[i]._embedded.adapter.parameters;
 
 
                                     //Iterate over all parameters
@@ -242,19 +284,19 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
                                         }
 
                                         //For each parameter, add a tuple (name, value) to the globally accessible parameter array
-                                        vm.parameterValues.push({
+                                        parameterValues.push({
                                             "name": requiredParams[i].name,
                                             "value": parameters[i]
                                         });
                                     }
-                                    newTestObject.config.push(vm.parameterValues);
+                                    newTestObject.config.push(parameterValues);
                                 }
                             }
                         });
                         newTestObject.config.push([{
                             "name": "ConfigRealSensors",
-                            "value": vm.parameterVal
-                        }])
+                            "value": realParameterValues
+                        }]);
                     }
                 }
 
@@ -275,16 +317,12 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
                             "value": SIMULATOR_LIST.TEMPERATURE
                         });
                         if (config.eventTemp === '3' || config.eventTemp === '4' || config.eventTemp === '5' || config.eventTemp === '6') {
-                            console.log("in event Temp");
-                            console.log(parameterValues);
                             parameterValues.push({
                                 "name": "event",
                                 "value": config.eventTemp
                             });
-                            console.log(parameterValues);
                             parameterValues.push({"name": "anomaly", "value": 0});
                             parameterValues.push({"name": "useNewData", "value": true});
-                            console.log(parameterValues);
                         } else {
                             parameterValues.push({
                                 "name": "event",
@@ -298,7 +336,6 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
                             });
                         }
                         newTestObject.config.push(parameterValues);
-                        console.log(newTestObject);
 
 
                     }
@@ -823,10 +860,14 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
             getPDFList: getPDFList,
             editConfig: editConfig,
             getTestData: getTestData,
-            pdfExists:pdfExists,
-            registerTestDevice:registerTestDevice,
-            registerTestActuator:registerTestActuator,
-            registerOneDimSensor:registerOneDimSensor
+            pdfExists: pdfExists,
+            registerTestDevice: registerTestDevice,
+            registerTestActuator: registerTestActuator,
+            registerOneDimSensor: registerOneDimSensor,
+            registerRerunOperator: registerRerunOperator,
+            downloadReport: downloadReport,
+            getRuleListTest: getRuleListTest,
+            updateTest: updateTest
         }
     }
 ]);

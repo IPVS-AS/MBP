@@ -25,13 +25,14 @@ public class GraphPlotter {
 
     public GraphPlotter() throws HeadlessException {
         // required, because some components of the toolkit otherwise trigger a headless exception on headless machines
-        if(!GraphicsEnvironment.isHeadless()){
+        if (!GraphicsEnvironment.isHeadless()) {
             System.setProperty("java.awt.headless", "true");
         }
     }
 
     /**
      * Creates the Test report for a specific test.
+     *
      * @param test for which a graph of the generated values of the sensors should be created
      * @throws IOException In case of an I/O issue
      */
@@ -69,22 +70,25 @@ public class GraphPlotter {
         // Get the list of generated values within the specific test 
         Map<String, LinkedHashMap<Long, Double>> generatedValues = test.getSimulationList();
 
-        // Adds sensor name and corresponding data to the data set
-        for (Map.Entry<String, LinkedHashMap<Long, Double>> mapEntry : generatedValues.entrySet()) {
-            double counter = 0.0;
-            // Get sensor name for the legend
-            String sensorName = String.valueOf(mapEntry.getKey());
-            XYSeries series = new XYSeries(sensorName);
+        if (generatedValues != null && generatedValues.size() > 0) {
+            // Adds sensor name and corresponding data to the data set
+            for (Map.Entry<String, LinkedHashMap<Long, Double>> mapEntry : generatedValues.entrySet()) {
+                double counter = 0.0;
+                // Get sensor name for the legend
+                String sensorName = String.valueOf(mapEntry.getKey());
+                XYSeries series = new XYSeries(sensorName);
 
-            // Add the generated values to the series to display them
-            Map<Long, Double> sensorValues = mapEntry.getValue();
-            for (Map.Entry<Long, Double> value : sensorValues.entrySet()) {
-                series.add(counter, value.getValue());
-                counter += 1.0;
+                // Add the generated values to the series to display them
+                Map<Long, Double> sensorValues = mapEntry.getValue();
+                for (Map.Entry<Long, Double> value : sensorValues.entrySet()) {
+                    series.add(counter, value.getValue());
+                    counter += 1.0;
+                }
+
+                dataSet.addSeries(series);
             }
-
-            dataSet.addSeries(series);
         }
+
 
         return dataSet;
     }

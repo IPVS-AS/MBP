@@ -52,7 +52,7 @@ public class TestingController {
             // Start the test and get Map of sensor values
             testExecutor.executeTest(testDetails);
         } catch (Exception e) {
-            return new ResponseEntity<>("An Error occurred during the test", HttpStatus.OK);
+            return new ResponseEntity<>("An Error occurred during the test", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>("Test was completed successfully.", HttpStatus.OK);
     }

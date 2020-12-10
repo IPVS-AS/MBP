@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
-public class TestEngine {
+public class TestEngine<THREE_DIM_SIMULATOR_LIST> {
 
 
     @Autowired
@@ -74,11 +74,10 @@ public class TestEngine {
     @Autowired
     SensorValidator sensorValidator;
 
-    @Value("#{'${testingTool.oneDimensionalSensors}'.split(',')}")
-    private List<String> ONE_DIM_SIMULATOR_LIST;
 
     @Value("#{'${testingTool.threeDimensionalSensor}'.split(',')}")
-    private List<String> THREE_DIM_SIMULATOR_LIST;
+    List<String> THREE_DIM_SIMULATOR_LIST;
+
 
     //To resolve ${} in @Value
     @Bean
@@ -86,28 +85,30 @@ public class TestEngine {
         return new PropertySourcesPlaceholderConfigurer();
     }
 
-    String TEST_DEVICE;
-    String TEST_DEVICE_IP;
-    String TEST_DEVICE_USERNAME;
-    String TEST_DEVICE_PASSWORD;
-    String ACTUATOR_NAME;
+    private final String TEST_DEVICE;
+    private final String TEST_DEVICE_IP;
+    private final String TEST_DEVICE_USERNAME;
+    private final String TEST_DEVICE_PASSWORD;
+    private final String ACTUATOR_NAME;
 
 
     public TestEngine() throws IOException {
         propertiesService = new PropertiesService();
-        this.TEST_DEVICE = propertiesService.getPropertiesString("testingTool.testDeviceName");
-        this.TEST_DEVICE_IP = propertiesService.getPropertiesString("testingTool.testDeviceUserName");
-        this.TEST_DEVICE_IP = propertiesService.getPropertiesString("testingTool.testDevicePassword");
-        this.ACTUATOR_NAME = propertiesService.getPropertiesString("testingTool.actuatorName");
+        TEST_DEVICE = propertiesService.getPropertiesString("testingTool.testDeviceName");
+        TEST_DEVICE_IP = propertiesService.getPropertiesString("testingTool.ipAddressTestDevice");
+        TEST_DEVICE_USERNAME = propertiesService.getPropertiesString("testingTool.testDeviceUserName");
+        TEST_DEVICE_PASSWORD = propertiesService.getPropertiesString("testingTool.testDevicePassword");
+        ACTUATOR_NAME = propertiesService.getPropertiesString("testingTool.actuatorName");
     }
 
 
     /**
-     * @param testID
-     * @param changes
-     * @return
+     * Update the test configurations redefined by the user.
+     *
+     * @param testID Id of the test to be modified
+     * @param changes to be included
+     * @return if update was successful or not
      */
-
     public HttpEntity<Object> editTestConfig(String testID, String changes) {
         try {
             TestDetails testToUpdate = testDetailsRepository.findById(testID);

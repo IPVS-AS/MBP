@@ -49,24 +49,27 @@ public class TestReport {
     private PropertiesService propertiesService;
 
     @Value("#{'${testingTool.plannedSimulators}'.split(',')}")
-    private List<String> PLANNED_SIMULATORS;
-
+    List<String> PLANNED_SIMULATORS;
     @Value("#{'${testingTool.sensorSimulators}'.split(',')}")
-    private List<String> SIMULATOR_LIST;
+     List<String> SIMULATOR_LIST;
 
-   //To resolve ${} in @Value
+
+  //  private static final List<String> PLANNED_SIMULATORS = planned_simulators;
+   // private final List<String> SIMULATOR_LIST = simulator_list;
+    private final String RERUN_IDENTIFIER;
+    private final String CONFIG_SENSOR_NAME_KEY;
+
+    //To resolve ${} in @Value
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
         return new PropertySourcesPlaceholderConfigurer();
     }
 
-    String RERUN_IDENTIFIER;
-    String CONFIG_SENSOR_NAME_KEY;
-    
+
     public TestReport() throws IOException {
         propertiesService = new PropertiesService();
-        this.RERUN_IDENTIFIER = propertiesService.getPropertiesString("testingTool.RerunIdentifier");
-        this.CONFIG_SENSOR_NAME_KEY = propertiesService.getPropertiesString("testingTool.ConfigSensorNameKey");
+        RERUN_IDENTIFIER = propertiesService.getPropertiesString("testingTool.RerunIdentifier");
+        CONFIG_SENSOR_NAME_KEY = propertiesService.getPropertiesString("testingTool.ConfigSensorNameKey");
 
     }
 
@@ -229,7 +232,7 @@ public class TestReport {
         String originalName = "";
 
         if (!test.isUseNewData()) {
-            rerunInfo = "("+RERUN_IDENTIFIER+")";
+            rerunInfo = "(" + RERUN_IDENTIFIER + ")";
         }
 
         // Table configurations
@@ -345,7 +348,7 @@ public class TestReport {
     private Map<String, String> plannedSim(TestDetails test, String sensorType) {
         Map<String, String> plannedConfig = new HashMap<>();
 
-        if(PLANNED_SIMULATORS.contains(sensorType)){
+        if (PLANNED_SIMULATORS.contains(sensorType)) {
             for (java.util.List<ParameterInstance> configSensor : test.getConfig()) {
                 for (ParameterInstance parameterInstance : configSensor) {
                     switch (parameterInstance.getName()) {
@@ -379,7 +382,7 @@ public class TestReport {
         String rerunInfo = "";
         String rerunName = "";
         if (!test.isUseNewData()) {
-            rerunInfo = "("+ RERUN_IDENTIFIER+")";
+            rerunInfo = "(" + RERUN_IDENTIFIER + ")";
             rerunName = RERUN_IDENTIFIER;
         }
 
@@ -521,7 +524,7 @@ public class TestReport {
 
 
         // Trigger-Values of the Rule
-        ruleInfos.addCell(tableCell("Trigger-Values", lightBlue, 2));
+        ruleInfos.addCell(tableCell("Trigger-Values", lightBlue, 4));
 
         // get Trigger Values for specific rules
         if (test.getTriggerValues().containsKey(ruleAfter.getName())) {

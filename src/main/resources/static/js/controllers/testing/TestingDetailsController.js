@@ -16,6 +16,7 @@ app.controller('TestingDetailsController',
             // ID of the Test
             const COMPONENT_ID = $routeParams.id;
             const RERUN_PREFIX = "RERUN_";
+            const CONFIG_NAME_REAL_SENSOR = "ConfigRealSensors";
             // Constant list of the sensor simulators, that can be included in the test
             const SIMULATOR_LIST = ['TestingTemperatureSensor',
                 'TestingTemperatureSensorPl',
@@ -25,6 +26,7 @@ app.controller('TestingDetailsController',
                 'TestingAccelerationSensorPl',
                 'TestingGPSSensor',
                 'TestingGPSSensorPl'];
+
 
             // Storing variables
             vm.sensorListTest = [];
@@ -121,25 +123,9 @@ app.controller('TestingDetailsController',
                 } else {
                     document.getElementById("ReuseSwitch").removeAttribute('disabled');
                 }
-                console.log(document.getElementById("ReuseSwitch"))
             }
 
 
-            /**
-             * [Private]
-             *
-             * Defines a list with the configurations of the real sensors included into the test.
-             *
-             */
-            function getParametersReal() {
-                testingDetails.config.forEach(function (config) {
-                    for (let n = 0; n < config.length; n++) {
-                        if (config[n].name === "ConfigRealSensors") {
-                            vm.parameterVal = angular.fromJson(config[n].value);
-                        }
-                    }
-                });
-            }
 
             /**
              * [Private]
@@ -148,6 +134,7 @@ app.controller('TestingDetailsController',
              */
 
             function getRealSensorList() {
+                vm.selectedRealSensor = [];
                 for (let y = 0; y < testingDetails.type.length; y++) {
                     if (!checkSimulator(testingDetails.type[y])) {
                         for (let z = 0; z < sensorList.length; z++) {
@@ -169,9 +156,8 @@ app.controller('TestingDetailsController',
              * The names and actions of this rules will be formatted for the user view.
              */
             function getTestRules() {
-                $http.get(ENDPOINT_URI + "/test-details/ruleList/" + COMPONENT_ID).success(function (response) {
+                TestService.getRuleListTest(COMPONENT_ID).success(function (response) {
                     $scope.ruleList = response;
-
                 });
 
                 $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
@@ -225,7 +211,14 @@ app.controller('TestingDetailsController',
              * @param useNewData boolean if the generated data should be reused
              */
             function editConfig(useNewData) {
-                TestService.editConfig(COMPONENT_ID, useNewData).then(function () {
+                let useNewDataConfig;
+                if (useNewData === true) {
+                    useNewDataConfig = "false";
+                } else if (useNewData === false) {
+                    useNewDataConfig = "true";
+                }
+
+                TestService.editConfig(COMPONENT_ID, useNewDataConfig).then(function () {
                     window.location.reload();
                     getTestSensorList();
                 });
@@ -257,7 +250,7 @@ app.controller('TestingDetailsController',
                 }
 
                 // Server Request with the updated test information in the request body
-                $http.post(ENDPOINT_URI + '/test-details/updateTest/' + COMPONENT_ID, JSON.stringify(testingDetails)).success(function successCallback() {
+                TestService.updateTest(COMPONENT_ID, JSON.stringify(testingDetails)).success(function successCallback() {
                     //Close modal on success
                     $("#editTestModal").modal('toggle');
                 });
@@ -327,10 +320,31 @@ app.controller('TestingDetailsController',
                 vm.rules = [];
                 vm.selectedRealSensor = [];
                 $rootScope.config = {};
+                $rootScope.selectedRealSensor=[];
 
-                // Checks if a real sensor is included into the test and saves ist configurations
-                getRealSensorList();
-                getParametersReal();
+
+                for (let y = 0; y < testingDetails.type.length; y++) {
+
+                    if (!checkSimulator(testingDetails.type[y])) {
+                        for (let z = 0; z < sensorList.length; z++) {
+                            if (sensorList[z].name === testingDetails.type[y]) {
+                                vm.selectedRealSensor.push(sensorList[z]);
+                            }
+
+                        }
+                    }
+
+                }
+                $rootScope.selectedRealSensor = vm.selectedRealSensor;
+
+                testingDetails.config.forEach(function (config) {
+                    for (let n = 0; n < config.length; n++) {
+                        if (config[n].name === "ConfigRealSensors") {
+                            vm.parameterVal = angular.fromJson(config[n].value);
+                        }
+                    }
+
+                });
 
                 $scope.config.useNewData = !testingDetails.useNewData;
 

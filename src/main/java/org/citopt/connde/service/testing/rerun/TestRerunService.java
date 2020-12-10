@@ -65,31 +65,27 @@ public class TestRerunService {
     @Autowired
     private PropertiesService propertiesService;
 
-
-
-    @Value("#{'${testingTool.sensorSimulators}'.split(',')}")
-    private List<String> SIMULATOR_LIST;
-
     //To resolve ${} in @Value
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
         return new PropertySourcesPlaceholderConfigurer();
     }
 
-    String RERUN_IDENTIFIER;
-    String RERUN_OPERATOR;
-    String TESTING_ACTUATOR;
-    String TESTING_DEVICE;
-    String CONFIG_SENSOR_NAME_KEY;
+    @Value("#{'${testingTool.sensorSimulators}'.split(',')}")
+   List<String> SIMULATOR_LIST;
+
+    private final String RERUN_IDENTIFIER;
+    private final String RERUN_OPERATOR;
+    private final String TESTING_DEVICE;
+    private final String CONFIG_SENSOR_NAME_KEY;
 
 
     public TestRerunService() throws IOException {
         propertiesService = new PropertiesService();
-        this.SIMULATOR_LIST = propertiesService.getPropertiesList();
-        this.RERUN_IDENTIFIER = propertiesService.getPropertiesString("testingTool.RerunIdentifier");
-        this.RERUN_OPERATOR = propertiesService.getPropertiesString("testingTool.rerunOperator");
-        this.TESTING_ACTUATOR = propertiesService.getPropertiesString("testingTool.deviceName");
-        this.CONFIG_SENSOR_NAME_KEY = propertiesService.getPropertiesString("testingTool.ConfigSensorNameKey");
+        RERUN_IDENTIFIER = propertiesService.getPropertiesString("testingTool.RerunIdentifier");
+        RERUN_OPERATOR = propertiesService.getPropertiesString("testingTool.rerunOperator");
+        TESTING_DEVICE = propertiesService.getPropertiesString("testingTool.testDeviceName");
+        CONFIG_SENSOR_NAME_KEY = propertiesService.getPropertiesString("testingTool.ConfigSensorNameKey");
     }
 
 
@@ -163,9 +159,8 @@ public class TestRerunService {
         for (List<ParameterInstance> config : test.getConfig()) {
             for (ParameterInstance parameterInstance : config) {
                 if (parameterInstance.getName().equals(CONFIG_SENSOR_NAME_KEY)) {
-                    if (!SIMULATOR_LIST.contains(parameterInstance.getValue().toString())) {
                         addRerunSensors(parameterInstance.getValue().toString(), test);
-                    }
+
                 }
             }
         }

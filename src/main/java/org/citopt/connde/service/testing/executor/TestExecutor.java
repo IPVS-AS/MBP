@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.sql.Struct;
 import java.util.*;
 
 /**
@@ -57,8 +58,15 @@ public class TestExecutor {
     @Autowired
     private PropertiesService propertiesService;
 
+
+    // List of all active Tests
+    Map<String, TestDetails> activeTests = new HashMap<>();
     @Value("#{'${testingTool.sensorSimulators}'.split(',')}")
-    private List<String> SIMULATOR_LIST;
+    List<String> SIMULATOR_LIST;
+
+    private final String RERUN_IDENTIFIER;
+    private final String TESTING_ACTUATOR;
+    private final String CONFIG_SENSOR_NAME_KEY;
 
     //To resolve ${} in @Value
     @Bean
@@ -67,14 +75,7 @@ public class TestExecutor {
     }
 
 
-    String RERUN_IDENTIFIER;
-    String TESTING_ACTUATOR;
-    String CONFIG_SENSOR_NAME_KEY;
-
-    // List of all active Tests
-    Map<String, TestDetails> activeTests = new HashMap<>();
-
-    public TestExecutor() throws IOException {
+    public TestExecutor(  ) throws IOException {
         propertiesService = new PropertiesService();
         this.RERUN_IDENTIFIER = propertiesService.getPropertiesString("testingTool.RerunIdentifier");
         this.TESTING_ACTUATOR = propertiesService.getPropertiesString("testingTool.actuatorName");
@@ -154,11 +155,11 @@ public class TestExecutor {
 
         // Get List of all simulated Values
         Map<String, LinkedHashMap<Long, Double>> valueList = testAnalyzer.isFinished(test.getId());
-
+        saveValues(test, valueList);
         analyzeTest(test, rulesBefore);
 
 
-        saveValues(test, valueList);
+
     }
 
     /**
@@ -195,11 +196,14 @@ public class TestExecutor {
 
         for (Sensor sensor : test.getSensor()) {
             if (testDetails.isUseNewData()) {
-                LinkedHashMap<Long, Double> temp = valueList.get(sensor.getId());
-                valueListTest.put(sensor.getName(), temp);
-                // list.remove(sensor.getId());
-                // save list of sensor values to database
-                testDetails.setSimulationList(valueListTest);
+                if(valueList.get(sensor.getId())!=null){
+                    LinkedHashMap<Long, Double> temp = valueList.get(sensor.getId());
+                    valueListTest.put(sensor.getName(), temp);
+                    // list.remove(sensor.getId());
+                    // save list of sensor values to database
+                    testDetails.setSimulationList(valueListTest);
+                }
+
             }
         }
         testDetailsRepository.save(testDetails);
@@ -268,7 +272,7 @@ public class TestExecutor {
                     for (ParameterInstance parameterInstance : configSensor) {
                         if (parameterInstance.getName().equals(CONFIG_SENSOR_NAME_KEY) && parameterInstance.getValue().equals(sensorName)) {
                             // start the sensor with the right corresponding configuration
-                            startSensors(sensor, configSensor, test.isUseNewData());
+                            startSensors(sensor, configSensor, !test.isUseNewData());
                         }
                     }
                 }
@@ -285,7 +289,7 @@ public class TestExecutor {
      */
     public void startSensors(Sensor testSensor, List<ParameterInstance> parameterValues, Boolean rerunSensor) {
         String rerun = "";
-        if (rerunSensor) {
+        if (rerunSensor == true) {
             rerun = RERUN_IDENTIFIER;
         }
         Sensor startSensor = sensorRepository.findByName(rerun + testSensor.getName());

@@ -15,6 +15,7 @@ import org.citopt.connde.service.receiver.ValueLogReceiverObserver;
 import org.citopt.connde.service.testing.PropertiesService;
 import org.citopt.connde.service.testing.executor.TestExecutor;
 import org.citopt.connde.web.rest.RestDeploymentController;
+import org.citopt.connde.web.rest.helper.DeploymentWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -51,13 +52,21 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
     @Autowired
     private PropertiesService propertiesService;
 
+    @Autowired
+    private DeploymentWrapper deploymentWrapper;
 
+    private final String RERUN_IDENTIFIER;
 
-    String RERUN_IDENTIFIER;
-
-    public TestAnalyzer() throws IOException {
+    /**
+     * Registers the TestEngine as an Observer to the ValueLogReceiver which then will be notified about incoming value logs.
+     *
+     * @param valueLogReceiver The value log receiver instance to use
+     */
+    @Autowired
+    private TestAnalyzer(ValueLogReceiver valueLogReceiver ) throws IOException {
         propertiesService = new PropertiesService();
-        this.RERUN_IDENTIFIER = propertiesService.getPropertiesString("testingTool.RerunIdentifier");
+        RERUN_IDENTIFIER = propertiesService.getPropertiesString("testingTool.RerunIdentifier");
+        valueLogReceiver.registerObserver(this);
     }
 
 
@@ -84,15 +93,6 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
     }
 
 
-    /**
-     * Registers the TestEngine as an Observer to the ValueLogReceiver which then will be notified about incoming value logs.
-     *
-     * @param valueLogReceiver The value log receiver instance to use
-     */
-    @Autowired
-    private TestAnalyzer(ValueLogReceiver valueLogReceiver) {
-        valueLogReceiver.registerObserver(this);
-    }
 
     /**
      * Stores all Values from the active Tests
@@ -125,8 +125,11 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
         List<Sensor> testingSensors = test.getSensor();
         boolean response = false;
         for (Sensor sensor : testingSensors) {
-            ResponseEntity<Boolean> sensorRunning = restDeploymentController.isRunningSensor(sensor.getId());
-            response = sensorRunning.getBody();
+             ResponseEntity<Boolean> sensorRunning = deploymentWrapper.isComponentRunning(sensor);
+            if(sensorRunning.getBody() == true){
+                response = sensorRunning.getBody();
+            }
+
         }
 
         return response;
@@ -142,6 +145,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
         boolean response = true;
         TestDetails test = testDetailsRepository.findById(testId);
         while (response) {
+            // testRunning
             response = areSensorsRunning(test);
         }
         // set and save end time
