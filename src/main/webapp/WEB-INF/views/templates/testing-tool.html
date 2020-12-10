@@ -99,9 +99,9 @@
                             </form>
                         </td>
                         <td>
-                            <form ng-submit="ctrl.refreshTestEntry(item.id, item.name)" style="margin-top: 5px;">
+                            <form ng-submit="ctrl.checkReportExists(item.id, item.name)" style="margin-top: 5px;">
                                 <li>
-                                    <a ng-click="ctrl.refreshTestEntry(item.id, item.name)" class="clickable">
+                                    <a ng-click="ctrl.checkReportExists(item.id, item.name)" class="clickable">
                                         <i class="material-icons">refresh</i>
                                     </a>
                                 </li>
@@ -535,8 +535,8 @@
                                                ng-model="ctrl.config.latitudeGPSPl"> <br> <br>
                                         <input type="text" name="gpsLat" placeholder="Longitude *"
                                                ng-model="ctrl.config.longitudeGPSPl"> <br><br>
-                                        <input type="text" name="gpsHight" placeholder="Hight *"
-                                               ng-model="ctrl.config.hightGPSPl">
+                                        <input type="text" name="gpsHeight" placeholder="Height *"
+                                               ng-model="ctrl.config.heightGPSPl">
                                     </div>
                                     <div class="form-line">
                                         <h4> Enter the radius at which a reaction should take place: </h4>
@@ -597,8 +597,8 @@
                                                ng-model="ctrl.config.latitudeGPS"> <br> <br>
                                         <input type="text" id="gpsLong" name="gpsLat" placeholder="Longitude *"
                                                ng-model="ctrl.config.longitudeGPS"> <br><br>
-                                        <input type="text" id="gpsHight" name="gpsHight" placeholder="Hight *"
-                                               ng-model="ctrl.config.hightGPS">
+                                        <input type="text" id="gpsHeight" name="gpsHeight" placeholder="Height *"
+                                               ng-model="ctrl.config.heightGPS">
                                     </div>
                                     <div class="form-line">
                                         <h4> Enter the radius at which a reaction should take place: </h4>
