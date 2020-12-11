@@ -888,8 +888,9 @@
                                         <tr>
                                             <td>Testing-Device</td>
                                             <td>
+
                                                 <div style="padding: 0px;  display: inline-block;" ng-switch="device"
-                                                     ng-click="ctrl.getDevice()" class="clickable">
+                                                     ng-click="ctrl.getTestDevice()" class="clickable">
                                                     <div ng-switch-when="LOADING">
                                                         <div class="preloader pl-size-xs">
                                                             <div class="spinner-layer pl-blue">
@@ -906,7 +907,7 @@
                                                         <span class="label label-danger">Not Registered</span>
                                                     </div>
                                                     <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
-                                                        <form ng-submit="ctrl.registerTestingDevice()">
+                                                        <form>
                                                             <button type="submit"
                                                                     class="btn bg-blue m-t-0 waves-effect"
                                                                     ng-click="ctrl.registerTestDevice()">
@@ -944,7 +945,7 @@
                                                     <span class="label label-danger">Not Registered</span>
                                                 </div>
                                                 <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
-                                                    <form ng-submit="ctrl.registerTestingActuator()">
+                                                    <form>
                                                         <button type="submit"
                                                                 class="btn bg-blue m-t-0 waves-effect"
                                                                 ng-click="ctrl.registerTestingActuator()">
@@ -983,7 +984,7 @@
                                                         <span class="label label-danger">Not Registered</span>
                                                     </div>
                                                     <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
-                                                        <form ng-submit="ctrl.registerRerunOperator()">
+                                                        <form>
                                                             <button type="submit"
                                                                     class="btn bg-blue m-t-0 waves-effect"
                                                                     ng-click="ctrl.registerRerunOperator()">
@@ -1024,7 +1025,7 @@
                                                         <span class="label label-danger">Not Registered</span>
                                                     </div>
                                                     <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
-                                                        <form ng-submit="ctrl.registerTestingDevice()">
+                                                        <form>
                                                             <button type="submit"
                                                                     class="btn bg-blue m-t-0 waves-effect"
                                                                     ng-click="ctrl.registerOneDimSensor('TestingTemperatureSensor')">
@@ -1064,7 +1065,7 @@
                                                         <span class="label label-danger">Not Registered</span>
                                                     </div>
                                                     <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
-                                                        <form ng-submit="ctrl.registerTestingDevice()">
+                                                        <form >
                                                             <button type="submit"
                                                                     class="btn bg-blue m-t-0 waves-effect"
                                                                     ng-click="ctrl.registerOneDimSensor('TestingTemperatureSensorPl')">

@@ -1,8 +1,5 @@
 package org.citopt.connde.service.testing;
 
-import org.citopt.connde.service.settings.model.BrokerLocation;
-import org.citopt.connde.service.settings.model.Settings;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 

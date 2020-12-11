@@ -8,15 +8,17 @@ app.controller('TestingChartController',
             const LIVE_CHART_CARD_SELECTOR = ".live-chart-card";
             const HISTORICAL_CHART_CARD_SELECTOR = ".historical-chart-card";
             const DEPLOYMENT_CARD_SELECTOR = ".deployment-card";
+            const COMPONENT_ID = testingDetails.id;
 
             const vm = this;
-            const COMPONENT_ID = testingDetails.id;
+
             vm.sensorList = sensorList;
 
 
             //Stores the parameters and their values as assigned by the user
             vm.parameterValues = [];
             vm.deploymentState = '';
+
             /**
              * Initializing function, sets up basic things.
              */
@@ -50,6 +52,7 @@ app.controller('TestingChartController',
 
             /**
              * [Public]
+             *
              * Updates the deployment state of the currently considered component. By default, a waiting screen
              * is displayed during the update. However, this can be deactivated.
              *
@@ -66,10 +69,7 @@ app.controller('TestingChartController',
                         //Retrieve the state of the current component
 
                         ComponentService.getComponentState(vm.sensorList[i].id, vm.sensorList[i].componentTypeName + 's').then(function (response) {
-                            //Success
                             vm.deploymentStateTemp.push(response.data.content);
-
-
                             if (vm.deploymentStateTemp.includes('NOT_READY')) {
                                 vm.deploymentState = 'NOT_READY';
                             } else if (vm.deploymentStateTemp.includes('UNKNOWN')) {
@@ -86,7 +86,6 @@ app.controller('TestingChartController',
                             NotificationService.notify('Could not retrieve deployment state.', 'error');
                         })
                     }
-
 
                 } finally {
                     //Finally hide the waiting screen again
@@ -116,6 +115,7 @@ app.controller('TestingChartController',
 
             /**
              * [Public]
+             *
              * Creates a server request to get a list of all generated Test Reports regarding to the Test of the IoT-Application.
              */
             function getPDFList() {
@@ -127,6 +127,7 @@ app.controller('TestingChartController',
 
             /**
              * [Public]
+             *
              * Starts the current test (in case it has been stopped before) and shows a waiting screen during
              * the start progress.
              */
@@ -153,6 +154,7 @@ app.controller('TestingChartController',
 
             /**
              * [Public]
+             *
              * Stops the current test and shows a waiting screen during the stop progress.
              */
             function stopComponent() {
@@ -170,6 +172,7 @@ app.controller('TestingChartController',
 
             /**
              * [Public]
+             *
              * Retrieves a certain number of value log data (in a specific order) for the current component
              * as a promise.
              *
@@ -197,12 +200,13 @@ app.controller('TestingChartController',
                 };
 
                 //Perform the server request in order to retrieve the data
-                return ComponentService.getValueLogs(sensor.id, sensor.componentType, pageDetails, unit);
+                return ComponentService.getValueLogs(sensor.id, 'sensor', pageDetails, unit);
             }
 
 
             /**
              * [Private]
+             *
              * Initializes the live chart for displaying the most recent sensor values.
              */
             function initLiveChart() {
@@ -245,6 +249,7 @@ app.controller('TestingChartController',
 
             /**
              * [Private]
+             *
              * Initializes the historical chart for displaying all sensor values (up to a certain limit).
              */
             function initHistoricalChart() {
@@ -279,6 +284,7 @@ app.controller('TestingChartController',
 
             /**
              * [Private]
+             *
              * Displays a waiting screen with a certain text for the deployment DOM container.
              * @param text The text to display
              */
@@ -298,6 +304,7 @@ app.controller('TestingChartController',
 
             /**
              * [Private]
+             *
              * Hides the waiting screen for the deployment DOM container.
              */
             function hideDeploymentWaitingScreen() {

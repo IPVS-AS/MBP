@@ -12,7 +12,6 @@ import org.citopt.connde.domain.device.DeviceValidator;
 import org.citopt.connde.domain.rules.Rule;
 import org.citopt.connde.domain.testing.TestDetails;
 import org.citopt.connde.repository.*;
-import org.citopt.connde.web.rest.RestRuleController;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,7 +40,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
-public class TestEngine<THREE_DIM_SIMULATOR_LIST> {
+public class TestEngine {
 
 
     @Autowired
@@ -120,10 +119,17 @@ public class TestEngine<THREE_DIM_SIMULATOR_LIST> {
             // convert the string of the request body to a JSONObject in order to continue working with it
             JSONObject updateInfos = new JSONObject(changes);
 
-            editSenorConfig(testToUpdate, updateInfos.get("config"));
-
+            List<List<ParameterInstance>> newConfig = updateSenorConfig(updateInfos.get("config"));
             // Update the rules to be observed in the test
-            updateRuleInformation(testToUpdate, updateInfos);
+            List<Rule> newRuleList = updateRuleInformation(updateInfos);
+
+            testToUpdate.setConfig(newConfig);
+            testToUpdate.setRules(newRuleList);
+            // Update the information if the selected rules be triggered during the test or not
+            testToUpdate.setTriggerRules(updateInfos.getBoolean("triggerRules"));
+
+
+            testDetailsRepository.save(testToUpdate);
 
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
@@ -132,12 +138,12 @@ public class TestEngine<THREE_DIM_SIMULATOR_LIST> {
     }
 
     /**
-     * Updates the rules that should be observed within the test and whether they should be triggered or not
-     *
-     * @param test        to be updated
+     * Creates a list of the updated rules that should be observed within the test.
+
      * @param updateInfos update/editUseNewData information for the rules and the trigger rules
+     * @return List of updated rules
      */
-    private void updateRuleInformation(TestDetails test, JSONObject updateInfos) throws JSONException {
+    private List<Rule> updateRuleInformation( JSONObject updateInfos) throws JSONException {
         Pattern pattern = Pattern.compile("rules/(.*)$");
         JSONArray rules = (JSONArray) updateInfos.get("rules");
         List<Rule> newRules = new ArrayList<>();
@@ -149,24 +155,19 @@ public class TestEngine<THREE_DIM_SIMULATOR_LIST> {
                 }
             }
         }
-        test.setRules(newRules);
-
-        // Update the information if the selected rules be triggered during the test or not
-        test.setTriggerRules(updateInfos.getBoolean("triggerRules"));
-
-        //save updates
-        testDetailsRepository.save(test);
+        return newRules;
     }
 
 
     /**
-     * Updates the sensor configurations.
      *
-     * @param test   to be updated
+     * Creates a list of the updated sensor configurations included into the test.
+     *
      * @param config update/editUseNewData information for the sensor configuration
      * @throws JSONException In case of parsing problems
+     * @return List new sensor Configurations
      */
-    void editSenorConfig(TestDetails test, Object config) throws JSONException {
+    public List<List<ParameterInstance>> updateSenorConfig(Object config) throws JSONException {
         ParameterInstance instance;
         // Get updates for the sensor config
         JSONArray configEntries = (JSONArray) config;
@@ -187,11 +188,8 @@ public class TestEngine<THREE_DIM_SIMULATOR_LIST> {
 
             }
         }
-        // set the updated configuration to the test
-        test.setConfig(newConfig);
 
-        //save updates
-        testDetailsRepository.save(test);
+        return newConfig;
     }
 
     /**
@@ -423,9 +421,7 @@ public class TestEngine<THREE_DIM_SIMULATOR_LIST> {
                         responseEntity = new ResponseEntity("Testing Actuator successfully created.", HttpStatus.CREATED);
 
                     }
-                    responseEntity = new ResponseEntity("Please register the Testing Actuator first.", HttpStatus.NOT_FOUND);
                 }
-                responseEntity = new ResponseEntity("Testing Actuator already exists.", HttpStatus.CONFLICT);
             }
 
 

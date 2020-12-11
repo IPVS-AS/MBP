@@ -1,6 +1,5 @@
 package org.citopt.connde.service.testing.executor;
 
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import org.citopt.connde.domain.adapter.parameters.ParameterInstance;
 import org.citopt.connde.domain.component.Actuator;
 import org.citopt.connde.domain.component.Sensor;
@@ -22,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.sql.Struct;
 import java.util.*;
 
 /**
@@ -75,7 +73,7 @@ public class TestExecutor {
     }
 
 
-    public TestExecutor(  ) throws IOException {
+    public TestExecutor() throws IOException {
         propertiesService = new PropertiesService();
         this.RERUN_IDENTIFIER = propertiesService.getPropertiesString("testingTool.RerunIdentifier");
         this.TESTING_ACTUATOR = propertiesService.getPropertiesString("testingTool.actuatorName");
@@ -159,7 +157,6 @@ public class TestExecutor {
         analyzeTest(test, rulesBefore);
 
 
-
     }
 
     /**
@@ -196,7 +193,7 @@ public class TestExecutor {
 
         for (Sensor sensor : test.getSensor()) {
             if (testDetails.isUseNewData()) {
-                if(valueList.get(sensor.getId())!=null){
+                if (valueList.get(sensor.getId()) != null) {
                     LinkedHashMap<Long, Double> temp = valueList.get(sensor.getId());
                     valueListTest.put(sensor.getName(), temp);
                     // list.remove(sensor.getId());
@@ -248,12 +245,12 @@ public class TestExecutor {
         if (!test.isUseNewData()) {
             for (Sensor sensor : testingSensors) {
                 List<ParameterInstance> parametersWrapper = new ArrayList<>();
-                // If not a sensor simulator
 
-                if (!SIMULATOR_LIST.contains(sensor.getName()) && !sensor.getName().contains(RERUN_IDENTIFIER)) {
+
+                if (!SIMULATOR_LIST.contains(sensor.getName()) && sensor.getName().contains(RERUN_IDENTIFIER)) {
                     restDeploymentController.stopSensor(sensor.getId());
                     for (Map.Entry<String, LinkedHashMap<Long, Double>> sensorValues : test.getSimulationList().entrySet()) {
-                        if (sensorValues.getKey().equals(sensor.getName())) {
+                        if (sensor.getName().contains(sensorValues.getKey())) {
                             // Get parameter values for starting the sensors
                             Map<String, ParameterInstance> parameterValues = createRerunParameters(sensorValues);
                             parametersWrapper.add(parameterValues.get("interval"));
@@ -292,7 +289,7 @@ public class TestExecutor {
         if (rerunSensor == true) {
             rerun = RERUN_IDENTIFIER;
         }
-        Sensor startSensor = sensorRepository.findByName(rerun + testSensor.getName());
+        Sensor startSensor = sensorRepository.findByName(testSensor.getName());
         ResponseEntity<Boolean> sensorDeployed = restDeploymentController.isRunningSensor(startSensor.getId());
 
         if (!sensorDeployed.getBody()) {

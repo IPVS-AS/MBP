@@ -101,6 +101,8 @@ app.controller('TestingDetailsController',
             }
 
             /**
+             * [Public]
+             *
              * Checks if a specific sensor included into the test is a real sensor
              * @param type of the sensor to be checked
              * @returns {boolean}
@@ -125,8 +127,6 @@ app.controller('TestingDetailsController',
                 }
             }
 
-
-
             /**
              * [Private]
              *
@@ -145,9 +145,6 @@ app.controller('TestingDetailsController',
                     }
                 }
             }
-
-
-
 
             /**
              * [Private]
@@ -253,6 +250,7 @@ app.controller('TestingDetailsController',
                 TestService.updateTest(COMPONENT_ID, JSON.stringify(testingDetails)).success(function successCallback() {
                     //Close modal on success
                     $("#editTestModal").modal('toggle');
+                    getConfig();
                 });
             }
 
@@ -265,10 +263,21 @@ app.controller('TestingDetailsController',
              */
             function getUpdateValues() {
                 getRealSensorList();
+
+                // Get the new list of selected rules for the test
+                vm.rulesUpdate = $rootScope.selectedRules.rules;
+
+                if (vm.executeRules === 'undefined') {
+                    NotificationService.notify('A decision must be made.', 'error')
+                }
+
+
                 vm.newTestObject = TestService.getTestData(testingDetails.type, vm.selectedRealSensor, vm.parameterVal, $rootScope.config, $rootScope.selectedRules.rules, vm.executeRules);
             }
 
             /**
+             * [Private]
+             *
              * Get the Configuration of the test to display them on the edit Test Modal
              */
             function getConfig() {
@@ -320,7 +329,7 @@ app.controller('TestingDetailsController',
                 vm.rules = [];
                 vm.selectedRealSensor = [];
                 $rootScope.config = {};
-                $rootScope.selectedRealSensor=[];
+                $rootScope.selectedRealSensor = [];
 
 
                 for (let y = 0; y < testingDetails.type.length; y++) {
@@ -348,362 +357,335 @@ app.controller('TestingDetailsController',
 
                 $scope.config.useNewData = !testingDetails.useNewData;
 
-                if (testingDetails.type.includes('TestingTemperatureSensor')) {
-                    testingDetails.config.forEach(function (config) {
-                        config.forEach(function (parameterInstance) {
-                            if (parameterInstance.name === "event" && parameterInstance.value === 3 || parameterInstance.name === "event" && parameterInstance.value === 4 || parameterInstance.name === "event" && parameterInstance.value === 5 || parameterInstance.name === "event" && parameterInstance.value === 6) {
-                                testingDetails.config.forEach(function (config) {
+                testingDetails.config.forEach(function (config) {
+                    config.forEach(function (parameterInstance) {
+                        if (parameterInstance.name === "ConfigName") {
+                            let configName = parameterInstance.value;
+                            switch (configName) {
+                                case 'TestingTemperatureSensor':
                                     config.forEach(function (parameterInstance) {
                                         if (parameterInstance.name === "event") {
-                                            eventTemp = parameterInstance.value;
-                                        } else if (parameterInstance.name === "anomaly") {
-                                            anomalyTemp = parameterInstance.value;
-                                        } else if (parameterInstance.name === "useNewData") {
-                                            useNewData = !parameterInstance.value;
+                                            if ((parameterInstance.name === "event" && parameterInstance.value === "3") || (parameterInstance.name === "event" && parameterInstance.value === "4") || (parameterInstance.name === "event" && parameterInstance.value === "5") || (parameterInstance.name === "event" && parameterInstance.value === "6")) {
+                                                config.forEach(function (parameterInstance) {
+                                                    if (parameterInstance.name === "event") {
+                                                        eventTemp = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "anomaly") {
+                                                        anomalyTemp = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "useNewData") {
+                                                        useNewData = !parameterInstance.value;
+                                                    }
+                                                });
+
+                                                $rootScope.config.eventTemp = eventTemp;
+                                                $rootScope.config.anomalyTemp = anomalyTemp;
+                                            } else {
+                                                config.forEach(function (parameterInstance) {
+                                                    if (parameterInstance.name === "event") {
+                                                        eventTemp = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "anomaly") {
+                                                        anomalyTemp = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "useNewData") {
+                                                        useNewData = !parameterInstance.value;
+                                                    } else if (parameterInstance.name === "room") {
+                                                        roomTemp = parameterInstance.value;
+                                                    }
+                                                });
+
+                                                $rootScope.config.eventTemp = eventTemp;
+                                                $rootScope.config.anomalyTemp = anomalyTemp;
+                                                $rootScope.config.roomTemp = roomTemp;
+
+                                            }
                                         }
-                                    })
-                                });
-
-                                $rootScope.config.eventTemp = eventTemp;
-                                $rootScope.config.anomalyTemp = anomalyTemp;
-                            } else {
-                                testingDetails.config.forEach(function (config) {
+                                    });
+                                    break;
+                                case 'TestingHumiditySensor':
                                     config.forEach(function (parameterInstance) {
                                         if (parameterInstance.name === "event") {
-                                            eventTemp = parameterInstance.value;
-                                        } else if (parameterInstance.name === "anomaly") {
-                                            anomalyTemp = parameterInstance.value;
-                                        } else if (parameterInstance.name === "useNewData") {
-                                            useNewData = !parameterInstance.value;
-                                        } else if (parameterInstance.name === "room") {
-                                            roomTemp = parameterInstance.value;
+                                            if (parameterInstance.name === "event" && parameterInstance.value === '3' || parameterInstance.name === "event" && parameterInstance.value === '4' || parameterInstance.name === "event" && parameterInstance.value === '5' || parameterInstance.name === "event" && parameterInstance.value === '6') {
+
+                                                config.forEach(function (parameterInstance) {
+                                                    if (parameterInstance.name === "event") {
+                                                        eventHum = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "anomaly") {
+                                                        anomalyHum = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "useNewData") {
+                                                        useNewData = !parameterInstance.value;
+                                                    }
+                                                });
+
+                                                $rootScope.config.eventHum = eventHum;
+                                                $rootScope.config.anomalyHum = anomalyHum;
+                                            } else {
+                                                config.forEach(function (parameterInstance) {
+                                                    if (parameterInstance.name === "event") {
+                                                        eventHum = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "anomaly") {
+                                                        anomalyHum = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "useNewData") {
+                                                        useNewData = !parameterInstance.value;
+                                                    } else if (parameterInstance.name === "room") {
+                                                        roomHum = parameterInstance.value;
+                                                    }
+                                                });
+                                                $rootScope.config.eventHum = eventHum;
+                                                $rootScope.config.anomalyHum = anomalyHum;
+                                                $rootScope.config.roomHum = roomHum;
+                                            }
                                         }
-                                    })
-                                });
+                                    });
 
-
-                                $rootScope.config.eventTemp = eventTemp;
-                                $rootScope.config.anomalyTemp = anomalyTemp;
-                                $rootScope.config.roomTemp = roomTemp;
-
-
-                            }
-                        });
-                    });
-
-
-                }
-                if (testingDetails.type.includes('TestingHumiditySensor')) {
-                    testingDetails.config.forEach(function (config) {
-                        config.forEach(function (parameterInstance) {
-                            if (parameterInstance.name === "event" && parameterInstance.value === '3' || parameterInstance.name === "event" && parameterInstance.value === '4' || parameterInstance.name === "event" && parameterInstance.value === '5' || parameterInstance.name === "event" && parameterInstance.value === '6') {
-                                testingDetails.config.forEach(function (config) {
+                                    break;
+                                case 'TestingTemperatureSensorPl':
                                     config.forEach(function (parameterInstance) {
                                         if (parameterInstance.name === "event") {
-                                            eventHum = parameterInstance.value;
-                                        } else if (parameterInstance.name === "anomaly") {
-                                            anomalyHum = parameterInstance.value;
-                                        } else if (parameterInstance.name === "useNewData") {
-                                            useNewData = !parameterInstance.value;
+                                            if (parameterInstance.name === "event" && parameterInstance.value === '3' || parameterInstance.name === "event" && parameterInstance.value === '4' || parameterInstance.name === "event" && parameterInstance.value === '5' || parameterInstance.name === "event" && parameterInstance.value === '6') {
+                                                config.forEach(function (parameterInstance) {
+                                                    if (parameterInstance.name === "event") {
+                                                        eventTempPl = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "anomaly") {
+                                                        anomalyTempPl = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "useNewData") {
+                                                        useNewData = !parameterInstance.value;
+                                                    } else if (parameterInstance.name === "simTime") {
+                                                        simTime = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "amountEvents") {
+                                                        amountEvents = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "amountAnomalies") {
+                                                        amountAnomalies = parameterInstance.value;
+                                                    }
+                                                });
+
+
+                                                $rootScope.config.eventTempPl = eventTempPl;
+                                                $rootScope.config.anomalyTempPl = anomalyTempPl;
+                                                $rootScope.config.simTime = simTime;
+                                                $rootScope.config.amountEvents = amountEvents;
+                                                $rootScope.config.amountAnomalies = amountAnomalies;
+
+                                            } else {
+                                                config.forEach(function (parameterInstance) {
+                                                    if (parameterInstance.name === "event") {
+                                                        eventTempPl = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "anomaly") {
+                                                        anomalyTempPl = parameterInstance.value;
+                                                    } else if (parameterInstance.value === "useNewData") {
+                                                        useNewData = !parameterInstance.value;
+                                                    } else if (parameterInstance.name === "simTime") {
+                                                        simTime = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "amountEvents") {
+                                                        amountEvents = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "amountAnomalies") {
+                                                        amountAnomalies = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "room") {
+                                                        roomTempPl = parameterInstance.value;
+                                                    }
+                                                });
+                                                $rootScope.config.eventTempPl = eventTempPl;
+                                                $rootScope.config.anomalyTempPl = anomalyTempPl;
+                                                $rootScope.config.roomTempPl = roomTempPl;
+                                                $rootScope.config.simTime = simTime;
+                                                $rootScope.config.amountEvents = amountEvents;
+                                                $rootScope.config.amountAnomalies = amountAnomalies;
+                                            }
                                         }
-                                    })
-                                });
+                                    });
 
-                                $rootScope.config.eventHum = eventHum;
-                                $rootScope.config.anomalyHum = anomalyHum;
-                            } else {
-                                testingDetails.config.forEach(function (config) {
+
+                                    break;
+                                case 'TestingHumiditySensorPl':
                                     config.forEach(function (parameterInstance) {
                                         if (parameterInstance.name === "event") {
-                                            eventHum = parameterInstance.value;
-                                        } else if (parameterInstance.name === "anomaly") {
-                                            anomalyHum = parameterInstance.value;
-                                        } else if (parameterInstance.name === "useNewData") {
-                                            useNewData = !parameterInstance.value;
-                                        } else if (parameterInstance.name === "room") {
-                                            roomHum = parameterInstance.value;
+                                            if (parameterInstance.name === "event" && parameterInstance.value === '3' || parameterInstance.name === "event" && parameterInstance.value === '4' || parameterInstance.name === "event" && parameterInstance.value === '5' || parameterInstance.name === "event" && parameterInstance.value === '6') {
+
+                                                config.forEach(function (parameterInstance) {
+                                                    if (parameterInstance.name === "event") {
+                                                        eventHumPl = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "anomaly") {
+                                                        anomalyHumPl = parameterInstance.value;
+                                                    } else if (parameterInstance.value === "useNewData") {
+                                                        useNewData = !parameterInstance.value;
+                                                    } else if (parameterInstance.name === "simTime") {
+                                                        simTime = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "amountEvents") {
+                                                        amountEvents = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "amountAnomalies") {
+                                                        amountAnomalies = parameterInstance.value;
+                                                    }
+                                                });
+                                                $rootScope.config.eventHumPl = eventHumPl;
+                                                $rootScope.config.anomalyHumPl = anomalyHumPl;
+                                                $rootScope.config.simTime = simTime;
+                                                $rootScope.config.amountEvents = amountEvents;
+                                                $rootScope.config.amountAnomalies = amountAnomalies;
+
+                                            } else {
+                                                config.forEach(function (parameterInstance) {
+                                                    if (parameterInstance.name === "event") {
+                                                        eventHumPl = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "anomaly") {
+                                                        anomalyHumPl = parameterInstance.value;
+                                                    } else if (parameterInstance.value === "useNewData") {
+                                                        useNewData = !parameterInstance.value;
+                                                    } else if (parameterInstance.name === "simTime") {
+                                                        simTime = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "amountEvents") {
+                                                        amountEvents = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "amountAnomalies") {
+                                                        amountAnomalies = parameterInstance.value;
+                                                    } else if (parameterInstance.name === "room") {
+                                                        roomHumPl = parameterInstance.value;
+                                                    }
+                                                });
+
+                                                $rootScope.config.eventHumPl = eventHumPl;
+                                                $rootScope.config.anomalyHumPl = anomalyHumPl;
+                                                $rootScope.config.roomHumPl = roomHumPl;
+                                                $rootScope.config.simTime = simTime;
+                                                $rootScope.config.amountEvents = amountEvents;
+                                                $rootScope.config.amountAnomalies = amountAnomalies;
+
+                                            }
                                         }
-                                    })
-                                });
-
-                                $rootScope.config.eventHum = eventHum;
-                                $rootScope.config.anomalyHum = anomalyHum;
-                                $rootScope.config.roomHum = roomHum;
-
-                            }
-                        });
-                    });
+                                    });
 
 
-                }
-
-
-                if (testingDetails.type.includes('TestingTemperatureSensorPl')) {
-                    testingDetails.config.forEach(function (config) {
-                        config.forEach(function (parameterInstance) {
-                            if (parameterInstance.name === "event" && parameterInstance.value === '3' || parameterInstance.name === "event" && parameterInstance.value === '4' || parameterInstance.name === "event" && parameterInstance.value === '5' || parameterInstance.name === "event" && parameterInstance.value === '6') {
-                                testingDetails.config.forEach(function (config) {
+                                    break;
+                                case 'TestingGPSSensor':
                                     config.forEach(function (parameterInstance) {
                                         if (parameterInstance.name === "event") {
-                                            eventTempPl = parameterInstance.value;
+                                            if (parameterInstance.name === "event") {
+                                                eventGPS = parameterInstance.value;
+                                            } else if (parameterInstance.name === "anomaly") {
+                                                anomalyGPS = parameterInstance.value;
+                                            } else if (parameterInstance.name === "useNewData") {
+                                                useNewData = !parameterInstance.value;
+                                            } else if (parameterInstance.name === "latitude") {
+                                                latitudeGPS = parameterInstance.value;
+                                            } else if (parameterInstance.name === "longitude") {
+                                                longitudeGPS = parameterInstance.value;
+                                            } else if (parameterInstance.name === "height") {
+                                                heightGPS = parameterInstance.value;
+                                            } else if (parameterInstance.name === "who") {
+                                                whoGPS = parameterInstance.value;
+                                            } else if (parameterInstance.name === "reactionMeters") {
+                                                reactionMetersGPS = parameterInstance.value;
+                                            }
+                                        }
+                                    });
+
+
+                                    $rootScope.config.eventGPS = eventGPS;
+                                    $rootScope.config.anomalyGPS = anomalyGPS;
+                                    $rootScope.config.latitudeGPS = latitudeGPS;
+                                    $rootScope.config.longitudeGPS = longitudeGPS;
+                                    $rootScope.config.hightGPS = heightGPS;
+                                    $rootScope.config.whoGPS = whoGPS;
+                                    $rootScope.config.reactionMetersGPS = reactionMetersGPS;
+
+                                    break;
+                                case 'TestingGPSSensorPl':
+                                    config.forEach(function (parameterInstance) {
+                                        if (parameterInstance.name === "event") {
+                                            eventGPSPl = parameterInstance.value;
                                         } else if (parameterInstance.name === "anomaly") {
-                                            anomalyTempPl = parameterInstance.value;
+                                            anomalyGPSPl = parameterInstance.value;
                                         } else if (parameterInstance.name === "useNewData") {
                                             useNewData = !parameterInstance.value;
+                                        } else if (parameterInstance.name === "latitude") {
+                                            latitudeGPSPl = parameterInstance.value;
+                                        } else if (parameterInstance.name === "longitude") {
+                                            longitudeGPSPl = parameterInstance.value;
+                                        } else if (parameterInstance.name === "height") {
+                                            heightGPSPl = parameterInstance.value;
+                                        } else if (parameterInstance.name === "who") {
+                                            whoGPSPl = parameterInstance.value;
+                                        } else if (parameterInstance.name === "reactionMeters") {
+                                            reactionMetersGPSPl = parameterInstance.value;
                                         } else if (parameterInstance.name === "simTime") {
                                             simTime = parameterInstance.value;
                                         } else if (parameterInstance.name === "amountEvents") {
                                             amountEvents = parameterInstance.value;
                                         } else if (parameterInstance.name === "amountAnomalies") {
                                             amountAnomalies = parameterInstance.value;
+
                                         }
-                                    })
-                                });
 
+                                        $rootScope.config.eventGPS = eventGPS;
+                                        $rootScope.config.anomalyGPS = anomalyGPS;
+                                        $rootScope.config.latitudeGPS = latitudeGPS;
+                                        $rootScope.config.longitudeGPS = longitudeGPS;
+                                        $rootScope.config.hightGPS = heightGPS;
+                                        $rootScope.config.whoGPS = whoGPS;
+                                        $rootScope.config.reactionMetersGPS = reactionMetersGPS;
+                                        $rootScope.config.simTime = simTime;
+                                        $rootScope.config.amountEvents = amountEvents;
+                                        $rootScope.config.amountAnomalies = amountAnomalies;
 
-                                $rootScope.config.eventTempPl = eventTempPl;
-                                $rootScope.config.anomalyTempPl = anomalyTempPl;
-                                $rootScope.config.simTime = simTime;
-                                $rootScope.config.amountEvents = amountEvents;
-                                $rootScope.config.amountAnomalies = amountAnomalies;
-
-                            } else {
-                                testingDetails.config.forEach(function (config) {
+                                    });
+                                    break;
+                                case 'TestingAccelerationSensor':
                                     config.forEach(function (parameterInstance) {
                                         if (parameterInstance.name === "event") {
-                                            eventTempPl = parameterInstance.value;
+                                            eventAcc = parameterInstance.value;
                                         } else if (parameterInstance.name === "anomaly") {
-                                            anomalyTempPl = parameterInstance.value;
-                                        } else if (parameterInstance.value === "useNewData") {
+                                            anomalyAcc = parameterInstance.value;
+                                        } else if (parameterInstance.name === "useNewData") {
                                             useNewData = !parameterInstance.value;
+                                        } else if (parameterInstance.name === "weightObject") {
+                                            weightObjectAcc = parameterInstance.value;
+                                        } else if (parameterInstance.name === "sensitivityClass") {
+                                            sensitivityClassAcc = parameterInstance.value;
+                                        } else if (parameterInstance.name === "reactionMeters") {
+                                            reactionMetersAcc = parameterInstance.value;
+                                        }
+                                    });
+                                    $rootScope.config.eventAcc = eventAcc;
+                                    $rootScope.config.anomalyAcc = anomalyAcc;
+                                    $rootScope.config.reactionMetersAcc = reactionMetersAcc;
+                                    $rootScope.config.weightObjectAcc = weightObjectAcc;
+                                    $rootScope.config.sensitivityClassAcc = sensitivityClassAcc;
+
+                                    break;
+                                case 'TestingAccelerationSensorPl':
+                                    config.forEach(function (parameterInstance) {
+                                        if (parameterInstance.name === "event") {
+                                            eventAccPl = parameterInstance.value;
+                                        } else if (parameterInstance.name === "anomaly") {
+                                            anomalyAccPl = parameterInstance.value;
+                                        } else if (parameterInstance.name === "useNewData") {
+                                            useNewData = !parameterInstance.value;
+                                        } else if (parameterInstance.name === "weightObject") {
+                                            weightObjectAccPl = parameterInstance.value;
+                                        } else if (parameterInstance.name === "sensitivityClass") {
+                                            sensitivityClassAccPl = parameterInstance.value;
+                                        } else if (parameterInstance.name === "reactionMeters") {
+                                            reactionMetersAccPl = parameterInstance.value;
                                         } else if (parameterInstance.name === "simTime") {
                                             simTime = parameterInstance.value;
                                         } else if (parameterInstance.name === "amountEvents") {
                                             amountEvents = parameterInstance.value;
                                         } else if (parameterInstance.name === "amountAnomalies") {
                                             amountAnomalies = parameterInstance.value;
-                                        } else if (parameterInstance.name === "room") {
-                                            roomTempPl = parameterInstance.value;
+
                                         }
-                                    })
-                                });
 
-                                $rootScope.config.eventTempPl = eventTempPl;
-                                $rootScope.config.anomalyTempPl = anomalyTempPl;
-                                $rootScope.config.roomTempPl = roomTempPl;
-                                $rootScope.config.simTime = simTime;
-                                $rootScope.config.amountEvents = amountEvents;
-                                $rootScope.config.amountAnomalies = amountAnomalies;
+                                    });
 
+                                    $rootScope.config.eventAccPl = eventAccPl;
+                                    $rootScope.config.anomalyAccPl = anomalyAccPl;
+                                    $rootScope.config.reactionMetersAccPl = reactionMetersAccPl;
+                                    $rootScope.config.weightObjectAccPl = weightObjectAccPl;
+                                    $rootScope.config.sensitivityClassAccPl = sensitivityClassAccPl;
+                                    $rootScope.config.simTime = simTime;
+                                    $rootScope.config.amountEvents = amountEvents;
+                                    $rootScope.config.amountAnomalies = amountAnomalies;
 
+                                    break;
                             }
-                        })
-                    })
-                }
-                if (testingDetails.type.includes('TestingHumiditySensorPl')) {
-                    testingDetails.config.forEach(function (config) {
-                        config.forEach(function (parameterInstance) {
-                            if (parameterInstance.name === "event" && parameterInstance.value === '3' || parameterInstance.name === "event" && parameterInstance.value === '4' || parameterInstance.name === "event" && parameterInstance.value === '5' || parameterInstance.name === "event" && parameterInstance.value === '6') {
-                                testingDetails.config.forEach(function (config) {
-                                    config.forEach(function (parameterInstance) {
-                                        if (parameterInstance.name === "event") {
-                                            eventHumPl = parameterInstance.value;
-                                        } else if (parameterInstance.name === "anomaly") {
-                                            anomalyHumPl = parameterInstance.value;
-                                        } else if (parameterInstance.value === "useNewData") {
-                                            useNewData = !parameterInstance.value;
-                                        } else if (parameterInstance.name === "simTime") {
-                                            simTime = parameterInstance.value;
-                                        } else if (parameterInstance.name === "amountEvents") {
-                                            amountEvents = parameterInstance.value;
-                                        } else if (parameterInstance.name === "amountAnomalies") {
-                                            amountAnomalies = parameterInstance.value;
-                                        }
-                                    })
-                                });
-                                $rootScope.config.eventHumPl = eventHumPl;
-                                $rootScope.config.anomalyHumPl = anomalyHumPl;
-                                $rootScope.config.simTime = simTime;
-                                $rootScope.config.amountEvents = amountEvents;
-                                $rootScope.config.amountAnomalies = amountAnomalies;
-
-                            } else {
-                                testingDetails.config.forEach(function (config) {
-                                    config.forEach(function (parameterInstance) {
-                                        if (parameterInstance.name === "event") {
-                                            eventHumPl = parameterInstance.value;
-                                        } else if (parameterInstance.name === "anomaly") {
-                                            anomalyHumPl = parameterInstance.value;
-                                        } else if (parameterInstance.value === "useNewData") {
-                                            useNewData = !parameterInstance.value;
-                                        } else if (parameterInstance.name === "simTime") {
-                                            simTime = parameterInstance.value;
-                                        } else if (parameterInstance.name === "amountEvents") {
-                                            amountEvents = parameterInstance.value;
-                                        } else if (parameterInstance.name === "amountAnomalies") {
-                                            amountAnomalies = parameterInstance.value;
-                                        } else if (parameterInstance.name === "room") {
-                                            roomHumPl = parameterInstance.value;
-                                        }
-                                    })
-                                });
-                                $rootScope.config.eventHumPl = eventHumPl;
-                                $rootScope.config.anomalyHumPl = anomalyHumPl;
-                                $rootScope.config.roomHumPl = roomHumPl;
-                                $rootScope.config.simTime = simTime;
-                                $rootScope.config.amountEvents = amountEvents;
-                                $rootScope.config.amountAnomalies = amountAnomalies;
-
-                            }
-                        })
-                    })
-                }
-
-                if (testingDetails.type.includes('TestingGPSSensor')) {
-                    testingDetails.config.forEach(function (config) {
-                        config.forEach(function (parameterInstance) {
-                            if (parameterInstance.name === "event") {
-                                eventGPS = parameterInstance.value;
-                            } else if (parameterInstance.name === "anomaly") {
-                                anomalyGPS = parameterInstance.value;
-                            } else if (parameterInstance.name === "useNewData") {
-                                useNewData = !parameterInstance.value;
-                            } else if (parameterInstance.name === "latitude") {
-                                latitudeGPS = parameterInstance.value;
-                            } else if (parameterInstance.name === "longitude") {
-                                longitudeGPS = parameterInstance.value;
-                            } else if (parameterInstance.name === "height") {
-                                heightGPS = parameterInstance.value;
-                            } else if (parameterInstance.name === "who") {
-                                whoGPS = parameterInstance.value;
-                            } else if (parameterInstance.name === "reactionMeters") {
-                                reactionMetersGPS = parameterInstance.value;
-                            }
-                        })
+                        }
                     });
-
-                    $rootScope.config.eventGPS = eventGPS;
-                    $rootScope.config.anomalyGPS = anomalyGPS;
-
-                    $rootScope.config.latitudeGPS = latitudeGPS;
-                    $rootScope.config.longitudeGPS = longitudeGPS;
-                    $rootScope.config.hightGPS = heightGPS;
-                    $rootScope.config.whoGPS = whoGPS;
-                    $rootScope.config.reactionMetersGPS = reactionMetersGPS;
-
-                }
-
-
-                if (testingDetails.type.includes('TestingGPSSensorPl')) {
-                    testingDetails.config.forEach(function (config) {
-                        config.forEach(function (parameterInstance) {
-                            if (parameterInstance.name === "event") {
-                                eventGPSPl = parameterInstance.value;
-                            } else if (parameterInstance.name === "anomaly") {
-                                anomalyGPSPl = parameterInstance.value;
-                            } else if (parameterInstance.name === "useNewData") {
-                                useNewData = !parameterInstance.value;
-                            } else if (parameterInstance.name === "latitude") {
-                                latitudeGPSPl = parameterInstance.value;
-                            } else if (parameterInstance.name === "longitude") {
-                                longitudeGPSPl = parameterInstance.value;
-                            } else if (parameterInstance.name === "height") {
-                                heightGPSPl = parameterInstance.value;
-                            } else if (parameterInstance.name === "who") {
-                                whoGPSPl = parameterInstance.value;
-                            } else if (parameterInstance.name === "reactionMeters") {
-                                reactionMetersGPSPl = parameterInstance.value;
-                            } else if (parameterInstance.name === "simTime") {
-                                simTime = parameterInstance.value;
-                            } else if (parameterInstance.name === "amountEvents") {
-                                amountEvents = parameterInstance.value;
-                            } else if (parameterInstance.name === "amountAnomalies") {
-                                amountAnomalies = parameterInstance.value;
-
-                            }
-                        })
-                    });
-
-                    $rootScope.config.eventGPS = eventGPS;
-                    $rootScope.config.anomalyGPS = anomalyGPS;
-                    $rootScope.config.latitudeGPS = latitudeGPS;
-                    $rootScope.config.longitudeGPS = longitudeGPS;
-                    $rootScope.config.hightGPS = heightGPS;
-                    $rootScope.config.whoGPS = whoGPS;
-                    $rootScope.config.reactionMetersGPS = reactionMetersGPS;
-                    $rootScope.config.simTime = simTime;
-                    $rootScope.config.amountEvents = amountEvents;
-                    $rootScope.config.amountAnomalies = amountAnomalies;
-
-
-                }
-
-                if (testingDetails.type.includes('TestingAccelerationSensor')) {
-                    testingDetails.config.forEach(function (config) {
-                        config.forEach(function (parameterInstance) {
-                            if (parameterInstance.name === "event") {
-                                eventAcc = parameterInstance.value;
-                            } else if (parameterInstance.name === "anomaly") {
-                                anomalyAcc = parameterInstance.value;
-                            } else if (parameterInstance.name === "useNewData") {
-                                useNewData = !parameterInstance.value;
-                            } else if (parameterInstance.name === "weightObject") {
-                                weightObjectAcc = parameterInstance.value;
-                            } else if (parameterInstance.name === "sensitivityClass") {
-                                sensitivityClassAcc = parameterInstance.value;
-                            } else if (parameterInstance.name === "reactionMeters") {
-                                reactionMetersAcc = parameterInstance.value;
-                            }
-                        })
-                    });
-                    $rootScope.config.eventAcc = eventAcc;
-                    $rootScope.config.anomalyAcc = anomalyAcc;
-                    $rootScope.config.reactionMetersAcc = reactionMetersAcc;
-                    $rootScope.config.weightObjectAcc = weightObjectAcc;
-                    $rootScope.config.sensitivityClassAcc = sensitivityClassAcc;
-
-
-                }
-
-                if (testingDetails.type.includes('TestingAccelerationSensorPl')) {
-                    testingDetails.config.forEach(function (config) {
-                        config.forEach(function (parameterInstance) {
-                            if (parameterInstance.name === "event") {
-                                eventAccPl = parameterInstance.value;
-                            } else if (parameterInstance.name === "anomaly") {
-                                anomalyAccPl = parameterInstance.value;
-                            } else if (parameterInstance.name === "useNewData") {
-                                useNewData = !parameterInstance.value;
-                            } else if (parameterInstance.name === "weightObject") {
-                                weightObjectAccPl = parameterInstance.value;
-                            } else if (parameterInstance.name === "sensitivityClass") {
-                                sensitivityClassAccPl = parameterInstance.value;
-                            } else if (parameterInstance.name === "reactionMeters") {
-                                reactionMetersAccPl = parameterInstance.value;
-                            } else if (parameterInstance.name === "simTime") {
-                                simTime = parameterInstance.value;
-                            } else if (parameterInstance.name === "amountEvents") {
-                                amountEvents = parameterInstance.value;
-                            } else if (parameterInstance.name === "amountAnomalies") {
-                                amountAnomalies = parameterInstance.value;
-
-                            }
-
-                        })
-                    });
-
-                    $rootScope.config.eventAccPl = eventAccPl;
-                    $rootScope.config.anomalyAccPl = anomalyAccPl;
-
-                    $rootScope.config.reactionMetersAccPl = reactionMetersAccPl;
-                    $rootScope.config.weightObjectAccPl = weightObjectAccPl;
-                    $rootScope.config.sensitivityClassAccPl = sensitivityClassAccPl;
-                    $rootScope.config.simTime = simTime;
-                    $rootScope.config.amountEvents = amountEvents;
-                    $rootScope.config.amountAnomalies = amountAnomalies;
-
-
-                }
+                });
 
 
                 $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
@@ -722,10 +704,6 @@ app.controller('TestingDetailsController',
                 }
 
             }
-
-
-
-
 
 
             //Extend the controller object for the public functions to make them available from outside
@@ -748,4 +726,5 @@ app.controller('TestingDetailsController',
                 editTestConfiguration: updateTest
             });
         }
+
     ]);

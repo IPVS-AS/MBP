@@ -170,7 +170,7 @@
             <div class="header">
                 <i class="material-icons" style="position: absolute">call_split</i>
                 <h2 style="margin-left: 35px;">
-                    Rule Informations of the tested IoT-Application
+                    Rule Information of the tested IoT-Application
                 </h2>
             </div>
             <div class="body">
@@ -334,6 +334,7 @@
                                     <select class="form-control show-tick" id="select-event"
                                             name="event"
                                             ng-model="config.eventTemp">
+                                        {{config.event}}
                                         <option value="">Select the event to be simulated *</option>
                                         <option ng-option class="ng-binding ng-scope" value="1">Temperature rise
                                         </option>
@@ -927,7 +928,7 @@
             <div class="card historical-chart-card">
                 <div class="header">
                     <h2>
-                        Historical sensor values: {{sensor.name}}
+                            Historical sensor values: {{sensor.name}}
                     </h2>
                     <ul class="header-dropdown m-r--5">
                         <li>

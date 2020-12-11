@@ -107,7 +107,6 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
          * @returns {*}
          */
         function editConfig(testId, useNewData) {
-
             return $http.post(ENDPOINT_URI + '/test-details/editConfig/' + testId, useNewData).success(function success(response) {
                 NotificationService.notify('Successfully updated.', 'success');
                 return response.success;
@@ -834,7 +833,6 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
                     break;
                 }
             }
-
 
             if (checkSimSensor === false && checkRealSensor === false) {
                 NotificationService.notify('Choose at least one sensor', 'error')
