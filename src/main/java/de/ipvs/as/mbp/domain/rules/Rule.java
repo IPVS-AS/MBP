@@ -2,6 +2,7 @@ package de.ipvs.as.mbp.domain.rules;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
  * executed subsequently by this service. In addition, the rule objects hold the
  * date of the last execution and the total number of executions that were performed.
  */
-@Document
+@MBPEntity(createValidator = RuleCreateValidator.class)
 public class Rule extends UserEntity {
 	
 	@Id

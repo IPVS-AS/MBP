@@ -133,7 +133,7 @@
                                            placeholder="Name *" ng-model="addPolicyEffectCtrl.item.name"/>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addPolicyEffectCtrl.item.errors.name">{{addPolicyEffectCtrl.item.errors.name.message}}</span>
+                                      ng-show="addPolicyEffectCtrl.item.errors.name">{{addPolicyEffectCtrl.item.errors.name}}</span>
                             </div>
                             <!-- item.description group -->
                             <div class="form-group"
@@ -144,7 +144,7 @@
                                            placeholder="Description" ng-model="addPolicyEffectCtrl.item.description"/>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addPolicyEffectCtrl.item.errors.description">{{addPolicyEffectCtrl.item.errors.description.message}}</span>
+                                      ng-show="addPolicyEffectCtrl.item.errors.description">{{addPolicyEffectCtrl.item.errors.description}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                             <!-- item.type group -->
@@ -160,7 +160,7 @@
                                     </select>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addPolicyEffectCtrl.item.errors.type">{{addPolicyEffectCtrl.item.errors.type.message}}</span>
+                                      ng-show="addPolicyEffectCtrl.item.errors.type">{{addPolicyEffectCtrl.item.errors.type}}</span>
                             </div>
                             <!-- Switch for parameters of different action types -->
                             <div ng-switch="addPolicyEffectCtrl.item.type">
@@ -201,7 +201,7 @@
                             </div>
                             <div class="form-group has-error" ng-show="addPolicyEffectCtrl.item.errors.parameters">
                                 <span class="help-block">
-                                    {{addPolicyEffectCtrl.item.errors.parameters.message}}
+                                    {{addPolicyEffectCtrl.item.errors.parameters}}
                                 </span>
                             </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>

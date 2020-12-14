@@ -1,31 +1,20 @@
 package de.ipvs.as.mbp.service;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
 import de.ipvs.as.mbp.DynamicBeanProvider;
-import de.ipvs.as.mbp.error.EntityNotFoundException;
-import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
-import de.ipvs.as.mbp.error.MissingPermissionException;
-import de.ipvs.as.mbp.util.C;
-import de.ipvs.as.mbp.util.Pages;
-import de.ipvs.as.mbp.domain.access_control.ACAbstractEffect;
-import de.ipvs.as.mbp.domain.access_control.ACAccess;
-import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
-import de.ipvs.as.mbp.domain.access_control.ACAccessType;
-import de.ipvs.as.mbp.domain.access_control.ACPolicy;
-import de.ipvs.as.mbp.domain.access_control.IACRequestedEntity;
+import de.ipvs.as.mbp.domain.access_control.*;
 import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
+import de.ipvs.as.mbp.error.EntityNotFoundException;
+import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
+import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.ACPolicyRepository;
 import de.ipvs.as.mbp.repository.UserEntityRepository;
 import de.ipvs.as.mbp.service.access_control.ACPolicyEvaluationService;
+import de.ipvs.as.mbp.service.validation.ICreateValidator;
+import de.ipvs.as.mbp.service.validation.IDeleteValidator;
+import de.ipvs.as.mbp.util.C;
+import de.ipvs.as.mbp.util.Pages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -33,6 +22,14 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 
 @Service
@@ -148,11 +145,23 @@ public class UserEntityService {
     }
 
     public <E extends UserEntity> E create(UserEntityRepository<E> repository, E entity) throws EntityNotFoundException {
-        // Retrieve the currently logged in user from the database
+        //Retrieve the currently logged in user from the database
         User user = userService.getLoggedInUser();
 
-        // Set owner user manually
+        //Set owner user manually
         entity.setOwner(user);
+
+        //Get all create validators that are associated with this entity type
+        MBPEntity[] annotations = entity.getClass().getAnnotationsByType(MBPEntity.class);
+        List<ICreateValidator<E>> validators = new ArrayList<>();
+        for (MBPEntity annotation : annotations) {
+            for (Class<? extends ICreateValidator<?>> c : annotation.createValidator()) {
+                validators.add((ICreateValidator<E>) DynamicBeanProvider.get(c));
+            }
+        }
+
+        // Execute validation and throw exception if validation fails
+        validators.forEach(v -> v.validateCreatable(entity));
 
         // Save (create) entity
         return repository.save(entity);
@@ -170,13 +179,13 @@ public class UserEntityService {
      * @throws MissingPermissionException
      */
     public <E extends UserEntity> void deleteWithAccessControlCheck(UserEntityRepository<E> repository, String entityId, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
-    	// Retrieve the entity from the database
-    	E entity = getForId(repository, entityId);
-    	
-    	if ((!checkAdmin() && !checkOwner(entity))) {
-    		// Not the owner -> check policies
-    		requirePermission(repository, entityId, ACAccessType.DELETE, accessRequest);
-    	}
+        // Retrieve the entity from the database
+        E entity = getForId(repository, entityId);
+
+        if ((!checkAdmin() && !checkOwner(entity))) {
+            // Not the owner -> check policies
+            requirePermission(repository, entityId, ACAccessType.DELETE, accessRequest);
+        }
 
         // Check whether entity actually can be deleted (may still be in use)
         requireDeletable(entity);
@@ -218,7 +227,7 @@ public class UserEntityService {
         if (user.isAdmin()) {
             return entities;
         }
-        
+
         // Requesting user is a non-admin user
         List<E> filteredEntities = new ArrayList<>();
         // Add all entities without owner or owned by the requesting user
@@ -259,13 +268,13 @@ public class UserEntityService {
             throw new MissingAdminPrivilegesException();
         }
     }
-    
+
     public <E extends IACRequestedEntity> boolean checkAdmin() {
-    	return checkAdmin(userService.getLoggedInUser());
+        return checkAdmin(userService.getLoggedInUser());
     }
 
     public <E extends IACRequestedEntity> boolean checkAdmin(String userId) {
-    	return checkAdmin(userService.getForId(userId));
+        return checkAdmin(userService.getForId(userId));
     }
 
     public <E extends IACRequestedEntity> boolean checkAdmin(User user) {

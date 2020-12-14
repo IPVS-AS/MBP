@@ -261,8 +261,6 @@ app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'Notifica
                 } catch (error) {
                     return null;
                 }
-
-
                 return null;
             }
 

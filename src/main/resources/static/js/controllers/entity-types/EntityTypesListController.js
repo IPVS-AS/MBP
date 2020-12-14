@@ -157,7 +157,13 @@ app.controller('EntityTypesListController',
                     $scope: $scope,
                     entity: 'sensor type',
                     addItem: function (data) {
-                        //Extend request for icon
+                        //Check if icon is available
+                        if (!data.hasOwnProperty(("icon"))) {
+                            data.icon = "";
+                            return addSensorType(data);
+                        }
+
+                        //Read icon and extend request
                         return readFile(data.icon[0]).then(function (response) {
                             data.icon = response || null;
                             return addSensorType(data);

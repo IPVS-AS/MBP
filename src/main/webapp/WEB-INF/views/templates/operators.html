@@ -106,7 +106,7 @@
                                            placeholder="Name *" ng-model="addOperatorCtrl.item.name"/>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addOperatorCtrl.item.errors.name">{{addOperatorCtrl.item.errors.name.message}}</span>
+                                      ng-show="addOperatorCtrl.item.errors.name">{{addOperatorCtrl.item.errors.name}}</span>
                             </div>
                             <!-- item.description group -->
                             <div class="form-group"
@@ -117,7 +117,7 @@
                                            ng-model="addOperatorCtrl.item.description">
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addOperatorCtrl.item.errors.description">{{addOperatorCtrl.item.errors.description.message}}</span>
+                                      ng-show="addOperatorCtrl.item.errors.description">{{addOperatorCtrl.item.errors.description}}</span>
                             </div>
                             <!-- item.unit group -->
                             <div class="form-group"
@@ -127,7 +127,7 @@
                                     <unit-input ng-model="addOperatorCtrl.item.unit"></unit-input>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addOperatorCtrl.item.errors.unit">{{addOperatorCtrl.item.errors.unit.message}}</span>
+                                      ng-show="addOperatorCtrl.item.errors.unit">{{addOperatorCtrl.item.errors.unit}}</span>
                             </div>
                             <!-- item.routine group -->
                             <label>Operator scripts: *</label>
@@ -152,7 +152,7 @@
                                     </div>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addOperatorCtrl.item.errors.routines">{{addOperatorCtrl.item.errors.routines.message}}</span>
+                                      ng-show="addOperatorCtrl.item.errors.routines">{{addOperatorCtrl.item.errors.routines}}</span>
                             </div>
                             <!-- item.parameters group -->
                             <label>Parameters:</label>
@@ -210,7 +210,7 @@
                                     </tbody>
                                 </table>
                                 <div class="has-error" ng-show="addOperatorCtrl.item.errors.parameters">
-                                    <span class="help-block">{{addOperatorCtrl.item.errors.parameters.message}}</span>
+                                    <span class="help-block">{{addOperatorCtrl.item.errors.parameters}}</span>
                                 </div>
                                 <div class="align-right">
                                     <button type="button"
@@ -234,7 +234,7 @@
                                     </select>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addOperatorCtrl.item.errors.accessControlPolicyIds">{{addOperatorCtrl.item.errors.accessControlPolicyIds.message}}</span>
+                                      ng-show="addOperatorCtrl.item.errors.accessControlPolicyIds">{{addOperatorCtrl.item.errors.accessControlPolicyIds}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>

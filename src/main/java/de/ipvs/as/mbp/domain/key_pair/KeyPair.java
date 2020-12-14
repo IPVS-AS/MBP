@@ -1,24 +1,21 @@
 package de.ipvs.as.mbp.domain.key_pair;
 
-import javax.persistence.GeneratedValue;
-
-import de.ipvs.as.mbp.service.KeyPairDeleteValidator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
-import org.springframework.data.annotation.Id;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.springframework.data.annotation.Id;
+
+import javax.persistence.GeneratedValue;
 
 /**
  * Document class for RSA key pairs. Key pairs are named user entities and consist out of a public and a private key.
  */
-@MBPEntity(deleteValidator = KeyPairDeleteValidator.class)
+@MBPEntity(createValidator = KeyPairCreateValidator.class, deleteValidator = KeyPairDeleteValidator.class)
 @ApiModel(description = "Model for RSA key pairs")
 public class KeyPair extends UserEntity {
-	
+
     @Id
     @GeneratedValue
     @ApiModelProperty(notes = "Key pair ID", example = "5c8f7ad66f9e3c1bacb0fa99", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
@@ -113,6 +110,7 @@ public class KeyPair extends UserEntity {
 
     /**
      * Checks whether a public key is available within this key pair.
+     *
      * @return True, if a public key is available; false otherwise
      */
     @JsonProperty("hasPublicKey")
@@ -123,6 +121,7 @@ public class KeyPair extends UserEntity {
 
     /**
      * Checks whether a private key is available within this key pair.
+     *
      * @return True, if a private key is available; false otherwise
      */
     @JsonProperty("hasPrivateKey")

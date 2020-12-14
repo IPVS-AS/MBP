@@ -2,10 +2,10 @@ package de.ipvs.as.mbp.service.rules.execution.ifttt_webhook;
 
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleAction;
-import de.ipvs.as.mbp.service.rules.execution.RuleActionExecutor;
+import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.service.cep.engine.core.output.CEPOutput;
+import de.ipvs.as.mbp.service.rules.execution.RuleActionExecutor;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.Errors;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -31,14 +31,16 @@ public class IFTTTWebhookExecutor implements RuleActionExecutor {
     private static final String REGEX_EVENT_NAME = "[A-z0-9_\\-]+";
 
     /**
-     * Validates a parameters map for the corresponding rule action type and updates
-     * an errors object accordingly.
+     * Validates a parameters map for the corresponding rule action type and will throw an exception
+     * if a parameter is invalid.
      *
-     * @param errors     The errors object to update
      * @param parameters The parameters map (parameter name -> value) to validate
      */
     @Override
-    public void validateParameters(Errors errors, Map<String, String> parameters) {
+    public void validateParameters(Map<String, String> parameters) {
+        //Create exception to collect invalid fields
+        EntityValidationException exception = new EntityValidationException("Could not create, because some fields are invalid.");
+
         //Check key parameter
         if (parameters.containsKey(PARAM_KEY_IFTTT_KEY)) {
             //Get key
@@ -46,13 +48,11 @@ public class IFTTTWebhookExecutor implements RuleActionExecutor {
 
             //Check if key is valid
             if ((key == null) || key.isEmpty() || (!key.matches(REGEX_IFTTT_KEY))) {
-                errors.rejectValue("parameters", "ruleAction.parameters.invalid",
-                        "The provided key seems to be invalid.");
+                exception.addInvalidField("parameters", "The provided key seems to be invalid.");
             }
         } else {
             //No key parameter available
-            errors.rejectValue("parameters", "ruleAction.parameters.missing",
-                    "A personal IFTTT key needs to be provided.");
+            exception.addInvalidField("parameters", "A personal IFTTT key needs to be provided.");
         }
 
         //Check event name parameter
@@ -62,13 +62,16 @@ public class IFTTTWebhookExecutor implements RuleActionExecutor {
 
             //Check if event name is valid
             if ((eventName == null) || eventName.isEmpty() || (!eventName.matches(REGEX_EVENT_NAME))) {
-                errors.rejectValue("parameters", "ruleAction.parameters.invalid",
-                        "The provided event name seems to be invalid.");
+                exception.addInvalidField("parameters", "The provided event name seems to be invalid.");
             }
         } else {
             //No event name parameter available
-            errors.rejectValue("parameters", "ruleAction.parameters.missing",
-                    "A IFTTT event name needs to be provided.");
+            exception.addInvalidField("parameters", "A IFTTT event name needs to be provided.");
+        }
+
+        //Throw exception if there are invalid fields
+        if (exception.hasInvalidFields()) {
+            throw exception;
         }
     }
 

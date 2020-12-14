@@ -3,16 +3,16 @@ package de.ipvs.as.mbp.service.rules.execution.actuator_action;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleAction;
+import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
+import de.ipvs.as.mbp.service.cep.engine.core.output.CEPOutput;
 import de.ipvs.as.mbp.service.mqtt.MQTTService;
 import de.ipvs.as.mbp.service.rules.execution.RuleActionExecutor;
-import de.ipvs.as.mbp.service.cep.engine.core.output.CEPOutput;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.Errors;
 
 import java.util.Map;
 
@@ -55,14 +55,16 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
     }
 
     /**
-     * Validates a parameters map for the corresponding rule action type and updates
-     * an errors object accordingly.
+     * Validates a parameters map for the corresponding rule action type and will throw an exception
+     * if a parameter is invalid.
      *
-     * @param errors     The errors object to update
      * @param parameters The parameters map (parameter name -> value) to validate
      */
     @Override
-    public void validateParameters(Errors errors, Map<String, String> parameters) {
+    public void validateParameters(Map<String, String> parameters) {
+        //Create exception to collect invalid fields
+        EntityValidationException exception = new EntityValidationException("Could not create, because some fields are invalid.");
+
         //Check actuator parameter
         if (parameters.containsKey(PARAM_KEY_ACTUATOR)) {
             //Get actuator id
@@ -70,13 +72,11 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
 
             //Check if actuator id is valid
             if ((actuatorId == null) || actuatorId.isEmpty() || (!actuatorRepository.existsById(actuatorId))) {
-                errors.rejectValue("parameters", "ruleAction.parameters.invalid",
-                        "Invalid actuator selected.");
+                exception.addInvalidField("parameters", "Invalid actuator selected.");
             }
         } else {
             //No actuator parameter available
-            errors.rejectValue("parameters", "ruleAction.parameters.missing",
-                    "An actuator needs to be selected.");
+            exception.addInvalidField("parameters", "An actuator needs to be selected.");
         }
 
         //Check action name parameter
@@ -86,18 +86,19 @@ public class ActuatorActionExecutor implements RuleActionExecutor {
 
             //Validate action name
             if ((actionName == null) || actionName.isEmpty()) {
-                errors.rejectValue("parameters", "ruleAction.parameters.empty",
-                        "The action name must not be empty..");
+                exception.addInvalidField("parameters", "The action name must not be empty.");
             } else if (!actionName.matches(REGEX_ACTION_NAME)) {
-                errors.rejectValue("parameters", "ruleAction.parameters.invalid",
-                        "The action name contains invalid characters.");
+                exception.addInvalidField("parameters", "The action name contains invalid characters.");
             }
         } else {
             //No subject parameter available
-            errors.rejectValue("parameters", "ruleAction.parameters.missing",
-                    "A subject needs to be provided.");
+            exception.addInvalidField("parameters", "A subject needs to be provided.");
         }
 
+        //Throw exception if there are invalid fields
+        if (exception.hasInvalidFields()) {
+            throw exception;
+        }
     }
 
 

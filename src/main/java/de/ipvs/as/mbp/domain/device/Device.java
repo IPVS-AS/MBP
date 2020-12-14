@@ -1,22 +1,19 @@
 package de.ipvs.as.mbp.domain.device;
 
-import javax.persistence.GeneratedValue;
-
-import de.ipvs.as.mbp.service.DeviceDeleteValidator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.access_control.ACAttributeValue;
 import de.ipvs.as.mbp.domain.key_pair.KeyPair;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.persistence.GeneratedValue;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-
-@MBPEntity(deleteValidator = DeviceDeleteValidator.class)
+@MBPEntity(createValidator = DeviceCreateValidator.class, deleteValidator = DeviceDeleteValidator.class)
 @ApiModel(description = "Model for device entities")
 public class Device extends UserEntity {
 
