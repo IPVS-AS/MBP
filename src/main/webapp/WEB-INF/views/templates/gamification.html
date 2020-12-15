@@ -1,0 +1,235 @@
+<div class="row clearfix">
+    <div class="col-lg-9">
+    	<div class="row clearfix">
+    		<!-- AVATAR -->
+            <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">
+            	<div class="info-box">
+                	<img src="images/user.png" class="bg-mbp-blue img-responsive" alt="User Avatar">
+                </div>
+            </div>
+            
+            <!-- POINTS/PROGRESS -->
+            <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+            	<div class="row clearfix">
+            		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            			<div class="info-box" style="height: 38px; margin-bottom: 4px;">
+		                    <div class="content">
+		                        <div class="text">Points: {{vm.GFUser.points}}</div>
+		                    </div>
+		                </div>
+	            	</div>
+                </div>
+                <div class="row clearfix">
+            		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            			<div class="info-box" style="height: 38px;">
+		                    <div class="content">
+		                        <div class="text">Progress: {{vm.GFUser.progressLevel}}</div>
+		                    </div>
+		                </div>
+	            	</div>
+                </div>
+            </div>
+            
+            <!-- BADGES -->
+            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                <div class="info-box">
+                    <div class="icon bg-mbp-blue">
+                        <i class="material-icons">view_quilt</i>
+                    </div>
+                    <div class="content">
+                        <div class="text"><h4>Badges</h4></div>
+                    </div>
+                </div>
+            </div>
+    	</div>
+    	
+    	<div class="row clearfix">
+    		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+		    	<!-- Gamification Card -->
+			    <div class="card">
+		            <div class="header">
+		                <div class="col-lg-12">
+		                    <h2>Learn IoT in a glance!<small>Gamification is cool</small></h2>
+		                </div>
+		            </div>
+		            <div class="body">
+		                <table class="table table-hover" st-table="vm.activities">
+		                    <tbody>
+		                    <tr id="{{item.id}}" ng-repeat="item in vm.activities">
+		                        <td>
+		                            <h2>{{item.title}} - {{item.description}}</h2>
+		                        </td>
+		                        <td>
+		                        	<h2 ng-switch="item.status">
+		                                <div ng-switch-when="done">
+		                                    <span class="label label-success">Done</span>
+		                                </div>
+		                                <div ng-switch-default>
+		                                    <span class="label label-default">Open</span>
+		                                </div>
+		                            </h2>
+		                        </td>
+		                        <td>
+		                        	<h2>
+			                        	<button class="btn btn-primary" ng-click="vm.openActivityContent(item.id)">
+			                        		Start
+			                        	</button>
+			                        </h2>
+		                        </td>
+		                    </tr>
+		                    <tr ng-show="vm.activities.length === 0">
+		                        <td>No activities configured.</td>
+		                        <td></td>
+		                        <td></td>
+		                    </tr>
+		                    </tbody>
+		                    <tfoot>
+		                    <tr>
+		                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+		                    </tr>
+		                    </tfoot>
+		                </table>
+		            </div>
+			    </div>
+			    <!-- #END# Gamification Card -->
+			</div>
+		</div>
+	</div>
+	
+	<div class="col-lg-3">
+		<div class="row clearfix">
+			<!-- LAST COLUMN - LEADERBOARD, FEEDBACKS, STORE -->
+          	<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="info-box">
+                    <div class="icon bg-mbp-blue">
+                        <i class="material-icons">view_quilt</i>
+                    </div>
+                    <div class="content">
+                        <div class="text">Leaderboard</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row clearfix">
+          	<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="info-box">
+                    <div class="content">
+                        <div class="text">Feedbacks, curiosities and surprises</div>
+                    </div>
+                </div>
+        	</div>
+        </div>
+        <div class="row clearfix">
+          	<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                <div class="card">
+                    <div class="body">
+                    	<h4>Store</h4>
+                        <table class="table table-striped" st-table="vm.storeItemList">
+		                    <thead>
+		                    <tr>
+		                    	<th scope="col">Item</th>
+      							<th scope="col">Price</th>
+		                    </tr>
+		                    </thead>
+		                    <tbody>
+		                    <tr id="{{item.id}}" ng-repeat="item in vm.storeItemList">
+		                        <td>{{item.name}}</td>
+		                        <td>{{item.price}}</td>
+		                    </tr>
+		                    <tr ng-show="vm.storeItemList.length === 0">
+		                        <td>No store items configured.</td>
+		                    </tr>
+		                    </tbody>
+		                </table>
+                    </div>
+                </div>
+        	</div>
+        </div>
+    </div>
+    
+    <!-- Modal Activity Content -->
+    <div class="modal fade" id="gamificationActivityContentModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">{{vm.modalContentTitle}}
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h2>
+                </div>
+                <div class="modal-body">
+                	<h5><a href="GF_Content/task1.1.pptx" target="_blank">TEST LINK</a></h5>
+                	<h5><a href="{{vm.modalContent}}" target="_blank">Check the content here!</a></h5>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="button" class="btn btn-primary" ng-click="vm.completeActivity(true)" ng-disabled="vm.selectedActivity.status == 'done'">
+		                Done!
+		            </button>
+                </div>
+			</div>
+        </div>
+    </div>
+    <!-- #END# Modal Activity Content -->
+    
+    <!-- Modal Quiz -->
+    <div class="modal fade" id="gamificationActivityQuizModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">{{vm.modalContentTitle}}
+	                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	                        <span aria-hidden="true">&times;</span>
+	                    </button>
+                    </h2>
+                </div>
+                <form id="quizQuestionForm" ng-submit="vm.submitQuizAnswers()">
+	                <div class="modal-body">
+	                	<table class="table" st-table="vm.selectedActivity.questions">
+		                    <tbody>
+		                    <tr id="question_{{question.id}}" ng-repeat="question in vm.selectedActivity.questions">
+		                        <td>
+		                        	<table class="table table-borderless">
+		                        		<tbody>
+			                        		<tr>
+			                        			<td><h3>{{question.sequence}} - {{question.question_text}}</h3></td>
+			                        		</tr>
+			                        		<tr>
+			                        			<td>
+			                        				<div class="form-check" ng-repeat="answer in question.answers">
+													  <input class="form-check-input" type="radio" name="answer_{{question.id}}" id="answer_{{question.id}}_{{answer.sequence}}" is_correct="{{answer.is_correct}}" value="">
+													  <label class="form-check-label" for="answer_{{question.id}}_{{answer.sequence}}">
+													    {{answer.answer_text}}
+													  </label>
+													</div>
+			                        			</td>
+			                        		</tr>
+			                        	</tbody>
+		                        	</table>
+		                        </td>
+		                    </tr>
+		                    <tr ng-show="vm.selectedActivity.questions.length === 0">
+		                        <td>No questions configured for this quiz.</td>
+		                        <td></td>
+		                        <td></td>
+		                    </tr>
+		                    </tbody>
+		                </table>
+	                </div>
+	                <div class="modal-footer">
+	                    <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+	                        Close
+	                    </button>
+	                    <button type="submit" class="btn btn-primary" ng-disabled="vm.selectedActivity.status == 'done'">
+	                        Submit Answers!
+	                    </button>
+	                </div>
+	        	</form>
+			</div>
+        </div>
+    </div>
+    <!-- #END# Modal Quiz-->
+</div>

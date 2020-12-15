@@ -166,6 +166,12 @@
               <span>Home</span>
             </a>
           </li>
+          <li href="view/gamification" menu-item="menu-item">
+            <a href="view/gamification">
+              <i class="material-icons">bug_report</i>
+              <span>Gamification</span>
+            </a>
+          </li>
           <li href="view/env-models" menu-item="menu-item">
             <a href="view/env-models">
               <i class="material-icons">view_quilt</i>
@@ -420,5 +426,9 @@
 <script th:src="@{/js/controllers/user/RegisterController.js}"></script>
 <script th:src="@{/js/controllers/user/UsersController.js}"></script>
 <script th:src="@{/js/controllers/env-models/EnvModelListController.js}"></script>
+
+<!-- Gamification -->
+<script th:src="@{/js/services/GamificationUserService.js}"></script>
+<script th:src="@{/js/controllers/gamification/GamificationController.js}"></script>
 </body>
 </html>
