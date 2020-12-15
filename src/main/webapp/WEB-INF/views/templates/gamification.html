@@ -57,7 +57,7 @@
 		                    <tbody>
 		                    <tr id="{{item.id}}" ng-repeat="item in vm.activities">
 		                        <td>
-		                            <h2>{{item.title}} - {{item.description}}</h2>
+		                            <h4>{{item.title}} - {{item.description}}</h4>
 		                        </td>
 		                        <td>
 		                        	<h2 ng-switch="item.status">
@@ -159,7 +159,6 @@
                     </h2>
                 </div>
                 <div class="modal-body">
-                	<h5><a href="GF_Content/task1.1.pptx" target="_blank">TEST LINK</a></h5>
                 	<h5><a href="{{vm.modalContent}}" target="_blank">Check the content here!</a></h5>
                 </div>
                 <div class="modal-footer">
