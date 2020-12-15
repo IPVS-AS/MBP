@@ -122,6 +122,12 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 controller: 'UsersController as vm'
             })
 
+			// Gamification
+            .when(viewPrefix + '/gamification', {
+                templateUrl: 'templates/gamification',
+                controller: 'GamificationController as vm'
+            })
+
             // Environment Model
             .when(viewPrefix + '/env-models', {
                 category: 'env-models',
