@@ -1,8 +1,9 @@
-package de.ipvs.as.mbp.service;
+package de.ipvs.as.mbp.domain.component;
 
 import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.service.deploy.SSHDeployer;
+import de.ipvs.as.mbp.service.validation.IDeleteValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

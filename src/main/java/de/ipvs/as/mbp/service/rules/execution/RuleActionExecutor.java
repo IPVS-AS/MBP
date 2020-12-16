@@ -14,13 +14,12 @@ import java.util.Map;
 public interface RuleActionExecutor {
 
     /**
-     * Validates a parameters map for the corresponding rule action type and updates
-     * an errors object accordingly.
+     * Validates a parameters map for the corresponding rule action type and will throw an exception
+     * if a parameter is invalid.
      *
-     * @param errors     The errors object to update
      * @param parameters The parameters map (parameter name -> value) to validate
      */
-    void validateParameters(Errors errors, Map<String, String> parameters);
+    void validateParameters(Map<String, String> parameters);
 
     /**
      * Executes an given action of a given rule that is of the corresponding rule action type. In addition, the output

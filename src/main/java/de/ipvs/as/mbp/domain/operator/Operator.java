@@ -7,7 +7,9 @@ import javax.measure.quantity.Quantity;
 import javax.measure.unit.Unit;
 import javax.persistence.GeneratedValue;
 
+import de.ipvs.as.mbp.domain.monitoring.MonitoringOperatorCreateValidator;
 import de.ipvs.as.mbp.domain.operator.parameters.Parameter;
+import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -18,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Document class for operators.
  */
-@Document
+@MBPEntity(createValidator = OperatorCreateValidator.class)
 public class Operator extends UserEntity {
 
     @Id

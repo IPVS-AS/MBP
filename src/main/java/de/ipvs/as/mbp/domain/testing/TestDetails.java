@@ -2,24 +2,24 @@ package de.ipvs.as.mbp.domain.testing;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.device.DeviceCreateValidator;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
-import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
+import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
-
-import javax.persistence.GeneratedValue;
-
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
 
+import javax.persistence.GeneratedValue;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 
-@Document
-public class TestDetails {
+@MBPEntity(createValidator = DeviceCreateValidator.class)
+public class TestDetails extends UserEntity {
 
     public TestDetails() {
 

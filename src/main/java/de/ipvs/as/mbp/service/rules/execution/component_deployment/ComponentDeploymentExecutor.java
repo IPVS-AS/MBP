@@ -1,22 +1,22 @@
 package de.ipvs.as.mbp.service.rules.execution.component_deployment;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Map;
-
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleAction;
+import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
+import de.ipvs.as.mbp.service.cep.engine.core.output.CEPOutput;
 import de.ipvs.as.mbp.service.deploy.ComponentState;
 import de.ipvs.as.mbp.service.deploy.SSHDeployer;
 import de.ipvs.as.mbp.service.rules.execution.RuleActionExecutor;
-import de.ipvs.as.mbp.service.cep.engine.core.output.CEPOutput;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.Errors;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * Executor for component deployment actions including the deployment and undeployment of actuators and sensors.
@@ -55,14 +55,17 @@ public class ComponentDeploymentExecutor implements RuleActionExecutor {
     }
 
     /**
-     * Validates a parameters map for the corresponding rule action type and updates
-     * an errors object accordingly.
+     * Validates a parameters map for the corresponding rule action type and will throw an exception
+     * if a parameter is invalid.
      *
-     * @param errors     The errors object to update
      * @param parameters The parameters map (parameter name -> value) to validate
      */
     @Override
-    public void validateParameters(Errors errors, Map<String, String> parameters) {
+    public void validateParameters(Map<String, String> parameters) {
+        //Create exception to collect invalid fields
+        EntityValidationException exception = new EntityValidationException("Could not create, because some fields are invalid.");
+
+
         //Check component parameter
         if (parameters.containsKey(PARAM_KEY_COMPONENT)) {
             //Get component string
@@ -70,22 +73,19 @@ public class ComponentDeploymentExecutor implements RuleActionExecutor {
 
             //Check if component string seems to be valid
             if ((componentString == null) || (componentString.length() < 3) || (!componentString.matches(REGEX_COMPONENT_STRING))) {
-                errors.rejectValue("parameters", "ruleAction.parameters.invalid",
-                        "Invalid component provided.");
+                exception.addInvalidField("parameters", "Invalid component provided.");
             } else {
                 //Get component from component string
                 de.ipvs.as.mbp.domain.component.Component component = getComponentFromString(componentString);
 
                 //Check if component could be found
                 if (component == null) {
-                    errors.rejectValue("parameters", "ruleAction.parameters.invalid",
-                            "Component could not be found.");
+                    exception.addInvalidField("parameters", "Component could not be found.");
                 }
             }
         } else {
             //No actuator parameter available
-            errors.rejectValue("parameters", "ruleAction.parameters.missing",
-                    "A component needs to be selected.");
+            exception.addInvalidField("parameters", "A component needs to be selected.");
         }
 
         //Check deploy action parameter
@@ -97,13 +97,16 @@ public class ComponentDeploymentExecutor implements RuleActionExecutor {
             try {
                 DeploymentAction.valueOf(deployActionString);
             } catch (Exception e) {
-                errors.rejectValue("parameters", "ruleAction.parameters.invalid",
-                        "Invalid deploy action provided.");
+                exception.addInvalidField("parameters", "Invalid deploy action provided.");
             }
         } else {
             //No subject parameter available
-            errors.rejectValue("parameters", "ruleAction.parameters.missing",
-                    "A deploy action needs to be selected.");
+            exception.addInvalidField("parameters", "A deploy action needs to be selected.");
+        }
+
+        //Throw exception if there are invalid fields
+        if (exception.hasInvalidFields()) {
+            throw exception;
         }
     }
 

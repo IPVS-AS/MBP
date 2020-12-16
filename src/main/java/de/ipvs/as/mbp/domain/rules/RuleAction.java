@@ -1,6 +1,5 @@
 package de.ipvs.as.mbp.domain.rules;
 
-import de.ipvs.as.mbp.service.RuleActionDeleteValidator;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
@@ -15,8 +14,7 @@ import java.util.Objects;
  * Objects of this class represent actions of rules that are executed after at least one of the containing rules
  * was triggered.
  */
-@MBPEntity(deleteValidator = RuleActionDeleteValidator.class)
-@Document
+@MBPEntity(createValidator = RuleActionCreateValidator.class, deleteValidator = RuleActionDeleteValidator.class)
 public class RuleAction extends UserEntity {
     @Id
     @GeneratedValue

@@ -16,6 +16,16 @@ public class Validation {
     private static final String REGEX_PRIVATE_RSA_KEY = "^-----BEGIN RSA PRIVATE KEY-----(?:[\\n\\r]{1,2}.{64})+[\\n\\r]{1,2}.{1,64}[\\n\\r]{1,2}-----END RSA PRIVATE KEY-----$";
 
     /**
+     * Returns whether a given string is null or empty.
+     *
+     * @param value The string to check
+     * @return True, if the provided string is null or empty; false otherwise
+     */
+    public static boolean isNullOrEmpty(String value) {
+        return (value == null) || value.trim().isEmpty();
+    }
+
+    /**
      * Checks if a provided formatted MAC address (including separators) is valid.
      *
      * @param macAddress The MAC address to check

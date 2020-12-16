@@ -1,7 +1,9 @@
 package de.ipvs.as.mbp.domain.entity_type;
 
 import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 
+@MBPEntity(createValidator = EntityTypeCreateValidator.class)
 public class SensorType extends EntityType {
 
     public SensorType() {

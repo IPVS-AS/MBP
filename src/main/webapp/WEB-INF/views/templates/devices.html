@@ -140,15 +140,9 @@
                         </button>
                     </h5>
                 </div>
-                <form id="addDeviceForm" ng-submit="addDeviceCtrl.addItem()">
+                <form ng-submit="addDeviceCtrl.addItem()">
                     <fieldset id="device-form">
                         <div class="modal-body">
-                            <!-- "global" error for addItem -->
-                            <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.global}">
-			                 <span class="alert alert-danger" ng-show="addDeviceCtrl.item.errors.global">
-			                   {{addDeviceCtrl.item.errors.global}}
-			                 </span>
-                            </div>
                             <!-- item.name group -->
                             <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.name }">
                                 <div class="form-line"
@@ -157,7 +151,7 @@
                                            placeholder="Name *" ng-model="addDeviceCtrl.item.name"/>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addDeviceCtrl.item.errors.name">{{addDeviceCtrl.item.errors.name.message}}</span>
+                                      ng-show="addDeviceCtrl.item.errors.name">{{addDeviceCtrl.item.errors.name}}</span>
                             </div>
                             <!-- item.componentType group -->
                             <div class="form-group"
@@ -174,7 +168,7 @@
                                     </select>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addDeviceCtrl.item.errors.componentType">{{addDeviceCtrl.item.errors.componentType.message}}</span>
+                                      ng-show="addDeviceCtrl.item.errors.componentType">{{addDeviceCtrl.item.errors.componentType}}</span>
                             </div>
                             <!-- item.ipAddress group -->
                             <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.ipAddress }">
@@ -184,7 +178,7 @@
                                            placeholder="IP address *" ng-model="addDeviceCtrl.item.ipAddress"/>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addDeviceCtrl.item.errors.ipAddress">{{addDeviceCtrl.item.errors.ipAddress.message}}</span>
+                                      ng-show="addDeviceCtrl.item.errors.ipAddress">{{addDeviceCtrl.item.errors.ipAddress}}</span>
                             </div>
                             <!-- item.username group -->
                             <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.username }">
@@ -194,7 +188,7 @@
                                            placeholder="User name *" ng-model="addDeviceCtrl.item.username"/>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addDeviceCtrl.item.errors.username">{{addDeviceCtrl.item.errors.username.message}}</span>
+                                      ng-show="addDeviceCtrl.item.errors.username">{{addDeviceCtrl.item.errors.username}}</span>
                             </div>
                             <!-- item.password group -->
                             <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.password }">
@@ -205,7 +199,7 @@
                                            ng-model="addDeviceCtrl.item.password"/>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addDeviceCtrl.item.errors.password">{{addDeviceCtrl.item.errors.password.message}}</span>
+                                      ng-show="addDeviceCtrl.item.errors.password">{{addDeviceCtrl.item.errors.password}}</span>
                             </div>
                             <!-- item.keyPair group -->
                             <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.keypair }">
@@ -214,11 +208,10 @@
                                     <select class="form-control show-tick" ng-model="addDeviceCtrl.item.keyPairId"
                                             ng-options="t.id as (t.name) for t in ctrl.keyPairList">
                                         <option value="">Select SSH key pair
-                                        </option>
                                     </select>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addDeviceCtrl.item.errors.keypair">{{addDeviceCtrl.item.errors.keypair.message}}</span>
+                                      ng-show="addDeviceCtrl.item.errors.keypair">{{addDeviceCtrl.item.errors.keypair}}</span>
                             </div>
                             <!-- item.accessControlPolicyIds group -->
                             <div class="form-group"
@@ -234,7 +227,7 @@
                                     </select>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addDeviceCtrl.item.errors.accessControlPolicyIds">{{addDeviceCtrl.item.errors.accessControlPolicyIds.message}}</span>
+                                      ng-show="addDeviceCtrl.item.errors.accessControlPolicyIds">{{addDeviceCtrl.item.errors.accessControlPolicyIds}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">* Mandatory field</span>
                         </div>

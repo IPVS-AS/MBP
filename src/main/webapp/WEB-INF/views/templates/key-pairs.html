@@ -126,7 +126,7 @@
                                            placeholder="Name *" ng-model="addKeyPairCtrl.item.name"/>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addKeyPairCtrl.item.errors.name">{{addKeyPairCtrl.item.errors.name.message}}</span>
+                                      ng-show="addKeyPairCtrl.item.errors.name">{{addKeyPairCtrl.item.errors.name}}</span>
                             </div>
                             <!-- item.publicKey group -->
                             <div class="form-group" ng-class="{'has-error' : addKeyPairCtrl.item.errors.publicKey }">
@@ -137,7 +137,7 @@
                                              rows="4"></textarea>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addKeyPairCtrl.item.errors.publicKey">{{addKeyPairCtrl.item.errors.publicKey.message}}</span>
+                                      ng-show="addKeyPairCtrl.item.errors.publicKey">{{addKeyPairCtrl.item.errors.publicKey}}</span>
                             </div>
                             <!-- item.privateKey group -->
                             <div class="form-group" ng-class="{'has-error' : addKeyPairCtrl.item.errors.privateKey }">
@@ -148,7 +148,7 @@
                                              rows="4"></textarea>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addKeyPairCtrl.item.errors.privateKey">{{addKeyPairCtrl.item.errors.privateKey.message}}</span>
+                                      ng-show="addKeyPairCtrl.item.errors.privateKey">{{addKeyPairCtrl.item.errors.privateKey}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>

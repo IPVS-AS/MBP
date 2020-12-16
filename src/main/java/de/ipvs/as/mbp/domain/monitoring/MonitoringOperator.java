@@ -2,6 +2,7 @@ package de.ipvs.as.mbp.domain.monitoring;
 
 import de.ipvs.as.mbp.domain.entity_type.DeviceType;
 import de.ipvs.as.mbp.domain.operator.Operator;
+import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
  * of monitoring the device infrastructure. In contrast to ordinary adapters, monitoring adapters are
  * associated with certain device types and can only be deployed on devices of the same type.
  */
+@MBPEntity(createValidator = MonitoringOperatorCreateValidator.class)
 public class MonitoringOperator extends Operator {
     @DBRef
     private List<DeviceType> deviceTypes;

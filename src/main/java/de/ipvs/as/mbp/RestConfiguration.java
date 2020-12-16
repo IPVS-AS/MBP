@@ -1,22 +1,20 @@
 package de.ipvs.as.mbp;
 
 import de.ipvs.as.mbp.domain.component.Actuator;
-import de.ipvs.as.mbp.domain.component.ActuatorValidator;
 import de.ipvs.as.mbp.domain.component.Sensor;
-import de.ipvs.as.mbp.domain.component.SensorValidator;
 import de.ipvs.as.mbp.domain.device.Device;
-import de.ipvs.as.mbp.domain.device.DeviceValidator;
-import de.ipvs.as.mbp.domain.entity_type.*;
+import de.ipvs.as.mbp.domain.entity_type.ActuatorType;
+import de.ipvs.as.mbp.domain.entity_type.DeviceType;
+import de.ipvs.as.mbp.domain.entity_type.EntityType;
+import de.ipvs.as.mbp.domain.entity_type.SensorType;
 import de.ipvs.as.mbp.domain.env_model.EnvironmentModel;
 import de.ipvs.as.mbp.domain.key_pair.KeyPair;
-import de.ipvs.as.mbp.domain.key_pair.KeyPairValidator;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringOperator;
-import de.ipvs.as.mbp.domain.monitoring.MonitoringOperatorValidator;
 import de.ipvs.as.mbp.domain.operator.Operator;
-import de.ipvs.as.mbp.domain.operator.OperatorValidator;
-import de.ipvs.as.mbp.domain.rules.*;
+import de.ipvs.as.mbp.domain.rules.Rule;
+import de.ipvs.as.mbp.domain.rules.RuleAction;
+import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
-import de.ipvs.as.mbp.domain.testing.TestDetailsValidator;
 import de.ipvs.as.mbp.domain.user.Authority;
 import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
@@ -26,7 +24,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.core.event.ValidatingRepositoryEventListener;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
@@ -78,59 +75,6 @@ public class RestConfiguration implements RepositoryRestConfigurer {
                 Rule.class, RuleTrigger.class, RuleAction.class,
                 DeviceType.class, ActuatorType.class, SensorType.class,
                 TestDetails.class);
-    }
-
-    /**
-     * Creates and adds validators for the REST documents.
-     *
-     * @param v Validating repository event listener to extend
-     */
-    @Override
-    public void configureValidatingRepositoryEventListener(ValidatingRepositoryEventListener v) {
-
-        //Adapters
-        v.addValidator("beforeSave", new OperatorValidator());
-        v.addValidator("beforeCreate", new OperatorValidator());
-
-        //Monitoring adapters
-        v.addValidator("beforeSave", new MonitoringOperatorValidator());
-        v.addValidator("beforeCreate", new MonitoringOperatorValidator());
-
-        //Sensors
-        v.addValidator("beforeSave", new SensorValidator());
-        v.addValidator("beforeCreate", new SensorValidator());
-
-        //Actuators
-        v.addValidator("beforeSave", new ActuatorValidator());
-        v.addValidator("beforeCreate", new ActuatorValidator());
-
-        //Key pairs
-        v.addValidator("beforeSave", new KeyPairValidator());
-        v.addValidator("beforeCreate", new KeyPairValidator());
-
-        //Devices
-        v.addValidator("beforeSave", new DeviceValidator());
-        v.addValidator("beforeCreate", new DeviceValidator());
-
-        //Rules
-        v.addValidator("beforeSave", new RuleValidator());
-        v.addValidator("beforeCreate", new RuleValidator());
-
-        //Rule actions
-        v.addValidator("beforeSave", new RuleActionValidator());
-        v.addValidator("beforeCreate", new RuleActionValidator());
-
-        //Rule triggers
-        v.addValidator("beforeSave", new RuleTriggerValidator());
-        v.addValidator("beforeCreate", new RuleTriggerValidator());
-
-        //Entity types
-        v.addValidator("beforeSave", new EntityTypeValidator());
-        v.addValidator("beforeCreate", new EntityTypeValidator());
-
-        //TestDetails
-        v.addValidator("beforeSave", new TestDetailsValidator());
-        v.addValidator("beforeCreate", new TestDetailsValidator());
     }
 
     /**
