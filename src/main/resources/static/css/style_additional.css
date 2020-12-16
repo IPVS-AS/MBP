@@ -1,4 +1,22 @@
-﻿/* Editable card header */
+﻿/* Loading bar for HTTP requests*/
+#requestLoadingBar {
+    position: relative;
+    z-index: 20;
+    height: 14px;
+    margin-bottom: -14px;
+    background-color: #00BEFF
+}
+
+#requestLoadingBar.progress .progress-bar {
+    width: 100%;
+}
+
+#requestLoadingBar.progress .progress-bar span {
+    display: block;
+    margin-top: -4px;
+}
+
+/* Editable card header */
 .card .header h2.editable {
     width: max-content;
     padding: 3px;
@@ -72,26 +90,38 @@ ul.minus-list li:before {
     width: 100%;
 }
 
-.dropzone{
-  overflow-y:auto;
-  max-height:250px;
-  margin:auto;
-  max-width:100%;
-  display:list-item;
+.dropzone {
+    overflow-y: auto;
+    max-height: 250px;
+    margin: auto;
+    max-width: 100%;
+    display: list-item;
 }
 
-.dz-details{
-   padding:5px;
+.dz-details {
+    padding: 5px;
 }
 
-.dz-filename{
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  display: block;
+.dz-filename {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    display: block;
 }
 
-:hover.dz-details{
-  background: #9e9e9e7d;
-  color: black;
+:hover.dz-details {
+    background: #9e9e9e7d;
+    color: black;
+}
+
+/* Filter input for lists */
+.list-filter {
+    margin-bottom: 0;
+}
+
+/* Clear button for filter input */
+button.list-filter-clear {
+    background: none;
+    border: none;
+    cursor: pointer;
 }

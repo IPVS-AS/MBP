@@ -15,7 +15,7 @@ app.controller('ComponentDetailsController',
             const COMPONENT_ID = $routeParams.id;
             const COMPONENT_TYPE = componentDetails.componentTypeName;
             const COMPONENT_TYPE_URL = COMPONENT_TYPE + 's';
-            const COMPONENT_ADAPTER_UNIT = componentDetails._embedded.adapter.unit;
+            const COMPONENT_OPERATOR_UNIT = componentDetails.operator.unit;
 
             //Initialization of variables that are used in the frontend by angular
             var vm = this;
@@ -23,8 +23,8 @@ app.controller('ComponentDetailsController',
             vm.isLoading = false;
             vm.deploymentState = 'UNKNOWN';
             vm.deviceState = 'UNKNOWN';
-            vm.displayUnit = COMPONENT_ADAPTER_UNIT;
-            vm.displayUnitInput = COMPONENT_ADAPTER_UNIT;
+            vm.displayUnit = COMPONENT_OPERATOR_UNIT;
+            vm.displayUnitInput = COMPONENT_OPERATOR_UNIT;
 
             //Stores the parameters and their values as assigned by the user
             vm.parameterValues = [];
@@ -77,7 +77,7 @@ app.controller('ComponentDetailsController',
                 //Retrieve the state of the current component
                 ComponentService.getComponentState(COMPONENT_ID, COMPONENT_TYPE_URL).then(function (response) {
                     //Success
-                    vm.deploymentState = response.data.content;
+                    vm.deploymentState = response.content;
                 }, function (response) {
                     //Failure
                     vm.deploymentState = 'UNKNOWN';
@@ -85,6 +85,7 @@ app.controller('ComponentDetailsController',
                 }).then(function () {
                     //Finally hide the waiting screen again
                     hideDeploymentWaitingScreen();
+                    $scope.$apply();
                 });
             }
 
@@ -97,13 +98,15 @@ app.controller('ComponentDetailsController',
                 vm.deviceState = 'LOADING';
 
                 //Retrieve device state
-                DeviceService.getDeviceState(componentDetails._embedded.device.id).then(function (response) {
+                DeviceService.getDeviceState(componentDetails.device.id).then(function (response) {
                     //Success
-                    vm.deviceState = response.data.content;
+                    vm.deviceState = response.content;
                 }, function (response) {
                     //Failure
                     vm.deviceState = 'UNKNOWN';
                     NotificationService.notify('Could not load device state.', 'error');
+                }).then(function () {
+                    $scope.$apply();
                 });
             }
 
@@ -116,16 +119,19 @@ app.controller('ComponentDetailsController',
                 //Retrieve entered unit
                 var inputUnit = vm.displayUnitInput;
 
-                //Check whether the entered unit is compatible with the adapter unit
-                UnitService.checkUnitsForCompatibility(COMPONENT_ADAPTER_UNIT, inputUnit).then(function (response) {
+                //Check whether the entered unit is compatible with the operator unit
+                UnitService.checkUnitsForCompatibility(COMPONENT_OPERATOR_UNIT, inputUnit).then(function (response) {
                     //Check compatibility according to server response
-                    if (!response.data) {
-                        NotificationService.notify("The entered unit is not compatible to the adapter unit.", "error");
+                    if (!response) {
+                        NotificationService.notify("The entered unit is not compatible to the operator unit.", "error");
                         return;
                     }
 
                     //Units are compatible, take user input as new unit
                     vm.displayUnit = vm.displayUnitInput;
+
+                    //Update UI
+                    $scope.$apply();
 
                 }, function () {
                     NotificationService.notify("The entered unit is invalid.", "error");
@@ -143,12 +149,6 @@ app.controller('ComponentDetailsController',
                 //Execute deployment request
                 ComponentService.deploy(componentDetails._links.deploy.href).then(
                     function (response) {
-                        //Success, check if everything worked well
-                        if (!response.data.success) {
-                            vm.deploymentState = 'UNKNOWN';
-                            NotificationService.notify('Error during deployment: ' + response.data.globalMessage, 'error');
-                            return;
-                        }
                         //Notify user
                         vm.deploymentState = 'DEPLOYED';
                         NotificationService.notify('Component deployed successfully.', 'success');
@@ -160,6 +160,7 @@ app.controller('ComponentDetailsController',
                     }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
+                    $scope.$apply();
                 });
             }
 
@@ -174,12 +175,6 @@ app.controller('ComponentDetailsController',
                 //Execute undeployment request
                 ComponentService.undeploy(componentDetails._links.deploy.href).then(
                     function (response) {
-                        //Success, check if everything worked well
-                        if (!response.data.success) {
-                            vm.deploymentState = 'UNKNOWN';
-                            NotificationService.notify('Error during undeployment: ' + response.data.globalMessage, 'error');
-                            return;
-                        }
                         //Notify user
                         vm.deploymentState = 'READY';
                         NotificationService.notify('Component undeployed successfully.', 'success');
@@ -191,6 +186,7 @@ app.controller('ComponentDetailsController',
                     }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
+                    $scope.$apply();
                 });
             }
 
@@ -206,12 +202,6 @@ app.controller('ComponentDetailsController',
                 //Execute start request
                 ComponentService.startComponent(COMPONENT_ID, COMPONENT_TYPE, vm.parameterValues)
                     .then(function (response) {
-                            //Success, check if everything worked well
-                            if (!response.data.success) {
-                                vm.deploymentState = 'UNKNOWN';
-                                NotificationService.notify('Error during starting: ' + response.data.globalMessage, 'error');
-                                return;
-                            }
                             //Notify user
                             vm.deploymentState = 'RUNNING';
                             NotificationService.notify('Component started successfully.', 'success');
@@ -223,6 +213,7 @@ app.controller('ComponentDetailsController',
                         }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
+                    $scope.$apply();
                 });
             }
 
@@ -236,12 +227,6 @@ app.controller('ComponentDetailsController',
 
                 //Execute stop request
                 ComponentService.stopComponent(COMPONENT_ID, COMPONENT_TYPE).then(function (response) {
-                        //Success, check if everything worked well
-                        if (!response.data.success) {
-                            vm.deploymentState = 'UNKNOWN';
-                            NotificationService.notify('Error during stopping: ' + response.data.globalMessage, 'error');
-                            return;
-                        }
                         //Notify user
                         vm.deploymentState = 'DEPLOYED';
                         NotificationService.notify('Component stopped successfully.', 'success');
@@ -253,6 +238,7 @@ app.controller('ComponentDetailsController',
                     }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
+                    $scope.$apply();
                 });
             }
 
@@ -360,8 +346,8 @@ app.controller('ComponentDetailsController',
                 function getStats(unit) {
                     return ComponentService.getValueLogStats(COMPONENT_ID, COMPONENT_TYPE_URL, unit).then(function (response) {
                         //Success, pass statistics data
-                        return response.data;
-                    }, function () {
+                        return response;
+                    }, function (response) {
                         //Failure
                         NotificationService.notify('Could not load value log statistics.', 'error');
                         return {};
@@ -456,7 +442,7 @@ app.controller('ComponentDetailsController',
              */
             function initParameters() {
                 //Retrieve all formal parameters for this component
-                var requiredParams = componentDetails._embedded.adapter.parameters;
+                var requiredParams = componentDetails.operator.parameters;
 
 
                 //Iterate over all parameters
@@ -464,10 +450,10 @@ app.controller('ComponentDetailsController',
                     //Set empty default values for these parameters
                     var value = "";
 
-                    if (requiredParams[i].type == "Switch") {
+                    if (requiredParams[i].type === "Switch") {
                         value = false;
                     }
-                    if (requiredParams[i].name == "device_code") {
+                    if (requiredParams[i].name === "device_code") {
                         console.log("Requesting code for required parameter device_code.");
                         value = getDeviceCode();
                         continue;

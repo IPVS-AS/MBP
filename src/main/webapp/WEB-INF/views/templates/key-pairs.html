@@ -5,7 +5,7 @@
             <div class="header">
                 <div class="col-lg-6">
                     <h2>Key Pairs
-                        <small>RSA key pairs for establishing SSH connections to devices.</small>
+                        <small>RSA key pairs for establishing SSH connections to devices</small>
                     </h2>
                 </div>
                 <div class="align-right">
@@ -24,6 +24,27 @@
                 </div>
             </div>
             <div class="body">
+                <div class="row">
+                    <div class="col-lg-8"></div>
+                    <div class="col-lg-4">
+                        <div class="form-group list-filter">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    <input class="form-control ng-pristine ng-valid ng-touched"
+                                           type="text" placeholder="Filter by name..."
+                                           ng-model="keyPairListCtrl.filterTerm">
+                                </div>
+                                <span class="input-group-addon">
+                                    <button type="button" class="list-filter-clear"
+                                            ng-show="keyPairListCtrl.filterTerm.length > 0"
+                                            ng-click="keyPairListCtrl.filterTerm = ''">
+                                        <i class="material-icons">clear</i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <table class="table table-hover" st-table="displayedCollection" st-safe-src="keyPairListCtrl.items">
                     <thead>
                     <tr>
@@ -33,7 +54,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection | filter:keyPairListCtrl.nameFilter">
                         <td>{{item.name}}</td>
                         <td>
                             <form ng-submit="ctrl.showPublicKey(item.id)" style="display: inline-block">
@@ -50,12 +71,10 @@
                         </td>
                         <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
-                            <div ng-show="item.isApprovable" style="display:inline-block">
-                                <user-approval entity-id="{{item.id}}" category-name="key-pairs"></user-approval>
-                            </div>
-                            <form ng-submit="deleteKeyPairCtrl.deleteItem()" ng-show="item.isDeletable"
+                            <form ng-submit="deleteKeyPairCtrl.deleteItem()"
                                   style="display: inline-block">
-                                <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                <button type="submit"
+                                        class="btn bg-red btn-circle waves-effect waves-circle waves-float"
                                         ng-click="deleteKeyPairCtrl.item.id = item.id"><i class="material-icons"
                                                                                           style="font-size:14px;">delete</i>
                                 </button>
@@ -107,7 +126,7 @@
                                            placeholder="Name *" ng-model="addKeyPairCtrl.item.name"/>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addKeyPairCtrl.item.errors.name">{{addKeyPairCtrl.item.errors.name.message}}</span>
+                                      ng-show="addKeyPairCtrl.item.errors.name">{{addKeyPairCtrl.item.errors.name}}</span>
                             </div>
                             <!-- item.publicKey group -->
                             <div class="form-group" ng-class="{'has-error' : addKeyPairCtrl.item.errors.publicKey }">
@@ -118,7 +137,7 @@
                                              rows="4"></textarea>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addKeyPairCtrl.item.errors.publicKey">{{addKeyPairCtrl.item.errors.publicKey.message}}</span>
+                                      ng-show="addKeyPairCtrl.item.errors.publicKey">{{addKeyPairCtrl.item.errors.publicKey}}</span>
                             </div>
                             <!-- item.privateKey group -->
                             <div class="form-group" ng-class="{'has-error' : addKeyPairCtrl.item.errors.privateKey }">
@@ -129,7 +148,7 @@
                                              rows="4"></textarea>
                                 </div>
                                 <span class="help-block"
-                                      ng-show="addKeyPairCtrl.item.errors.privateKey">{{addKeyPairCtrl.item.errors.privateKey.message}}</span>
+                                      ng-show="addKeyPairCtrl.item.errors.privateKey">{{addKeyPairCtrl.item.errors.privateKey}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>

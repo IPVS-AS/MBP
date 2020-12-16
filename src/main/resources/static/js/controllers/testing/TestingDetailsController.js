@@ -706,6 +706,7 @@ app.controller('TestingDetailsController',
             }
 
 
+
             //Extend the controller object for the public functions to make them available from outside
             angular.extend(vm, $controller('TestingChartController as testingChartCtrl',
                 {

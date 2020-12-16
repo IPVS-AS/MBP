@@ -5,11 +5,11 @@
  */
 app.controller('RuleListController',
     ['$scope', '$controller', '$interval', 'ruleList', 'addRule', 'deleteRule', 'ruleActionList', 'ruleTriggerList',
-        'CrudService', 'RuleService', 'NotificationService',
+        'RuleService', 'NotificationService',
         function ($scope, $controller, $interval, ruleList, addRule, deleteRule, ruleActionList, ruleTriggerList,
-                  CrudService, RuleService, NotificationService) {
+                  RuleService, NotificationService) {
 
-            var vm = this;
+            let vm = this;
 
             //Expose rule action and trigger lists
             vm.ruleActionList = ruleActionList;
@@ -39,9 +39,9 @@ app.controller('RuleListController',
              */
             function prepareRuleList() {
                 //Extend rule list with further functions
-                for (var i = 0; i < ruleList.length; i++) {
+                for (let i = 0; i < ruleList.length; i++) {
                     //Get current rule
-                    var rule = ruleList[i];
+                    let rule = ruleList[i];
 
                     //Extend rule for toggle function
                     rule.onToggle = createOnToggleFunction(rule.id);
@@ -57,28 +57,28 @@ app.controller('RuleListController',
              * @returns A promise of the user's decision
              */
             function confirmDelete(data) {
-                var ruleId = data.id;
-                var ruleName = "";
+                let ruleId = data.id;
+                let ruleName = "";
 
                 //Determines the rule's name by checking the list
-                for (var i = 0; i < ruleList.length; i++) {
+                for (let i = 0; i < ruleList.length; i++) {
                     if (ruleId === ruleList[i].id) {
                         ruleName = ruleList[i].name;
                         break;
                     }
-                }
 
-                //Show the alert to the user and return the resulting promise
-                return Swal.fire({
-                    title: 'Delete rule',
-                    type: 'warning',
-                    html: "Are you sure you want to delete rule \"" + ruleName + "\"?",
-                    showCancelButton: true,
-                    confirmButtonText: 'Delete',
-                    confirmButtonClass: 'bg-red',
-                    focusConfirm: false,
-                    cancelButtonText: 'Cancel'
-                });
+                    //Show the alert to the user and return the resulting promise
+                    return Swal.fire({
+                        title: 'Delete rule',
+                        type: 'warning',
+                        html: "Are you sure you want to delete rule \"" + ruleName + "\"?",
+                        showCancelButton: true,
+                        confirmButtonText: 'Delete',
+                        confirmButtonClass: 'bg-red',
+                        focusConfirm: false,
+                        cancelButtonText: 'Cancel'
+                    });
+                }
             }
 
             /**
@@ -91,9 +91,9 @@ app.controller('RuleListController',
                 //Create function and return it
                 return function () {
                     //Try to find a rule with this id
-                    var rule = null;
-                    for (var i = 0; i < ruleList.length; i++) {
-                        if (ruleList[i].id == ruleId) {
+                    let rule = null;
+                    for (let i = 0; i < ruleList.length; i++) {
+                        if (ruleList[i].id === ruleId) {
                             rule = ruleList[i];
                         }
                     }
@@ -107,10 +107,10 @@ app.controller('RuleListController',
                         //Enable rule
                         RuleService.enableRule(rule.id).then(function (response) {
                             //Success, check if every thing worked well
-                            if (!response.data.success) {
+                            if (!response.success) {
                                 rule.enabled = false;
                                 NotificationService.notify('Error while enabling rule: '
-                                    + response.data.globalMessage, 'error');
+                                    + response.globalMessage, 'error');
                                 return;
                             }
                             //Notify user
@@ -125,10 +125,10 @@ app.controller('RuleListController',
                         //Disable rule
                         RuleService.disableRule(rule.id).then(function (response) {
                             //Success, check if every thing worked well
-                            if (!response.data.success) {
+                            if (!response.success) {
                                 rule.enabled = true;
                                 NotificationService.notify('Error while disabling rule: '
-                                    + response.data.globalMessage, 'error');
+                                    + response.globalMessage, 'error');
                                 return;
                             }
                             //Notify user
@@ -151,6 +151,7 @@ app.controller('RuleListController',
                 }),
                 addRuleCtrl: $controller('AddItemController as addRuleCtrl', {
                     $scope: $scope,
+                    entity: 'rule',
                     addItem: addRule
                 }),
                 deleteRuleCtrl: $controller('DeleteItemController as deleteRuleCtrl', {
@@ -168,7 +169,7 @@ app.controller('RuleListController',
                 },
                 function () {
                     //Callback
-                    var rule = vm.addRuleCtrl.result;
+                    let rule = vm.addRuleCtrl.result;
 
                     //Make sure the result is valid
                     if (rule) {
@@ -192,7 +193,7 @@ app.controller('RuleListController',
                 },
                 function () {
                     //Callback
-                    var id = vm.deleteRuleCtrl.result;
+                    let id = vm.deleteRuleCtrl.result;
                     vm.ruleListCtrl.removeItem(id);
                 }
             );

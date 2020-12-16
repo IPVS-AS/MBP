@@ -10,6 +10,9 @@ app.controller('ItemListController',
         function ($scope, $route, list) {
             let vm = this;
 
+            //Current term for filtering
+            vm.filterTerm = "";
+
             /**
              * [Public]
              * Pushes a new item to the item list.
@@ -71,13 +74,39 @@ app.controller('ItemListController',
                 }
             }
 
+            /**
+             * Returns whether a given item is supposed to be displayed or needs to be filtered out
+             * based on the current filter term.
+             *
+             * @param item The item to check
+             * @returns {boolean} True, if the item is supposed to be displayed; false otherwise
+             */
+            function filterByName(item) {
+                //Trim filter term and convert to lowercase
+                let filterTerm = vm.filterTerm.trim().toLowerCase();
+
+                //Sanity checks
+                if ((item == null) || (typeof item === 'undefined') || (!item.hasOwnProperty('name'))) {
+                    return false;
+                } else if (filterTerm === "") {
+                    return true;
+                }
+
+                //Get item name, trim it and convert to lowercase
+                let itemName = item.name.trim().toLowerCase();
+
+                //Check if filter term is a substring of the item name
+                return itemName.includes(filterTerm);
+            }
+
             //Expose
             angular.extend(vm,
                 {
                     items: list,
                     pushItem: pushItem,
                     removeItem: removeItem,
-                    updateItem: updateItem
+                    updateItem: updateItem,
+                    nameFilter: filterByName,
                 });
         }
     ]);

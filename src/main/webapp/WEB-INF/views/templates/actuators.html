@@ -4,7 +4,7 @@
         <div class="card">
             <div class="header">
                 <div class="col-lg-6">
-                    <h2>Actuators</h2>
+                    <h2>Actuators<small>Your actuators at a glance</small></h2>
                 </div>
                 <div class="align-right">
                     <button id="add-button" type="button"
@@ -15,6 +15,27 @@
                 </div>
             </div>
             <div class="body">
+                <div class="row">
+                    <div class="col-lg-8"></div>
+                    <div class="col-lg-4">
+                        <div class="form-group list-filter">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    <input class="form-control ng-pristine ng-valid ng-touched"
+                                           type="text" placeholder="Filter by name..."
+                                           ng-model="actuatorListCtrl.filterTerm">
+                                </div>
+                                <span class="input-group-addon">
+                                    <button type="button" class="list-filter-clear"
+                                            ng-show="actuatorListCtrl.filterTerm.length > 0"
+                                            ng-click="actuatorListCtrl.filterTerm = ''">
+                                        <i class="material-icons">clear</i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <table class="table table-hover" st-table="displayedCollection" st-safe-src="actuatorListCtrl.items">
                     <thead>
                     <tr>
@@ -27,7 +48,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection | filter:actuatorListCtrl.nameFilter">
                         <td>
                             <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>&nbsp;
                             <i ng-show="item.wasModelled" class="material-icons" style="vertical-align: bottom;">view_quilt</i>
@@ -47,13 +68,13 @@
                                     </div>
                                 </div>
                                 <div ng-switch-when="NOT_READY">
-                                    <span class="label label-danger">Not Ready</span>
+                                    <span class="label label-danger">Unavailable</span>
                                 </div>
                                 <div ng-switch-when="READY">
                                     <span class="label label-success">Ready</span>
                                 </div>
                                 <div ng-switch-when="DEPLOYED">
-                                    <span class="label bg-teal">Deployed</span>
+                                    <span class="label bg-mbp-mid-blue">Installed</span>
                                 </div>
                                 <div ng-switch-when="RUNNING">
                                     <span class="label label-info">Running</span>
@@ -64,15 +85,13 @@
                             </div>
                         </td>
                         <td>{{item.componentType}}</td>
-                        <td>{{item._embedded.adapter.name}}</td>
-                        <td>{{item._embedded.device.name}}</td>
+                        <td>{{item.operator.name}}</td>
+                        <td>{{item.device.name}}</td>
                         <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
-                            <div ng-show="item.isApprovable" style="display:inline-block">
-                                <user-approval entity-id="{{item.id}}" category-name="actuators"></user-approval>
-                            </div>
                             <form ng-submit="deleteActuatorCtrl.deleteItem()" style="display:inline-block">
-                                <button type="submit" class="btn btn-danger m-t-0 waves-effect"
+                                <button type="submit"
+                                        class="btn bg-red btn-circle waves-effect waves-circle waves-float"
                                         ng-click="deleteActuatorCtrl.item.id = item.id">
                                     <i class="material-icons" style="font-size:14px;">delete</i>
                                 </button>
@@ -109,7 +128,7 @@
                     </h5>
 
                 </div>
-                <form id="addActuatorForm" ng-submit="addActuatorCtrl.addItem()">
+                <form ng-submit="addActuatorCtrl.addItem()">
                     <fieldset id="actuator-form">
                         <div class="modal-body">
                             <!-- "global" error for addItem -->
@@ -124,7 +143,8 @@
                                     <input class="form-control" id="actuator-form-input-name" type="text"
                                            placeholder="Name *" ng-model="addActuatorCtrl.item.name"/>
                                 </div>
-                                <span class="help-block" ng-show="addActuatorCtrl.item.errors.name">{{addActuatorCtrl.item.errors.name.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addActuatorCtrl.item.errors.name">{{addActuatorCtrl.item.errors.name}}</span>
                             </div>
                             <!-- item.componentType group -->
                             <div class="form-group"
@@ -139,33 +159,50 @@
                                         </option>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addActuatorCtrl.item.errors.componentType">{{addActuatorCtrl.item.errors.componentType.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addActuatorCtrl.item.errors.componentType">{{addActuatorCtrl.item.errors.componentType}}</span>
                             </div>
-                            <!-- item.adapter group -->
-                            <div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.adapter }">
+                            <!-- item.operator group -->
+                            <div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.operator }">
                                 <div class="form-line"
-                                     ng-class="{'focused error' : addActuatorCtrl.item.errors.adapter }">
-                                    <select class="form-control show-tick" id="actuator-form-select-adapter"
-                                            ng-model="addActuatorCtrl.item.adapter"
-                                            ng-options="t._links.self.href as (t.name) for t in ctrl.adapterList">
+                                     ng-class="{'focused error' : addActuatorCtrl.item.errors.operator }">
+                                    <select class="form-control show-tick" id="actuator-form-select-operator"
+                                            ng-model="addActuatorCtrl.item.operatorId"
+                                            ng-options="t.id as (t.name) for t in ctrl.operatorList">
                                         <option value="">Select control operator *
-                                        <option/>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addActuatorCtrl.item.errors.adapter">{{addActuatorCtrl.item.errors.adapter.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addActuatorCtrl.item.errors.operator">{{addActuatorCtrl.item.errors.operator}}</span>
                             </div>
                             <!-- item.device group -->
                             <div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.device }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addActuatorCtrl.item.errors.device }">
                                     <select class="form-control show-tick" id="actuator-form-select-device"
-                                            ng-model="addActuatorCtrl.item.device"
-                                            ng-options="d._links.self.href as (d.name) for d in ctrl.deviceList">
+                                            ng-model="addActuatorCtrl.item.deviceId"
+                                            ng-options="d.id as (d.name) for d in ctrl.deviceList">
                                         <option value="">Select device *
                                         <option/>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addActuatorCtrl.item.errors.device">{{addActuatorCtrl.item.errors.device.message}}</span>
+                                <span class="help-block"
+                                      ng-show="addActuatorCtrl.item.errors.device">{{addActuatorCtrl.item.errors.device}}</span>
+                            </div>
+                            <!-- item.accessControlPolicyIds group -->
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addActuatorCtrl.item.errors.accessControlPolicyIds }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addActuatorCtrl.item.errors.accessControlPolicyIds }">
+                                    <select multiple class="form-control selectpicker" title="Access Control Policies"
+                                            data-header="Access Control Policies"
+                                            ng-model="addActuatorCtrl.item.accessControlPolicyIds"
+                                            ng-options="p.id as (p.name) for p in ctrl.accessControlPolicyList">
+                                        <option value="">Select access control policies
+                                    </select>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addActuatorCtrl.item.errors.accessControlPolicyIds">{{addActuatorCtrl.item.errors.accessControlPolicyIds}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>

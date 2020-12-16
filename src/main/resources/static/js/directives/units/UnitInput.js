@@ -25,7 +25,7 @@ app.directive('unitInput', ['UnitService', function (UnitService) {
             //Execute server request
             UnitService.getPredefinedUnits(scope.unitFilter).then(function (response) {
                 //Success, set array
-                scope.unitList = response.data;
+                scope.unitList = response;
             }, function () {
                 //Failure, no suggestions
                 scope.unitList = [];
@@ -56,7 +56,7 @@ app.directive('unitInput', ['UnitService', function (UnitService) {
         template: '<div class="input-group" style="margin-bottom:0;">' +
             '<input type="text" class="form-control" placeholder="Unit" ng-model="bindedModel">' +
             '<span class="input-group-btn">' +
-            '<button type="button" class="btn bg-teal dropdown-toggle" data-toggle="dropdown">' +
+            '<button type="button" class="btn bg-mbp-blue dropdown-toggle" data-toggle="dropdown">' +
             'Suggestions&nbsp;' +
             '<span class="caret"></span>' +
             '</button>' +

@@ -7,9 +7,9 @@
                 <i class="material-icons" style="position: absolute; margin-top: 4px">settings_remote</i>
                 <h2 style="margin-left: 35px;">
                     {{componentDetailsCtrl.component.name}}
-                    <small>{{componentDetailsCtrl.deploymentState == 'NOT_READY' ? 'Deployment impossible' :
-                            (componentDetailsCtrl.deploymentState == 'READY' ? 'Ready for deployment' :
-                                    (componentDetailsCtrl.deploymentState == 'DEPLOYED' ? 'Deployed' :
+                    <small>{{componentDetailsCtrl.deploymentState == 'NOT_READY' ? 'Unavailable' :
+                            (componentDetailsCtrl.deploymentState == 'READY' ? 'Ready for installation' :
+                                    (componentDetailsCtrl.deploymentState == 'DEPLOYED' ? 'Installed' :
                                             (componentDetailsCtrl.deploymentState == 'RUNNING' ? 'Running' :
                                                     (componentDetailsCtrl.deploymentState == 'UNKNOWN' ? 'Unknown state' : 'Loading...'))))}}
                     </small>
@@ -23,32 +23,26 @@
                 </ul>
             </div>
             <div class="body">
-                <h4>Properties</h4>
                 <table class="table table-hover">
                     <tbody>
-                    <tr id="{{componentDetailsCtrl.component.id}}">
-                        <th>Name:</th>
-                        <td>{{componentDetailsCtrl.component.name}}
-                        </td>
-                    </tr>
                     <tr>
                         <th>Sensor type:</th>
                         <td>{{componentDetailsCtrl.component.componentType}}</td>
                     </tr>
                     <tr>
                         <th>Operator:</th>
-                        <td>{{componentDetailsCtrl.component._embedded.adapter.name}}</td>
+                        <td>{{componentDetailsCtrl.component.operator.name}}</td>
                     </tr>
                     <tr>
                         <th>Unit:</th>
-                        <td>{{componentDetailsCtrl.component._embedded.adapter.unit ?
-                                componentDetailsCtrl.component._embedded.adapter.unit : 'None'}}
+                        <td>{{componentDetailsCtrl.component.operator.unit ?
+                                componentDetailsCtrl.component.operator.unit : 'None'}}
                         </td>
                     </tr>
                     <tr>
                         <th>Device:</th>
-                        <td>{{componentDetailsCtrl.component._embedded.device.name}} (IP:
-                            {{componentDetailsCtrl.component._embedded.device.ipAddress}})
+                        <td>{{componentDetailsCtrl.component.device.name}} (IP:
+                            {{componentDetailsCtrl.component.device.ipAddress}})
                         </td>
                     </tr>
                     <tr>
@@ -72,10 +66,10 @@
                                     <span class="label label-danger">Unavailable</span>
                                 </div>
                                 <div ng-switch-when="ONLINE">
-                                    <span class="label label-warning">No SSH</span>
+                                    <span class="label label-warning">Not connected</span>
                                 </div>
                                 <div ng-switch-when="SSH_AVAILABLE">
-                                    <span class="label label-success">Available</span>
+                                    <span class="label label-success">Connected</span>
                                 </div>
                                 <div ng-switch-default>
                                     <span class="label label-default">Unknown</span>
@@ -86,11 +80,11 @@
                     </tbody>
                 </table>
                 <br/>
-                <h4>Deployment parameters</h4>
+                <h5>Start parameters</h5>
                 <table class="table parameter-table">
                     <thead></thead>
                     <tbody>
-                    <tr ng-repeat="parameter in componentDetailsCtrl.component._embedded.adapter.parameters">
+                    <tr ng-repeat="parameter in componentDetailsCtrl.component.operator.parameters">
                         <td>
                             <label>{{parameter.name}}:</label><br/>
                             <small ng-show="parameter.mandatory">(required)</small>
@@ -119,8 +113,8 @@
                             <span class="label bg-grey" ng-show="parameter.unit">{{parameter.unit}}</span>
                         </td>
                     </tr>
-                    <tr ng-show="componentDetailsCtrl.component._embedded.adapter.parameters.length === 0">
-                        <td colspan="2">No parameters required.</td>
+                    <tr ng-show="componentDetailsCtrl.component.operator.parameters.length === 0">
+                        <td colspan="2">No required parameters</td>
                     </tr>
                     </tbody>
                 </table>
@@ -131,27 +125,27 @@
 
                 <div>
                     <span ng-show="componentDetailsCtrl.deploymentState=='READY'">
-                        <button class="btn btn-primary waves-effect" ng-click="componentDetailsCtrl.deploy()">
+                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="componentDetailsCtrl.deploy()">
                             <i class="material-icons">file_download</i>
-                            <span>Deploy operator</span>
-                        </button>
-                    </span>
-                    <span ng-show="['DEPLOYED', 'RUNNING'].includes(componentDetailsCtrl.deploymentState)">
-                        <button class="btn bg-deep-orange waves-effect" ng-click="componentDetailsCtrl.undeploy()">
-                            <i class="material-icons">file_upload</i>
-                            <span>Undeploy operator</span>
+                            <span>Install operator</span>
                         </button>
                     </span>
                     <span ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
-                        <button class="btn bg-cyan waves-effect" ng-click="componentDetailsCtrl.startComponent()">
+                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="componentDetailsCtrl.startComponent()">
                             <i class="material-icons">play_arrow</i>
                             <span>Start operator</span>
                         </button>
                     </span>
                     <span ng-show="componentDetailsCtrl.deploymentState=='RUNNING'">
-                        <button class="btn bg-orange waves-effect" ng-click="componentDetailsCtrl.stopComponent()">
-                            <i class="material-icons">pause</i>
-                            <span>Pause operator</span>
+                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="componentDetailsCtrl.stopComponent()">
+                            <i class="material-icons">stop</i>
+                            <span>Stop operator</span>
+                        </button>
+                    </span>
+                    <span ng-show="['DEPLOYED', 'RUNNING'].includes(componentDetailsCtrl.deploymentState)">
+                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="componentDetailsCtrl.undeploy()">
+                            <i class="material-icons">file_upload</i>
+                            <span>Uninstall operator</span>
                         </button>
                     </span>
                 </div>
@@ -163,9 +157,9 @@
     <div class="col-lg-6">
         <div class="card stats-card">
             <div class="header">
-                <h2>
-                    Sensor values overview
-                    <small>Overview about the values received from the sensor.</small>
+                <i class="material-icons" style="position: absolute; margin-top: 4px">equalizer</i>
+                <h2 style="margin-left: 35px;">Values Statistics
+                    <small>Overview about received sensor values</small>
                 </h2>
                 <ul class="header-dropdown m-r--5">
                     <li>
@@ -176,19 +170,18 @@
                 </ul>
             </div>
             <div class="body">
-                <h4>Display unit</h4>
-                <div class="form-group">
+                <h5>Display unit</h5>
+                <div class="form-group align-right">
                     <div class="form-line">
                         <unit-input ng-model="componentDetailsCtrl.displayUnitInput"
-                                    unit-filter="{{componentDetailsCtrl.component._embedded.adapter.unit}}"></unit-input>
+                                    unit-filter="{{componentDetailsCtrl.component.operator.unit}}"></unit-input>
                     </div>
-                    <span class="help-block" ng-show="false"></span><br/>
-                    <button class="btn btn-primary m-t-0 waves-effect" ng-click="ctrl.onDisplayUnitChange()">
-                        Update
-                    </button>
+                <span class="help-block" ng-show="false"></span><br/>
+                <button class="btn btn-primary m-t-0 waves-effect" ng-click="ctrl.onDisplayUnitChange()">
+                Update
+                </button>
                 </div>
-                <br/>
-                <h4>Value statistics</h4>
+                
                 <value-log-stats api="valueLogStatsApi"
                                  loading-start="componentDetailsCtrl.valueLogStats.loadingStart()"
                                  loading-finish="componentDetailsCtrl.valueLogStats.loadingFinish()"
@@ -196,9 +189,9 @@
                                  unit="{{componentDetailsCtrl.displayUnit}}">
                 </value-log-stats>
                 <div style="height: 20px"></div>
-                <h4>Delete data</h4>
+                
                 <button class="btn btn-danger waves-effect" ng-click="componentDetailsCtrl.deleteValueLogs()">
-                    Delete all sensor data
+                    <i class="material-icons">delete</i>Delete all sensor values
                 </button>
             </div>
         </div>
@@ -210,9 +203,8 @@
     <div class="col-lg-12">
         <div class="card live-chart-card animate-show-hide" ng-show="componentDetailsCtrl.deploymentState=='RUNNING'">
             <div class="header">
-                <h2>
-                    Live sensor values&nbsp;<i class="material-icons" style="color: red;">live_tv</i>
-                </h2>
+            	<i class="material-icons" style="position: absolute; margin-top: 1px">live_tv</i>
+                <h2 style="margin-left: 35px;">Live Chart</h2>
             </div>
             <div class="body">
                 <live-chart loading-start="componentDetailsCtrl.liveChart.loadingStart()"
@@ -231,9 +223,8 @@
     <div class="col-lg-12">
         <div class="card historical-chart-card">
             <div class="header">
-                <h2>
-                    Historical sensor values
-                </h2>
+                <i class="material-icons" style="position: absolute; margin-top: 1px">access_time</i>
+                <h2 style="margin-left: 35px;">Historical Chart</h2>
                 <ul class="header-dropdown m-r--5">
                     <li>
                         <a ng-click="historicalChartApi.updateChart()" class="clickable">

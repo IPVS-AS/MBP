@@ -1,96 +1,88 @@
 /* global app */
 
 /**
- * Provides services for monitoring and the retrieval of monitoring adapters.
+ * Provides services for monitoring and the retrieval of monitoring operators.
  */
-app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'ComponentService',
-    function ($http, $resource, $q, ENDPOINT_URI, ComponentService) {
+app.factory('MonitoringService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI', 'ComponentService',
+    function (HttpService, $resource, $q, ENDPOINT_URI, ComponentService) {
         //URLs for server requests
-        const URL_GET_COMPATIBLE_ADAPTERS = ENDPOINT_URI + '/monitoring-adapters/by-device/';
+        const URL_GET_COMPATIBLE_OPERATORS = ENDPOINT_URI + '/monitoring-operators/by-device/';
         const URL_MONITORING_PREFIX = ENDPOINT_URI + '/monitoring/';
         const URL_GET_STATE = URL_MONITORING_PREFIX + 'state/';
         const URL_STATS_SUFFIX = '/stats';
         const URL_VALUE_LOGS_SUFFIX = '/valueLogs';
-        const URL_ADAPTER_SUFFIX = '?adapter=';
+        const URL_OPERATOR_SUFFIX = '?operatorId=';
 
         /**
          * [Public]
-         * Performs a server request in order to retrieve the monitoring state for all adapters that are compatible to a certain device
+         * Performs a server request in order to retrieve the monitoring state for all operators that are compatible to a certain device
          *
-         * @param deviceId The id of the device for whose adapters the monitoring state should be retrieved
+         * @param deviceId The id of the device for whose operators the monitoring state should be retrieved
          * @returns {*}
          */
         function getDeviceMonitoringState(deviceId) {
-            return $http.get(URL_GET_STATE + deviceId);
+            return HttpService.getRequest(URL_GET_STATE + deviceId);
         }
 
         /**
          * [Public]
-         * Performs a server request in order to retrieve the monitoring state for a certain adapter and device.
+         * Performs a server request in order to retrieve the monitoring state for a certain operator and device.
          *
          * @param deviceId The id of the device for which the state should be retrieved
-         * @param monitoringAdapterId The id of the monitoring adapter in question
+         * @param monitoringOperatorId The id of the monitoring operator in question
          * @returns {*}
          */
-        function getMonitoringState(deviceId, monitoringAdapterId) {
-            return $http.get(URL_GET_STATE + deviceId + URL_ADAPTER_SUFFIX + monitoringAdapterId);
+        function getMonitoringState(deviceId, monitoringOperatorId) {
+            return HttpService.getRequest(URL_GET_STATE + deviceId + URL_OPERATOR_SUFFIX + monitoringOperatorId);
         }
 
         /**
          * [Public]
-         * Performs a server request in order to retrieve a list of all compatible monitoring adapters for a given device.
+         * Performs a server request in order to retrieve a list of all compatible monitoring operators for a given device.
          *
-         * @param deviceId The id of the device for which the monitoring adapters should be retrieved
+         * @param deviceId The id of the device for which the monitoring operators should be retrieved
          * @returns {*}
          */
-        function getCompatibleMonitoringAdapters(deviceId) {
-            return $http.get(URL_GET_COMPATIBLE_ADAPTERS + deviceId);
+        function getCompatibleMonitoringOperators(deviceId) {
+            return HttpService.getRequest(URL_GET_COMPATIBLE_OPERATORS + deviceId);
         }
 
         /**
          * [Public]
-         * Performs a server request in order to check whether the monitoring for a given device and adapter is active
+         * Performs a server request in order to check whether the monitoring for a given device and operator is active
          *
          * @param deviceId The id of the device to check
-         * @param monitoringAdapterId The id of the monitoring adapter in question
+         * @param monitoringOperatorId The id of the monitoring operator in question
          * @returns {*}
          */
-        function isMonitoringActive(deviceId, monitoringAdapterId) {
-            return $http.get(generateMonitoringURL(deviceId, monitoringAdapterId));
+        function isMonitoringActive(deviceId, monitoringOperatorId) {
+            return HttpService.getRequest(generateMonitoringURL(deviceId, monitoringOperatorId));
         }
 
         /**
          * [Public]
-         * Performs a server request in order to enable monitoring of a given device with a given adapter and parameters
+         * Performs a server request in order to enable monitoring of a given device with a given operator and parameters
          *
          * @param deviceId The id if the device to monitor
-         * @param monitoringAdapterId The id of the adapter to use for the monitoring
-         * @param parameterList A list of parameters that might be required by the adapter
+         * @param monitoringOperatorId The id of the operator to use for the monitoring
+         * @param parameterList A list of parameters that might be required by the operator
          * @returns {*}
          */
-        function enableMonitoring(deviceId, monitoringAdapterId, parameterList) {
-            return $http({
-                method: 'POST',
-                url: generateMonitoringURL(deviceId, monitoringAdapterId),
-                data: parameterList,
-                headers: {'Content-Type': 'application/json'}
-            });
+        function enableMonitoring(deviceId, monitoringOperatorId, parameterList) {
+            return HttpService.postRequest(generateMonitoringURL(deviceId, monitoringOperatorId), parameterList);
         }
 
 
         /**
          * [Public]
-         * Performs a server request in order to disable monitoring of a given device with a given adapter
+         * Performs a server request in order to disable monitoring of a given device with a given operator
          *
          * @param deviceId The id of the device that is currently monitored
-         * @param monitoringAdapterId The id of the monitoring adapter that should no longer be used
+         * @param monitoringOperatorId The id of the monitoring operator that should no longer be used
          * @returns {*}
          */
-        function disableMonitoring(deviceId, monitoringAdapterId) {
-            return $http({
-                method: 'DELETE',
-                url: generateMonitoringURL(deviceId, monitoringAdapterId)
-            });
+        function disableMonitoring(deviceId, monitoringOperatorId) {
+            return HttpService.deleteRequest(generateMonitoringURL(deviceId, monitoringOperatorId));
         }
 
         /**
@@ -99,15 +91,15 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          * Optionally, a unit may be provided in which the values are supposed to be displayed.
          *
          * @param deviceId The id of the device for which the stats are supposed to be retrieved
-         * @param monitoringAdapterId The id of the monitoring adapter for which the stats are supposed to be retrieved
+         * @param monitoringOperatorId The id of the monitoring operator for which the stats are supposed to be retrieved
          * @param unit The unit in which the values are supposed to be retrieved
          * @returns {*}
          */
-        function getMonitoringValueLogStats(deviceId, monitoringAdapterId, unit) {
+        function getMonitoringValueLogStats(deviceId, monitoringOperatorId, unit) {
             var parameters = {};
 
-            //Extend parameters for adapter id
-            parameters.adapter = monitoringAdapterId;
+            //Extend parameters for operator id
+            parameters.operatorId = monitoringOperatorId;
 
             //Check if unit was provided
             if (unit) {
@@ -115,9 +107,7 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
             }
 
             //Execute request
-            return $http.get(URL_MONITORING_PREFIX + deviceId + URL_STATS_SUFFIX, {
-                params: parameters
-            });
+            return HttpService.getRequest(URL_MONITORING_PREFIX + deviceId + URL_STATS_SUFFIX, parameters);
         }
 
         /**
@@ -125,16 +115,16 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          * Performs a server request in order to retrieve monitoring value logs for a certain monitoring component.
          *
          * @param deviceId The id of the device for which monitoring data is supposed to be retrieved
-         * @param monitoringAdapterId The id of the monitoring adapter for which data is supposed to be retrieved
+         * @param monitoringOperatorId The id of the monitoring operator for which data is supposed to be retrieved
          * @param pageDetails Page details object (size, order etc.) that specifies the logs to retrieve
          * @param unit The unit in which the values are supposed to be retrieved
          * @returns {*}
          */
-        function getMonitoringValueLogs(deviceId, monitoringAdapterId, pageDetails, unit) {
+        function getMonitoringValueLogs(deviceId, monitoringOperatorId, pageDetails, unit) {
             var parameters = pageDetails;
 
-            //Extend parameters for adapter id
-            parameters.adapter = monitoringAdapterId;
+            //Extend parameters for operator id
+            parameters.operatorId = monitoringOperatorId;
 
             //Check if unit was provided
             if (unit) {
@@ -142,11 +132,9 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
             }
 
             //Execute request
-            return $http.get(URL_MONITORING_PREFIX + deviceId + URL_VALUE_LOGS_SUFFIX, {
-                params: parameters
-            }).then(function (response) {
+            return HttpService.getRequest(URL_MONITORING_PREFIX + deviceId + URL_VALUE_LOGS_SUFFIX, parameters).then(function (response) {
                 //Process received logs in order to be able to display them in a chart
-                return ComponentService.processValueLogs(response.data.content);
+                return ComponentService.processValueLogs(response.content);
             });
         }
 
@@ -159,30 +147,24 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          * @param component The type of the component
          * @param deviceId The id of the device that is part of the monitoring component whose value logs
          * are supposed to be deleted
-         * @param monitoringAdapterId The id of the monitoring adapter that is part of the monitoring component
+         * @param monitoringOperatorId The id of the monitoring operator that is part of the monitoring component
          * whose value logs are supposed to be deleted
          * @returns {*}
          */
-        function deleteMonitoringValueLogs(deviceId, monitoringAdapterId) {
-            var parameters = {
-                adapter: monitoringAdapterId
-            };
-
+        function deleteMonitoringValueLogs(deviceId, monitoringOperatorId) {
             //Execute request
-            return $http.delete(URL_MONITORING_PREFIX + deviceId + URL_VALUE_LOGS_SUFFIX, {
-                params: parameters
-            });
+            return HttpService.deleteRequest(URL_MONITORING_PREFIX + deviceId + URL_VALUE_LOGS_SUFFIX + '?operatorId=' + monitoringOperatorId);
         }
 
         /**
          * [Public]
          * Performs a server request in order to retrieve all available monitoring components. Each monitoring
-         * component consists out of a device and a compatible monitoring adapter.
+         * component consists out of a device and a compatible monitoring operator.
          *
          * @returns {*}
          */
         function getMonitoringComponents() {
-            return $http.get(URL_MONITORING_PREFIX);
+            return HttpService.getRequest(URL_MONITORING_PREFIX);
         }
 
 
@@ -191,17 +173,17 @@ app.factory('MonitoringService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'C
          * Generates the monitoring URL that can be used for monitoring server requests.
          *
          * @param deviceId Id of the affected device
-         * @param monitoringAdapterId Id of the affected monitoring adapter
+         * @param monitoringOperatorId Id of the affected monitoring operator
          */
-        function generateMonitoringURL(deviceId, monitoringAdapterId) {
-            return URL_MONITORING_PREFIX + deviceId + URL_ADAPTER_SUFFIX + monitoringAdapterId;
+        function generateMonitoringURL(deviceId, monitoringOperatorId) {
+            return URL_MONITORING_PREFIX + deviceId + URL_OPERATOR_SUFFIX + monitoringOperatorId;
         }
 
         //Expose public methods
         return {
             getDeviceMonitoringState: getDeviceMonitoringState,
             getMonitoringState: getMonitoringState,
-            getCompatibleMonitoringAdapters: getCompatibleMonitoringAdapters,
+            getCompatibleMonitoringOperators: getCompatibleMonitoringOperators,
             isMonitoringActive: isMonitoringActive,
             enableMonitoring: enableMonitoring,
             disableMonitoring: disableMonitoring,

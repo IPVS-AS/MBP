@@ -3,8 +3,9 @@
 /**
  * Provides services for managing tests.
  */
-app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'NotificationService',
-    function ($http, $resource, $q, ENDPOINT_URI, NotificationService) {
+app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT_URI', 'NotificationService',
+    function (HttpService, $http,$resource, $q, ENDPOINT_URI, NotificationService) {
+
         //URLs for server requests
         const URL_TEST_START = ENDPOINT_URI + '/test-details/test/';
         const URL_TEST_STOP = ENDPOINT_URI + '/test-details/test/stop/';
@@ -41,7 +42,7 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
          * @returns {*}
          */
         function executeTest(testId) {
-            return $http.post(URL_TEST_START + testId);
+            return HttpService.postRequest(URL_TEST_START + testId);
         }
 
         /**
@@ -52,7 +53,7 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
          * @returns {*}
          */
         function stopTest(testId) {
-            return $http.post(URL_TEST_STOP + testId);
+            return HttpService.postRequest(URL_TEST_STOP + testId);
 
         }
 
@@ -63,7 +64,7 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
          * Performs a server request to get a list of all generated Test Reports regarding to a test given by its id.
          */
         function getPDFList(testId) {
-            return $http.get(URL_REPORT_LIST + testId).then(function (response) {
+            return HttpService.getRequest(URL_REPORT_LIST + testId).then(function (response) {
                 const pdfList = {};
                 let pdfDetails = [];
                 let responseArray = [];
@@ -92,7 +93,7 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
          * @returns {*}
          */
         function pdfExists(testId) {
-            return $http.get(URL_REPORT_EXISTS + testId);
+            return HttpService.getRequest(URL_REPORT_EXISTS + testId);
         }
 
 
@@ -107,7 +108,7 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
          * @returns {*}
          */
         function editConfig(testId, useNewData) {
-            return $http.post(ENDPOINT_URI + '/test-details/editConfig/' + testId, useNewData).success(function success(response) {
+            return HttpService.postRequest(ENDPOINT_URI + '/test-details/editConfig/' + testId, useNewData).success(function success(response) {
                 NotificationService.notify('Successfully updated.', 'success');
                 return response.success;
             });
@@ -121,7 +122,7 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
          * @returns {*|void}
          */
         function registerTestDevice() {
-            return $http.post(URL_TESTDEVICE_REGISTER);
+            return HttpService.postRequest(URL_TESTDEVICE_REGISTER);
         }
 
         /**
@@ -131,7 +132,7 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
          * @returns {*|void}
          */
         function registerTestActuator() {
-            return $http.post(URL_TESTACTUATOR_REGISTER);
+            return HttpService.postRequest(URL_TESTACTUATOR_REGISTER);
 
         }
 
@@ -152,7 +153,7 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
          * Performs a server request to register the operator for the test repetitions.
          */
         function registerRerunOperator() {
-            return $http.post(URL_RERUN_OPERATOR_REGISTER);
+            return HttpService.postRequest(URL_RERUN_OPERATOR_REGISTER);
         }
 
         /**
@@ -164,7 +165,7 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
          * @param testDetails
          */
         function updateTest(testId, testDetails) {
-            return $http.post(URL_UPDATE_TEST + testId, testDetails);
+            return HttpService.postRequest(URL_UPDATE_TEST + testId, testDetails);
         }
 
         /**
@@ -173,7 +174,7 @@ app.factory('TestService', ['$http', '$resource', '$q', 'ENDPOINT_URI', 'Notific
          * Creates a server request to get all rules to be observed during the test.
          */
         function getRuleListTest(testId) {
-            return $http.get(URL_RULE_LIST_TEST + testId);
+            return HttpService.postRequest(URL_RULE_LIST_TEST + testId);
         }
 
         /**

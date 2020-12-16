@@ -5,10 +5,10 @@
  */
 app.controller('EnvModelListController',
     ['$scope', '$controller', '$timeout', 'envModelList', 'addEnvModel', 'updateEnvModel', 'deleteEnvModel',
-        'keyPairList', 'adapterList', 'deviceTypesList', 'actuatorTypesList', 'sensorTypesList',
+        'keyPairList', 'operatorList', 'deviceTypesList', 'actuatorTypesList', 'sensorTypesList',
         'EnvModelService', 'NotificationService',
         function ($scope, $controller, $timeout, envModelList, addEnvModel, updateEnvModel, deleteEnvModel,
-                  keyPairList, adapterList, deviceTypesList, actuatorTypesList, sensorTypesList,
+                  keyPairList, operatorList, deviceTypesList, actuatorTypesList, sensorTypesList,
                   EnvModelService, NotificationService) {
             //Get required DOM elements
             const MODEL_EDIT_ENVIRONMENT = $("#model-edit-card");
@@ -86,8 +86,8 @@ app.controller('EnvModelListController',
                 vm.updateEnvModelCtrl.updateItem().then(function (data) {
                     //Check for success
                     if (vm.updateEnvModelCtrl.success) {
-              //          console.log(data);
-                //        console.log(vm.updateEnvModelCtrl.result)
+                        //          console.log(data);
+                        //        console.log(vm.updateEnvModelCtrl.result)
                     } else {
                         //Failure handling
                         //TODO
@@ -145,7 +145,7 @@ app.controller('EnvModelListController',
                 //Perform request to load the entity states
                 EnvModelService.getEntityStates(currentModelID).then(function (response) {
                     //Get entity states
-                    let entityStates = response.data;
+                    let entityStates = response;
 
                     //Iterate over all entities
                     for (let nodeId of Object.keys(entityStates)) {
@@ -245,7 +245,7 @@ app.controller('EnvModelListController',
              */
             function handleActionRequestFailure(response, defaultMessage) {
                 //Get field errors
-                let fieldErrors = response.data.fieldErrors;
+                let fieldErrors = response.fieldErrors;
 
                 //Check if there are field errors
                 if (fieldErrors && (!$.isEmptyObject(fieldErrors))) {
@@ -255,8 +255,8 @@ app.controller('EnvModelListController',
                 }
 
                 //Check if global error message was provided
-                if (response.data.globalMessage) {
-                    NotificationService.notify(response.data.globalMessage, "error");
+                if (response.globalMessage) {
+                    NotificationService.notify(response.globalMessage, "error");
                 } else {
                     //Failure
                     NotificationService.notify(defaultMessage, "error");
@@ -537,6 +537,7 @@ app.controller('EnvModelListController',
                 }),
                 addEnvModelCtrl: $controller('AddItemController as addEnvModelCtrl', {
                     $scope: $scope,
+                    entity: 'environment model',
                     addItem: addEnvModel
                 }),
                 updateEnvModelCtrl: $controller('UpdateItemController as updateEnvModelCtrl', {
@@ -549,7 +550,7 @@ app.controller('EnvModelListController',
                     confirmDeletion: confirmDelete
                 }),
                 keyPairList: keyPairList,
-                adapterList: adapterList,
+                operatorList: operatorList,
                 deviceTypesList: deviceTypesList,
                 actuatorTypesList: actuatorTypesList,
                 sensorTypesList: sensorTypesList,

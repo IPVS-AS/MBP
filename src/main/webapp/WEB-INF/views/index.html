@@ -12,7 +12,7 @@
     <title>MBP</title>
 
     <!-- Favicon-->
-    <link rel="icon" th:href="@{/images/favicon.ico}" type="image/x-icon">
+    <link rel="icon" th:href="@{/images/mbp-icon.png}" type="image/x-icon">
 
     <!-- Google Fonts -->
     <link th:href="@{/plugins/google-fonts/roboto.css}" rel="stylesheet">
@@ -54,9 +54,6 @@
     <!-- Angular UI Bootstrap href fix -->
     <link th:href="@{/plugins/angular-ui/bootstrap/css/angular-ui-fix.css}" rel="stylesheet"/>
 
-    <!-- Angular UI Select Plugin -->
-    <!--<link th:href="@{/plugins/angular-ui-select/css/select.min.css}" rel="stylesheet"/>-->
-
     <!-- Angular Dropzone Plugin -->
     <link th:href="@{/plugins/angular-dropzone/css/ng-dropzone.min.css}" rel="stylesheet"/>
 
@@ -73,13 +70,10 @@
     <link th:href="@{/plugins/jsplumb/css/jsPlumb-defaults.css}" rel="stylesheet"/>
 
     <!-- Modeling Tool Css -->
-    <link th:href="@{/css/modeling-tool.css}" rel="stylesheet"/>
+    <link th:href="@{/css/modelling-tool.css}" rel="stylesheet"/>
 
     <!-- Event pattern creator -->
     <link th:href="@{/css/cep-query-editor.css}" rel="stylesheet"/>
-
-    <!-- Angular loading bar -->
-    <link th:href="@{/plugins/angular-loading-bar/loading-bar.min.css}" rel="stylesheet"/>
 
     <!-- waitMe plugin -->
     <link th:href="@{/plugins/waitme/waitMe.min.css}" rel="stylesheet"/>
@@ -101,6 +95,13 @@
 </head>
 
 <body class="theme-blue" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
+<!-- Progress bar for HTTP requests -->
+<div id="requestLoadingBar" class="progress" ng-show="ctrl.loadingBarDisplay">
+    <div class="progress-bar progress-bar-primary progress-bar-striped active" role="progressbar">
+        <span>{{ctrl.requestCount}} active {{(ctrl.requestCount === 1) ? 'request' : 'requests'}}</span>
+    </div>
+</div>
+
 <!-- Overlay For Sidebars -->
 <div class="overlay"></div>
 <!-- #END# Overlay For Sidebars -->
@@ -129,114 +130,119 @@
     <!-- User Info -->
     <div class="user-info">
         <div class="image">
-            <img src="images/user.png" width="48" height="48" alt="User"/>
+            <img src="images/user.png" alt="User" style="width:48px;height:48px"/>
         </div>
         <div class="info-container">
             <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 {{username}}
             </div>
-            <div class="name" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="font-size: 10px">
+            <div class="username" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                 style="font-size: 10px">
                 {{userData.firstName + " " + userData.lastName}}
-            </div>
-            <div class="btn-group user-helper-dropdown" uib-dropdown="uib-dropdown"
-                 is-open="status.isopen" ng-show="userData.isAdmin">
-                <!--<button class="dropdown-toggle pull-right">-->
-                <i class="material-icons" type="button" uib-dropdown-toggle="uib-dropdown-toggle"
-                   ng-disabled="disabled">keyboard_arrow_down</i>
-                <!--</button>-->
-                <ul class="dropdown-menu pull-right" uib-dropdown-menu="uib-dropdown-menu" role="menu"
-                    aria-labelledby="single-button">
-                    <li>
-                        <a href="view/users">
-                            <i class="material-icons">person</i>Users
-                        </a>
-                    </li>
-                </ul>
             </div>
         </div>
     </div>
     <!-- #User Info -->
     <!-- Menu -->
+    <!-- Menu -->
     <div class="menu">
         <ul class="list">
-          <li class="header">Main Navigation</li>
-          <li class="active" href="./" menu-item="menu-item">
-            <a href="./">
-              <i class="material-icons">home</i>
-              <span>Home</span>
-            </a>
-          </li>
-          <li href="view/env-models" menu-item="menu-item">
-            <a href="view/env-models">
-              <i class="material-icons">view_quilt</i>
-              <span>Environment Models</span>
-            </a>
-          </li>
-          <li menu-item="menu-item">
-              <a class="menu-toggle">
-                  <i class="material-icons">call_split</i>
-                  <span>Rules</span>
-              </a>
-              <ul class="ml-menu">
-                  <li>
-                      <a href="view/rules" menu-item="menu-item">Definitions</a>
-                  </li>
-                  <li>
-                      <a href="view/rule-triggers" menu-item="menu-item">Conditions</a>
-                  </li>
-                  <li>
-                      <a href="view/rule-actions" menu-item="menu-item">Actions</a>
-                  </li>
-              </ul>
-          </li>
-            <li href="view/key-pairs" menu-item="menu-item">
-                <a href="view/key-pairs">
-                    <i class="material-icons">vpn_key</i>
-                    <span>Key Pairs</span>
+            <li class="header">Main Navigation</li>
+            <li class="active" href="./" menu-item="menu-item">
+                <a href="./">
+                    <i class="material-icons">home</i>
+                    <span>Home</span>
                 </a>
             </li>
-          <li href="view/devices" menu-item="menu-item">
-            <a href="view/devices">
-              <i class="material-icons">devices</i>
-              <span>Devices</span>
-            </a>
-          </li>
-          <li href="view/sensors" menu-item="menu-item">
-            <a href="view/sensors">
-              <i class="material-icons">settings_remote</i>
-              <span>Sensors</span>
-            </a>
-          </li>
-          <li href="view/actuators" menu-item="menu-item">
-            <a href="view/actuators">
-              <i class="material-icons">wb_incandescent</i>
-              <span>Actuators</span>
-            </a>
-          </li>
-          <li href="view/adapters" menu-item="menu-item">
-            <a href="view/adapters">
-              <i class="material-icons">description</i>
-              <span>Extraction/Control Operators</span>
-            </a>
-          </li>
-          <li href="view/monitoring-adapters" menu-item="menu-item">
-            <a href="view/monitoring-adapters">
-              <i class="material-icons">timeline</i>
-              <span>Monitoring Operators</span>
-            </a>
-          </li>
-          <li href="view/testing-tool" menu-item="menu-item">
-            <a href="view/testing-tool">
-              <i class="material-icons">bug_report</i>
-              <span>Testing-Tool</span>
-            </a>
-          </li>
-          <li href="view/settings" menu-item="menu-item" ng-show="userData.isAdmin">
-            <a href="view/settings">
-              <i class="material-icons">settings</i>
-              <span>Settings</span>
-            </a>
-          </li>
+            <li href="view/env-models" menu-item="menu-item">
+                <a href="view/env-models">
+                    <i class="material-icons">view_quilt</i>
+                    <span>Environment Models</span>
+                </a>
+            </li>
+            <li menu-item="menu-item">
+                <a class="menu-toggle">
+                    <i class="material-icons">devices</i>
+                    <span>IoT Hardware</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/devices" menu-item="menu-item">Devices</a>
+                    </li>
+                    <li>
+                        <a href="view/actuators" menu-item="menu-item">Actuators</a>
+                    </li>
+                    <li>
+                        <a href="view/sensors" menu-item="menu-item">Sensors</a>
+                    </li>
+                    <li>
+                        <a href="view/key-pairs" menu-item="menu-item">Key Pairs</a>
+                    </li>
+                </ul>
+            </li>
+            <li menu-item="menu-item">
+                <a class="menu-toggle">
+                    <i class="material-icons">description</i>
+                    <span>Operators</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/operators" menu-item="menu-item">Extraction/Control Operators</a>
+                    </li>
+                    <li>
+                        <a href="view/monitoring-operators" menu-item="menu-item">Monitoring Operators</a>
+                    </li>
+                </ul>
+            </li>
+            <li menu-item="menu-item">
+                <a class="menu-toggle">
+                    <i class="material-icons">call_split</i>
+                    <span>Rules</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/rules" menu-item="menu-item">Definitions</a>
+                    </li>
+                    <li>
+                        <a href="view/rule-triggers" menu-item="menu-item">Conditions</a>
+                    </li>
+                    <li>
+                        <a href="view/rule-actions" menu-item="menu-item">Actions</a>
+                    </li>
+                    <li>
+                        <a href="view/testing-tool" menu-item="menu-item">Testing-Tool</a>
+                    </li>
+                </ul>
+            </li>
+            <li href="view/entity-types" menu-item="menu-item">
+                <a href="view/entity-types">
+                    <i class="material-icons">widgets</i>
+                    <span>Entity Types</span>
+                </a>
+            </li>
+            <li menu-item="menu-item">
+                <a class="menu-toggle">
+                    <i class="material-icons">security</i>
+                    <span>Policies</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/policies" menu-item="menu-item">Policy Definitions</a>
+                    </li>
+                    <li>
+                        <a href="view/policy-conditions" menu-item="menu-item">Conditions</a>
+                    </li>
+                    <li>
+                        <a href="view/policy-effects" menu-item="menu-item">Effects</a>
+                    </li>
+                </ul>
+            </li>
+            <li href="view/settings" menu-item="menu-item" ng-show="userData.isAdmin">
+                <a href="view/settings">
+                    <i class="material-icons">settings</i>
+                    <span>Settings</span>
+                </a>
+            </li>
         </ul>
     </div>
     <!-- #Menu -->
@@ -244,7 +250,7 @@
     <div class="legal">
         <div class="copyright">
             &copy;
-            {{ctrl.getDate()| date:'yyyy'}}
+            {{ctrl.getDate() | date:'yyyy'}}
             <a href="swagger-ui.html" target="_blank">MBP</a>.
         </div>
     </div>
@@ -254,10 +260,6 @@
 
 <section class="content" ng-style="{ 'margin-left' : loggedIn ? '315px' : '0px' }">
     <div class="container-fluid">
-        <!-- <div ng-controller="MainCtrl as main"> <pre>$location.absUrl() = {{main.$location.absUrl()}}</pre> <pre>$location.path() = {{main.$location.path()}}</pre> <pre>$route.current.templateUrl = {{main.$route.current.templateUrl}}</pre>
-        <pre>$route.current.params = {{main.$route.current.params}}</pre> <pre>$route.current.scope.name = {{$route.current.scope.name}}</pre> <pre>$routeParams = {{main.$routeParams}}</pre> </div> -->
-        <div ng-class="{ 'alert': flash, 'alert-success': flash.type === 'success', 'alert-danger': flash.type === 'error' }"
-             ng-if="flash" ng-bind="flash.message"></div>
         <div ng-view="ng-view"></div>
     </div>
 </section>
@@ -289,9 +291,6 @@
 <!-- Custom Template Js -->
 <script th:src="@{/js/admin.js}"></script>
 
-<!-- Input Mask Plugin Js -->
-<script th:src="@{/plugins/jquery-inputmask/jquery.inputmask.bundle.js}"></script>
-
 <!-- AngularJS with resource and route - built by WRO -->
 <script th:src="@{/js/angular.js}"></script>
 
@@ -312,9 +311,6 @@
 
 <!-- Bootstrap notify plugin -->
 <script th:src="@{/plugins/bootstrap-notify/bootstrap-notify.min.js}"></script>
-
-<!-- Angular loading bar -->
-<script th:src="@{/plugins/angular-loading-bar/loading-bar.min.js}"></script>
 
 <!-- waitMe plugin -->
 <script th:src="@{/plugins/waitme/waitMe.min.js}"></script>
@@ -337,6 +333,9 @@
 <!-- jQuery-QueryBuilder -->
 <script th:src="@{/plugins/jquery-querybuilder/js/query-builder.standalone.min.js}"></script>
 
+<!-- jQuery-CountTo -->
+<script th:src="@{/plugins/jquery-countTo/countTo.js}"></script>
+
 <!-- Easy Autocomplete -->
 <script th:src="@{/plugins/easy-autocomplete/autocomplete.min.js}"></script>
 
@@ -350,32 +349,33 @@
 <script th:src="@{/plugins/filesaver/filesaver.min.js}"></script>
 
 <!-- CryptoJS -->
-<script th:src="@{/plugins/cryptojs/md5.min.js}"></script>
+<script th:src="@{/plugins/cryptojs/cryptojs.min.js}"></script>
 
 <!-- Angular -->
 <script th:src="@{/js/app.js}"></script>
 <script th:src="@{/js/services/SessionService.js}"></script>
-<script th:src="@{/js/services/CrudService.js}"></script>
 <script th:src="@{/js/services/FileReader.js}"></script>
 <script th:src="@{/js/services/KeyPairService.js}"></script>
 <script th:src="@{/js/services/DeviceService.js}"></script>
 <script th:src="@{/js/services/ComponentService.js}"></script>
-<script th:src="@{/js/services/AdapterService.js}"></script>
+<script th:src="@{/js/services/OperatorService.js}"></script>
 <script th:src="@{/js/services/MonitoringService.js}"></script>
 <script th:src="@{/js/services/AuthenticationService.js}"></script>
-<script th:src="@{/js/services/FlashService.js}"></script>
 <script th:src="@{/js/services/UserService.js}"></script>
-<script th:src="@{/js/services/ComponentTypeService.js}"></script>
 <script th:src="@{/js/services/EnvModelService.js}"></script>
-<script th:src="@{/js/services/ParameterTypeService.js}"></script>
 <script th:src="@{/js/services/UnitService.js}"></script>
 <script th:src="@{/js/services/NotificationService.js}"></script>
 <script th:src="@{/js/services/RuleService.js}"></script>
 <script th:src="@{/js/services/SettingsService.js}"></script>
 <script th:src="@{/js/services/TestService.js}"></script>
 <script th:src="@{/js/services/UserApprovalService.js}"></script>
+
 <script th:src="@{/js/services/RuleActionService.js}"></script>
 <script th:src="@{/js/services/RuleTriggerService.js}"></script>
+<script th:src="@{/js/services/PolicyService.js}"></script>
+<script th:src="@{/js/services/PolicyConditionService.js}"></script>
+<script th:src="@{/js/services/PolicyEffectService.js}"></script>
+<script th:src="@{/js/services/HttpService.js}"></script>
 
 <script th:src="@{/js/directives/menuItem.js}"></script>
 <script th:src="@{/js/directives/popover.js}"></script>
@@ -388,7 +388,6 @@
 <script th:src="@{/js/directives/env-models/EnvModelTool.js}"></script>
 <script th:src="@{/js/directives/stats/ValueLogStats.js}"></script>
 <script th:src="@{/js/directives/triggers/CEPQueryEditor.js}"></script>
-<script th:src="@{/js/directives/users/UserApproval.js}"></script>
 
 <script th:src="@{/js/controllers/index/IndexController.js}"></script>
 <script th:src="@{/js/controllers/ItemListController.js}"></script>
@@ -408,14 +407,18 @@
 
 <script th:src="@{/js/controllers/devices/DeviceListController.js}"></script>
 <script th:src="@{/js/controllers/devices/DeviceDetailsController.js}"></script>
-<script th:src="@{/js/controllers/adapters/AdapterListController.js}"></script>
-<script th:src="@{/js/controllers/monitoring-adapters/MonitoringAdapterListController.js}"></script>
+<script th:src="@{/js/controllers/operators/OperatorListController.js}"></script>
+<script th:src="@{/js/controllers/monitoring-operators/MonitoringOperatorListController.js}"></script>
 <script th:src="@{/js/controllers/components/ComponentDetailsController.js}"></script>
 <script th:src="@{/js/controllers/actuators/ActuatorDetailsController.js}"></script>
 <script th:src="@{/js/controllers/sensors/SensorDetailsController.js}"></script>
+<script th:src="@{/js/controllers/entity-types/EntityTypesListController.js}"></script>
 <script th:src="@{/js/controllers/rules/RuleListController.js}"></script>
 <script th:src="@{/js/controllers/rules/RuleActionListController.js}"></script>
 <script th:src="@{/js/controllers/rules/RuleTriggerListController.js}"></script>
+<script th:src="@{/js/controllers/policies/PolicyListController.js}"></script>
+<script th:src="@{/js/controllers/policies/PolicyConditionListController.js}"></script>
+<script th:src="@{/js/controllers/policies/PolicyEffectListController.js}"></script>
 <script th:src="@{/js/controllers/settings/SettingsController.js}"></script>
 <script th:src="@{/js/controllers/user/LoginController.js}"></script>
 <script th:src="@{/js/controllers/user/RegisterController.js}"></script>

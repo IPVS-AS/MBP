@@ -4,21 +4,20 @@
  * Controller for the device list page.
  */
 app.controller('DeviceListController',
-    ['$scope', '$controller', '$interval', 'DeviceService', 'deviceList', 'addDevice', 'deleteDevice', 'keyPairList',
-        'ComponentTypeService', 'NotificationService',
-        function ($scope, $controller, $interval, DeviceService, deviceList, addDevice, deleteDevice, keyPairList,
-                  ComponentTypeService, NotificationService) {
-            var vm = this;
-            
+    ['$scope', '$controller', '$interval', 'DeviceService', 'deviceList', 'addDevice', 'deleteDevice', 'keyPairList', 'accessControlPolicyList',
+        'deviceTypesList', 'NotificationService',
+        function ($scope, $controller, $interval, DeviceService, deviceList, addDevice, deleteDevice, keyPairList, accessControlPolicyList,
+                  deviceTypesList, NotificationService) {
+            let vm = this;
+
             /**
              * Initializing function, sets up basic things.
              */
             (function initController() {
-                loadDeviceTypes();
                 loadDeviceStates();
 
                 //Interval for updating device states  on a regular basis
-                var interval = $interval(function () {
+                let interval = $interval(function () {
                     loadDeviceStates();
                 }, 5 * 60 * 1000);
 
@@ -34,10 +33,15 @@ app.controller('DeviceListController',
                     }
                     return "#";
                 };
+
+                // Refresh policy select picker when the modal is opened
+                $('.modal').on('shown.bs.modal', function (e) {
+                    $('.selectpicker').selectpicker('refresh');
+                });
             })();
 
             //Extend each device in deviceList for the formatted mac address, a state and a reload function
-            for (var i in deviceList) {
+            for (let i in deviceList) {
                 deviceList[i].formattedMacAddress = DeviceService.formatMacAddress(deviceList[i].macAddress);
                 deviceList[i].state = 'LOADING';
                 deviceList[i].reloadState = createReloadStateFunction(deviceList[i].id);
@@ -52,11 +56,11 @@ app.controller('DeviceListController',
              * @returns A promise of the user's decision
              */
             function confirmDelete(data) {
-                var deviceId = data.id;
-                var deviceName = "";
+                let deviceId = data.id;
+                let deviceName = "";
 
                 //Determines the device's name by checking all devices in the device list
-                for (var i = 0; i < deviceList.length; i++) {
+                for (let i = 0; i < deviceList.length; i++) {
                     if (deviceId === deviceList[i].id) {
                         deviceName = deviceList[i].name;
                         break;
@@ -65,17 +69,17 @@ app.controller('DeviceListController',
 
                 //Ask the server for all components that use this device
                 return DeviceService.getUsingComponents(data.id).then(function (result) {
-                    var affectedWarning = "";
+                    let affectedWarning = "";
 
                     //If list is not empty, create a message that contains the names of all affected components
-                    if (result.data.length > 0) {
+                    if (result.length > 0) {
                         affectedWarning = "<br/><br/><strong>The following components are currently " +
                             "using this device and will be deleted as well:</strong><br/>";
 
-                        for (var i = 0; i < result.data.length; i++) {
+                        for (let i = 0; i < result.length; i++) {
                             affectedWarning += "- ";
-                            affectedWarning += result.data[i].name;
-                            affectedWarning += " (" + result.data[i].component + ")";
+                            affectedWarning += result[i].name;
+                            affectedWarning += " (" + result[i].component + ")";
                             affectedWarning += "<br/>";
                         }
                     }
@@ -119,8 +123,8 @@ app.controller('DeviceListController',
              */
             function getDeviceState(id) {
                 //Resolve device object of the affected device
-                var device = null;
-                for (var i = 0; i < deviceList.length; i++) {
+                let device = null;
+                for (let i = 0; i < deviceList.length; i++) {
                     if (deviceList[i].id === id) {
                         device = deviceList[i];
                     }
@@ -136,10 +140,12 @@ app.controller('DeviceListController',
 
                 //Perform server request and set state of the device object accordingly
                 DeviceService.getDeviceState(device.id).then(function (response) {
-                    device.state = response.data.content;
+                    device.state = response.content;
                 }, function (response) {
                     device.state = 'UNKNOWN';
                     NotificationService.notify("Could not retrieve the device state.", "error");
+                }).then(function () {
+                    $scope.$apply();
                 });
             }
 
@@ -150,19 +156,19 @@ app.controller('DeviceListController',
              */
             function loadDeviceStates() {
                 //Perform server request
-                DeviceService.getAllDeviceStates().then(function (response) {
-                    var statesMap = response.data;
-
+                DeviceService.getAllDeviceStates().then(function (statesMap) {
                     //Iterate over all devices in deviceList and update the states of all devices accordingly
-                    for (var i in deviceList) {
-                        var deviceId = deviceList[i].id;
+                    for (let i in deviceList) {
+                        let deviceId = deviceList[i].id;
                         deviceList[i].state = statesMap[deviceId];
                     }
                 }, function (response) {
-                    for (var i in deviceList) {
+                    for (let i in deviceList) {
                         deviceList[i].state = 'UNKNOWN';
                     }
                     NotificationService.notify("Could not retrieve device states.", "error");
+                }).then(function () {
+                    $scope.$apply();
                 });
             }
 
@@ -174,10 +180,11 @@ app.controller('DeviceListController',
                 }),
                 addDeviceCtrl: $controller('AddItemController as addDeviceCtrl', {
                     $scope: $scope,
+                    entity: 'device',
                     addItem: function (data) {
-                        var deviceObject = {};
+                        let deviceObject = {};
 
-                        for (var property in data) {
+                        for (let property in data) {
                             if (data.hasOwnProperty(property)) {
                                 deviceObject[property] = data[property];
                             }
@@ -193,6 +200,8 @@ app.controller('DeviceListController',
                     deleteItem: deleteDevice,
                     confirmDeletion: confirmDelete
                 }),
+                accessControlPolicyList: accessControlPolicyList,
+                deviceTypesList: deviceTypesList,
                 keyPairList: keyPairList
             });
 
@@ -204,7 +213,7 @@ app.controller('DeviceListController',
                 },
                 function () {
                     //Callback
-                    var device = vm.addDeviceCtrl.result;
+                    let device = vm.addDeviceCtrl.result;
 
                     if (device) {
                         //Close modal on success
@@ -233,22 +242,10 @@ app.controller('DeviceListController',
                     return vm.deleteDeviceCtrl.result;
                 },
                 function () {
-                    var id = vm.deleteDeviceCtrl.result;
+                    let id = vm.deleteDeviceCtrl.result;
 
                     vm.deviceListCtrl.removeItem(id);
                 }
             );
-
-            function loadDeviceTypes() {
-                ComponentTypeService.GetByComponent('DEVICE')
-                    .then(function (response) {
-                        if (response.success) {
-                            vm.deviceTypesList = response.data;
-                        } else {
-                            console.log("Error loading device types!");
-                        }
-                    });
-            }
-
         }
     ]);

@@ -31,7 +31,7 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
          * is called. After the update is finished, the loadingFinished function is called.
          */
         function updateStats(noCallback) {
-            //Loading start callback f desired
+            //Loading start callback if desired
             if (!noCallback) {
                 scope.loadingStart();
             }
@@ -45,6 +45,9 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
                 if (!noCallback) {
                     scope.loadingFinish();
                 }
+
+                //Update UI
+                scope.$apply();
             });
         }
 

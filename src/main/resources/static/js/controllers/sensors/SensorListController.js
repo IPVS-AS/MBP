@@ -5,25 +5,23 @@
  */
 app.controller('SensorListController',
     ['$scope', '$controller', '$interval', 'sensorList', 'addSensor', 'deleteSensor',
-        'deviceList', 'adapterList', 'ComponentService',
-        'ComponentTypeService', 'NotificationService',
+        'deviceList', 'operatorList', 'sensorTypesList', 'accessControlPolicyList', 'ComponentService', 'NotificationService',
         function ($scope, $controller, $interval, sensorList, addSensor, deleteSensor,
-                  deviceList, adapterList, ComponentService,
-                  ComponentTypeService, NotificationService) {
-            var vm = this;
+                  deviceList, operatorList, sensorTypesList, accessControlPolicyList, ComponentService,
+                  NotificationService) {
+            let vm = this;
 
-            vm.adapterList = adapterList;
+            vm.operatorList = operatorList;
             vm.deviceList = deviceList;
 
             /**
              * Initializing function, sets up basic things.
              */
             (function initController() {
-                loadSensorTypes();
                 loadSensorStates();
 
                 //Interval for updating sensor states on a regular basis
-                var interval = $interval(function () {
+                let interval = $interval(function () {
                     loadSensorStates();
                 }, 5 * 60 * 1000);
 
@@ -31,10 +29,15 @@ app.controller('SensorListController',
                 $scope.$on('$destroy', function () {
                     $interval.cancel(interval);
                 });
+
+                // Refresh policy select picker when the modal is opened
+                $('.modal').on('shown.bs.modal', function (e) {
+                    $('.selectpicker').selectpicker('refresh');
+                });
             })();
 
             //Extend each sensor in sensorList for a state and a reload function
-            for (var i in sensorList) {
+            for (let i in sensorList) {
                 sensorList[i].state = 'LOADING';
                 sensorList[i].reloadState = createReloadStateFunction(sensorList[i].id);
             }
@@ -59,12 +62,12 @@ app.controller('SensorListController',
              * @returns A promise of the user's decision
              */
             function confirmDelete(data) {
-                var sensorId = data.id;
-                var sensorName = "";
+                let sensorId = data.id;
+                let sensorName = "";
 
                 //Determines the sensor's name by checking all sensors in the sensor list
-                for (var i = 0; i < sensorList.length; i++) {
-                    if (sensorId == sensorList[i].id) {
+                for (let i = 0; i < sensorList.length; i++) {
+                    if (sensorId === sensorList[i].id) {
                         sensorName = sensorList[i].name;
                         break;
                     }
@@ -105,9 +108,9 @@ app.controller('SensorListController',
              */
             function getSensorState(id) {
                 //Resolve sensor object of the affected sensor
-                var sensor = null;
-                for (var i = 0; i < sensorList.length; i++) {
-                    if (sensorList[i].id == id) {
+                let sensor = null;
+                for (let i = 0; i < sensorList.length; i++) {
+                    if (sensorList[i].id === id) {
                         sensor = sensorList[i];
                     }
                 }
@@ -122,10 +125,12 @@ app.controller('SensorListController',
 
                 //Perform server request and set state of the sensor object accordingly
                 ComponentService.getComponentState(sensor.id, 'sensors').then(function (response) {
-                    sensor.state = response.data.content;
+                    sensor.state = response.content;
                 }, function (response) {
                     sensor.state = 'UNKNOWN';
                     NotificationService.notify("Could not retrieve the sensor state.", "error");
+                }).then(function () {
+                    $scope.$apply()
                 });
             }
 
@@ -136,28 +141,23 @@ app.controller('SensorListController',
              */
             function loadSensorStates() {//Perform server request
 
-                ComponentService.getAllComponentStates('sensors').then(function (response) {
-                    var statesMap = response.data;
-
+                ComponentService.getAllComponentStates('sensors').then(function (statesMap) {
                     //Iterate over all sensors in sensorList and update the states of all sensors accordingly
-                    for (var i in sensorList) {
-                        var sensorId = sensorList[i].id;
+                    for (let i in sensorList) {
+                        let sensorId = sensorList[i].id;
                         sensorList[i].state = statesMap[sensorId];
                     }
                 }, function (response) {
-                    for (var i in sensorList) {
+                    for (let i in sensorList) {
                         sensorList[i].state = 'UNKNOWN';
                     }
                     NotificationService.notify("Could not retrieve sensor states.", "error");
+                }).then(function () {
+                    $scope.$apply();
                 });
             }
 
-            //Expose
-            angular.extend(vm, {
-                registeringDevice: false
-            });
-
-            // expose controller ($controller will auto-add to $scope)
+            //Expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {
                 sensorListCtrl: $controller('ItemListController as sensorListCtrl', {
                     $scope: $scope,
@@ -165,16 +165,20 @@ app.controller('SensorListController',
                 }),
                 addSensorCtrl: $controller('AddItemController as addSensorCtrl', {
                     $scope: $scope,
+                    entity: 'sensor',
                     addItem: addSensor
                 }),
                 deleteSensorCtrl: $controller('DeleteItemController as deleteSensorCtrl', {
                     $scope: $scope,
                     deleteItem: deleteSensor,
                     confirmDeletion: confirmDelete
-                })
+                }),
+                registeringDevice: false,
+                sensorTypes: sensorTypesList,
+                accessControlPolicyList: accessControlPolicyList
             });
 
-            // $watch 'addSensor' result and add to 'sensorList'
+            //Watch 'addSensor' result and add to 'sensorList'
             $scope.$watch(
                 function () {
                     //Value being watched
@@ -182,7 +186,7 @@ app.controller('SensorListController',
                 },
                 function () {
                     //Callback
-                    var sensor = vm.addSensorCtrl.result;
+                    let sensor = vm.addSensorCtrl.result;
 
                     if (sensor) {
                         //Close modal on success
@@ -201,29 +205,17 @@ app.controller('SensorListController',
                 }
             );
 
-            // $watch 'deleteItem' result and remove from 'itemList'
+            //Watch 'deleteItem' result and remove from 'itemList'
             $scope.$watch(
                 function () {
                     // value being watched
                     return vm.deleteSensorCtrl.result;
                 },
                 function () {
-                    var id = vm.deleteSensorCtrl.result;
-
+                    let id = vm.deleteSensorCtrl.result;
                     vm.sensorListCtrl.removeItem(id);
                 }
             );
-
-            function loadSensorTypes() {
-                ComponentTypeService.GetByComponent('SENSOR')
-                    .then(function (response) {
-                        if (response.success) {
-                            vm.sensorTypes = response.data;
-                        } else {
-                            console.log("Error loading sensor types!");
-                        }
-                    });
-            };
 
         }
     ]);

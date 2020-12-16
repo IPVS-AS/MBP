@@ -1,14 +1,13 @@
-/* global app */
-
+/**
+ * Controller for the Home page.
+ */
 app.controller('HomeController',
-    ['$scope', '$timeout', 'CrudService', 'ComponentService', 'DeviceService', 'countEnvModels',
-        'countActuators', 'countSensors', 'countDevices', 'countAdapters', 'countMonitoringAdapters', 'countTests',
-        function ($scope, $timeout, CrudService, ComponentService, DeviceService, countEnvModels,
-                  countActuators, countSensors, countDevices, countAdapters, countMonitoringAdapters, countTests) {
-
+    ['$scope', 'countEnvModels', 'countActuators', 'countSensors', 'countDevices', 'countPolicies',
+        function ($scope, countEnvModels, countActuators, countSensors, countDevices, countPolicies) {
             //DOM elements
             const ELEMENT_WELCOME_CARD = $('#welcome-card-body');
 
+            //Local storage keys
             const STORAGE_KEY_WELCOME = "show_welcome_card";
 
             let vm = this;
@@ -28,8 +27,12 @@ app.controller('HomeController',
                 }).on('hide.bs.collapse', function () {
                     localStorage.setItem(STORAGE_KEY_WELCOME, "false");
                 })
-            })();
 
+                //Trigger info-box count effect
+                $(document).ready(() => {
+                    $('.count-to').countTo();
+                });
+            })();
 
             //Expose
             angular.extend(vm, {
@@ -37,9 +40,8 @@ app.controller('HomeController',
                 countActuators: countActuators,
                 countSensors: countSensors,
                 countDevices: countDevices,
-                countAdapters: countAdapters,
-                countMonitoringAdapters: countMonitoringAdapters,
-                countTests: countTests
+                countPolicies: countPolicies
             });
-        }]);
+        }]
+);
 

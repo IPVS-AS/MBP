@@ -5,8 +5,8 @@
  * Controller for the sensor list page.
  */
 app.controller('TestingController',
-    ['$scope', '$controller', '$interval', '$http', 'TestService', 'CrudService', 'testList', '$rootScope', 'addTest', 'deleteTest', 'ruleList', 'sensorList', '$q', 'ComponentService', 'FileReader', 'ENDPOINT_URI', 'NotificationService',
-        function ($scope, $controller, $interval, $http, TestService, CrudService, testList, $rootScope, addTest, deleteTest, ruleList, sensorList, $q, ComponentService, FileReader, ENDPOINT_URI, NotificationService) {
+    ['$scope', '$controller', '$interval', '$http', 'TestService', 'HttpService', 'testList', '$rootScope', 'addTest', 'deleteTest', 'ruleList', 'sensorList', '$q', 'ComponentService', 'FileReader', 'ENDPOINT_URI', 'NotificationService',
+        function ($scope, $controller, $interval, $http, TestService, HttpService, testList, $rootScope, addTest, deleteTest, ruleList, sensorList, $q, ComponentService, FileReader, ENDPOINT_URI, NotificationService) {
 
             // Constant list of the sensor simulators, that can be included in the test
             const SIMULATOR_LIST = {
@@ -115,6 +115,7 @@ app.controller('TestingController',
              * @param testId
              * @param testName
              */
+
             function checkReportExists(testId, testName) {
                 TestService.pdfExists(testId).then(function (response) {
                     switch (response.data) {
@@ -137,7 +138,7 @@ app.controller('TestingController',
             function getTestDevice() {
                 $scope.device = "NOT_REGISTERED";
                 // go through every registered device and search for the test device
-                CrudService.fetchAllItems('devices').then(function (deviceList) {
+                HttpService.getAll('devices').then(function (deviceList) {
                     angular.forEach(deviceList, function (device) {
 
                         if (device.name === TESTING_DEVICE) {
@@ -154,9 +155,8 @@ app.controller('TestingController',
              */
             function getRerunOperator() {
                 $scope.rerunOperator = "NOT_REGISTERED";
-
                 // go through every registered adapter and search for the test rerun adapter
-                CrudService.fetchAllItems('adapters').then(function (adaptersList) {
+                HttpService.getAll('operators').then(function (adaptersList) {
                     angular.forEach(adaptersList, function (adapters) {
 
                         if (adapters.name === RERUN_OPERATOR) {
@@ -208,7 +208,7 @@ app.controller('TestingController',
                 $scope.testingActuator = "NOT_REGISTERED";
 
                 // go through every registered actuator and search for the testing actuator
-                CrudService.fetchAllItems('actuators').then(function (actuatorList) {
+                HttpService.getAll('actuators').then(function (actuatorList) {
                     angular.forEach(actuatorList, function (actuator) {
                         if (actuator.name === TESTING_ACTUATOR) {
                             $scope.testingActuator = 'REGISTERED';
@@ -231,6 +231,7 @@ app.controller('TestingController',
                 }).catch(function onError() {
                     //Notify the user
                     NotificationService.notify('Error during creation of the Testing Actuator.', 'error')
+
                 });
 
             }
@@ -243,15 +244,18 @@ app.controller('TestingController',
              *
              * @param sensorSimulator to be checked
              */
+
             function checkSensorReg(sensorSimulator) {
                 let registered = "NOT_REGISTERED";
-
                 // go through every registered sensor and search for the sensor simulator
-                CrudService.fetchAllItems('sensors').then(function (sensorList) {
-                    angular.forEach(sensorList, function (sensor) {
-                        if (sensor.name == sensorSimulator) {
-                            registered = "REGISTERED";
-                            vm.availableSensors.push(sensorSimulator);
+                HttpService.getAll('sensors').then(function (sensorList) {
+                        if (sensorList.length > 0) {
+                            angular.forEach(sensorList, function (sensor) {
+                                if (sensor.name == sensorSimulator) {
+                                    registered = "REGISTERED";
+                                    vm.availableSensors.push(sensorSimulator);
+                                }
+                            })
                         }
                         // define the scope variable for the sensor simulators for the view
                         switch (sensorSimulator) {
@@ -280,11 +284,8 @@ app.controller('TestingController',
                                 $scope.accPl = registered;
                                 break;
                         }
-                    })
-                });
-
-
-
+                    }
+                );
             }
 
 
@@ -318,14 +319,13 @@ app.controller('TestingController',
              */
             function registerOneDimSensor(sensor) {
                 TestService.registerOneDimSensor(sensor).success(function (response) {
-                    checkSensorReg(sensor);
                     //Notify the user
                     NotificationService.notify('Entity successfully created.', 'success')
+                    checkSensorReg(sensor);
                 }).catch(function onError() {
                     //Notify the user
                     NotificationService.notify('Error during creation of the Sensor Simulator.', 'error')
                 });
-
             }
 
             /**
@@ -477,13 +477,14 @@ app.controller('TestingController',
                 addTestCtrl: $controller('AddItemController as addTestCtrl',
                     {
                         $scope: $scope,
+                        entity: 'test',
                         addItem: function (data) {
                             let selectedSensorsReal = vm.selectedRealSensor;
                             let parameterValuesReal = vm.parameterVal;
 
                             const newTestObject = TestService.getTestData(vm.selectedSensors, selectedSensorsReal, parameterValuesReal, vm.config, vm.rules, vm.executeRules, data);
-                            return addTest(newTestObject);
 
+                            return addTest(newTestObject);
 
                         }
                     }),
@@ -545,4 +546,6 @@ app.controller('TestingController',
             );
 
         }
-    ]);
+
+    ])
+;

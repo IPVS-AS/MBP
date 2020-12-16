@@ -3,8 +3,8 @@
 /**
  * Provides services for managing rules.
  */
-app.factory('RuleService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
-    function ($http, $resource, $q, ENDPOINT_URI) {
+app.factory('RuleService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI',
+    function (HttpService, $resource, $q, ENDPOINT_URI) {
         //URLs for server requests
         const URL_GEt_RULE_ACTION_TYPES = ENDPOINT_URI + '/rule-actions/types';
         const URL_TEST_RULE_ACTION = ENDPOINT_URI + '/rule-actions/test/';
@@ -18,7 +18,7 @@ app.factory('RuleService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          * @returns {*}
          */
         function getRuleActionTypes() {
-            return $http.get(URL_GEt_RULE_ACTION_TYPES);
+            return HttpService.getRequest(URL_GEt_RULE_ACTION_TYPES);
         }
 
         /**
@@ -28,7 +28,7 @@ app.factory('RuleService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          * @returns {*}
          */
         function testRuleAction(actionId) {
-            return $http.post(URL_TEST_RULE_ACTION + actionId);
+            return HttpService.postRequest(URL_TEST_RULE_ACTION + actionId);
         }
 
         /**
@@ -40,7 +40,7 @@ app.factory('RuleService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          * @returns {*}
          */
         function enableRule(ruleId) {
-            return $http.post(URL_ENABLE_RULE + ruleId);
+            return HttpService.postRequest(URL_ENABLE_RULE + ruleId);
         }
 
         /**
@@ -52,7 +52,7 @@ app.factory('RuleService', ['$http', '$resource', '$q', 'ENDPOINT_URI',
          * @returns {*}
          */
         function disableRule(ruleId) {
-            return $http.post(URL_DISABLE_RULE + ruleId);
+            return HttpService.postRequest(URL_DISABLE_RULE + ruleId);
         }
 
         //Expose public methods
