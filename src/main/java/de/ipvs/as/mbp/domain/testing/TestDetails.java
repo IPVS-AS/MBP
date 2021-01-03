@@ -14,6 +14,7 @@ import javax.persistence.GeneratedValue;
 
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
+
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -132,7 +133,7 @@ public class TestDetails extends UserEntity {
      *
      * @return simulationList
      */
-    public Map<String, LinkedHashMap<Long, Double>>  getSimulationList() {
+    public Map<String, LinkedHashMap<Long, Double>> getSimulationList() {
         return simulationList;
     }
 
@@ -378,6 +379,7 @@ public class TestDetails extends UserEntity {
     public void setConfig(List<List<ParameterInstance>> config) {
         this.config = config;
     }
+
     /**
      * Returns the information whether data from the last test run should be used again or not.
      *
@@ -388,7 +390,7 @@ public class TestDetails extends UserEntity {
     }
 
     /**
-     *  Sets the information whether data from the last test run should be used again or not.
+     * Sets the information whether data from the last test run should be used again or not.
      *
      * @param useNewData boolean whether data from the last test run should be used again or not.
      */

@@ -1,36 +1,25 @@
 package de.ipvs.as.mbp.web.rest;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
-import de.ipvs.as.mbp.domain.testing.TestDetails;
-import de.ipvs.as.mbp.repository.RuleRepository;
-import de.ipvs.as.mbp.repository.TestDetailsRepository;
-import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.rules.Rule;
+import de.ipvs.as.mbp.domain.testing.TestDetails;
+import de.ipvs.as.mbp.repository.TestDetailsRepository;
 import de.ipvs.as.mbp.service.testing.TestEngine;
-import de.ipvs.as.mbp.service.testing.analyzer.GraphPlotter;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
-import de.ipvs.as.mbp.service.testing.analyzer.TestReport;
 import de.ipvs.as.mbp.service.testing.executor.TestExecutor;
 import de.ipvs.as.mbp.service.testing.rerun.TestRerunService;
-import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
-import org.json.JSONArray;
-import org.json.JSONObject;
+
+import java.util.List;
+
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 
 
-import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -114,7 +102,7 @@ public class TestingController {
             // Add or deletes Rerun Components for the specific test
             testRerunService.editRerunComponents(testDetails);
             responseEntity = new ResponseEntity(HttpStatus.OK);
-        } catch (Exception e) {
+        }catch (Exception e) {
             responseEntity = new ResponseEntity(HttpStatus.NOT_FOUND);
         }
 
