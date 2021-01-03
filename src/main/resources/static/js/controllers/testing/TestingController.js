@@ -304,6 +304,10 @@ app.controller('TestingController',
                         }
                     });
 
+                    if(sensor.name.includes("RERUN_")){
+                        realSensor = false;
+                    }
+
                     // Add to list if real sensor
                     if (realSensor) {
                         vm.realSensorList.push(sensor);
