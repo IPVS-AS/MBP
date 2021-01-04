@@ -14,7 +14,7 @@
                     your IoT-Application.
 
                 <p> &ensp; &ensp; Step 3 - Define the <a href="view/rules" target="_blank"><span>rules</span></a> that
-                    are necessary for the your IoT-Applikation.</p>
+                    are necessary for the your IoT-Application.</p>
                 <p>&ensp; &ensp; Step 4 - Register the new test.</p>
                 <p> &ensp; &ensp; Step 5 - Start the test and wait until the simulation is finished.</p>
                 <p> &ensp; &ensp; Step 6 - Download the test report to find out the result of the test.</p>
@@ -53,13 +53,9 @@
                     <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Sensor</th>
-                        <th>Reuse Data</th>
-                        <th>Start Test</th>
-                        <th>Stop Test</th>
-                        <th>Test Report</th>
-                        <th>Refresh</th>
-                        <th></th>
+                        <th>Sensor(s)</th>
+                        <th>Rule(s)</th>
+                        <th>Latest Test Report</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -69,42 +65,13 @@
                             <i ng-show="item.wasModelled" class="material-icons" style="vertical-align: bottom;">view_quilt</i>
                         </td>
                         <td>{{item.type.join(', ')}}</td>
-                        <td>
-                            <div class="switch" style="margin-top: 7px;">
-                                <label>
-                                    <input type="checkbox" ng-model="useNewData.singleSelect"
-                                           ng-click="ctrl.editConfig(item.id, useNewData.singleSelect)">
-                                    <span class="lever"></span>
-                                </label>
-                            </div>
-                        </td>
-                        <td>
-                            <button class="btn bg-cyan waves-effect" ng-click="ctrl.executeTest(item.id, item)">
-                                <i class="material-icons">play_arrow</i>
-                                <span>Start Test</span>
-                            </button>
-                        </td>
-                        <td>
-                            <button class="btn bg-orange waves-effect" ng-click="ctrl.stopTest(item.id)">
-                                <i class="material-icons">stop</i>
-                                <span>Stop Test</span>
-                            </button>
-                        </td>
+                        <td>Names of the included rules.</td>
                         <td>
                             <form ng-submit="ctrl.downloadPDF(item.id, item.endTimeUnix)" style="margin-top: 3px;">
                                 <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect" id="{{item.name}}"
                                         ng-disabled="!item.pdfExists">
                                     DownloadPDF
                                 </button>
-                            </form>
-                        </td>
-                        <td>
-                            <form ng-submit="ctrl.refreshTestEntry(item.id, item.name)" style="margin-top: 5px;">
-                                <li>
-                                    <a ng-click="ctrl.refreshTestEntry(item.id, item.name)" class="clickable">
-                                        <i class="material-icons">refresh</i>
-                                    </a>
-                                </li>
                             </form>
                         </td>
                         <td>
@@ -210,7 +177,7 @@
                                     <table class="table parameter-table">
                                         <thead></thead>
                                         <tbody>
-                                        <tr ng-repeat="parameter in realSensor._embedded.adapter.parameters">
+                                        <tr ng-repeat="parameter in realSensor.operator.parameters">
                                             <td>
                                                 <label>{{parameter.name}}:</label><br/>
                                                 <small ng-show="parameter.mandatory">(required)</small>
@@ -251,7 +218,7 @@
                                 </div>
 
 
-                                <div ng-if="ctrl.selectedSensors.includes('TestingTemperaturSensor')">
+                                <div ng-if="ctrl.selectedSensors.includes('TestingTemperatureSensor')">
                                     <div class="form-line">
                                         <h3>Configuration Sensor Simulator: Temperature Sensor Simulator</h3>
                                         <h4> Type of simulation </h4>
@@ -310,7 +277,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div ng-if="ctrl.selectedSensors.includes('TestingTemperaturSensorPl')">
+                                <div ng-if="ctrl.selectedSensors.includes('TestingTemperatureSensorPl')">
                                     <div class="form-line">
                                         <h3>Configuration Sensor Simulator: Planned Temerature Sensor Simulator</h3>
                                         <h4> Type of simulation </h4>
@@ -369,7 +336,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div ng-if="ctrl.selectedSensors.includes('TestingFeuchtigkeitsSensor')">
+                                <div ng-if="ctrl.selectedSensors.includes('TestingHumiditySensor')">
                                     <h3>Configuration Sensor Simulator: Humidity Sensor Simulator</h3>
                                     <h4> Type of simulation: </h4>
                                     <div class="form-line">
@@ -426,7 +393,7 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div ng-if="ctrl.selectedSensors.includes('TestingFeuchtigkeitsSensorPl')">
+                                <div ng-if="ctrl.selectedSensors.includes('TestingHumiditySensorPl')">
                                     <h3>Configuration Sensor Simulator: Planned Humidity Sensor Simulator</h3>
                                     <h4> Type of simulation: </h4>
                                     <div class="form-line">
@@ -535,8 +502,8 @@
                                                ng-model="ctrl.config.latitudeGPSPl"> <br> <br>
                                         <input type="text" name="gpsLat" placeholder="Longitude *"
                                                ng-model="ctrl.config.longitudeGPSPl"> <br><br>
-                                        <input type="text" name="gpsHight" placeholder="Hight *"
-                                               ng-model="ctrl.config.hightGPSPl">
+                                        <input type="text" name="gpsHeight" placeholder="Height *"
+                                               ng-model="ctrl.config.heightGPSPl">
                                     </div>
                                     <div class="form-line">
                                         <h4> Enter the radius at which a reaction should take place: </h4>
@@ -597,8 +564,8 @@
                                                ng-model="ctrl.config.latitudeGPS"> <br> <br>
                                         <input type="text" id="gpsLong" name="gpsLat" placeholder="Longitude *"
                                                ng-model="ctrl.config.longitudeGPS"> <br><br>
-                                        <input type="text" id="gpsHight" name="gpsHight" placeholder="Hight *"
-                                               ng-model="ctrl.config.hightGPS">
+                                        <input type="text" id="gpsHeight" name="gpsHeight" placeholder="Height *"
+                                               ng-model="ctrl.config.heightGPS">
                                     </div>
                                     <div class="form-line">
                                         <h4> Enter the radius at which a reaction should take place: </h4>
@@ -607,7 +574,7 @@
                                                ng-model="ctrl.config.reactionMetersGPS">
                                     </div>
                                 </div>
-                                <div ng-if="ctrl.selectedSensors.includes('TestingBeschleunigungsSensorPl')">
+                                <div ng-if="ctrl.selectedSensors.includes('TestingAccelerationSensorPl')">
                                     <div class="form-line">
                                         <h3>Configuration Sensor Simulator: Planned Acceleration Sensor
                                             Simulator</h3>
@@ -703,7 +670,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div ng-if="ctrl.selectedSensors.includes('TestingBeschleunigungsSensor')">
+                                <div ng-if="ctrl.selectedSensors.includes('TestingAccelerationSensor')">
                                     <div class="form-line">
                                         <h3>Configuration Sensor Simulator: Acceleration Sensor Simulator</h3>
                                         <h4> Type of simulation:</h4>
@@ -800,7 +767,7 @@
                                     </div>
                                 </div>
                                 <div class="form-line"
-                                     ng-if="ctrl.selectedSensors.includes('TestingFeuchtigkeitsSensorPl') || ctrl.selectedSensors.includes('TestingTemperaturSensorPl') ||ctrl.selectedSensors.includes('TestingGPSSensorPl') || ctrl.selectedSensors.includes('TestingBeschleunigungsSensorPl')">
+                                     ng-if="ctrl.selectedSensors.includes('TestingHumiditySensorPl') || ctrl.selectedSensors.includes('TestingTemperatureSensorPl') ||ctrl.selectedSensors.includes('TestingGPSSensorPl') || ctrl.selectedSensors.includes('TestingAccelerationSensorPl')">
 
                                     <h3>Configuration Sensor Simulator: Planned Simulation</h3>
                                     <h4> How long should the sensor be simulated? (specified in hours)</h4>
@@ -862,9 +829,11 @@
         </div>
         <!-- #END# Modal -->
 
-        <!-- Modal -->
-        <div class="modal fade" id="addDevice" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
+
+        <!-- Modal Register Components for Testing -->
+        <div class="modal fade bd-example-modal-xl" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel"
+             aria-hidden="true" id="addDevice">
+            <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Register the Components for the Test of your IoT-Application
@@ -877,19 +846,25 @@
                         <fieldset id="sensor-form">
                             <div class="modal-body">
                                 <div class="form-line">
-                                    <table class="table table-hover" style="border: 1px solid transparent">
-                                        <thead>
+                                    <table class="table table-hover" st-table="displayedCollection"
+                                           st-safe-src="testListCtrl.items">
+                                        <caption>Category: Device</caption>
+                                        <thead class="thead-dark">
                                         <tr>
-                                            <th>Component</th>
-                                            <th>Registered</th>
+                                            <th>Name</th>
+                                            <th>Description</th>
+                                            <th>Status</th>
+                                            <th></th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         <tr>
-                                            <td>Testing-Device</td>
+                                            <td>Testing Device</td>
+                                            <td>Device required for the simulated components.
+                                            </td>
                                             <td>
                                                 <div style="padding: 0px;  display: inline-block;" ng-switch="device"
-                                                     ng-click="ctrl.getDevice()" class="clickable">
+                                                     ng-click="ctrl.getTestDevice()" class="clickable">
                                                     <div ng-switch-when="LOADING">
                                                         <div class="preloader pl-size-xs">
                                                             <div class="spinner-layer pl-blue">
@@ -906,11 +881,11 @@
                                                         <span class="label label-danger">Not Registered</span>
                                                     </div>
                                                     <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
-                                                        <form ng-submit="ctrl.registerTestingDevice()">
+                                                        <form>
                                                             <button type="submit"
                                                                     class="btn bg-blue m-t-0 waves-effect"
                                                                     ng-click="ctrl.registerTestDevice()">
-                                                                Register Testing-Device
+                                                                Register
                                                             </button>
                                                         </form>
                                                     </div>
@@ -923,49 +898,86 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                        <td>Testing-Actuator</td>
-                                        <td>
-                                            <div style="padding: 0px;  display: inline-block;"
-                                                 ng-switch="testingActuator"
-                                                 ng-click="ctrl.checkActuatorReg()" class="clickable">
-                                                <div ng-switch-when="LOADING">
-                                                    <div class="preloader pl-size-xs">
-                                                        <div class="spinner-layer pl-blue">
-                                                            <div class="circle-clipper left">
-                                                                <div class="circle"></div>
-                                                            </div>
-                                                            <div class="circle-clipper right">
-                                                                <div class="circle"></div>
+                                        </tbody>
+                                    </table>
+
+                                    <table class="table table-hover"
+                                           st-safe-src="testListCtrl.items">
+                                        <caption>Category: Actuator</caption>
+                                        <thead class="thead-dark">
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Description</th>
+                                            <th>Status</th>
+                                            <th></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>Testing Actuator</td>
+                                            <td> Actuator that does not trigger any functions and can be used for
+                                                testing purposes.
+                                            </td>
+                                            <td>
+                                                <div style="padding: 0px;  display: inline-block;"
+                                                     ng-switch="testingActuator"
+                                                     ng-click="ctrl.checkActuatorReg()" class="clickable">
+                                                    <div ng-switch-when="LOADING">
+                                                        <div class="preloader pl-size-xs">
+                                                            <div class="spinner-layer pl-blue">
+                                                                <div class="circle-clipper left">
+                                                                    <div class="circle"></div>
+                                                                </div>
+                                                                <div class="circle-clipper right">
+                                                                    <div class="circle"></div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    <div ng-switch-when="NOT_REGISTERED">
+                                                        <span class="label label-danger">Not Registered</span>
+                                                    </div>
+                                                    <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
+                                                        <form>
+                                                            <button type="submit"
+                                                                    class="btn bg-blue m-t-0 waves-effect"
+                                                                    ng-click="ctrl.registerTestingActuator()">
+                                                                Register
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                    <div ng-switch-when="REGISTERED">
+                                                        <span class="label label-success">Registered</span>
+                                                    </div>
+                                                    <div ng-switch-default>
+                                                        <span class="label label-default">Unknown</span>
+                                                    </div>
                                                 </div>
-                                                <div ng-switch-when="NOT_REGISTERED">
-                                                    <span class="label label-danger">Not Registered</span>
-                                                </div>
-                                                <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
-                                                    <form ng-submit="ctrl.registerTestingActuator()">
-                                                        <button type="submit"
-                                                                class="btn bg-blue m-t-0 waves-effect"
-                                                                ng-click="ctrl.registerTestingActuator()">
-                                                            Register Testing-Actuator
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                                <div ng-switch-when="REGISTERED">
-                                                    <span class="label label-success">Registered</span>
-                                                </div>
-                                                <div ng-switch-default>
-                                                    <span class="label label-default">Unknown</span>
-                                                </div>
-                                            </div>
-                                        </td>
+                                            </td>
                                         </tr>
+                                        </tbody>
+                                    </table>
+
+
+                                    <table class="table table-hover"
+                                           st-safe-src="testListCtrl.items">
+                                        <caption>Category: Sensors</caption>
+                                        <thead class="thead-dark">
                                         <tr>
-                                            <td>Temperature Sensor Simulator</td>
+                                            <th>Name</th>
+                                            <th>Description</th>
+                                            <th>Status</th>
+                                            <th></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr>
+                                            <td>Temperature Sensor </td>
+                                            <td>Sensor Simulator that simulates sensor data of a temperature sensor.
+                                            </td>
                                             <td>
                                                 <div ng-switch="temp"
-                                                     ng-click="ctrl.checkSensorReg('TestingTemperaturSensor')"
+                                                     ng-click="ctrl.checkSensorReg('TestingTemperatureSensor')"
                                                      class="clickable">
                                                     <div ng-switch-when="LOADING">
                                                         <div class="preloader pl-size-xs">
@@ -983,11 +995,11 @@
                                                         <span class="label label-danger">Not Registered</span>
                                                     </div>
                                                     <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
-                                                        <form ng-submit="ctrl.registerTestingDevice()">
+                                                        <form>
                                                             <button type="submit"
                                                                     class="btn bg-blue m-t-0 waves-effect"
-                                                                    ng-click="ctrl.registerOneDimSensor('TestingTemperaturSensor')">
-                                                                Register Simulator
+                                                                    ng-click="ctrl.registerOneDimSensor('TestingTemperatureSensor')">
+                                                                Register
                                                             </button>
                                                         </form>
 
@@ -1000,12 +1012,15 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                        </tr>
                                         <tr>
-                                            <td>Temperature Sensor Simulator (Planned)</td>
+                                            <td>Temperature Sensor  (Planned)</td>
+                                            <td> Sensor Simulator that simulates sensor data of a temperature sensor,
+                                                where the simulation time and number of events and anomalies can be
+                                                scheduled.
+                                            </td>
                                             <td>
                                                 <div ng-switch="tempPl"
-                                                     ng-click="ctrl.checkSensorReg('TestingTemperaturSensorPl')"
+                                                     ng-click="ctrl.checkSensorReg('TestingTemperatureSensorPl')"
                                                      class="clickable">
                                                     <div ng-switch-when="LOADING">
                                                         <div class="preloader pl-size-xs">
@@ -1023,11 +1038,11 @@
                                                         <span class="label label-danger">Not Registered</span>
                                                     </div>
                                                     <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
-                                                        <form ng-submit="ctrl.registerTestingDevice()">
+                                                        <form>
                                                             <button type="submit"
                                                                     class="btn bg-blue m-t-0 waves-effect"
-                                                                    ng-click="ctrl.registerOneDimSensor('TestingTemperaturSensorPl')">
-                                                                Register Simulator
+                                                                    ng-click="ctrl.registerOneDimSensor('TestingTemperatureSensorPl')">
+                                                                Register
                                                             </button>
                                                         </form>
 
@@ -1042,10 +1057,11 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Humidity Sensor Simulator</td>
+                                            <td>Humidity Sensor </td>
+                                            <td>Sensor Simulator that simulates sensor data of a humidity sensor.</td>
                                             <td>
                                                 <div ng-switch="hum"
-                                                     ng-click="ctrl.checkSensorReg('TestingFeuchtigkeitsSensor')"
+                                                     ng-click="ctrl.checkSensorReg('TestingHumiditySensor')"
                                                      class="clickable">
                                                     <div ng-switch-when="LOADING">
                                                         <div class="preloader pl-size-xs">
@@ -1066,8 +1082,8 @@
                                                         <form ng-submit="ctrl.registerTestingDevice()">
                                                             <button type="submit"
                                                                     class="btn bg-blue m-t-0 waves-effect"
-                                                                    ng-click="ctrl.registerOneDimSensor('TestingFeuchtigkeitsSensor')">
-                                                                Register Simulator
+                                                                    ng-click="ctrl.registerOneDimSensor('TestingHumiditySensor')">
+                                                                Register
                                                             </button>
                                                         </form>
 
@@ -1082,10 +1098,13 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Humidity Sensor Simulator (Planned)</td>
+                                            <td>Humidity Sensor  (Planned)</td>
+                                            <td> Sensor Simulator that simulates sensor data of a humidity sensor, where
+                                                the simulation time and number of events and anomalies can be scheduled.
+                                            </td>
                                             <td>
                                                 <div ng-switch="humPl"
-                                                     ng-click="ctrl.checkSensorReg('TestingFeuchtigkeitsSensorPl')"
+                                                     ng-click="ctrl.checkSensorReg('TestingHumiditySensorPl')"
                                                      class="clickable">
                                                     <div ng-switch-when="LOADING">
                                                         <div class="preloader pl-size-xs">
@@ -1106,8 +1125,8 @@
                                                         <form ng-submit="ctrl.registerTestingDevice()">
                                                             <button type="submit"
                                                                     class="btn bg-blue m-t-0 waves-effect"
-                                                                    ng-click="ctrl.registerOneDimSensor('TestingFeuchtigkeitsSensorPl')">
-                                                                Register Simulator
+                                                                    ng-click="ctrl.registerOneDimSensor('TestingHumiditySensorPl')">
+                                                                Register
                                                             </button>
                                                         </form>
 
@@ -1122,7 +1141,11 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>GPS Sensor Simulator</td>
+                                            <td>GPS Sensor </td>
+                                            <td>Sensor Simulator that simulates sensor data of a GPS sensor. The
+                                                simulated data are movements of a human or animal to or from a set point
+                                                of position.
+                                            </td>
                                             <td>
                                                 <div ng-switch="gps"
                                                      ng-click="ctrl.checkSensorReg('TestingGPSSensor')"
@@ -1147,7 +1170,7 @@
                                                             <button type="submit"
                                                                     class="btn bg-blue m-t-0 waves-effect"
                                                                     ng-click="ctrl.registerThreeDimSensor('TestingGPSSensor')">
-                                                                Register Simulator
+                                                                Register
                                                             </button>
                                                         </form>
 
@@ -1162,7 +1185,10 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>GPS Sensor Simulator (Planned)</td>
+                                            <td>GPS Sensor (Planned)</td>
+                                            <td>Sensor Simulator that simulates sensor data of a GPS sensor, where the simulation time and number of events and anomalies can be scheduled. The
+                                                simulated data are movements of a human or animal to or from a set point
+                                                of position.</td>
                                             <td>
                                                 <div ng-switch="gpsPl"
                                                      ng-click="ctrl.checkSensorReg('TestingGPSSensorPl')"
@@ -1187,7 +1213,7 @@
                                                             <button type="submit"
                                                                     class="btn bg-blue m-t-0 waves-effect"
                                                                     ng-click="ctrl.registerThreeDimSensor('TestingGPSSensorPl')">
-                                                                Register Simulator
+                                                                Register
                                                             </button>
                                                         </form>
 
@@ -1202,10 +1228,13 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Acceleration Sensor Simulator</td>
+                                            <td>Acceleration Sensor</td>
+                                            <td>Sensor Simulator that simulates sensor data of a Acceleration Sensor. It
+                                                simulates the idle state or the movement/acceleration of an object.
+                                            </td>
                                             <td>
                                                 <div ng-switch="acc"
-                                                     ng-click="ctrl.checkSensorReg('TestingBeschleunigungsSensor')"
+                                                     ng-click="ctrl.checkSensorReg('TestingAccelerationSensor')"
                                                      class="clickable">
                                                     <div ng-switch-when="LOADING">
                                                         <div class="preloader pl-size-xs">
@@ -1226,8 +1255,8 @@
                                                         <form ng-submit="ctrl.registerTestingDevice()">
                                                             <button type="submit"
                                                                     class="btn bg-blue m-t-0 waves-effect"
-                                                                    ng-click="ctrl.registerThreeDimSensor('TestingBeschleunigungsSensor')">
-                                                                Register Simulator
+                                                                    ng-click="ctrl.registerThreeDimSensor('TestingAccelerationSensor')">
+                                                                Register
                                                             </button>
                                                         </form>
 
@@ -1242,10 +1271,12 @@
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td>Acceleration Sensor Simulator (Planned)</td>
+                                            <td>Acceleration Sensor (Planned)</td>
+                                            <td>Sensor Simulator that simulates sensor data of a Acceleration Sensor, where the simulation time and number of events and anomalies can be scheduled. It
+                                                simulates the idle state or the movement/acceleration of an object.</td>
                                             <td>
                                                 <div ng-switch="accPl"
-                                                     ng-click="ctrl.checkSensorReg('TestingBeschleunigungsSensorPl')"
+                                                     ng-click="ctrl.checkSensorReg('TestingAccelerationSensorPl')"
                                                      class="clickable">
                                                     <div ng-switch-when="LOADING">
                                                         <div class="preloader pl-size-xs">
@@ -1266,8 +1297,8 @@
                                                         <form ng-submit="ctrl.registerTestingDevice()">
                                                             <button type="submit"
                                                                     class="btn bg-blue m-t-0 waves-effect"
-                                                                    ng-click="ctrl.registerThreeDimSensor('TestingBeschleunigungsSensorPl')">
-                                                                Register Simulator
+                                                                    ng-click="ctrl.registerThreeDimSensor('TestingAccelerationSensorPl')">
+                                                                Register
                                                             </button>
                                                         </form>
 
@@ -1280,6 +1311,8 @@
                                                     </div>
                                                 </div>
                                             </td>
+                                        </tr>
+
                                         </tr>
                                         </tbody>
                                     </table>
@@ -1289,7 +1322,8 @@
                     </form>
                 </div>
             </div>
-            <!-- #END# Modal -->
+
         </div>
+        <!-- #END# Modal -->
     </div>
 </div>

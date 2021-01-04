@@ -9,11 +9,14 @@ import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
+
+import javax.persistence.GeneratedValue;
+
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
-import javax.persistence.GeneratedValue;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -60,9 +63,11 @@ public class TestDetails extends UserEntity {
 
     private List<String> rulesExecuted;
 
-    private Map<String, List<Double>> simulationList;
+    private Map<String, LinkedHashMap<Long, Double>> simulationList;
 
     private boolean triggerRules;
+
+    private boolean useNewData;
 
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy HH:mm:ss")
@@ -128,7 +133,7 @@ public class TestDetails extends UserEntity {
      *
      * @return simulationList
      */
-    public Map<String, List<Double>> getSimulationList() {
+    public Map<String, LinkedHashMap<Long, Double>> getSimulationList() {
         return simulationList;
     }
 
@@ -137,7 +142,7 @@ public class TestDetails extends UserEntity {
      *
      * @param simulationList list of simulated values of the sensors
      */
-    public void setSimulationList(Map<String, List<Double>> simulationList) {
+    public void setSimulationList(Map<String, LinkedHashMap<Long, Double>> simulationList) {
         this.simulationList = simulationList;
     }
 
@@ -375,4 +380,21 @@ public class TestDetails extends UserEntity {
         this.config = config;
     }
 
+    /**
+     * Returns the information whether data from the last test run should be used again or not.
+     *
+     * @return useNewData boolean whether data from the last test run should be used again or not.
+     */
+    public boolean isUseNewData() {
+        return useNewData;
+    }
+
+    /**
+     * Sets the information whether data from the last test run should be used again or not.
+     *
+     * @param useNewData boolean whether data from the last test run should be used again or not.
+     */
+    public void setUseNewData(boolean useNewData) {
+        this.useNewData = useNewData;
+    }
 }
