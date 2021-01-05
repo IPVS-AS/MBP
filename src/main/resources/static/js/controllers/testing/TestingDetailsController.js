@@ -154,7 +154,7 @@ app.controller('TestingDetailsController',
              * The names and actions of this rules will be formatted for the user view.
              */
             function getTestRules() {
-                $scope.ruleList =  TestService.getRuleListTest(COMPONENT_ID);
+                $scope.ruleList = TestService.getRuleListTest(COMPONENT_ID);
 
                 $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
                     for (let i = 0; i < responseRules._embedded.rules.length; i++) {
@@ -195,6 +195,15 @@ app.controller('TestingDetailsController',
              */
             function downloadPDF(path) {
                 window.open('api/test-details/downloadPDF/' + path, '_blank');
+            }
+
+            /**
+             * [Public]
+             *
+             * Creates a server request to delete a certain Test Report for the specific Test
+             */
+            function deletePDF(pdfPath) {
+                TestService.deleteTestReport(COMPONENT_ID,pdfPath.toString());
             }
 
 
@@ -724,7 +733,8 @@ app.controller('TestingDetailsController',
                 downloadPDF: downloadPDF,
                 getPDFList: getPDFList,
                 editConfig: editConfig,
-                editTestConfiguration: updateTest
+                editTestConfiguration: updateTest,
+                deletePDF: deletePDF
             });
         }
 

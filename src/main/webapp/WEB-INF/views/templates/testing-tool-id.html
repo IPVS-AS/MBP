@@ -133,6 +133,7 @@
                             <th>Test Report
                                 <Report></Report>
                             </th>
+                            <th></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -147,6 +148,13 @@
 
                                         </span>
                                         <span>Download PDF</span>
+                                    </button>
+                                </form>
+                            </td>
+                            <td>
+                                <form ng-submit="ctrl.deletePDF(pdf.path)" style="margin-top: 3px;">
+                                    <button type="submit" class="btn btn-danger m-t-0 waves-effect">
+                                        Delete
                                     </button>
                                 </form>
                             </td>

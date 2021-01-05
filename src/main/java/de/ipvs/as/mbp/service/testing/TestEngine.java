@@ -10,6 +10,7 @@ import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.repository.SensorRepository;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -93,7 +94,7 @@ public class TestEngine {
     /**
      * Update the test configurations redefined by the user.
      *
-     * @param testID Id of the test to be modified
+     * @param testID  Id of the test to be modified
      * @param changes to be included
      * @return if update was successful or not
      */
@@ -128,10 +129,11 @@ public class TestEngine {
 
     /**
      * Creates a list of the updated rules that should be observed within the test.
+     *
      * @param updateInfos update/editUseNewData information for the rules and the trigger rules
      * @return List of updated rules
      */
-    private List<Rule> updateRuleInformation( JSONObject updateInfos) throws JSONException {
+    private List<Rule> updateRuleInformation(JSONObject updateInfos) throws JSONException {
         Pattern pattern = Pattern.compile("rules/(.*)$");
         JSONArray rules = (JSONArray) updateInfos.get("rules");
         List<Rule> newRules = new ArrayList<>();
@@ -148,12 +150,11 @@ public class TestEngine {
 
 
     /**
-     *
      * Creates a list of the updated sensor configurations included into the test.
      *
      * @param config update/editUseNewData information for the sensor configuration
-     * @throws JSONException In case of parsing problems
      * @return List new sensor Configurations
+     * @throws JSONException In case of parsing problems
      */
     public List<List<ParameterInstance>> updateSenorConfig(Object config) throws JSONException {
         ParameterInstance instance;
@@ -224,26 +225,39 @@ public class TestEngine {
      * @param testId of the test the report to be deleted belongs to
      * @return if files could be deleted successfully or not
      */
-    public ResponseEntity deleteReport(String testId) {
+    public ResponseEntity deleteReport(String testId, Object path) {
+        String fileName = String.valueOf(path);
         ResponseEntity response;
+
+
+
 
         TestDetails testDetails = testDetailsRepository.findById(testId).get();
 
-        if (testDetails.isPdfExists()) {
-            Path pathTestReport = Paths.get(testDetails.getPathPDF());
-            Path pathDiagram = Paths.get(pathTestReport.getParent().toString(), testId + ".gif");
 
-            try {
-                Files.delete(pathTestReport);
-                Files.delete(pathDiagram);
+        //Path pathTestReport = Paths.get(testDetails.getPathPDF()+ ""fileName);
+        try {
+            if (testDetails.isPdfExists()) {
+                File dir = new File(testDetails.getPathPDF());
+                FileFilter fileFilter = new WildcardFileFilter(fileName);
+                File[] files = dir.listFiles(fileFilter);
+                for (final File file : files) {
+                    if (!file.delete()) {
+                        System.err.println("Can't remove " + file.getAbsolutePath());
+                    }
+                }
+
+
+                //  Files.delete(pathTestReport);
                 response = new ResponseEntity<>("Test report successfully deleted", HttpStatus.OK);
-            } catch (NoSuchFileException x) {
-                response = new ResponseEntity<>("Test report doesn't exist.", HttpStatus.NOT_FOUND);
-            } catch (IOException x) {
-                response = new ResponseEntity<>(x, HttpStatus.CONFLICT);
+
+            } else {
+                response = new ResponseEntity<>("No available Test report for this Test.", HttpStatus.NOT_FOUND);
             }
-        } else {
-            response = new ResponseEntity<>("No available Test report for this Test.", HttpStatus.NOT_FOUND);
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace();
+            response = new ResponseEntity<>("Error during deletion.",HttpStatus.CONFLICT);
         }
         return response;
     }
@@ -458,9 +472,9 @@ public class TestEngine {
 
         // Go through the List of sensors and check if specific sensor is available
         Iterator iterator = sensorList.listIterator();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             Sensor tempSensor = (Sensor) iterator.next();
-            if(tempSensor.getName().equals(sensorName)){
+            if (tempSensor.getName().equals(sensorName)) {
                 sensorSimulator = tempSensor;
             }
 
@@ -468,7 +482,6 @@ public class TestEngine {
 
         return sensorSimulator;
     }
-
 
 
     /**
@@ -523,7 +536,6 @@ public class TestEngine {
     }
 
 
-
     /**
      * Checks if the one and three dimensional sensor simulators are already registered.
      *
@@ -564,8 +576,6 @@ public class TestEngine {
         //TODO
 
     }
-
-
 
 
 }

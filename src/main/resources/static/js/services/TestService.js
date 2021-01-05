@@ -11,6 +11,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
         const URL_TEST_STOP = ENDPOINT_URI + '/test-details/test/stop/';
         const URL_REPORT_LIST = ENDPOINT_URI + '/test-details/pdfList/';
         const URL_REPORT_EXISTS = ENDPOINT_URI + '/test-details/pdfExists/';
+        const URL_REPORT_DELETE = ENDPOINT_URI + '/test-details/deleteTestReport/';
         const URL_TESTDEVICE_REGISTER = ENDPOINT_URI + '/test-details/registerTestDevice';
         const URL_TESTACTUATOR_REGISTER = ENDPOINT_URI + '/test-details/registerTestActuator';
         const URL_ONEDIM_SENSOR_REGISTER = ENDPOINT_URI + '/test-details/registerSensorSimulator';
@@ -94,6 +95,17 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             return HttpService.getRequest(URL_REPORT_EXISTS + testId);
         }
 
+
+        /**
+         * [Public]
+         *
+         * Performs a server request to delete a specific test report of a test.
+         */
+        function deleteTestReport(testId, path) {
+
+            return HttpService.postRequest(URL_REPORT_DELETE + testId, path);
+
+        }
 
         /**
          * [Public]
@@ -863,7 +875,8 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             registerRerunOperator: registerRerunOperator,
             downloadReport: downloadReport,
             getRuleListTest: getRuleListTest,
-            updateTest: updateTest
+            updateTest: updateTest,
+            deleteTestReport: deleteTestReport
         }
     }
 ]);
