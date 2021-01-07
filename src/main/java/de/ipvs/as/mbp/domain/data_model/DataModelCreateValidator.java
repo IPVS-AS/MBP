@@ -1,0 +1,48 @@
+package de.ipvs.as.mbp.domain.data_model;
+
+import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
+import de.ipvs.as.mbp.domain.rules.Rule;
+import de.ipvs.as.mbp.domain.rules.RuleActionType;
+import de.ipvs.as.mbp.error.EntityValidationException;
+import de.ipvs.as.mbp.service.validation.ICreateValidator;
+import de.ipvs.as.mbp.util.Validation;
+import org.springframework.stereotype.Service;
+import org.apache.commons.lang3.EnumUtils;
+
+import javax.swing.tree.TreeNode;
+
+/**
+ * Validator for DataModel trees.
+ */
+@Service
+public class DataModelCreateValidator implements ICreateValidator<DataModel> {
+
+    @Override
+    public void validateCreatable(DataModel entity) {
+
+        //Sanity check
+        if (entity == null) {
+            throw new EntityValidationException("The entity is invalid.");
+        }
+
+        //Create exception to collect invalid fields
+        EntityValidationException exception = new EntityValidationException("Could not create, because some fields are invalid.");
+
+        //Check name
+        if (Validation.isNullOrEmpty(entity.getName())) {
+            exception.addInvalidField("name", "The name must not be empty.");
+        }
+
+        //Check treeNode array
+        if (entity.getTreeNodes() == null || entity.getTreeNodes().size() <= 0) {
+            exception.addInvalidField("name", "The data model must not be empty.");
+        }
+
+        //Throw exception if there are invalid fields so far
+        if (exception.hasInvalidFields()) {
+            throw exception;
+        }
+
+        DataModelTree.validateWholeTree(entity.getTreeNodes());
+    }
+}
