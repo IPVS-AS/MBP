@@ -2,7 +2,7 @@ package de.ipvs.as.mbp.domain.data_model;
 
 /**
  * An enum for storing all available tree node types for a data model tree together with
- * their string value representation for interferring types from strings.
+ * their string value representation for interfering types from strings.
  */
 public enum IoTDataTypes {
 

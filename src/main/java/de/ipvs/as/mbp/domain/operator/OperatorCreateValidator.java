@@ -49,6 +49,11 @@ public class OperatorCreateValidator implements ICreateValidator<Operator> {
             exception.addInvalidField("unit", "Unable to parse provided unit.");
         }
 
+        //Check dataModel
+        if (entity.getDataModel() == null) {
+            exception.addInvalidField("dataModel", "A data model must be selected.");
+        }
+
         //Check parameters for validity
         Set<String> nameSet = new HashSet<>();
         for (Parameter parameter : entity.getParameters()) {

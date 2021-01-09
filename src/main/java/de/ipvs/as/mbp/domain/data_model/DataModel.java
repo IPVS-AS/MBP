@@ -2,13 +2,17 @@ package de.ipvs.as.mbp.domain.data_model;
 
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
-import io.swagger.annotations.ApiModel;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 
 import javax.persistence.GeneratedValue;
 import java.util.List;
 
+/**
+ * Repository class for storing DataModels. The here stored data models
+ * can be converted to a {@link de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree}
+ * which provides logic to handle heterogeneous iot data.
+ */
 @MBPEntity(createValidator = DataModelCreateValidator.class)
 public class DataModel extends UserEntity {
 

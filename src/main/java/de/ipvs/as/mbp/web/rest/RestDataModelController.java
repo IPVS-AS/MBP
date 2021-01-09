@@ -3,8 +3,10 @@ package de.ipvs.as.mbp.web.rest;
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
+import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.rules.RuleAction;
+import de.ipvs.as.mbp.domain.units.PredefinedQuantity;
 import de.ipvs.as.mbp.error.EntityAlreadyExistsException;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
@@ -15,9 +17,18 @@ import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * REST controller for requests related to the creation of new data models.
@@ -56,8 +67,41 @@ public class RestDataModelController {
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable("dataModelId") String dataModelId, @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
         // Retrieve the corresponding rule action (includes access-control)
-        System.out.println("test");
         DataModel dataModel = userEntityService.getForIdWithAccessControlCheck(dataModelRepository, dataModelId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
         return ResponseEntity.ok(userEntityService.entityToEntityModel(dataModel));
+    }
+
+    @GetMapping(produces = "application/hal+json")
+    @ApiOperation(value = "Retrieves all existing data model entities available for the requesting entity.", produces = "application/hal+json")
+    @ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
+            @ApiResponse(code = 404, message = "Data model or requesting user not found!") })
+    public ResponseEntity<PagedModel<EntityModel<DataModel>>> all(
+            @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+            @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+
+        System.out.println("GET test");
+        // Parse the access-request information
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+        // Retrieve the corresponding data models (includes access-control)
+        List<DataModel> dataModels = userEntityService.getPageWithAccessControlCheck(dataModelRepository, ACAccessType.READ, accessRequest, pageable);
+
+        // Create self link
+        Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
+
+        return ResponseEntity.ok(userEntityService.entitiesToPagedModel(dataModels, selfLink, pageable));
+    }
+
+    @DeleteMapping(path = "/{dataModelId}")
+    @ApiOperation(value = "Deletes an existing data model entity identified by its id if it's available for the requesting entity.")
+    @ApiResponses({@ApiResponse(code = 204, message = "Success!"),
+            @ApiResponse(code = 401, message = "Not authorized to delete the data model!"),
+            @ApiResponse(code = 404, message = "Data model or requesting user not found!")})
+    public ResponseEntity<Void> delete(
+            @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+            @PathVariable("dataModelId") String dataModelId) throws EntityNotFoundException, MissingPermissionException {
+        // Delete the data model (includes access-control)
+        userEntityService.deleteWithAccessControlCheck(dataModelRepository, dataModelId, ACAccessRequest.valueOf(accessRequestHeader));
+        return ResponseEntity.noContent().build();
     }
 }

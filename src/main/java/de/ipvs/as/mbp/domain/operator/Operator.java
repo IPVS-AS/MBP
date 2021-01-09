@@ -2,16 +2,17 @@ package de.ipvs.as.mbp.domain.operator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.List;
+import javax.measure.unit.Unit;
+import javax.persistence.GeneratedValue;
+import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.operator.parameters.Parameter;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
-
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import javax.measure.quantity.Quantity;
-import javax.measure.unit.Unit;
-import javax.persistence.GeneratedValue;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Document class for operators.
@@ -34,18 +35,30 @@ public class Operator extends UserEntity {
 
     private List<Parameter> parameters;
 
+    @DBRef
+    private DataModel dataModel;
+
     public Operator() {
         this.routines = new ArrayList<>();
         this.parameters = new ArrayList<>();
     }
 
-    public List<Code> getRoutines() {
-        return routines;
-    }
-
     public Operator setRoutines(List<Code> routines) {
         this.routines = routines;
         return this;
+    }
+
+    public DataModel getDataModel() {
+        return dataModel;
+    }
+
+    public Operator setDataModel(DataModel dataModel) {
+        this.dataModel = dataModel;
+        return this;
+    }
+
+    public List<Code> getRoutines() {
+        return routines;
     }
 
     public Operator addRoutine(Code routine) {

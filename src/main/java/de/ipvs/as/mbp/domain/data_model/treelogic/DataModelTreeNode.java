@@ -6,6 +6,12 @@ import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * One node of the {@link DataModelTree}. Some contained fields are optional
+ * for some {@link IoTDataTypes}:
+ * - Only arrays need a dimension, not used dimensions should be <= 0
+ * - Description is always optional
+ */
 public class DataModelTreeNode {
 
     /**
@@ -23,10 +29,12 @@ public class DataModelTreeNode {
     private IoTDataTypes type;
 
     private int dimension;
+
+    private List<String> treePath;
+
     /**
-     *
      * @param repoTreeNode The tree node representation of the repository
-     * {@link de.ipvs.as.mbp.domain.data_model.DataModel DataModel}
+     *                     {@link de.ipvs.as.mbp.domain.data_model.DataModel DataModel}
      */
     public DataModelTreeNode(DataTreeNode repoTreeNode) {
         this.repositoryTreeNode = repoTreeNode;
@@ -41,6 +49,8 @@ public class DataModelTreeNode {
         } else {
             this.dimension = -1;
         }
+
+        this.treePath = new ArrayList<>();
     }
 
     public String getName() {
@@ -77,6 +87,20 @@ public class DataModelTreeNode {
 
     public void addParent(DataModelTreeNode parentToAdd) {
         this.parent = parentToAdd;
+    }
+
+    public List<String> getTreePath() {
+        return treePath;
+    }
+
+    /**
+     * Execute in preorder after the whole tree is build
+     */
+    public void updateTreePath() {
+        if (this.parent != null) {
+            this.treePath.addAll(this.parent.getTreePath());
+        }
+        this.treePath.add(this.name);
     }
 
     public DataTreeNode getRepositoryTreeNode() {

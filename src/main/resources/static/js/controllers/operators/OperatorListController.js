@@ -1,9 +1,11 @@
 /* global app */
 
 app.controller('OperatorListController',
-    ['$scope', '$rootScope', '$controller', '$q', 'operatorList', 'operatorPreprocessing', 'addOperator', 'deleteOperator', 'FileReader', 'parameterTypesList', 'OperatorService', 'NotificationService',
-        function ($scope, $rootScope, $controller, $q, operatorList, operatorPreprocessing, addOperator, deleteOperator, FileReader, parameterTypesList, OperatorService, NotificationService) {
+    ['$scope', '$rootScope', '$controller', '$q', 'operatorList', 'dataModelList', 'operatorPreprocessing', 'addOperator', 'deleteOperator', 'FileReader', 'parameterTypesList', 'OperatorService', 'NotificationService',
+        function ($scope, $rootScope, $controller, $q, operatorList, dataModelList, operatorPreprocessing, addOperator, deleteOperator, FileReader, parameterTypesList, OperatorService, NotificationService) {
             let vm = this;
+
+            vm.dataModelList = dataModelList;
 
             vm.dzServiceOptions = {
                 paramName: 'serviceFile',

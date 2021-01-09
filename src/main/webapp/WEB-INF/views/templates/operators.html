@@ -44,7 +44,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Description</th>
-                        <th>Unit</th>
+                        <th>Data Model</th>
                         <th>Parameters</th>
                         <th>Owner</th>
                     </tr>
@@ -137,6 +137,20 @@
                                 </div>
                                 <span class="help-block"
                                       ng-show="addOperatorCtrl.item.errors.description">{{addOperatorCtrl.item.errors.description}}</span>
+                            </div>
+                            <!-- item.dataModel group -->
+                            <div class="form-group" ng-class="{'has-error' : addOperatorCtrl.item.errors.dataModel}">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : addOperatorCtrl.item.errors.dataModel}">
+                                    <select class="form-control show-tick" id="operator-form-select-data-model"
+                                            ng-model="addOperatorCtrl.item.dataModelId"
+                                            ng-options="t.id as (t.name) for t in ctrl.dataModelList">
+                                        <option value="">Select data model *
+                                        <option/>
+                                    </select>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="addOperatorCtrl.item.errors.dataModel">{{addOperatorCtrl.item.errors.dataModel}}</span>
                             </div>
                             <!-- item.unit group -->
                             <div class="form-group"

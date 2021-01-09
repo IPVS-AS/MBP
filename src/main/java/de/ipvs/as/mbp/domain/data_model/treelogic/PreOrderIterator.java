@@ -1,13 +1,6 @@
 package de.ipvs.as.mbp.domain.data_model.treelogic;
 
-import com.sun.xml.bind.v2.util.FatalAdapter;
-import org.apache.commons.collections.ArrayStack;
-
-import java.sql.Array;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 /**
  * Implementation idea from https://www.geeksforgeeks.org/iterative-preorder-traversal-of-a-n-ary-tree/
@@ -18,12 +11,15 @@ public class PreOrderIterator implements Iterator<DataModelTreeNode> {
     private List<DataModelTreeNode> stack;
     private List<DataModelTreeNode> visitedNodes;
 
+    private boolean isCyclic;
+
     public PreOrderIterator(DataModelTreeNode root) {
         this.root = root;
         this.stack = new ArrayList();
         this.stack.add(root);
         this.visitedNodes = new ArrayList<>();
         this.visitedNodes.add(root);
+        this.isCyclic = false;
 
         while(stack.size() > 0) {
             boolean allChildrenVisited = false;
@@ -41,9 +37,14 @@ public class PreOrderIterator implements Iterator<DataModelTreeNode> {
 
             // Handle the next unvisited child node of the parent
             for (DataModelTreeNode child : parentNode.getChildren()) {
+                if (visitedNodes.contains(child)) {
+                    if (child.getParent() != parentNode) {
+                        this.isCyclic = true;
+                    }
+                }
                 // Is the child unvisited?
                 if (!visitedNodes.contains(child)) {
-                    // Yes, it is unvisited! Then visit it know by adding it to the stack and to the visitedNodes list.
+                    // Yes, it is unvisited! Then visit it now by adding it to the stack and to the visitedNodes list.
                     allChildrenVisited = true;
                     stack.add(child);
                     visitedNodes.add(child);
@@ -57,6 +58,24 @@ public class PreOrderIterator implements Iterator<DataModelTreeNode> {
                 stack.remove(stack.size()-1);
             }
         }
+    }
+
+    private boolean hasListDuplicates(List<DataModelTreeNode> listToCheck) {
+        Set<DataModelTreeNode> set = new HashSet<>();
+        set.addAll(listToCheck);
+        if (listToCheck.size() != set.size()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @return True if the tree has multiple parents and is therefore not a proper tree (could be cyclic if
+     * no multiple parents).
+     */
+    public boolean isCyclic() {
+        return isCyclic;
     }
 
     @Override

@@ -12,7 +12,8 @@ import org.apache.commons.lang3.EnumUtils;
 import javax.swing.tree.TreeNode;
 
 /**
- * Validator for DataModel trees.
+ * Validator for DataModel trees. Criterias, amongst other things: Non-cyclic, connected, primitive data fields
+ * as leaves, objects have at least one child, arrays have exactly one child
  */
 @Service
 public class DataModelCreateValidator implements ICreateValidator<DataModel> {
@@ -35,7 +36,7 @@ public class DataModelCreateValidator implements ICreateValidator<DataModel> {
 
         //Check treeNode array
         if (entity.getTreeNodes() == null || entity.getTreeNodes().size() <= 0) {
-            exception.addInvalidField("name", "The data model must not be empty.");
+            exception.addInvalidField("treeNodes", "The data model must not be empty.");
         }
 
         //Throw exception if there are invalid fields so far
@@ -43,6 +44,7 @@ public class DataModelCreateValidator implements ICreateValidator<DataModel> {
             throw exception;
         }
 
-        DataModelTree.validateWholeTree(entity.getTreeNodes());
+        DataModelTree tree = new DataModelTree(entity.getTreeNodes());
+        tree.validateWholeTree();
     }
 }
