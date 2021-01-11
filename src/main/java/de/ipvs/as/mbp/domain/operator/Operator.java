@@ -1,21 +1,17 @@
 package de.ipvs.as.mbp.domain.operator;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.measure.quantity.Quantity;
-import javax.measure.unit.Unit;
-import javax.persistence.GeneratedValue;
-
-import de.ipvs.as.mbp.domain.monitoring.MonitoringOperatorCreateValidator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.operator.parameters.Parameter;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.measure.quantity.Quantity;
+import javax.measure.unit.Unit;
+import javax.persistence.GeneratedValue;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Document class for operators.
@@ -47,8 +43,14 @@ public class Operator extends UserEntity {
         return routines;
     }
 
-    public void addRoutine(Code routine) {
+    public Operator setRoutines(List<Code> routines) {
+        this.routines = routines;
+        return this;
+    }
+
+    public Operator addRoutine(Code routine) {
         this.routines.add(routine);
+        return this;
     }
 
     public boolean hasRoutines() {
@@ -59,32 +61,36 @@ public class Operator extends UserEntity {
         return id;
     }
 
-    public void setId(String id) {
+    public Operator setId(String id) {
         this.id = id;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public Operator setName(String name) {
         this.name = name;
+        return this;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public Operator setDescription(String description) {
         this.description = description;
+        return this;
     }
 
     public String getUnit() {
         return unit;
     }
 
-    public void setUnit(String unit) {
+    public Operator setUnit(String unit) {
         this.unit = unit;
+        return this;
     }
 
     @JsonIgnore
@@ -100,7 +106,8 @@ public class Operator extends UserEntity {
         return parameters;
     }
 
-    public void setParameters(List<Parameter> parameters) {
+    public Operator setParameters(List<Parameter> parameters) {
         this.parameters = parameters;
+        return this;
     }
 }

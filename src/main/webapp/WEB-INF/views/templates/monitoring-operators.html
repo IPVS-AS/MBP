@@ -147,7 +147,7 @@
                                      ng-class="{'focused error' : addOperatorCtrl.item.errors.deviceTypes }">
                                     <select class="form-control selectpicker" title="Device types *"
                                             data-header="Device types *"
-                                            ng-options="deviceType.href as deviceType.name for deviceType in ctrl.deviceTypesList"
+                                            ng-options="deviceType.id as deviceType.name for deviceType in ctrl.deviceTypesList"
                                             ng-model="addOperatorCtrl.item.deviceTypes" multiple>
                                     </select>
                                 </div>

@@ -1,25 +1,25 @@
 package de.ipvs.as.mbp.web.rest;
 
 import de.ipvs.as.mbp.RestConfiguration;
-import de.ipvs.as.mbp.domain.operator.Operator;
-import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
-import de.ipvs.as.mbp.error.EntityNotFoundException;
-import de.ipvs.as.mbp.error.MissingPermissionException;
-import de.ipvs.as.mbp.repository.DeviceRepository;
-import de.ipvs.as.mbp.repository.projection.MonitoringOperatorExcerpt;
-import de.ipvs.as.mbp.service.UserEntityService;
-import de.ipvs.as.mbp.service.UserService;
-import io.swagger.annotations.*;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringComponent;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringComponentDTO;
+import de.ipvs.as.mbp.domain.operator.Operator;
+import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.user.User;
+import de.ipvs.as.mbp.error.EntityNotFoundException;
+import de.ipvs.as.mbp.error.MissingPermissionException;
+import de.ipvs.as.mbp.repository.DeviceRepository;
+import de.ipvs.as.mbp.repository.projection.MonitoringOperatorExcerpt;
+import de.ipvs.as.mbp.service.UserEntityService;
+import de.ipvs.as.mbp.service.UserService;
 import de.ipvs.as.mbp.service.deploy.ComponentState;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
 import de.ipvs.as.mbp.web.rest.helper.MonitoringHelper;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
@@ -59,29 +59,29 @@ public class RestMonitoringController {
 
     /**
      * Indicates whether monitoring is currently active for a certain device
-     * and monitoring adapter.
+     * and monitoring operator.
      *
-     * @param deviceId            the id of the {@link Device}.
-     * @param monitoringAdapterId the id of the {@link Operator}.
+     * @param deviceId             the id of the {@link Device}.
+     * @param monitoringOperatorId the id of the {@link Operator}.
      * @return {@code true} if the monitoring is active; {@code false} otherwise (embedded in response body).
      * @throws EntityNotFoundException
      * @throws MissingPermissionException
      */
     @GetMapping(value = "/monitoring/{deviceId}")
-    @ApiOperation(value = "Indicates whether monitoring is active for a given device and monitoring adapter.", produces = "application/hal+json")
+    @ApiOperation(value = "Indicates whether monitoring is active for a given device and monitoring operator.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
             @ApiResponse(code = 401, message = "Not authorized to access the device!"),
-            @ApiResponse(code = 404, message = "Device, monitoring adapter or requesting user not found!")})
+            @ApiResponse(code = 404, message = "Device, monitoring operator or requesting user not found!")})
     public ResponseEntity<Boolean> isMonitoringActive(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable(value = "deviceId") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
-            @RequestParam("adapterId") @ApiParam(value = "ID of the monitoring adapter", example = "5c97dc2583aeb6078c5ab672", required = true) String adapterId,
+            @RequestParam("monitoringOperatorId") @ApiParam(value = "ID of the monitoring operator", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringOperatorId,
             @RequestBody @ApiParam(value = "The list of monitoring parameters to use") List<ParameterInstance> parameters) throws EntityNotFoundException, MissingPermissionException {
         // Parse the access-request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
         // Create new monitoring component from parameters
-        MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, adapterId);
+        MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringOperatorId);
 
         // Check permission
         userEntityService.requirePermission(monitoringComponent.getDevice(), ACAccessType.READ, accessRequest);
@@ -90,28 +90,17 @@ public class RestMonitoringController {
         return ResponseEntity.ok(deploymentWrapper.isComponentRunning(monitoringComponent));
     }
 
-    /**
-     * Starts monitoring for a certain device and monitoring adapter.
-     *
-     * @param deviceId            the id of the {@link Device}.
-     * @param monitoringAdapterId the id of the {@link Operator}.
-     * @param accessRequest       the {@link ACAccessRequest} holding the context information of the requesting user
-     *                            as well as the list of parameters.
-     * @return the {@link ActionResponse}.
-     * @throws EntityNotFoundException
-     * @throws MissingPermissionException
-     */
     @PostMapping(value = "/monitoring/{deviceId}")
-    @ApiOperation(value = "Enables monitoring for a given device and monitoring adapter with optional parameters", produces = "application/hal+json")
+    @ApiOperation(value = "Enables monitoring for a given device and monitoring operator with optional parameters", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 201, message = "Success"),
             @ApiResponse(code = 400, message = "Invalid parameters provided!"),
             @ApiResponse(code = 401, message = "Not authorized to monitor the device!"),
-            @ApiResponse(code = 404, message = "Device, monitoring adapter or requesting user not found!"),
+            @ApiResponse(code = 404, message = "Device, monitoring operator or requesting user not found!"),
             @ApiResponse(code = 500, message = "Monitoring failed due to an unexpected error!")})
     public ResponseEntity<Void> startMonitoring(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable(value = "deviceId") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
-            @RequestParam("adapterId") @ApiParam(value = "ID of the monitoring adapter", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringAdapterId,
+            @RequestParam("monitoringOperatorId") @ApiParam(value = "ID of the monitoring operator", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringOperatorId,
             @RequestBody @ApiParam(value = "The list of monitoring parameters to use") List<ParameterInstance> parameters) throws EntityNotFoundException, MissingPermissionException {
         // Parse the access-request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
@@ -120,7 +109,7 @@ public class RestMonitoringController {
         User user = userService.getLoggedInUser();
 
         // Create new monitoring component
-        MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
+        MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringOperatorId);
 
         // Check for monitoring permission
         requireMonitoringPermission(monitoringComponent.getDevice(), user, accessRequest);
@@ -133,27 +122,17 @@ public class RestMonitoringController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    /**
-     * Stops monitoring for a certain device and monitoring adapter.
-     *
-     * @param deviceId            the id of the {@link Device}.
-     * @param monitoringAdapterId the id of the {@link Operator}.
-     * @param accessRequest       the {@link ACAccessRequest} holding the context information of the requesting user
-     *                            as well as the list of parameters.
-     * @return the {@link ActionResponse}.
-     * @throws EntityNotFoundException
-     * @throws MissingPermissionException
-     */
+
     @DeleteMapping(value = "/monitoring/{deviceId}")
-    @ApiOperation(value = "Disables monitoring for a given device and monitoring adapter", produces = "application/hal+json")
+    @ApiOperation(value = "Disables monitoring for a given device and monitoring operator", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
             @ApiResponse(code = 401, message = "Not authorized to monitor the device!"),
-            @ApiResponse(code = 404, message = "Device, monitoring adapter or requesting user not found!"),
+            @ApiResponse(code = 404, message = "Device, monitoring operator or requesting user not found!"),
             @ApiResponse(code = 500, message = "Stopping monitoring failed due to an unexpected error!")})
     public ResponseEntity<Void> disableMonitoring(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable(value = "deviceId") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
-            @RequestParam("adapterId") @ApiParam(value = "ID of the monitoring adapter", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringAdapterId) throws EntityNotFoundException, MissingPermissionException {
+            @RequestParam("monitoringOperatorId") @ApiParam(value = "ID of the monitoring operator", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringOperatorId) throws EntityNotFoundException, MissingPermissionException {
         // Parse the access-request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
@@ -161,7 +140,7 @@ public class RestMonitoringController {
         User user = userService.getLoggedInUser();
 
         // Create new monitoring component
-        MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
+        MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringOperatorId);
 
         // Check for monitoring permission
         requireMonitoringPermission(monitoringComponent.getDevice(), user, accessRequest);
@@ -173,10 +152,10 @@ public class RestMonitoringController {
 
 
     @GetMapping(value = "/monitoring/state/{deviceId}")
-    @ApiOperation(value = "Retrieves monitoring adapters and their current monitoring state that are available for a given device and the requesting user", produces = "application/hal+json")
+    @ApiOperation(value = "Retrieves monitoring operators and their current monitoring state that are available for a given device and the requesting user", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
             @ApiResponse(code = 401, message = "Not authorized to access/monitor the device!"),
-            @ApiResponse(code = 404, message = "Device, monitoring adapter or requesting user not found!")})
+            @ApiResponse(code = 404, message = "Device, monitoring operator or requesting user not found!")})
     public ResponseEntity<Map<String, ComponentState>> getDeviceMonitoringState(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable(value = "deviceId") String deviceId) throws EntityNotFoundException, MissingPermissionException {
@@ -192,7 +171,7 @@ public class RestMonitoringController {
         // Check for monitoring permission
         requireMonitoringPermission(device, user, accessRequest);
 
-        // Retrieve compatible adapters (includes only entities the requesting user has been granted access for)
+        // Retrieve compatible operators (includes only entities the requesting user has been granted access for)
         // and create a monitoring component for each one
         List<Component> monitoringComponents = monitoringHelper.getCompatibleOperators(device, accessRequest)
                 .stream().map(a -> new MonitoringComponent(a, device)).collect(Collectors.toList());
@@ -201,15 +180,15 @@ public class RestMonitoringController {
         return ResponseEntity.ok(deploymentWrapper.getStatesAllComponents(monitoringComponents));
     }
 
-    @GetMapping(value = "/monitoring/state/{deviceId}", params = {"adapter"})
-    @ApiOperation(value = "Retrieves the monitoring state for a given device and monitoring adapter", produces = "application/hal+json")
+    @GetMapping(value = "/monitoring/state/{deviceId}", params = {"monitoringOperatorId"})
+    @ApiOperation(value = "Retrieves the monitoring state for a given device and monitoring operator", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
             @ApiResponse(code = 401, message = "Not authorized to access/monitor the device!"),
-            @ApiResponse(code = 404, message = "Device, monitoring adapter or requesting user not found!")})
+            @ApiResponse(code = 404, message = "Device, monitoring operator or requesting user not found!")})
     public ResponseEntity<EntityModel<ComponentState>> getMonitoringState(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable(value = "deviceId") @ApiParam(value = "ID of the device", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
-            @RequestParam("adapterId") @ApiParam(value = "ID of the monitoring adapter", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringAdapterId) throws EntityNotFoundException, MissingPermissionException {
+            @RequestParam("monitoringOperatorId") @ApiParam(value = "ID of the monitoring operator", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringOperatorId) throws EntityNotFoundException, MissingPermissionException {
         // Parse the access-request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
@@ -217,7 +196,7 @@ public class RestMonitoringController {
         User user = userService.getLoggedInUser();
 
         // Create new monitoring component
-        MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
+        MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringOperatorId);
 
         // Check for monitoring permission
         requireMonitoringPermission(monitoringComponent.getDevice(), user, accessRequest);
@@ -227,10 +206,10 @@ public class RestMonitoringController {
     }
 
     @GetMapping("/monitoring-operators/by-device/{id}")
-    @ApiOperation(value = "Retrieves all monitoring adapters that are available for a given device and the requesting user", produces = "application/hal+json")
+    @ApiOperation(value = "Retrieves all monitoring operators that are available for a given device and the requesting user", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 401, message = "Not authorized to access/monitor the device!"),
-            @ApiResponse(code = 404, message = "Device, monitoring adapter or requesting user not found!")})
+            @ApiResponse(code = 404, message = "Device, monitoring operator or requesting user not found!")})
     public ResponseEntity<List<MonitoringOperatorExcerpt>> getCompatibleMonitoringOperatorsForDevice(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable(value = "id", required = true) @NotEmpty String deviceId) throws EntityNotFoundException, MissingPermissionException {
@@ -246,25 +225,25 @@ public class RestMonitoringController {
         // Check for monitoring permission
         requireMonitoringPermission(device, user, accessRequest);
 
-        // Get excerpt for each compatible adapter
-        List<MonitoringOperatorExcerpt> compatibleAdapters = monitoringHelper.getCompatibleOperators(device, accessRequest)
+        // Get excerpt for each compatible operator
+        List<MonitoringOperatorExcerpt> compatibleOperators = monitoringHelper.getCompatibleOperators(device, accessRequest)
                 .stream()
                 .map(monitoringHelper::operatorToExcerpt)
                 .flatMap(o -> o.map(Stream::of).orElseGet(Stream::empty))
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(compatibleAdapters);
+        return ResponseEntity.ok(compatibleOperators);
     }
 
     /**
      * Returns a list of all monitoring components that are available. Each
      * monitoring component consists out of a device and a compatible monitoring
-     * adapter and is returned as a DTO.
+     * operator and is returned as a DTO.
      *
      * @return A list of all available monitoring components
      */
     @GetMapping("/monitoring")
-    @ApiOperation(value = "Retrieves all monitoring components that are available for the requesting user, each consisting out of a device and a monitoring adapter", produces = "application/hal+json")
+    @ApiOperation(value = "Retrieves all monitoring components that are available for the requesting user, each consisting out of a device and a monitoring operator", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success")})
     public ResponseEntity<List<MonitoringComponentDTO>> getAllMonitoringComponents(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader) {
         // Parse the access-request information
@@ -275,7 +254,7 @@ public class RestMonitoringController {
                 .stream()
                 // Filter devices based on policies
                 .filter(d -> userEntityService.checkPermission(d, ACAccessType.MONITOR, accessRequest))
-                // Get compatible monitoring adapter
+                // Get compatible monitoring operator
                 .map(d -> monitoringHelper.getCompatibleOperators(d, accessRequest)
                         .stream()
                         // Map to monitoring components

@@ -49,6 +49,11 @@ public class MonitoringOperatorCreateValidator implements ICreateValidator<Monit
             exception.addInvalidField("unit", "Unable to parse provided unit.");
         }
 
+        //Check whether device types were provided
+        if((entity.getDeviceTypes() == null) || entity.getDeviceTypes().isEmpty()){
+            exception.addInvalidField("deviceTypes", "At least one device type needs to be provided.");
+        }
+
         //Check parameters for validity
         Set<String> nameSet = new HashSet<>();
         for (Parameter parameter : entity.getParameters()) {

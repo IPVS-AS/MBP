@@ -31,8 +31,9 @@ public class MonitoringOperator extends Operator {
      *
      * @return The list of device types to set
      */
-    public void setDeviceTypes(List<DeviceType> deviceTypes) {
+    public MonitoringOperator setDeviceTypes(List<DeviceType> deviceTypes) {
         this.deviceTypes = deviceTypes;
+        return this;
     }
 
     /**
