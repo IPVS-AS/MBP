@@ -15,6 +15,24 @@ app.controller('DataModelListController',
 
             /**
              * [Public]
+             * Converts a JSON string to a more pretty printed JSON representation
+             * @param string
+             * @returns {string}
+             */
+            vm.formatJSON = function formatJSON(string) {
+                if (string != null) {
+                    try {
+                        return JSON.stringify(JSON.parse(string), null, 2);
+                    } catch (e) {
+                        return "Refresh page to view the example.";
+                    }
+                } else {
+                    return "";
+                }
+            }
+
+            /**
+             * [Public]
              * Shows an alert that asks the user if he is sure that he wants to delete a certain data model. It also
              * shows a list of all components that are affected by this deletion.
              *
@@ -113,6 +131,8 @@ app.controller('DataModelListController',
 
                         //Add new item to list
                         vm.dataModelListCtrl.pushItem(data);
+                        // TODO Get again a get request for getting the json representation
+                        data.jsonexample = "Refresh page to view the example.";
                     }
                 }
             );

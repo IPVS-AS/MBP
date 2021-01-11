@@ -26,7 +26,7 @@
                         <tr>
                             <th>Name</th>
                             <th>Description</th>
-                            <!--      <th>Data example</th> -->
+                            <th>Data example</th>
                          <!--   <th>Amount of data tree nodes</th> -->
                             <th>Owner</th>
                         </tr>
@@ -39,19 +39,17 @@
                                    class="material-icons" style="vertical-align: bottom;">lock</i>
                             </td>
                             <td>{{item.description}}</td>
-                            <!--
-                          <td>{{item.unit ? item.unit : 'None'}}</td>
                          <td>
-                             <button ng-repeat-start="parameter in item.parameters"
-                                     class="btn btn-default" role="button"
+                             <button class="btn btn-default" role="button"
                                      data-html="true" data-toggle="popover"
-                                     data-placement="top" title="{{parameter.name}}"
-                                     data-content="<strong>Type:</strong> {{parameter.type}}<br/>
-                                 <strong>Unit:</strong> {{parameter.unit ? parameter.unit : 'None'}}">
-                                 {{parameter.name}}
+                                     data-placement="top" title="MQTT message example"
+                                     data-content="<pre style=&quot;height: auto; max-height: 200px; overflow: auto;
+                                                    background-color: #eeeeee; word-break: normal !important;
+                                                    word-wrap: normal !important;
+                                                    white-space: pre !important;&quot;
+                                                    >{{item.jsonexample ? ctrl.formatJSON(item.jsonexample) : 'Not available'}}</pre>">
+                                 MQTT message example
                              </button>
-                             -->
-                               <span ng-repeat-end="">&nbsp;</span>
                            </td>
                            <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                            <td>
@@ -66,6 +64,7 @@
                        </tr>
                        <tr ng-show="dataModelListCtrl.items.length === 0">
                            <td>No data models registered.</td>
+                           <td></td>
                            <td></td>
                            <td></td>
                        </tr>

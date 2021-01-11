@@ -3,7 +3,12 @@ package de.ipvs.as.mbp.domain.data_model.treelogic;
 import java.util.*;
 
 /**
- * Implementation idea from https://www.geeksforgeeks.org/iterative-preorder-traversal-of-a-n-ary-tree/
+ * Preorder iterator for a {@link DataModelTree} using {@link DataModelTreeNode}s. Beyond the pure iteration
+ * it provides the opportunity to checker whether the is cyclic or a node has multiple parents and is therefore
+ * not a proper tree. This can be checked by using {@link PreOrderIterator#isCyclic()} direct after constructor
+ * call.<br>
+ *
+ * <i>Basic implementation idea from https://www.geeksforgeeks.org/iterative-preorder-traversal-of-a-n-ary-tree/</i>
  */
 public class PreOrderIterator implements Iterator<DataModelTreeNode> {
 
@@ -13,6 +18,12 @@ public class PreOrderIterator implements Iterator<DataModelTreeNode> {
 
     private boolean isCyclic;
 
+    /**
+     * Inits the iterator. If you want to check if the tree is valid (no multiple parents, no cycles) then you
+     * can use the {@link PreOrderIterator#isCyclic()} method afterwards.
+     *
+     * @param root The root of the tree. This is the start point of iteration.
+     */
     public PreOrderIterator(DataModelTreeNode root) {
         this.root = root;
         this.stack = new ArrayList();

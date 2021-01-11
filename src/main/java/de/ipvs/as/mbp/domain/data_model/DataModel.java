@@ -9,7 +9,7 @@ import javax.persistence.GeneratedValue;
 import java.util.List;
 
 /**
- * Repository class for storing DataModels. The here stored data models
+ * Repository (document) class for storing DataModels. The here stored data models
  * can be converted to a {@link de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree}
  * which provides logic to handle heterogeneous iot data.
  */
@@ -26,6 +26,18 @@ public class DataModel extends UserEntity {
     private String description;
 
     private List<DataTreeNode> treeNodes;
+
+    private String JSONExample;
+
+    // ------
+
+    public String getJSONExample() {
+        return JSONExample;
+    }
+
+    public void setJSONExample(String JSONExample) {
+        this.JSONExample = JSONExample;
+    }
 
     public List<DataTreeNode> getTreeNodes() {
         return treeNodes;
