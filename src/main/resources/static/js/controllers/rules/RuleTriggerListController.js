@@ -53,7 +53,7 @@ app.controller('RuleTriggerListController',
              * @returns A promise of the user's decision
              */
             function confirmDelete(data) {
-                
+
                 let ruleTriggerId = data.id;
                 let ruleTriggerName = "";
 
@@ -65,39 +65,43 @@ app.controller('RuleTriggerListController',
                     }
                 }
 
-                return RuleTriggerService.getUsingRules( ruleTriggerId ).then(function (result) {
+                //Ask the server for all rules that use this rule trigger
+                return RuleTriggerService.getUsingRules(ruleTriggerId).then(function (result) {
+                    //Check if list is empty
+                    if (result.length > 0) {
+                        //Not empty, entity cannot be deleted
+                        let errorText = "The rule condition <strong>" + ruleTriggerName + "</strong> is still used by " +
+                            "the following rules and thus cannot be deleted:<br/><br/>";
 
-                    var affectedWarning = "";
-
-                    //If list is not empty, create a message that contains the names of all affected components
-                    if (result.data.length > 0) {
-
-                        affectedWarning = "<br/><br/><strong>The following rules are currently " +
-                            "using this rule trigger and will be deleted as well:</strong><br/>";
-
-                        for (var i = 0; i < result.data.length; i++) {
-                            affectedWarning += "- ";
-                            affectedWarning += result.data[i].name;
-                            affectedWarning += "<br/>";
+                        //Iterate over all affected entities
+                        for (let i = 0; i < result.length; i++) {
+                            errorText += "- " + result[i].name + "<br/>";
                         }
+
+                        // Show error message
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Deletion impossible',
+                            html: errorText
+                        })
+
+                        // Return new promise as result
+                        return Promise.resolve({value: false});
                     }
 
-                    //Show the alert to the user and return the resulting promise
+                    //Show confirm prompt to the user and return the resulting promise
                     return Swal.fire({
-                        title: 'Delete rule trigger',
-                        type: 'warning',
-                        html: "Are you sure you want to delete rule trigger \"" + ruleTriggerName + "\"?"+ affectedWarning,
+                        title: 'Delete rule condition',
+                        icon: 'warning',
+                        html: "Are you sure you want to delete the rule condition \"<strong>" + ruleTriggerName +
+                            "</strong>\"?",
                         showCancelButton: true,
                         confirmButtonText: 'Delete',
                         confirmButtonClass: 'bg-red',
                         focusConfirm: false,
                         cancelButtonText: 'Cancel'
                     });
-
-                }, function () {
-                    NotificationService.notify("Could not retrieve affected components.", "error");
                 });
-
             }
 
             /**
@@ -211,7 +215,7 @@ app.controller('RuleTriggerListController',
 
                             Swal.fire({
                                 title: 'Step back',
-                                type: 'warning',
+                                icon: 'warning',
                                 html: "Are you sure you want to step back? All changes done to the query will be lost!",
                                 showCancelButton: true,
                                 confirmButtonText: 'Step back',

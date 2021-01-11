@@ -88,7 +88,7 @@ app.controller('OperatorListController',
 
             /**
              * Reads given files from the user's disk and returns a promise
-             * containing the combined promises for all asynchronous 
+             * containing the combined promises for all asynchronous
              * file read operations.
              *
              * @param files The files to read
@@ -125,29 +125,34 @@ app.controller('OperatorListController',
 
                 //Ask the server for all components that use this operator
                 return OperatorService.getUsingComponents(data.id).then(function (result) {
-                    var affectedWarning = "";
-
-                    //If the list is not empty, create a message that contains the names of all affected components
+                    //Check if list is empty
                     if (result.length > 0) {
-
-                        affectedWarning = "<br/><br/>The following components are currently " +
-                            "using this operator and <strong>will be deleted as well</strong>:<br/>";
+                        //Not empty, entity cannot be deleted
+                        let errorText = "The operator <strong>" + operatorName + "</strong> is still used by the " +
+                            "following components and thus cannot be deleted:<br/><br/>";
 
                         //Iterate over all affected components
-                        for (var i = 0; i < result.length; i++) {
-                            affectedWarning += "- ";
-                            affectedWarning += result[i].name;
-                            affectedWarning += " (" + result[i].component + ")";
-                            affectedWarning += "<br/>";
+                        for (let i = 0; i < result.length; i++) {
+                            errorText += "- " + result[i].name + " (" + result[i].component + ")<br/>";
                         }
+
+
+                        // Show error message
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Deletion impossible',
+                            html: errorText
+                        })
+
+                        // Return new promise as result
+                        return Promise.resolve({value: false});
                     }
 
-                    //Show the alert to the user and return the resulting promise
+                    //Show confirm prompt to the user and return the resulting promise
                     return Swal.fire({
                         title: 'Delete operator',
-                        type: 'warning',
-                        html: "Are you sure you want to delete the operator <strong>" +
-                            operatorName + "</strong>?" + affectedWarning,
+                        icon: 'warning',
+                        html: "Are you sure you want to delete the operator \"<strong>" + operatorName + "</strong>\"?",
                         showCancelButton: true,
                         confirmButtonText: 'Delete',
                         confirmButtonClass: 'bg-red',
