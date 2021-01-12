@@ -92,7 +92,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * @returns {*}
          */
         function pdfExists(testId) {
-            return HttpService.getRequest(URL_REPORT_EXISTS + testId);
+            return HttpService.getRequest(URL_REPORT_EXISTS + testId)
         }
 
 
@@ -102,9 +102,15 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * Performs a server request to delete a specific test report of a test.
          */
         function deleteTestReport(testId, path) {
-
-            return HttpService.postRequest(URL_REPORT_DELETE + testId, path);
-
+            return HttpService.postRequest(URL_REPORT_DELETE + testId, path).then(function (response)
+            {
+                if(response){
+                    NotificationService.notify('Test Report successfully deleted.', 'success');
+                } else {
+                    NotificationService.notify('Error during deletion.', 'error');
+                }
+                return getPDFList(testId);
+            });
         }
 
         /**
@@ -184,7 +190,6 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * Creates a server request to get all rules to be observed during the test.
          */
         function getRuleListTest(testId) {
-            console.log(HttpService.getRequest(URL_RULE_LIST_TEST + testId));
             return HttpService.getRequest(URL_RULE_LIST_TEST + testId);
         }
 

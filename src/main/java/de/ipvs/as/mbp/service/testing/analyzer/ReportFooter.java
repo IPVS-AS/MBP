@@ -34,7 +34,7 @@ public class ReportFooter implements IEventHandler{
     /**
      * Handles the End Page event and adds "currentPageNumber / " to the footer of the report.
      *
-     * @param event to handle
+     * @param event T
      */
     public void handleEvent(Event event) {
         PdfDocumentEvent docEvent = (PdfDocumentEvent) event;

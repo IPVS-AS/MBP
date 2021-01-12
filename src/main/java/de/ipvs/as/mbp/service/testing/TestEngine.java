@@ -225,15 +225,11 @@ public class TestEngine {
      * @param testId of the test the report to be deleted belongs to
      * @return if files could be deleted successfully or not
      */
-    public ResponseEntity deleteReport(String testId, Object path) {
+    public ResponseEntity<Boolean> deleteReport(String testId, Object path) {
         String fileName = String.valueOf(path);
         ResponseEntity response;
 
-
-
-
         TestDetails testDetails = testDetailsRepository.findById(testId).get();
-
 
         //Path pathTestReport = Paths.get(testDetails.getPathPDF()+ ""fileName);
         try {
@@ -247,17 +243,16 @@ public class TestEngine {
                     }
                 }
 
-
                 //  Files.delete(pathTestReport);
-                response = new ResponseEntity<>("Test report successfully deleted", HttpStatus.OK);
+                response = new ResponseEntity<>(true, HttpStatus.OK);
 
             } else {
-                response = new ResponseEntity<>("No available Test report for this Test.", HttpStatus.NOT_FOUND);
+                response = new ResponseEntity<>(true, HttpStatus.NOT_FOUND);
             }
             return response;
         } catch (Exception e) {
             e.printStackTrace();
-            response = new ResponseEntity<>("Error during deletion.",HttpStatus.CONFLICT);
+            response = new ResponseEntity<>(false, HttpStatus.CONFLICT);
         }
         return response;
     }

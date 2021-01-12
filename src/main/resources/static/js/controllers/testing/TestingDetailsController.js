@@ -9,7 +9,6 @@ app.controller('TestingDetailsController',
             //Initialization of variables that are used in the frontend by angular
             const vm = this;
             vm.ruleList = ruleList;
-            console.log(ruleList);
             vm.test = testingDetails;
             vm.executeRules = true;
             vm.sensorType = testingDetails.type;
@@ -203,7 +202,9 @@ app.controller('TestingDetailsController',
              * Creates a server request to delete a certain Test Report for the specific Test
              */
             function deletePDF(pdfPath) {
-                TestService.deleteTestReport(COMPONENT_ID,pdfPath.toString());
+                TestService.deleteTestReport(COMPONENT_ID,pdfPath.toString()).then(function (response) {
+                    $scope.pdfTable = response;
+                });
             }
 
 
@@ -712,9 +713,6 @@ app.controller('TestingDetailsController',
                 }
 
             }
-
-
-            console.log(vm.sensorListTest);
 
             //Extend the controller object for the public functions to make them available from outside
             angular.extend(vm, $controller('TestingChartController as testingChartCtrl',

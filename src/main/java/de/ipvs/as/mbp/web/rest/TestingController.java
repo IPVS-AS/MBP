@@ -15,6 +15,7 @@ import java.util.List;
 
 import java.io.IOException;
 
+import javolution.io.Struct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -159,7 +160,7 @@ public class TestingController {
      * @return if deletion worked or not
      */
     @PostMapping(value = "/test-details/deleteTestReport/{testId}")
-    public ResponseEntity deleteTestReport(@PathVariable(value = "testId") String testId, @RequestBody Object fileName) {
+    public ResponseEntity<Boolean> deleteTestReport(@PathVariable(value = "testId") String testId, @RequestBody Object fileName) {
         return testEngine.deleteReport(testId, fileName);
     }
 
