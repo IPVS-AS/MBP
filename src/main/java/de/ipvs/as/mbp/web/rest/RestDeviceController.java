@@ -17,7 +17,7 @@ import de.ipvs.as.mbp.service.UserEntityService;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.device.Device;
-import de.ipvs.as.mbp.domain.device.DeviceRequestDTO;
+import de.ipvs.as.mbp.domain.device.DeviceDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
@@ -124,7 +124,7 @@ public class RestDeviceController {
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 409, message = "Device already exists!") })
     public ResponseEntity<EntityModel<Device>> create(
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@RequestBody DeviceRequestDTO requestDto) throws EntityAlreadyExistsException, EntityNotFoundException {
+    		@RequestBody DeviceDTO requestDto) throws EntityAlreadyExistsException, EntityNotFoundException {
     	// Create device from request DTO
     	Device device = (Device) new Device()
     			.setName(requestDto.getName())

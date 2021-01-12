@@ -91,7 +91,8 @@ public class RestMonitoringOperatorController {
                 .setDescription(monitoringOperatorDTO.getDescription())
                 .setUnit(monitoringOperatorDTO.getUnit())
                 .setRoutines(monitoringOperatorDTO.getRoutines())
-                .setParameters(monitoringOperatorDTO.getParameters());
+                .setParameters(monitoringOperatorDTO.getParameters())
+                .setAccessControlPolicyIds(monitoringOperatorDTO.getAccessControlPolicyIds());
 
         //Check whether device types were provided
         if (monitoringOperatorDTO.getDeviceTypes() == null) {

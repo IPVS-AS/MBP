@@ -66,19 +66,19 @@ app.controller('RuleListController',
                         ruleName = ruleList[i].name;
                         break;
                     }
-
-                    //Show the alert to the user and return the resulting promise
-                    return Swal.fire({
-                        title: 'Delete rule',
-                        type: 'warning',
-                        html: "Are you sure you want to delete rule \"" + ruleName + "\"?",
-                        showCancelButton: true,
-                        confirmButtonText: 'Delete',
-                        confirmButtonClass: 'bg-red',
-                        focusConfirm: false,
-                        cancelButtonText: 'Cancel'
-                    });
                 }
+
+                //Show the alert to the user and return the resulting promise
+                return Swal.fire({
+                    title: 'Delete rule',
+                    icon: 'warning',
+                    html: "Are you sure you want to delete rule \"<strong>" + ruleName + "</strong>\"?",
+                    showCancelButton: true,
+                    confirmButtonText: 'Delete',
+                    confirmButtonClass: 'bg-red',
+                    focusConfirm: false,
+                    cancelButtonText: 'Cancel'
+                });
             }
 
             /**
@@ -106,32 +106,18 @@ app.controller('RuleListController',
                     if (rule.enabled) {
                         //Enable rule
                         RuleService.enableRule(rule.id).then(function (response) {
-                            //Success, check if every thing worked well
-                            if (!response.success) {
-                                rule.enabled = false;
-                                NotificationService.notify('Error while enabling rule: '
-                                    + response.globalMessage, 'error');
-                                return;
-                            }
-                            //Notify user
+                            //Success, notify user
                             rule.enabled = true;
                             NotificationService.notify('Rule enabled successfully.', 'success');
                         }, function () {
                             //Failure
                             rule.enabled = false;
-                            NotificationService.notify('Failed to enable rule. Do all components still exist?', 'error');
+                            NotificationService.notify('Failed to enable rule.', 'error');
                         });
                     } else {
                         //Disable rule
                         RuleService.disableRule(rule.id).then(function (response) {
-                            //Success, check if every thing worked well
-                            if (!response.success) {
-                                rule.enabled = true;
-                                NotificationService.notify('Error while disabling rule: '
-                                    + response.globalMessage, 'error');
-                                return;
-                            }
-                            //Notify user
+                            //Success, notify user
                             rule.enabled = false;
                             NotificationService.notify('Rule disabled successfully.', 'success');
                         }, function () {

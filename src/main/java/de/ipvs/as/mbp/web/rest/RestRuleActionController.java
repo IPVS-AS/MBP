@@ -15,6 +15,7 @@ import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.rules.RuleAction;
 import de.ipvs.as.mbp.domain.rules.RuleActionType;
+import de.ipvs.as.mbp.service.rules.RuleExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
@@ -44,6 +45,9 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(RestConfiguration.BASE_PATH + "/rule-actions")
 @Api(tags = {"Rule Actions"})
 public class RestRuleActionController {
+
+    @Autowired
+    private RuleExecutor ruleExecutor;
 
     @Autowired
     private RuleActionRepository ruleActionRepository;
@@ -107,6 +111,19 @@ public class RestRuleActionController {
         // Delete the rule action (includes access-control)
         userEntityService.deleteWithAccessControlCheck(ruleActionRepository, ruleActionId, ACAccessRequest.valueOf(accessRequestHeader));
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(value = "/test/{id}")
+    public ResponseEntity<Boolean> testRuleAction(
+            @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+            @PathVariable(value = "id") String actionId) throws EntityNotFoundException, MissingPermissionException {
+        // Retrieve the corresponding rule action (includes access-control)
+        RuleAction ruleAction = userEntityService.getForIdWithAccessControlCheck(ruleActionRepository, actionId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+
+        // Test action
+        boolean result = ruleExecutor.testRuleAction(ruleAction);
+
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping(value = "/types")

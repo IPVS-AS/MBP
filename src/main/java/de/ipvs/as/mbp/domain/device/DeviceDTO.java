@@ -2,7 +2,7 @@ package de.ipvs.as.mbp.domain.device;
 
 import de.ipvs.as.mbp.domain.user_entity.UserEntityRequestDTO;
 
-public class DeviceRequestDTO extends UserEntityRequestDTO {
+public class DeviceDTO extends UserEntityRequestDTO {
 
     private String name;
 

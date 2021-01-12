@@ -50,13 +50,7 @@ app.controller('RuleActionListController',
             function testRuleAction(actionId) {
                 //Execute request
                 RuleService.testRuleAction(actionId).then(function (response) {
-                    if (response && response.success) {
-                        //Test succeeded
-                        NotificationService.notify("Action test succeeded.", "success")
-                    } else {
-                        //Test failed
-                        NotificationService.notify("Action test failed.", "warning")
-                    }
+                    NotificationService.notify("Action test succeeded.", "success")
                 }, function (response) {
                     //Server request failed
                     NotificationService.notify("Unable to perform action test.", "error")

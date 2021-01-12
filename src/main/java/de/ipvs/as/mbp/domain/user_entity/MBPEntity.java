@@ -1,5 +1,6 @@
 package de.ipvs.as.mbp.domain.user_entity;
 
+import de.ipvs.as.mbp.service.event_handler.ICreateEventHandler;
 import de.ipvs.as.mbp.service.validation.ICreateValidator;
 import de.ipvs.as.mbp.service.validation.IDeleteValidator;
 
@@ -17,5 +18,7 @@ public @interface MBPEntity {
     Class<? extends ICreateValidator<?>>[] createValidator() default {};
 
     Class<? extends IDeleteValidator<?>>[] deleteValidator() default {};
+
+    Class<? extends ICreateEventHandler<?>>[] createEventHandler() default {};
 
 }
