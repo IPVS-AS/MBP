@@ -1,23 +1,36 @@
 package de.ipvs.as.mbp.service.testing.analyzer;
 
 
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.io.font.constants.StandardFonts;
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.colors.DeviceRgb;
+import com.itextpdf.kernel.events.PdfDocumentEvent;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.Style;
+import com.itextpdf.layout.element.*;
+import com.itextpdf.layout.property.*;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleAction;
+import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.repository.RuleRepository;
 import de.ipvs.as.mbp.repository.TestDetailsRepository;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
-import de.ipvs.as.mbp.domain.testing.TestDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.stereotype.Component;
-import com.itextpdf.text.pdf.PdfPCell;
-import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.kernel.pdf.PdfDocument;
+
+import com.itextpdf.kernel.colors.Color;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -58,6 +71,7 @@ public class TestReport {
     // private final List<String> SIMULATOR_LIST = simulator_list;
     private final String RERUN_IDENTIFIER;
     private final String CONFIG_SENSOR_NAME_KEY;
+    private final String MBP_ICON_URL;
 
     //To resolve ${} in @Value
     @Bean
@@ -70,6 +84,7 @@ public class TestReport {
         propertiesService = new PropertiesService();
         RERUN_IDENTIFIER = propertiesService.getPropertiesString("testingTool.RerunIdentifier");
         CONFIG_SENSOR_NAME_KEY = propertiesService.getPropertiesString("testingTool.ConfigSensorNameKey");
+        MBP_ICON_URL = propertiesService.getPropertiesString("testingTool.ReportIcon");
 
     }
 
@@ -78,13 +93,17 @@ public class TestReport {
     final SimpleDateFormat simpleDateFormat = new SimpleDateFormat(datePattern);
 
     // final background colors and fonts
-    final BaseColor lightBlue = new BaseColor(191, 220, 227);
-    final BaseColor darkBlue = new BaseColor(157, 213, 227);
-    final BaseColor darkGrey = new BaseColor(117, 117, 117);
-    final Font white = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
-    final Font titleFont = new Font(Font.FontFamily.HELVETICA, 22, Font.BOLD, BaseColor.BLACK);
-    final Font boldUnderlined = new Font(Font.FontFamily.HELVETICA, 17, Font.BOLD | Font.UNDERLINE, BaseColor.BLACK);
-
+    final Color lightBlue = new DeviceRgb(168, 232, 255);
+    final Color darkBlue = new DeviceRgb(0, 191, 255);
+    final Color darkGrey = new DeviceRgb(182, 182, 182);
+    final Color mbpBlue = new DeviceRgb(0, 191, 255);
+    PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+    final Style white = new Style().setFont(font).setFontSize(12).setFontColor(ColorConstants.WHITE);
+    final Style headerFont = new Style().setFont(font).setFontSize(10).setFontColor(mbpBlue);
+    final Style tableHeader = new Style().setFont(font).setFontSize(12).setFontColor(ColorConstants.BLACK);
+    final Style pageFont = new Style().setFont(font).setFontSize(22).setFontColor(ColorConstants.BLACK);
+    final Style titleFont = new Style().setFont(font).setFontSize(22).setFontColor(ColorConstants.BLACK);
+    final Style boldUnderlined = new Style().setFont(font).setFontSize(17).setFontColor(ColorConstants.BLACK).setUnderline();
 
     /**
      * Generates the Test-Report with the Chart of the simulated Values and other important information for the user.
@@ -96,67 +115,73 @@ public class TestReport {
     public String generateTestReport(String testId, List<Rule> rulesBefore) throws Exception {
         int counterRules = 0;
         TestDetails test = testDetailsRepository.findById(testId).get();
-        Document doc = new Document();
-
-
         // Create a new pdf, which is named with the ID of the specific test
         File testReport = new File(testId + "_" + test.getEndTimeUnix() + ".pdf");
         Path wholePath = Paths.get(testReport.getAbsolutePath());
         String path = wholePath.getParent().toString();
+        PdfDocument pdfDocument = new PdfDocument(new PdfWriter(wholePath.toString()));
 
-        FileOutputStream pdfFileout = new FileOutputStream(testReport);
-        PdfWriter.getInstance(doc, pdfFileout);
-        doc.open();
+        // Add an event handler for the header and footer of the test report
+        pdfDocument.addEventHandler(PdfDocumentEvent.START_PAGE, new ReportHeader("A Platform for Managing IoT Environments", MBP_ICON_URL));
+        ReportFooter footerEvent = new ReportFooter();
+        pdfDocument.addEventHandler(PdfDocumentEvent.END_PAGE, footerEvent);
+
+        com.itextpdf.layout.Document doc = new Document(pdfDocument, PageSize.A4);
 
 
         // Title of the test report
-        Paragraph title = new Paragraph("Test-Report: " + test.getName(), titleFont);
-        title.setAlignment(Element.ALIGN_CENTER);
+        com.itextpdf.layout.element.Paragraph title = new com.itextpdf.layout.element.Paragraph().add("Test-Report: " + test.getName()).addStyle(titleFont).setTextAlignment(TextAlignment.CENTER);
+
+
+        //Page Title
+        com.itextpdf.layout.element.Paragraph pageTitle = new com.itextpdf.layout.element.Paragraph().add("MBP: A Platform for Managing IoT Environments").addStyle(pageFont).setTextAlignment(TextAlignment.CENTER);
 
 
         // Creating an ImageData object from the graph of sensor values, which was previously created with the GraphPlotter
-        Image graphSensorVal = Image.getInstance(testId + ".gif");
-        graphSensorVal.setAlignment(Element.ALIGN_CENTER);
+        ImageData graphSensorVal = ImageDataFactory.create(testId + ".gif");
+        com.itextpdf.layout.element.Image graphSensorValImg = new com.itextpdf.layout.element.Image(graphSensorVal).setHorizontalAlignment(HorizontalAlignment.CENTER);
+        graphSensorValImg.setHorizontalAlignment(HorizontalAlignment.CENTER);
 
         // information about the success of the test and the start/end times
-        PdfPTable successInfo = getGeneralInfo(test);
+        Table successInfo = getGeneralInfo(test);
 
         // Test-Details
-        Paragraph subtitle = new Paragraph("Test-Details: ", boldUnderlined);
-        subtitle.setAlignment(Element.ALIGN_CENTER);
+        com.itextpdf.layout.element.Paragraph subtitle = new com.itextpdf.layout.element.Paragraph().add("Test-Details: ").addStyle(boldUnderlined).setTextAlignment(TextAlignment.CENTER);
 
         // Sensor information
-        PdfPTable simulationSensors = getSimulationConfig(test);
-        PdfPTable realSensors = getRealSensorConfig(test);
+        Table simulationSensors = getSimulationConfig(test);
+        Table realSensors = getRealSensorConfig(test);
 
         // Actuator information
-        PdfPTable actuatorInfos = getActuatorInfos();
+        Table actuatorInfos = getActuatorInfos();
 
         // Rule information
-        PdfPTable ruleInfos = getRuleInfos(test);
-        ruleInfos.setSpacingAfter(14f);
+        Table ruleInfos = getRuleInfos(test);
+        doc.add(new com.itextpdf.layout.element.Paragraph("\n"));
 
         // Rule details
-        PdfPTable ruleDetails = new PdfPTable(4);
-        ruleDetails.setSpacingAfter(15f);
+        Table ruleDetails = new Table(4);
+        doc.add(new com.itextpdf.layout.element.Paragraph("\n"));
 
         // add all components to the test report pdf
+        //doc.add(table);
         doc.add(title);
-        doc.add(Chunk.NEWLINE);
-        doc.add(successInfo);
-        doc.add(Chunk.NEWLINE);
-        doc.add(Chunk.NEWLINE);
-        doc.add(graphSensorVal);
-        doc.newPage();
+        doc.add(new com.itextpdf.layout.element.Paragraph("\n"));
+        doc.add(successInfo.setHorizontalAlignment(HorizontalAlignment.CENTER));
+        doc.add(new com.itextpdf.layout.element.Paragraph("\n"));
+        doc.add(new com.itextpdf.layout.element.Paragraph("\n"));
+        doc.add(graphSensorValImg);
+        doc.add(new AreaBreak(AreaBreakType.NEXT_PAGE));
         doc.add(subtitle);
-        doc.add(Chunk.NEWLINE);
+        doc.add(new com.itextpdf.layout.element.Paragraph("\n"));
         doc.add(simulationSensors);
-        doc.add(Chunk.NEWLINE);
+        doc.add(new com.itextpdf.layout.element.Paragraph("\n"));
         doc.add(realSensors);
-        doc.add(Chunk.NEWLINE);
+        doc.add(new com.itextpdf.layout.element.Paragraph("\n"));
         doc.add(actuatorInfos);
-        doc.add(Chunk.NEWLINE);
+        doc.add(new com.itextpdf.layout.element.Paragraph("\n"));
         doc.add(ruleInfos);
+        doc.add(new com.itextpdf.layout.element.Paragraph("\n"));
 
         // Add new table to get the details for each rule
         for (Rule rule : rulesBefore) {
@@ -172,6 +197,8 @@ public class TestReport {
             doc.add(ruleDetails);
         }
 
+        // Footer event to write the total number of pages in to the footer
+        footerEvent.writeTotal(pdfDocument);
         doc.close();
         return path;
     }
@@ -182,14 +209,14 @@ public class TestReport {
      * @param test test for which the test report is created
      * @return table with general information of the test
      */
-    private PdfPTable getGeneralInfo(TestDetails test) {
+    private Table getGeneralInfo(TestDetails test) {
         String success;
-        PdfPTable generalInfo = new PdfPTable(4);
-        generalInfo.setWidthPercentage(100f);
+        Table generalInfo = new Table(4);
+        generalInfo.setWidth(UnitValue.createPercentValue(70));
 
         // information if test was a rerun
         if (!test.isUseNewData()) {
-            generalInfo.addCell(tableCell("This was a Test rerun.", lightBlue, 4));
+            generalInfo.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("This was a Test rerun."), lightBlue, 4));
         }
 
         // Success of the Test
@@ -199,19 +226,18 @@ public class TestReport {
             success = "No";
         }
 
-        generalInfo.addCell(tableCell("Successful", lightBlue, 2));
-        generalInfo.addCell(tableCell(success, null, 2));
+        generalInfo.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("Successful"), lightBlue, 2));
+        generalInfo.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(success), null, 2));
 
         //Start-Time pdf
         String startTestTime = simpleDateFormat.format(test.getStartTestTime());
-        generalInfo.addCell(tableCell("Start-Time", lightBlue, 2));
-        generalInfo.addCell(tableCell(startTestTime, null, 2));
+        generalInfo.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("Start-Time"), lightBlue, 2));
+        generalInfo.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(startTestTime), null, 2));
 
         // End-Time pdf
         String endTestTime = simpleDateFormat.format(test.getEndTestTime());
-        generalInfo.setWidthPercentage(100f);
-        generalInfo.addCell(tableCell("End-Time", lightBlue, 2));
-        generalInfo.addCell(tableCell(endTestTime, null, 2));
+        generalInfo.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("End-Time"), lightBlue, 2));
+        generalInfo.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(endTestTime), null, 2));
 
 
         return generalInfo;
@@ -225,7 +251,7 @@ public class TestReport {
      * @param test test for which the test report is created
      * @return table with all sensor simulators and the configurations of them
      **/
-    private PdfPTable getSimulationConfig(TestDetails test) {
+    private Table getSimulationConfig(TestDetails test) {
         boolean sensorSimulation = false;
         int counter = 0;
         String rerunInfo = "";
@@ -236,8 +262,8 @@ public class TestReport {
         }
 
         // Table configurations
-        PdfPTable tableSensorSim = new PdfPTable(4);
-        tableSensorSim.setWidthPercentage(100f);
+        Table tableSensorSim = new Table(4);
+        tableSensorSim.setWidth(UnitValue.createPercentValue(100));
 
         tableSensorSim.addCell(headerCell("Simulated Sensor(s)"));
 
@@ -257,16 +283,16 @@ public class TestReport {
                 ArrayList<String> generalConfig = getGeneralConfig(test, type);
 
                 //Sensor-Type
-                tableSensorSim.addCell(tableCell(counter + ".: Sensor-Type", darkBlue, 2));
-                tableSensorSim.addCell(tableCell(rerunInfo + generalConfig.get(0), darkBlue, 2));
+                com.itextpdf.layout.element.Paragraph sensorType = new com.itextpdf.layout.element.Paragraph().add(counter + ". Sensor-Type: " + rerunInfo + generalConfig.get(0)).addStyle(tableHeader);
+                tableSensorSim.addCell(tableCell(sensorType, darkBlue, 4));
 
                 //Event
-                tableSensorSim.addCell(tableCell("Event", lightBlue, 2));
-                tableSensorSim.addCell(tableCell(generalConfig.get(1), null, 2));
+                tableSensorSim.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("Event"), lightBlue, 2));
+                tableSensorSim.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(generalConfig.get(1)), null, 2));
 
                 //Anomaly
-                tableSensorSim.addCell(tableCell("Anomaly", lightBlue, 2));
-                tableSensorSim.addCell(tableCell(generalConfig.get(2), null, 2));
+                tableSensorSim.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("Anomaly"), lightBlue, 2));
+                tableSensorSim.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(generalConfig.get(2)), null, 2));
 
 
                 // Planned simulation
@@ -277,23 +303,23 @@ public class TestReport {
                 if (!plannedConfig.isEmpty()) {
 
                     // Simulation time
-                    tableSensorSim.addCell(tableCell("Simulation-Time", lightBlue, 2));
-                    tableSensorSim.addCell(tableCell(plannedConfig.get("simTime") + " hours", null, 2));
+                    tableSensorSim.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("Simulation-Time"), lightBlue, 2));
+                    tableSensorSim.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(plannedConfig.get("simTime") + " hours"), null, 2));
 
                     // Amount Events
-                    tableSensorSim.addCell(tableCell("Amount Events", lightBlue, 2));
-                    tableSensorSim.addCell(tableCell(plannedConfig.get("amountEvents"), null, 2));
+                    tableSensorSim.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("Amount Events"), lightBlue, 2));
+                    tableSensorSim.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(plannedConfig.get("amountEvents")), null, 2));
 
                     // Amount Anomalies
-                    tableSensorSim.addCell(tableCell("Amount Anomalies", lightBlue, 2));
-                    tableSensorSim.addCell(tableCell(plannedConfig.get("amountAnomalies"), null, 2));
+                    tableSensorSim.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("Amount Anomalies"), lightBlue, 2));
+                    tableSensorSim.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(plannedConfig.get("amountAnomalies")), null, 2));
                 }
             }
         }
 
         // Information if no sensor simulator was included in the test
         if (!sensorSimulation) {
-            tableSensorSim.addCell(tableCell("No Sensor-Simulator was integrated into the test.", null, 4));
+            tableSensorSim.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("No Sensor-Simulator was integrated into the test."), null, 4));
         }
 
         return tableSensorSim;
@@ -376,7 +402,7 @@ public class TestReport {
      * @param test test for which the test report is created
      * @return table with user configurations of the test
      */
-    private PdfPTable getRealSensorConfig(TestDetails test) {
+    private Table getRealSensorConfig(TestDetails test) {
         int counter = 0;
         boolean realSensors = false;
         String rerunInfo = "";
@@ -387,8 +413,8 @@ public class TestReport {
         }
 
         // Table configurations
-        PdfPTable tableRealSensors = new PdfPTable(4);
-        tableRealSensors.setWidthPercentage(100f);
+        Table tableRealSensors = new Table(4);
+        tableRealSensors.setWidth(UnitValue.createPercentValue(100));
 
         tableRealSensors.addCell(headerCell("Real Sensor(s)"));
 
@@ -399,8 +425,8 @@ public class TestReport {
                 counter += 1;
 
                 //Sensor-Type
-                tableRealSensors.addCell(tableCell(counter + ".: Sensor-Type", darkBlue, 2));
-                tableRealSensors.addCell(tableCell(rerunInfo + type, darkBlue, 2));
+                com.itextpdf.layout.element.Paragraph sensorType = new com.itextpdf.layout.element.Paragraph().add(counter + ". Sensor-Type: " + rerunInfo + type).addStyle(tableHeader);
+                tableRealSensors.addCell(tableCell(sensorType, darkBlue, 4));
 
 
                 // Get sensor parameters and their values
@@ -409,8 +435,8 @@ public class TestReport {
                         if (parameterInstance.getValue().equals(type)) {
                             for (ParameterInstance parameterInstance2 : configSensor) {
                                 if (!parameterInstance2.getName().equals(CONFIG_SENSOR_NAME_KEY)) {
-                                    tableRealSensors.addCell(tableCell(parameterInstance2.getName(), lightBlue, 2));
-                                    tableRealSensors.addCell(tableCell(parameterInstance2.getValue().toString(), null, 2));
+                                    tableRealSensors.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(parameterInstance2.getName()), lightBlue, 2));
+                                    tableRealSensors.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(parameterInstance2.getValue().toString()), null, 2));
                                 }
 
                             }
@@ -422,7 +448,7 @@ public class TestReport {
 
         // Information if no real sensor was included in the test
         if (!realSensors) {
-            tableRealSensors.addCell(tableCell("No Real Sensor was integrated into the test.", null, 4));
+            tableRealSensors.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("No Real Sensor was integrated into the test."), null, 4));
         }
         return tableRealSensors;
     }
@@ -433,15 +459,15 @@ public class TestReport {
      *
      * @return table with the actuator information
      */
-    private PdfPTable getActuatorInfos() {
+    private Table getActuatorInfos() {
         String infoText = "The actuator used for the tests does not trigger any actions if the corresponding rule is triggered. It functions as a dummy.";
 
         // Table configurations
-        PdfPTable actuatorInfo = new PdfPTable(4);
-        actuatorInfo.setWidthPercentage(100f);
+        Table actuatorInfo = new Table(4);
+        actuatorInfo.setWidth(UnitValue.createPercentValue(100));
 
         actuatorInfo.addCell(headerCell("Simulated actuator"));
-        actuatorInfo.addCell(tableCell(infoText, null, 4));
+        actuatorInfo.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(infoText), null, 4));
 
         return actuatorInfo;
     }
@@ -454,7 +480,7 @@ public class TestReport {
      * @param rule detail information of the selected rules before the test
      * @return PDFTable with all important information about the rules in the test of a specific application
      */
-    private PdfPTable getRuleDetails(TestDetails test, Rule rule, int counterRules) {
+    private Table getRuleDetails(TestDetails test, Rule rule, int counterRules) {
         int executionsAfter;
         String lastExecutionBefore = "NEVER";
         String lastExecutionAfter = "NEVER";
@@ -465,19 +491,19 @@ public class TestReport {
                 .replace("]", "");  //remove the left bracket
 
         // Table configurations
-        PdfPTable ruleInfos = new PdfPTable(4);
-        ruleInfos.setWidthPercentage(100f);
+        Table ruleInfos = new Table(4);
+        ruleInfos.setWidth(UnitValue.createPercentValue(100));
 
-
-        ruleInfos.addCell(tableCell(counterRules + ". Rule: " + rule.getName(), darkBlue, 4));
+        com.itextpdf.layout.element.Paragraph ruleName = new com.itextpdf.layout.element.Paragraph().add(counterRules + ". Rule: " + rule.getName()).addStyle(tableHeader);
+        ruleInfos.addCell(tableCell(ruleName, darkBlue, 4));
 
         // Rule: Condition (Trigger Querey)
-        ruleInfos.addCell(tableCell("Rule: Condition", lightBlue, 4));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("Rule: Condition"), lightBlue, 4));
         Rule ruleAfter = ruleRepository.findByName(rule.getName()).get();
-        ruleInfos.addCell(tableCell(ruleAfter.getTrigger().getQuery(), null, 4));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(ruleAfter.getTrigger().getQuery()), null, 4));
 
         // Rule: Action (Actuator)
-        ruleInfos.addCell(tableCell("Rule: Action", lightBlue, 4));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("Rule: Action"), lightBlue, 4));
 
         ArrayList<String> ruleActions = new ArrayList<>();
         for (RuleAction action : ruleAfter.getActions()) {
@@ -487,44 +513,44 @@ public class TestReport {
         // get executed Rules
         String ruleAction = ruleActions.toString().replace("[", "")  //remove the right bracket
                 .replace("]", "");  //remove the left bracket
-        ruleInfos.addCell(tableCell(ruleAction, null, 4));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(ruleAction), null, 4));
 
 
         // # Rule Executions before/after
-        ruleInfos.addCell(tableCell("Number of executions before the test", lightBlue, 2));
-        ruleInfos.addCell(tableCell("Number of executions after the test", lightBlue, 2));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("Number of executions before the test"), lightBlue, 2));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("Number of executions after the test"), lightBlue, 2));
 
         int executionsBefore = rule.getExecutions();
-        ruleInfos.addCell(tableCell(Integer.toString(executionsBefore), null, 2));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(Integer.toString(executionsBefore)), null, 2));
 
         if (!rulesExecuted.contains(rule.getName())) {
             executionsAfter = rule.getExecutions();
         } else {
             executionsAfter = ruleAfter.getExecutions();
         }
-        ruleInfos.addCell(tableCell(Integer.toString(executionsAfter), null, 2));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(Integer.toString(executionsAfter)), null, 2));
 
 
         // Last Execution time before/after
-        ruleInfos.addCell(tableCell("Last execution before the test", lightBlue, 2));
-        ruleInfos.addCell(tableCell("Last execution after the test", lightBlue, 2));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("Last execution before the test"), lightBlue, 2));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("Last execution after the test"), lightBlue, 2));
 
 
         // if never executed before "NEVER"
         if (rule.getLastExecution() != null) {
             lastExecutionBefore = simpleDateFormat.format(rule.getLastExecution());
         }
-        ruleInfos.addCell(tableCell(lastExecutionBefore, null, 2));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(lastExecutionBefore), null, 2));
 
         // If never executed after the test "NEVER"
         if (ruleAfter.getLastExecution() != null) {
             lastExecutionAfter = simpleDateFormat.format(ruleAfter.getLastExecution());
         }
-        ruleInfos.addCell(tableCell(lastExecutionAfter, null, 2));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(lastExecutionAfter), null, 2));
 
 
         // Trigger-Values of the Rule
-        ruleInfos.addCell(tableCell("Trigger-Values", lightBlue, 4));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("Trigger-Values"), lightBlue, 4));
 
         // get Trigger Values for specific rules
         if (test.getTriggerValues().containsKey(ruleAfter.getName())) {
@@ -534,7 +560,7 @@ public class TestReport {
             }
         }
 
-        ruleInfos.addCell(tableCell(triggerValues, null, 4));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(triggerValues), null, 4));
 
 
         return ruleInfos;
@@ -547,7 +573,7 @@ public class TestReport {
      * @param test test for which the test report is created
      * @return table with detailed rule information
      */
-    public PdfPTable getRuleInfos(TestDetails test) {
+    public Table getRuleInfos(TestDetails test) {
         StringBuilder rulesUser = new StringBuilder();
         String rulesExecuted;
         String triggerRules;
@@ -555,8 +581,8 @@ public class TestReport {
         String rerunInfo = "";
 
         // Table configurations
-        PdfPTable ruleInfos = new PdfPTable(4);
-        ruleInfos.setWidthPercentage(100f);
+        Table ruleInfos = new Table(4);
+        ruleInfos.setWidth(UnitValue.createPercentValue(100));
 
         //Set header
         ruleInfos.addCell(headerCell("Rule-Information"));
@@ -570,10 +596,10 @@ public class TestReport {
             infoSelectedRules = "Rules which shouldn't be triggered";
         }
 
-        ruleInfos.addCell(tableCell(triggerRules, null, 4));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(triggerRules), null, 4));
 
         // Rules which should be triggered by the values of the sensor generated through the test defined by the user
-        ruleInfos.addCell(tableCell(infoSelectedRules, lightBlue, 2));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(infoSelectedRules), lightBlue, 2));
         // get an format
         if (!test.isUseNewData()) {
             rerunInfo = RERUN_IDENTIFIER;
@@ -584,11 +610,11 @@ public class TestReport {
             }
             rulesUser.append(rerunInfo).append(test.getRules().get(i).getName());
         }
-        ruleInfos.addCell(tableCell(rulesUser.toString(), null, 2));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(rulesUser.toString()), null, 2));
 
 
         // Rules which were triggered by the values of the sensors through the test
-        ruleInfos.addCell(tableCell("Rules, which were triggered", lightBlue, 2));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph("Rules, which were triggered"), lightBlue, 2));
         // get and format
         rulesExecuted = test.getRulesExecuted().toString().replace("[", "")  //remove the right bracket
                 .replace("]", "");  //remove the left bracket
@@ -598,7 +624,7 @@ public class TestReport {
             rulesExecuted = "-";
         }
 
-        ruleInfos.addCell(tableCell(rulesExecuted, null, 2));
+        ruleInfos.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(rulesExecuted), null, 2));
 
         return ruleInfos;
     }
@@ -760,14 +786,14 @@ public class TestReport {
      * @param colspan    of the cell
      * @return PdfPCell
      */
-    public PdfPCell tableCell(String phrase, BaseColor background, int colspan) {
+    public Cell tableCell(com.itextpdf.layout.element.Paragraph phrase, Color background, int colspan) {
 
-        PdfPCell cell = new PdfPCell(new Phrase(phrase));
-        cell.setColspan(colspan);
-        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        Cell cell = new Cell(1, colspan).add(phrase).setTextAlignment(TextAlignment.CENTER);
+        cell.setHorizontalAlignment(HorizontalAlignment.CENTER);
 
         if (background != null) {
             cell.setBackgroundColor(background);
+
         }
         return cell;
     }
@@ -778,11 +804,9 @@ public class TestReport {
      * @param phrase of the header
      * @return PdfPCell as header
      */
-    public PdfPCell headerCell(String phrase) {
-        Chunk text = new Chunk(phrase, white);
-        PdfPCell headerCell = new PdfPCell(new Phrase(text));
-        headerCell.setHorizontalAlignment(Element.ALIGN_CENTER);
-        headerCell.setColspan(4);
+    public Cell headerCell(String phrase) {
+        Cell headerCell = new Cell(1, 4).add(new com.itextpdf.layout.element.Paragraph(phrase)).addStyle(white).setTextAlignment(TextAlignment.CENTER);
+        headerCell.setHorizontalAlignment(HorizontalAlignment.CENTER);
         headerCell.setBackgroundColor(darkGrey);
 
         return headerCell;
