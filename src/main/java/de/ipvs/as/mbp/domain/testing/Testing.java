@@ -23,6 +23,7 @@ public class Testing  {
     private Set<String> rule;
 
     private static final String COMPONENT_TYPE_NAME = "testing-tool";
+
     /**
      * Returns the rule name the entry belongs to.
      *

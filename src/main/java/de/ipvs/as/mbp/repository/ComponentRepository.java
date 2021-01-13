@@ -22,5 +22,5 @@ public interface ComponentRepository<C extends Component> extends UserEntityRepo
 
 	@RestResource(exported = false)
 	List<ComponentExcerpt> findAllByDeviceId(@Param("device.id") String deviceId);
-	
+
 }

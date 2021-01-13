@@ -383,6 +383,7 @@ app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'Notifica
             }
 
             //Perform POST request
+            console.log(category, data);
             return postRequest(ENDPOINT_URI + "/" + category, data).then(function (data) {
                 //Sanitize and return entity
                 return data || {};
