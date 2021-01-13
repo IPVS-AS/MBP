@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.service.settings.model;
+package de.ipvs.as.mbp.domain.settings;
 
 import de.ipvs.as.mbp.util.Validation;
 

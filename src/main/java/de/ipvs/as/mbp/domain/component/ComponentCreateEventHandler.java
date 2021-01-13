@@ -1,10 +1,7 @@
 package de.ipvs.as.mbp.domain.component;
 
-import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.service.cep.trigger.CEPTriggerService;
 import de.ipvs.as.mbp.service.event_handler.ICreateEventHandler;
-import de.ipvs.as.mbp.service.validation.ICreateValidator;
-import de.ipvs.as.mbp.util.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

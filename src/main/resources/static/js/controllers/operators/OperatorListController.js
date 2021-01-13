@@ -1,9 +1,9 @@
 /* global app */
 
 app.controller('OperatorListController',
-    ['$scope', '$controller', '$q', 'operatorList', 'operatorPreprocessing', 'addOperator', 'deleteOperator', 'FileReader', 'parameterTypesList', 'OperatorService', 'NotificationService',
-        function ($scope, $controller, $q, operatorList, operatorPreprocessing, addOperator, deleteOperator, FileReader, parameterTypesList, OperatorService, NotificationService) {
-            var vm = this;
+    ['$scope', '$rootScope', '$controller', '$q', 'operatorList', 'operatorPreprocessing', 'addOperator', 'deleteOperator', 'FileReader', 'parameterTypesList', 'OperatorService', 'NotificationService',
+        function ($scope, $rootScope, $controller, $q, operatorList, operatorPreprocessing, addOperator, deleteOperator, FileReader, parameterTypesList, OperatorService, NotificationService) {
+            let vm = this;
 
             vm.dzServiceOptions = {
                 paramName: 'serviceFile',
@@ -38,19 +38,27 @@ app.controller('OperatorListController',
 
             };
 
+            //List of added methods
             vm.dzMethods = {};
 
-            /**
-             * The device code parameter is necessary for every operator.
-             * @type {{unit: string, name: string, type: string, mandatory: boolean}}
-             */
-            var deviceCodeParameter = {
+            //List of added parameters
+            vm.parameters = [];
+
+            //If a message broker with OAuth is used, each operator must specify a device code parameter
+            let deviceCodeParameter = {
                 name: "device_code",
                 type: "Text",
                 unit: "",
                 mandatory: true
             };
-            vm.parameters = [deviceCodeParameter];
+
+            //Decide whether the device code parameter is needed
+            if ($rootScope.hasOwnProperty("mbpinfo") &&
+                (["LOCAL_SECURE", "REMOTE_SECURE"].includes($rootScope.mbpinfo.brokerLocation))) {
+                vm.parameters = [deviceCodeParameter];
+            }
+
+            //Set parameter types list
             vm.parameterTypes = parameterTypesList;
 
             /**
@@ -64,7 +72,7 @@ app.controller('OperatorListController',
 
                 //Modify each operator according to the preprocessing function (if provided)
                 if (operatorPreprocessing) {
-                    for (var i = 0; i < operatorList.length; i++) {
+                    for (let i = 0; i < operatorList.length; i++) {
                         operatorPreprocessing(operatorList[i]);
                     }
                 }
@@ -72,7 +80,7 @@ app.controller('OperatorListController',
 
             //public
             function addParameter() {
-                var parameter = {
+                let parameter = {
                     name: "",
                     type: "",
                     unit: "",
@@ -112,11 +120,11 @@ app.controller('OperatorListController',
              * @returns A promise of the user's decision
              */
             function confirmDelete(data) {
-                var operatorId = data.id;
-                var operatorName = "";
+                let operatorId = data.id;
+                let operatorName = "";
 
                 //Determines the operator's name by checking all operators in the operator list
-                for (var i = 0; i < operatorList.length; i++) {
+                for (let i = 0; i < operatorList.length; i++) {
                     if (operatorId === operatorList[i].id) {
                         operatorName = operatorList[i].name;
                         break;
@@ -204,7 +212,7 @@ app.controller('OperatorListController',
                 },
                 function () {
                     //Callback
-                    var data = vm.addOperatorCtrl.result;
+                    let data = vm.addOperatorCtrl.result;
                     if (data) {
                         //Close modal on success
                         $("#addOperatorModal").modal('toggle');
@@ -230,7 +238,7 @@ app.controller('OperatorListController',
                     return vm.deleteOperatorCtrl.result;
                 },
                 function () {
-                    var id = vm.deleteOperatorCtrl.result;
+                    let id = vm.deleteOperatorCtrl.result;
                     vm.operatorListCtrl.removeItem(id);
                 }
             );

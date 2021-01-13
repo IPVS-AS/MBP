@@ -156,34 +156,4 @@ public class RestDeviceController {
     	userEntityService.deleteWithAccessControlCheck(deviceRepository, deviceId, accessRequest);
     	return ResponseEntity.noContent().build();
     }
-    
-    // =====================================================================================================
-
-//    @PostMapping(path = "/test1")
-//    public ResponseEntity<EntityModel<Device>> test1() {
-//    	Device device = deviceRepository.findById("5f30fe9f8bdd050a72e9f636").get();
-//    	User user = userRepository.findOneByUsername("admin").get();
-//		
-//		List<ACAccessType> acs = new ArrayList<>();
-//		acs.add(ACAccessType.READ);
-//		IACCondition c = new ACSimpleCondition<String>("C1", ACArgumentFunction.EQUALS, new ACConditionSimpleAttributeArgument<>(ACEntityType.REQUESTING_ENTITY, "a1"), new ACConditionSimpleValueArgument<String>("v1"));
-//		List<IACEffect<?>> effects = new ArrayList<>();
-////		effects.add(new ACDoubleAccuracyEffect("Effect 1", 10, 5));
-//		ACPolicy p = new ACPolicy("P1", 1, acs, c, effects, user);
-//		p = policyRepository.save(p);
-//		device.getAccessControlPolicies().add(p);
-//		device = deviceRepository.save(device);
-//    	
-//    	return ResponseEntity.ok(deviceToEntityModel(device));
-//    }
-    
-    
-//  public static void main(String[] args) throws JsonProcessingException {
-//  	List<ACAttribute<? extends Comparable<?>>> attributes = new ArrayList<>();
-//  	attributes.add(new ACAttribute<String>(ACDataType.ALPHABETIC, "firstName", "Jakob"));
-//  	attributes.add(new ACAttribute<String>(ACDataType.ALPHABETIC, "lastName", "Benz"));
-//		ACAccessRequest r = new ACAccessRequest(attributes);
-//		System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(r));
-//	}
-    
 }

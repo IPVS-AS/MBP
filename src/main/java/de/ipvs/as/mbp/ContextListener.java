@@ -7,8 +7,6 @@ import javax.servlet.annotation.WebListener;
 /**
  * Provides context listeners that can be used to schedule tasks which need to be executed on startup or shutdown
  * of the application.
- *
- * @author Jan
  */
 @WebListener
 public class ContextListener implements ServletContextListener {
