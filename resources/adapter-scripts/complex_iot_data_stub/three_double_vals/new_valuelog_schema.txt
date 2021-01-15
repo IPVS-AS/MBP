@@ -1,0 +1,39 @@
+[
+  {
+    "name": "schema",
+    "description": "",
+    "semanticHint": "",
+    "type": "object",
+    "parent": null,
+    "children": [
+      "val1",
+      "val2",
+      "val3"
+    ]
+  },
+  {
+    "name": "val1",
+    "description": "",
+    "semanticHint": "",
+    "type": "double",
+    "parent": "schema",
+    "children": []
+  },  
+{
+    "name": "val2",
+    "description": "",
+    "semanticHint": "",
+    "type": "double",
+    "parent": "schema",
+    "children": []
+  },
+ {
+    "name": "val3",
+    "description": "",
+    "semanticHint": "",
+    "type": "double",
+    "parent": "schema",
+    "children": []
+  }
+
+]

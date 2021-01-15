@@ -49,7 +49,9 @@ public class ACDoubleAccuracyEffect extends ACAbstractEffect {
 	
 	@Override
 	public ValueLog apply(ValueLog valueLog) {
-		return valueLog.setValue(apply(valueLog.getValue()));
+		// TODO NOT SUPPORTED AT THE MOMENT
+		//return valueLog.setValue(apply(valueLog.getValue()));
+		return null;
 	}
 	
 	// - - -

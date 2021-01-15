@@ -97,17 +97,21 @@ public class ValueLogStatsService {
         //Iterate over all value logs in the list
         for (ValueLog log : valueLogList) {
             //Get value of the current log
-            double logValue = log.getValue();
+            // TODO NOT SUPPORTED AT THE MOMENT
+            //double logValue = log.getValue();
+            double logValue = 5.0;
 
             //Update min log if necessary
-            if (logValue < minLog.getValue()) {
+            // TODO NOT SUPPORTED AT THE MOMENT
+          //  if (logValue < minLog.getValue()) {
                 minLog = log;
-            }
+          //  }
 
             //Update max log if necessary
-            if (logValue > maxLog.getValue()) {
+            // TODO NOT SUPPORTED AT THE MOMENT
+          //  if (logValue > maxLog.getValue()) {
                 maxLog = log;
-            }
+          //  }
 
             //Increase accumulator
             averageAccumulator += logValue;
@@ -131,7 +135,9 @@ public class ValueLogStatsService {
         //Iterate over all value logs in the list
         for (ValueLog log : valueLogList) {
             //Get current value
-            double logValue = log.getValue();
+            // TODO NOT SUPPORTED AT THE MOMENT
+            //double logValue = log.getValue();
+            double logValue = 5.0;
 
             //Increase accumulator with respect to the value
             varianceAccumulator += Math.pow(logValue - average, 2);

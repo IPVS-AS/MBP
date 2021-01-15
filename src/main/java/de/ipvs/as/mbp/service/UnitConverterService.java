@@ -1,6 +1,7 @@
 package de.ipvs.as.mbp.service;
 
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
+import org.bson.Document;
 import org.springframework.stereotype.Component;
 
 import javax.measure.converter.UnitConverter;
@@ -26,10 +27,14 @@ public class UnitConverterService {
      */
     public void convertValueLogValue(ValueLog valueLog, UnitConverter converter) {
         //Get value of current log
-        double value = Double.valueOf(valueLog.getValue());
+        // TODO NOT SUPPORTED AT THE MOMENT
+        //double value = Double.valueOf(valueLog.getValue());
+        double value = 5.0;
 
         //Convert value
-        double convertedValue = converter.convert(value);
+        // TODO NOT SUPPORTED AT THE MOMENT
+        //double convertedValue = converter.convert(value);
+        double convertedValue = 10.0;
 
         //Determine rounding constant
         double roundingConst = Math.pow(10, ROUNDING_DECIMAL_PLACES);
@@ -38,6 +43,6 @@ public class UnitConverterService {
         convertedValue = Math.round(convertedValue * roundingConst) / roundingConst;
 
         //Write value to log
-        valueLog.setValue(convertedValue);
+        valueLog.setValue(new Document("test", convertedValue));
     }
 }

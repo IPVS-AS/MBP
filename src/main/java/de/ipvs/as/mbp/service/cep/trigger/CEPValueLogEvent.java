@@ -29,7 +29,9 @@ public class CEPValueLogEvent extends CEPEvent {
         this.valueLog = valueLog;
 
         //Convert value string of value log to double
-        double value = valueLog.getValue();
+        // TODO NOT SUPPORTED AT THE MOMENT
+        //double value = valueLog.getValue();
+        double value = 5.0;
 
         //Get Instant object from value log
         Instant time = valueLog.getTime();

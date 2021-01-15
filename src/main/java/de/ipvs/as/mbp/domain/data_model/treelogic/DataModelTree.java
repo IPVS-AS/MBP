@@ -16,7 +16,9 @@ import java.util.List;
 
 /**
  * This class is a tree representation for one data model saved in the {@link DataModel}
- * repository. With the help of this tree representation it is possible to handle heterogeneous
+ * repository. It is a schema to describe how the IoT data of different components
+ * is expected to look like.
+ * With the help of this tree representation it is possible to handle heterogeneous
  * IoT data.
  * <p>
  * Provided features:<br>
@@ -57,6 +59,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
      */
     public DataModelTree(List<DataTreeNode> repoNodesToConvert) throws EntityValidationException {
         this.repoNodeRepresentationList = repoNodesToConvert;
+        this.modelNodeList = new ArrayList<>();
         validateAndBuildTree();
 
     }
@@ -121,6 +124,10 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
         buildTree();
 
         return;
+    }
+
+    public DataModelTreeNode getRoot() {
+        return rootNodeModel;
     }
 
     /**
@@ -412,10 +419,11 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                         getJSONFromChild(currNode.getChildren().get(0), newArr, null);
                     }
                 } else if (currNode.getType() == IoTDataTypes.DECIMAL128
-                        || currNode.getType() == IoTDataTypes.DOUBLE
-                        || currNode.getType() == IoTDataTypes.LONG) {
+                        || currNode.getType() == IoTDataTypes.DOUBLE) {
                     lastObject.put(currNode.getName(), 14.25);
                     // As primitive no children to be expected --> return
+                } else if (currNode.getType() == IoTDataTypes.LONG) {
+                    lastObject.put(currNode.getName(), 20);
                 } else if (currNode.getType() == IoTDataTypes.BOOLEAN) {
                     lastObject.put(currNode.getName(), true);
                     // As primitive no children to be expected --> return
@@ -425,14 +433,8 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                 } else if (currNode.getType() == IoTDataTypes.STRING) {
                     lastObject.put(currNode.getName(), "String");
                     // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.TIMESTAMP) {
-                    lastObject.put(currNode.getName(), "Timestamp");
-                    // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.DATE) {
                     lastObject.put(currNode.getName(), "Date");
-                    // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.JAVASCRIPT) {
-                    lastObject.put(currNode.getName(), "Javascript");
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.BINARY) {
                     lastObject.put(currNode.getName(), "Binary");
@@ -457,10 +459,11 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                         getJSONFromChild(currNode.getChildren().get(0), newArr, null);
                     }
                 } else if (currNode.getType() == IoTDataTypes.DECIMAL128
-                        || currNode.getType() == IoTDataTypes.DOUBLE
-                        || currNode.getType() == IoTDataTypes.LONG) {
+                        || currNode.getType() == IoTDataTypes.DOUBLE) {
                     lastArray.put(14.25);
                     // As primitive no children to be expected --> return
+                } else if (currNode.getType() == IoTDataTypes.LONG) {
+                    lastObject.put(currNode.getName(), 20);
                 } else if (currNode.getType() == IoTDataTypes.BOOLEAN) {
                     lastArray.put(true);
                     // As primitive no children to be expected --> return
@@ -470,16 +473,10 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                 } else if (currNode.getType() == IoTDataTypes.STRING) {
                     lastArray.put("String");
                     // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.TIMESTAMP) {
-                    lastArray.put("Timestamp");
-                    // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.DATE) {
+                }  else if (currNode.getType() == IoTDataTypes.DATE) {
                     lastArray.put("Date");
                     // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.JAVASCRIPT) {
-                    lastArray.put("Javascript");
-                    // As primitive no children to be expected --> return
-                } else if (currNode.getType() == IoTDataTypes.BINARY) {
+                }  else if (currNode.getType() == IoTDataTypes.BINARY) {
                     lastArray.put("Binary");
                     // As primitive no children to be expected --> return
                 }
@@ -488,5 +485,16 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
             // TODO handle this properly
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public String toString() {
+        String retString = "";
+        PreOrderIterator it = new PreOrderIterator(rootNodeModel);
+        while (it.hasNext()) {
+            DataModelTreeNode next = it.next();
+            retString += next.getTreePath() + " " + next.getName() + "\n";
+        }
+        return retString;
     }
 }

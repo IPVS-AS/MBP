@@ -95,7 +95,9 @@ public class EnvironmentModelValueReceiver implements ValueLogReceiverObserver {
         String adapterUnit = component.getOperator().getUnit();
 
         //Create corresponding event
-        ComponentValueEvent event = new ComponentValueEvent(nodeId, adapterUnit, valueLog.getValue());
+        // TODO NOT SUPPORTED AT THE MOMENT
+        //ComponentValueEvent event = new ComponentValueEvent(nodeId, adapterUnit, valueLog.getValue());
+        ComponentValueEvent event = new ComponentValueEvent(nodeId, adapterUnit, 5.0);
 
         //Publish event to all subscribers of the model
         eventService.publishEvent(model.getId(), event);

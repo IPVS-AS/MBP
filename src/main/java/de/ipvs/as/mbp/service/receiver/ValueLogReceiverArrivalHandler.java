@@ -1,10 +1,13 @@
 package de.ipvs.as.mbp.service.receiver;
 
+import java.text.ParseException;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Set;
 
+import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
+import de.ipvs.as.mbp.repository.DataModelTreeCache;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -24,6 +27,9 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
     private static final String JSON_COMPONENT_ID = "id";
     private static final String JSON_KEY_VALUE = "value";
 
+    // Cache of data model trees to provide fast supply
+    private DataModelTreeCache dataModelTreeCache;
+
     //Set of observers
     private Set<ValueLogReceiverObserver> observerSet;
 
@@ -34,6 +40,8 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
      */
     ValueLogReceiverArrivalHandler(Set<ValueLogReceiverObserver> observerSet) {
         this.observerSet = observerSet;
+        // Get the bean of the data model tree cache
+        this.dataModelTreeCache = DynamicBeanProvider.get(DataModelTreeCache.class);
     }
 
     /**
@@ -59,9 +67,10 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
      * @param topic       The topic under which the message was sent
      * @param mqttMessage The received value log message
      * @throws JSONException In case the message could not be parsed
+     * @throws ParseException In case a date value field could not be parsed
      */
     @Override
-    public void messageArrived(String topic, MqttMessage mqttMessage) throws JSONException {
+    public void messageArrived(String topic, MqttMessage mqttMessage) throws JSONException, ParseException {
         //Record current time
         Instant time = ZonedDateTime.now().toInstant();
 
@@ -86,7 +95,12 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
         valueLog.setQos(qos);
         valueLog.setTime(time);
         valueLog.setIdref(componentID);
-        valueLog.setValue(json.getDouble(JSON_KEY_VALUE));
+        valueLog.setValue(ValueLogReceiveVerifier.validateJsonValueAndGetDocument(
+                // Retrieve the root node of the value json object which must be part of the mqtt message by convention
+                json.getJSONObject("value"),
+                // Get the data model tree of the component as this is needed to infer the right database types
+                dataModelTreeCache.getDataModelOfSensor(componentID)
+        ));
         valueLog.setComponent(componentType);
 
         //Notify all observers
