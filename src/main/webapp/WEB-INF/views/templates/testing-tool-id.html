@@ -53,9 +53,9 @@
                     <tr id=" ">
                         <th>Reuse Data:</th>
                         <td>
-                            <div class="switch" style="margin-left: 0px;">
+                            <div class="switch" style="margin-left: 0px;" >
                                 <label>
-                                    <input type="checkbox" ng-model="config.useNewData"
+                                    <input id="ReuseSwitch" type="checkbox" ng-model="config.useNewData"
                                            ng-click="ctrl.editConfig(config.useNewData)">
                                     <span class="lever"></span>
                                 </label>
@@ -130,7 +130,7 @@
                         <thead>
                         <tr>
                             <th>Date and Time</th>
-                            <th>Test
+                            <th>Test Report
                                 <Report></Report>
                             </th>
                         </tr>
@@ -140,9 +140,13 @@
                             <td>{{pdf.date * 1000 | date:'dd.MM.yyyy HH:mm:ss'}}</td>
                             <td>
                                 <form ng-submit="ctrl.downloadPDF(pdf.path)">
-                                    <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect"
+                                    <button type="submit" class="btn btn-primary btn-lg"
                                             id="downloadReport">
-                                        DownloadPDF
+                                        <i class="material-icons">get_app</i>
+                                        <span>
+
+                                        </span>
+                                        <span>Download PDF</span>
                                     </button>
                                 </form>
                             </td>
@@ -166,7 +170,7 @@
             <div class="header">
                 <i class="material-icons" style="position: absolute">call_split</i>
                 <h2 style="margin-left: 35px;">
-                    Rule Informations of the tested IoT-Application
+                    Rule Information of the tested IoT-Application
                 </h2>
             </div>
             <div class="body">
@@ -272,7 +276,7 @@
                                 </div>
                             </div>
 
-                            <div ng-repeat="realSensor in ctrl.selectedRealSensor" ng-init="row=$index" >
+                            <div ng-repeat="realSensor in selectedRealSensor" ng-init="row=$index" >
                                 <h3>Configuration Real Sensor: {{realSensor.name}}</h3>
                                 <table class="table parameter-table">
                                     <thead></thead>
@@ -319,13 +323,15 @@
 
 
 
-                            <div ng-if="ctrl.sensorType.includes('TestingTemperaturSensor')">
+
+                            <div ng-if="ctrl.sensorType.includes('TestingTemperatureSensor')">
                                 <div class="form-line">
                                     <h3>Configuration Temperature Sensor Simulator</h3>
                                     <h4> Type of simulation </h4>
                                     <select class="form-control show-tick" id="select-event"
                                             name="event"
                                             ng-model="config.eventTemp">
+                                        {{config.event}}
                                         <option value="">Select the event to be simulated *</option>
                                         <option ng-option class="ng-binding ng-scope" value="1">Temperature rise
                                         </option>
@@ -349,7 +355,7 @@
                                         </option>
                                         <option ng-option class="ng-binding ng-scope" value="5">Wrong value type
                                         </option>
-                                        <option ng-option class="ng-binding ng-scope" bvalue="6"
+                                        <option ng-option class="ng-binding ng-scope" value="6"
                                                 selected="selected">No combination
                                         </option>
                                     </select>
@@ -374,7 +380,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div ng-if="ctrl.sensorType.includes('TestingTemperaturSensorPl')">
+                            <div ng-if="ctrl.sensorType.includes('TestingTemperatureSensorPl')">
                                 <div class="form-line">
                                     <h3>Configuration Planned Temperature Sensor Simulator</h3>
                                     <h4> Type of simulation </h4>
@@ -404,7 +410,7 @@
                                         </option>
                                         <option ng-option class="ng-binding ng-scope" value="5">Wrong value type
                                         </option>
-                                        <option ng-option class="ng-binding ng-scope" bvalue="6"
+                                        <option ng-option class="ng-binding ng-scope" value="6"
                                                 selected="selected">No combination
                                         </option>
                                     </select>
@@ -430,7 +436,7 @@
                                 </div>
                             </div>
 
-                            <div ng-if="ctrl.sensorType.includes('TestingFeuchtigkeitsSensor')">
+                            <div ng-if="ctrl.sensorType.includes('TestingHumiditySensor')">
                                 <h3>Configuration Humidity Sensor Simulator</h3>
                                 <h4> Type of simulation: </h4>
                                 <div class="form-line">
@@ -486,7 +492,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div ng-if="ctrl.sensorType.includes('TestingFeuchtigkeitsSensorPl')">
+                            <div ng-if="ctrl.sensorType.includes('TestingHumiditySensorPl')">
                                 <h3>Configuration Planned Humidity Sensor Simulator</h3>
                                 <h4> Type of simulation: </h4>
                                 <div class="form-line">
@@ -662,7 +668,7 @@
                                            ng-model="config.reactionMetersGPS">
                                 </div>
                             </div>
-                            <div ng-if="ctrl.sensorType.includes('TestingBeschleunigungsSensorPl')">
+                            <div ng-if="ctrl.sensorType.includes('TestingAccelerationSensorPl')">
                                 <div class="form-line">
                                     <h3>Configuration Planned Acceleration Sensor Simulator</h3>
                                     <h4> Type of simulation:</h4>
@@ -743,7 +749,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div ng-if="ctrl.sensorType.includes('TestingBeschleunigungsSensor')">
+                            <div ng-if="ctrl.sensorType.includes('TestingAccelerationSensor')">
                                 <div class="form-line">
                                     <h3>Configuration Acceleration Sensor Simulator</h3>
                                     <h4> Type of simulation:</h4>
@@ -825,7 +831,7 @@
                                 </div>
                             </div>
                             <div class="form-line"
-                                 ng-if="ctrl.sensorType.includes('TestingFeuchtigkeitsSensorPl') || ctrl.sensorType.includes('TestingTemperaturSensorPl') ||ctrl.sensorType.includes('TestingGPSSensorPl') || ctrl.sensorType.includes('TestingBeschleunigungsSensorPl')">
+                                 ng-if="ctrl.sensorType.includes('TestingHumiditySensorPl') || ctrl.sensorType.includes('TestingTemperatureSensorPl') ||ctrl.sensorType.includes('TestingGPSSensorPl') || ctrl.sensorType.includes('TestingAccelerationSensorPl')">
 
                                 <h3>Configuration Planned Simulation</h3>
                                 <h4> How long should the sensor be simulated? (specified in hours)</h4>
@@ -919,7 +925,7 @@
             <div class="card historical-chart-card">
                 <div class="header">
                     <h2>
-                        Historical sensor values: {{sensor.name}}
+                            Historical sensor values: {{sensor.name}}
                     </h2>
                     <ul class="header-dropdown m-r--5">
                         <li>

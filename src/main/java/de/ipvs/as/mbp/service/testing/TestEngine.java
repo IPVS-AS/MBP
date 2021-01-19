@@ -1,455 +1,195 @@
 package de.ipvs.as.mbp.service.testing;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+
+import de.ipvs.as.mbp.domain.component.Actuator;
+import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.device.Device;
+import de.ipvs.as.mbp.domain.operator.Operator;
+import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
+import de.ipvs.as.mbp.domain.rules.Rule;
+import de.ipvs.as.mbp.repository.*;
+import de.ipvs.as.mbp.domain.testing.TestDetails;
+import de.ipvs.as.mbp.repository.SensorRepository;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Errors;
+
+
+import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import de.ipvs.as.mbp.domain.component.Actuator;
-import de.ipvs.as.mbp.domain.component.Sensor;
-import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
-import de.ipvs.as.mbp.domain.rules.Rule;
-import de.ipvs.as.mbp.domain.rules.RuleTrigger;
-import de.ipvs.as.mbp.domain.testing.TestDetails;
-import de.ipvs.as.mbp.domain.testing.Testing;
-import de.ipvs.as.mbp.domain.valueLog.ValueLog;
-import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
-import de.ipvs.as.mbp.service.receiver.ValueLogReceiverObserver;
-import de.ipvs.as.mbp.service.rules.RuleEngine;
-import de.ipvs.as.mbp.web.rest.RestDeploymentController;
-import de.ipvs.as.mbp.repository.ActuatorRepository;
-import de.ipvs.as.mbp.repository.RuleRepository;
-import de.ipvs.as.mbp.repository.RuleTriggerRepository;
-import de.ipvs.as.mbp.repository.TestDetailsRepository;
-import de.ipvs.as.mbp.repository.TestRepository;
-import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
-
 @Component
-public class TestEngine implements ValueLogReceiverObserver {
-	
+public class TestEngine {
+
+
     @Autowired
     private TestDetailsRepository testDetailsRepository;
-
-    @Autowired
-    private TestEngine testEngine;
-
-    @Autowired
-    private RuleTriggerRepository ruleTriggerRepository;
-
-    @Autowired
-    private ActuatorRepository actuatorRepository;
-
-    @Autowired
-    private TestRepository testRepo;
-
-    @Autowired
-    private RestDeploymentController restDeploymentController;
 
     @Autowired
     private RuleRepository ruleRepository;
 
     @Autowired
-    private RuleEngine ruleEngine;
-    
+    private DeviceRepository deviceRepository;
+
     @Autowired
-    private DeploymentWrapper deploymentWrapper;
+    private PropertiesService propertiesService;
 
-    // List of all active Tests/testValues
-    Map<String, TestDetails> activeTests = new HashMap<>();
-    Map<String, List<Double>> testValues = new HashMap<>();
-
-
-    /**
-     * Returns a list of all active tests.
-     *
-     * @return activeTests
-     */
-    public Map<String, TestDetails> getActiveTests() {
-        return activeTests;
-    }
-
-    /**
-     * Sets a list of all active tests
-     *
-     * @param activeTests active/running tests
-     */
-    public void setActiveTests(Map<String, TestDetails> activeTests) {
-        this.activeTests = activeTests;
-    }
-
-    /**
-     * Returns a list of all incomming values of the sensors of the activeted tests.
-     *
-     * @return list of test values
-     */
-    public Map<String, List<Double>> getTestValues() {
-        return testValues;
-    }
-
-    /**
-     * Sets a list of all incomming values of the sensors of the activeted tests.
-     *
-     * @param testValues list of test values
-     */
-    public void setTestValues(Map<String, List<Double>> testValues) {
-        this.testValues = testValues;
-    }
-
-    /**
-     * Registers the TestEngine as an Observer to the ValueLogReceiver which then will be notified about incoming value logs.
-     *
-     * @param valueLogReceiver The value log receiver instance to use
-     */
     @Autowired
-    private TestEngine(ValueLogReceiver valueLogReceiver) {
-        valueLogReceiver.registerObserver(this);
+    ActuatorRepository actuatorRepository;
+
+    @Autowired
+    OperatorRepository operatorRepository;
+
+    @Autowired
+    private SensorRepository sensorRepository;
+
+
+    @Value("#{'${testingTool.threeDimensionalSensor}'.split(',')}")
+    List<String> THREE_DIM_SIMULATOR_LIST;
+
+
+    //To resolve ${} in @Value
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
+        return new PropertySourcesPlaceholderConfigurer();
     }
 
-    /**
-     * Stores all Values from the active Tests
-     *
-     * @param valueLog The corresponding value log that arrived
-     */
-    @Override
-    public void onValueReceived(ValueLog valueLog) {
-        if (!activeTests.containsKey(valueLog.getIdref())) {
-            return;
-        }
-        if (!testValues.containsKey(valueLog.getIdref())) {
-            List<Double> newList = new ArrayList<>();
-            newList.add(valueLog.getValue());
-            testValues.put(valueLog.getIdref(), newList);
-        } else {
-            List<Double> oldList = testValues.get(valueLog.getIdref());
-            oldList.add(valueLog.getValue());
-        }
-    }
+    private final String TEST_DEVICE;
+    private final String TEST_DEVICE_IP;
+    private final String TEST_DEVICE_USERNAME;
+    private final String TEST_DEVICE_PASSWORD;
+    private final String ACTUATOR_NAME;
 
-    /**
-     * Checks if the sensors of the specific test are running
-     *
-     * @param testDetails specific test with all details
-     * @return boolean, if test is still running
-     */
-    public boolean testRunning(TestDetails testDetails) {
-        List<Sensor> testingSensors = testDetails.getSensor();
-        boolean response = false;
-        for (Sensor sensor : testingSensors) {
-			// TODO: I don't think this implementation is correct: test running = LAST
-			// sensor running
-			// Not sure what the criteria are for running tests - i guess all sensors have
-			// to run -> use a logical AND (&&) to create the response:
-//        	response = response && deploymentWrapper.isComponentRunning(sensor);
-			response = deploymentWrapper.isComponentRunning(sensor);
-		}
 
-        return response;
-    }
-
-    /**
-     * Sets the End time of the test, if every Sensor of a test is finished.
-     *
-     * @param testId Id of the the running test
-     * @return value-list of the simulated Sensor
-     */
-    public Map<String, List<Double>> isFinished(String testId) {
-        boolean response = true;
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
-        while (response) {
-            response = testEngine.testRunning(testDetails);
-        }
-        testDetails.setEndTestTimeNow();
-        testDetailsRepository.save(testDetails);
-
-        return testEngine.getTestValues();
+    public TestEngine() throws IOException {
+        propertiesService = new PropertiesService();
+        TEST_DEVICE = propertiesService.getPropertiesString("testingTool.testDeviceName");
+        TEST_DEVICE_IP = propertiesService.getPropertiesString("testingTool.ipAddressTestDevice");
+        TEST_DEVICE_USERNAME = propertiesService.getPropertiesString("testingTool.testDeviceUserName");
+        TEST_DEVICE_PASSWORD = propertiesService.getPropertiesString("testingTool.testDevicePassword");
+        ACTUATOR_NAME = propertiesService.getPropertiesString("testingTool.actuatorName");
     }
 
 
     /**
-     * Checks if the test was successful or not.
+     * Update the test configurations redefined by the user.
      *
-     * @param triggerValuesMap map of all trigger values of a specific test
-     * @param ruleNames        Names of all rules regarding to the test
-     * @return information about the success
+     * @param testID Id of the test to be modified
+     * @param changes to be included
+     * @return if update was successful or not
      */
-    public String checkSuccess(TestDetails test, Map<String, List<Double>> triggerValuesMap, List<String> ruleNames) {
-        String success = "Not Successful";
-        boolean triggerRules = test.isTriggerRules();
+    public HttpEntity<Object> editTestConfig(String testID, String changes) {
+        try {
+            TestDetails testToUpdate = testDetailsRepository.findById(testID).get();
 
-        if (triggerRules) {
-            if (triggerValuesMap.size() == ruleNames.size()) {
-                for (String ruleName : ruleNames) {
-                    if (triggerValuesMap.containsKey(ruleName)) {
-                        success = "Successful";
-                    } else {
-                        success = "Not Successful";
-                        break;
-                    }
-                }
+            // Clear the configuration and rules field of the specific test
+            testToUpdate.getConfig().clear();
+            testToUpdate.getRules().clear();
 
-            }
-        } else {
-            if (triggerValuesMap.size() == 0) {
-                success = "Successful";
-            }
+            // convert the string of the request body to a JSONObject in order to continue working with it
+            JSONObject updateInfos = new JSONObject(changes);
+
+            List<List<ParameterInstance>> newConfig = updateSenorConfig(updateInfos.get("config"));
+            // Update the rules to be observed in the test
+            List<Rule> newRuleList = updateRuleInformation(updateInfos);
+
+            testToUpdate.setConfig(newConfig);
+            testToUpdate.setRules(newRuleList);
+            // Update the information if the selected rules be triggered during the test or not
+            testToUpdate.setTriggerRules(updateInfos.getBoolean("triggerRules"));
+
+
+            testDetailsRepository.save(testToUpdate);
+
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
         }
-
-        return success;
     }
 
     /**
-     * Enable selected Rules, Deploy and Start the Actuator and Sensors of the test
-     *
-     * @param testDetails specific test to be executed
+     * Creates a list of the updated rules that should be observed within the test.
+
+     * @param updateInfos update/editUseNewData information for the rules and the trigger rules
+     * @return List of updated rules
      */
-    public ResponseEntity<String> startTest(TestDetails testDetails) {
-        Actuator testingActuator = actuatorRepository.findByName("TestingActuator").get();
-
-        List<Sensor> testingSensor = testDetails.getSensor();
-        List<Rule> rules = testDetails.getRules();
-        List<List<ParameterInstance>> config = testDetails.getConfig();
-
-        //activate the selected rules for the test
-        for (Rule rule : rules) {
-            // check if selected rules are active --> if not active Rules
-            ruleEngine.enableRule(rule);
-        }
-
-        //check if test exists
-        if (!testDetailsRepository.existsById(testDetails.getId())) {
-            return new ResponseEntity<>("Test does not exists.", HttpStatus.NOT_FOUND);
-        }
-
-        //check if actuator is deployed
-        boolean actuatorDeployed = deploymentWrapper.isComponentRunning(testingActuator);
-        if (!actuatorDeployed) {
-            //if false deploy actuator
-            deploymentWrapper.deployComponent(testingActuator);
-        }
-        // start the Actuator
-        deploymentWrapper.startComponent(testingActuator, new ArrayList<>());
-
-
-
-		// check if the sensor/s are currently running
-		for (Sensor sensor : testingSensor) {
-			boolean sensorDeployed = deploymentWrapper.isComponentRunning(sensor);
-			String sensorName = sensor.getName();
-			for (List<ParameterInstance> configSensor : config) {
-				for (ParameterInstance parameterInstance : configSensor) {
-					if (parameterInstance.getName().equals("ConfigName")
-							&& parameterInstance.getValue().equals(sensorName)) {
-						// check if sensor is deployed
-						if (!sensorDeployed) {
-							// if not deploy Sensor
-							deploymentWrapper.deployComponent((sensor));
-						}
-						deploymentWrapper.stopComponent(sensor);
-						deploymentWrapper.startComponent(sensor, configSensor);
-					}
-				}
-			}
-		}
-
-        return new ResponseEntity<>("Test successfully started.", HttpStatus.OK);
-    }
-
-
-    /**
-     * Saved informations about the success, executed Rules and the trigger-values
-     *
-     * @param testId ID of the executed test
-     */
-    public void testSuccess(String testId) {
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
-        List<String> ruleNames = new ArrayList<>();
-
-        List<Rule> ruleList = testDetails.getRules();
-
-        // add all  names and triggerIDs of the rules of the application  tested
-        for (Rule rule : ruleList) {
-            ruleNames.add(rule.getName());
-        }
-
-        Map<String, List<Double>> triggerValues = getTriggerValues(testId);
-        String sucessResponse = testEngine.checkSuccess(testDetails, triggerValues, ruleNames);
-        List<String> rulesExecuted = testEngine.getRulesExecuted(triggerValues);
-
-        // save informations about the success and rules of the executed test
-        testDetails.setTriggerValues(triggerValues);
-        testDetails.setSuccessful(sucessResponse);
-        testDetails.setRulesExecuted(rulesExecuted);
-        testDetailsRepository.save(testDetails);
-    }
-
-    /**
-     * Returns a list of all values that triggered the selected rules in the test, between start and end time.
-     *
-     * @param testId ID of the executed test
-     * @return List of trigger-values
-     */
-    public Map<String, List<Double>> getTriggerValues(String testId) {
-        Map<String, List<Double>> testValues = new HashMap<>();
-
-
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
-        List<String> ruleNames = new ArrayList<>();
-        List<String> triggerID = new ArrayList<>();
-
-        Integer startTime = testDetails.getStartTimeUnix();
-        long endTime = testDetails.getEndTimeUnix();
-
-
-        for (int i = 0; i < testDetails.getSensor().size(); i++) {
-            for (RuleTrigger trigger : ruleTriggerRepository.findAll()) {
-                Sensor sensor = testDetails.getSensor().get(i);
-                String s = sensor.getId();
-                if (trigger.getQuery().contains(s)) {
-                    triggerID.add(trigger.getId());
-                    for (Rule nextRule : ruleRepository.findAll()) {
-                        if (nextRule.getTrigger().getId().equals(trigger.getId())) {
-                            ruleNames.add(nextRule.getName());
-                        }
-                    }
+    private List<Rule> updateRuleInformation( JSONObject updateInfos) throws JSONException {
+        Pattern pattern = Pattern.compile("rules/(.*)$");
+        JSONArray rules = (JSONArray) updateInfos.get("rules");
+        List<Rule> newRules = new ArrayList<>();
+        if (rules != null) {
+            for (int i = 0; i < rules.length(); i++) {
+                Matcher m = pattern.matcher(rules.getString(i));
+                if (m.find()) {
+                    newRules.add(ruleRepository.findById(m.group(1)).get());
                 }
             }
         }
-
-        for (int i = 0; i < ruleNames.size(); i++) {
-            List<Double> values = new ArrayList<>();
-            String rulename = ruleNames.get(i);
-            List<Testing> test = testRepo.findAllByTriggerId(triggerID.get(i));
-            for (Testing testing : test) {
-                if (testing.getRule().contains(rulename)) {
-                    LinkedHashMap<String, Double> timeTiggerValue = (LinkedHashMap<String, Double>) testing.getOutput().getOutputMap().get("event_0");
-                    LinkedHashMap<String, Long> timeTiggerValMp = (LinkedHashMap<String, Long>) testing.getOutput().getOutputMap().get("event_0");
-                    long timeTiggerVal = timeTiggerValMp.get("time");
-                    if (timeTiggerVal >= startTime && timeTiggerVal <= endTime) {
-                        values.add(timeTiggerValue.get("value"));
-                    }
+        return newRules;
+    }
 
 
+    /**
+     *
+     * Creates a list of the updated sensor configurations included into the test.
+     *
+     * @param config update/editUseNewData information for the sensor configuration
+     * @throws JSONException In case of parsing problems
+     * @return List new sensor Configurations
+     */
+    public List<List<ParameterInstance>> updateSenorConfig(Object config) throws JSONException {
+        ParameterInstance instance;
+        // Get updates for the sensor config
+        JSONArray configEntries = (JSONArray) config;
+
+        // Create a new List of Parameter Instances for the updates
+        List<List<ParameterInstance>> newConfig = new ArrayList<>();
+        if (configEntries != null) {
+            for (int i = 0; i < configEntries.length(); i++) {
+                // get out single configurations for the different sensors
+                JSONArray singleConfig = (JSONArray) configEntries.get(i);
+                List<ParameterInstance> newConfigInner = new ArrayList<>();
+                for (int j = 0; j < singleConfig.length(); j++) {
+                    // get out the name and values of the update Parameter Instances
+                    instance = new ParameterInstance(singleConfig.getJSONObject(j).getString("name"), singleConfig.getJSONObject(j).getString("value"));
+                    newConfigInner.add(instance);
                 }
-            }
-            if (values.size() > 0) {
-                testValues.put(rulename, values);
-            }
-        }
-        return testValues;
-    }
+                newConfig.add(newConfigInner);
 
-
-    /**
-     * Returns all informations about the rules of the tested application before the execution
-     *
-     * @param test to be executed test
-     * @return list of informations about the rules of the tested application before execution
-     */
-    public List<Rule> getStatRulesBefore(TestDetails test) {
-        // Get the rules selected by the user with their informations about the last execution,.. before the sensor is started
-        List<Rule> rulesbefore = new ArrayList<>(test.getRules());
-
-        List<RuleTrigger> allRules = ruleTriggerRepository.findAll();
-        // Get Informations for all rules of the IoT-Applikation
-        for (int i = 0; i < test.getSensor().size(); i++) {
-            for (RuleTrigger trigger : allRules) {
-                Sensor sensor = test.getSensor().get(i);
-                String s = sensor.getId();
-                if (trigger.getQuery().contains(s)) {
-                    for (Rule nextRule : ruleRepository.findAll()) {
-                        if (nextRule.getTrigger().getId().equals(trigger.getId())) {
-                            if (!rulesbefore.contains(nextRule)) {
-                                rulesbefore.add(nextRule);
-                            }
-                        }
-                    }
-                }
             }
         }
 
-        return rulesbefore;
-    }
-
-    /**
-     * Starts the test and saves all values form the sensor.
-     *
-     * @param test test to be executed
-     */
-    public Map<String, List<Double>> executeTest(TestDetails test) {
-
-        Map<String, TestDetails> activeTests = testEngine.getActiveTests();
-        Map<String, List<Double>> list = testEngine.getTestValues();
-        for (Sensor sensor : test.getSensor()) {
-            activeTests.put(sensor.getId(), test);
-            list.remove(sensor.getId());
-        }
-        testEngine.setActiveTests(activeTests);
-        testEngine.setTestValues(list);
-        testEngine.startTest(testDetailsRepository.findById(test.getId()).get());
-
-        Map<String, List<Double>> valueList;
-        Map<String, List<Double>> valueListTest = new HashMap<>();
-
-        // Get List of all simulated Values
-        valueList = testEngine.isFinished(test.getId());
-        TestDetails testDetails2 = testDetailsRepository.findById(test.getId()).get();
-        for (Sensor sensor : test.getSensor()) {
-            List<Double> temp = valueList.get(sensor.getId());
-            valueList.put(sensor.getName(), temp);
-            valueListTest.put(sensor.getName(), temp);
-            list.remove(sensor.getId());
-        }
-
-        // save list of sensor values to database
-        testDetails2.setSimulationList(valueListTest);
-        testDetailsRepository.save(testDetails2);
-
-        return valueListTest;
-    }
-
-
-    /**
-     * Gets all Rules executed by the test
-     *
-     * @param triggerValues map of all trigger values of a specific test
-     * @return a list of all executed rules
-     */
-    public List<String> getRulesExecuted(Map<String, List<Double>> triggerValues) {
-
-        List<String> executedRules = new ArrayList<>();
-        triggerValues.forEach((k, v) -> executedRules.add(k));
-
-        return executedRules;
+        return newConfig;
     }
 
     /**
      * Method to download a specific Test Report
      *
      * @param path to the specific Test Report to download
-     * @return
+     * @return ResponseEntity
      */
-    public ResponseEntity downloadPDF(String path) throws IOException {
+    public ResponseEntity<Serializable> downloadPDF(String path) throws IOException {
         TestDetails test = null;
+        ResponseEntity<Serializable> respEntity;
         Pattern pattern = Pattern.compile("(.*?)_");
         Matcher m = pattern.matcher(path);
         if (m.find()) {
@@ -460,7 +200,6 @@ public class TestEngine implements ValueLogReceiverObserver {
         assert test != null;
         File result = new File(test.getPathPDF() + "/" + path + ".pdf");
 
-        ResponseEntity respEntity;
 
         if (result.exists()) {
             InputStream inputStream = new FileInputStream(result);
@@ -470,10 +209,10 @@ public class TestEngine implements ValueLogReceiverObserver {
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.add("content-disposition", "attachment; filename=" + path + ".pdf");
 
-            respEntity = new ResponseEntity(out, responseHeaders, HttpStatus.OK);
+            respEntity = new ResponseEntity<>(out, responseHeaders, HttpStatus.OK);
             inputStream.close();
         } else {
-            respEntity = new ResponseEntity("File Not Found", HttpStatus.NOT_FOUND);
+            respEntity = new ResponseEntity<>("File Not Found", HttpStatus.NOT_FOUND);
         }
 
 
@@ -481,13 +220,44 @@ public class TestEngine implements ValueLogReceiverObserver {
     }
 
     /**
-     * Returns a Hashmap with date and path to of all Test Reports regarding to a specific test.
+     * Deletes the last Test report and the corresponding graph if existing.
+     *
+     * @param testId of the test the report to be deleted belongs to
+     * @return if files could be deleted successfully or not
+     */
+    public ResponseEntity deleteReport(String testId) {
+        ResponseEntity response;
+
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
+
+        if (testDetails.isPdfExists()) {
+            Path pathTestReport = Paths.get(testDetails.getPathPDF());
+            Path pathDiagram = Paths.get(pathTestReport.getParent().toString(), testId + ".gif");
+
+            try {
+                Files.delete(pathTestReport);
+                Files.delete(pathDiagram);
+                response = new ResponseEntity<>("Test report successfully deleted", HttpStatus.OK);
+            } catch (NoSuchFileException x) {
+                response = new ResponseEntity<>("Test report doesn't exist.", HttpStatus.NOT_FOUND);
+            } catch (IOException x) {
+                response = new ResponseEntity<>(x, HttpStatus.CONFLICT);
+            }
+        } else {
+            response = new ResponseEntity<>("No available Test report for this Test.", HttpStatus.NOT_FOUND);
+        }
+        return response;
+    }
+
+
+    /**
+     * Returns a HashMap with date and path to of all Test Reports regarding to a specific test.
      *
      * @param testId ID of the test from which all reports are to be found
-     * @return hashmap with the date and path to every report regarding to the specific test
+     * @return hashMap with the date and path to every report regarding to the specific test
      */
-    public ResponseEntity getPDFList(String testId) {
-        ResponseEntity pdfList;
+    public ResponseEntity<Map<Long, String>> getPDFList(String testId) {
+        ResponseEntity<Map<Long, String>> pdfList;
         Map<Long, String> nullList = new TreeMap<>();
         TestDetails testDetails = testDetailsRepository.findById(testId).get();
         try {
@@ -498,14 +268,14 @@ public class TestEngine implements ValueLogReceiverObserver {
                             file.getName().contains(testId + "_");
                 });
 
-                pdfList = new ResponseEntity(generateReportList(pathStream), HttpStatus.OK);
+                pdfList = new ResponseEntity<>(generateReportList(pathStream), HttpStatus.OK);
             } else {
-                pdfList = new ResponseEntity(nullList, HttpStatus.OK);
+                pdfList = new ResponseEntity<>(nullList, HttpStatus.OK);
             }
 
 
         } catch (IOException e) {
-            pdfList = new ResponseEntity(HttpStatus.NOT_FOUND);
+            pdfList = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         return pdfList;
@@ -513,7 +283,7 @@ public class TestEngine implements ValueLogReceiverObserver {
 
 
     /**
-     * Generates a Hashmap where the entries consist of the creation date of the report and the path to it.
+     * Generates a HashMap where the entries consist of the creation date of the report and the path to it.
      *
      * @param pathStream Stream of the matching reports regarding to to the specific test
      * @return Map out of the creation dates and paths to the report
@@ -530,7 +300,6 @@ public class TestEngine implements ValueLogReceiverObserver {
         // Put every path out of the stream into a list
         List<Path> files = pathStream.sorted(Comparator.comparing(Path::toString)).collect(Collectors.toList());
 
-        files.forEach(System.out::println);
         for (Path singlePath : files) {
             // get  date in milliseconds out of the filename and convert this into the specified date format
             Matcher machter = pattern.matcher(singlePath.toString());
@@ -546,7 +315,6 @@ public class TestEngine implements ValueLogReceiverObserver {
         return sortMap(pdfEntry);
     }
 
-
     /**
      * Sorts the timestamps of the List of Test-Reports.
      *
@@ -555,10 +323,250 @@ public class TestEngine implements ValueLogReceiverObserver {
      */
     private Map<Long, String> sortMap(Map<Long, String> unsortedMap) {
 
-        Map<Long, String> treeMap = new TreeMap<>((o1, o2) -> o1.compareTo(o2));
+        Map<Long, String> treeMap = new TreeMap<>(Long::compareTo);
 
         treeMap.putAll(unsortedMap);
-
         return treeMap;
     }
+
+    /**
+     * Registers the Testing Device which is used for testing purposes.
+     *
+     * @return response entity if insertion was successful or not
+     */
+    public ResponseEntity registerTestDevice() {
+        ResponseEntity responseEntity;
+        Device testDevice = null;
+
+
+        try {
+            // Check if device with this name is already registered
+            testDevice = getTestDevice();
+
+            if (testDevice == null) {
+                //Enrich device for details
+                testDevice = new Device();
+                testDevice.setName(TEST_DEVICE);
+                testDevice.setComponentType("Computer");
+                testDevice.setIpAddress(TEST_DEVICE_IP);
+                testDevice.setUsername(TEST_DEVICE_USERNAME);
+                testDevice.setPassword(TEST_DEVICE_PASSWORD);
+            }
+
+            // Insert the new testing device into the device repository
+            deviceRepository.insert(testDevice);
+
+            //Validate device
+            // errors = new BeanPropertyBindingResult(testDevice, "device");
+            //deviceCreateValidator.validate(device, errors); TODO
+
+            responseEntity = new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception exception) {
+            responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return responseEntity;
+
+
+    }
+
+    /**
+     * Registers the Testing Actuator which is used for testing purposes and does't make any real actions.
+     *
+     * @return response entity if insertion was successful or not
+     */
+    public ResponseEntity<String> registerTestActuator() {
+        //Validation errors
+        Errors errors;
+        ResponseEntity responseEntity = null;
+        Device testDevice;
+
+
+        try {
+            Actuator testingActuator = actuatorRepository.findByName(ACTUATOR_NAME).get();
+            Operator testActuatorAdapter = operatorRepository.findByName(ACTUATOR_NAME).get();
+            testDevice = getTestDevice();
+
+            // Check if testing device and actuator are already registered
+            if (testDevice == null) {
+                // Register the Testing device automatically if not existing
+                registerTestDevice();
+            } else {
+                // Check if Actuator is already existing
+                if (testingActuator == null) {
+                    // Check if the corresponding adapter is registered
+                    if (testActuatorAdapter != null) {
+                        //Enrich actuator for details
+                        testingActuator = new Actuator();
+                        testingActuator.setName(ACTUATOR_NAME);
+                        testingActuator.setOwner(null);
+                        testingActuator.setDevice(testDevice);
+                        testingActuator.setOperator(testActuatorAdapter);
+                        testingActuator.setComponentType("Buzzer");
+
+                        //Validate device
+                        errors = new BeanPropertyBindingResult(testingActuator, "component");
+                       // actuatorValidator.validate(testingActuator, errors);
+
+                        actuatorRepository.insert(testingActuator);
+
+                        responseEntity = new ResponseEntity("Testing Actuator successfully created.", HttpStatus.CREATED);
+
+                    }
+                }
+            }
+
+
+        } catch (Exception e) {
+            responseEntity = new ResponseEntity("Error during creation of the Actuator.", HttpStatus.CONFLICT);
+        }
+        return responseEntity;
+    }
+
+    /**
+     * Checks if the Testing Device is already registered and turn back this device or null.
+     *
+     * @return the test Device if existing
+     */
+    private Device getTestDevice() {
+        Device testDevice = null;
+
+        // List of all registered Devices
+        List<Device> testDeviceList = deviceRepository.findAll();
+
+        // Go through the List of devices and check if testing Device is available
+        Iterator iterator = testDeviceList.listIterator();
+        while (iterator.hasNext()) {
+            Device tempDevice = (Device) iterator.next();
+            if (tempDevice.getName().equals(TEST_DEVICE)) {
+                testDevice = tempDevice;
+                break;
+            }
+        }
+        return testDevice;
+    }
+
+    /**
+     * Checks if given Sensor Simulator is already registered and turn back this sensor or null.
+     *
+     * @return the sensor simulator if existing
+     */
+    private Sensor getSensorSimulator(String sensorName) {
+        Sensor sensorSimulator = null;
+
+        // List of all registered Sensors
+        List<Sensor> sensorList = sensorRepository.findAll();
+
+        // Go through the List of sensors and check if specific sensor is available
+        Iterator iterator = sensorList.listIterator();
+        while (iterator.hasNext()){
+            Sensor tempSensor = (Sensor) iterator.next();
+            if(tempSensor.getName().equals(sensorName)){
+                sensorSimulator = tempSensor;
+            }
+
+        }
+
+        return sensorSimulator;
+    }
+
+
+
+    /**
+     * Registers the wished sensor simulator if the corresponding adapter is already registered
+     *
+     * @param sensorName Name of the sensor simulator to be registered
+     * @return ResponseEntity if the registration was successful or not
+     */
+    public ResponseEntity<String> registerSensorSimulator(String sensorName) {
+        ResponseEntity<String> responseEntity;
+
+        Operator sensorAdapter = operatorRepository.findByName(sensorName).get();
+        Device testingDevice = getTestDevice();
+        Sensor sensorSimulator = getSensorSimulator(sensorName);
+
+        try {
+            // Check if corresponding adapter exists
+            if (sensorAdapter == null) {
+                return new ResponseEntity<>("Cloud not create Sensor.", HttpStatus.CONFLICT);
+            } else if (testingDevice == null) {
+                registerTestDevice();
+            } else if (sensorSimulator == null) {
+                //Enrich actuator for details
+                sensorSimulator = new Sensor();
+                sensorSimulator.setName(sensorName);
+                sensorSimulator.setOwner(null);
+
+                if (sensorName.contains("Temperature")) {
+                    sensorSimulator.setComponentType("Temperature");
+                } else if (sensorName.contains("Humidity")) {
+                    sensorSimulator.setComponentType("Humidity");
+                } else {
+                    sensorSimulator.setComponentType("Motion");
+                }
+
+                sensorSimulator.setOperator(sensorAdapter);
+                sensorSimulator.setDevice(testingDevice);
+
+                //Validate device
+                //errors = new BeanPropertyBindingResult(sensorSimulator, "component");
+                // sensorValidator.validate(sensorSimulator, errors);
+
+                sensorRepository.insert(sensorSimulator);
+
+            }
+            responseEntity = new ResponseEntity<>("Sensor successfully created", HttpStatus.OK);
+        } catch (Exception e) {
+            responseEntity = new ResponseEntity<>("Error during creation of the Sensor.", HttpStatus.CONFLICT);
+        }
+
+        return responseEntity;
+    }
+
+
+
+    /**
+     * Checks if the one and three dimensional sensor simulators are already registered.
+     *
+     * @param sensor Name of the sensor to be checked
+     * @return Boolean if the sensor is already registered or not
+     */
+    public Boolean isSimulatorRegistr(String sensor) {
+        Boolean registered = false;
+        String dimX = sensor + "X";
+        String dimY = sensor + "Y";
+        String dimZ = sensor + "Z";
+
+        if (THREE_DIM_SIMULATOR_LIST.contains(sensor)) {
+            Sensor sensorX = getSensorSimulator(dimX);
+            Sensor sensorY = getSensorSimulator(dimY);
+            Sensor sensorZ = getSensorSimulator(dimZ);
+
+            if (sensorX != null && sensorY != null && sensorZ != null) {
+                registered = true;
+            }
+        } else {
+            if (getSensorSimulator(sensor) != null) {
+                registered = true;
+            }
+        }
+
+        return registered;
+    }
+
+
+    /**
+     * Registers the wished three dimensional sensor simulator if the corresponding adapter is already registered.
+     *
+     * @param sensorName of the three dimensional sensor to be registered
+     * @return Response entity if registration was successful
+     */
+    public void registerThreeDimSensorSimulator(String sensorName) {
+       //TODO
+
+    }
+
+
+
+
 }

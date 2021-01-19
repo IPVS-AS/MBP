@@ -2,26 +2,29 @@
  * Controller for the component details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('TestingChartController',
-    ['$scope', '$rootScope', '$routeParams', 'testingDetails', 'sensorList', '$interval', 'ComponentService', 'DeviceService', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI',
-        function ($scope, $rootScope, $routeParams, testingDetails, sensorList, $interval, ComponentService, DeviceService, UnitService, NotificationService, $http, ENDPOINT_URI) {
+    ['$scope', '$rootScope', '$routeParams', 'TestService', 'testingDetails', 'sensorList', '$interval', 'ComponentService', 'CrudService', 'DeviceService', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI',
+        function ($scope, $rootScope, $routeParams, TestService, testingDetails, sensorList, $interval, ComponentService, CrudService, DeviceService, UnitService, NotificationService, $http, ENDPOINT_URI) {
+            const vm = this;
+
             //Selectors that allow the selection of different ui cards
             const LIVE_CHART_CARD_SELECTOR = ".live-chart-card";
             const HISTORICAL_CHART_CARD_SELECTOR = ".historical-chart-card";
             const DEPLOYMENT_CARD_SELECTOR = ".deployment-card";
-            const STATS_CARD_SELECTOR = ".stats-card";
-
-            const vm = this;
-            vm.sensorList = sensorList;
-
-
-            const COMPONENT_ID = vm.component_id;
+            const COMPONENT_ID = testingDetails.id;
             const COMPONENT_TYPE = vm.component_type;
             const COMPONENT_TYPE_URL = vm.component_type_url;
             const COMPONENT_OPERATOR_UNIT = vm.component_operator_unit;
 
+
+            vm.sensorList = sensorList;
+
+
+
+
             //Stores the parameters and their values as assigned by the user
             vm.parameterValues = [];
             vm.deploymentState = '';
+
             /**
              * Initializing function, sets up basic things.
              */
@@ -33,10 +36,6 @@ app.controller('TestingChartController',
                 //Initialize parameters and retrieve states and stats
                 updateDeploymentState();
                 updateDeviceState();
-
-
-                //Initialize value log stats
-                initValueLogStats();
 
                 //Initialize charts
                 initLiveChart();
@@ -58,7 +57,8 @@ app.controller('TestingChartController',
 
 
             /**
-             * {Public]
+             * [Public]
+             *
              * Updates the deployment state of the currently considered component. By default, a waiting screen
              * is displayed during the update. However, this can be deactivated.
              *
@@ -71,13 +71,12 @@ app.controller('TestingChartController',
                 }
                 vm.deploymentStateTemp = [];
                 try {
-                    for (var i = 0; i < sensorList.length; i++) {
+                    for (let i = 0; i < sensorList.length; i++) {
                         //Retrieve the state of the current component
 
                         ComponentService.getComponentState(vm.sensorList[i].id, vm.sensorList[i].componentTypeName + 's').then(function (response) {
                             //Success
                             vm.deploymentStateTemp.push(response.content);
-
 
                             if (vm.deploymentStateTemp.includes('NOT_READY')) {
                                 vm.deploymentState = 'NOT_READY';
@@ -109,7 +108,6 @@ app.controller('TestingChartController',
              */
             function updateDeviceState() {
                 vm.deviceState = 'LOADING';
-
                 //Retrieve device state
                 DeviceService.getDeviceState(vm.sensorList[0]._embedded.device.id).then(function (response) {
                     //Success
@@ -124,6 +122,17 @@ app.controller('TestingChartController',
 
             /**
              * [Public]
+             *
+             * Creates a server request to get a list of all generated Test Reports regarding to the Test of the IoT-Application.
+             */
+            function getPDFList() {
+                vm.pdfDetails = [];
+                TestService.getPDFList(COMPONENT_ID).then(function (response) {
+                    $scope.pdfTable = response;
+                });
+            }
+
+            /**
              * Called, when the user updates the unit in which the values should be displayed
              * by clicking on the update button.
              */
@@ -150,31 +159,7 @@ app.controller('TestingChartController',
 
             /**
              * [Public]
-             * Creates a server request to get a list of all generated Test Reports regarding to the Test of the IoT-Application.
-             */
-            function getPDFList() {
-                $http.get(ENDPOINT_URI + '/test-details/pdfList/' + testingDetails.id).then(function (response) {
-                    const pdfList = {};
-                    vm.pdfDetails = [];
-
-                    if (Object.keys(response).length > 0) {
-                        angular.forEach(response, function (value, key) {
-                            vm.pdfDetails.push({
-                                "date": key,
-                                "path": value
-                            });
-                        });
-                        pdfList.pdfTable = vm.pdfDetails;
-                        $scope.pdfTable = pdfList.pdfTable;
-                    } else {
-                        document.getElementById("pdfTable").innerHTML = "There is no Test Report for this Test yet.";
-                    }
-                });
-            }
-
-
-            /**
-             * [Public]
+             *
              * Starts the current test (in case it has been stopped before) and shows a waiting screen during
              * the start progress.
              */
@@ -183,7 +168,7 @@ app.controller('TestingChartController',
                 vm.startTest = 'STARTING_TEST';
 
                 //Execute start request
-                $http.post(ENDPOINT_URI + '/test-details/test/' + testingDetails.id, testingDetails.id.toString()).success(function () {
+                TestService.executeTest(COMPONENT_ID).success(function () {
                     // If test completed successfully, update List of Test-Reports
                     getPDFList();
                     vm.startTest = "END_TEST";
@@ -201,13 +186,14 @@ app.controller('TestingChartController',
 
             /**
              * [Public]
+             *
              * Stops the current test and shows a waiting screen during the stop progress.
              */
             function stopComponent() {
                 //Show waiting screen
                 showDeploymentWaitingScreen("Stopping...");
 
-                vm.http = $http.post(ENDPOINT_URI + '/test-details/test/stop/' + testingDetails.id, testingDetails.id.toString()).success(function () {
+                TestService.stopTest(COMPONENT_ID).success(function () {
                     //Finally hide the waiting screen
                     vm.deploymentState = updateDeploymentState();
                 }).finally(function () {
@@ -218,6 +204,7 @@ app.controller('TestingChartController',
 
             /**
              * [Public]
+             *
              * Retrieves a certain number of value log data (in a specific order) for the current component
              * as a promise.
              *
@@ -226,6 +213,7 @@ app.controller('TestingChartController',
              * order, false in ascending order. By default, the logs are retrieved in ascending
              * order ([oldest log] --> ... --> [most recent log])
              * @param unit The unit in which the values are supposed to be retrieved
+             * @param sensor The sensor of which the values are supposed to be retrieved
              * @returns A promise that passes the logs as a parameter
              */
             function retrieveComponentData(numberLogs, descending, unit, sensor) {
@@ -244,47 +232,7 @@ app.controller('TestingChartController',
                 };
 
                 //Perform the server request in order to retrieve the data
-                return ComponentService.getValueLogs(sensor.id, sensor.componentTypeName, pageDetails, unit);
-            }
-
-            /**
-             * [Public]
-             * Asks the user if he really wants to delete all value logs for the current component. If this is the case,
-             * the deletion is executed by creating the corresponding server request.
-             */
-            function deleteValueLogs() {
-                /**
-                 * Executes the deletion of the value logs by performing the server request.
-                 */
-                function executeDeletion() {
-                    ComponentService.deleteValueLogs(COMPONENT_ID, COMPONENT_TYPE).then(function () {
-                        //Update historical chart and stats
-                        $scope.historicalChartApi.updateChart();
-                        $scope.valueLogStatsApi.updateStats();
-
-                        NotificationService.notify("Value logs were deleted successfully.", "success");
-                    }, function () {
-                        NotificationService.notify("Could not delete value logs.", "error");
-                    });
-                }
-
-                //Ask the user to confirm the deletion
-                return Swal.fire({
-                    title: 'Delete value data',
-                    type: 'warning',
-                    html: "Are you sure you want to delete all value data that has been recorded so far for this " +
-                        "component? This action cannot be undone.",
-                    showCancelButton: true,
-                    confirmButtonText: 'Delete',
-                    confirmButtonClass: 'bg-red',
-                    focusConfirm: false,
-                    cancelButtonText: 'Cancel'
-                }).then(function (result) {
-                    //Check if the user confirmed the deletion
-                    if (result.value) {
-                        executeDeletion();
-                    }
-                });
+                return ComponentService.getValueLogs(sensor.id, 'sensor', pageDetails, unit);
             }
 
 
@@ -379,6 +327,7 @@ app.controller('TestingChartController',
 
             /**
              * [Private]
+             *
              * Initializes the historical chart for displaying all sensor values (up to a certain limit).
              */
             function initHistoricalChart() {
@@ -412,26 +361,8 @@ app.controller('TestingChartController',
 
 
             /**
-             * Retrieve authorization code for the device from the OAuth Authorization server.
-             */
-            function getDeviceCode() {
-                fetch(location.origin + '/MBP/oauth/authorize?client_id=device-client&response_type=code&scope=write', {
-                    headers: {
-                        // Basic http authentication with username "device-client" and the according password from MBP
-                        'Authorization': 'Basic ZGV2aWNlLWNsaWVudDpkZXZpY2U='
-                    }
-                }).then(function (response) {
-                    let chars = response.url.split('?');
-                    let code = chars[1].split('=');
-                    vm.parameterValues.push({
-                        "name": "device_code",
-                        "value": code[1]
-                    });
-                });
-            }
-
-            /**
              * [Private]
+             *
              * Displays a waiting screen with a certain text for the deployment DOM container.
              * @param text The text to display
              */
@@ -451,11 +382,13 @@ app.controller('TestingChartController',
 
             /**
              * [Private]
+             *
              * Hides the waiting screen for the deployment DOM container.
              */
             function hideDeploymentWaitingScreen() {
                 $(DEPLOYMENT_CARD_SELECTOR).waitMe("hide");
             }
+
 
             function specifyChart(sensor) {
 
@@ -476,15 +409,9 @@ app.controller('TestingChartController',
 
             }
 
-
             //Extend the controller object for the public functions to make them available from outside
             angular.extend(vm, {
-                updateDeploymentState: updateDeploymentState,
-                updateDeviceState: updateDeviceState,
-                onDisplayUnitChange: onDisplayUnitChange,
                 startComponent: startComponent,
                 stopComponent: stopComponent,
-                deleteValueLogs: deleteValueLogs,
-                specifyChart: specifyChart
             });
         }]);
