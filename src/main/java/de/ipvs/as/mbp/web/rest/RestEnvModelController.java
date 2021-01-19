@@ -81,15 +81,15 @@ public class RestEnvModelController {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
-    @ApiOperation(value = "Retrieves an existing environment model entity identified by its id if it's available for the requesting entity.", produces = "application/hal+json")
+    @ApiOperation(value = "Creates a new environment model entity.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
             @ApiResponse(code = 409, message = "Environment model already exists!")})
     public ResponseEntity<EntityModel<EnvironmentModel>> create(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @ApiParam(value = "Page parameters", required = true) Pageable pageable,
-            @RequestBody EnvironmentModel adapter) throws EntityAlreadyExistsException, EntityNotFoundException {
+            @RequestBody EnvironmentModel environmentModel) throws EntityAlreadyExistsException, EntityNotFoundException {
         // Save environment model in the database
-        EnvironmentModel createdEnvironmentModel = userEntityService.create(environmentModelRepository, adapter);
+        EnvironmentModel createdEnvironmentModel = userEntityService.create(environmentModelRepository, environmentModel);
         return ResponseEntity.ok(userEntityService.entityToEntityModel(createdEnvironmentModel));
     }
 
