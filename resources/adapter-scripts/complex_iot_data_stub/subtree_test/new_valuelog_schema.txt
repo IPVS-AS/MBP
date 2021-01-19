@@ -1,0 +1,62 @@
+[
+  {
+    "name": "root",
+    "description": "",
+    "semanticHint": "",
+    "type": "object",
+    "parent": null,
+    "children": [
+      "left",
+      "right"
+    ]
+  },
+  {
+    "name": "left",
+    "description": "",
+    "semanticHint": "",
+    "type": "object",
+    "parent": "root",
+    "children": ["A", "B"]
+  },  
+{
+   "name": "right",
+    "description": "",
+    "semanticHint": "",
+    "type": "object",
+    "parent": "root",
+    "children": ["C", "D"]
+  }, 
+ {
+    "name": "A",
+    "description": "",
+    "semanticHint": "",
+    "type": "string",
+    "parent": "left",
+    "children": []
+  },
+ {
+    "name": "B",
+    "description": "",
+    "semanticHint": "",
+    "type": "string",
+    "parent": "left",
+    "children": []
+  },
+ {
+    "name": "C",
+    "description": "",
+    "semanticHint": "",
+    "type": "string",
+    "parent": "right",
+    "children": []
+  },
+ {
+    "name": "D",
+    "description": "",
+    "semanticHint": "",
+    "type": "string",
+    "parent": "right",
+    "children": []
+  }
+
+]

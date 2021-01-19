@@ -35,7 +35,8 @@ public class ValueLog implements IACValueLog<Document> {
     @ApiModelProperty(notes = "Type of the pertaining component", example = "SENSOR", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String component; //Component type
 
-    @ApiModelProperty(notes = "Received value", example = "27.5", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    // Value document with all the sensor data
+    @ApiModelProperty(notes = "Received value", example = "{\"val1\": 27.5}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private Document value;
 
     /**

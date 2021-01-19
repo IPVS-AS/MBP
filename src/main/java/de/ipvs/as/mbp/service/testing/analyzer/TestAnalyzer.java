@@ -104,11 +104,13 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
         }
         if (!testValues.containsKey(valueLog.getIdref())) {
             LinkedHashMap<Long, Double> newList = new LinkedHashMap<>();
-            newList.put(valueLog.getTime().getEpochSecond(), valueLog.getValue());
+            // TODO Not supported currently
+            //newList.put(valueLog.getTime().getEpochSecond(), valueLog.getValue());
             testValues.put(valueLog.getIdref(), newList);
         } else {
             Map<Long, Double> oldList = testValues.get(valueLog.getIdref());
-            oldList.put(valueLog.getTime().getEpochSecond(), valueLog.getValue());
+            // TODO Not supported currently
+            //oldList.put(valueLog.getTime().getEpochSecond(), valueLog.getValue());
         }
     }
 

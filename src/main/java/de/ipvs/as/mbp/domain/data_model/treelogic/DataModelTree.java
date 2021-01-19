@@ -1,25 +1,26 @@
 package de.ipvs.as.mbp.domain.data_model.treelogic;
 
+import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.data_model.DataTreeNode;
 import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.util.Validation;
+import javolution.io.Struct;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This class is a tree representation for one data model saved in the {@link DataModel}
  * repository. It is a schema to describe how the IoT data of different components
  * is expected to look like.
  * With the help of this tree representation it is possible to handle heterogeneous
- * IoT data.
+ * IoT data.<br>
+ * <p>The supported for-each iteration on {@link DataModelTreeNode} is a preorder tree traversal.</p>
  * <p>
  * Provided features:<br>
  * - Validate {@link DataModel}s<br>
@@ -31,22 +32,22 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
     /**
      * The original node data from the {@link DataModel} repository.
      */
-    private List<DataTreeNode> repoNodeRepresentationList;
-
-    /**
-     * The root node of the original node representation
-     */
-    private DataTreeNode rootRepoRepresentation;
+    private final List<DataTreeNode> repoNodeRepresentationList;
 
     /**
      * The converted tree nodes of the initial {@link DataModelTree#repoNodeRepresentationList}
      */
-    private List<DataModelTreeNode> modelNodeList;
+    private final List<DataModelTreeNode> modelNodeList;
 
     /**
      * The root node of the tree
      */
     private DataModelTreeNode rootNodeModel;
+
+    /**
+     * Map storing all jsonPaths which can be retrieved easily if path is known
+     */
+    private final Map<String, Map.Entry<JsonPath, IoTDataTypes>> jsonPathMap;
 
     /**
      * Builds a tree data structure out of repository {@link DataTreeNode}s. Before the tree is built, various
@@ -60,6 +61,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
     public DataModelTree(List<DataTreeNode> repoNodesToConvert) throws EntityValidationException {
         this.repoNodeRepresentationList = repoNodesToConvert;
         this.modelNodeList = new ArrayList<>();
+        this.jsonPathMap = new HashMap<>();
         validateAndBuildTree();
 
     }
@@ -108,7 +110,6 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
             exception.addInvalidField("treeNodes", "Tree is missing a root or has too " +
                     "much roots.");
         } else {
-            this.rootRepoRepresentation = rootCandidates.get(0);
             // Check if root is object
             if (!rootCandidates.get(0).getType().toLowerCase().equals(IoTDataTypes.OBJECT.getValue())) {
                 exception.addInvalidField("treeNodes", "Tree root must be an object.");
@@ -122,8 +123,6 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
 
         // Now build the tree
         buildTree();
-
-        return;
     }
 
     public DataModelTreeNode getRoot() {
@@ -203,6 +202,8 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
         while (it.hasNext()) {
             DataModelTreeNode next = it.next();
             next.updateTreePath();
+            // Add the jsonPath to the jsonPath map to retrieve the reference quickly.
+            this.jsonPathMap.put(next.getJsonPathToNode().getPath(), new AbstractMap.SimpleEntry<>(next.getJsonPathToNode(), next.getType()));
             treeNodeCount++;
         }
 
@@ -391,10 +392,11 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
      * step for each tree node. The method is called recursively within itself to iterate in Preorder the
      * whole tree.
      *
-     * @param currNode
-     * @param lastArray A reference to a {@link JSONArray} which should be set to the last occurred JSONArray if
-     *                  the last occurred complex JSON data type (array and object) was an array. Otherwise set this
-     *                  to null.
+     * @param currNode   The node the current method call should handle. Form the perspective of a method caller:
+     *                   the next node to deal with.
+     * @param lastArray  A reference to a {@link JSONArray} which should be set to the last occurred JSONArray if
+     *                   the last occurred complex JSON data type (array and object) was an array. Otherwise set this
+     *                   to null.
      * @param lastObject A reference to a {@link JSONObject} which should be set to the last occurred JSON object if
      *                   the last occurred complex JSON data type (array and object) was an object. Otherwise set this
      *                   to null.
@@ -463,7 +465,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                     lastArray.put(14.25);
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.LONG) {
-                    lastObject.put(currNode.getName(), 20);
+                    lastArray.put(20);
                 } else if (currNode.getType() == IoTDataTypes.BOOLEAN) {
                     lastArray.put(true);
                     // As primitive no children to be expected --> return
@@ -473,10 +475,10 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                 } else if (currNode.getType() == IoTDataTypes.STRING) {
                     lastArray.put("String");
                     // As primitive no children to be expected --> return
-                }  else if (currNode.getType() == IoTDataTypes.DATE) {
+                } else if (currNode.getType() == IoTDataTypes.DATE) {
                     lastArray.put("Date");
                     // As primitive no children to be expected --> return
-                }  else if (currNode.getType() == IoTDataTypes.BINARY) {
+                } else if (currNode.getType() == IoTDataTypes.BINARY) {
                     lastArray.put("Binary");
                     // As primitive no children to be expected --> return
                 }
@@ -489,12 +491,206 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
 
     @Override
     public String toString() {
-        String retString = "";
+        StringBuilder retString = new StringBuilder();
         PreOrderIterator it = new PreOrderIterator(rootNodeModel);
         while (it.hasNext()) {
             DataModelTreeNode next = it.next();
-            retString += next.getTreePath() + " " + next.getName() + "\n";
+            retString.append(next.getTreePath()).append(" ").append(next.getName()).append(" jsonPath: ").append(next.getJsonPathToNode().getPath()).append("\n");
         }
-        return retString;
+        return retString.toString();
     }
+
+    /**
+     * @param path A JsonPath string representation of which one want to retrieve the compiled
+     *             {@link JsonPath} and the {@link IoTDataTypes} of the related node .
+     * @return A {@link Map.Entry} with the JsonPath of the given string and the {@link IoTDataTypes} of
+     * the node the path targets at.
+     */
+    public Map.Entry<JsonPath, IoTDataTypes> getJsonPathWithType(String path) {
+        return this.jsonPathMap.get(path);
+    }
+
+    /**
+     * Finds all subtrees of a specified {@link DataModelTreeNode} root node in this {@link DataModelTree}. Finds
+     * also all combinations of sibling orders which are possible to get a valid subtree match.
+     *
+     * @param rootNodeOfSubtreeToFind The root of the subtree which should be found in this DataModelTree.
+     * @return A list of all found subtrees of the visualization together with a list of all name mappings
+     * (second_tree_field_name: first_tree_field_name) per sub tree rote node (order matches
+     */
+    public Map.Entry<List<DataModelTreeNode>, List<List<Map<String, String>>>> findSubtreeByTypes(DataModelTreeNode rootNodeOfSubtreeToFind) {
+
+        // List for the real subtree roots which will be returned
+        List<DataModelTreeNode> subTreeRoots = new ArrayList<>();
+
+        // List for all candidate subtree roots which means all nodes which could be a subtree root.
+        List<DataModelTreeNode> subTreeRootsCandidates = new ArrayList<>();
+
+        // List for storing all name mappings of permuted tree fields
+        List<List<Map<String, String>>> allStringMappings = new ArrayList<>();
+
+        // 1) Find all nodes with the same type as the root node of the subtree to search for --> put in list
+        PreOrderIterator it = new PreOrderIterator(this.rootNodeModel);
+        while (it.hasNext()) {
+            DataModelTreeNode next = it.next();
+            if (next.getType() == rootNodeOfSubtreeToFind.getType()) {
+                subTreeRootsCandidates.add(next);
+            }
+        }
+
+        // 2) For all root node candidates in the tree --> check if the subtree is equally build (considering the types)
+        for (DataModelTreeNode candidateRootNode : subTreeRootsCandidates) {
+            List<Map<String, String>> stringMappingForAllChilds = new ArrayList<>();
+            List<Map<String, String>> finalStringMapping = new ArrayList<>();
+
+            // Check if the candidate root is a real root of a subtree
+            boolean equallyTyped = isEqualNode(candidateRootNode, rootNodeOfSubtreeToFind, finalStringMapping,
+                    rootNodeOfSubtreeToFind, stringMappingForAllChilds);
+            if (equallyTyped) {
+                // Yes the candidate root is indeed a root of a subtree
+                subTreeRoots.add(candidateRootNode);
+
+                // Find the maximum number of string mappings
+                int currMax = 0;
+                for (Map<String, String> map : finalStringMapping) {
+                    if (map.size() > currMax) {
+                        currMax = map.size();
+                    }
+                }
+                // Remove all mappings which do not contain all elements (all elements = maximum number of string mappings)
+                List<Map<String, String>> toRemove = new ArrayList<>();
+                for (Map<String, String> map : finalStringMapping) {
+                    if (map.size() != currMax) {
+                        toRemove.add(map);
+                    }
+                }
+                finalStringMapping.removeAll(toRemove);
+
+                // Remove duplicates
+                List<Map<String, String>> withoutDuplicates = new ArrayList<>(new HashSet<>(finalStringMapping));
+
+                // Finally, add the mappings without duplicates to the return field
+                allStringMappings.add(withoutDuplicates);
+            }
+        }
+
+        return new AbstractMap.SimpleEntry<>(subTreeRoots, allStringMappings);
+    }
+
+    /**
+     * Recursive called method to check whether a tree is a subtree of the other. The siblings relation
+     * for nodes is commutative which means that a very large number of possibilities may be checked.
+     * Thus, make sure that the checked trees are small!
+     *
+     * @param rootOfFirstTree  The current root to check of the tree in which subtrees should be found.
+     * @param rootOfSecondTree The current root to check of the tree which might be a subtree of the first one.
+     * @param finalStringMapping Final list of name mappings for all tree permutations. Reference must be always
+     *                           the same.
+     * @param constRootOfSecondTree The root of the possible subtree. Should always be set to the same on (the one
+     *                              which was rootOfSecondTree also at the first call). Reference must always be the
+     *                              same.
+     * @param stringMappingForAllChilds Temporary list to of name mappings for each sibling permutation. Reference
+     *                                  should change for a new permutation pass.
+     * @return True if the tree of the second root is a subtree of the tree of the first root. False if not.
+     */
+    private boolean isEqualNode(DataModelTreeNode rootOfFirstTree, DataModelTreeNode rootOfSecondTree,
+                                List<Map<String, String>> finalStringMapping,
+                                DataModelTreeNode constRootOfSecondTree, List<Map<String, String>> stringMappingForAllChilds) {
+        if (rootOfFirstTree.getType() == rootOfSecondTree.getType()
+                && rootOfFirstTree.getChildren().size() == rootOfSecondTree.getChildren().size()) {
+            // IoTDatatype and children size of root node is equal.
+            if (rootOfFirstTree.getChildren().size() != 0) {
+                // We are not at the end of the tree: Create a list of all occurring child data types
+                List<IoTDataTypes> typesOfNextChildrenOfFirstNode = new ArrayList<>();
+                List<IoTDataTypes> typesOfNextChildrenOfSecondNode = new ArrayList<>();
+
+                // Fill the temp lists with data in the same order the originals are sorted
+                for (int i = 0; i < rootOfFirstTree.getChildren().size(); i++) {
+                    typesOfNextChildrenOfFirstNode.add(rootOfFirstTree.getChildren().get(i).getType());
+                    typesOfNextChildrenOfSecondNode.add(rootOfSecondTree.getChildren().get(i).getType());
+                }
+
+                // Sort the lists by their IoT type
+                typesOfNextChildrenOfFirstNode.sort(Enum::compareTo);
+                typesOfNextChildrenOfSecondNode.sort(Enum::compareTo);
+
+                // Check if the lists are equal
+                if (typesOfNextChildrenOfFirstNode.equals(typesOfNextChildrenOfSecondNode)) {
+                    // We need to know if there is a permutation of child mappings that evaluates to true (trees are equal)
+                    // Example: A1B1, A2B2, A3B3, A1B2, A2B1, A3B3, ...
+                    List<DataModelTreeNode> childPermutationsOfSecondNode = new ArrayList<>(rootOfSecondTree.getChildren());
+
+                    boolean result = false;
+
+                    // Get all children permutations
+                    List<List<DataModelTreeNode>> allPermutations = new ArrayList<>();
+                    Permutations.of(childPermutationsOfSecondNode).forEach(p -> {
+                        // or with result --> if one true find add it to possible mapping list or something like that
+                        allPermutations.add(p.collect(Collectors.toList()));
+                    });
+
+                    // Loop through all permutations and call the method recursively on children to get all combinations
+                    for (List<DataModelTreeNode> permut : allPermutations) {
+                        List<Boolean> childResultList = new ArrayList<>();
+
+                        // Check for this permutation if the currently mapped children of the two trees are equal
+                        for (int i = 0; i < permut.size(); i++) {
+                            childResultList.add(isEqualNode(rootOfFirstTree.getChildren().get(i),
+                                    permut.get(i), finalStringMapping, constRootOfSecondTree,
+                                    stringMappingForAllChilds));
+                        }
+                        // Check if a subtree was found
+                        if (childResultList.size() > 0 && !(childResultList.contains(Boolean.FALSE))) {
+
+                            // Create a new string mapping consisting the children
+                            Map<String, String> keyMapping = new HashMap<>();
+                            for (int i = 0; i < rootOfFirstTree.getChildren().size(); i++) {
+                                keyMapping.put(permut.get(i).getName(), rootOfFirstTree.getChildren().get(i).getName());
+                            }
+                            stringMappingForAllChilds.add(keyMapping);
+
+                            // Merge the name mapping results of already passed permutations with the new ones.
+                            List<Map<String, String>> copyToAdd = new ArrayList<>();
+                            for (Map<String, String> allCurrentlyExistingStringMappingsForThisPermutation : stringMappingForAllChilds) {
+                                if (!allCurrentlyExistingStringMappingsForThisPermutation.keySet().equals(keyMapping.keySet())) {
+                                    // Copy the current version for the next iterations
+                                    Map<String, String> copy = new HashMap<>(allCurrentlyExistingStringMappingsForThisPermutation);
+                                    copyToAdd.add(copy);
+                                    // Merge the name mapping results of already passed permutations
+                                    allCurrentlyExistingStringMappingsForThisPermutation.putAll(keyMapping);
+                                }
+                            }
+                            stringMappingForAllChilds.addAll(copyToAdd);
+
+                            // Check if we are at the root of the subtree
+                            if (rootOfSecondTree == constRootOfSecondTree) {
+                                // Yes, we are: Now add the results to the final map
+                                finalStringMapping.addAll(stringMappingForAllChilds);
+                                // Create a new temp list for other permutations loops
+                                stringMappingForAllChilds = new ArrayList<>();
+                            }
+
+                            result = true;
+                        }
+                    }
+                    return result;
+
+                } else {
+                    // Type lists are not equal
+                    return false;
+                }
+            } else {
+                // This is the case for leaf nodes which are equally typed
+                return true;
+            }
+
+
+        } else {
+            // The size of the children list is different
+            return false;
+        }
+
+    }
+
+
 }

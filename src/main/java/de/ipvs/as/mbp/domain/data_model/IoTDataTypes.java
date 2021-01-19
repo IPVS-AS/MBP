@@ -4,7 +4,7 @@ package de.ipvs.as.mbp.domain.data_model;
  * An enum for storing all available tree node types for a data model tree together with
  * their string value representation for interfering types from strings.
  */
-public enum IoTDataTypes {
+public enum IoTDataTypes implements Comparable<IoTDataTypes> {
 
     DOUBLE("double"),
     STRING("string"),
@@ -17,9 +17,9 @@ public enum IoTDataTypes {
     OBJECT("object"),
     ARRAY("array");
 
-    private String value;
+    private final String value;
 
-    private IoTDataTypes(String value) {
+    IoTDataTypes(String value) {
         this.value = value;
     }
 
@@ -33,10 +33,7 @@ public enum IoTDataTypes {
      * @return true if the type is primitive, false if not
      */
     public static boolean isPrimitive(IoTDataTypes type) {
-        if (type == ARRAY || type == OBJECT) {
-            return false;
-        }
-        return true;
+        return type != ARRAY && type != OBJECT;
     }
 
     /**
@@ -48,9 +45,9 @@ public enum IoTDataTypes {
      */
     public static IoTDataTypes getDataTypeWithValue(String value) {
         IoTDataTypes[] allIoTDataTypes = IoTDataTypes.values();
-        for (int i = 0; i < allIoTDataTypes.length; i++) {
-            if (value.equals(allIoTDataTypes[i].getValue())) {
-                return allIoTDataTypes[i];
+        for (IoTDataTypes allIoTDataType : allIoTDataTypes) {
+            if (value.equals(allIoTDataType.getValue())) {
+                return allIoTDataType;
             }
         }
         return null;

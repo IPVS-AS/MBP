@@ -1,5 +1,6 @@
 package de.ipvs.as.mbp.domain.data_model.treelogic;
 
+import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.domain.data_model.DataTreeNode;
 import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
 
@@ -31,6 +32,8 @@ public class DataModelTreeNode {
     private int dimension;
 
     private List<String> treePath;
+
+    private JsonPath pathToNode;
 
     /**
      * @param repoTreeNode The tree node representation of the repository
@@ -100,7 +103,23 @@ public class DataModelTreeNode {
         if (this.parent != null) {
             this.treePath.addAll(this.parent.getTreePath());
         }
-        this.treePath.add(this.name);
+        String tmpPath = this.name;
+        if (this.getType() == IoTDataTypes.ARRAY) {
+            tmpPath += "[*]";
+        }
+        this.treePath.add(tmpPath);
+        String path = "$";
+        for (int i = 1; i < this.treePath.size(); i++) {
+            path += "." + this.treePath.get(i);
+        }
+        this.pathToNode = JsonPath.compile(path);
+    }
+
+    /**
+     * @return The {@link JsonPath} for accessing this nodes subtree from a json.
+     */
+    public JsonPath getJsonPathToNode() {
+        return pathToNode;
     }
 
     public DataTreeNode getRepositoryTreeNode() {

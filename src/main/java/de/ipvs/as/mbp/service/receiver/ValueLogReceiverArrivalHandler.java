@@ -3,10 +3,16 @@ package de.ipvs.as.mbp.service.receiver;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import de.ipvs.as.mbp.DynamicBeanProvider;
+import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
+import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
+import de.ipvs.as.mbp.domain.visualization.VisualsDataTreesCollections;
 import de.ipvs.as.mbp.repository.DataModelTreeCache;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -66,7 +72,7 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
      *
      * @param topic       The topic under which the message was sent
      * @param mqttMessage The received value log message
-     * @throws JSONException In case the message could not be parsed
+     * @throws JSONException  In case the message could not be parsed
      * @throws ParseException In case a date value field could not be parsed
      */
     @Override
@@ -101,6 +107,32 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
                 // Get the data model tree of the component as this is needed to infer the right database types
                 dataModelTreeCache.getDataModelOfSensor(componentID)
         ));
+
+        //TODO ONLY TEST REMOVE LATER
+        VisualsDataTreesCollections coll = new VisualsDataTreesCollections();
+        DataModelTree tree = dataModelTreeCache.getDataModelOfSensor(componentID);
+        Map.Entry<List<DataModelTreeNode>, List<List<Map<String, String>>>>
+                // z or newRoot
+                test = tree.findSubtreeByTypes(coll.getVisById("string1").getVisualisableDataModels().get(0));
+        System.out.println("All sub tree roots:");
+        for (DataModelTreeNode n : test.getKey()) {
+            System.out.print(n.getName() + ", ");
+        }
+        System.out.println("");
+
+        List<List<Map<String, String>>> stringMap = test.getValue();
+        for (List<Map<String, String>> stringMapping : stringMap) {
+            System.out.println("---START MAPPING Subtree---");
+            for (Map<String, String> m : stringMapping) {
+                for (Map.Entry<String, String> e : m.entrySet()) {
+                    System.out.println(e.getKey() + ": " + e.getValue());
+                }
+                System.out.println("---END OF THIS MAPPING---");
+            }
+        }
+
+        // TODO REMOVE END
+
         valueLog.setComponent(componentType);
 
         //Notify all observers
