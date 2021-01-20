@@ -63,7 +63,7 @@ public class ReportHeader implements IEventHandler {
 
             // Set the scale and fixed position of the icon on the page
             mbpIcon.scaleAbsolute(25, 25);
-            mbpIcon.setFixedPosition(((pageSize.getWidth() - mbpIcon.getImageScaledWidth()) / 30) - 10, (pageSize.getHeight() - mbpIcon.getImageScaledHeight()) - 6);
+            mbpIcon.setFixedPosition(((pageSize.getWidth() - mbpIcon.getImageScaledWidth()) / 30) - 12, (pageSize.getHeight() - mbpIcon.getImageScaledHeight()) - 6);
 
             // Add the MBP icon
             canvas.add(mbpIcon);

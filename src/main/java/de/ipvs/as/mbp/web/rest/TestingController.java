@@ -220,7 +220,7 @@ public class TestingController {
      * @return response entity if the registration was successful or not
      */
     @PostMapping(value = "/test-details/registerTestActuator")
-    public ResponseEntity<String> registerTestActuator() {
+    public ResponseEntity registerTestActuator() {
         return testEngine.registerTestActuator();
     }
 
@@ -230,7 +230,7 @@ public class TestingController {
      * @return response entity if the registration was successful or not
      */
     @PostMapping(value = "/test-details/registerSensorSimulator")
-    public ResponseEntity<String> registerSensorSimulator(@RequestBody String sensorName) {
+    public ResponseEntity registerSensorSimulator(@RequestBody String sensorName) {
         return testEngine.registerSensorSimulator(sensorName);
     }
 
@@ -241,7 +241,7 @@ public class TestingController {
      * @return response entity if the registration was successful or not
      */
     @PostMapping(value = "/test-details/registerThreeDimSensorSimulator")
-    public ResponseEntity<String> registerThreeDimSensorSimulator(@RequestBody String sensorName) {
+    public ResponseEntity registerThreeDimSensorSimulator(@RequestBody String sensorName) {
         testEngine.registerThreeDimSensorSimulator(sensorName);
         return new ResponseEntity<>("needs to be implemented", HttpStatus.OK);
     }

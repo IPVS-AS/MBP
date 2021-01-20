@@ -227,6 +227,27 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             });
         }
 
+        /**
+         * [Private]
+         *
+         * Returns a list of all rule names included into the test.
+         *
+         * @param rules link included into the test
+         * @param ruleList list of all registered rules
+         */
+        function getRuleNames(rules, ruleList) {
+            let ruleNames = [];
+            angular.forEach(rules, function (rule) {
+               angular.forEach(ruleList, function (ruleInList) {
+                    if(ruleInList._links.self.href === rule ){
+                        ruleNames.push(ruleInList.name);
+                    }
+               })
+            });
+            return ruleNames;
+
+
+        }
 
         /**
          * [Public]
@@ -241,7 +262,9 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * @param executeRules information if rules should be triggered through the test
          * @param data object
          */
-        function getTestData(sensors, realSensors, realParameterValues, config, rules, executeRules, data) {
+        function getTestData(sensors, realSensors, realParameterValues, config, rules, ruleList ,executeRules, data) {
+
+            let ruleNames = getRuleNames(rules, ruleList);
             // to check if the user has selected at least one sensor
             let checkRealSensor = false;
             let checkSimSensor = false;
@@ -250,6 +273,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             let newTestObject = {};
             newTestObject.config = [];
             newTestObject.type = [];
+            newTestObject.ruleNames = ruleNames;
             let parameterValues = [];
 
             // random values Angle and Axis for the GPS-Sensor

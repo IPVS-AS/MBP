@@ -681,12 +681,14 @@ public class TestReport {
         } else if (anomaly == 5) {
             anomalyDtr = "Wrong value type";
         } else if (basicAnomaly) {
-            if (anomaly == 4) {
+            if (anomaly == 3) {
+                anomalyDtr = "Outlier";
+            } else if (anomaly == 4) {
                 anomalyDtr = "Missing values";
             } else if (anomaly == 5) {
                 anomalyDtr = "Wrong value type";
             }
-        } else if (!basicAnomaly) {
+        } else {
             if (anomaly == 3) {
                 anomalyDtr = "Fly bumps into the Object";
             } else if (anomaly == 4) {

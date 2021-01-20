@@ -1,11 +1,15 @@
 package de.ipvs.as.mbp.web.rest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.operator.Operator;
+import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
+import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.service.UserEntityService;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
@@ -14,11 +18,6 @@ import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleAction;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
-import de.ipvs.as.mbp.repository.ActuatorRepository;
-import de.ipvs.as.mbp.repository.RuleActionRepository;
-import de.ipvs.as.mbp.repository.RuleRepository;
-import de.ipvs.as.mbp.repository.RuleTriggerRepository;
-import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.repository.projection.ComponentExcerpt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -61,6 +60,9 @@ public class RestComponentFilterController {
 	
 	@Autowired
 	private UserEntityService userEntityService;
+
+	@Autowired
+	private TestDetailsRepository testDetailsRepository;
 
 	/**
 	 * Retrieves all rules that use a given rule trigger.
@@ -166,6 +168,39 @@ public class RestComponentFilterController {
 		List<ComponentExcerpt> componentExcerpts = userEntityService.filterForAdminOwnerAndPolicies(() -> actuatorRepository.findAllByOperatorId(deviceId), ACAccessType.READ, accessRequest);
 		componentExcerpts.addAll(userEntityService.filterForAdminOwnerAndPolicies(() -> sensorRepository.findAllByOperatorId(deviceId), ACAccessType.READ, accessRequest));
 		return ResponseEntity.ok(componentExcerpts);
+	}
+
+	/**
+	 * Retrieves all components(tests) that use a given sensor.
+	 *
+	 * @param sensorId the id of the Sensor
+	 * @return the list of Tests
+	 */
+	@GetMapping("/components/by-sensor/{id}")
+	@ApiOperation(value = "Retrieves the components which use a certain operator and for which the user is authorized.", produces = "application/hal+json")
+	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
+			@ApiResponse(code = 401, message = "Not authorized to access the operator!"),
+			@ApiResponse(code = 404, message = "Operator or requesting user not found!") })
+	public ResponseEntity<List<TestDetails>> getComponentsBySensorId(
+			@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+			@PathVariable(value = "id") @ApiParam(value = "ID of the sensor", example = "5c97dc2583aeb6078c5ab672", required = true) String sensorId) {
+		// Parse the access-request information
+		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+		// Retrieve actuator and sensor excerpts from the database
+		Sensor sensor = sensorRepository.findById(sensorId).get();
+		List<TestDetails> testDetailsList = testDetailsRepository.findAll();
+		List<TestDetails> resultList = new ArrayList<>();
+
+		for (TestDetails test : testDetailsList){
+			if(test.getSensor().contains(sensor)){
+				resultList.add(test);
+			}
+		}
+
+		//List<ComponentExcerpt> componentExcerpts = userEntityService.filterForAdminOwnerAndPolicies(() -> testDetailsRepository.findAllBySensorId(sensorId), ACAccessType.READ, accessRequest);
+		//componentExcerpts.addAll(userEntityService.filterForAdminOwnerAndPolicies(() -> testDetailsRepository.findAllBySensorId(sensorId), ACAccessType.READ, accessRequest));
+		return ResponseEntity.ok(resultList);
 	}
 
 }

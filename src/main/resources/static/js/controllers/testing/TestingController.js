@@ -39,7 +39,6 @@ app.controller('TestingController',
             vm.addSimulator = false;
             vm.addRealSensor = false;
 
-
             /**
              * Initializing function, sets up basic things.
              */
@@ -136,13 +135,15 @@ app.controller('TestingController',
              * Check if Test-Device is already registered or not.
              */
             function getTestDevice() {
-                $scope.device = "NOT_REGISTERED";
                 // go through every registered device and search for the test device
                 HttpService.getAll('devices').then(function (deviceList) {
+                    $scope.device = "NOT_REGISTERED";
                     angular.forEach(deviceList, function (device) {
 
                         if (device.name === TESTING_DEVICE) {
                             $scope.device = "REGISTERED";
+                        } else{
+                            $scope.device = "NOT_REGISTERED";
                         }
                     })
                 });
@@ -154,13 +155,16 @@ app.controller('TestingController',
              * Check if the rerun operator for a test repetition is already registered.
              */
             function getRerunOperator() {
-                $scope.rerunOperator = "NOT_REGISTERED";
                 // go through every registered adapter and search for the test rerun adapter
                 HttpService.getAll('operators').then(function (adaptersList) {
+                    $scope.rerunOperator = "NOT_REGISTERED";
                     angular.forEach(adaptersList, function (adapters) {
 
                         if (adapters.name === RERUN_OPERATOR) {
                             $scope.rerunOperator = "REGISTERED";
+                        } else{
+
+                            $scope.rerunOperator = "NOT_REGISTERED";
                         }
                     })
                 });
@@ -188,7 +192,7 @@ app.controller('TestingController',
              * Register Test Device and update the registered status.
              */
             function registerTestDevice() {
-                TestService.registerTestDevice().success(function success() {
+                TestService.registerTestDevice().then(function success() {
                     getTestDevice();
                     //Notify the user
                     NotificationService.notify('Entity successfully created.', 'success')
@@ -205,15 +209,16 @@ app.controller('TestingController',
              * Check if Actuator simulator is already registered or not.
              */
             function checkActuatorReg() {
-                $scope.testingActuator = "NOT_REGISTERED";
-
                 // go through every registered actuator and search for the testing actuator
                 HttpService.getAll('actuators').then(function (actuatorList) {
+                    $scope.testingActuator = "NOT_REGISTERED";
                     angular.forEach(actuatorList, function (actuator) {
                         if (actuator.name === TESTING_ACTUATOR) {
-                            $scope.testingActuator = 'REGISTERED';
+                            $scope.testingActuator = "REGISTERED";
+                        }else{
+                            $scope.testingActuator = "NOT_REGISTERED";
                         }
-                    })
+                    });
                 });
             }
 
@@ -224,13 +229,14 @@ app.controller('TestingController',
              * Register the Actuator-Simulator for the Test of IoT-Applications.
              */
             function registerTestingActuator() {
-                TestService.registerTestActuator().success(function () {
+                TestService.registerTestActuator().then(function () {
                     checkActuatorReg();
                     //Notify the user
                     NotificationService.notify('Entity successfully created.', 'success')
                 }).catch(function onError() {
                     //Notify the user
                     NotificationService.notify('Error during creation of the Testing Actuator.', 'error')
+                    checkActuatorReg();
 
                 });
 
@@ -287,6 +293,8 @@ app.controller('TestingController',
                     }
                 );
             }
+
+
 
 
             /**
@@ -487,7 +495,7 @@ app.controller('TestingController',
                             let parameterValuesReal = vm.parameterVal;
 
 
-                            const newTestObject = TestService.getTestData(vm.selectedSensors, selectedSensorsReal, parameterValuesReal, vm.config, vm.rules, vm.executeRules, data);
+                            const newTestObject = TestService.getTestData(vm.selectedSensors, selectedSensorsReal, parameterValuesReal, vm.config, vm.rules, ruleList,vm.executeRules, data);
 
                             return addTest(newTestObject);
 

@@ -41,6 +41,8 @@ public class TestDetails extends UserEntity {
     @DBRef
     private List<Rule> rules;
 
+    private List<String> ruleNames;
+
     private List<List<ParameterInstance>> config;
 
     private List<String> type;
@@ -396,5 +398,23 @@ public class TestDetails extends UserEntity {
      */
     public void setUseNewData(boolean useNewData) {
         this.useNewData = useNewData;
+    }
+
+    /**
+     * Returns a list with the names of the rules of the application to be tested.
+     *
+     * @return List of rule names to be tested
+     */
+    public List<String> getRuleNames() {
+        return ruleNames;
+    }
+
+    /**
+     * Sets a List of the rule names of the application to be tested.
+     *
+     * @param ruleNames to be tested
+     */
+    public void setRuleNames(List<String> ruleNames) {
+        this.ruleNames = ruleNames;
     }
 }

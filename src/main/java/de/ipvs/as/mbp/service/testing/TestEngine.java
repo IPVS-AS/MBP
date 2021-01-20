@@ -383,15 +383,17 @@ public class TestEngine {
      *
      * @return response entity if insertion was successful or not
      */
-    public ResponseEntity<String> registerTestActuator() {
+    public ResponseEntity registerTestActuator() {
         //Validation errors
         Errors errors;
         ResponseEntity responseEntity = null;
+        Actuator testingActuator;
         Device testDevice;
 
 
         try {
-            Actuator testingActuator = actuatorRepository.findByName(ACTUATOR_NAME).get();
+
+            boolean testingActuatorExists = actuatorRepository.existsByName(ACTUATOR_NAME);
             Operator testActuatorAdapter = operatorRepository.findByName(ACTUATOR_NAME).get();
             testDevice = getTestDevice();
 
@@ -401,10 +403,11 @@ public class TestEngine {
                 registerTestDevice();
             } else {
                 // Check if Actuator is already existing
-                if (testingActuator == null) {
+                if (testingActuatorExists == false) {
                     // Check if the corresponding adapter is registered
                     if (testActuatorAdapter != null) {
                         //Enrich actuator for details
+
                         testingActuator = new Actuator();
                         testingActuator.setName(ACTUATOR_NAME);
                         testingActuator.setOwner(null);
@@ -418,15 +421,17 @@ public class TestEngine {
 
                         actuatorRepository.insert(testingActuator);
 
-                        responseEntity = new ResponseEntity("Testing Actuator successfully created.", HttpStatus.CREATED);
+                        responseEntity = new ResponseEntity( HttpStatus.CREATED);
 
                     }
+                } else{
+                    responseEntity = new ResponseEntity(HttpStatus.BAD_REQUEST);
                 }
             }
 
 
         } catch (Exception e) {
-            responseEntity = new ResponseEntity("Error during creation of the Actuator.", HttpStatus.CONFLICT);
+            responseEntity = new ResponseEntity( HttpStatus.CONFLICT);
         }
         return responseEntity;
     }
@@ -485,7 +490,7 @@ public class TestEngine {
      * @param sensorName Name of the sensor simulator to be registered
      * @return ResponseEntity if the registration was successful or not
      */
-    public ResponseEntity<String> registerSensorSimulator(String sensorName) {
+    public ResponseEntity registerSensorSimulator(String sensorName) {
         ResponseEntity<String> responseEntity;
 
         Operator sensorAdapter = operatorRepository.findByName(sensorName).get();
@@ -495,7 +500,7 @@ public class TestEngine {
         try {
             // Check if corresponding adapter exists
             if (sensorAdapter == null) {
-                return new ResponseEntity<>("Cloud not create Sensor.", HttpStatus.CONFLICT);
+                return new ResponseEntity<>( HttpStatus.CONFLICT);
             } else if (testingDevice == null) {
                 registerTestDevice();
             } else if (sensorSimulator == null) {
@@ -522,9 +527,9 @@ public class TestEngine {
                 sensorRepository.insert(sensorSimulator);
 
             }
-            responseEntity = new ResponseEntity<>("Sensor successfully created", HttpStatus.OK);
+            responseEntity = new ResponseEntity<>( HttpStatus.OK);
         } catch (Exception e) {
-            responseEntity = new ResponseEntity<>("Error during creation of the Sensor.", HttpStatus.CONFLICT);
+            responseEntity = new ResponseEntity<>( HttpStatus.CONFLICT);
         }
 
         return responseEntity;

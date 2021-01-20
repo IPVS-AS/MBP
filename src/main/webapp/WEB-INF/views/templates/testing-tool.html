@@ -65,7 +65,7 @@
                             <i ng-show="item.wasModelled" class="material-icons" style="vertical-align: bottom;">view_quilt</i>
                         </td>
                         <td>{{item.type.join(', ')}}</td>
-                        <td>Names of the included rules.</td>
+                        <td>{{item.ruleNames.join(', ')}}</td>
                         <td>
                             <form ng-submit="ctrl.downloadPDF(item.id, item.endTimeUnix)" style="margin-top: 3px;">
                                 <button type="submit" class="btn bg-blue-grey m-t-0 waves-effect" id="{{item.name}}"
@@ -1043,6 +1043,7 @@
                                     </tbody>
                                 </table>
 
+
                                 <table class="table table-hover"
                                        st-safe-src="testListCtrl.items">
                                     <caption>Category: Actuator</caption>
@@ -1471,5 +1472,6 @@
         </div>
 
     </div>
+
     <!-- #END# Modal -->
 </div>
