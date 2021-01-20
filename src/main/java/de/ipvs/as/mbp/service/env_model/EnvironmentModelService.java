@@ -280,7 +280,7 @@ public class EnvironmentModelService {
      * Deploys the components of an environment model.
      *
      * @param model The model whose components are supposed to be deployed
-     * @throws DeploymentException
+     * @throws DeploymentException In case of an error during deployment
      */
     public void deployComponents(EnvironmentModel model) throws DeploymentException {
         //Sanity check
@@ -329,7 +329,6 @@ public class EnvironmentModelService {
                     deploymentErrors.put(nodeId, "Impossible to deploy, device is not available.");
                     continue;
                 case READY:
-                    // TODO: Something to do here?
                     break;
                 default:
                     break;
@@ -395,10 +394,8 @@ public class EnvironmentModelService {
                     publishEntityState(model, nodeId, component, EntityState.REGISTERED);
                     continue;
                 case DEPLOYED:
-                    // TODO: Something to do here?
                     break;
                 case RUNNING:
-                    // TODO: Something to do here?
                     break;
                 default:
                     break;
@@ -471,7 +468,6 @@ public class EnvironmentModelService {
                     startErrors.put(nodeId, "Impossible to start, device is not available.");
                     continue;
                 case DEPLOYED:
-                    // TODO: Something to do here?
                     break;
                 default:
                     break;
@@ -498,7 +494,7 @@ public class EnvironmentModelService {
      * Stops the components of an environment model.
      *
      * @param model The model whose components are supposed to be stopped
-     * @throws DeploymentException
+     * @throws DeploymentException In case of a failure on undeployment
      */
     public void stopComponents(EnvironmentModel model) throws DeploymentException {
         //Sanity check
@@ -541,7 +537,6 @@ public class EnvironmentModelService {
                     publishEntityState(model, nodeId, component, EntityState.REGISTERED);
                     continue;
                 case RUNNING:
-                    // TODO: Something to do here?
                     break;
                 default:
                     break;
