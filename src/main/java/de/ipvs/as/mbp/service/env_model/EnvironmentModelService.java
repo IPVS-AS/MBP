@@ -1,9 +1,6 @@
 package de.ipvs.as.mbp.service.env_model;
 
-import de.ipvs.as.mbp.domain.component.Actuator;
-import de.ipvs.as.mbp.domain.component.Component;
-import de.ipvs.as.mbp.domain.component.ComponentCreateValidator;
-import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.component.*;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.device.DeviceCreateValidator;
 import de.ipvs.as.mbp.domain.env_model.EnvironmentModel;
@@ -64,6 +61,9 @@ public class EnvironmentModelService {
 
     @Autowired
     private SensorRepository sensorRepository;
+
+    @Autowired
+    private ComponentCreateEventHandler componentCreateEventHandler;
 
     @Autowired
     private UserService userService;
@@ -802,12 +802,21 @@ public class EnvironmentModelService {
             throw new IllegalArgumentException("Component must not be null.");
         }
 
+        //Store registered Component
+        Component registeredComponent = null;
+
+
         //Insert component into its repository and return the new id
         if (component instanceof Actuator) {
-            return actuatorRepository.insert((Actuator) component).getId();
+            registeredComponent = actuatorRepository.insert((Actuator) component);
         } else {
-            return sensorRepository.insert((Sensor) component).getId();
+            registeredComponent = sensorRepository.insert((Sensor) component);
         }
+
+        //Call creation handler for this component
+        componentCreateEventHandler.onCreate(registeredComponent);
+
+        return registeredComponent.getId();
     }
 
 
