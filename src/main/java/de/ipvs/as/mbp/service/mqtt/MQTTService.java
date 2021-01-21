@@ -8,8 +8,8 @@ import java.util.UUID;
 
 import org.apache.commons.codec.binary.Base64;
 import de.ipvs.as.mbp.service.settings.SettingsService;
-import de.ipvs.as.mbp.service.settings.model.BrokerLocation;
-import de.ipvs.as.mbp.service.settings.model.Settings;
+import de.ipvs.as.mbp.domain.settings.BrokerLocation;
+import de.ipvs.as.mbp.domain.settings.Settings;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;

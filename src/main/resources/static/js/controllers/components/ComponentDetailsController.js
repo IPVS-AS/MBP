@@ -10,7 +10,6 @@ app.controller('ComponentDetailsController',
             const DEPLOYMENT_CARD_SELECTOR = ".deployment-card";
             const STATS_CARD_SELECTOR = ".stats-card";
 
-
             //Important properties of the currently considered component
             const COMPONENT_ID = $routeParams.id;
             const COMPONENT_TYPE = componentDetails.componentTypeName;
@@ -18,7 +17,7 @@ app.controller('ComponentDetailsController',
             const COMPONENT_OPERATOR_UNIT = componentDetails.operator.unit;
 
             //Initialization of variables that are used in the frontend by angular
-            var vm = this;
+            let vm = this;
             vm.component = componentDetails;
             vm.isLoading = false;
             vm.deploymentState = 'UNKNOWN';
@@ -49,7 +48,7 @@ app.controller('ComponentDetailsController',
                 initHistoricalChart();
 
                 //Interval for updating states on a regular basis
-                var interval = $interval(function () {
+                let interval = $interval(function () {
                     updateDeploymentState(true);
                     updateDeviceState();
                 }, 2 * 60 * 1000);
@@ -117,7 +116,7 @@ app.controller('ComponentDetailsController',
              */
             function onDisplayUnitChange() {
                 //Retrieve entered unit
-                var inputUnit = vm.displayUnitInput;
+                let inputUnit = vm.displayUnitInput;
 
                 //Check whether the entered unit is compatible with the operator unit
                 UnitService.checkUnitsForCompatibility(COMPONENT_OPERATOR_UNIT, inputUnit).then(function (response) {
@@ -256,7 +255,7 @@ app.controller('ComponentDetailsController',
              */
             function retrieveComponentData(numberLogs, descending, unit) {
                 //Set default order
-                var order = 'asc';
+                let order = 'asc';
 
                 //Check for user option
                 if (descending) {
@@ -264,7 +263,7 @@ app.controller('ComponentDetailsController',
                 }
 
                 //Initialize parameters for the server request
-                var pageDetails = {
+                let pageDetails = {
                     sort: 'time,' + order,
                     size: numberLogs
                 };
@@ -442,13 +441,13 @@ app.controller('ComponentDetailsController',
              */
             function initParameters() {
                 //Retrieve all formal parameters for this component
-                var requiredParams = componentDetails.operator.parameters;
+                let requiredParams = componentDetails.operator.parameters;
 
 
                 //Iterate over all parameters
-                for (var i = 0; i < requiredParams.length; i++) {
+                for (let i = 0; i < requiredParams.length; i++) {
                     //Set empty default values for these parameters
-                    var value = "";
+                    let value = "";
 
                     if (requiredParams[i].type === "Switch") {
                         value = false;

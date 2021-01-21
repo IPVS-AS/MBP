@@ -1,18 +1,15 @@
 package de.ipvs.as.mbp.service.settings;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import de.ipvs.as.mbp.domain.settings.BrokerLocation;
+import de.ipvs.as.mbp.domain.settings.MBPInfo;
+import de.ipvs.as.mbp.domain.settings.Settings;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Properties;
-
-import de.ipvs.as.mbp.service.settings.model.BrokerLocation;
-import de.ipvs.as.mbp.service.settings.model.Settings;
-import org.springframework.stereotype.Service;
 
 /**
  * This service provides features for the management of application-wide settings that may be changed by the users.
@@ -28,6 +25,18 @@ public class SettingsService {
     private static final String SETTINGS_KEY_BROKER_LOCATION = "broker_location";
     private static final String SETTINGS_KEY_BROKER_IP_ADDRESS = "broker_url";
 
+    //Auto-injected data
+    @Value("${git.branch}")
+    private String branch;
+    @Value("${git.build.time}")
+    private String buildTime;
+    @Value("${git.build.version}")
+    private String buildVersion;
+    @Value("${git.commit.id.abbrev}")
+    private String commitID;
+    @Value("${git.commit.time")
+    private String commitTime;
+
     private File settingsFile = null;
     private Properties properties = null;
 
@@ -42,8 +51,34 @@ public class SettingsService {
         } catch (URISyntaxException e) {
             System.err.println("Error while reading the properties file.");
         } catch (Exception e) {
-        	System.err.println("Error while reading the properties file: "  + e.getMessage() + ".");
+            System.err.println("Error while reading the properties file: " + e.getMessage() + ".");
         }
+    }
+
+    /**
+     * Returns a MBOInfo object containing information about the running MBP app instance and the environment
+     * in which it is operated.
+     *
+     * @return The populated MBPInfo object
+     */
+    public MBPInfo getMBPInfo() {
+        // Create MBPInfo object
+        MBPInfo mbpInfo = new MBPInfo();
+        mbpInfo.setVersion(buildVersion);
+        mbpInfo.setCommitID(commitID);
+        mbpInfo.setCommitTime(commitTime);
+        mbpInfo.setBuildTime(buildTime);
+        mbpInfo.setBranch(branch);
+
+        //Set broker location
+        try {
+            mbpInfo.setBrokerLocation(getSettings().getBrokerLocation());
+        } catch (IOException e) {
+            //Default
+            mbpInfo.setBrokerLocation(BrokerLocation.LOCAL);
+        }
+
+        return mbpInfo;
     }
 
     /**

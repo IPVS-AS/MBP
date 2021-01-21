@@ -92,6 +92,9 @@
 
     <!-- jQuery-UI-Rotatable -->
     <link th:href="@{/plugins/jquery-ui-rotatable/jquery.ui.rotatable.css}" rel="stylesheet"/>
+
+    <!-- GitHub Fork Ribbon -->
+    <link th:href="@{/plugins/gh-fork-ribbon/gh-fork-ribbon.min.css}" rel="stylesheet"/>
 </head>
 
 <body class="theme-blue" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
@@ -250,8 +253,8 @@
     <div class="legal">
         <div class="copyright">
             &copy;
-            {{ctrl.getDate() | date:'yyyy'}}
-            <a href="swagger-ui.html" target="_blank">MBP</a>.
+            {{ctrl.getDate() | date:'yyyy'}}&nbsp;|&nbsp;
+            <a href="#" ng-click="ctrl.showAboutAlert()">MBP</a>.
         </div>
     </div>
     <!-- #Footer -->
@@ -368,7 +371,6 @@
 <script th:src="@{/js/services/RuleService.js}"></script>
 <script th:src="@{/js/services/SettingsService.js}"></script>
 <script th:src="@{/js/services/TestService.js}"></script>
-<script th:src="@{/js/services/UserApprovalService.js}"></script>
 
 <script th:src="@{/js/services/RuleActionService.js}"></script>
 <script th:src="@{/js/services/RuleTriggerService.js}"></script>

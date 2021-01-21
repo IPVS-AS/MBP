@@ -11,7 +11,7 @@ app.factory('MonitoringService', ['HttpService', '$resource', '$q', 'ENDPOINT_UR
         const URL_GET_STATE = URL_MONITORING_PREFIX + 'state/';
         const URL_STATS_SUFFIX = '/stats';
         const URL_VALUE_LOGS_SUFFIX = '/valueLogs';
-        const URL_OPERATOR_SUFFIX = '?operatorId=';
+        const URL_OPERATOR_SUFFIX = '?monitoringOperatorId=';
 
         /**
          * [Public]
@@ -99,7 +99,7 @@ app.factory('MonitoringService', ['HttpService', '$resource', '$q', 'ENDPOINT_UR
             var parameters = {};
 
             //Extend parameters for operator id
-            parameters.operatorId = monitoringOperatorId;
+            parameters.monitoringOperatorId = monitoringOperatorId;
 
             //Check if unit was provided
             if (unit) {
@@ -124,7 +124,7 @@ app.factory('MonitoringService', ['HttpService', '$resource', '$q', 'ENDPOINT_UR
             var parameters = pageDetails;
 
             //Extend parameters for operator id
-            parameters.operatorId = monitoringOperatorId;
+            parameters.monitoringOperatorId = monitoringOperatorId;
 
             //Check if unit was provided
             if (unit) {

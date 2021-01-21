@@ -1,6 +1,7 @@
 package de.ipvs.as.mbp.service.testing.rerun;
 
 
+import de.ipvs.as.mbp.domain.component.ComponentCreateEventHandler;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.operator.Operator;
@@ -9,10 +10,8 @@ import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.repository.*;
-import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
-import de.ipvs.as.mbp.web.rest.event_handler.SensorEventHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,6 +42,8 @@ public class TestRerunService {
     @Autowired
     private RuleTriggerRepository ruleTriggerRepository;
 
+    @Autowired
+    private ComponentCreateEventHandler componentCreateEventHandler;
 
     @Autowired
     private RuleRepository ruleRepository;
@@ -55,9 +56,6 @@ public class TestRerunService {
     private SensorRepository sensorRepository;
 
     @Autowired
-    private SensorEventHandler sensorEventHandler;
-
-    @Autowired
     private PropertiesService propertiesService;
 
     //To resolve ${} in @Value
@@ -67,7 +65,7 @@ public class TestRerunService {
     }
 
     @Value("#{'${testingTool.sensorSimulators}'.split(',')}")
-   List<String> SIMULATOR_LIST;
+    List<String> SIMULATOR_LIST;
 
     private final String RERUN_IDENTIFIER;
     private final String RERUN_OPERATOR;
@@ -84,11 +82,10 @@ public class TestRerunService {
     }
 
 
-
     /**
      * Update the UseNewData field of the test and edits the rerun components.
      *
-     * @param testId of the test to be
+     * @param testId     of the test to be
      * @param useNewData information if a test should be repeated
      * @return the updated configuration list
      */
@@ -125,7 +122,6 @@ public class TestRerunService {
     }
 
 
-
     /**
      * Adds rerun Components if the test should be repeated. Otherwise they will be deleted.
      *
@@ -154,7 +150,7 @@ public class TestRerunService {
         for (List<ParameterInstance> config : test.getConfig()) {
             for (ParameterInstance parameterInstance : config) {
                 if (parameterInstance.getName().equals(CONFIG_SENSOR_NAME_KEY)) {
-                        addRerunSensors(parameterInstance.getValue().toString(), test);
+                    addRerunSensors(parameterInstance.getValue().toString(), test);
 
                 }
             }
@@ -218,8 +214,7 @@ public class TestRerunService {
                     //Insert new sensor into repository
                     sensorRepository.insert(newSensor);
                     sensorRepository.save(newSensor);
-                    sensorEventHandler.afterSensorCreate(newSensor);
-
+                    componentCreateEventHandler.onCreate(newSensor);
                 }
             }
             if (!testDetails.getSensor().contains(sensorRepository.findByName(newSensorName))) {

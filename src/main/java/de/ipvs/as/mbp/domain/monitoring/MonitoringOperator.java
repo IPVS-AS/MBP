@@ -12,7 +12,8 @@ import java.util.List;
  * of monitoring the device infrastructure. In contrast to ordinary adapters, monitoring adapters are
  * associated with certain device types and can only be deployed on devices of the same type.
  */
-@MBPEntity(createValidator = MonitoringOperatorCreateValidator.class)
+@MBPEntity(createValidator = MonitoringOperatorCreateValidator.class,
+        createEventHandler = MonitoringOperatorCreateEventHandler.class)
 public class MonitoringOperator extends Operator {
     @DBRef
     private List<DeviceType> deviceTypes;
@@ -31,8 +32,9 @@ public class MonitoringOperator extends Operator {
      *
      * @return The list of device types to set
      */
-    public void setDeviceTypes(List<DeviceType> deviceTypes) {
+    public MonitoringOperator setDeviceTypes(List<DeviceType> deviceTypes) {
         this.deviceTypes = deviceTypes;
+        return this;
     }
 
     /**
@@ -54,10 +56,10 @@ public class MonitoringOperator extends Operator {
      * @param deviceTypeName The name of the device type to check
      * @return True, if the adapter is compatible; false otherwise
      */
-    public boolean isCompatibleWith(String deviceTypeName){
+    public boolean isCompatibleWith(String deviceTypeName) {
         //Iterate over all component types of this device and check for equality
-        for(DeviceType currentType : deviceTypes){
-            if(currentType.getName().equals(deviceTypeName)){
+        for (DeviceType currentType : deviceTypes) {
+            if (currentType.getName().equals(deviceTypeName)) {
                 return true;
             }
         }

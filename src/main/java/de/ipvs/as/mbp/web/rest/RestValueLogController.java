@@ -120,15 +120,15 @@ public class RestValueLogController {
 	@ApiResponses({ @ApiResponse(code = 200, message = "Success!"),
 			@ApiResponse(code = 400, message = "Invalid unit specification!"),
 			@ApiResponse(code = 401, message = "Not authorized to access value logs of this monitoring component!"),
-			@ApiResponse(code = 404, message = "Device, monitoring adapter or requesting user not found!") })
+			@ApiResponse(code = 404, message = "Device, monitoring operator or requesting user not found!") })
 	public ResponseEntity<Page<ValueLog>> getMonitoringValueLogs(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "deviceId") @ApiParam(value = "ID of the device to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String deviceId,
-			@RequestParam("adapter") @ApiParam(value = "ID of the monitoring adapter to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringAdapterId,
+			@RequestParam("monitoringOperatorId") @ApiParam(value = "ID of the monitoring operator to retrieve value logs for", example = "5c97dc2583aeb6078c5ab672", required = true) String monitoringOperatorId,
 			@RequestParam(value = "unit", required = false) @ApiParam(value = "The desired unit of the monitoring value logs", example = "°C", required = false) String unit,
 			@ApiParam(value = "The page configuration", required = true) Pageable pageable) throws MissingPermissionException, EntityNotFoundException {
 		// Create new monitoring component from parameters
-		MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
+		MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringOperatorId);
 		
 		// Check permission
 		userEntityService.requirePermission(monitoringComponent, ACAccessType.MONITOR, ACAccessRequest.valueOf(accessRequestHeader));
@@ -173,15 +173,15 @@ public class RestValueLogController {
 	@DeleteMapping("/monitoring/{deviceId}/valueLogs")
 	@ApiResponses({ @ApiResponse(code = 204, message = "Success!"),
 			@ApiResponse(code = 401, message = "Not authorized to delete value logs of this minitoring component!"),
-			@ApiResponse(code = 404, message = "Device, monitoring adapter or requesting user not found!") })
+			@ApiResponse(code = 404, message = "Device, monitoring operator or requesting user not found!") })
 	@ApiIgnore("Currently not working")
 	public ResponseEntity<Void> deleteMonitoringValueLogs(
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
 			@PathVariable(value = "deviceId") String deviceId,
-			@RequestParam("adapter") String monitoringAdapterId) throws MissingPermissionException, EntityNotFoundException {
+			@RequestParam("monitoringOperatorId") String monitoringOperatorId) throws MissingPermissionException, EntityNotFoundException {
 
 		// Create new monitoring component from parameters
-		MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringAdapterId);
+		MonitoringComponent monitoringComponent = monitoringHelper.createMonitoringComponent(deviceId, monitoringOperatorId);
 		
 		// Check delete permission
 		userEntityService.requirePermission(monitoringComponent.getDevice(), ACAccessType.DELETE_VALUE_LOGS, ACAccessRequest.valueOf(accessRequestHeader));

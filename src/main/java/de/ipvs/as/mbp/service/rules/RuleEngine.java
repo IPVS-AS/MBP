@@ -20,15 +20,15 @@ import java.util.*;
 @Component
 public class RuleEngine {
 
-    private RuleRepository ruleRepository;
+    private final RuleRepository ruleRepository;
 
-    private CEPTriggerService triggerService;
+    private final CEPTriggerService triggerService;
 
-    private RuleExecutor ruleExecutor;
+    private final RuleExecutor ruleExecutor;
 
-    private Map<RuleTrigger, Set<Rule>> triggerMap;
+    private final Map<RuleTrigger, Set<Rule>> triggerMap;
 
-    private TestRepository testRepo;
+    private final TestRepository testRepo;
 
     /**
      * Initializes the rule engine component and activates all already enabled rules.

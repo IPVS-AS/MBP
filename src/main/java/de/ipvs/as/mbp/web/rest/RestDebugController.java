@@ -6,9 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.jcraft.jsch.JSchException;
-
 import springfox.documentation.annotations.ApiIgnore;
 
 /**
@@ -26,7 +23,7 @@ public class RestDebugController {
      * @return Debugging output specified by the developer
      */
     @RequestMapping(value = "/debug", method = RequestMethod.GET)
-    public ResponseEntity<String> debug() throws JSchException {
+    public ResponseEntity<String> debug() {
         return new ResponseEntity<>("debug", HttpStatus.OK);
     }
 }

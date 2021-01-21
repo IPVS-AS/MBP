@@ -9,6 +9,7 @@ app.factory('SettingsService', ['HttpService', 'ENDPOINT_URI',
         const URL_SETTINGS = ENDPOINT_URI + '/settings';
         const URL_DEFAULT_OPERATORS = ENDPOINT_URI + '/settings/default-operators';
         const URL_DOCUMENTATION_META_DATA = ENDPOINT_URI + '/docs';
+        const URL_MBP_INFO = ENDPOINT_URI + '/settings/mbpinfo'
 
         /**
          * [Public]
@@ -49,12 +50,24 @@ app.factory('SettingsService', ['HttpService', 'ENDPOINT_URI',
             return HttpService.getRequest(URL_DOCUMENTATION_META_DATA);
         }
 
+        /**
+         * [Public]
+         * Performs a server request in order to retrieve information about the running MBP instance and the
+         * environment in which it is operated.
+         *
+         * @returns {*}
+         */
+        function getMBPInfo() {
+            return HttpService.getRequest(URL_MBP_INFO);
+        }
+
         //Expose public methods
         return {
             addDefaultOperators: addDefaultOperators,
             getSettings: getSettings,
             saveSettings: saveSettings,
-            getDocumentationMetaData: getDocumentationMetaData
+            getDocumentationMetaData: getDocumentationMetaData,
+            getMBPInfo: getMBPInfo
         }
     }
 ]);
