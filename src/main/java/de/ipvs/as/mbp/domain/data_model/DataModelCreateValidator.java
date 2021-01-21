@@ -42,5 +42,7 @@ public class DataModelCreateValidator implements ICreateValidator<DataModel> {
 
         DataModelTree tree = new DataModelTree(entity.getTreeNodes());
         entity.setJSONExample(tree.getJSONExample());
+        entity.setPossibleVisMappings(tree.getPossibleVisualizationMappings());
+        System.out.println("test");
     }
 }

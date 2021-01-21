@@ -3,6 +3,7 @@ package de.ipvs.as.mbp.domain.data_model.treelogic;
 import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.domain.data_model.DataTreeNode;
 import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
+import de.ipvs.as.mbp.util.Validation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,11 +30,33 @@ public class DataModelTreeNode {
 
     private IoTDataTypes type;
 
+    private String unit;
+
     private int dimension;
 
     private List<String> treePath;
 
     private JsonPath pathToNode;
+
+    private List<String> internTreePathHistory;
+    private String internPathToNode;
+
+
+    public List<String> getInternTreePathHistory() {
+        return internTreePathHistory;
+    }
+
+    public void setInternTreePathHistory(List<String> internTreePath) {
+        this.internTreePathHistory = internTreePath;
+    }
+
+    public String getInternPathToNode() {
+        return internPathToNode;
+    }
+
+    public void setInternPathToNode(String internPathToNode) {
+        this.internPathToNode = internPathToNode;
+    }
 
     /**
      * @param repoTreeNode The tree node representation of the repository
@@ -45,6 +68,8 @@ public class DataModelTreeNode {
         this.parent = null;
         this.name = repoTreeNode.getName();
         this.type = IoTDataTypes.getDataTypeWithValue(repoTreeNode.getType().toLowerCase());
+        this.unit = repoTreeNode.getUnit();
+        this.internTreePathHistory = new ArrayList<>();
 
         // Add dimension for arrays. If not an array set the dimension value to -1 as default.
         if (this.type != null && this.type == IoTDataTypes.ARRAY) {
@@ -55,6 +80,15 @@ public class DataModelTreeNode {
 
         this.treePath = new ArrayList<>();
     }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
 
     public String getName() {
         return name;
@@ -100,19 +134,52 @@ public class DataModelTreeNode {
      * Execute in preorder after the whole tree is build
      */
     public void updateTreePath() {
-        if (this.parent != null) {
-            this.treePath.addAll(this.parent.getTreePath());
+
+        if (this.parent == null) {
+            this.pathToNode = JsonPath.compile("$");
+            this.internPathToNode = "$";
+            this.treePath.add(pathToNode.getPath());
+            this.internTreePathHistory.add(internPathToNode);
+            return;
         }
-        String tmpPath = this.name;
-        if (this.getType() == IoTDataTypes.ARRAY) {
+
+        String tmpPath = "";
+        String tmpInternPath = "";
+
+        // Get all the path fragments of the parents
+        this.treePath.addAll(this.parent.getTreePath());
+        this.internTreePathHistory.addAll(this.parent.getInternTreePathHistory());
+
+
+        if (this.parent.getType() == IoTDataTypes.ARRAY) {
+            // If the parent is an array then the current node is not allowed to have a name
+
+        } else {
+            // Parent is no array --> names are needed
+            tmpPath += "." + this.getName();
+            tmpInternPath += "['" + this.getName() + "']";
+        }
+
+        if (this.type == IoTDataTypes.ARRAY) {
+            // This node is an array --> We need array brackets to signal the array
             tmpPath += "[*]";
+            // This is an (mbp) intern representation of JsonPath which stores the dimension of a path too
+            tmpInternPath += "[#" + this.dimension + "#]";
         }
+
         this.treePath.add(tmpPath);
-        String path = "$";
-        for (int i = 1; i < this.treePath.size(); i++) {
-            path += "." + this.treePath.get(i);
+        this.internTreePathHistory.add(tmpInternPath);
+
+        String finalPath = "";
+        String finalInternPath = "";
+
+        for (int i = 0; i < this.treePath.size(); i++) {
+            finalPath += this.treePath.get(i);
+            finalInternPath += this.internTreePathHistory.get(i);
         }
-        this.pathToNode = JsonPath.compile(path);
+
+        this.pathToNode = JsonPath.compile(finalPath);
+        this.internPathToNode = finalInternPath;
     }
 
     /**

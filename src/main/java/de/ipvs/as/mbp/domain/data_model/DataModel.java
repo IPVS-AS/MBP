@@ -2,6 +2,7 @@ package de.ipvs.as.mbp.domain.data_model;
 
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
+import de.ipvs.as.mbp.domain.visualization.VisualizationMappings;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 
@@ -29,7 +30,18 @@ public class DataModel extends UserEntity {
 
     private String JSONExample;
 
+    private List<VisualizationMappings> possibleVisMappings;
+
     // ------
+
+
+    public List<VisualizationMappings> getPossibleVisMappings() {
+        return possibleVisMappings;
+    }
+
+    public void setPossibleVisMappings(List<VisualizationMappings> possibleVisMappings) {
+        this.possibleVisMappings = possibleVisMappings;
+    }
 
     public String getJSONExample() {
         return JSONExample;

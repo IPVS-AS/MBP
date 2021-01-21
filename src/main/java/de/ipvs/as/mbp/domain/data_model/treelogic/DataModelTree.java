@@ -4,9 +4,12 @@ import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.data_model.DataTreeNode;
 import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
+import de.ipvs.as.mbp.domain.visualization.PathUnitPair;
+import de.ipvs.as.mbp.domain.visualization.VisualizationCollection;
+import de.ipvs.as.mbp.domain.visualization.VisualizationMappings;
+import de.ipvs.as.mbp.domain.visualization.Visualization;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.util.Validation;
-import javolution.io.Struct;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -226,6 +229,54 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
         if (exception.hasInvalidFields()) {
             throw exception;
         }
+    }
+
+    /**
+     * Get all possible visualization mappings
+     */
+    public List<VisualizationMappings> getPossibleVisualizationMappings() {
+        List<VisualizationMappings> allMappings = new ArrayList<>();
+
+        // For all visualizations
+        for (Visualization v : VisualizationCollection.visIdMapping.values()) {
+            VisualizationMappings visMapping = new VisualizationMappings();
+            List<PathUnitPair> jsonPathsWithUnits = new ArrayList<>();
+
+            for (Map.Entry<String, DataModelTreeNode> field : v.getFieldsToVisualize().entrySet()) {
+
+                // Subtree search for getting all possible mappings
+                List<DataModelTreeNode> foundFields = this.findSubtreeByTypes(field.getValue()).getKey();
+
+                // Sanity check and size check, jump to the next iteration if
+                if (foundFields == null || foundFields.size() <= 0) {
+                    continue;
+                }
+
+
+                for (DataModelTreeNode node : foundFields) {
+                    if (node.getType() == IoTDataTypes.ARRAY) {
+                        // Extra case for arrays: To retrieve the unit the child element must be checked
+                        jsonPathsWithUnits.add(
+                                new PathUnitPair(node.getJsonPathToNode().getPath(),
+                                        node.getChildren().get(0).getUnit()
+                                ));
+                    } else {
+                        // Normal case (no array), the unit is already given with the node
+                        jsonPathsWithUnits.add(new PathUnitPair(node.getInternPathToNode(), node.getUnit()));
+                    }
+                }
+                if (jsonPathsWithUnits != null && jsonPathsWithUnits.size() > 0) {
+                    // Add the fields to the final mapping list
+                    visMapping.addVisualizationField(v.getId(), jsonPathsWithUnits);
+                }
+            }
+            if (jsonPathsWithUnits != null && jsonPathsWithUnits.size() > 0) {
+                // Add the visualization as possible option
+                allMappings.add(visMapping);
+            }
+
+        }
+        return allMappings;
     }
 
     /**
@@ -582,13 +633,13 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
      * for nodes is commutative which means that a very large number of possibilities may be checked.
      * Thus, make sure that the checked trees are small!
      *
-     * @param rootOfFirstTree  The current root to check of the tree in which subtrees should be found.
-     * @param rootOfSecondTree The current root to check of the tree which might be a subtree of the first one.
-     * @param finalStringMapping Final list of name mappings for all tree permutations. Reference must be always
-     *                           the same.
-     * @param constRootOfSecondTree The root of the possible subtree. Should always be set to the same on (the one
-     *                              which was rootOfSecondTree also at the first call). Reference must always be the
-     *                              same.
+     * @param rootOfFirstTree           The current root to check of the tree in which subtrees should be found.
+     * @param rootOfSecondTree          The current root to check of the tree which might be a subtree of the first one.
+     * @param finalStringMapping        Final list of name mappings for all tree permutations. Reference must be always
+     *                                  the same.
+     * @param constRootOfSecondTree     The root of the possible subtree. Should always be set to the same on (the one
+     *                                  which was rootOfSecondTree also at the first call). Reference must always be the
+     *                                  same.
      * @param stringMappingForAllChilds Temporary list to of name mappings for each sibling permutation. Reference
      *                                  should change for a new permutation pass.
      * @return True if the tree of the second root is a subtree of the tree of the first root. False if not.

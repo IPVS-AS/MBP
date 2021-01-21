@@ -152,7 +152,7 @@ public class ValueLogReceiveVerifier {
 
                     // Call the function for the childs recursively (call it that often like dimensions)
                     for (int i = 0; i < currNode.getDimension(); i++) {
-                        validateChild(currNode.getChildren().get(i), nextArr, null, null, nextList, i);
+                        validateChild(currNode.getChildren().get(0), nextArr, null, null, nextList, i);
                     }
                     break;
                 case DOUBLE:

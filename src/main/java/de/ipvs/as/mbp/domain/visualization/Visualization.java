@@ -1,69 +1,74 @@
 package de.ipvs.as.mbp.domain.visualization;
 
-import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
+import de.ipvs.as.mbp.domain.data_model.DataTreeNode;
+import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Visualization {
 
     /**
-     * Id of the visualization.
+     * All fields the visualization needs to visualize something. A field
+     * must be either primitive or an array of a primitive type.
      */
+    private Map<String, DataModelTreeNode> fieldsToVisualize;
+
     private String id;
 
-    /**
-     * Name of the visualization.
-     */
-    private String name;
+    public Visualization(String id) {
+        setId(id);
+        fieldsToVisualize = new HashMap<>();
+    }
 
-    /**
-     * Description of the visualization
-     */
-    private String description;
-
-    /**
-     * Specifies which kind of data can be visualized by this visualization.
-     */
-    private List<DataModelTreeNode> visualisableDataModels;
-
-    public Visualization(List<DataModelTreeNode> visualisableDataModels) {
-        this.visualisableDataModels = visualisableDataModels;
+    public void setFieldsToVisualize(Map<String, DataModelTreeNode> fieldsToVisualize) {
+        this.fieldsToVisualize = fieldsToVisualize;
     }
 
     public String getId() {
         return id;
     }
 
-    public Visualization setId(String id) {
+    public void setId(String id) {
         this.id = id;
+    }
+
+    public Visualization addNewArray(String fieldName, IoTDataTypes primitiveTypeOfArray) {
+        if (!IoTDataTypes.isPrimitive(primitiveTypeOfArray)) {
+            // For visualizations only arrays with a primitive type are valid.
+            return this;
+        }
+        DataModelTreeNode arrRoot = getNewDataModelTreeNode(fieldName, IoTDataTypes.ARRAY);
+        DataModelTreeNode typeNode = getNewDataModelTreeNode(fieldName, primitiveTypeOfArray);
+
+        arrRoot.addOneChildren(typeNode);
+        typeNode.addParent(arrRoot);
+
+        this.fieldsToVisualize.put(fieldName, arrRoot);
         return this;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public Visualization setName(String name) {
-        this.name = name;
+    public Visualization addNewPrimitiveType(String fieldName, IoTDataTypes primitiveType) {
+        if (!IoTDataTypes.isPrimitive(primitiveType)) {
+            return this;
+        }
+        this.fieldsToVisualize.put(fieldName, getNewDataModelTreeNode(fieldName, primitiveType));
         return this;
     }
 
-    public String getDescription() {
-        return description;
+
+    private DataModelTreeNode getNewDataModelTreeNode(String fieldName, IoTDataTypes type) {
+        DataTreeNode node = new DataTreeNode();
+        node.setName(fieldName);
+        node.setType(type.getValue());
+        DataModelTreeNode modelNode = new DataModelTreeNode(node);
+        modelNode.setType(type);
+        modelNode.setName(fieldName);
+        return modelNode;
     }
 
-    public Visualization setDescription(String description) {
-        this.description = description;
-        return this;
-    }
-
-    public List<DataModelTreeNode> getVisualisableDataModels() {
-        return visualisableDataModels;
-    }
-
-    public Visualization setVisualisableDataModels(List<DataModelTreeNode> visualisableDataModels) {
-        this.visualisableDataModels = visualisableDataModels;
-        return this;
+    public Map<String, DataModelTreeNode> getFieldsToVisualize() {
+        return fieldsToVisualize;
     }
 }
