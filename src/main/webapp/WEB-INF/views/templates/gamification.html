@@ -1,97 +1,113 @@
 <div class="row clearfix">
     <div class="col-lg-9">
-    	<div class="row clearfix">
+    	<div class="row equal">
     		<!-- AVATAR -->
-            <div class="col-lg-2 col-md-2 col-sm-6 col-xs-12">
-            	<div class="info-box">
-                	<img src="images/user.png" class="bg-mbp-blue img-responsive" alt="User Avatar">
+            <div class="col-lg-1 col-md-1 col-sm-6 col-xs-12 GF_flexCol">
+            	<div class="card">
+                    <div class="body GF_cardbody">
+            			<div class="GF_div"><img src="images/avatar.png" style="width:100%" alt="User Avatar"></div>
+            		</div>
                 </div>
             </div>
             
-            <!-- POINTS/PROGRESS -->
-            <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
-            	<div class="row clearfix">
-            		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-            			<div class="info-box" style="height: 38px; margin-bottom: 4px;">
-		                    <div class="content">
-		                        <div class="text">Points: {{vm.GFUser.points}}</div>
-		                    </div>
-		                </div>
-	            	</div>
-                </div>
-                <div class="row clearfix">
-            		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-            			<div class="info-box" style="height: 38px;">
-		                    <div class="content">
-		                        <div class="text">Progress: {{vm.GFUser.progressLevel}}</div>
-		                    </div>
-		                </div>
-	            	</div>
+            <!-- POINTS -->
+            <div class="col-lg-2 col-md-2 col-sm-3 col-xs-12 GF_flexCol">
+      			<div class="card">
+                    <div class="body GF_cardbody">
+                   		<div class="GF_div">
+	                   		<table>
+	                   			<tr>
+	                   		   		<td><img src="images/gold.png" style="width:70%"></td>
+	                       			<td><h4>{{vm.GFUser.points}}</h4></td>
+	                       		</tr>
+	                       	</table>
+	                    </div>
+                    </div>
                 </div>
             </div>
+       		<div class="col-lg-2 col-md-2 col-sm-3 col-xs-12 GF_flexCol">
+         		<div class="card">
+                    <div class="body GF_cardbody">
+                        <div class="GF_div" ng-switch="vm.GFUser.progressLevel">
+                        	<div ng-switch-when="Beginner">
+                                <img src="images/progress_beginner.png" style="width:100%">
+                            </div>
+                            <div ng-switch-when="Intermediate">
+                                <img src="images/progress_intermediate.png" style="width:100%">
+                            </div>
+                            <div ng-switch-when="Advanced">
+                                <img src="images/progress_advanced.png" style="width:100%">
+                            </div>
+                            <div ng-switch-default>
+                                <img src="images/progress_beginner.png" style="width:100%">
+                            </div>
+                            <h4 style="text-align:center;">{{vm.GFUser.progressLevel}}</h4>
+                        </div>
+                   </div>
+               </div>
+           	</div>
             
             <!-- BADGES -->
-            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
-                <div class="info-box">
-                    <div class="icon bg-mbp-blue">
-                        <i class="material-icons">view_quilt</i>
-                    </div>
-                    <div class="content">
-                        <div class="text"><h4>Badges</h4></div>
+            <div class="col-lg-7 col-md-7 col-sm-7 col-xs-12">
+                <div class="card">
+                    <div class="body">
+                        <img src="images/badges.png" style="width:100%;">
                     </div>
                 </div>
             </div>
     	</div>
     	
-    	<div class="row clearfix">
+    	<div class="row clearfix" ng-repeat="gamificationLevel in vm.levels">
     		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-		    	<!-- Gamification Card -->
+		    	<!-- Gamification Level Card -->
 			    <div class="card">
 		            <div class="header">
-		                <div class="col-lg-12">
-		                    <h2>Learn IoT in a glance!<small>Gamification is cool</small></h2>
-		                </div>
+		                <h2 class="ng-binding" style="font-size:26px;">
+		                   {{gamificationLevel}} 
+		                </h2>
+		                <ul class="header-dropdown m-r--5">
+		                    <li>
+		                        <a class="clickable" data-toggle="collapse" data-target="#{{gamificationLevel}}-card-body">
+		                            <i class="material-icons">keyboard_arrow_down</i>
+		                        </a>
+		                    </li>
+		                </ul>
 		            </div>
-		            <div class="body">
-		                <table class="table table-hover" st-table="vm.activities">
+		            <div id="{{gamificationLevel}}-card-body" class="body collapse">
+		                <table class="table table-responsive align-middle" st-table="vm.activities">
 		                    <tbody>
-		                    <tr id="{{item.id}}" ng-repeat="item in vm.activities">
-		                        <td>
-		                            <h4>{{item.title}} - {{item.description}}</h4>
-		                        </td>
-		                        <td>
-		                        	<h2 ng-switch="item.status">
-		                                <div ng-switch-when="done">
-		                                    <span class="label label-success">Done</span>
-		                                </div>
-		                                <div ng-switch-default>
-		                                    <span class="label label-default">Open</span>
-		                                </div>
-		                            </h2>
-		                        </td>
-		                        <td>
-		                        	<h2>
-			                        	<button class="btn btn-primary" ng-click="vm.openActivityContent(item.id)">
-			                        		Start
-			                        	</button>
-			                        </h2>
-		                        </td>
-		                    </tr>
-		                    <tr ng-show="vm.activities.length === 0">
-		                        <td>No activities configured.</td>
-		                        <td></td>
-		                        <td></td>
-		                    </tr>
+			                    <tr id="{{item.id}}" ng-repeat="item in vm.activities" ng-if="item.level == gamificationLevel">
+			                        <td style="vertical-align:middle">
+			                            <h4>{{item.title}} - {{item.description}}</h4>
+			                        </td>
+			                        <td class="align-center">
+			                        	<h2 ng-switch="item.status">
+			                                <div ng-switch-when="done">
+			                                    <span class="label label-success">Done</span>
+			                                </div>
+			                                <div ng-switch-default>
+			                                    <span class="label label-default">Open</span>
+			                                </div>
+			                            </h2>
+			                        </td>
+			                        <td class="align-center">
+			                        	<h2>
+				                        	<button class="btn btn-primary" ng-click="vm.openActivityContent(item.id)">
+				                        		Start
+				                        	</button>
+				                        </h2>
+			                        </td>
+			                    </tr>
+			                    <tr ng-show="vm.activities.length === 0">
+			                        <td>No activities configured.</td>
+			                        <td></td>
+			                        <td></td>
+			                    </tr>
 		                    </tbody>
-		                    <tfoot>
-		                    <tr>
-		                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
-		                    </tr>
-		                    </tfoot>
 		                </table>
 		            </div>
 			    </div>
-			    <!-- #END# Gamification Card -->
+			    <!-- #END# Gamification Level Card -->
 			</div>
 		</div>
 	</div>
@@ -100,21 +116,18 @@
 		<div class="row clearfix">
 			<!-- LAST COLUMN - LEADERBOARD, FEEDBACKS, STORE -->
           	<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                <div class="info-box">
-                    <div class="icon bg-mbp-blue">
-                        <i class="material-icons">view_quilt</i>
-                    </div>
-                    <div class="content">
-                        <div class="text">Leaderboard</div>
+                <div class="card">
+                    <div class="body">
+                        <img src="images/leaderboard.png" style="width:100%">
                     </div>
                 </div>
             </div>
         </div>
         <div class="row clearfix">
           	<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                <div class="info-box">
-                    <div class="content">
-                        <div class="text">Feedbacks, curiosities and surprises</div>
+                <div class="card">
+                    <div class="body">
+                        <img src="images/feedback.png" style="width:100%">
                     </div>
                 </div>
         	</div>
@@ -123,7 +136,14 @@
           	<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                 <div class="card">
                     <div class="body">
-                    	<h4>Store</h4>
+                    	<table>
+                   			<tr>
+                   		   		<td style="width:30%"><img src="images/shoppingcart.png" style="width:80%"></td>
+                       			<td><h4>Store</h4></td>
+                       		</tr>
+                       	</table>
+                    	<!-- <img src="images/shoppingcart.png" class="col-sm-2">
+                    	<h4>Store</h4>-->
                         <table class="table table-striped" st-table="vm.storeItemList">
 		                    <thead>
 		                    <tr>
@@ -179,7 +199,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 class="modal-title">{{vm.modalContentTitle}}
+                    <h2 class="modal-title" style="font-size:30px;">{{vm.modalContentTitle}}
 	                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 	                        <span aria-hidden="true">&times;</span>
 	                    </button>
