@@ -4,9 +4,11 @@ import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.data_model.DataTreeNode;
 import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
-import de.ipvs.as.mbp.domain.visualization.PathUnitPair;
+import de.ipvs.as.mbp.domain.visualization.VisualizationFields;
+import de.ipvs.as.mbp.domain.visualization.repo.PathUnitPair;
 import de.ipvs.as.mbp.domain.visualization.VisualizationCollection;
-import de.ipvs.as.mbp.domain.visualization.VisualizationMappings;
+import de.ipvs.as.mbp.domain.visualization.repo.VisMappingInfo;
+import de.ipvs.as.mbp.domain.visualization.repo.VisualizationMappings;
 import de.ipvs.as.mbp.domain.visualization.Visualization;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.util.Validation;
@@ -234,47 +236,55 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
     /**
      * Get all possible visualization mappings
      */
-    public List<VisualizationMappings> getPossibleVisualizationMappings() {
-        List<VisualizationMappings> allMappings = new ArrayList<>();
+    public List<VisMappingInfo> getPossibleVisualizationMappings() {
+        List<VisMappingInfo> allMappings = new ArrayList<>();
 
         // For all visualizations
         for (Visualization v : VisualizationCollection.visIdMapping.values()) {
-            VisualizationMappings visMapping = new VisualizationMappings();
-            List<PathUnitPair> jsonPathsWithUnits = new ArrayList<>();
 
-            for (Map.Entry<String, DataModelTreeNode> field : v.getFieldsToVisualize().entrySet()) {
+            VisMappingInfo currVisInfo = new VisMappingInfo();
+            currVisInfo.setVisName(v.getId());
 
-                // Subtree search for getting all possible mappings
-                List<DataModelTreeNode> foundFields = this.findSubtreeByTypes(field.getValue()).getKey();
+            // For all visualization field collections
+            for (VisualizationFields field : v.getFieldsToVisualize()) {
+                VisualizationMappings currMapping = new VisualizationMappings(field.getFieldName());
+                List<PathUnitPair> jsonPathsWithUnits = new ArrayList<>();
 
-                // Sanity check and size check, jump to the next iteration if
-                if (foundFields == null || foundFields.size() <= 0) {
-                    continue;
-                }
+                for (Map.Entry<String, DataModelTreeNode> visField : field.getFieldsToVisualize().entrySet()) {
 
+                    // Subtree search for getting all possible data model visualization mappings
+                    List<DataModelTreeNode> foundSubtreeRoots = this.findSubtreeByTypes(visField.getValue()).getKey();
 
-                for (DataModelTreeNode node : foundFields) {
-                    if (node.getType() == IoTDataTypes.ARRAY) {
-                        // Extra case for arrays: To retrieve the unit the child element must be checked
-                        jsonPathsWithUnits.add(
-                                new PathUnitPair(node.getJsonPathToNode().getPath(),
-                                        node.getChildren().get(0).getUnit()
-                                ));
-                    } else {
-                        // Normal case (no array), the unit is already given with the node
-                        jsonPathsWithUnits.add(new PathUnitPair(node.getInternPathToNode(), node.getUnit()));
+                    // Check if subtrees were found, if not, jump to the next iteration
+                    if (foundSubtreeRoots == null || foundSubtreeRoots.size() <= 0) {
+                        continue;
+                    }
+
+                    // Check all found subtree roots and add them as possible mapping
+                    for (DataModelTreeNode node : foundSubtreeRoots) {
+                        if (node.getType() == IoTDataTypes.ARRAY) {
+                            jsonPathsWithUnits.add(
+                                    new PathUnitPair(
+                                            node.getInternPathToNode(),
+                                            node.getChildren().get(0).getUnit(),
+                                            IoTDataTypes.ARRAY.getValue()));
+                        } else {
+                            jsonPathsWithUnits.add(new PathUnitPair(node.getInternPathToNode(), node.getUnit(),
+                                    node.getType().getValue()));
+                        }
+                        currMapping.addVisualizationField(visField.getKey(), jsonPathsWithUnits);
                     }
                 }
-                if (jsonPathsWithUnits != null && jsonPathsWithUnits.size() > 0) {
-                    // Add the fields to the final mapping list
-                    visMapping.addVisualizationField(v.getId(), jsonPathsWithUnits);
+
+                // Check if for all needed vis fields a mapping exists
+                if (currMapping.getJsonPathPerVisualizationField().size() == field.getFieldsToVisualize().size()) {
+                    // Yes -->
+                    currVisInfo.addVisMapping(currMapping);
                 }
             }
-            if (jsonPathsWithUnits != null && jsonPathsWithUnits.size() > 0) {
-                // Add the visualization as possible option
-                allMappings.add(visMapping);
+            if (currVisInfo.getMappingPerVisualizationField() != null && currVisInfo.getMappingPerVisualizationField().size() > 0) {
+                allMappings.add(currVisInfo);
             }
-
         }
         return allMappings;
     }

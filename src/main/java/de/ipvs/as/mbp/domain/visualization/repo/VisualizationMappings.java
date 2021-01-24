@@ -1,6 +1,7 @@
-package de.ipvs.as.mbp.domain.visualization;
+package de.ipvs.as.mbp.domain.visualization.repo;
 
-import java.nio.file.Path;
+import de.ipvs.as.mbp.domain.visualization.repo.PathUnitPair;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,12 +18,24 @@ public class VisualizationMappings {
      */
     private Map<String, List<PathUnitPair>> jsonPathPerVisualization;
 
-    public VisualizationMappings() {
+    private String fieldCollectionName;
+
+
+    public VisualizationMappings(String fieldCollectionName) {
         this.jsonPathPerVisualization = new HashMap<>();
+        this.fieldCollectionName = fieldCollectionName;
     }
 
     public Map<String, List<PathUnitPair>> getJsonPathPerVisualizationField() {
         return jsonPathPerVisualization;
+    }
+
+    public String getFieldCollectionName() {
+        return fieldCollectionName;
+    }
+
+    public void setFieldCollectionName(String fieldCollectionName) {
+        this.fieldCollectionName = fieldCollectionName;
     }
 
     public void setJsonPathPerVisualizationField(Map<String, List<PathUnitPair>> jsonPathPerVisualizationField) {

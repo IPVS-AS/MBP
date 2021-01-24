@@ -1,4 +1,6 @@
-package de.ipvs.as.mbp.domain.visualization;
+package de.ipvs.as.mbp.domain.visualization.repo;
+
+import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
 
 import java.util.List;
 
@@ -10,10 +12,20 @@ public class PathUnitPair {
 
     private String path;
     private String unit;
+    private String type;
 
-    public PathUnitPair(String path, String unit) {
+    public PathUnitPair(String path, String unit, String type) {
         this.path = path;
         this.unit = unit;
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getPath() {

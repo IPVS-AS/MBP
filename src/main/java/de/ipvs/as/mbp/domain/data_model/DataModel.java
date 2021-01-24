@@ -2,11 +2,14 @@ package de.ipvs.as.mbp.domain.data_model;
 
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
-import de.ipvs.as.mbp.domain.visualization.VisualizationMappings;
+import de.ipvs.as.mbp.domain.visualization.repo.VisMappingInfo;
+import de.ipvs.as.mbp.domain.visualization.repo.VisualizationMappings;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 
 import javax.persistence.GeneratedValue;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,18 +33,19 @@ public class DataModel extends UserEntity {
 
     private String JSONExample;
 
-    private List<VisualizationMappings> possibleVisMappings;
+    private ArrayList<VisMappingInfo> possibleVisMappings;
 
     // ------
 
 
-    public List<VisualizationMappings> getPossibleVisMappings() {
+    public ArrayList<VisMappingInfo> getPossibleVisMappings() {
         return possibleVisMappings;
     }
 
-    public void setPossibleVisMappings(List<VisualizationMappings> possibleVisMappings) {
+    public void setPossibleVisMappings(ArrayList<VisMappingInfo> possibleVisMappings) {
         this.possibleVisMappings = possibleVisMappings;
     }
+
 
     public String getJSONExample() {
         return JSONExample;

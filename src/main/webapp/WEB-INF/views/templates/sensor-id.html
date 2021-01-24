@@ -131,13 +131,15 @@
                         </button>
                     </span>
                     <span ng-show="componentDetailsCtrl.deploymentState=='DEPLOYED'">
-                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="componentDetailsCtrl.startComponent()">
+                        <button class="btn bg-mbp-mid-blue waves-effect"
+                                ng-click="componentDetailsCtrl.startComponent()">
                             <i class="material-icons">play_arrow</i>
                             <span>Start operator</span>
                         </button>
                     </span>
                     <span ng-show="componentDetailsCtrl.deploymentState=='RUNNING'">
-                        <button class="btn bg-mbp-mid-blue waves-effect" ng-click="componentDetailsCtrl.stopComponent()">
+                        <button class="btn bg-mbp-mid-blue waves-effect"
+                                ng-click="componentDetailsCtrl.stopComponent()">
                             <i class="material-icons">stop</i>
                             <span>Stop operator</span>
                         </button>
@@ -170,18 +172,18 @@
                 </ul>
             </div>
             <div class="body">
-                <h5>Display unit</h5>
+                <!--<h5>Display unit</h5>
                 <div class="form-group align-right">
                     <div class="form-line">
                         <unit-input ng-model="componentDetailsCtrl.displayUnitInput"
                                     unit-filter="{{componentDetailsCtrl.component.operator.unit}}"></unit-input>
                     </div>
-                <span class="help-block" ng-show="false"></span><br/>
-                <button class="btn btn-primary m-t-0 waves-effect" ng-click="ctrl.onDisplayUnitChange()">
-                Update
-                </button>
-                </div>
-                
+                    <span class="help-block" ng-show="false"></span><br/>
+                    <button class="btn btn-primary m-t-0 waves-effect" ng-click="ctrl.onDisplayUnitChange()">
+                        Update
+                    </button>
+                </div>-->
+
                 <value-log-stats api="valueLogStatsApi"
                                  loading-start="componentDetailsCtrl.valueLogStats.loadingStart()"
                                  loading-finish="componentDetailsCtrl.valueLogStats.loadingFinish()"
@@ -189,7 +191,7 @@
                                  unit="{{componentDetailsCtrl.displayUnit}}">
                 </value-log-stats>
                 <div style="height: 20px"></div>
-                
+
                 <button class="btn btn-danger waves-effect" ng-click="componentDetailsCtrl.deleteValueLogs()">
                     <i class="material-icons">delete</i>Delete all sensor values
                 </button>
@@ -198,12 +200,12 @@
     </div>
 </div>
 
-<!-- Live Values Card -->
+<!-- Live Values Card
 <div class="row clearfix">
     <div class="col-lg-12">
         <div class="card live-chart-card animate-show-hide" ng-show="componentDetailsCtrl.deploymentState=='RUNNING'">
             <div class="header">
-            	<i class="material-icons" style="position: absolute; margin-top: 1px">live_tv</i>
+                <i class="material-icons" style="position: absolute; margin-top: 1px">live_tv</i>
                 <h2 style="margin-left: 35px;">Live Chart</h2>
             </div>
             <div class="body">
@@ -217,30 +219,154 @@
         </div>
     </div>
 </div>
+-->
 
-<!-- Historical Values Card -->
+<!-- Values Card -->
 <div class="row clearfix">
     <div class="col-lg-12">
         <div class="card historical-chart-card">
             <div class="header">
-                <i class="material-icons" style="position: absolute; margin-top: 1px">access_time</i>
-                <h2 style="margin-left: 35px;">Historical Chart</h2>
+                <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                    <li role="presentation" ng-show="componentDetailsCtrl.deploymentState==='RUNNING'">
+                        <a data-target="#liveChart" data-toggle="tab">
+                            <i class="material-icons">live_tv</i>
+                            Live Chart
+                        </a>
+                    </li>
+                    <li role="presentation" class="active">
+                        <a data-target="#historicalChart" data-toggle="tab">
+                            <i class="material-icons">access_time</i>
+                            Historical Chart
+                        </a>
+                    </li>
+                </ul>
                 <ul class="header-dropdown m-r--5">
                     <li>
                         <a ng-click="historicalChartApi.updateChart()" class="clickable">
                             <i class="material-icons">refresh</i>
                         </a>
                     </li>
+                    <li>
+                        <a class="clickable" data-toggle="modal" data-target="#visSettings-doubleVal"
+                           data-backdrop="static" data-keyboard="false">
+                            <i class="material-icons">settings</i>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="clickable" data-toggle="modal" data-target="#addDeviceTypeModal">
+                            <i class="material-icons">delete</i>
+                        </a>
+                    </li>
                 </ul>
             </div>
             <div class="body">
-                <historical-chart api="historicalChartApi"
-                                  loading-start="componentDetailsCtrl.historicalChart.loadingStart()"
-                                  loading-finish="componentDetailsCtrl.historicalChart.loadingFinish()"
-                                  get-data="componentDetailsCtrl.historicalChart.getData(numberLogs, descending, unit)"
-                                  unit="{{componentDetailsCtrl.displayUnit}}">
-                </historical-chart>
+                <div class="tab-content">
+                    <div id="liveChart" class="tab-pane fade in active"
+                         ng-show="componentDetailsCtrl.deploymentState=='RUNNING'">
+                        <live-chart loading-start="componentDetailsCtrl.liveChart.loadingStart()"
+                                    loading-finish="componentDetailsCtrl.liveChart.loadingFinish()"
+                                    get-data="componentDetailsCtrl.liveChart.getData(numberLogs, descending, unit)"
+                                    is-updateable="componentDetailsCtrl.liveChart.isUpdateable()"
+                                    unit="{{componentDetailsCtrl.displayUnit}}"
+                                    json-path="{{componentDetailsCtrl.jsonPath}}">>
+                        </live-chart>
+                    </div>
+                    <div id="historicalChart" class="tab-pane fade in active">
+                        <historical-chart api="historicalChartApi"
+                                          loading-start="componentDetailsCtrl.historicalChart.loadingStart()"
+                                          loading-finish="componentDetailsCtrl.historicalChart.loadingFinish()"
+                                          get-data="componentDetailsCtrl.historicalChart.getData(numberLogs, descending, unit)"
+                                          unit="{{componentDetailsCtrl.displayUnit}}"
+                                          json-path="{{componentDetailsCtrl.jsonPath}}">
+                        </historical-chart>
+                    </div>
+                </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create new visualization component button -->
+<div class="row clearfix">
+    <div class="col-lg-12">
+        <div class="card create-new-vis-card-card">
+            <div class="header">
+                <i class="material-icons" style="position: absolute; margin-top: 0px">addchart</i>
+                <h2 style="margin-left: 35px;">Add a chart</h2>
+            </div>
+            <div class="body text-center">
+                <div class="row clearfix">
+                    <button type="button"
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                            data-toggle="modal" data-target="#addDeviceTypeModal" data-backdrop="static"
+                            data-keyboard="false">
+                        <i class="material-icons">add</i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Visualization settings modal -->
+<div class="modal fade" id="visSettings-doubleVal" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Configure the chart
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </h5>
+            </div>
+            <form ng-submit="componentDetailsCtrl.updateJsonPath()">
+                <fieldset>
+                    <div class="modal-body">
+                        <!-- "global" error for addItem -->
+                        <div class="form-group" ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addDeviceTypeCtrl.item.errors.global">
+			                      {{addDeviceTypeCtrl.item.errors.global}}
+			                    </span>
+                        </div>
+                        <!-- item.name group -->
+                        <label>JsonPath to double value:</label>
+                        <div class="form-group" ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
+                            <div class="form-line"
+                                 ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
+                                <input class="form-control" type="text"
+                                       placeholder="JsonPath" ng-model="componentDetailsCtrl.jsonPathInput"
+                                       list="jsonPathSuggestions"/>
+                                <datalist id="jsonPathSuggestions">
+                                    <option ng-repeat="pathItem in componentDetailsCtrl.doublePathList"
+                                            value="{{pathItem.path}}">{{pathItem.path}}
+                                        [{{pathItem.unit ? pathItem.unit :
+                                                "None"}}]
+                                    </option>
+                                </datalist>
+                                <div id="doubleVal-ArrInput">
+                                    <div ng-repeat="">
+                                        <select class="form-control show-tick" id="operator-form-select-data-model"
+                                                ng-model="addOperatorCtrl.item.dataModelId"
+                                                ng-options="t.id as (t.name) for t in ctrl.dataModelList">
+                                            <option value="">Select data model *
+                                            <option/>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="help-block"
+                                  ng-show="addDeviceTypeCtrl.item.errors.name">{{addDeviceTypeCtrl.item.errors.name}}</span>
+                        </div>
+                        <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                            Close
+                        </button>
+                        <button type="submit" class="btn btn-primary m-t-0 waves-effect">Save</button>
+                    </div>
+                </fieldset>
+            </form>
         </div>
     </div>
 </div>

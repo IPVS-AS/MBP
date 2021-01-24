@@ -2,7 +2,9 @@ package de.ipvs.as.mbp.service.visualization;
 
 import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.domain.component.Sensor;
-import de.ipvs.as.mbp.domain.visualization.ActiveVisualization;
+import de.ipvs.as.mbp.domain.visualization.Visualization;
+import de.ipvs.as.mbp.domain.visualization.VisualizationFields;
+import de.ipvs.as.mbp.domain.visualization.repo.ActiveVisualization;
 import de.ipvs.as.mbp.domain.visualization.VisualizationCollection;
 import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.repository.SensorRepository;
@@ -54,12 +56,13 @@ public class ActiveVisualizationUpdater {
         if (toEdit != null) {
             // Entity does exist already --> modify it
             toEdit.setVisFieldToPathMapping(visToCreateOrUpdate.getVisFieldToPathMapping());
+            toEdit.setFieldCollectionId(visToCreateOrUpdate.getFieldCollectionId());
         } else {
             // Entity does not exist --> create a new one
             sensorToUpdate.addActiveVisualization(new ActiveVisualization()
                     .setVisId(visToCreateOrUpdate.getVisId())
                     .setVisFieldToPathMapping(visToCreateOrUpdate.getVisFieldToPathMapping())
-            );
+                    .setFieldCollectionId(visToCreateOrUpdate.getFieldCollectionId()));
         }
 
         // Apply the changes to the database
@@ -74,7 +77,7 @@ public class ActiveVisualizationUpdater {
      * @param sensor
      * @param visualComponentId
      */
-    public  ResponseEntity deleteVisualComponent(Sensor sensor, String visualComponentId) {
+    public ResponseEntity deleteVisualComponent(Sensor sensor, String visualComponentId) {
         for (ActiveVisualization vis : sensor.getActiveVisualizations()) {
             if (vis.getInstanceId().equals(visualComponentId)) {
                 sensor.removeActiveVisualization(visualComponentId);
@@ -93,6 +96,11 @@ public class ActiveVisualizationUpdater {
             throw new MBPException(HttpStatus.NOT_FOUND, "An id of the visualization component is missing.");
         }
 
+        // 0) Check if a field collection id is given
+        if (Validation.isNullOrEmpty(visToValidate.getFieldCollectionId())) {
+            throw new MBPException(HttpStatus.NOT_FOUND, "An id of the visualization field collection is missing.");
+        }
+
         // 1) Check if a json key to json path mapping exists
         if (visToValidate.getVisFieldToPathMapping() == null || visToValidate.getVisFieldToPathMapping().size() <= 0) {
             throw new MBPException(HttpStatus.NOT_FOUND, "Visualization settings map is missing!");
@@ -105,8 +113,16 @@ public class ActiveVisualizationUpdater {
         }
 
         // 3) Check if the key fields of the json key to json path map are all valid and complete
-        if (!visToValidate.getVisFieldToPathMapping().keySet().equals(
-                VisualizationCollection.visIdMapping.get(visToValidate.getVisId()).getFieldsToVisualize().keySet())) {
+        Visualization vis = VisualizationCollection.visIdMapping.get(visToValidate.getVisId());
+        boolean hasValid = false;
+        for (VisualizationFields fields : vis.getFieldsToVisualize()) {
+            if (!visToValidate.getVisFieldToPathMapping().keySet().equals(
+                    VisualizationCollection.visIdMapping.get(fields.getFieldsToVisualize().keySet())))
+            {
+                hasValid = true;
+            }
+        }
+        if (!hasValid) {
             throw new MBPException(HttpStatus.NOT_FOUND,
                     "For visual component with the id " + visToValidate.getVisId() + ", invalid visualization" +
                             "parameters were provided.");

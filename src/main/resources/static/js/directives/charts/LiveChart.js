@@ -132,6 +132,12 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                         return;
                     }
 
+                    // Retrieve double values from the values by using JsonPath
+                    values.forEach(applyJsonPath);
+                    function applyJsonPath(value, index, array) {
+                        array[index][1] =  parseFloat(JSONPath.JSONPath({path: scope.jsonPath, json: array[index][1]}).toString());
+                    }
+
                     /*
                      * The server requests returns a number of most recent logs; however, it is possible
                      * that some of the value logs are already displayed in the chart and do not need
@@ -220,6 +226,19 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
             initChartUpdate();
         });
 
+        //Watch the jsonPath parameter
+        scope.$watch(function () {
+            return scope.jsonPath;
+        }, function (newValue, oldValue) {
+            /*
+             * Update chart if jsonPath was changed, which means for the live chart: redraw everything
+             * by accepting the discard of some values
+            */
+            cancelChartUpdate();
+            initChart();
+            initChartUpdate();
+        });
+
         //Initialize chart
         initChart();
         initChartUpdate();
@@ -239,6 +258,8 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
         scope: {
             //The unit in which the values are supposed to be displayed
             unit: '@unit',
+            // The json path which should be used to interpret the json value data
+            jsonPath: '@jsonPath',
             //Functions that are called when the chart loads/finishes loading data
             loadingStart: '&loadingStart',
             loadingFinish: '&loadingFinish',

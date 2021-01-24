@@ -185,6 +185,8 @@ app.controller('ComponentDetailsController',
                     }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
+                    // Finally make sure that the tab of the historical chart is selected
+                    setTabActive('historicalChart');
                     $scope.$apply();
                 });
             }
@@ -212,6 +214,8 @@ app.controller('ComponentDetailsController',
                         }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
+                    // Finally make sure that the tab of the live chart is selected
+                    setTabActive('liveChart');
                     $scope.$apply();
                 });
             }
@@ -237,6 +241,8 @@ app.controller('ComponentDetailsController',
                     }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
+                    // Finally make sure that the tab of the historical chart is selected
+                    setTabActive('historicalChart');
                     $scope.$apply();
                 });
             }
@@ -512,6 +518,54 @@ app.controller('ComponentDetailsController',
                 $(DEPLOYMENT_CARD_SELECTOR).waitMe("hide");
             }
 
+
+
+            vm.jsonPath = "$";
+            vm.lastModalId = 0;
+            vm.doublePathList = [];
+            vm.jsonPathInput = "$";
+            /**
+             * Actions when a view settings of a modal clicked
+             */
+            $('div.modal.fade').on('shown.bs.modal', function () {
+                var id = $(this).attr('id');
+                vm.lastModalId = id;
+                vm.doublePathList = vm.component.operator.dataModel.possibleVisMappings[0].mappingPerVisualizationField[0].jsonPathPerVisualizationField.value;
+            });
+
+            /**
+             * Called, when the create button in the chart settings modal is triggered.
+             * Sets the jsonPath for the chart and let the modal fade out.
+             */
+            function updateJsonPath() {
+                vm.jsonPath = vm.jsonPathInput;
+                $('div.modal.fade').modal('hide');
+                // TODO HTTP-PUT-Request
+            }
+
+            function setTabActive(tab) {
+                $('.nav-tabs a[data-target="#' + tab + '"]').tab('show');
+            }
+
+            addInputBoxForJsonPathWithArraysForRetrievingASingleValue("", "['tes'][#4#]['test'][#5#]");
+
+            function addInputBoxForJsonPathWithArraysForRetrievingASingleValue(domPathStr, jsonPathStr) {
+
+                var regex = /#(.*?)#/g;
+
+                do {
+                    m = regex.exec(jsonPathStr);
+                    if (m) {
+                        console.log(m[0] + " : " + m[1]);
+                    }
+                } while (m);
+
+
+                /*$("#" + domPathStr).append(""
+                    + "<h1>Hello</h1>"
+                );*/
+            }
+
             //Extend the controller object for the public functions to make them available from outside
             angular.extend(vm, {
                 updateDeploymentState: updateDeploymentState,
@@ -521,7 +575,8 @@ app.controller('ComponentDetailsController',
                 stopComponent: stopComponent,
                 deploy: deploy,
                 undeploy: undeploy,
-                deleteValueLogs: deleteValueLogs
+                deleteValueLogs: deleteValueLogs,
+                updateJsonPath: updateJsonPath
             });
         }]
 );

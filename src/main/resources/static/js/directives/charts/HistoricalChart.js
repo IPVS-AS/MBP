@@ -3,7 +3,7 @@
 'use strict';
 
 /**
- * Directive which creates a chart for displaying historical values. Control elements are provided with
+ * Directive whreich creates a chart for displaying historical values. Control elements are provided with
  * which the user has the possibility to select the data that he wants to display.
  *
  * @author Jan
@@ -35,7 +35,7 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
         //Define chart settings that can be adjusted by the user
         scope.settings = {
             numberOfValues: CHART_INITIAL_ELEMENTS_NUMBER,
-            mostRecent: true
+            mostRecent: true,
         };
 
         /**
@@ -62,6 +62,8 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                     valueSuffix: ' ' + scope.unit
                 },
             });
+
+            chart.addC
 
             //Initialize slider
             sliderContainer.ionRangeSlider({
@@ -126,11 +128,18 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             scope.getData({
                 numberLogs: scope.settings.numberOfValues,
                 descending: scope.settings.mostRecent,
-                unit: scope.unit
+                unit: scope.unit,
+                jsonPath: scope.jsonPath
             }).then(function (values) {
                 //Reverse the values array if ordered in descending order
                 if (scope.settings.mostRecent) {
                     values = values.reverse();
+                }
+
+                // Apply jsonPath on the values
+                values.forEach(applyJsonPath);
+                function applyJsonPath(value, index, array) {
+                    array[index][1] =  parseFloat(JSONPath.JSONPath({path: scope.jsonPath, json: array[index][1]}).toString());
                 }
 
                 //Update chart
@@ -148,6 +157,14 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             return scope.unit;
         }, function (newValue, oldValue) {
             //Update chart if unit was changed
+            updateChart();
+        });
+
+        //Watch the jsonPath parameter
+        scope.$watch(function () {
+            return scope.jsonPath;
+        }, function (newValue, oldValue) {
+            //Update chart if jsonPath was changed
             updateChart();
         });
 
@@ -189,6 +206,8 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             api: "=api",
             //The unit in which the values are supposed to be displayed
             unit: '@unit',
+            // The json path which should be used to interpret the json value data
+            jsonPath: '@jsonPath',
             //Functions that are called when the chart loads/finishes loading data
             loadingStart: '&loadingStart',
             loadingFinish: '&loadingFinish',

@@ -2,10 +2,13 @@ package de.ipvs.as.mbp.domain.data_model;
 
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
+import de.ipvs.as.mbp.domain.visualization.repo.VisMappingInfo;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.service.validation.ICreateValidator;
 import de.ipvs.as.mbp.util.Validation;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 
 /**
  * Validator for DataModel trees. Criterias, amongst other things: Non-cyclic, connected, primitive data fields
@@ -42,7 +45,7 @@ public class DataModelCreateValidator implements ICreateValidator<DataModel> {
 
         DataModelTree tree = new DataModelTree(entity.getTreeNodes());
         entity.setJSONExample(tree.getJSONExample());
-        entity.setPossibleVisMappings(tree.getPossibleVisualizationMappings());
+        entity.setPossibleVisMappings((ArrayList<VisMappingInfo>) tree.getPossibleVisualizationMappings());
         System.out.println("test");
     }
 }

@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.domain.visualization;
+package de.ipvs.as.mbp.domain.visualization.repo;
 
 import org.bson.types.ObjectId;
 
@@ -20,6 +20,8 @@ public class ActiveVisualization {
 
     private String visId;
 
+    private String fieldCollectionId;
+
     private Map<String, String> visFieldToPathMapping;
 
     public ActiveVisualization() {
@@ -27,6 +29,17 @@ public class ActiveVisualization {
         visFieldToPathMapping = new HashMap<>();
         visFieldToPathMapping.put("test", "test");
     }
+
+    public String getFieldCollectionId() {
+        return fieldCollectionId;
+    }
+
+    public ActiveVisualization setFieldCollectionId(String fieldCollectionId) {
+        this.fieldCollectionId = fieldCollectionId;
+        return this;
+    }
+
+
 
     public String getVisId() {
         return visId;

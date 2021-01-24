@@ -155,7 +155,7 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             //Iterate over all received value logs
             for (var i = 0; i < receivedLogs.length; i++) {
                 //Extract value and time for the current log and format them
-                var value = receivedLogs[i].value * 1;
+                var value = receivedLogs[i].value;
                 var time = receivedLogs[i].time.epochSecond * 1000;
                 time = dateToString(new Date(time));
 

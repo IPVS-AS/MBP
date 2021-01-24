@@ -9,7 +9,7 @@ import javax.persistence.GeneratedValue;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
-import de.ipvs.as.mbp.domain.visualization.ActiveVisualization;
+import de.ipvs.as.mbp.domain.visualization.repo.ActiveVisualization;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -39,6 +39,8 @@ public abstract class Component extends UserEntity {
 
     private List<ActiveVisualization> activeVisualizations;
 
+    private String idOfLastAddedVisualization;
+
     public String getId() {
         return id;
     }
@@ -46,6 +48,15 @@ public abstract class Component extends UserEntity {
     public Component setId(String id) {
         this.id = id;
         return this;
+    }
+
+
+    public String getIdOfLastAddedVisualization() {
+        return idOfLastAddedVisualization;
+    }
+
+    public void setIdOfLastAddedVisualization(String idOfLastAddedVisualization) {
+        this.idOfLastAddedVisualization = idOfLastAddedVisualization;
     }
 
     public String getName() {
@@ -103,11 +114,12 @@ public abstract class Component extends UserEntity {
             this.activeVisualizations = new ArrayList<>();
         }
         this.activeVisualizations.add(visToAdd);
+        this.idOfLastAddedVisualization = visToAdd.getInstanceId();
     }
 
-    public void removeActiveVisualization(String idOfVisInstaceToBeRemoved) {
+    public void removeActiveVisualization(String idOfVisInstanceToBeRemoved) {
         if (this.activeVisualizations != null) {
-            this.activeVisualizations.removeIf(vis -> vis.getInstanceId().equals(idOfVisInstaceToBeRemoved));
+            this.activeVisualizations.removeIf(vis -> vis.getInstanceId().equals(idOfVisInstanceToBeRemoved));
         }
     }
 
