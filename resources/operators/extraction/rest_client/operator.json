@@ -1,0 +1,37 @@
+{
+  "name": "REST client",
+  "description": "Operator for performing REST requests and extracting values from the response.",
+  "unit": "",
+  "files": [
+    "rest_client.py",
+    "../../mbp_client/mbp_client.py",
+    "install.sh",
+    "start.sh",
+    "../../mbp_client/stop.sh",
+    "../../mbp_client/running.sh",
+    "entry-file-name"
+  ],
+  "parameters": [
+    {
+      "name": "url",
+      "type": "text",
+      "mandatory": true
+    },
+    {
+      "name": "method",
+      "type": "text",
+      "mandatory": false
+    },
+    {
+      "name": "jsp_exp",
+      "type": "text",
+      "mandatory": true
+    },
+    {
+      "name": "interval",
+      "type": "number",
+      "unit": "s",
+      "mandatory": false
+    }
+  ]
+}

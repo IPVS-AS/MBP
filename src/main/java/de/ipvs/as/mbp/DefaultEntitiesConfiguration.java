@@ -49,7 +49,8 @@ public class DefaultEntitiesConfiguration {
                 createDeviceType("Smartwatch", false, iconPath + "smartwatch.png"),
                 createDeviceType("TV", false, iconPath + "tv.png"),
                 createDeviceType("Voice Controller", false, iconPath + "voice-controller.png"),
-                createDeviceType("Virtual Machine", true, iconPath + "default.png")
+                createDeviceType("Virtual Machine", true, iconPath + "default.png"),
+                createDeviceType("Gateway", true, iconPath + "default.png")
         );
 
         //Only add if repository is empty
@@ -130,7 +131,9 @@ public class DefaultEntitiesConfiguration {
      */
     @Bean(name = "defaultOperatorWhitelist")
     public List<String> defaultOperatorWhitelist() {
-        List<String> operatorPaths = Arrays.asList("/operators/extraction/temperature_stub");
+        List<String> operatorPaths = Arrays.asList(
+                "/operators/extraction/temperature_stub",
+                "/operators/extraction/rest_client");
         return Collections.unmodifiableList(operatorPaths);
     }
 }
