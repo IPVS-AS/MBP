@@ -7,10 +7,18 @@ import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Represents a data type list of a visualization. One {@link Visualization} can
+ * have 1..n VisualizationFields.
+ */
 public class VisualizationFields {
 
     private Map<String, DataModelTreeNode> fieldsToVisualize;
 
+    /**
+     * A data type field needs to have a name to be able to distinguish between those
+     * alternative field lists for one visualization.
+     */
     private String fieldName;
 
     public VisualizationFields(String fieldName) {

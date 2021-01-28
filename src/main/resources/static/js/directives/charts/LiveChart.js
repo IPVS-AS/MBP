@@ -121,6 +121,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                     return;
                 }
 
+                console.log("get data");
                 //Retrieve the most recent component data
                 scope.getData({
                     numberLogs: CHART_MAX_ELEMENTS,
@@ -132,11 +133,16 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                         return;
                     }
 
+                    // As the directive takes the jsonPath parameter as string a conversion to an object is necessary
+                    var jsonPathAsObj = JSON.parse(scope.jsonPath);
+
+                    console.log("Start JsonPath retrieval");
                     // Retrieve double values from the values by using JsonPath
                     values.forEach(applyJsonPath);
                     function applyJsonPath(value, index, array) {
-                        array[index][1] =  parseFloat(JSONPath.JSONPath({path: scope.jsonPath, json: array[index][1]}).toString());
+                        array[index][1] =  parseFloat(JSONPath.JSONPath({path: jsonPathAsObj.value, json: array[index][1]}).toString());
                     }
+                    console.log("End JsonPath retrieval");
 
                     /*
                      * The server requests returns a number of most recent logs; however, it is possible
@@ -148,9 +154,11 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                     //Check if there is already data in the chart
                     if (lastDate == null) {
                         //No data in the chart, thus add all received value logs
+                        console.log("No data in chart: Start adding points.");
                         for (var i = values.length - 1; i >= 0; i--) {
                             series.addPoint(values[i], true, (++count >= CHART_MAX_ELEMENTS));
                         }
+                        console.log("No data in chart: Finish adding points.");
                     } else {
                         /* There is already data in the chart, so iterate over all value logs but
                          only take the ones from the array that occur before the log with lastDate */
@@ -165,6 +173,8 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                             }
                         }
 
+                        console.log("Data check of live chart compelted.");
+
                         /* In case the log with lastDate could not be found, this means that all data is relevant
                          and needs to be added to the chart */
                         if (!insert) {
@@ -173,6 +183,8 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                             }
                         }
                     }
+
+                    console.log("Added points to chart");
                     //Update lastDate with the most recent log that was added to the chart
                     lastDate = values[0][0];
                 }).then(function () {
@@ -260,6 +272,8 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
             unit: '@unit',
             // The json path which should be used to interpret the json value data
             jsonPath: '@jsonPath',
+            // The name of the field collection which the visualization uses
+            fieldCollectionId: '@fieldCollectionId',
             //Functions that are called when the chart loads/finishes loading data
             loadingStart: '&loadingStart',
             loadingFinish: '&loadingFinish',

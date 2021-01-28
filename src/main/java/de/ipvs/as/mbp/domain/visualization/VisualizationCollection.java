@@ -6,6 +6,9 @@ import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Stores all data models of all {@link Visualization}s of the MBP frontend.
+ */
 public class VisualizationCollection {
 
     public final static Map<String, Visualization> visIdMapping = new HashMap<>();

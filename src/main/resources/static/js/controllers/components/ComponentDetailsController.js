@@ -185,8 +185,6 @@ app.controller('ComponentDetailsController',
                     }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
-                    // Finally make sure that the tab of the historical chart is selected
-                    setTabActive('historicalChart');
                     $scope.$apply();
                 });
             }
@@ -214,8 +212,6 @@ app.controller('ComponentDetailsController',
                         }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
-                    // Finally make sure that the tab of the live chart is selected
-                    setTabActive('liveChart');
                     $scope.$apply();
                 });
             }
@@ -241,8 +237,6 @@ app.controller('ComponentDetailsController',
                     }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
-                    // Finally make sure that the tab of the historical chart is selected
-                    setTabActive('historicalChart');
                     $scope.$apply();
                 });
             }
@@ -374,9 +368,9 @@ app.controller('ComponentDetailsController',
                 /**
                  * Function that is called when the chart loads something
                  */
-                function loadingStart() {
+                function loadingStart(visInstanceId) {
                     //Show the waiting screen
-                    $(LIVE_CHART_CARD_SELECTOR).waitMe({
+                    $(LIVE_CHART_CARD_SELECTOR.replace(".", "#") + "-" + visInstanceId).waitMe({
                         effect: 'bounce',
                         text: 'Loading chart...',
                         bg: 'rgba(255,255,255,0.85)'
@@ -386,9 +380,9 @@ app.controller('ComponentDetailsController',
                 /**
                  * Function that is called when the chart finished loading
                  */
-                function loadingFinish() {
+                function loadingFinish(visInstanceId) {
                     //Hide the waiting screen for the case it was displayed before
-                    $(LIVE_CHART_CARD_SELECTOR).waitMe("hide");
+                    $(LIVE_CHART_CARD_SELECTOR.replace(".", "#") + "-" + visInstanceId).waitMe("hide");
                 }
 
                 /**
@@ -416,9 +410,10 @@ app.controller('ComponentDetailsController',
                 /**
                  * Function that is called when the chart loads something
                  */
-                function loadingStart() {
+                function loadingStart(visInstanceId) {
                     //Show the waiting screen
-                    $(HISTORICAL_CHART_CARD_SELECTOR).waitMe({
+
+                    $(HISTORICAL_CHART_CARD_SELECTOR.replace(".", "#") + "-" + visInstanceId).waitMe({
                         effect: 'bounce',
                         text: 'Loading chart...',
                         bg: 'rgba(255,255,255,0.85)'
@@ -428,9 +423,9 @@ app.controller('ComponentDetailsController',
                 /**
                  * Function that is called when the chart finished loading
                  */
-                function loadingFinish() {
+                function loadingFinish(visInstanceId) {
                     //Hide the waiting screen for the case it was displayed before
-                    $(HISTORICAL_CHART_CARD_SELECTOR).waitMe("hide");
+                    $(HISTORICAL_CHART_CARD_SELECTOR.replace(".", "#") + "-" + visInstanceId).waitMe("hide");
                 }
 
                 //Expose
@@ -518,33 +513,212 @@ app.controller('ComponentDetailsController',
                 $(DEPLOYMENT_CARD_SELECTOR).waitMe("hide");
             }
 
+            // ---------------------------- NEW VISUALIZATION STUFF -----------------------------
+
+            // All visualizations applicable for this sensor
+            vm.availableVisualizationsMappings = vm.component.operator.dataModel.possibleVisMappings;
+
+            // All visualization ids of all visualizations applicable for this sensor
+            vm.idOfAllApplicableVisualizations = vm.availableVisualizationsMappings.map(visObj => visObj.visName);
+
+            // Binding for the next chart to add (visualization id)
+            vm.nextChartToAdd = "";
+
+            // Represents one instance of a currently active visualization
+            class ActiveVisualization {
+                constructor(instanceId, visId) {
+                    this.instanceId = instanceId;
+                    this.visId = visId;
+                    this.fieldCollectionId = "";
+                    this.fieldCollectionIdInput = "";
+                    this.visFieldToPathMapping = {};
+                    this.visFieldToPathMappingInput = {};
+                    this.jsonPath = "";
+                    this.jsonPathInput = "";
+                    this.availableOptions = getVisualizationMappingFieldByVisId(this.visId);
+                }
+
+                hasVisualizationOptionFieldCollectionWithName = function hasVisualizationOptionFieldCollectionWithName(fieldCollectionName) {
+                    if (this.availableOptions == null || fieldCollectionName == null) {
+                        return false;
+                    } else {
+                        var hasFieldCollection = false;
+                        this.availableOptions.forEach(function(item, index) {
+                            if (item.fieldCollectionName === fieldCollectionName) {
+                                hasFieldCollection = true;
+                            }
+                        });
+                        return hasFieldCollection;
+                    }
+                }
+
+                getJsonPathsByFieldCollectionName =  function getJsonPathsByFieldCollectionName(fieldCollectionName) {
+                    if (this.hasVisualizationOptionFieldCollectionWithName(fieldCollectionName)) {
+                        var jsonPathList = null;
+                        this.availableOptions.forEach(function(item, index) {
+                            if (item.fieldCollectionName === fieldCollectionName) {
+                                jsonPathList = item.jsonPathPerVisualizationField;
+                            }
+                        });
+                        return jsonPathList;
+                    } else {
+                        return null;
+                    }
+                }
+            }
+
+            function getVisualizationMappingFieldByVisId(visId) {
+                var match = null;
+                vm.availableVisualizationsMappings.forEach(function(item, index) {
+                    if (item.visName === visId) {
+                        match = item.mappingPerVisualizationField;
+                    }
+                });
+                return match;
+            }
 
 
-            vm.jsonPath = "$";
+
+
+            vm.allActiveVisualizations = [];
+
+            function initActiveVisualizations() {
+                var activeVisualizationsComponentRepresentation = vm.component.activeVisualizations;
+
+                // Sanity check
+                if (activeVisualizationsComponentRepresentation == null) {
+                    return;
+                }
+                activeVisualizationsComponentRepresentation.forEach(function (item, index) {
+                    var visToAdd = new ActiveVisualization(item.instanceId, item.visId);
+                    if (item.fieldCollectionId != null) {
+                        visToAdd.fieldCollectionId = item.fieldCollectionId;
+                        visToAdd.fieldCollectionIdInput = item.fieldCollectionId;
+                    }
+                    if (item.visFieldToPathMapping != null) {
+                        visToAdd.visFieldToPathMapping = item.visFieldToPathMapping;
+                        visToAdd.visFieldToPathMappingInput = JSON.parse(JSON.stringify(item.visFieldToPathMapping));
+                    }
+                   vm.allActiveVisualizations.push(visToAdd);
+                });
+            }
+            initActiveVisualizations();
+
+
+            // Actions when the "Add a chart" button is clicked
+            var cardCount = 0;
+
+            function onCreateNewVisualizationClicked() {
+                var visToAdd = new ActiveVisualization(cardCount.toString(), vm.nextChartToAdd);
+                cardCount += 1;
+
+                // Perform put request to update the components
+                ComponentService.addNewActiveVisualization(vm.component.id, {
+                    instanceId: visToAdd.instanceId,
+                    visId: visToAdd.visId
+                }).then(function (data) {
+                    // Request succeeded --> update the vis component instance id and add the new active vis
+                    visToAdd.instanceId = data.idOfLastAddedVisualization;
+                    vm.allActiveVisualizations.push(visToAdd);
+                    NotificationService.notify('Chart was added successfully.', 'success');
+                }, function (errData) {
+                    // Request failed --> notify the user and do nothing
+                    alert(JSON.stringify(errData));
+                    NotificationService.notify('Creation of new visualization instance failed.', 'error');
+                });
+            }
+
+            function deleteChartCard(instanceId) {
+                ComponentService.deleteActiveVisualization(vm.component.id, instanceId).then(function (data) {
+                    // Find the chart to remove by instance id
+                    var visToRemove = null;
+                    for (var i = 0; i < vm.allActiveVisualizations.length; i += 1) {
+                        if (vm.allActiveVisualizations[i].instanceId == instanceId) {
+                            visToRemove = vm.allActiveVisualizations[i];
+                            break;
+                        }
+                    }
+
+                    if (visToRemove == null) {
+                        return;
+                    }
+
+                    // Remove the chart by value
+                    var index = vm.allActiveVisualizations.indexOf(visToRemove);
+                    if (index !== -1) {
+                        vm.allActiveVisualizations.splice(index, 1);
+                    }
+                    NotificationService.notify('Chart was removed successfully.', 'success');
+                }, function (errData) {
+                    NotificationService.notify('Chart could not be removed.', 'error');
+                });
+
+
+            }
+
+
+            //vm.jsonPath = "$";
             vm.lastModalId = 0;
-            vm.doublePathList = [];
-            vm.jsonPathInput = "$";
-            /**
-             * Actions when a view settings of a modal clicked
-             */
-            $('div.modal.fade').on('shown.bs.modal', function () {
-                var id = $(this).attr('id');
-                vm.lastModalId = id;
-                vm.doublePathList = vm.component.operator.dataModel.possibleVisMappings[0].mappingPerVisualizationField[0].jsonPathPerVisualizationField.value;
-            });
+            //vm.doublePathList = vm.component.operator.dataModel.possibleVisMappings[0].mappingPerVisualizationField[0].jsonPathPerVisualizationField.value;
+            //vm.jsonPathInput = "$";
+
 
             /**
              * Called, when the create button in the chart settings modal is triggered.
              * Sets the jsonPath for the chart and let the modal fade out.
              */
-            function updateJsonPath() {
-                vm.jsonPath = vm.jsonPathInput;
-                $('div.modal.fade').modal('hide');
-                // TODO HTTP-PUT-Request
+            function updateJsonPath(visToUpdate) {
+
+               // visToUpdate.visFieldToPathMapping = "default";
+
+                // Perform put request to update the chart components
+                ComponentService.addNewActiveVisualization(vm.component.id, {
+                    instanceId: visToUpdate.instanceId,
+                    visId: visToUpdate.visId,
+                    fieldCollectionId: visToUpdate.fieldCollectionIdInput,
+                    visFieldToPathMapping: JSON.parse(JSON.stringify(visToUpdate.visFieldToPathMappingInput))
+                        /*{
+                        value: visToUpdate.jsonPathInput
+                    }*/
+                }).then(function (data) {
+                    // Request succeeded --> notify the user
+                    visToUpdate.fieldCollectionId = visToUpdate.fieldCollectionIdInput;
+                    visToUpdate.visFieldToPathMapping = JSON.parse(JSON.stringify(visToUpdate.visFieldToPathMappingInput));
+                    $('div.modal.fade').modal('hide');
+                    NotificationService.notify('Chart was updated successfully.', 'success');
+                }, function (errData) {
+                    // Request failed --> notify the user and do nothing
+                    alert(JSON.stringify(errData));
+                    NotificationService.notify('Update of visualization instance failed.', 'error');
+                });
             }
 
-            function setTabActive(tab) {
-                $('.nav-tabs a[data-target="#' + tab + '"]').tab('show');
+            // Watch the deployment status and change the chart tabs accordingly
+            $scope.$watch(function () {
+                return vm.deploymentState;
+            }, function (newValue, oldValue) {
+                if (newValue === 'RUNNING') {
+                    // Make sure that the tab of the live chart is selected
+                    setTabActive('#live-chart-card');
+                } else {
+                    // Make sure that the tab of the historical chart is selected
+                    setTabActive('#historical-chart-card');
+                }
+            });
+
+            /**
+             * [private]
+             * Activates a tab based on a given data-target
+             * @param tab the id prefix of the data-target
+             * @param instanceId [optional] to specify a certain tab instead of activating all with the tab prefix.
+             */
+            function setTabActive(tab, instanceId) {
+                if (instanceId != null) {
+                    $('.nav-tabs a[data-target="' + tab + "-" + instanceId + ']"').tab('show');
+                } else {
+                    // Select the tab as active which id begins with tab
+                    $('.nav-tabs a[data-target^="' + tab + '"]').tab('show');
+                }
             }
 
             addInputBoxForJsonPathWithArraysForRetrievingASingleValue("", "['tes'][#4#]['test'][#5#]");
@@ -576,7 +750,9 @@ app.controller('ComponentDetailsController',
                 deploy: deploy,
                 undeploy: undeploy,
                 deleteValueLogs: deleteValueLogs,
-                updateJsonPath: updateJsonPath
+                updateJsonPath: updateJsonPath,
+                onCreateNewVisualizationClicked: onCreateNewVisualizationClicked,
+                deleteChartCard: deleteChartCard
             });
         }]
 );

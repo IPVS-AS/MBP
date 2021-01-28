@@ -43,6 +43,7 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
          * Initializes the chart.
          */
         function initChart() {
+
             //Create chart
             chart = Highcharts.chart(chartContainer, {
                 title: {
@@ -62,8 +63,6 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                     valueSuffix: ' ' + scope.unit
                 },
             });
-
-            chart.addC
 
             //Initialize slider
             sliderContainer.ionRangeSlider({
@@ -124,28 +123,57 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             };
             chart.series[0].tooltipOptions.valueSuffix = ' ' + scope.unit;
 
+            chart.addSeries({
+                name: 'Value2',
+                data: [["test1", 4.0], ["test2", 5.0], ["test3", 2.0]],
+                showInLegend: false
+            });
+
             //Retrieve a fixed number of value logs from the server
             scope.getData({
                 numberLogs: scope.settings.numberOfValues,
                 descending: scope.settings.mostRecent,
                 unit: scope.unit,
-                jsonPath: scope.jsonPath
             }).then(function (values) {
                 //Reverse the values array if ordered in descending order
                 if (scope.settings.mostRecent) {
                     values = values.reverse();
                 }
 
+                // As the directive takes the jsonPath parameter as string a conversion to an object is necessary
+                var jsonPathAsObj = JSON.parse(scope.jsonPath);
+
                 // Apply jsonPath on the values
                 values.forEach(applyJsonPath);
+
                 function applyJsonPath(value, index, array) {
-                    array[index][1] =  parseFloat(JSONPath.JSONPath({path: scope.jsonPath, json: array[index][1]}).toString());
+                    console.log("collection id");
+                    console.log(scope.fieldCollectionId);
+                    // TODO ensure right access
+                    scope.fieldCollectionId = "default";
+                    console.log(scope.fieldCollectionId);
+                    if (scope.fieldCollectionId === 'default') {
+                        array[index][1] = parseFloat(JSONPath.JSONPath({
+                            path: jsonPathAsObj.value,
+                            json: array[index][1]
+                        }).toString());
+                    } else {
+                        array[index][1] = parseFloat(JSONPath.JSONPath({
+                            path: jsonPathAsObj.arrVal,
+                            json: array[index][1]
+                        }).toString());
+                    }
                 }
 
-                //Update chart
-                chart.series[0].update({
-                    data: values
-                }, true); //True: Redraw chart
+                if (scope.fieldCollectionId === 'default') {
+                    //Update chart
+                    chart.series[0].update({
+                        data: values
+                    }, true); //True: Redraw chart
+                } else {
+                    // Check if enough series are existing - if not add the missing ones
+                    //var seriesSize = chart.series.s
+                }
 
                 //Loading finished
                 scope.loadingFinish();
@@ -208,11 +236,13 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             unit: '@unit',
             // The json path which should be used to interpret the json value data
             jsonPath: '@jsonPath',
+            // The name of the field collection which the visualization uses
+            fieldCollectionId: '@fieldCollectionId',
             //Functions that are called when the chart loads/finishes loading data
             loadingStart: '&loadingStart',
             loadingFinish: '&loadingFinish',
             //Function for updating the displayed data
-            getData: '&getData',
+            getData: '&getData'
         }
     };
 }]);

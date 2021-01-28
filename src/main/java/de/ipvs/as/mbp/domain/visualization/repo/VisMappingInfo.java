@@ -3,6 +3,9 @@ package de.ipvs.as.mbp.domain.visualization.repo;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ */
 public class VisMappingInfo {
 
     private List<VisualizationMappings> mappingPerVisualizationField;

@@ -20,6 +20,8 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
         const URL_GET_VALUE_LOG_STATS_SUFFIX = '/stats';
         //URL suffix under which the value logs of a certain component can be retrieved
         const URL_VALUE_LOGS_SUFFIX = '/valueLogs';
+        // URL suffix under which the active visualizations of a component can be retrieved or updated
+        const URL_ACTIVE_VISUALIZATION_SUFFIX = 'component-vis';
 
 
         /**
@@ -144,13 +146,16 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
         /**
          * [Public]
          * Processes an array of value logs as they are retrieved from the server. As a result, an array of
-         * value logs is returned that can be directly used for charts.
+         * value logs is returned that can be used for charts (if in a second step a parsing with a
+         * json path is proceeded).
          *
          * @param receivedLogs An array of value log objects as returned by the server
          */
         function processValueLogs(receivedLogs) {
             //Array that stores the finally formatted value logs
             var finalValues = [];
+
+            console.log("Start processing value logs")
 
             //Iterate over all received value logs
             for (var i = 0; i < receivedLogs.length; i++) {
@@ -164,8 +169,36 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
                 finalValues.push(tuple);
             }
 
+            console.log("End processing value logs")
+
+
             //Return final value log array so that it is accessible in the promise
             return finalValues;
+        }
+
+        // TODO Handle also actuators and monitoring operators...
+        /**
+         * [Public]
+         * Performs a server put request to update the active visualizations of one component.
+         *
+         * @param componentId The id of the component to update
+         * @param activeVisualization Object which holds all needed active visualization data
+         * @return The updated sensor document (if successful)
+         */
+        function addNewActiveVisualization(componentId, activeVisualization) {
+            return HttpService.putRequest(URL_PREFIX + URL_ACTIVE_VISUALIZATION_SUFFIX + "/" + componentId, activeVisualization);
+        }
+
+        // TODO handle also actuators, monitoring operators...
+        /**
+         * [Public]
+         * Performs a server delete request to remove an active visualization from a components document.
+         * @param componentId The component to which the visualization belongs.
+         * @param visInstanceId The instance id of the visualization which should be removed.
+         * @return The server answer.
+         */
+        function deleteActiveVisualization(componentId, visInstanceId) {
+            return HttpService.deleteRequest(URL_PREFIX + URL_ACTIVE_VISUALIZATION_SUFFIX + "/" + componentId + "/" + visInstanceId);
         }
 
         /**
@@ -212,7 +245,9 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             startComponent: startComponent,
             stopComponent: stopComponent,
             deploy: deployComponent,
-            undeploy: undeployComponent
+            undeploy: undeployComponent,
+            addNewActiveVisualization: addNewActiveVisualization,
+            deleteActiveVisualization: deleteActiveVisualization
         };
     }
 ]);

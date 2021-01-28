@@ -11,6 +11,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class represents a possible visualization a user can choose
+ * in the MBP frontend to visualize data.
+ */
 public class Visualization {
 
     /**
@@ -22,6 +26,9 @@ public class Visualization {
      */
     private List<VisualizationFields> fieldsToVisualize;
 
+    /**
+     * An unique identifier to identify the visualization among others.
+     */
     private String id;
 
     public Visualization(String id) {

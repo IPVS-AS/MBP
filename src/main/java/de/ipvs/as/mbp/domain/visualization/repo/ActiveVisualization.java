@@ -14,8 +14,6 @@ import java.util.Map;
  */
 public class ActiveVisualization {
 
-    @Id
-    @GeneratedValue
     private String instanceId;
 
     private String visId;
@@ -68,12 +66,10 @@ public class ActiveVisualization {
         return instanceId;
     }
 
-    /*
-    public ActiveComponentVisualization setInstanceId(String instanceId) {
+    public ActiveVisualization setInstanceId(String instanceId) {
         this.instanceId = instanceId;
         return this;
     }
-    */
 
     @Override
     public boolean equals(Object obj) {
