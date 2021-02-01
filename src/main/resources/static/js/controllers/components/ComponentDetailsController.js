@@ -543,7 +543,7 @@ app.controller('ComponentDetailsController',
                         return false;
                     } else {
                         var hasFieldCollection = false;
-                        this.availableOptions.forEach(function(item, index) {
+                        this.availableOptions.forEach(function (item, index) {
                             if (item.fieldCollectionName === fieldCollectionName) {
                                 hasFieldCollection = true;
                             }
@@ -552,10 +552,10 @@ app.controller('ComponentDetailsController',
                     }
                 }
 
-                getJsonPathsByFieldCollectionName =  function getJsonPathsByFieldCollectionName(fieldCollectionName) {
+                getJsonPathsByFieldCollectionName = function getJsonPathsByFieldCollectionName(fieldCollectionName) {
                     if (this.hasVisualizationOptionFieldCollectionWithName(fieldCollectionName)) {
                         var jsonPathList = null;
-                        this.availableOptions.forEach(function(item, index) {
+                        this.availableOptions.forEach(function (item, index) {
                             if (item.fieldCollectionName === fieldCollectionName) {
                                 jsonPathList = item.jsonPathPerVisualizationField;
                             }
@@ -569,7 +569,7 @@ app.controller('ComponentDetailsController',
 
             function getVisualizationMappingFieldByVisId(visId) {
                 var match = null;
-                vm.availableVisualizationsMappings.forEach(function(item, index) {
+                vm.availableVisualizationsMappings.forEach(function (item, index) {
                     if (item.visName === visId) {
                         match = item.mappingPerVisualizationField;
                     }
@@ -578,10 +578,15 @@ app.controller('ComponentDetailsController',
             }
 
 
-
-
             vm.allActiveVisualizations = [];
 
+            /**
+             * [private]
+             * Handles the proper creation of already existent visualization card information.
+             * The information comes with the sensor data from the server and must be converted
+             * to a format usable for this details view controller as well as added to the
+             * local data structures which are the model of the view.
+             */
             function initActiveVisualizations() {
                 var activeVisualizationsComponentRepresentation = vm.component.activeVisualizations;
 
@@ -599,7 +604,7 @@ app.controller('ComponentDetailsController',
                         visToAdd.visFieldToPathMapping = item.visFieldToPathMapping;
                         visToAdd.visFieldToPathMappingInput = JSON.parse(JSON.stringify(item.visFieldToPathMapping));
                     }
-                   vm.allActiveVisualizations.push(visToAdd);
+                    vm.allActiveVisualizations.push(visToAdd);
                 });
             }
             initActiveVisualizations();
@@ -607,7 +612,6 @@ app.controller('ComponentDetailsController',
 
             // Actions when the "Add a chart" button is clicked
             var cardCount = 0;
-
             function onCreateNewVisualizationClicked() {
                 var visToAdd = new ActiveVisualization(cardCount.toString(), vm.nextChartToAdd);
                 cardCount += 1;
@@ -623,11 +627,17 @@ app.controller('ComponentDetailsController',
                     NotificationService.notify('Chart was added successfully.', 'success');
                 }, function (errData) {
                     // Request failed --> notify the user and do nothing
-                    alert(JSON.stringify(errData));
                     NotificationService.notify('Creation of new visualization instance failed.', 'error');
                 });
             }
 
+            /**
+             * [public]
+             * Removes a chart card by id. Performs a HTTP-Delete request in order to keep
+             * the view persistent.
+             *
+             * @param instanceId The id of the visualization card instance which should be removed.
+             */
             function deleteChartCard(instanceId) {
                 ComponentService.deleteActiveVisualization(vm.component.id, instanceId).then(function (data) {
                     // Find the chart to remove by instance id
@@ -652,16 +662,7 @@ app.controller('ComponentDetailsController',
                 }, function (errData) {
                     NotificationService.notify('Chart could not be removed.', 'error');
                 });
-
-
             }
-
-
-            //vm.jsonPath = "$";
-            vm.lastModalId = 0;
-            //vm.doublePathList = vm.component.operator.dataModel.possibleVisMappings[0].mappingPerVisualizationField[0].jsonPathPerVisualizationField.value;
-            //vm.jsonPathInput = "$";
-
 
             /**
              * Called, when the create button in the chart settings modal is triggered.
@@ -669,7 +670,7 @@ app.controller('ComponentDetailsController',
              */
             function updateJsonPath(visToUpdate) {
 
-               // visToUpdate.visFieldToPathMapping = "default";
+                // visToUpdate.visFieldToPathMapping = "default";
 
                 // Perform put request to update the chart components
                 ComponentService.addNewActiveVisualization(vm.component.id, {
@@ -677,9 +678,9 @@ app.controller('ComponentDetailsController',
                     visId: visToUpdate.visId,
                     fieldCollectionId: visToUpdate.fieldCollectionIdInput,
                     visFieldToPathMapping: JSON.parse(JSON.stringify(visToUpdate.visFieldToPathMappingInput))
-                        /*{
-                        value: visToUpdate.jsonPathInput
-                    }*/
+                    /*{
+                    value: visToUpdate.jsonPathInput
+                }*/
                 }).then(function (data) {
                     // Request succeeded --> notify the user
                     visToUpdate.fieldCollectionId = visToUpdate.fieldCollectionIdInput;
@@ -723,6 +724,26 @@ app.controller('ComponentDetailsController',
 
             addInputBoxForJsonPathWithArraysForRetrievingASingleValue("", "['tes'][#4#]['test'][#5#]");
 
+            /*
+            var mymap = L.map('mapid').setView([51.505, -0.09], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(mymap);
+
+            L.marker([51.5, -0.09]).addTo(mymap)
+                .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
+                .openPopup();
+
+            L.marker([50.5, -0.09]).addTo(mymap)
+                .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
+                .openPopup();
+
+            L.marker([490.5, -0.09]).addTo(mymap)
+                .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
+                .openPopup();
+            */
+
             function addInputBoxForJsonPathWithArraysForRetrievingASingleValue(domPathStr, jsonPathStr) {
 
                 var regex = /#(.*?)#/g;
@@ -752,7 +773,7 @@ app.controller('ComponentDetailsController',
                 deleteValueLogs: deleteValueLogs,
                 updateJsonPath: updateJsonPath,
                 onCreateNewVisualizationClicked: onCreateNewVisualizationClicked,
-                deleteChartCard: deleteChartCard
+                deleteChartCard: deleteChartCard,
             });
         }]
 );

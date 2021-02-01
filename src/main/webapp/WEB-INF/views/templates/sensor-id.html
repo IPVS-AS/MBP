@@ -291,6 +291,8 @@
     <div class="row clearfix">
         <div class="col-lg-12">
             <div class="card">
+
+
                 <div class="header">
                     <ul class="nav nav-tabs tab-nav-right" role="tablist">
                         <li role="presentation" ng-show="componentDetailsCtrl.deploymentState==='RUNNING'">
@@ -329,28 +331,64 @@
                     <div class="tab-content">
                         <div class="tab-pane fade in active live-chart-card" id="live-chart-card-{{visItem.instanceId}}"
                              ng-show="componentDetailsCtrl.deploymentState=='RUNNING'">
-                            <live-chart loading-start="componentDetailsCtrl.liveChart.loadingStart(visItem.instanceId)"
+
+                            <!-- doubleVis Live chart -->
+                            <div ng-if="visItem.visId === 'doubleVis'">
+                                <live-chart
+                                        loading-start="componentDetailsCtrl.liveChart.loadingStart(visItem.instanceId)"
                                         loading-finish="componentDetailsCtrl.liveChart.loadingFinish(visItem.instanceId)"
                                         get-data="componentDetailsCtrl.liveChart.getData(numberLogs, descending, unit)"
                                         is-updateable="componentDetailsCtrl.liveChart.isUpdateable()"
                                         unit="{{componentDetailsCtrl.displayUnit}}"
                                         json-path="{{visItem.visFieldToPathMapping}}"
-                                        fieldCollectionId="{{visItem.fieldCollectionId}}">
-                            </live-chart>
+                                        field-collection-id="{{visItem.fieldCollectionId}}">
+                                </live-chart>
+                            </div>
+                            <!-- geoMap Live chart -->
+                            <div ng-if="visItem.visId === 'geoMap'">
+                                <live-geo-map-chart
+                                        loading-start="componentDetailsCtrl.liveChart.loadingStart(visItem.instanceId)"
+                                        loading-finish="componentDetailsCtrl.liveChart.loadingFinish(visItem.instanceId)"
+                                        get-data="componentDetailsCtrl.liveChart.getData(numberLogs, descending, unit)"
+                                        is-updateable="componentDetailsCtrl.liveChart.isUpdateable()"
+                                        unit="{{componentDetailsCtrl.displayUnit}}"
+                                        json-path="{{visItem.visFieldToPathMapping}}"
+                                        field-collection-id="{{visItem.fieldCollectionId}}">
+                                </live-geo-map-chart>
+                            </div>
                         </div>
                         <div class="tab-pane fade in active historical-chart-card"
                              id="historical-chart-card-{{visItem.instanceId}}">
-                            <historical-chart api="historicalChartApi"
-                                              loading-start="componentDetailsCtrl.historicalChart.loadingStart(visItem.instanceId)"
-                                              loading-finish="componentDetailsCtrl.historicalChart.loadingFinish(visItem.instanceId)"
-                                              get-data="componentDetailsCtrl.historicalChart.getData(numberLogs, descending, unit)"
-                                              unit="{{componentDetailsCtrl.displayUnit}}"
-                                              json-path="{{visItem.visFieldToPathMapping}}"
-                                              fieldCollectionId="{{visItem.fieldCollectionId}}">
-                            </historical-chart>
+
+                            <!-- doubleVis historical chart -->
+                            <div ng-if="visItem.visId === 'doubleVis'">
+                                <historical-chart
+                                        api="$parent.historicalChartApi"
+                                        loading-start="componentDetailsCtrl.historicalChart.loadingStart(visItem.instanceId)"
+                                        loading-finish="componentDetailsCtrl.historicalChart.loadingFinish(visItem.instanceId)"
+                                        get-data="componentDetailsCtrl.historicalChart.getData(numberLogs, descending, unit)"
+                                        unit="{{componentDetailsCtrl.displayUnit}}"
+                                        json-path="{{visItem.visFieldToPathMapping}}"
+                                        field-collection-id="{{visItem.fieldCollectionId}}">
+                                </historical-chart>
+                            </div>
+                            <!-- geoMap historical chart -->
+                            <div ng-if="visItem.visId === 'geoMap'">
+                                <historical-geo-map-chart
+                                        api="$parent.historicalChartApi"
+                                        loading-start="componentDetailsCtrl.historicalChart.loadingStart(visItem.instanceId)"
+                                        loading-finish="componentDetailsCtrl.historicalChart.loadingFinish(visItem.instanceId)"
+                                        get-data="componentDetailsCtrl.historicalChart.getData(numberLogs, descending, unit)"
+                                        unit="{{componentDetailsCtrl.displayUnit}}"
+                                        json-path="{{visItem.visFieldToPathMapping}}"
+                                        field-collection-id="{{visItem.fieldCollectionId}}">
+                                </historical-geo-map-chart>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+
             </div>
         </div>
     </div>
@@ -392,7 +430,7 @@
                                             <input class="form-control" type="text"
                                                    placeholder="JsonPath"
                                                    ng-model="visItem.visFieldToPathMappingInput.value"
-                                                   ng-click="{{visItem.fieldCollectionIdInput = 'default'}}"
+                                                   ng-focus="visItem.fieldCollectionIdInput = 'default'"
                                                    list="jsonPathSuggestions-doubleVal-default-{{visItem.instanceId}}"/>
                                             <datalist id="jsonPathSuggestions-doubleVal-default-{{visItem.instanceId}}">
                                                 <option ng-repeat="pathItem in visItem.getJsonPathsByFieldCollectionName('default').value"
@@ -425,10 +463,60 @@
                                             <input class="form-control" type="text"
                                                    placeholder="JsonPath"
                                                    ng-model="visItem.visFieldToPathMappingInput.arrVal"
-                                                   ng-change="{{visItem.fieldCollectionIdInput = 'arrVal'}}"
+                                                   ng-focus="visItem.fieldCollectionIdInput = 'arrVal'"
                                                    list="jsonPathSuggestions-doubleVal-arrVal-{{visItem.instanceId}}"/>
                                             <datalist id="jsonPathSuggestions-doubleVal-arrVal-{{visItem.instanceId}}">
                                                 <option ng-repeat="pathItem in visItem.getJsonPathsByFieldCollectionName('arrVal').arrVal"
+                                                        value="{{pathItem.path}}">{{pathItem.path}}
+                                                    [{{pathItem.unit ? pathItem.unit :
+                                                            "None"}}]
+                                                </option>
+                                            </datalist>
+                                        </div>
+                                        <span class="help-block"
+                                              ng-show="addDeviceTypeCtrl.item.errors.name">{{addDeviceTypeCtrl.item.errors.name}}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- GeoMap case -->
+                            <div ng-if="visItem.visId === 'geoMap'">
+
+                                <div ng-if="visItem.hasVisualizationOptionFieldCollectionWithName('default')">
+                                    <!-- "global" error for addItem -->
+                                    <div class="form-group"
+                                         ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.global}">
+			                    <span class="alert alert-danger" ng-show="addDeviceTypeCtrl.item.errors.global">
+			                      {{addDeviceTypeCtrl.item.errors.global}}
+			                    </span>
+                                    </div>
+                                    <!-- item.name group -->
+                                    <div class="form-group"
+                                         ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
+                                        <div class="form-line"
+                                             ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
+                                            <label>JsonPath to double latitude:</label>
+                                            <input class="form-control" type="text"
+                                                   placeholder="JsonPath"
+                                                   ng-model="visItem.visFieldToPathMappingInput.latitude"
+                                                   ng-focus="visItem.fieldCollectionIdInput = 'default'"
+                                                   list="jsonPathSuggestions-geoMap-defaultLtd-{{visItem.instanceId}}"/>
+                                            <datalist id="jsonPathSuggestions-geoMap-defaultLtd-{{visItem.instanceId}}">
+                                                <option ng-repeat="pathItem in visItem.getJsonPathsByFieldCollectionName('default').latitude"
+                                                        value="{{pathItem.path}}">{{pathItem.path}}
+                                                    [{{pathItem.unit ? pathItem.unit :
+                                                            "None"}}]
+                                                </option>
+                                            </datalist>
+
+                                            <label>JsonPath to double longitude:</label>
+                                            <input class="form-control" type="text"
+                                                   placeholder="JsonPath"
+                                                   ng-model="visItem.visFieldToPathMappingInput.longitude"
+                                                   ng-focus="visItem.fieldCollectionIdInput = 'default'"
+                                                   list="jsonPathSuggestions-geoMap-defaultLng-{{visItem.instanceId}}"/>
+                                            <datalist id="jsonPathSuggestions-geoMap-defaultLng-{{visItem.instanceId}}">
+                                                <option ng-repeat="pathItem in visItem.getJsonPathsByFieldCollectionName('default').longitude"
                                                         value="{{pathItem.path}}">{{pathItem.path}}
                                                     [{{pathItem.unit ? pathItem.unit :
                                                             "None"}}]
@@ -495,7 +583,8 @@
         </div>
     </div>
 </div>
-</div>
+
+<!--<div id="mapid" style="height: 400px;"></div> -->
 
 <!-- Visualization settings modal -->
 <!--<div class="modal fade" id="visSettings-doubleVal" role="dialog">-->

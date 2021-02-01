@@ -3,14 +3,12 @@
 'use strict';
 
 /**
- * Directive which creates a chart for displaying live values with a certain refresh time.
+ * Directive which creates a chart for displaying live gps values with a certain refresh time.
  * In addition, a fake progress bar is added to visualize the timespan between refreshments.
- *
- * @author Jan
  */
-app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interval) {
+app.directive('liveGeoMapChart', ['$timeout', '$interval', function ($timeout, $interval) {
     //Maximum number of elements that may be displayed in the chart
-    const CHART_MAX_ELEMENTS = 20;
+    const CHART_MAX_ELEMENTS = 1;
 
     //Interval with that the chart data is refreshed (seconds)
     const REFRESH_DELAY_SECONDS = 15;
@@ -28,6 +26,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
         var chartContainer = element.find('.chart-container').get(0);
         var chart = null;
         var chartInterval = null;
+        var markers = null;
 
         //Progress jQuery element
         var progressBar = element.find('.progress-bar');
@@ -37,58 +36,15 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
          * Initializes the chart.
          */
         function initChart() {
-            //Set required global library options
-            Highcharts.setOptions({
-                global: {
-                    useUTC: false
-                }
-            });
-
-            //Destroy chart if already existing
-            if (chart) {
-                chart.destroy();
+            //Create chart
+            if (chart != undefined) {
+                chart.remove();
             }
+            chart = new L.map(chartContainer).setView([48.74516, 9.10682], 5);
 
-            //Create new chart with certain options
-            chart = Highcharts.stockChart(chartContainer, {
-                title: {
-                    text: ''
-                },
-                rangeSelector: {
-                    enabled: false
-                },
-                xAxis: {
-                    type: 'datetime',
-                    labels: {
-                        format: '{value}'
-                    }
-                },
-                yAxis: {
-                    opposite: false
-                },
-                navigator: {
-                    xAxis: {
-                        type: 'datetime',
-                        labels: {
-                            format: '{value}'
-                        }
-                    }
-                },
-                series: [{
-                    name: 'Value',
-                    data: []
-                }],
-                tooltip: {
-                    valueDecimals: 2,
-                    valuePrefix: '',
-                    valueSuffix: ' ' + scope.unit
-                }
-            });
-
-            //Set y-axis unit
-            chart.yAxis[0].labelFormatter = function () {
-                return this.value + ' ' + scope.unit;
-            };
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(chart);
 
             //Data will be loaded
             scope.loadingStart();
@@ -100,11 +56,6 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
          * from the server and to update the chart accordingly.
          */
         function initChartUpdate() {
-            //Counts the number of retrieved logs for ensuring the log limit
-            var count = 0;
-
-            //Get series from the chart that is supposed to be updated
-            var series = chart.series;
 
             var lastDate = null;
 
@@ -138,35 +89,35 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
 
                     console.log("Start JsonPath retrieval");
                     // Retrieve double values from the values by using JsonPath
-                    values.forEach(applyJsonPath);
+                    values = values.map(applyJsonPath);
 
                     function applyJsonPath(value, index, array) {
+                        var newVal = [];
+                        console.log(jsonPathAsObj.latitude);
+                        console.log(jsonPathAsObj.longitude);
                         if (scope.fieldCollectionId === 'default') {
-                            array[index][1] = parseFloat(JSONPath.JSONPath({
-                                path: jsonPathAsObj.value,
-                                json: array[index][1]
-                            }).toString());
+                            console.log(value);
+                            // Push time
+                            newVal.push(value[0]);
+                            // Push coordinates
+                            newVal.push([
+                                parseFloat(JSONPath.JSONPath({
+                                    path: jsonPathAsObj.latitude,
+                                    json: value[1]
+                                }).toString()),
+                                parseFloat(JSONPath.JSONPath({
+                                    path: jsonPathAsObj.longitude,
+                                    json: value[1]
+                                }).toString())]);
                         } else {
-                            array[index][1] = JSONPath.JSONPath({
-                                path: jsonPathAsObj.arrVal,
-                                json: array[index][1]
-                            });
+                            // Alternative approach
                         }
+                        return newVal;
                     }
+                    console.log("LIVECHARTVALS");
+                    console.log(values);
 
                     console.log("End JsonPath retrieval");
-
-                    if (scope.fieldCollectionId != 'default') {
-                        // Add series if array visualization needs more series elements
-                        for (var i = series.length-1; i < values[0][1].length; i++) {
-                            chart.addSeries({
-                                name: 'Value' + i,
-                                data: [],
-                                showInNavigator: true
-                            });
-                            console.log("addChart");
-                        }
-                    }
 
                     /*
                      * The server requests returns a number of most recent logs; however, it is possible
@@ -175,61 +126,37 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                      * is used to remember the date of the most recent log displayed in the chart.
                      */
 
-                    var addArrayPointsToChart = function (valueIndex) {
-                        ++count;
-                        for (var j = 0; j < series.length; j++) {
-                            var newVal = [];
-                            newVal.push(values[valueIndex][0]);
-                            newVal.push(values[valueIndex][1][j])
-                            series[j].addPoint(newVal, true, (count >= CHART_MAX_ELEMENTS));
-                            //chart.xAxis.setExtremes();
+                    /**
+                     * Displays array of data in the following format:
+                     * values = [time, [latitude, longitude]]}
+                     * @param values
+                     */
+                    function displayData(values) {
+                        // Clear possibly already existing markers
+                        if (markers != null) {
+                            markers.clearLayers();
                         }
+
+                        var latLngArr = [];
+
+                        markers = L.layerGroup([]);
+
+                        for (var i = 0; i < values.length; i++) {
+                            var marker = L.marker([values[i][1][0], values[i][1][1]]);
+                            latLngArr.push([values[i][1][0], values[i][1][1]])
+                            marker.bindPopup("<b>" + values[i][0] + "</b><br> Lat=" + values[i][1][0] + "°<br>Long=" + values[i][1][1] + "°");
+
+                            // add marker
+                            markers.addLayer(marker);
+                        }
+                        chart.addLayer(markers);
+                        chart.fitBounds(new L.LatLngBounds(latLngArr), {
+                            maxZoom: 5
+                        });
                     }
 
-                    //Check if there is already data in the chart
-                    if (lastDate == null) {
-                        //No data in the chart, thus add all received value logs
-                        console.log("No data in chart: Start adding points.");
-                        for (var i = values.length - 1; i >= 0; i--) {
-                            if (scope.fieldCollectionId === 'default') {
-                                series[0].addPoint(values[i], true, (++count >= CHART_MAX_ELEMENTS));
-                            } else {
-                                addArrayPointsToChart(i);
-                            }
-                        }
-                        console.log("No data in chart: Finish adding points.");
-                    } else {
-                        /* There is already data in the chart, so iterate over all value logs but
-                         only take the ones from the array that occur before the log with lastDate */
-                        var insert = false;
-                        for (var i = values.length - 1; i >= 0; i--) {
-                            //Try to find the log with lastdate in the array
-                            if (values[i][0] === lastDate) {
-                                insert = true;
-                            } else if (insert) {
-                                //This is a log before the log with lastedate
-                                if (scope.fieldCollectionId === 'default') {
-                                    series[0].addPoint(values[i], true, (++count >= CHART_MAX_ELEMENTS));
-                                } else {
-                                    addArrayPointsToChart(i);
-                                }
-                            }
-                        }
-
-                        console.log("Data check of live chart compelted.");
-
-                        /* In case the log with lastDate could not be found, this means that all data is relevant
-                         and needs to be added to the chart */
-                        if (!insert) {
-                            for (var i = values.length - 1; i >= 0; i--) {
-                                if (scope.fieldCollectionId === 'default') {
-                                    series[0].addPoint(values[i], true, (++count >= CHART_MAX_ELEMENTS));
-                                } else {
-                                    addArrayPointsToChart(i);
-                                }
-                            }
-                        }
-                    }
+                    // Display data, as only the current live position is visualized no extra handlings are needed
+                    displayData(values);
 
                     console.log("Added points to chart");
                     //Update lastDate with the most recent log that was added to the chart
@@ -294,7 +221,6 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
              * by accepting the discard of some values
             */
             cancelChartUpdate();
-            initChart();
             initChartUpdate();
         });
 
@@ -303,7 +229,6 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
             return scope.fieldCollectionId;
         }, function (newValue, oldValue) {
             cancelChartUpdate();
-            initChart();
             initChartUpdate();
         });
 
@@ -321,7 +246,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
             '<span class="sr-only"></span>' +
             '</div>' +
             '</div>' +
-            '<div class="chart-container"></div>',
+            '<div class="chart-container" id="mapLiveId"' + 'style="height: 400px;"></div>',
         link: link,
         scope: {
             //The unit in which the values are supposed to be displayed

@@ -248,9 +248,10 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
             // For all visualization field collections
             for (VisualizationFields field : v.getFieldsToVisualize()) {
                 VisualizationMappings currMapping = new VisualizationMappings(field.getFieldName());
-                List<PathUnitPair> jsonPathsWithUnits = new ArrayList<>();
 
                 for (Map.Entry<String, DataModelTreeNode> visField : field.getFieldsToVisualize().entrySet()) {
+
+                    List<PathUnitPair> jsonPathsWithUnits = new ArrayList<>();
 
                     // Subtree search for getting all possible data model visualization mappings
                     List<DataModelTreeNode> foundSubtreeRoots = this.findSubtreeByTypes(visField.getValue()).getKey();

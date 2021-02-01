@@ -3,12 +3,10 @@
 'use strict';
 
 /**
- * Directive whreich creates a chart for displaying historical values. Control elements are provided with
+ * Directive whreich creates a chart for displaying historical gps values. Control elements are provided with
  * which the user has the possibility to select the data that he wants to display.
- *
- * @author Jan
  */
-app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $interval) {
+app.directive('historicalGeoMapChart', ['$timeout', '$interval', function ($timeout, $interval) {
     //Initial number of elements to display in the chart
     const CHART_INITIAL_ELEMENTS_NUMBER = 200;
 
@@ -28,6 +26,7 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
         //Chart objects
         var chartContainer = element.find('.chart-container').get(0);
         var chart = null;
+        var markers = null;
 
         //Slider objects
         var sliderContainer = element.find('.chart-slider');
@@ -45,24 +44,11 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
         function initChart() {
 
             //Create chart
-            chart = Highcharts.chart(chartContainer, {
-                title: {
-                    text: ''
-                },
-                chart: {
-                    zoomType: 'xy'
-                },
-                series: [{
-                    name: 'Value',
-                    data: [],
-                    showInLegend: true
-                }],
-                tooltip: {
-                    valueDecimals: 2,
-                    valuePrefix: '',
-                    valueSuffix: ' ' + scope.unit
-                },
-            });
+            chart = new L.map(chartContainer).setView([48.74516, 9.10682], 5);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(chart);
 
             //Initialize slider
             sliderContainer.ionRangeSlider({
@@ -108,6 +94,37 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
          * the update is finished, the loadingFinished function is called.
          */
         function updateChart() {
+
+            /**
+             * Displays array of data in the following format:
+             * values = [time, [latitude, longitude]]}
+             * @param values
+             */
+            function displayData(values) {
+                // Clear possibly already existing markers
+                if (markers != null) {
+                    markers.clearLayers();
+                }
+
+                var latLngArr = [];
+
+                markers = L.layerGroup([]);
+
+                for (var i = 0; i < values.length; i++) {
+                    var marker = L.marker([values[i][1][0], values[i][1][1]]);
+                    latLngArr.push([values[i][1][0], values[i][1][1]])
+                    marker.bindPopup("<b>" + values[i][0] + "</b><br> Lat=" + values[i][1][0] + "°<br>Long=" + values[i][1][1] + "°");
+                    marker.bindTooltip("" + i, {
+                        permanent: true,
+                        opacity: 0.7
+                    })
+                    // add marker
+                    markers.addLayer(marker);
+                }
+                chart.addLayer(markers);
+                chart.fitBounds(new L.LatLngBounds(latLngArr));
+            }
+
             //Ensure that the chart has already been initialized
             if (chart == null) {
                 console.error("The historical chart has not been initialized yet.");
@@ -117,11 +134,13 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             //Data will be loaded
             scope.loadingStart();
 
+            /*
             //Set y-axis and tooltip unit to currently displayed unit and redraw chart
             chart.yAxis[0].labelFormatter = function () {
                 return this.value + ' ' + scope.unit;
             };
             chart.series[0].tooltipOptions.valueSuffix = ' ' + scope.unit;
+            */
 
             //Retrieve a fixed number of value logs from the server
             scope.getData({
@@ -138,52 +157,37 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                 var jsonPathAsObj = JSON.parse(scope.jsonPath);
 
                 // Apply jsonPath on the values
-                values.forEach(applyJsonPath);
+                var valuesToVisualize = values.map(applyJsonPath);
 
                 function applyJsonPath(value, index, array) {
+                    var newVal = [];
+                    console.log(jsonPathAsObj.latitude);
+                    console.log(jsonPathAsObj.longitude);
                     if (scope.fieldCollectionId === 'default') {
-                        array[index][1] = parseFloat(JSONPath.JSONPath({
-                            path: jsonPathAsObj.value,
-                            json: array[index][1]
-                        }).toString());
+                        console.log(value);
+                        // Push time
+                        newVal.push(value[0]);
+                        // Push coordinates
+                        newVal.push([
+                            parseFloat(JSONPath.JSONPath({
+                                path: jsonPathAsObj.latitude,
+                                json: value[1]
+                            }).toString()),
+                            parseFloat(JSONPath.JSONPath({
+                                path: jsonPathAsObj.longitude,
+                                json: value[1]
+                            }).toString())]);
                     } else {
-                        array[index][1] = JSONPath.JSONPath({
-                            path: jsonPathAsObj.arrVal,
-                            json: array[index][1]
-                        });
+                        // Alternative approach
                     }
+                    return newVal;
                 }
 
                 if (scope.fieldCollectionId === 'default') {
                     //Update chart
-                    chart.series[0].update({
-                        data: values
-                    }, true); //True: Redraw chart
+                    displayData(valuesToVisualize);
                 } else {
-                    // Check if enough series are existing - if not add the missing ones
-
-                    var dataSeriesNumber = chart.series.length;
-                    var valueLengthNumber = values[0][1].length;
-
-                    // Add series if not enough are currently existing
-                    for (var i = dataSeriesNumber; i < valueLengthNumber; i++) {
-                        chart.addSeries({
-                            name: 'Value' + i,
-                            data: [],
-                            showInLegend: true
-                        });
-                    }
-
-                    for (var i = 0; i < chart.series.length; i++) {
-                        chart.series[i].update({
-                            data: values.map(function (currentVal, index) {
-                                var newVal = [];
-                                newVal.push(currentVal[0]);
-                                newVal.push(currentVal[1][i]);
-                                return newVal;
-                            })
-                        }, true);
-                    }
+                    // Alternative approach
                 }
                 //Loading finished
                 scope.loadingFinish();
@@ -204,7 +208,7 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
         }, function (newValue, oldValue) {
             //Update chart if jsonPath was changed
             console.log("JSONPATh updated");
-            initChart();
+            updateChart();
         });
 
         //Watch the fieldCollectionId parameter
@@ -215,7 +219,8 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             console.log(newValue);
             console.log(oldValue);
             console.log(scope.fieldCollectionId);
-            initChart();
+            //initChart();
+            updateChart();
         });
 
         //Initialize chart
@@ -226,7 +231,7 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
     return {
         restrict: 'E', //Elements only
         template:
-            '<div class="chart-container"></div>' +
+            '<div class="chart-container" id="mapid"' + 'style="height: 400px;"></div>' +
             '<br/>' +
             '<table>' +
             '<tr>' +

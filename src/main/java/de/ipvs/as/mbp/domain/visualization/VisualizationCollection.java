@@ -34,6 +34,14 @@ public class VisualizationCollection {
                         .addFieldsToVisualize(new VisualizationFields("default").addNewPrimitiveType("value", IoTDataTypes.DOUBLE))
                         .addFieldsToVisualize(new VisualizationFields("arrVal").addNewArray("arrVal", IoTDataTypes.DOUBLE))
         );
+
+        // Map
+        visIdMapping.put(
+                "geoMap",
+                new Visualization("geoMap")
+                        .addFieldsToVisualize(new VisualizationFields("default").addNewPrimitiveType("latitude", IoTDataTypes.DOUBLE)
+                                .addNewPrimitiveType("longitude", IoTDataTypes.DOUBLE))
+        );
     }
 
 }
