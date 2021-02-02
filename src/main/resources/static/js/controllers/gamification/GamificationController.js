@@ -186,6 +186,10 @@
 		if (p_addPoints) {
 			vm.GFUser.points = vm.GFUser.points + vm.selectedActivity.points;
 		}
+		else {
+			vm.GFUser.points = vm.GFUser.points - vm.selectedActivity.points;	
+		}
+		
 		var newSequence = vm.selectedActivity.sequence + 1;
 		vm.GFUser.progress = vm.selectedActivity.level + "(" + newSequence + ")";
 		GamificationUserService.updateGamificationUser(vm.GFUser)
@@ -205,28 +209,35 @@
 	function submitQuizAnswers() {
 		var questionCount = 0;
 		var correctQuestionCount = 0;
-		for (var i = 0; i < vm.selectedActivity.questions.length; i++) {
-			questionCount++;
-			var questionID = "#question_" + vm.selectedActivity.questions[i].id;  
-			$(questionID).find("input.form-check-input").each(function(){
-				if (this.checked && ($(this).attr("is_correct") == "true")) {
-					correctQuestionCount++;
-				}
-				
-				if ($(this).attr("is_correct") == "true") {
-					$(this).before('<span class="glyphicon glyphicon-ok text-success"></span>');
-				}
-			});
-		}
+		var activityType = vm.selectedActivity.type;
 		
-		var grade = Math.round((correctQuestionCount/questionCount)*100);
-		if (grade > vm.minimumGrade) {
-			alert("Congratulations! Your reached mark (" + grade + "%) was over the minimum of " + vm.minimumGrade + "%");
-			completeActivity(true);
+		if (activityType == "quiz") {
+			for (var i = 0; i < vm.selectedActivity.questions.length; i++) {
+				questionCount++;
+				var questionID = "#question_" + vm.selectedActivity.questions[i].id;  
+				$(questionID).find("input.form-check-input").each(function(){
+					if (this.checked && ($(this).attr("is_correct") == "true")) {
+						correctQuestionCount++;
+					}
+					
+					if ($(this).attr("is_correct") == "true") {
+						$(this).before('<span class="glyphicon glyphicon-ok text-success"></span>');
+					}
+				});
+			}
+			
+			var grade = Math.round((correctQuestionCount/questionCount)*100);
+			if (grade > vm.minimumGrade) {
+				alert("Congratulations! Your reached mark (" + grade + "%) was over the minimum of " + vm.minimumGrade + "%");
+				completeActivity(true);
+			}
+			else {
+				alert("Oops! Your reached mark (" + grade + ") was below the minimum of " + vm.minimumGrade);
+				completeActivity(false);
+			}
 		}
 		else {
-			alert("Oops! Your reached mark (" + grade + ") was below the minimum of " + vm.minimumGrade);
-			completeActivity(false);
+			completeActivity(true);
 		}
 		
 		vm.selectedActivity.status = "done";		

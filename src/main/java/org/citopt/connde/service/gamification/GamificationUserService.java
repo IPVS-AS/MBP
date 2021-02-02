@@ -49,11 +49,6 @@ public class GamificationUserService {
   	    gamificationUserRepository.save(newGFUser);
   	    return newGFUser;
     }
-
-    public GamificationUser TEST_createGamificationUser() {
-    	GamificationUser newGFU = this.createGamificationUser(userRepository.findOne("5f6c9aceae2300244495305c"), 666, "advanced");
-    	return newGFU;
-    }
     
     public Optional<GamificationUser> getGamificationUserOfCurrentLoggedUser() {
     	//Get current user

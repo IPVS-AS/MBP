@@ -25,6 +25,8 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- LEVEL -->
        		<div class="col-lg-2 col-md-2 col-sm-3 col-xs-12 GF_flexCol">
          		<div class="card">
                     <div class="body GF_cardbody">
@@ -57,6 +59,7 @@
             </div>
     	</div>
     	
+    	<!-- GAMIFICATION QUESTS -->
     	<div class="row clearfix" ng-repeat="gamificationLevel in vm.levels">
     		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 		    	<!-- Gamification Level Card -->
@@ -86,7 +89,7 @@
 			                                    <span class="label label-success">Done</span>
 			                                </div>
 			                                <div ng-switch-default>
-			                                    <span class="label label-default">Open</span>
+			                                    <span class="label label-default">Pending</span>
 			                                </div>
 			                            </h2>
 			                        </td>
@@ -241,7 +244,7 @@
 	                <div class="modal-footer">
 	                    <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
 	                        Close
-	                    </button>
+	                    </button>                                      
 	                    <button type="submit" class="btn btn-primary" ng-disabled="vm.selectedActivity.status == 'done'">
 	                        Submit Answers!
 	                    </button>

@@ -78,16 +78,6 @@ public class RestGamificationUserController {
         }
     }
     
-    @PostMapping("/TEST_createGamificationUser")
-    @ApiOperation(value = "Tests the creation a new gamification user entity", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 400, message = "Username already has a gamification user")})
-    public ResponseEntity<?> TEST_createGamificationUser() throws URISyntaxException {
-        GamificationUser newGFUser = gamificationUserService.TEST_createGamificationUser();
-        return ResponseEntity.created(new URI("/api/gamificationUsers/" + newGFUser.getUser().getUsername()))
-                .headers(HeaderUtil.createAlert("Gamification User registered successfully", newGFUser.getUser().getUsername()))
-                .body(newGFUser);
-    }
-    
     /**
      * GET /gamificationUser : get the gamification user object of current logged user.
      *
