@@ -69,35 +69,39 @@ app.controller('DeviceListController',
 
                 //Ask the server for all components that use this device
                 return DeviceService.getUsingComponents(data.id).then(function (result) {
-                    let affectedWarning = "";
-
-                    //If list is not empty, create a message that contains the names of all affected components
+                    //Check if list is empty
                     if (result.length > 0) {
-                        affectedWarning = "<br/><br/><strong>The following components are currently " +
-                            "using this device and will be deleted as well:</strong><br/>";
+                        //Not empty, entity cannot be deleted
+                        let errorText = "The device <strong>" + deviceName + "</strong> is still used by the " +
+                            "following components and thus cannot be deleted:<br/><br/>";
 
+                        //Iterate over all affected entities
                         for (let i = 0; i < result.length; i++) {
-                            affectedWarning += "- ";
-                            affectedWarning += result[i].name;
-                            affectedWarning += " (" + result[i].component + ")";
-                            affectedWarning += "<br/>";
+                            errorText += "- " + result[i].name + " (" + result[i].component + ")<br/>";
                         }
+
+                        // Show error message
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Deletion impossible',
+                            html: errorText
+                        })
+
+                        // Return new promise as result
+                        return Promise.resolve({value: false});
                     }
 
-                    //Show the alert to the user and return the resulting promise
+                    //Show confirm prompt to the user and return the resulting promise
                     return Swal.fire({
                         title: 'Delete device',
-                        type: 'warning',
-                        html: "Are you sure you want to delete the device \"" +
-                            deviceName + "\"?" + affectedWarning,
+                        icon: 'warning',
+                        html: "Are you sure you want to delete the device \"<strong>" + deviceName + "</strong>\"?",
                         showCancelButton: true,
                         confirmButtonText: 'Delete',
                         confirmButtonClass: 'bg-red',
                         focusConfirm: false,
                         cancelButtonText: 'Cancel'
                     });
-                }, function (response) {
-                    NotificationService.notify("Could not retrieve affected components.", "error");
                 });
             }
 

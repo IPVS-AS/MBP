@@ -138,12 +138,15 @@ app.controller('TestingController',
                 // go through every registered device and search for the test device
                 HttpService.getAll('devices').then(function (deviceList) {
                     $scope.device = "NOT_REGISTERED";
+
                     angular.forEach(deviceList, function (device) {
 
                         if (device.name === TESTING_DEVICE) {
                             $scope.device = "REGISTERED";
-                        } else{
+
+                        } else {
                             $scope.device = "NOT_REGISTERED";
+
                         }
                     })
                 });
@@ -158,15 +161,18 @@ app.controller('TestingController',
                 // go through every registered adapter and search for the test rerun adapter
                 HttpService.getAll('operators').then(function (adaptersList) {
                     $scope.rerunOperator = "NOT_REGISTERED";
+
                     angular.forEach(adaptersList, function (adapters) {
 
                         if (adapters.name === RERUN_OPERATOR) {
                             $scope.rerunOperator = "REGISTERED";
-                        } else{
+
+                        } else {
 
                             $scope.rerunOperator = "NOT_REGISTERED";
                         }
                     })
+
                 });
             }
 
@@ -215,7 +221,7 @@ app.controller('TestingController',
                     angular.forEach(actuatorList, function (actuator) {
                         if (actuator.name === TESTING_ACTUATOR) {
                             $scope.testingActuator = "REGISTERED";
-                        }else{
+                        } else {
                             $scope.testingActuator = "NOT_REGISTERED";
                         }
                     });
@@ -237,6 +243,7 @@ app.controller('TestingController',
                     //Notify the user
                     NotificationService.notify('Error during creation of the Testing Actuator.', 'error')
                     checkActuatorReg();
+
 
                 });
 
@@ -294,9 +301,6 @@ app.controller('TestingController',
                 );
             }
 
-
-
-
             /**
              * [Private]
              *
@@ -312,7 +316,7 @@ app.controller('TestingController',
                         }
                     });
 
-                    if(sensor.name.includes("RERUN_")){
+                    if (sensor.name.includes("RERUN_")) {
                         realSensor = false;
                     }
 
@@ -330,14 +334,20 @@ app.controller('TestingController',
              * Register the one dimensional Sensor-Simulator for the Test of IoT-Applications.
              */
             function registerOneDimSensor(sensor) {
-                TestService.registerOneDimSensor(sensor).success(function (response) {
+                TestService.registerOneDimSensor(sensor).success(function () {
                     //Notify the user
                     NotificationService.notify('Entity successfully created.', 'success')
                     checkSensorReg(sensor);
-                }).catch(function onError() {
+                }, function () {
                     //Notify the user
                     NotificationService.notify('Error during creation of the Sensor Simulator.', 'error')
+                    checkSensorReg(sensor);
                 });
+                checkSensorReg(sensor);
+
+
+
+
             }
 
             /**
@@ -495,7 +505,8 @@ app.controller('TestingController',
                             let parameterValuesReal = vm.parameterVal;
 
 
-                            const newTestObject = TestService.getTestData(vm.selectedSensors, selectedSensorsReal, parameterValuesReal, vm.config, vm.rules, ruleList,vm.executeRules, data);
+                            const newTestObject = TestService.getTestData(vm.selectedSensors, selectedSensorsReal, parameterValuesReal, vm.config, vm.rules, ruleList, vm.executeRules, data);
+
 
                             return addTest(newTestObject);
 
@@ -560,5 +571,5 @@ app.controller('TestingController',
 
         }
 
-    ])
-;
+    ]);
+

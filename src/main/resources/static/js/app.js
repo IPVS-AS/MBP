@@ -518,7 +518,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         return angular.bind(this, HttpService.addOne, 'test-details');
                     }],
                     ruleList: ['HttpService', function (HttpService) {
-                        return HttpService.getAll('rules');
+                            return HttpService.getAll('rules');
                     }],
                     sensorList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('sensors');

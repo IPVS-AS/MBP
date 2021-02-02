@@ -563,8 +563,9 @@
                                                ng-model="ctrl.config.latitudeGPSPl"> <br> <br>
                                         <input type="text" name="gpsLat" placeholder="Longitude"
                                                ng-model="ctrl.config.longitudeGPSPl"> <br><br>
+
                                         <input type="text" name="gpsHeight" placeholder="Height"
-                                               ng-model="ctrl.config.heightGPSPl">
+                                        ng-model="ctrl.config.heightGPSPl">
                                     </div>
                                     <div class="form-line">
                                         <h4> Enter the radius at which a reaction should take place:* </h4>
@@ -657,7 +658,6 @@
                                             </tr>
                                             </tbody>
                                         </table>
-
                                     </div>
                                 </div>
                                 <div ng-if="ctrl.selectedSensors.includes('TestingAccelerationSensorPl')">
@@ -1076,6 +1076,24 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    <div ng-switch-when="NOT_REGISTERED">
+                                                        <span class="label label-danger">Not Registered</span>
+                                                    </div>
+                                                    <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
+                                                        <form>
+                                                            <button type="submit"
+                                                                    class="btn bg-blue m-t-0 waves-effect"
+                                                                    ng-click="ctrl.registerTestingActuator()">
+                                                                Register
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                    <div ng-switch-when="REGISTERED">
+                                                        <span class="label label-success">Registered</span>
+                                                    </div>
+                                                    <div ng-switch-default>
+                                                        <span class="label label-default">Unknown</span>
+                                                    </div>
                                                 </div>
                                                 <div ng-switch-when="NOT_REGISTERED">
                                                     <span class="label label-danger">Not Registered</span>
@@ -1145,7 +1163,6 @@
                                                             Register
                                                         </button>
                                                     </form>
-
                                                 </div>
                                                 <div ng-switch-when="REGISTERED">
                                                     <span class="label label-success">Registered</span>
@@ -1188,7 +1205,6 @@
                                                             Register
                                                         </button>
                                                     </form>
-
                                                 </div>
                                                 <div ng-switch-when="REGISTERED">
                                                     <span class="label label-success">Registered</span>
@@ -1229,7 +1245,6 @@
                                                             Register
                                                         </button>
                                                     </form>
-
                                                 </div>
                                                 <div ng-switch-when="REGISTERED">
                                                     <span class="label label-success">Registered</span>
@@ -1272,7 +1287,6 @@
                                                             Register
                                                         </button>
                                                     </form>
-
                                                 </div>
                                                 <div ng-switch-when="REGISTERED">
                                                     <span class="label label-success">Registered</span>
@@ -1404,7 +1418,6 @@
                                                             Register
                                                         </button>
                                                     </form>
-
                                                 </div>
                                                 <div ng-switch-when="REGISTERED">
                                                     <span class="label label-success">Registered</span>
@@ -1449,7 +1462,6 @@
                                                             Register
                                                         </button>
                                                     </form>
-
                                                 </div>
                                                 <div ng-switch-when="REGISTERED">
                                                     <span class="label label-success">Registered</span>
@@ -1464,14 +1476,17 @@
                                     </tr>
                                     </tbody>
                                 </table>
-                            </div>
+
                         </div>
-                    </fieldset>
-                </form>
             </div>
+            </fieldset>
+            </form>
         </div>
 
     </div>
 
-    <!-- #END# Modal -->
 </div>
+
+<!-- #END# Modal -->
+</div>
+

@@ -80,13 +80,12 @@ app.controller('SensorListController',
                     if (result.length > 0) {
 
                         affectedWarning = "<br/><br/>The following Tests are currently " +
-                            "using this sensor and <strong>will be deleted as well</strong>:<br/>";
+                            "<strong> using this sensor </strong>:<br/>";
 
                         //Iterate over all affected components
                         for (var i = 0; i < result.length; i++) {
                             affectedWarning += "- ";
                             affectedWarning += result[i].name;
-                            affectedWarning += " (" + result[i].component + ")";
                             affectedWarning += "<br/>";
                         }
                     }

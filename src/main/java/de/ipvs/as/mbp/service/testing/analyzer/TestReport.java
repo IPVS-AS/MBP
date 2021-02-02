@@ -1,6 +1,5 @@
 package de.ipvs.as.mbp.service.testing.analyzer;
 
-
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;

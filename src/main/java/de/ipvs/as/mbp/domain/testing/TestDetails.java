@@ -400,6 +400,7 @@ public class TestDetails extends UserEntity {
         this.useNewData = useNewData;
     }
 
+
     /**
      * Returns a list with the names of the rules of the application to be tested.
      *
@@ -418,3 +419,4 @@ public class TestDetails extends UserEntity {
         this.ruleNames = ruleNames;
     }
 }
+

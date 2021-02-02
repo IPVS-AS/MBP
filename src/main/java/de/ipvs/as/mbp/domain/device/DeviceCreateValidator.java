@@ -52,7 +52,7 @@ public class DeviceCreateValidator implements ICreateValidator<Device> {
         }
 
         //Check whether key or password have been provided
-        if ((!entity.hasRSAKey()) && (!entity.hasPassword()) || Validation.isNullOrEmpty(entity.getPassword())) {
+        if ((!entity.hasRSAKey()) && ((!entity.hasPassword()) || Validation.isNullOrEmpty(entity.getPassword()))) {
             exception.addInvalidField("password", "Either a RSA key or a password must be provided.");
         }
 

@@ -62,7 +62,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      * @param valueLogReceiver The value log receiver instance to use
      */
     @Autowired
-    private TestAnalyzer(ValueLogReceiver valueLogReceiver ) throws IOException {
+    private TestAnalyzer(ValueLogReceiver valueLogReceiver) throws IOException {
         propertiesService = new PropertiesService();
         RERUN_IDENTIFIER = propertiesService.getPropertiesString("testingTool.RerunIdentifier");
         valueLogReceiver.registerObserver(this);
@@ -92,7 +92,6 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
     }
 
 
-
     /**
      * Stores all Values from the active Tests
      *
@@ -100,7 +99,6 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      */
     @Override
     public void onValueReceived(ValueLog valueLog) {
-
         if (!testExecutor.getActiveTests().containsKey(valueLog.getIdref())) {
             return;
         }
@@ -125,7 +123,8 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
         boolean response = false;
         for (Sensor sensor : testingSensors) {
             boolean sensorRunning = deploymentWrapper.isComponentRunning(sensor);
-            if(sensorRunning == true){
+
+            if (sensorRunning == true) {
                 response = true;
             }
 
@@ -324,4 +323,6 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
     }
 
 
+
 }
+

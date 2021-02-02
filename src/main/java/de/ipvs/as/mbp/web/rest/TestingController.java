@@ -15,7 +15,7 @@ import java.util.List;
 
 import java.io.IOException;
 
-import javolution.io.Struct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
@@ -28,8 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-
-
+import javax.json.JsonObject;
 
 
 @RestController
@@ -59,15 +58,15 @@ public class TestingController {
      * @return list of the simulated values
      */
     @PostMapping(value = "/test-details/test/{testId}")
-    public ResponseEntity executeTest(@PathVariable(value = "testId") String testId) {
+    public ResponseEntity<Boolean> executeTest(@PathVariable(value = "testId") String testId) {
         TestDetails testDetails = testDetailsRepository.findById(testId).get();
         try {
             // Start the test and get Map of sensor values
             testExecutor.executeTest(testDetails);
         } catch (Exception e) {
-            return new ResponseEntity<>("An Error occurred during the test", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
-        return new ResponseEntity<>("Test was completed successfully.", HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(true);
     }
 
 
@@ -78,14 +77,13 @@ public class TestingController {
      * @return if stopping the sensors was successful
      */
     @PostMapping(value = "/test-details/test/stop/{testId}")
-    public ResponseEntity<String> stopTest(@PathVariable(value = "testId") String testId) {
+    public ResponseEntity<Boolean> stopTest(@PathVariable(value = "testId") String testId) {
         try {
             testExecutor.stopTest(testId);
         } catch (Exception e) {
-            return new ResponseEntity<>("An Error occurred during stopping the test.", HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
-
-        return new ResponseEntity<>("Test was stopped successfully.", HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).body(true);
     }
 
 
@@ -103,7 +101,7 @@ public class TestingController {
             // Add or deletes Rerun Components for the specific test
             testRerunService.editRerunComponents(testDetails);
             responseEntity = new ResponseEntity(HttpStatus.OK);
-        }catch (Exception e) {
+        } catch (Exception e) {
             responseEntity = new ResponseEntity(HttpStatus.NOT_FOUND);
         }
 
@@ -180,8 +178,6 @@ public class TestingController {
     }
 
 
-
-
     /**
      * Changes the value "UseNewData", changed with the switch button, in the database.
      *
@@ -200,8 +196,9 @@ public class TestingController {
      * @return if the updated worked or not
      */
     @RequestMapping(value = "/test-details/updateTest/{testId}", method = RequestMethod.POST)
-    public HttpEntity<Object> updateTest(@PathVariable(value = "testId") String testId, @RequestBody String updateInformation) {
+    public ResponseEntity<Boolean> updateTest(@PathVariable(value = "testId") String testId, @RequestBody String updateInformation) {
         return testEngine.editTestConfig(testId, updateInformation);
+
     }
 
     /**
@@ -233,19 +230,6 @@ public class TestingController {
     public ResponseEntity registerSensorSimulator(@RequestBody String sensorName) {
         return testEngine.registerSensorSimulator(sensorName);
     }
-
-
-    /**
-     * Register a three dimensional sensor simulator used for testing purposes.
-     *
-     * @return response entity if the registration was successful or not
-     */
-    @PostMapping(value = "/test-details/registerThreeDimSensorSimulator")
-    public ResponseEntity registerThreeDimSensorSimulator(@RequestBody String sensorName) {
-        testEngine.registerThreeDimSensorSimulator(sensorName);
-        return new ResponseEntity<>("needs to be implemented", HttpStatus.OK);
-    }
-
 
     /**
      * Opens the selected Test-Report from the Testlist

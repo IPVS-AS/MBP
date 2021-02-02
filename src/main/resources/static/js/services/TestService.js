@@ -38,11 +38,10 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
         /**
          * [Public]
          *
-         * Performs a server request in order to execute a test given by its id.
-         * @param testId The id of the test to be executed
-         * @returns {*}
+         * Performs a server request in order to start the current test (in case it has been stopped before).
+         * @param testId The id of the test to be started
          */
-        function executeTest(testId) {
+        function startTest(testId){
             return HttpService.postRequest(URL_TEST_START + testId);
         }
 
@@ -70,6 +69,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
                 let pdfDetails = [];
                 if (Object.keys(response).length > 0) {
                     angular.forEach(response, function (value, key) {
+
                         pdfDetails.push({
                             "date": key,
                             "path": value
@@ -79,6 +79,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
                     return pdfList.pdfTable;
                 } else {
                     return document.getElementById("pdfTable").innerHTML = "There is no Test Report for this Test yet.";
+
                 }
             });
         }
@@ -93,6 +94,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          */
         function pdfExists(testId) {
             return HttpService.getRequest(URL_REPORT_EXISTS + testId)
+
         }
 
 
@@ -181,6 +183,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * @param testDetails
          */
         function updateTest(testId, testDetails) {
+            console.log(testDetails);
             return HttpService.postRequest(URL_UPDATE_TEST + testId, testDetails);
         }
 
@@ -237,8 +240,11 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          */
         function getRuleNames(rules, ruleList) {
             let ruleNames = [];
+            console.log(ruleList)
+            console.log(rules)
             angular.forEach(rules, function (rule) {
                angular.forEach(ruleList, function (ruleInList) {
+                   console.log(ruleInList);
                     if(ruleInList._links.self.href === rule ){
                         ruleNames.push(ruleInList.name);
                     }
@@ -248,6 +254,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
 
 
         }
+
 
         /**
          * [Public]
@@ -274,6 +281,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             newTestObject.config = [];
             newTestObject.type = [];
             newTestObject.ruleNames = ruleNames;
+
             let parameterValues = [];
 
             // random values Angle and Axis for the GPS-Sensor
@@ -289,6 +297,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             try {
 
                 if (!angular.isUndefined(realSensors)) {
+
                     checkRealSensor = true;
                     if (!angular.isUndefined(realParameterValues)) {
                         for (let x = 0; x < realSensors.length; x++) {
@@ -305,6 +314,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
                                         "value": realSensors[i].name
                                     });
                                     const requiredParams = realSensors[i].operator.parameters;
+
 
 
                                     //Iterate over all parameters
@@ -892,7 +902,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
 
         //Expose public methods
         return {
-            executeTest: executeTest,
+            startTest: startTest,
             stopTest: stopTest,
             getPDFList: getPDFList,
             editConfig: editConfig,
@@ -906,6 +916,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             getRuleListTest: getRuleListTest,
             updateTest: updateTest,
             deleteTestReport: deleteTestReport
+
         }
     }
 ]);

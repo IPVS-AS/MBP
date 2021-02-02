@@ -110,7 +110,10 @@ app.controller('TestingDetailsController',
             function checkSimulator(type) {
                 return SIMULATOR_LIST.some(function (sensorType) {
                     return type === sensorType;
+
                 });
+
+
             }
 
             /**
@@ -202,7 +205,7 @@ app.controller('TestingDetailsController',
              * Creates a server request to delete a certain Test Report for the specific Test
              */
             function deletePDF(pdfPath) {
-                TestService.deleteTestReport(COMPONENT_ID,pdfPath.toString()).then(function (response) {
+                TestService.deleteTestReport(COMPONENT_ID, pdfPath.toString()).then(function (response) {
                     $scope.pdfTable = response;
                 });
             }
@@ -256,7 +259,7 @@ app.controller('TestingDetailsController',
                 }
 
                 // Server Request with the updated test information in the request body
-                TestService.updateTest(COMPONENT_ID, JSON.stringify(testingDetails)).success(function successCallback() {
+                TestService.updateTest(COMPONENT_ID, testingDetails).then(function successCallback() {
                     //Close modal on success
                     $("#editTestModal").modal('toggle');
                     getConfig();
@@ -280,8 +283,7 @@ app.controller('TestingDetailsController',
                     NotificationService.notify('A decision must be made.', 'error')
                 }
 
-
-                vm.newTestObject = TestService.getTestData(testingDetails.type, vm.selectedRealSensor, vm.parameterVal, $rootScope.config, $rootScope.selectedRules.rules, vm.executeRules);
+                vm.newTestObject = TestService.getTestData(testingDetails.type, vm.selectedRealSensor, vm.parameterVal, $rootScope.config, $rootScope.selectedRules.rules, ruleList, vm.executeRules);
             }
 
             /**
@@ -737,3 +739,4 @@ app.controller('TestingDetailsController',
         }
 
     ]);
+

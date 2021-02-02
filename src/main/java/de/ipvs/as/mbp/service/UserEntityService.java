@@ -11,6 +11,7 @@ import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.ACPolicyRepository;
 import de.ipvs.as.mbp.repository.UserEntityRepository;
 import de.ipvs.as.mbp.service.access_control.ACPolicyEvaluationService;
+import de.ipvs.as.mbp.service.event_handler.ICreateEventHandler;
 import de.ipvs.as.mbp.service.validation.ICreateValidator;
 import de.ipvs.as.mbp.service.validation.IDeleteValidator;
 import de.ipvs.as.mbp.util.C;
@@ -160,11 +161,25 @@ public class UserEntityService {
             }
         }
 
-        // Execute validation and throw exception if validation fails
+        //Execute validation and throw exception if validation fails
         validators.forEach(v -> v.validateCreatable(entity));
 
-        // Save (create) entity
-        return repository.save(entity);
+        //Save (create) entity
+        E createdEntity = repository.save(entity);
+
+        //Get creation event handlers if available
+        List<ICreateEventHandler<E>> createEventHandlers = new ArrayList<>();
+        for (MBPEntity annotation : annotations) {
+            for (Class<? extends ICreateEventHandler<?>> c : annotation.createEventHandler()) {
+                createEventHandlers.add((ICreateEventHandler<E>) DynamicBeanProvider.get(c));
+            }
+        }
+
+        //Call all found event handlers
+        createEventHandlers.forEach(v -> v.onCreate(entity));
+
+        //Return created entity
+        return createdEntity;
     }
 
     /**

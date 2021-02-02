@@ -1,12 +1,8 @@
 package de.ipvs.as.mbp.web.rest.event_handler;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import de.ipvs.as.mbp.domain.component.Sensor;
-import de.ipvs.as.mbp.domain.testing.TestDetails;
-import de.ipvs.as.mbp.repository.TestDetailsRepository;
 import de.ipvs.as.mbp.service.deploy.SSHDeployer;
 import de.ipvs.as.mbp.service.cep.trigger.CEPTriggerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +25,6 @@ public class SensorEventHandler {
     @Autowired
     private SSHDeployer sshDeployer;
 
-    @Autowired
-    private TestDetailsRepository testDetailsRepository;
 
     /**
      * Called in case a sensor was created. This method then takes care of registering a corresponding
@@ -52,15 +46,6 @@ public class SensorEventHandler {
     @HandleBeforeDelete
     public void beforeSensorDelete(Sensor sensor) throws IOException {
         sshDeployer.undeployIfRunning(sensor);
-
-        //  Delete Test if sensor is included
-        List<TestDetails> testDetailsList = testDetailsRepository.findAll();
-
-        for (TestDetails test : testDetailsList){
-            if(test.getSensor().contains(sensor)){
-                testDetailsRepository.delete(test);
-            }
-        }
 
     }
 

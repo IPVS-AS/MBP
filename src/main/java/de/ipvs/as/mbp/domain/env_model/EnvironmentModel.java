@@ -1,7 +1,10 @@
 package de.ipvs.as.mbp.domain.env_model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.ipvs.as.mbp.domain.access_control.ACAttributeValue;
+import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
+import io.swagger.annotations.ApiModel;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,13 +17,15 @@ import java.util.Map;
 /**
  * Document class for environment model entities, created by the environment modelling tool.
  */
-@Document
+@MBPEntity
+@ApiModel(description = "Model for environment models")
 public class EnvironmentModel extends UserEntity {
 
     @Id
     @GeneratedValue
     private String id;
 
+    @ACAttributeValue
     @NotNull
     @Indexed(unique = true)
     private String name;

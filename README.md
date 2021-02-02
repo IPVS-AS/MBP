@@ -10,7 +10,7 @@ MBP UI (based on [Bootstrap templates](https://startbootstrap.com/template-overv
 
 How to install and use the MBP is explained in the following.
 
-[1 Installation](https://github.com/IPVS-AS/MBP/wiki/Install---Step-by-Step)
+[1 Installation](https://github.com/IPVS-AS/MBP/wiki/Installation)
 
 [2 Quick Start](https://github.com/IPVS-AS/MBP/wiki/Quick-Start)
 

@@ -1,11 +1,11 @@
 package de.ipvs.as.mbp.service.testing.rerun;
 
+
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
-import de.ipvs.as.mbp.service.testing.rerun.TestRerunOperatorService;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.repository.*;
@@ -13,6 +13,7 @@ import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
 import de.ipvs.as.mbp.web.rest.event_handler.SensorEventHandler;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +23,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.*;
+
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,7 +44,6 @@ public class TestRerunService {
 
     @Autowired
     private RuleTriggerRepository ruleTriggerRepository;
-
 
     @Autowired
     private RuleRepository ruleRepository;
@@ -123,7 +124,6 @@ public class TestRerunService {
         testDetailsRepository.save(testDetails);
         return configList;
     }
-
 
 
     /**
@@ -219,6 +219,7 @@ public class TestRerunService {
                     sensorRepository.insert(newSensor);
                     sensorRepository.save(newSensor);
                     sensorEventHandler.afterSensorCreate(newSensor);
+
 
                 }
             }
@@ -361,3 +362,4 @@ public class TestRerunService {
         return response;
     }
 }
+

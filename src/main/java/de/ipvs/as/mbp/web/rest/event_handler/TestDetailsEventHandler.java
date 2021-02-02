@@ -33,7 +33,9 @@ public class TestDetailsEventHandler {
      * @param testDetails Test with details to be created
      */
     @HandleBeforeCreate
+
     public void testStarted(TestDetails testDetails) {
+
 
         List<Sensor> sensorArray = new ArrayList<>();
 
@@ -65,6 +67,7 @@ public class TestDetailsEventHandler {
             }
         }
     }
+
 
 
 }

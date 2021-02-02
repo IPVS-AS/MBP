@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +28,6 @@ import org.springframework.validation.Errors;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -40,7 +38,6 @@ import java.util.stream.Stream;
 
 @Component
 public class TestEngine {
-
 
     @Autowired
     private TestDetailsRepository testDetailsRepository;
@@ -98,13 +95,14 @@ public class TestEngine {
      * @param changes to be included
      * @return if update was successful or not
      */
-    public HttpEntity<Object> editTestConfig(String testID, String changes) {
+    public ResponseEntity<Boolean> editTestConfig(String testID, String changes) {
         try {
             TestDetails testToUpdate = testDetailsRepository.findById(testID).get();
 
             // Clear the configuration and rules field of the specific test
             testToUpdate.getConfig().clear();
             testToUpdate.getRules().clear();
+            testToUpdate.getRuleNames().clear();
 
             // convert the string of the request body to a JSONObject in order to continue working with it
             JSONObject updateInfos = new JSONObject(changes);
@@ -112,19 +110,36 @@ public class TestEngine {
             List<List<ParameterInstance>> newConfig = updateSenorConfig(updateInfos.get("config"));
             // Update the rules to be observed in the test
             List<Rule> newRuleList = updateRuleInformation(updateInfos);
+            List<String> newRuleNames = updateRuleNames(newRuleList);
 
             testToUpdate.setConfig(newConfig);
             testToUpdate.setRules(newRuleList);
+            testToUpdate.setRuleNames(newRuleNames);
             // Update the information if the selected rules be triggered during the test or not
             testToUpdate.setTriggerRules(updateInfos.getBoolean("triggerRules"));
 
 
             testDetailsRepository.save(testToUpdate);
 
-            return new ResponseEntity<>(HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.OK).body(true);
         } catch (Exception e) {
-            return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
         }
+    }
+
+    /**
+     * Creates a list of the updated rule Names that should be observed within the test.
+     *
+     * @param newRuleList List of rules to be observed within the test
+     * @return List of the new rule names
+     */
+    private List<String> updateRuleNames(List<Rule> newRuleList) {
+        List<String> ruleNames = new ArrayList<>();
+        for(Rule rule: newRuleList){
+            ruleNames.add(rule.getName());
+        }
+
+        return ruleNames;
     }
 
     /**
@@ -134,12 +149,13 @@ public class TestEngine {
      * @return List of updated rules
      */
     private List<Rule> updateRuleInformation(JSONObject updateInfos) throws JSONException {
-        Pattern pattern = Pattern.compile("rules/(.*)$");
+        Pattern pattern = Pattern.compile("MBP_war_exploded/(.*)$");
         JSONArray rules = (JSONArray) updateInfos.get("rules");
         List<Rule> newRules = new ArrayList<>();
         if (rules != null) {
             for (int i = 0; i < rules.length(); i++) {
-                Matcher m = pattern.matcher(rules.getString(i));
+                String href = rules.getString(i).replace("\\","");
+                Matcher m = pattern.matcher(href);
                 if (m.find()) {
                     newRules.add(ruleRepository.findById(m.group(1)).get());
                 }
@@ -253,6 +269,7 @@ public class TestEngine {
         } catch (Exception e) {
             e.printStackTrace();
             response = new ResponseEntity<>(false, HttpStatus.CONFLICT);
+
         }
         return response;
     }
@@ -388,10 +405,12 @@ public class TestEngine {
         Errors errors;
         ResponseEntity responseEntity = null;
         Actuator testingActuator;
+
         Device testDevice;
 
 
         try {
+
 
             boolean testingActuatorExists = actuatorRepository.existsByName(ACTUATOR_NAME);
             Operator testActuatorAdapter = operatorRepository.findByName(ACTUATOR_NAME).get();
@@ -408,6 +427,7 @@ public class TestEngine {
                     if (testActuatorAdapter != null) {
                         //Enrich actuator for details
 
+
                         testingActuator = new Actuator();
                         testingActuator.setName(ACTUATOR_NAME);
                         testingActuator.setOwner(null);
@@ -421,17 +441,19 @@ public class TestEngine {
 
                         actuatorRepository.insert(testingActuator);
 
-                        responseEntity = new ResponseEntity( HttpStatus.CREATED);
+                        responseEntity = new ResponseEntity(HttpStatus.CREATED);
 
                     }
-                } else{
+                } else {
                     responseEntity = new ResponseEntity(HttpStatus.BAD_REQUEST);
+
                 }
             }
 
 
         } catch (Exception e) {
-            responseEntity = new ResponseEntity( HttpStatus.CONFLICT);
+            responseEntity = new ResponseEntity(HttpStatus.CONFLICT);
+
         }
         return responseEntity;
     }
@@ -491,6 +513,7 @@ public class TestEngine {
      * @return ResponseEntity if the registration was successful or not
      */
     public ResponseEntity registerSensorSimulator(String sensorName) {
+
         ResponseEntity<String> responseEntity;
 
         Operator sensorAdapter = operatorRepository.findByName(sensorName).get();
@@ -500,7 +523,8 @@ public class TestEngine {
         try {
             // Check if corresponding adapter exists
             if (sensorAdapter == null) {
-                return new ResponseEntity<>( HttpStatus.CONFLICT);
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+
             } else if (testingDevice == null) {
                 registerTestDevice();
             } else if (sensorSimulator == null) {
@@ -527,14 +551,14 @@ public class TestEngine {
                 sensorRepository.insert(sensorSimulator);
 
             }
-            responseEntity = new ResponseEntity<>( HttpStatus.OK);
+            responseEntity = new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
-            responseEntity = new ResponseEntity<>( HttpStatus.CONFLICT);
+            responseEntity = new ResponseEntity<>(HttpStatus.CONFLICT);
+
         }
 
         return responseEntity;
     }
-
 
     /**
      * Checks if the one and three dimensional sensor simulators are already registered.
@@ -574,8 +598,5 @@ public class TestEngine {
      */
     public void registerThreeDimSensorSimulator(String sensorName) {
         //TODO
-
     }
-
-
 }

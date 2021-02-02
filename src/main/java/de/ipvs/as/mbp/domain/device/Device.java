@@ -13,7 +13,8 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import javax.persistence.GeneratedValue;
 
-@MBPEntity(createValidator = DeviceCreateValidator.class, deleteValidator = DeviceDeleteValidator.class)
+@MBPEntity(createValidator = DeviceCreateValidator.class, deleteValidator = DeviceDeleteValidator.class,
+        createEventHandler = DeviceCreateEventHandler.class)
 @ApiModel(description = "Model for device entities")
 public class Device extends UserEntity {
 
