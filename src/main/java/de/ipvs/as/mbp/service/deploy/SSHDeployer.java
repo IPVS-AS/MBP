@@ -469,8 +469,11 @@ public class SSHDeployer {
 	 */
 	private String convertJSONToCmdLineString(JSONArray jsonArray) { // Resource<
 		String jsonString = jsonArray.toString();
-		// Escape backslashes
+		// Escape quotes
 		jsonString = jsonString.replace("\"", "\\\"");
+
+		// Escape backticks
+		jsonString = jsonString.replace("`", "\\\\\\`");
 
 		// Wrap string with double quotes
 		jsonString = "\"" + jsonString + "\"";
