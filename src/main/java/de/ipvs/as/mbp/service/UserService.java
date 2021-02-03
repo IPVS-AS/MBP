@@ -3,6 +3,7 @@ package de.ipvs.as.mbp.service;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.domain.user.User;
+import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
 import de.ipvs.as.mbp.repository.UserRepository;
 import de.ipvs.as.mbp.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,10 +100,10 @@ public class UserService {
 	 * Checks whether the currently logged in user has admin privileges.
 	 * @throws EntityNotFoundException
 	 */
-	public void requireAdmin() throws EntityNotFoundException {
+	public void requireAdmin() throws EntityNotFoundException, MissingAdminPrivilegesException {
     	User user = userRepository.findByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new EntityNotFoundException("User", SecurityUtils.getCurrentUserUsername()));
     	if (!user.isAdmin()) {
-    		throw new MBPException(HttpStatus.UNAUTHORIZED, "Admin privileges required!");
+			throw new MissingAdminPrivilegesException();
     	}
     }
 

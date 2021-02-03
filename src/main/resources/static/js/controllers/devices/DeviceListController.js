@@ -49,8 +49,8 @@ app.controller('DeviceListController',
 
             /**
              * [Public]
-             * Shows an alert that asks the user if he is sure that he wants to delete a certain device. It also
-             * shows a list of all components that are affected by this deletion.
+             * Shows an alert that asks the user if he is sure that he wants to delete a certain device. In case
+             * other components are affected by this deletion, an error message is shown.
              *
              * @param data A data object that contains the id of the device that is supposed to be deleted
              * @returns A promise of the user's decision
