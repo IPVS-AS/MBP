@@ -87,6 +87,7 @@
     "description": "",
     "semanticHint": "",
     "type": "string",
+"unit": "°C",
     "parent": "leftright",
     "children": []
   }, 
@@ -95,6 +96,7 @@
     "description": "",
     "semanticHint": "",
     "type": "string",
+"unit": "°C",
     "parent": "rightleft",
     "children": []
   },
@@ -103,6 +105,7 @@
     "description": "",
     "semanticHint": "",
     "type": "string",
+"unit": "°C",
     "parent": "rightleft",
     "children": []
   },
@@ -111,6 +114,7 @@
     "description": "",
     "semanticHint": "",
     "type": "string",
+"unit": "°C",
     "parent": "rightright",
     "children": []
   },
@@ -119,6 +123,7 @@
     "description": "",
     "semanticHint": "",
     "type": "string",
+"unit": "°C",
     "parent": "rightright",
     "children": []
   }
