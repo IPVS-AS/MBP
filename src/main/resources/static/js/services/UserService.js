@@ -4,6 +4,9 @@
 app.factory('UserService', ['$rootScope', 'HttpService', 'ENDPOINT_URI', 'BASE_URI',
     function ($rootScope, HttpService, ENDPOINT_URI, BASE_URI) {
 
+        const URL_PROMOTE_SUFFIX = '/promote';
+        const URL_DEGRADE_SUFFIX = '/degrade';
+
         function authenticate(user) {
             return HttpService.postRequest(ENDPOINT_URI + '/users/authenticate', user);
         }
@@ -32,6 +35,14 @@ app.factory('UserService', ['$rootScope', 'HttpService', 'ENDPOINT_URI', 'BASE_U
             return HttpService.deleteRequest(ENDPOINT_URI + '/users/' + username);
         }
 
+        function promoteUser(userId) {
+            return HttpService.postRequest(ENDPOINT_URI + '/users/' + userId + URL_PROMOTE_SUFFIX);
+        }
+
+        function degradeUser(userId) {
+            return HttpService.postRequest(ENDPOINT_URI + '/users/' + userId + URL_DEGRADE_SUFFIX);
+        }
+
         //Expose
         return {
             Authenticate: authenticate,
@@ -40,6 +51,8 @@ app.factory('UserService', ['$rootScope', 'HttpService', 'ENDPOINT_URI', 'BASE_U
             GetByUsername: getByUsername,
             Create: createUser,
             Update: updateUser,
-            Delete: deleteUser
+            Delete: deleteUser,
+            promoteUser: promoteUser,
+            degradeUser: degradeUser
         };
     }]);

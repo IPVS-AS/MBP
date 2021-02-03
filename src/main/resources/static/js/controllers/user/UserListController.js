@@ -14,8 +14,51 @@ app.controller('UserListController',
              * Initializing function, sets up basic things.
              */
             (function initController() {
-                console.log(userList);
             })();
+
+            /**
+             * [Public]
+             *
+             * Performs a server request in order to promote a user, given by its ID, to an administrator.
+             *
+             * @param userId The ID of the user to promote
+             */
+            function promoteUser(userId) {
+                UserService.promoteUser(userId).then(function (response) {
+                    // Find the affected user in the list and update it
+                    for (let i = 0; i < userList.length; i++) {
+                        if (userId === userList[i].id) {
+                            userList[i].isAdmin = true;
+                            break;
+                        }
+                    }
+
+                    //Notify user
+                    NotificationService.notify("The user was updated successfully.", "success")
+                });
+            }
+
+            /**
+             * [Public]
+             *
+             * Performs a server request in order to degrade a user, given by its ID, to an ordinary user without
+             * admin privileges.
+             *
+             * @param userId The ID of the user to degrade
+             */
+            function degradeUser(userId) {
+                UserService.degradeUser(userId).then(function (response) {
+                    // Find the affected user in the list and update it
+                    for (let i = 0; i < userList.length; i++) {
+                        if (userId === userList[i].id) {
+                            userList[i].isAdmin = false;
+                            break;
+                        }
+                    }
+                    //Notify user
+                    NotificationService.notify("The user was updated successfully.", "success")
+                });
+            }
 
 
             /**
@@ -26,13 +69,13 @@ app.controller('UserListController',
              * @returns A promise of the user's decision
              */
             function confirmDelete(data) {
-                let userID = data.id;
+                let userId = data.id;
                 let userName = "";
 
-                //Determines the key pair's name by checking all key pairs in the list
+                //Determines the user's name by checking all users in the list
                 for (let i = 0; i < userList.length; i++) {
-                    if (userID === userList[i].id) {
-                        userName = userList[i].name;
+                    if (userId === userList[i].id) {
+                        userName = userList[i].username;
                         break;
                     }
                 }
@@ -63,7 +106,24 @@ app.controller('UserListController',
                         $scope: $scope,
                         deleteItem: deleteUser,
                         confirmDeletion: confirmDelete
-                    })
+                    }),
+                promoteUser: promoteUser,
+                degradeUser: degradeUser
             });
+
+            // Watch delete controller and remove users from list
+            $scope.$watch(
+                function () {
+                    // Watch the delete controller
+                    return vm.deleteUserCtrl.result;
+                },
+                function () {
+                    //Get ID of the affected user
+                    let id = vm.deleteUserCtrl.result;
+
+                    //Remove user from list
+                    vm.userListCtrl.removeItem(id);
+                }
+            );
         }
     ]);

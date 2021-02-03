@@ -9,7 +9,6 @@ import de.ipvs.as.mbp.error.InvalidPasswordException;
 import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
 import de.ipvs.as.mbp.repository.UserRepository;
 import de.ipvs.as.mbp.repository.projection.UserExcerpt;
-import de.ipvs.as.mbp.service.UserEntityService;
 import de.ipvs.as.mbp.service.UserService;
 import de.ipvs.as.mbp.util.Pages;
 import io.swagger.annotations.*;
@@ -48,8 +47,7 @@ public class RestUserController {
     @GetMapping(produces = "application/hal+json")
     @ApiOperation(value = "Retrieves all existing users.", notes = "Requires admin privileges.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
-            @ApiResponse(code = 401, message = "Not authorized to access users (admin privileges required)!"),
-            @ApiResponse(code = 404, message = "Requesting user not found!")})
+            @ApiResponse(code = 401, message = "Not authorized to access users (admin privileges required)!")})
     public ResponseEntity<PagedModel<EntityModel<User>>> all(@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws MissingAdminPrivilegesException, EntityNotFoundException {
         // Check whether the requesting user has admin privileges
         userService.requireAdmin();
@@ -108,5 +106,48 @@ public class RestUserController {
         } else {
             throw new InvalidPasswordException();
         }
+    }
+
+    @DeleteMapping(path = "/{userId}")
+    @ApiOperation(value = "Deletes an existing user identified by its ID.")
+    @ApiResponses({@ApiResponse(code = 204, message = "Success!"),
+            @ApiResponse(code = 401, message = "Not authorized to delete the user!"),
+            @ApiResponse(code = 404, message = "User not found!")})
+    public ResponseEntity<Void> delete(@PathVariable("userId") String userId) throws MissingAdminPrivilegesException, EntityNotFoundException {
+        // Check whether the requesting user has admin privileges
+        userService.requireAdmin();
+
+        // Try to delete the user
+        userService.deleteUser(userId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping(path = "/{userId}/promote")
+    @ApiOperation(value = "Promotes an existing user to an administrator.")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to promote users (admin privileges required)!")})
+    public ResponseEntity<EntityModel<User>> promoteUser(@PathVariable("userId") String userId) throws MissingAdminPrivilegesException, EntityNotFoundException {
+        // Check whether the requesting user has admin privileges
+        userService.requireAdmin();
+
+        // Update user
+        User updatedUser = userService.promoteUser(userId);
+
+        //Return entity model of the updated user
+        return ResponseEntity.ok(new EntityModel<User>(updatedUser, linkTo(getClass()).slash(updatedUser.getId()).withSelfRel()));
+    }
+
+    @PostMapping(path = "/{userId}/degrade")
+    @ApiOperation(value = "Degrades an existing administrator to a non-administrator.")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to degrade users (admin privileges required)!")})
+    public ResponseEntity<EntityModel<User>> degradeUser(@PathVariable("userId") String userId) throws MissingAdminPrivilegesException, EntityNotFoundException {
+        // Check whether the requesting user has admin privileges
+        userService.requireAdmin();
+
+        // Update user
+        User updatedUser = userService.degradeUser(userId);
+
+        //Return entity model of the updated user
+        return ResponseEntity.ok(new EntityModel<User>(updatedUser, linkTo(getClass()).slash(updatedUser.getId()).withSelfRel()));
     }
 }
