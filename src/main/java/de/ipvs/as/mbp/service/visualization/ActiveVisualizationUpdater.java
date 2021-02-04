@@ -6,6 +6,7 @@ import de.ipvs.as.mbp.domain.visualization.Visualization;
 import de.ipvs.as.mbp.domain.visualization.VisualizationFields;
 import de.ipvs.as.mbp.domain.visualization.repo.ActiveVisualization;
 import de.ipvs.as.mbp.domain.visualization.VisualizationCollection;
+import de.ipvs.as.mbp.domain.visualization.repo.PathUnitPair;
 import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.util.Validation;
@@ -132,8 +133,8 @@ public class ActiveVisualizationUpdater {
         String jsonDataModelExample = sensor.getOperator().getDataModel().getJSONExample();
         try {
             JSONObject exampleObj = new JSONObject(jsonDataModelExample);
-            for (String pathToValidate : visToValidate.getVisFieldToPathMapping().values()) {
-                JsonPath testPath = JsonPath.compile(pathToValidate);
+            for (PathUnitPair pathToValidate : visToValidate.getVisFieldToPathMapping().values()) {
+                JsonPath testPath = JsonPath.compile(pathToValidate.getPath());
                 testPath.read(exampleObj.getJSONObject("value").toString());
             }
         } catch (Exception e) {

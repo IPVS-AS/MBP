@@ -265,13 +265,16 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                     for (DataModelTreeNode node : foundSubtreeRoots) {
                         if (node.getType() == IoTDataTypes.ARRAY) {
                             jsonPathsWithUnits.add(
-                                    new PathUnitPair(
-                                            node.getInternPathToNode(),
-                                            node.getChildren().get(0).getUnit(),
-                                            IoTDataTypes.ARRAY.getValue()));
+                                    new PathUnitPair().setPath(node.getInternPathToNode())
+                                            .setName(node.getName())
+                                            .setUnit(node.getUnit())
+                                            .setType(node.getType()
+                                                    .getValue())
+                                            .setDimension(node.getDimension()));
                         } else {
-                            jsonPathsWithUnits.add(new PathUnitPair(node.getInternPathToNode(), node.getUnit(),
-                                    node.getType().getValue()));
+                            jsonPathsWithUnits.add(new PathUnitPair().setPath(node.getInternPathToNode())
+                                    .setName(node.getName()).setUnit(node.getUnit()).setType(node.getType().getValue())
+                            );
                         }
                         currMapping.addVisualizationField(visField.getKey(), jsonPathsWithUnits);
                     }

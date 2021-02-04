@@ -161,8 +161,9 @@ app.directive('historicalGeoMapChart', ['$timeout', '$interval', function ($time
 
                 function applyJsonPath(value, index, array) {
                     var newVal = [];
-                    console.log(jsonPathAsObj.latitude);
-                    console.log(jsonPathAsObj.longitude);
+                    console.log(jsonPathAsObj);
+                    console.log(jsonPathAsObj.latitude.path);
+                    console.log(jsonPathAsObj.longitude.path);
                     if (scope.fieldCollectionId === 'default') {
                         console.log(value);
                         // Push time
@@ -170,11 +171,11 @@ app.directive('historicalGeoMapChart', ['$timeout', '$interval', function ($time
                         // Push coordinates
                         newVal.push([
                             parseFloat(JSONPath.JSONPath({
-                                path: jsonPathAsObj.latitude,
+                                path: jsonPathAsObj.latitude.path,
                                 json: value[1]
                             }).toString()),
                             parseFloat(JSONPath.JSONPath({
-                                path: jsonPathAsObj.longitude,
+                                path: jsonPathAsObj.longitude.path,
                                 json: value[1]
                             }).toString())]);
                     } else {

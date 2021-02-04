@@ -143,12 +143,12 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                 function applyJsonPath(value, index, array) {
                     if (scope.fieldCollectionId === 'default') {
                         array[index][1] = parseFloat(JSONPath.JSONPath({
-                            path: jsonPathAsObj.value,
+                            path: jsonPathAsObj.value.path,
                             json: array[index][1]
                         }).toString());
                     } else {
                         array[index][1] = JSONPath.JSONPath({
-                            path: jsonPathAsObj.arrVal,
+                            path: jsonPathAsObj.arrVal.path,
                             json: array[index][1]
                         });
                     }
@@ -157,6 +157,8 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                 if (scope.fieldCollectionId === 'default') {
                     //Update chart
                     chart.series[0].update({
+                        name: jsonPathAsObj.value.name,
+                        tooltip: {valueSuffix: ' ' + (jsonPathAsObj.value.unit ? jsonPathAsObj.value.unit : '')},
                         data: values
                     }, true); //True: Redraw chart
                 } else {
@@ -168,14 +170,16 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                     // Add series if not enough are currently existing
                     for (var i = dataSeriesNumber; i < valueLengthNumber; i++) {
                         chart.addSeries({
-                            name: 'Value' + i,
+                            name: jsonPathAsObj.arrVal.name  + "[" + i + "]",
                             data: [],
-                            showInLegend: true
+                            showInLegend: true,
                         });
                     }
 
                     for (var i = 0; i < chart.series.length; i++) {
                         chart.series[i].update({
+                            name: jsonPathAsObj.arrVal.name  + "[" + i + "]",
+                            tooltip: {valueSuffix: ' ' + (jsonPathAsObj.arrVal.unit ? jsonPathAsObj.arrVal.unit : '')},
                             data: values.map(function (currentVal, index) {
                                 var newVal = [];
                                 newVal.push(currentVal[0]);

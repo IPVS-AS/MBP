@@ -671,6 +671,21 @@ app.controller('ComponentDetailsController',
             function updateJsonPath(visToUpdate) {
 
                 // visToUpdate.visFieldToPathMapping = "default";
+                console.log(visToUpdate.visFieldToPathMappingInput);
+                console.log(JSON.parse(JSON.stringify(visToUpdate.visFieldToPathMappingInput)));
+
+                // Convert string json object to objects
+                var convertMappings = function(mappingToConvert) {
+                    Object.keys(mappingToConvert).forEach(function(key) {
+                        if (typeof mappingToConvert[key] === "string") {
+                            mappingToConvert[key] = JSON.parse(mappingToConvert[key]);
+                        }
+                        return mappingToConvert;
+                    })
+                }
+
+                convertMappings(visToUpdate.visFieldToPathMappingInput);
+                console.log(visToUpdate.visFieldToPathMappingInput);
 
                 // Perform put request to update the chart components
                 ComponentService.addNewActiveVisualization(vm.component.id, {

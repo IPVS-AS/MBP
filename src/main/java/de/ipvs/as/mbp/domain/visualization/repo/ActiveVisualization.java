@@ -20,12 +20,11 @@ public class ActiveVisualization {
 
     private String fieldCollectionId;
 
-    private Map<String, String> visFieldToPathMapping;
+    private Map<String, PathUnitPair> visFieldToPathMapping;
 
     public ActiveVisualization() {
         this.instanceId = new ObjectId().toString();
         visFieldToPathMapping = new HashMap<>();
-        visFieldToPathMapping.put("test", "test");
     }
 
     public String getFieldCollectionId() {
@@ -48,16 +47,16 @@ public class ActiveVisualization {
         return this;
     }
 
-    public Map<String, String> getVisFieldToPathMapping() {
+    public Map<String, PathUnitPair> getVisFieldToPathMapping() {
         return visFieldToPathMapping;
     }
 
-    public ActiveVisualization setVisFieldToPathMapping(Map<String, String> visFieldToPathMapping) {
+    public ActiveVisualization setVisFieldToPathMapping(Map<String, PathUnitPair> visFieldToPathMapping) {
         this.visFieldToPathMapping = visFieldToPathMapping;
         return this;
     }
 
-    public ActiveVisualization addFieldToPathMapping(String field, String path) {
+    public ActiveVisualization addFieldToPathMapping(String field, PathUnitPair path) {
         this.visFieldToPathMapping.put(field, path);
         return this;
     }

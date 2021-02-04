@@ -1,46 +1,66 @@
 package de.ipvs.as.mbp.domain.visualization.repo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
+import org.mozilla.javascript.annotations.JSConstructor;
 
+import javax.swing.*;
 import java.util.List;
 
 /**
- * A pair consisting of a string {@link com.jayway.jsonpath.JsonPath} representation
- * and a unit.
+ * Groups data model node information for visualization purposes. Stores the json path
+ * to the node as well as properties like its name, unit, type and dimension.
  */
 public class PathUnitPair {
 
     private String path;
+    private String name;
     private String unit;
     private String type;
+    private int dimension;
 
-    public PathUnitPair(String path, String unit, String type) {
-        this.path = path;
-        this.unit = unit;
-        this.type = type;
+    public String getName() {
+        return name;
+    }
+
+    public PathUnitPair setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public int getDimension() {
+        return dimension;
+    }
+
+    public PathUnitPair setDimension(int dimension) {
+        this.dimension = dimension;
+        return this;
     }
 
     public String getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public PathUnitPair setType(String type) {
         this.type = type;
+        return this;
     }
 
     public String getPath() {
         return path;
     }
 
-    public void setPath(String path) {
+    public PathUnitPair setPath(String path) {
         this.path = path;
+        return this;
     }
 
     public String getUnit() {
         return unit;
     }
 
-    public void setUnit(String unit) {
+    public PathUnitPair setUnit(String unit) {
         this.unit = unit;
+        return this;
     }
 }

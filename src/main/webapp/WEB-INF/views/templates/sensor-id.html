@@ -434,7 +434,7 @@
                                                    list="jsonPathSuggestions-doubleVal-default-{{visItem.instanceId}}"/>
                                             <datalist id="jsonPathSuggestions-doubleVal-default-{{visItem.instanceId}}">
                                                 <option ng-repeat="pathItem in visItem.getJsonPathsByFieldCollectionName('default').value"
-                                                        value="{{pathItem.path}}">{{pathItem.path}}
+                                                        value="{{pathItem}}">{{pathItem.path}}
                                                     [{{pathItem.unit ? pathItem.unit :
                                                             "None"}}]
                                                 </option>
@@ -467,7 +467,7 @@
                                                    list="jsonPathSuggestions-doubleVal-arrVal-{{visItem.instanceId}}"/>
                                             <datalist id="jsonPathSuggestions-doubleVal-arrVal-{{visItem.instanceId}}">
                                                 <option ng-repeat="pathItem in visItem.getJsonPathsByFieldCollectionName('arrVal').arrVal"
-                                                        value="{{pathItem.path}}">{{pathItem.path}}
+                                                        value="{{pathItem}}">{{pathItem.path}}
                                                     [{{pathItem.unit ? pathItem.unit :
                                                             "None"}}]
                                                 </option>
@@ -503,7 +503,7 @@
                                                    list="jsonPathSuggestions-geoMap-defaultLtd-{{visItem.instanceId}}"/>
                                             <datalist id="jsonPathSuggestions-geoMap-defaultLtd-{{visItem.instanceId}}">
                                                 <option ng-repeat="pathItem in visItem.getJsonPathsByFieldCollectionName('default').latitude"
-                                                        value="{{pathItem.path}}">{{pathItem.path}}
+                                                        value="{{pathItem}}">{{pathItem.path}}
                                                     [{{pathItem.unit ? pathItem.unit :
                                                             "None"}}]
                                                 </option>
@@ -517,7 +517,7 @@
                                                    list="jsonPathSuggestions-geoMap-defaultLng-{{visItem.instanceId}}"/>
                                             <datalist id="jsonPathSuggestions-geoMap-defaultLng-{{visItem.instanceId}}">
                                                 <option ng-repeat="pathItem in visItem.getJsonPathsByFieldCollectionName('default').longitude"
-                                                        value="{{pathItem.path}}">{{pathItem.path}}
+                                                        value="{{pathItem}}">{{pathItem.path}}
                                                     [{{pathItem.unit ? pathItem.unit :
                                                             "None"}}]
                                                 </option>
