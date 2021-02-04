@@ -104,12 +104,12 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
                 // Retrieve the root node of the value json object which must be part of the mqtt message by convention
                 json.getJSONObject("value"),
                 // Get the data model tree of the component as this is needed to infer the right database types
-                dataModelTreeCache.getDataModelOfSensor(componentID)
+                dataModelTreeCache.getDataModelOfSensor(componentID, componentType)
         ));
 
         //TODO ONLY TEST REMOVE LATER
         VisualsDataTreesCollections coll = new VisualsDataTreesCollections();
-        DataModelTree tree = dataModelTreeCache.getDataModelOfSensor(componentID);
+        DataModelTree tree = dataModelTreeCache.getDataModelOfSensor(componentID, componentType);
         Map.Entry<List<DataModelTreeNode>, List<List<Map<String, String>>>>
                 // z or newRoot
                 test = tree.findSubtreeByTypes(coll.getVisById("string1").getVisualisableDataModels().get(0));

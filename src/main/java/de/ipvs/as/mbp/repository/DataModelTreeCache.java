@@ -1,10 +1,13 @@
 package de.ipvs.as.mbp.repository;
 
 
+import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
 
+import de.ipvs.as.mbp.domain.entity_type.EntityType;
+import de.ipvs.as.mbp.domain.monitoring.MonitoringOperator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -47,6 +50,14 @@ public class DataModelTreeCache {
     @Autowired
     private SensorRepository sensorRepository;
 
+    @Autowired
+    private ActuatorRepository actuatorRepository;
+
+    //TODO How to access monitoring operators/devices properly?
+    @Autowired
+    private MonitoringOperatorRepository monitoringOperatorRepository;
+
+
     private DataModelTreeCache() {
         // Init the data models cache
         System.out.println("Cache started.");
@@ -54,35 +65,48 @@ public class DataModelTreeCache {
     }
 
     /**
-     * Returns the data model by a given sensor id.
+     * Returns the data model by a given component id.
      *
-     * @param sensorID MongoDB ObjectID of the sensor
-     * @return the data model used by this sensor
+     * @param componentId   MongoDB ObjectID of the entity
+     * @param componentType Is the componentId from a sensor, actuator or monitoring component?
+     * @return the data model used by this entity
      */
-    public DataModelTree getDataModelOfSensor(String sensorID) {
+    public DataModelTree getDataModelOfSensor(String componentId, String componentType) {
         // Is the data model is already cached?
-        if (this.cachedDataModels.containsKey(sensorID)) {
+        if (this.cachedDataModels.containsKey(componentId)) {
             // Yes, the data model is already present in the application logic --> just return it (and update the date before)
-            DataModelTree tree = this.cachedDataModels.get(sensorID).getKey();
-            this.cachedDataModels.put(sensorID, new AbstractMap.SimpleEntry<>(tree, new Date()));
+            DataModelTree tree = this.cachedDataModels.get(componentId).getKey();
+            this.cachedDataModels.put(componentId, new AbstractMap.SimpleEntry<>(tree, new Date()));
             return tree;
         } else {
             // No, the data model is not present in the application logic yet --> get it from the db and add it to the
             // data model cache to avoid further db accesses
             System.out.println("Get model from database:");
 
-            // First get the sensor
-            Optional<Sensor> sensorOpt = sensorRepository.findById(sensorID);
-            Sensor sensor = sensorOpt.orElse(null);
+            // First get the component from the repository
+            de.ipvs.as.mbp.domain.component.Component component = null;
+            String lowerCasedComponentType = componentType.toLowerCase();
+            if (lowerCasedComponentType.equals("sensor")) {
+                Optional<Sensor> componentOpt = sensorRepository.findById(componentId);
+                component = componentOpt.orElse(null);
+            } else if (lowerCasedComponentType.equals("actuator")) {
+                Optional<Actuator> componentOpt = actuatorRepository.findById(componentId);
+                component = componentOpt.orElse(null);
+            } else if (lowerCasedComponentType.equals("monitoring")) {
+                // TODO HOW TO HANDLE MONITORING OPERATORS? Which repository must be how accessed?
+            } else {
+                throw new IllegalArgumentException("Only sensor, actuator or monitoring are valid types for the" +
+                        "ValueLogReceiverArrivalHandler.");
+            }
 
             DataModel dataModel = null;
             // If this succeeded get now the corresponding operator and the corresponding data model
-            if (sensor != null) {
-                dataModel = sensor.getOperator().getDataModel();
+            if (component != null) {
+                dataModel = component.getOperator().getDataModel();
             }
             System.out.println(dataModel.getName());
             DataModelTree tree = new DataModelTree(dataModel.getTreeNodes());
-            this.cachedDataModels.put(sensorID, new AbstractMap.SimpleEntry<>(tree, new Date()));
+            this.cachedDataModels.put(componentId, new AbstractMap.SimpleEntry<>(tree, new Date()));
             System.out.println(tree.toString());
             return tree;
         }

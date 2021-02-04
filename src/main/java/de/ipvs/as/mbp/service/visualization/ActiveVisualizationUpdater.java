@@ -1,6 +1,8 @@
 package de.ipvs.as.mbp.service.visualization;
 
 import com.jayway.jsonpath.JsonPath;
+import de.ipvs.as.mbp.domain.component.Actuator;
+import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.visualization.Visualization;
 import de.ipvs.as.mbp.domain.visualization.VisualizationFields;
@@ -8,6 +10,8 @@ import de.ipvs.as.mbp.domain.visualization.repo.ActiveVisualization;
 import de.ipvs.as.mbp.domain.visualization.VisualizationCollection;
 import de.ipvs.as.mbp.domain.visualization.repo.PathUnitPair;
 import de.ipvs.as.mbp.error.MBPException;
+import de.ipvs.as.mbp.repository.ActuatorRepository;
+import de.ipvs.as.mbp.repository.ComponentRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.util.Validation;
 import org.json.JSONObject;
@@ -28,25 +32,28 @@ public class ActiveVisualizationUpdater {
     @Autowired
     private SensorRepository sensorRepository;
 
+    @Autowired
+    private ActuatorRepository actuatorRepository;
+
     /**
-     * Updates the currently active visualization settings for one sensor persistent to the database.
+     * Updates the currently active visualization settings for one component persistent to the database.
      * If the {@link ActiveVisualization#getInstanceId()} is already used for the sensor, the
      * visualization settings for this visualization will be updated. Else, a new ActiveComponentVisualization
      * entry will be added to the sensor with a new uniquely generated id.
      *
-     * @param sensorToUpdate      The sensor of which the visualization fields should be updated.
+     * @param componentToUpdate      The sensor of which the visualization fields should be updated.
      * @param visToCreateOrUpdate The {@link ActiveVisualization} which should be edited or created new.
      * @return The sensor which was updated.
      */
-    public Sensor updateOrCreateActiveVisualization(Sensor sensorToUpdate, ActiveVisualization visToCreateOrUpdate) {
+    public Component updateOrCreateActiveVisualization(Component componentToUpdate, ActiveVisualization visToCreateOrUpdate) {
 
         // Validate the input TODO remove comment
         // this.validateVisualizationSettings(visToCreateOrUpdate, sensorToUpdate);
 
-        List<ActiveVisualization> currActiveVisualizationsOfSensor = sensorToUpdate.getActiveVisualizations();
+        List<ActiveVisualization> currActiveVisualizationsOfSensor = componentToUpdate.getActiveVisualizations();
 
         ActiveVisualization toEdit = null;
-        if (sensorToUpdate.getActiveVisualizations() != null) {
+        if (componentToUpdate.getActiveVisualizations() != null) {
             for (ActiveVisualization vis : currActiveVisualizationsOfSensor) {
                 if (vis.getInstanceId().equals(visToCreateOrUpdate.getInstanceId())) {
                     toEdit = vis;
@@ -60,29 +67,43 @@ public class ActiveVisualizationUpdater {
             toEdit.setFieldCollectionId(visToCreateOrUpdate.getFieldCollectionId());
         } else {
             // Entity does not exist --> create a new one
-            sensorToUpdate.addActiveVisualization(new ActiveVisualization()
+            componentToUpdate.addActiveVisualization(new ActiveVisualization()
                     .setVisId(visToCreateOrUpdate.getVisId())
                     .setVisFieldToPathMapping(visToCreateOrUpdate.getVisFieldToPathMapping())
                     .setFieldCollectionId(visToCreateOrUpdate.getFieldCollectionId()));
         }
 
-        // Apply the changes to the database
-        sensorRepository.save(sensorToUpdate);
-        return sensorToUpdate;
+        // Apply the changes to the respective database (either the on for actuators or sensors)
+        if (componentToUpdate instanceof Sensor) {
+            sensorRepository.save((Sensor) componentToUpdate);
+        } else if (componentToUpdate instanceof Actuator){
+            actuatorRepository.save((Actuator) componentToUpdate);
+        } else {
+            System.err.println("Error applying visualization changes to sensor or actuator repository.");
+        }
+        return componentToUpdate;
     }
 
     /**
      * Deletes a visual component of a sensor by the sensor reference and the visual
      * component id. Applies the changes to the database.
      *
-     * @param sensor
+     * @param component
      * @param visualComponentId
      */
-    public ResponseEntity deleteVisualComponent(Sensor sensor, String visualComponentId) {
-        for (ActiveVisualization vis : sensor.getActiveVisualizations()) {
+    public ResponseEntity deleteVisualComponent(Component component, String visualComponentId) {
+        for (ActiveVisualization vis : component.getActiveVisualizations()) {
             if (vis.getInstanceId().equals(visualComponentId)) {
-                sensor.removeActiveVisualization(visualComponentId);
-                sensorRepository.save(sensor);
+                component.removeActiveVisualization(visualComponentId);
+
+                if (component instanceof Sensor) {
+                    sensorRepository.save((Sensor) component);
+                } else if (component instanceof Actuator){
+                    actuatorRepository.save((Actuator) component);
+                } else {
+                    System.err.println("Error applying visualization changes to sensor or actuator repository.");
+                }
+
                 return ResponseEntity.ok().build();
             }
         }
@@ -90,7 +111,7 @@ public class ActiveVisualizationUpdater {
         throw new MBPException(HttpStatus.NOT_FOUND, "No visual component with the id " + visualComponentId + " found!");
     }
 
-    private void validateVisualizationSettings(ActiveVisualization visToValidate, Sensor sensor) throws MBPException {
+    private void validateVisualizationSettings(ActiveVisualization visToValidate, Component component) throws MBPException {
 
         // 0) Check if a id is given
         if (Validation.isNullOrEmpty(visToValidate.getVisId())) {
@@ -130,7 +151,7 @@ public class ActiveVisualizationUpdater {
         }
 
         // 4) Check if all value fields of the visual component map are valid json paths
-        String jsonDataModelExample = sensor.getOperator().getDataModel().getJSONExample();
+        String jsonDataModelExample = component.getOperator().getDataModel().getJSONExample();
         try {
             JSONObject exampleObj = new JSONObject(jsonDataModelExample);
             for (PathUnitPair pathToValidate : visToValidate.getVisFieldToPathMapping().values()) {
