@@ -4,8 +4,8 @@
  * Controller for the monitoring operator list page which extends the OperatorListController.
  */
 app.controller('MonitoringOperatorListController',
-    ['$scope', '$controller', '$timeout', 'deviceTypesList', 'monitoringOperatorList', 'addMonitoringOperator', 'deleteMonitoringOperator', 'parameterTypesList', 'NotificationService',
-        function ($scope, $controller, $timeout, deviceTypesList, monitoringOperatorList, addMonitoringOperator, deleteMonitoringOperator, parameterTypesList, NotificationService) {
+    ['$scope', '$controller', '$timeout', 'deviceTypesList', 'monitoringOperatorList', 'dataModelList', 'addMonitoringOperator', 'deleteMonitoringOperator', 'parameterTypesList', 'NotificationService',
+        function ($scope, $controller, $timeout, deviceTypesList, monitoringOperatorList, dataModelList, addMonitoringOperator, deleteMonitoringOperator, parameterTypesList, NotificationService) {
             //Array of colors to be used for the different device types
             const DEVICE_TYPES_COLORS = ['bg-pink', 'bg-purple', 'bg-deep-purple', 'bg-indigo', 'bg-blue',
                 'bg-light-blue', 'bg-cyan', 'bg-teal', 'bg-green', 'bg-light-green', 'bg-lime', 'bg-yellow',
@@ -76,6 +76,7 @@ app.controller('MonitoringOperatorListController',
                 {
                     $scope: $scope,
                     operatorList: monitoringOperatorList,
+                    dataModelList: dataModelList,
                     operatorPreprocessing: monitoringOperatorPreprocessing,
                     addOperator: addMonitoringOperator,
                     deleteOperator: deleteMonitoringOperator,

@@ -28,13 +28,13 @@ public class UnitConverterService {
     public void convertValueLogValue(ValueLog valueLog, UnitConverter converter) {
         //Get value of current log
         // TODO NOT SUPPORTED AT THE MOMENT
-        //double value = Double.valueOf(valueLog.getValue());
-        double value = 5.0;
+        double value = Double.valueOf(valueLog.getValue().getDouble("value"));
+        //double value = 5.0;
 
         //Convert value
         // TODO NOT SUPPORTED AT THE MOMENT
-        //double convertedValue = converter.convert(value);
-        double convertedValue = 10.0;
+        double convertedValue = converter.convert(value);
+        //double convertedValue = 10.0;
 
         //Determine rounding constant
         double roundingConst = Math.pow(10, ROUNDING_DECIMAL_PLACES);
@@ -43,6 +43,6 @@ public class UnitConverterService {
         convertedValue = Math.round(convertedValue * roundingConst) / roundingConst;
 
         //Write value to log
-        valueLog.setValue(new Document("test", convertedValue));
+        valueLog.setValue(new Document("value", convertedValue));
     }
 }

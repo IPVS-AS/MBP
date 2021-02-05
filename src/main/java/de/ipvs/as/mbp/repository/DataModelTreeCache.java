@@ -4,6 +4,7 @@ package de.ipvs.as.mbp.repository;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.data_model.DataModel;
+import de.ipvs.as.mbp.domain.data_model.DataTreeNode;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
 
 import de.ipvs.as.mbp.domain.entity_type.EntityType;
@@ -62,6 +63,12 @@ public class DataModelTreeCache {
         // Init the data models cache
         System.out.println("Cache started.");
         this.cachedDataModels = new HashMap<>();
+
+        // Create a default data model tree entry for monitoring operators as they should only consider one double value
+        DataTreeNode rawNode = new DataTreeNode();
+        rawNode.setName("value");
+        rawNode.setType("double");
+        // TODO continue
     }
 
     /**

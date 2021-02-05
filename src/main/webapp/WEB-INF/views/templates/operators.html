@@ -57,7 +57,7 @@
                                class="material-icons" style="vertical-align: bottom;">lock</i>
                         </td>
                         <td>{{item.description}}</td>
-                        <td>{{item.unit ? item.unit : 'None'}}</td>
+                        <td>{{item.dataModel.name ? item.dataModel.name : 'None'}}</td>
                         <td>
                             <button ng-repeat-start="parameter in item.parameters"
                                     class="btn btn-default" role="button"

@@ -13,6 +13,7 @@ import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.domain.visualization.tmp.VisualsDataTreesCollections;
 import de.ipvs.as.mbp.repository.DataModelTreeCache;
+import org.bson.Document;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -100,13 +101,23 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
         valueLog.setQos(qos);
         valueLog.setTime(time);
         valueLog.setIdref(componentID);
-        valueLog.setValue(ValueLogReceiveVerifier.validateJsonValueAndGetDocument(
-                // Retrieve the root node of the value json object which must be part of the mqtt message by convention
-                json.getJSONObject("value"),
-                // Get the data model tree of the component as this is needed to infer the right database types
-                dataModelTreeCache.getDataModelOfSensor(componentID, componentType)
-        ));
+        if (!componentType.toLowerCase().equals("monitoring")) {
+            // Validate the value object part of the json object and transfer the json to a document representation
+            valueLog.setValue(ValueLogReceiveVerifier.validateJsonValueAndGetDocument(
+                    // Retrieve the root node of the value json object which must be part of the mqtt message by convention
+                    json.getJSONObject("value"),
+                    // Get the data model tree of the component as this is needed to infer the right database types
+                    dataModelTreeCache.getDataModelOfSensor(componentID, componentType)
+            ));
+        } else {
+            // Extra case for monitoring operators as they don't have data models and are just expected to send numbers
+            double monitoringOperatorVal = json.getDouble("value");
+            Document valueDoubleDoc = new Document();
+            valueDoubleDoc.append("value", monitoringOperatorVal);
+            valueLog.setValue(valueDoubleDoc);
+        }
 
+        /*
         //TODO ONLY TEST REMOVE LATER
         VisualsDataTreesCollections coll = new VisualsDataTreesCollections();
         DataModelTree tree = dataModelTreeCache.getDataModelOfSensor(componentID, componentType);
@@ -129,6 +140,7 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
                 System.out.println("---END OF THIS MAPPING---");
             }
         }
+        */
 
         // TODO REMOVE END
 
