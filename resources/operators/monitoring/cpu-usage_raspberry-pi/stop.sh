@@ -1,2 +1,5 @@
 #!/bin/bash
-sudo kill -9 $(ps -ef | grep cpu-usage_raspberry-pi.py | grep -v grep | awk '{print $2}')
+DIR=`dirname $0`
+PID=`cat $DIR/pid.txt`
+sudo kill -9 $PID
+sudo rm $DIR/pid.txt
