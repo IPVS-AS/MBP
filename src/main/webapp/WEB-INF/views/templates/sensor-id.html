@@ -324,8 +324,8 @@
                             <!-- START: Modal cases for each visualization and available vis field collections -->
                             <div ng-if="visItem.visId === 'doubleVis'">
 
+                                <!-- Line chart modal START -->
                                 <div ng-if="visItem.hasVisualizationOptionFieldCollectionWithName('default')">
-
                                     <!-- "global" error for addItem -->
                                     <div class="form-group"
                                          ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.global}">
@@ -335,10 +335,17 @@
                                     </div>
                                     <!-- item.name group -->
                                     <label>JsonPath to double value:</label>
-                                    <div class="form-group"
+                                    <div
                                          ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
-                                        <div class="form-line"
-                                             ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
+                                        <div ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
+
+                                            <json-path-input ng-model="visItem.visFieldToPathMappingInput.value"
+                                                             json-path-list="visItem.getJsonPathsByFieldCollectionName('default').value"
+                                                             number-of-needed-wildcards="0"
+                                                             field-collection-id-input="visItem.fieldCollectionIdInput"
+                                                             path-type="default"
+                                            </json-path-input>
+                                            <!--
                                             <input class="form-control" type="text"
                                                    placeholder="JsonPath"
                                                    ng-model="visItem.visFieldToPathMappingInput.value"
@@ -350,8 +357,9 @@
                                                     [{{pathItem.unit ? pathItem.unit :
                                                             "None"}}]
                                                 </option>
-                                            </datalist>
+                                            </datalist>-->
                                         </div>
+
                                         <span class="help-block"
                                               ng-show="addDeviceTypeCtrl.item.errors.name">{{addDeviceTypeCtrl.item.errors.name}}</span>
                                     </div>
@@ -368,10 +376,18 @@
                                     </div>
                                     <!-- item.name group -->
                                     <label>JsonPath to double array:</label>
-                                    <div class="form-group"
+                                    <div
                                          ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
                                         <div class="form-line"
                                              ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
+
+                                            <json-path-input ng-model="visItem.visFieldToPathMappingInput.arrVal"
+                                                             json-path-list="visItem.getJsonPathsByFieldCollectionName('arrVal').arrVal"
+                                                             number-of-needed-wildcards="1"
+                                                             field-collection-id-input="visItem.fieldCollectionIdInput"
+                                                             path-type="arrVal"
+                                            </json-path-input>
+                                            <!--
                                             <input class="form-control" type="text"
                                                    placeholder="JsonPath"
                                                    ng-model="visItem.visFieldToPathMappingInput.arrVal"
@@ -384,11 +400,28 @@
                                                             "None"}}]
                                                 </option>
                                             </datalist>
+                                            -->
                                         </div>
                                         <span class="help-block"
                                               ng-show="addDeviceTypeCtrl.item.errors.name">{{addDeviceTypeCtrl.item.errors.name}}</span>
                                     </div>
                                 </div>
+
+<!--
+                                <json-path-input ng-model="visItem.visFieldToPathMappingInput.value"
+                                                 json-path-list="visItem.getJsonPathsByFieldCollectionName('default').value"
+                                                 number-of-needed-wildcards="0"
+                                                 field-collection-id-input="visItem.fieldCollectionIdInput"
+                                                 path-type="default"
+                                </json-path-input>
+                                <br>
+                                <json-path-input ng-model="visItem.visFieldToPathMappingInput.arrVal"
+                                                 json-path-list="visItem.getJsonPathsByFieldCollectionName('arrVal').arrVal"
+                                                 number-of-needed-wildcards="1"
+                                                 field-collection-id-input="visItem.fieldCollectionIdInput"
+                                                 path-type="arrVal"
+                                </json-path-input>
+                                -->
                             </div>
 
                             <!-- GeoMap case -->
@@ -442,8 +475,6 @@
                             </div>
 
                             <!-- END: Modal cases for each visualization and available vis field collections -->
-
-                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">

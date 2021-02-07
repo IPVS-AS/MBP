@@ -536,6 +536,11 @@ app.controller('ComponentDetailsController',
                     this.jsonPath = "";
                     this.jsonPathInput = "";
                     this.availableOptions = getVisualizationMappingFieldByVisId(this.visId);
+
+                    this.setFieldCollectionIdInput = function (newIdInput) {
+                        alert("fieldcollection input set to " + newIdInput);
+                        this.fieldCollectionIdInput = newIdInput;
+                    }
                 }
 
                 hasVisualizationOptionFieldCollectionWithName = function hasVisualizationOptionFieldCollectionWithName(fieldCollectionName) {
@@ -735,45 +740,6 @@ app.controller('ComponentDetailsController',
                     // Select the tab as active which id begins with tab
                     $('.nav-tabs a[data-target^="' + tab + '"]').tab('show');
                 }
-            }
-
-            addInputBoxForJsonPathWithArraysForRetrievingASingleValue("", "['tes'][#4#]['test'][#5#]");
-
-            /*
-            var mymap = L.map('mapid').setView([51.505, -0.09], 13);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(mymap);
-
-            L.marker([51.5, -0.09]).addTo(mymap)
-                .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
-                .openPopup();
-
-            L.marker([50.5, -0.09]).addTo(mymap)
-                .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
-                .openPopup();
-
-            L.marker([490.5, -0.09]).addTo(mymap)
-                .bindPopup('A pretty CSS3 popup.<br> Easily customizable.')
-                .openPopup();
-            */
-
-            function addInputBoxForJsonPathWithArraysForRetrievingASingleValue(domPathStr, jsonPathStr) {
-
-                var regex = /#(.*?)#/g;
-
-                do {
-                    m = regex.exec(jsonPathStr);
-                    if (m) {
-                        console.log(m[0] + " : " + m[1]);
-                    }
-                } while (m);
-
-
-                /*$("#" + domPathStr).append(""
-                    + "<h1>Hello</h1>"
-                );*/
             }
 
             //Extend the controller object for the public functions to make them available from outside

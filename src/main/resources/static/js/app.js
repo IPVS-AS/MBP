@@ -449,7 +449,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         return HttpService.getAll('data-models', 'dataModels');
                     }],
                     addMonitoringOperator: ['HttpService', function (HttpService) {
-                        return angular.bind(thiVs, HttpService.addOne, 'monitoring-operators');
+                        return angular.bind(this, HttpService.addOne, 'monitoring-operators');
                     }],
                     deleteMonitoringOperator: ['HttpService', function (HttpService) {
                         return angular.bind(this, HttpService.deleteOne, 'monitoring-operators');
