@@ -3,7 +3,6 @@ package de.ipvs.as.mbp.domain.testing;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.component.Sensor;
-import de.ipvs.as.mbp.domain.device.DeviceCreateValidator;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
@@ -20,8 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-
-@MBPEntity(createValidator = DeviceCreateValidator.class)
+@MBPEntity(createValidator = TestDetailsCreateValidator.class, deleteValidator = TestDetailsDeleteValidator.class)
 public class TestDetails extends UserEntity {
 
     public TestDetails() {

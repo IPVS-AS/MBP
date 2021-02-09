@@ -4,8 +4,8 @@
  * Controller for the test details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('TestingDetailsController',
-    ['$scope', '$controller', 'TestService', 'testingDetails', 'sensorList', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI', 'ruleList',
-        function ($scope, $controller, TestService, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, ENDPOINT_URI, ruleList) {
+    ['$scope', '$controller', 'TestService', 'testingDetails', 'sensorList', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'HttpService', 'ENDPOINT_URI', 'ruleList',
+        function ($scope, $controller, TestService, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, HttpService, ENDPOINT_URI, ruleList) {
             //Initialization of variables that are used in the frontend by angular
             const vm = this;
             vm.ruleList = ruleList;
@@ -157,24 +157,26 @@ app.controller('TestingDetailsController',
              */
             function getTestRules() {
                 $scope.ruleList = TestService.getRuleListTest(COMPONENT_ID);
+                console.log(testingDetails.rules.length);
 
-                $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
-                    for (let i = 0; i < responseRules._embedded.rules.length; i++) {
-                        if (i === 0) {
-                            vm.ruleNames = vm.ruleNames + responseRules._embedded.rules[i].name;
-                            vm.actionNames = vm.actionNames + responseRules._embedded.rules[i].actionNames;
-                        } else {
-                            vm.ruleNames = vm.ruleNames + ", " + responseRules._embedded.rules[i].name;
-                            for (let x = 0; x < responseRules._embedded.rules[i].actionNames.length; x++) {
-                                if (vm.actionNames.includes(responseRules._embedded.rules[i].actionNames[x])) {
 
-                                } else {
-                                    vm.actionNames = vm.actionNames + ", " + responseRules._embedded.rules[i].actionNames[x];
-                                }
+                for (let i = 0; i < testingDetails.rules.length; i++) {
+                    if (i === 0) {
+                        vm.ruleNames = vm.ruleNames + testingDetails.rules[i].name;
+                        vm.actionNames = vm.actionNames + testingDetails.rules[i].actionNames;
+                        console.log(vm.ruleNames, vm.actionNames)
+                    } else {
+                        vm.ruleNames = vm.ruleNames + ", " + testingDetails.rules[i].name;
+                        for (let x = 0; x < testingDetails.rules[i].actionNames.length; x++) {
+                            if (vm.actionNames.includes(testingDetails.rules[i].actionNames[x])) {
+
+                            } else {
+                                vm.actionNames = vm.actionNames + ", " + testingDetails.rules[i].actionNames[x];
                             }
                         }
                     }
-                });
+                }
+
             }
 
 
@@ -278,6 +280,7 @@ app.controller('TestingDetailsController',
 
                 // Get the new list of selected rules for the test
                 vm.rulesUpdate = $rootScope.selectedRules.rules;
+                console.log(vm.rulesUpdate);
 
                 if (vm.executeRules === 'undefined') {
                     NotificationService.notify('A decision must be made.', 'error')
@@ -699,14 +702,14 @@ app.controller('TestingDetailsController',
                 });
 
 
-                $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
-                    for (let i = 0; i < responseRules._embedded.rules.length; i++) {
-                        vm.rules.push(responseRules._embedded.rules[i]._links.self.href);
-
-                    }
-                    $rootScope.selectedRules = {rules: vm.rules};
-                });
-
+                for (let i = 0; i < testingDetails.rules.length; i++) {
+                    ruleList.forEach(function (rule) {
+                        if (rule.name === testingDetails.rules[i].name) {
+                            vm.rules.push(rule);
+                        }
+                    });
+                }
+                $rootScope.selectedRules = {rules: vm.rules};
 
                 if (testingDetails.triggerRules === true) {
                     vm.executeRules = "true";

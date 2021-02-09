@@ -183,7 +183,6 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * @param testDetails
          */
         function updateTest(testId, testDetails) {
-            console.log(testDetails);
             return HttpService.postRequest(URL_UPDATE_TEST + testId, testDetails);
         }
 
@@ -240,11 +239,8 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          */
         function getRuleNames(rules, ruleList) {
             let ruleNames = [];
-            console.log(ruleList)
-            console.log(rules)
             angular.forEach(rules, function (rule) {
                angular.forEach(ruleList, function (ruleInList) {
-                   console.log(ruleInList);
                     if(ruleInList._links.self.href === rule ){
                         ruleNames.push(ruleInList.name);
                     }
@@ -885,6 +881,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
 
             if (checkSimSensor === false && checkRealSensor === false) {
                 NotificationService.notify('Choose at least one sensor', 'error')
+
             }
 
 

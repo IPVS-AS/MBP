@@ -728,7 +728,7 @@
                                                 <select class="form-control show-tick"
                                                         name="select-gps-cathum"
                                                         ng-model="config.whoGPS">
-                                                    <option value="">GPS tracking of a... </option>
+                                                    <option value="">GPS tracking of a...</option>
                                                     <option ng-option class="ng-binding ng-scope" value="a">Person
                                                     </option>
                                                     <option ng-option class="ng-binding ng-scope" value="b">Cat</option>
@@ -740,7 +740,7 @@
                                             <td><select class="form-control show-tick" id="select-gps-event"
                                                         name="event"
                                                         ng-model="config.eventGPS">
-                                                <option value="">Select the event to be simulated </option>
+                                                <option value="">Select the event to be simulated</option>
                                                 <option ng-option class="ng-binding ng-scope" value="1">Approach
                                                 </option>
                                                 <option ng-option class="ng-binding ng-scope" value="2">Moving away
@@ -858,7 +858,7 @@
                                             <td><select class="form-control show-tick"
                                                         name="sensitivity"
                                                         ng-model="config.sensitivityAccPl">
-                                                <option value="">Select the Sensitivity: </option>
+                                                <option value="">Select the Sensitivity:</option>
                                                 <option ng-option class="ng-binding ng-scope" value="0">Immediate
                                                     reaction
                                                     (0,0g)
@@ -898,7 +898,7 @@
                                             <td>
                                                 <select class="form-control show-tick" name="event"
                                                         ng-model="config.eventAcc">
-                                                    <option value="">Select the Event to be simulated </option>
+                                                    <option value="">Select the Event to be simulated</option>
                                                     <option ng-option class="ng-binding ng-scope" value="1">Object is
                                                         not moving
                                                     </option>
@@ -921,7 +921,7 @@
                                                 with a anomaly:*</label></td>
                                             <td><select class="form-control show-tick" id="select-acc-Anomaly"
                                                         name="anomaly" ng-model="config.anomalyAcc">
-                                                <option value="">Select the combination with an anomaly </option>
+                                                <option value="">Select the combination with an anomaly</option>
                                                 <option ng-option class="ng-binding ng-scope" value="3">Fly bumps into
                                                     the
                                                     Object
@@ -1018,9 +1018,10 @@
                             <div class="form-group">
                                 <div class="form-line">
                                     <h3> Which rules should be observed?*</h3>
-                                    <select class="form-control selectpicker" title="Rules"  ng-model="selectedRules.rules"
+                                    <select class="form-control selectpicker" title="Rules"
+                                            ng-model="selectedRules.rules"
                                             data-header="Rules to be observed"
-                                            ng-options="rule._links.self.href as (rule.name) for rule in ctrl.ruleList"
+                                            ng-options="rule as rule.name for rule in ctrl.ruleList"
                                             multiple>
                                     </select>
                                 </div>
@@ -1029,9 +1030,9 @@
                             <div class="form-group">
 
                                 <div class="radio">
-                                    <input  type="radio" class="with-gap" id="trigger_rules"
-                                            ng-model="ctrl.executeRules"
-                                            value="true"/>
+                                    <input type="radio" class="with-gap" id="trigger_rules"
+                                           ng-model="ctrl.executeRules"
+                                           value="true"/>
                                     <label for="trigger_rules">The selected rules should be triggered. *</label>
                                 </div>
 

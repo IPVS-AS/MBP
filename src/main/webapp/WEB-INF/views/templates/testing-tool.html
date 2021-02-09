@@ -128,8 +128,12 @@
                                     <span class="help-block"
                                           ng-show="addTestCtrl.item.errors.name">{{addTestCtrl.item.errors.name}}</span>
                                 </div>
-                                <div class="form-group">
-                                    <div class="form-line">
+
+                                <!-- items.sensors group -->
+
+                                <div class="form-group" ng-class="{'has-error' : addTestCtrl.item.errors.sensors }">
+                                    <div class="form-line"
+                                         ng-class="{'focused error' : addTestCtrl.item.errors.sensors }">
                                         <h3>Sensor Simulators:
                                             <button type="button" id="addSimulator"
                                                     class="btn btn-secondary m-t-0 waves-effect"
@@ -149,9 +153,13 @@
 
 
                                     </div>
+                                    <span class="help-block"
+                                          ng-show="addTestCtrl.item.errors.sensors">{{addTestCtrl.item.errors.sensors}}</span>
+
                                 </div>
-                                <div class="form-group">
-                                    <div class="form-line">
+                                <div class="form-group" ng-class="{'has-error' : addTestCtrl.item.errors.sensors }">
+                                    <div class="form-line"
+                                         ng-class="{'focused error' : addTestCtrl.item.errors.sensors }">
                                         <h3>Real Sensor:
                                             <button type="button" id="addRealSensor"
                                                     class="btn btn-secondary m-t-0 waves-effect"
@@ -169,6 +177,8 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <span class="help-block"
+                                          ng-show="addTestCtrl.item.errors.sensors">{{addTestCtrl.item.errors.sensors}}</span>
 
                                 </div>
 
@@ -565,7 +575,7 @@
                                                ng-model="ctrl.config.longitudeGPSPl"> <br><br>
 
                                         <input type="text" name="gpsHeight" placeholder="Height"
-                                        ng-model="ctrl.config.heightGPSPl">
+                                               ng-model="ctrl.config.heightGPSPl">
                                     </div>
                                     <div class="form-line">
                                         <h4> Enter the radius at which a reaction should take place:* </h4>
@@ -928,8 +938,12 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <div class="form-group">
-                                    <div class="form-line">
+
+
+                                <!-- item.rules group -->
+                                <div class="form-group" ng-class="{'has-error' : addTestCtrl.item.errors.rules }">
+                                    <div class="form-line"
+                                         ng-class="{'focused error' : addTestCtrl.item.errors.rules }">
                                         <h3> Which rules should be observed?*</h3>
                                         <select class="form-control selectpicker" title="Rules"
                                                 data-header="Rules to be observed"
@@ -937,7 +951,10 @@
                                                 ng-model="ctrl.rules" multiple>
                                         </select>
                                     </div>
+                                    <span class="help-block"
+                                          ng-show="addTestCtrl.item.errors.rules">{{addTestCtrl.item.errors.rules}}</span>
                                 </div>
+                                <!-- item.triggerRules group radio button -->
                                 <div class="form-group">
                                     <div class="radio">
                                         <input type="radio" class="with-gap" id="trigger_rules"
@@ -1477,16 +1494,16 @@
                                     </tbody>
                                 </table>
 
+                            </div>
                         </div>
+                    </fieldset>
+                </form>
             </div>
-            </fieldset>
-            </form>
+
         </div>
 
     </div>
 
-</div>
-
-<!-- #END# Modal -->
+    <!-- #END# Modal -->
 </div>
 

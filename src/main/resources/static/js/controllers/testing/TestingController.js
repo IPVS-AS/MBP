@@ -38,6 +38,7 @@ app.controller('TestingController',
             vm.test = "";
             vm.addSimulator = false;
             vm.addRealSensor = false;
+            vm.executeRules = "true";
 
             /**
              * Initializing function, sets up basic things.

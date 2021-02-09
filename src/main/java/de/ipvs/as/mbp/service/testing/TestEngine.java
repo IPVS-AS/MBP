@@ -1,6 +1,7 @@
 package de.ipvs.as.mbp.service.testing;
 
 
+import com.mongodb.util.JSON;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;
@@ -135,7 +136,7 @@ public class TestEngine {
      */
     private List<String> updateRuleNames(List<Rule> newRuleList) {
         List<String> ruleNames = new ArrayList<>();
-        for(Rule rule: newRuleList){
+        for (Rule rule : newRuleList) {
             ruleNames.add(rule.getName());
         }
 
@@ -149,16 +150,13 @@ public class TestEngine {
      * @return List of updated rules
      */
     private List<Rule> updateRuleInformation(JSONObject updateInfos) throws JSONException {
-        Pattern pattern = Pattern.compile("MBP_war_exploded/(.*)$");
         JSONArray rules = (JSONArray) updateInfos.get("rules");
         List<Rule> newRules = new ArrayList<>();
         if (rules != null) {
             for (int i = 0; i < rules.length(); i++) {
-                String href = rules.getString(i).replace("\\","");
-                Matcher m = pattern.matcher(href);
-                if (m.find()) {
-                    newRules.add(ruleRepository.findById(m.group(1)).get());
-                }
+                JSONObject ruleDetails = rules.getJSONObject(i);
+                String ruleName = ruleDetails.getString("name");
+                newRules.add(ruleRepository.findByName(ruleName).get());
             }
         }
         return newRules;
@@ -598,5 +596,19 @@ public class TestEngine {
      */
     public void registerThreeDimSensorSimulator(String sensorName) {
         //TODO
+    }
+
+    /**
+     * Delete Tets with specific test id.
+     *
+     * @param testId
+     */
+    public void deleteTest(String testId) {
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
+
+        if (testDetailsRepository.existsById(testId)) {
+            testDetailsRepository.deleteById(testId);
+        }
+
     }
 }

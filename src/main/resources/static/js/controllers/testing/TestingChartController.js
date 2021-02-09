@@ -104,7 +104,6 @@ app.controller('TestingChartController',
             function updateDeviceState() {
                 vm.deviceState = 'LOADING';
                 //Retrieve device state
-                console.log(vm.sensorList)
                 DeviceService.getDeviceState(vm.sensorList[0].device.id).then(function (response) {
                     //Success
                     vm.deviceState = response.content;
