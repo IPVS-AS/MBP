@@ -879,16 +879,6 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
                 }
             }
 
-            if (checkSimSensor === false && checkRealSensor === false) {
-                NotificationService.notify('Choose at least one sensor', 'error')
-
-            }
-
-
-            if (executeRulesTemp === 'undefined') {
-                NotificationService.notify('A decision must be made.', 'error')
-            }
-
             vm.executeRules = executeRulesTemp === 'true';
             newTestObject.triggerRules = executeRules;
 
