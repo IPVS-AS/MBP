@@ -7,8 +7,7 @@ app.controller('PolicyConditionListController',
     ['$scope', '$controller', '$interval', 'policyConditionList', 'addPolicyCondition', 'deletePolicyCondition', 'NotificationService', 'PolicyConditionService',
         function ($scope, $controller, $interval, policyConditionList, addPolicyCondition, deletePolicyCondition, NotificationService, PolicyConditionService) {
 
-            var vm = this;
-            // var queryResult = $scope.$('#condition-builder').queryBuilder('getRules');
+            let vm = this;
 
             /**
              * [Public]
@@ -18,11 +17,11 @@ app.controller('PolicyConditionListController',
              * @returns A promise of the user's decision
              */
             function confirmDelete(data) {
-                var policyConditionId = data.id;
-                var policyConditionName = "";
+                let policyConditionId = data.id;
+                let policyConditionName = "";
 
                 // Determines the policy condition's name by checking the list
-                for (var i = 0; i < policyConditionList.length; i++) {
+                for (let i = 0; i < policyConditionList.length; i++) {
                     if (policyConditionId === policyConditionList[i].id) {
                         policyConditionName = policyConditionList[i].name;
                         break;
@@ -55,8 +54,14 @@ app.controller('PolicyConditionListController',
                 deletePolicyConditionCtrl: $controller('DeleteItemController as deletePolicyConditionCtrl', {
                     $scope: $scope,
                     deleteItem: deletePolicyCondition,
-                    confirmDeletion: confirmDelete
-                })
+                    confirmDeletion: confirmDelete,
+                }),
+                closeModal: () => {
+                    $('#addPolicyConditionModal').modal('hide');
+                },
+                showModal: () => {
+                    $('#addPolicyConditionModal').modal('show');
+                }
             });
 
             // Watch addition of policy conditions and add them to the list
@@ -67,7 +72,7 @@ app.controller('PolicyConditionListController',
                 },
                 function () {
                     // Callback
-                    var policyCondition = vm.addPolicyConditionCtrl.result;
+                    let policyCondition = vm.addPolicyConditionCtrl.result;
 
                     // Make sure the result is valid
                     if (policyCondition) {
@@ -88,7 +93,7 @@ app.controller('PolicyConditionListController',
                 },
                 function () {
                     // Callback
-                    var id = vm.deletePolicyConditionCtrl.result;
+                    let id = vm.deletePolicyConditionCtrl.result;
                     vm.policyConditionListCtrl.removeItem(id);
                 }
             );
