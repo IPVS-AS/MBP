@@ -6,6 +6,7 @@ import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.domain.user.UserAuthData;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.InvalidPasswordException;
+import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
 import de.ipvs.as.mbp.repository.UserRepository;
 import de.ipvs.as.mbp.repository.projection.UserExcerpt;
@@ -139,13 +140,32 @@ public class RestUserController {
 
     @PostMapping(path = "/{userId}/degrade")
     @ApiOperation(value = "Degrades an existing administrator to a non-administrator.")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to degrade users (admin privileges required)!")})
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to degrade users (admin privileges required)!"), @ApiResponse(code = 403, message = "Cannot degrade yourself.")})
     public ResponseEntity<EntityModel<User>> degradeUser(@PathVariable("userId") String userId) throws MissingAdminPrivilegesException, EntityNotFoundException {
         // Check whether the requesting user has admin privileges
         userService.requireAdmin();
 
+        //Check if current user is the same as the affected user
+        if (userService.getLoggedInUser().getId().equals(userId)) {
+            throw new MBPException(HttpStatus.FORBIDDEN, "To prevent lock-outs, you cannot degrade yourself.");
+        }
+
         // Update user
         User updatedUser = userService.degradeUser(userId);
+
+        //Return entity model of the updated user
+        return ResponseEntity.ok(new EntityModel<User>(updatedUser, linkTo(getClass()).slash(updatedUser.getId()).withSelfRel()));
+    }
+
+    @PostMapping(path = "/{userId}/change_password")
+    @ApiOperation(value = "Updates the password of an existing user.")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to change the password (admin privileges required)!")})
+    public ResponseEntity<EntityModel<User>> changePassword(@PathVariable("userId") String userId, @RequestBody @ApiParam(value = "The new password to set (plain text)", required = true) User newPassword) throws MissingAdminPrivilegesException, EntityNotFoundException {
+        // Check whether the requesting user has admin privileges
+        userService.requireAdmin();
+
+        // Update user
+        User updatedUser = userService.changePassword(userId, newPassword.getPassword());
 
         //Return entity model of the updated user
         return ResponseEntity.ok(new EntityModel<User>(updatedUser, linkTo(getClass()).slash(updatedUser.getId()).withSelfRel()));

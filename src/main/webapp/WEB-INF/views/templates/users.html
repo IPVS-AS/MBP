@@ -1,5 +1,4 @@
 <div class="row clearfix" ng-hide="ng-hide">
-
     <div class="col-lg-12">
         <div class="card">
             <div class="header">
@@ -34,6 +33,11 @@
                                     ng-click="ctrl.degradeUser(user.id)">
                                 <i class="material-icons" style="font-size:14px;">star_border</i>
                             </button>
+                            <button ng-hide="user.isSystemUser"
+                                    class="btn bg-primary btn-circle waves-effect waves-circle waves-float"
+                                    ng-click="ctrl.newPassword.userId = user.id; ctrl.showPasswordModal()">
+                                <i class="material-icons" style="font-size:14px;">edit</i>
+                            </button>
                             <form ng-submit="deleteUserCtrl.deleteItem()" style="display: inline-block">
                                 <button type="submit" ng-hide="user.isSystemUser"
                                         class="btn bg-red btn-circle waves-effect waves-circle waves-float"
@@ -58,4 +62,43 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change user password
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form ng-submit="ctrl.changePassword()">
+                    <fieldset>
+                        <div class="modal-body">
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : ctrl.newPassword.error }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : ctrl.generation.error }">
+                                    <input type="password" class="form-control"
+                                           placeholder="New password" ng-model="ctrl.newPassword.password"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="ctrl.generation.error">{{ctrl.newPassword.error}}</span>
+                            </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Update password</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- #END# Modal -->
 </div>

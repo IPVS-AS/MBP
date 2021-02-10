@@ -9,6 +9,12 @@ app.controller('UserListController',
 
             let vm = this;
 
+            //Set object for password change
+            vm.newPassword = {
+                password: '',
+                userId: ''
+            };
+
 
             /**
              * Initializing function, sets up basic things.
@@ -60,6 +66,32 @@ app.controller('UserListController',
                 });
             }
 
+            /**
+             * [Public]
+             *
+             * Shows a modal dialog in which a new password for a user can be entered.
+             */
+            function showPasswordModal() {
+                //Show modal for password change
+                $("#changePasswordModal").modal('show');
+            }
+
+            /**
+             * [Public]
+             *
+             * Performs a server request in order to change the password of the current set user.
+             */
+            function changePassword() {
+                //Perform server request
+                UserService.changeUserPassword(vm.newPassword.userId, vm.newPassword.password).then(function () {
+                    //Notify user
+                    NotificationService.notify("The user was updated successfully.", "success")
+
+                    //Hide modal for password change
+                    $("#changePasswordModal").modal('hide');
+                });
+            }
+
 
             /**
              * [Public]
@@ -108,7 +140,9 @@ app.controller('UserListController',
                         confirmDeletion: confirmDelete
                     }),
                 promoteUser: promoteUser,
-                degradeUser: degradeUser
+                degradeUser: degradeUser,
+                showPasswordModal: showPasswordModal,
+                changePassword: changePassword
             });
 
             // Watch delete controller and remove users from list
