@@ -1,9 +1,7 @@
 package de.ipvs.as.mbp.domain.testing;
 
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
-import de.ipvs.as.mbp.domain.rules.Rule;
-import org.apache.commons.digester.Rules;
-import org.springframework.data.mongodb.core.mapping.DBRef;
+
 
 import java.util.List;
 

@@ -41,7 +41,7 @@ app.controller('TestingController',
             vm.executeRules = "true";
 
             /**
-             * Initializing function, sets up basic things.
+             * test
              */
             (function initController() {
                 vm.availableSensors = [];
