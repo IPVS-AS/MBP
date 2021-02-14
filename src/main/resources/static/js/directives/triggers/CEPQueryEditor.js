@@ -5,7 +5,7 @@
 /**
  * Directive which allows the user to define event patterns based on components.
  */
-app.directive('cepQueryEditor', [function () {
+app.directive('cepQueryEditor', ['$compile', function ($compile) {
 
     const CLASS_MAIN_CONTAINER = 'cep-query-editor';
     const CLASS_PATTERN_CONTAINER = 'pattern-container';
@@ -95,6 +95,11 @@ app.directive('cepQueryEditor', [function () {
         }];
 
     function init(scope, element, attrs) {
+        // Map for accessing the rule objects provided by the query builder for the angular bindings of the json path input
+        scope.ruleJsonPathBindings = new Map();
+        // Map for accessing component infos by their corresponding event name (filter name). Needed for the json path input
+        scope.eventComponentMapping = new Map();
+
         const OPERATOR_TYPES_LIST = [{
             name: 'Before',
             description: 'Specifies that first the expression on the left hand must turn true and only then ' +
@@ -391,7 +396,8 @@ app.directive('cepQueryEditor', [function () {
             id: 'null',
             label: 'None',
             type: 'double',
-            operators: CONDITIONS_PICKER_OPERATORS_PLAIN
+            operators: CONDITIONS_PICKER_OPERATORS_PLAIN,
+            data: {},
         }];
 
         function getElementType(element) {
@@ -726,6 +732,11 @@ app.directive('cepQueryEditor', [function () {
             let eventId = element.data(KEY_ID);
             let eventResourceName = element.data(KEY_SOURCE_RESOURCE_NAME);
             let eventAlias = element.data(KEY_SOURCE_ALIAS);
+
+            // Update the maps holding the mapping information: event-name --> component infos
+            // TODO Maybe generalize this a bit more and make sure that the map keeps always up to date
+            scope.eventComponentMapping.set(eventAlias, element.data(KEY_SOURCE_COMPONENT_DATA));
+            scope.eventComponentMapping.set(element.data(KEY_SOURCE_COMPONENT_DATA).name, element.data(KEY_SOURCE_COMPONENT_DATA));
 
             //Iterate over all available filter types and create corresponding filter objects
             for (let i = 0; i < CONDITIONS_PICKER_ALL_FILTER_TYPES.length; i++) {
@@ -1222,6 +1233,11 @@ app.directive('cepQueryEditor', [function () {
                         windowTypeDropdownButton.html(text + ' <span class="caret"/>');
                     }
 
+                    let ruleElement = rule.$el;
+                    let filterContainer = $(ruleElement.find('div.rule-filter-container'));
+                    let filterSelect = $(filterContainer.find('select'));
+                    let valueContainer = $(ruleElement.find('div.rule-value-container'));
+
                     //Apply styling
                     $('.rule-value-container input:first').css({
                         'width': '70px',
@@ -1232,16 +1248,39 @@ app.directive('cepQueryEditor', [function () {
                         return;
                     }
 
+                    rule.data = {jsonPath: ""};
+                    scope.ruleJsonPathBindings.set(rule.id, rule);
+
+                    // Get the name of the event type (filter) which is currently selected for this rule
+                    let selectedFilter = filterSelect.find('option:selected').text();
+
+                    // Prepare the jsonPath input with all needed bindings
+                    scope.fieldCollectionId = "";
+                    scope.pathType = "";
+                    var jsonPathInput = "<json-path-input ng-model=\"ruleJsonPathBindings.get(\'" + rule.id + "\').data.jsonPath\"" +
+                        "json-path-list=\"eventComponentMapping.get(\'" + selectedFilter + "\').operator.dataModel.jsonPathsToLeafNodes\"" +
+                        "number-of-needed-wildcards=\"0\"" +
+                        "field-collection-id-input=\"fieldCollectionId\"" +
+                        "path-type=\"pathType\"" +
+                        "</json-path-input>";
+
+                    // Compile the html so that angular can apply the bindings properly
+                    var compiledJsonPathInput = $compile(jsonPathInput)(scope);
+
+                    // Add a the jsonPath input within a new container to the rule element
+                    var componentFieldContainer = $('<div class="btn-group">').append(compiledJsonPathInput);
+                    if (ruleElement.has("json-path-input").length) {
+                        // Remove old json-path-inputs
+                        ruleElement.find("json-path-input").remove();
+                    }
+                    ruleElement.append(componentFieldContainer);
+
+
                     //Get filter type
                     let filterType = filterTypeChoices[rule.id];
                     if (filterType === CONDITIONS_PICKER_SOURCE_FILTER) {
                         return;
                     }
-
-                    let ruleElement = rule.$el;
-                    let filterContainer = $(ruleElement.find('div.rule-filter-container'));
-                    let filterSelect = $(filterContainer.find('select'));
-                    let valueContainer = $(ruleElement.find('div.rule-value-container'));
 
                     if ((filterSelect.val() === '-1')) {
                         delete aggregationWindowOptions[rule.id];
@@ -1364,7 +1403,7 @@ app.directive('cepQueryEditor', [function () {
                 //Condition is a single event, get event alias
                 let eventAlias = getAliasForPatternEvent(conditionsObject.id);
 
-                return "(" + eventAlias + ".value " + operator + " " + conditionsObject.value + ")";
+                return "(" + eventAlias + "." + conditionsObject.data.jsonPath.path.substring(1) + operator + " " + conditionsObject.value + ")";
             }
 
             //Condition is an aggregation
@@ -1378,7 +1417,8 @@ app.directive('cepQueryEditor', [function () {
                 windowUnit = " " + CONDITIONS_PICKER_WINDOW_UNITS[windowOptions.unit].querySymbol;
             }
 
-            return "((SELECT " + aggregationFunction + "(value) FROM " + sourceReference +
+            return "((SELECT " + aggregationFunction + "(" + conditionsObject.data.jsonPath.path.substring(1) +
+                ") FROM " + sourceReference +
                 ".win:" + windowOptions.type + "(" + windowOptions.size + windowUnit + ")) " +
                 operator + " " + conditionsObject.value + ")";
         }

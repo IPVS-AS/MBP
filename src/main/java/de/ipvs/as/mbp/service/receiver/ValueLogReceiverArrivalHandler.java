@@ -3,15 +3,10 @@ package de.ipvs.as.mbp.service.receiver;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import de.ipvs.as.mbp.DynamicBeanProvider;
-import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
-import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
-import de.ipvs.as.mbp.domain.visualization.tmp.VisualsDataTreesCollections;
 import de.ipvs.as.mbp.repository.DataModelTreeCache;
 import org.bson.Document;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -107,7 +102,7 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
                     // Retrieve the root node of the value json object which must be part of the mqtt message by convention
                     json.getJSONObject("value"),
                     // Get the data model tree of the component as this is needed to infer the right database types
-                    dataModelTreeCache.getDataModelOfSensor(componentID, componentType)
+                    dataModelTreeCache.getDataModelOfComponent(componentID)
             ));
         } else {
             // Extra case for monitoring operators as they don't have data models and are just expected to send numbers

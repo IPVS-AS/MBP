@@ -129,7 +129,7 @@ public class EsperCEPEngine implements CEPEngine {
             CEPPrimitiveDataTypes fieldType = eventFields.get(fieldName);
 
             //Append field name and its type to the query
-            queryBuilder.append(fieldName);
+            queryBuilder.append("`" + fieldName + "`");
             queryBuilder.append(" ");
             queryBuilder.append(fieldType.getName());
 
@@ -138,6 +138,9 @@ public class EsperCEPEngine implements CEPEngine {
                 queryBuilder.append(", ");
             }
         }
+
+        // Mehrdimensionale Arrays FUNKEN NICHT
+        //queryBuilder.append(", test string[]");
 
         //Close query
         queryBuilder.append(")");
@@ -170,6 +173,8 @@ public class EsperCEPEngine implements CEPEngine {
         if (matchingEventType == null) {
             throw new EventNotRegisteredException("No event type has been registered for event \"" + event.getEventTypeName() + "\".");
         }
+
+        System.out.println("Sent event");
 
         //Send valid event to Esper
         cepRuntime.sendEvent(event.getFieldValues(), event.getEventTypeName());

@@ -1,30 +1,50 @@
 package de.ipvs.as.mbp.domain.data_model;
 
+import de.ipvs.as.mbp.service.cep.engine.core.events.CEPPrimitiveDataTypes;
+
 /**
  * An enum for storing all available tree node types for a data model tree together with
  * their string value representation for interfering types from strings.
  */
 public enum IoTDataTypes implements Comparable<IoTDataTypes> {
 
-    DOUBLE("double"),
-    STRING("string"),
-    BINARY("binary"),
-    BOOLEAN("boolean"),
-    DATE("date"),
-    INT("int"),
-    LONG("long"),
-    DECIMAL128("decimal128"),
-    OBJECT("object"),
-    ARRAY("array");
+    DOUBLE("double", CEPPrimitiveDataTypes.DOUBLE),
+    STRING("string", CEPPrimitiveDataTypes.STRING),
+    BINARY("binary", null),
+    BOOLEAN("boolean", CEPPrimitiveDataTypes.BOOLEAN),
+    DATE("date", null),
+    INT("int", CEPPrimitiveDataTypes.INTEGER),
+    LONG("long", CEPPrimitiveDataTypes.LONG),
+    DECIMAL128("decimal128", CEPPrimitiveDataTypes.BIG_DECIMAL),
+    OBJECT("object", null),
+    ARRAY("array", null);
 
     private final String value;
+    private final CEPPrimitiveDataTypes cepType;
 
-    IoTDataTypes(String value) {
+    IoTDataTypes(String value, CEPPrimitiveDataTypes cepType) {
         this.value = value;
+        this.cepType = cepType;
     }
 
     public String getValue() {
         return value;
+    }
+
+    /**
+     * @return The analog {@link CEPPrimitiveDataTypes} of this {@link IoTDataTypes} or null
+     * if no analog type exists.
+     */
+    public CEPPrimitiveDataTypes getCepType() {
+        return cepType;
+    }
+
+    public static boolean hasCepPrimitiveDataType(IoTDataTypes type) {
+        if (type.getCepType() != null) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**

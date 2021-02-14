@@ -4,6 +4,7 @@ import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPEvent;
 
 import java.time.Instant;
+import java.util.Map;
 
 /**
  * CEP event wrapping a value log that was received for a certain component. This event may be used in order to be
@@ -18,8 +19,9 @@ public class CEPValueLogEvent extends CEPEvent {
      * Creates a new CEP value log event from a given value log.
      *
      * @param valueLog The value log to use
+     * @param parsedLog
      */
-    CEPValueLogEvent(ValueLog valueLog) {
+    CEPValueLogEvent(ValueLog valueLog, Map<String, Object> parsedLog) {
         super();
 
         //Sanity check
@@ -30,6 +32,7 @@ public class CEPValueLogEvent extends CEPEvent {
 
         //Convert value string of value log to double
         // TODO NOT SUPPORTED AT THE MOMENT
+        // TODO ADD HERE HANDLING
         //double value = valueLog.getValue();
         double value = 5.0;
 
@@ -39,9 +42,19 @@ public class CEPValueLogEvent extends CEPEvent {
         //Get epoch seconds
         long unixSeconds = time.getEpochSecond();
 
-        //Set event fields
-        this.addValue("value", value);
+        if (this.valueLog.getComponent().equals("MONOTORING") || this.valueLog.getComponent().equals("DEVICE")) {
+            //Set event fields
+            this.addValue("value", value);
+            this.addValue("time", unixSeconds);
+            return;
+        }
+
         this.addValue("time", unixSeconds);
+
+        // Set event fields
+        for (Map.Entry<String, Object> entry : parsedLog.entrySet()) {
+            this.addValue(entry.getKey(), entry.getValue());
+        }
     }
 
     /**

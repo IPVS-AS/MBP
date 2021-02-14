@@ -44,6 +44,8 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
      */
     private final List<DataModelTreeNode> modelNodeList;
 
+    private final List<DataModelTreeNode> leafNodes;
+
     /**
      * The root node of the tree
      */
@@ -67,8 +69,25 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
         this.repoNodeRepresentationList = repoNodesToConvert;
         this.modelNodeList = new ArrayList<>();
         this.jsonPathMap = new HashMap<>();
+        this.leafNodes = new ArrayList<>();
         validateAndBuildTree();
 
+    }
+
+    public List<DataModelTreeNode> getLeafNodes() {
+        return leafNodes;
+    }
+
+    /**
+     * Inits the {@link DataModelTree#leafNodes} list. Will be called
+     * by {@link DataModelTree#validateAndBuildTree()}.
+     */
+    public void initLeafNodeList() {
+        for (DataModelTreeNode node : this.modelNodeList) {
+            if (node.getChildren().size() <= 0) {
+                this.leafNodes.add(node);
+            }
+        }
     }
 
     /**
@@ -128,6 +147,9 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
 
         // Now build the tree
         buildTree();
+
+        // Init the leaf nodes list
+        initLeafNodeList();
     }
 
     public DataModelTreeNode getRoot() {
@@ -757,5 +779,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
 
     }
 
-
+    public Map<String, Map.Entry<JsonPath, IoTDataTypes>> getJsonPathMap() {
+        return jsonPathMap;
+    }
 }

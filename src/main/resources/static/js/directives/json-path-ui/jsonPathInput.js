@@ -41,6 +41,7 @@ app.directive('jsonPathInput', ['UnitService', '$compile', function (UnitService
         var jsonPathSplittedForArrInput = [];
 
         /**
+         * [public]
          * Actions when a json path item is selected by the user.
          *
          * @param pathItem Object with all the necessary json path information.

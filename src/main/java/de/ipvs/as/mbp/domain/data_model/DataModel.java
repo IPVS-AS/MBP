@@ -2,6 +2,7 @@ package de.ipvs.as.mbp.domain.data_model;
 
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
+import de.ipvs.as.mbp.domain.visualization.repo.PathUnitPair;
 import de.ipvs.as.mbp.domain.visualization.repo.VisMappingInfo;
 import de.ipvs.as.mbp.domain.visualization.repo.VisualizationMappings;
 import org.springframework.data.annotation.Id;
@@ -31,14 +32,32 @@ public class DataModel extends UserEntity {
 
     private List<DataTreeNode> treeNodes;
 
+    /**
+     * Example of how a value json string is to be expected to be sent by an operator
+     */
     private String JSONExample;
 
+    /**
+     * All possibilities how an instance of this data model can be visualized
+     */
     private ArrayList<VisMappingInfo> possibleVisMappings;
+
+    /**
+     * All json paths to the leaf nodes of the model
+     */
+    private List<PathUnitPair> jsonPathsToLeafNodes;
 
     // ------
 
+    public List<PathUnitPair> getJsonPathsToLeafNodes() {
+        return jsonPathsToLeafNodes;
+    }
 
-    public ArrayList<VisMappingInfo> getPossibleVisMappings() {
+    public void setJsonPathsToLeafNodes(List<PathUnitPair> jsonPathsToLeafNodes) {
+        this.jsonPathsToLeafNodes = jsonPathsToLeafNodes;
+    }
+
+    public List<VisMappingInfo> getPossibleVisMappings() {
         return possibleVisMappings;
     }
 
