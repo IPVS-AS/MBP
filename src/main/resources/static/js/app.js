@@ -1,6 +1,6 @@
 'use strict';
 
-let app = angular.module('app', ['ngRoute', 'ngResource', 'ngCookies', 'ngSanitize', 'smart-table', 'ui.bootstrap', 'ngFileUpload', 'thatisuday.dropzone']);
+let app = angular.module('app', ['ngRoute', 'ngResource', 'ngCookies', 'ngSanitize', 'smart-table', 'ui.bootstrap', 'ngFileUpload', 'thatisuday.dropzone', 'jsonFormatter']);
 
 app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvider', 'dropzoneOpsProvider',
     function ($provide, $routeProvider, $locationProvider, $resourceProvider, dropzoneOpsProvider) {

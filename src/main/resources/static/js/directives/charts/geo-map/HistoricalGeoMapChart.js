@@ -134,14 +134,6 @@ app.directive('historicalGeoMapChart', ['$timeout', '$interval', function ($time
             //Data will be loaded
             scope.loadingStart();
 
-            /*
-            //Set y-axis and tooltip unit to currently displayed unit and redraw chart
-            chart.yAxis[0].labelFormatter = function () {
-                return this.value + ' ' + scope.unit;
-            };
-            chart.series[0].tooltipOptions.valueSuffix = ' ' + scope.unit;
-            */
-
             //Retrieve a fixed number of value logs from the server
             scope.getData({
                 numberLogs: scope.settings.numberOfValues,
@@ -161,9 +153,7 @@ app.directive('historicalGeoMapChart', ['$timeout', '$interval', function ($time
 
                 function applyJsonPath(value, index, array) {
                     var newVal = [];
-                    console.log(jsonPathAsObj);
-                    console.log(jsonPathAsObj.latitude.path);
-                    console.log(jsonPathAsObj.longitude.path);
+
                     if (scope.fieldCollectionId === 'default') {
                         console.log(value);
                         // Push time
@@ -216,10 +206,7 @@ app.directive('historicalGeoMapChart', ['$timeout', '$interval', function ($time
         scope.$watch(function () {
             return scope.fieldCollectionId;
         }, function (newValue, oldValue) {
-            console.log("Field collection ID: ");
-            console.log(newValue);
-            console.log(oldValue);
-            console.log(scope.fieldCollectionId);
+
             //initChart();
             updateChart();
         });

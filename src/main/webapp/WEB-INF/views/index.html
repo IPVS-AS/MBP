@@ -98,6 +98,9 @@
 
     <!-- Leaflet (OSM javascript library) -->
     <link th:href="@{/plugins/leaflet/css/leaflet.css}" rel="stylesheet"/>
+
+    <!-- jsonFormatter css -->
+    <link th:href="@{/plugins/json-formatter/json-formatter.min.css}" rel="stylesheet"/>
 </head>
 
 <body class="theme-blue" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
@@ -369,6 +372,9 @@
 
 <!-- Leaflet (Open-Street-Map javascript library) -->
 <script th:src="@{/plugins/leaflet/leaflet.js}"></script>
+
+<!-- Angular jsonFormatter plugin -->
+<script th:src="@{/plugins/json-formatter/json-formatter.min.js}"></script>
 
 <!-- Angular -->
 <script th:src="@{/js/app.js}"></script>

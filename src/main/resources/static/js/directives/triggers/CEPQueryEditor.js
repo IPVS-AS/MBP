@@ -5,7 +5,7 @@
 /**
  * Directive which allows the user to define event patterns based on components.
  */
-app.directive('cepQueryEditor', ['$compile', function ($compile) {
+app.directive('cepQueryEditor' ['$compile', function ($compile) {
 
     const CLASS_MAIN_CONTAINER = 'cep-query-editor';
     const CLASS_PATTERN_CONTAINER = 'pattern-container';

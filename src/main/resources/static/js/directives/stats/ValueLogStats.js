@@ -19,6 +19,8 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
      * @param attrs Attributes of the directive
      */
     var link = function (scope, element, attrs) {
+
+
         //Stores the interval object for regular updates
         var updateInterval = null;
 
@@ -40,6 +42,8 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
             scope.getStats({unit: scope.unit}).then(function (receivedData) {
                 //Take received data
                 scope.statisticsData = receivedData;
+                console.log("STATSTICS");
+                console.log(scope.statisticsData);
 
                 //Loading finish callback if desired
                 if (!noCallback) {
@@ -74,6 +78,49 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
             if (updateInterval) {
                 $interval.cancel(updateInterval);
             }
+        }
+
+        /**
+         * [public]
+         * Converts epoch time to a date string
+         * @param timeToConvert
+         * @return {string} The date string
+         */
+        function convertTime(timeToConvert= 0) {
+            var time = timeToConvert.epochSecond * 1000;
+            time = dateToString(new Date(time));
+            return time;
+        }
+
+        scope.getTimeString = convertTime;
+
+            /**
+         * [Private]
+         * Converts a javascript date object to a human-readable date string in the "dd.mm.yyyy hh:mm:ss" format.
+         *
+         * @param date The date object to convert
+         * @returns The generated date string in the corresponding format
+         */
+        function dateToString(date) {
+            //Retrieve all properties from the date object
+            var year = date.getFullYear();
+            var month = '' + (date.getMonth() + 1);
+            var day = '' + date.getDate();
+            var hours = '' + date.getHours();
+            var minutes = '' + date.getMinutes();
+            var seconds = '' + date.getSeconds();
+
+            //Add a leading zero (if necessary) to all properties except the year
+            var values = [day, month, hours, minutes, seconds];
+            for (var i = 0; i < values.length; i++) {
+                if (values[i].length < 2) {
+                    values[i] = '0' + values[i];
+                }
+            }
+
+            //Generate and return the date string
+            return ([values[0], values[1], year].join('.')) +
+                ' ' + ([values[2], values[3], values[4]].join(':'));
         }
 
         //Watch the unit parameter
@@ -119,19 +166,24 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
           //  '<td>{{statisticsData.standardDeviation}}&nbsp;{{(unit)}}</td>' +
           //  '</tr>' +
           //  '<tr>' +
-            '<th>First value:</th>' +
-            '<td><button uib-popover="{{statisticsData.firstLog.message}}"' +
-            'popover-title="{{statisticsData.firstLog.date}}" type="button"' +
-            'style="width:100%; max-width: 250px; overflow: hidden; text-overflow: ellipsis;"' +
-            'class="btn btn-default">{{statisticsData.firstLog.value}}</button>' +
+            '<th>First value ({{getTimeString(statisticsData.firstLog.time)}}):</th>' +
+            '<td><json-formatter json="statisticsData.firstLog.value" open="1"></json-formatter></td>' +
+            //'<td><button uib-popover="{{statisticsData.firstLog.message}}"' +
+            //'<td><button uib-popover="5"' +
+            //'popover-title="{{statisticsData.firstLog.date}}" type="button"' +
+            //'style="width:100%; max-width: 250px; overflow: hidden; text-overflow: ellipsis;"' +
+            //'class="btn btn-default">5{statisticsData.firstLog.value}}</button>' +
+            //'class="btn btn-default">5</button>' +
             '<span>&nbsp;{{(unit)}}</span></td>' +
             '</tr>' +
             '<tr>' +
-            '<th>Last value:</th>' +
-            '<td><button uib-popover="{{statisticsData.lastLog.message}}"' +
-            'popover-title="{{statisticsData.lastLog.date}}" type="button"' +
-            'style="width:100%; max-width: 250px; overflow: hidden; text-overflow: ellipsis;"' +
-            'class="btn btn-default">{{statisticsData.lastLog.value}}</button>' +
+            '<th>Last value ({{getTimeString(statisticsData.lastLog.time)}}):</th>' +
+            '<td><json-formatter json="statisticsData.lastLog.value" open="1"></json-formatter></td>' +
+
+        //    '<td><button uib-popover="{{statisticsData.lastLog.message}}"' +
+        //    'popover-title="{{statisticsData.lastLog.date}}" type="button"' +
+        //    'style="width:100%; max-width: 250px; overflow: hidden; text-overflow: ellipsis;"' +
+        //   'class="btn btn-default">{{statisticsData.lastLog.value}}</button>' +
             '<span>&nbsp;{{(unit)}}</span></td>' +
             '</tr>' +
             // '<tr>' +
