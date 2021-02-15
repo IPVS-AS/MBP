@@ -1403,7 +1403,7 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
                 //Condition is a single event, get event alias
                 let eventAlias = getAliasForPatternEvent(conditionsObject.id);
 
-                return "(" + eventAlias + "." + conditionsObject.data.jsonPath.path.substring(1) + operator + " " + conditionsObject.value + ")";
+                return "(" + eventAlias + ".`" + conditionsObject.data.jsonPath.path.substring(1) + "`" + operator + " " + conditionsObject.value + ")";
             }
 
             //Condition is an aggregation
@@ -1417,8 +1417,8 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
                 windowUnit = " " + CONDITIONS_PICKER_WINDOW_UNITS[windowOptions.unit].querySymbol;
             }
 
-            return "((SELECT " + aggregationFunction + "(" + conditionsObject.data.jsonPath.path.substring(1) +
-                ") FROM " + sourceReference +
+            return "((SELECT " + aggregationFunction + "(`" + conditionsObject.data.jsonPath.path.substring(1) +
+                "`) FROM " + sourceReference +
                 ".win:" + windowOptions.type + "(" + windowOptions.size + windowUnit + ")) " +
                 operator + " " + conditionsObject.value + ")";
         }
