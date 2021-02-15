@@ -2,8 +2,8 @@
 
 'use strict';
 
-app.controller('DeleteTestController', ['deleteItem', 'confirmDeletion', '$http', 'ENDPOINT_URI','NotificationService',
-    function (deleteItem, confirmDeletion, $http,ENDPOINT_URI, NotificationService) {
+app.controller('DeleteTestController', ['deleteItem', '$rootScope', 'confirmDeletion', '$http', 'ENDPOINT_URI', 'NotificationService',
+    function (deleteItem, $rootScope, confirmDeletion, $http, ENDPOINT_URI, NotificationService) {
         var vm = this;
 
         /**
@@ -16,7 +16,7 @@ app.controller('DeleteTestController', ['deleteItem', 'confirmDeletion', '$http'
             //Check if an alert function is defined
             if (typeof confirmDeletion !== 'undefined') {
                 //Function is defined, ask the user
-                confirmDeletion(vm.item).then(function (result) {
+                confirmDeletion(vm.item.toString()).then(function (result) {
                     //Check if the user confirmed the deletion
                     if (result.value) {
                         deleteItemPromise();
@@ -36,12 +36,14 @@ app.controller('DeleteTestController', ['deleteItem', 'confirmDeletion', '$http'
          */
         function deleteItemPromise() {
             vm.item.errors = {};
-            console.log(vm.item.id);
-            $http.post(ENDPOINT_URI + '/test-details/deleteTestreport/' + vm.item.id).then(function success(response) {
+
+            $http.post(ENDPOINT_URI + '/test-details/deleteTestReport/' + vm.item.id).then(function (response) {
                 console.log(response);
             });
+
             //Create deletion request and return the resulting promise
-            return deleteItem(vm.item).then(
+            console.log(deleteItem(vm.item.id))
+            return deleteItem(vm.item.id).then(
                 function (data) {
                     //Success
                     vm.result = data;
@@ -60,7 +62,9 @@ app.controller('DeleteTestController', ['deleteItem', 'confirmDeletion', '$http'
                     //Notify the user
                     NotificationService.notify('Could not delete entity', 'error');
                 }
-            );
+            ).then(function () {
+                $rootScope.$digest();
+            });
         }
 
         //Expose

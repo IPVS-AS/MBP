@@ -2,8 +2,9 @@
  * Controller for the component details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('TestingChartController',
-    ['$scope', '$rootScope', '$routeParams', 'TestService', 'testingDetails', 'sensorList', '$interval', 'ComponentService', 'CrudService', 'DeviceService', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI',
-        function ($scope, $rootScope, $routeParams, TestService, testingDetails, sensorList, $interval, ComponentService, CrudService, DeviceService, UnitService, NotificationService, $http, ENDPOINT_URI) {
+    ['$scope', '$rootScope', '$routeParams', 'TestService', 'testingDetails', 'sensorList', '$interval', 'ComponentService', 'DeviceService', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI', 'HttpService',
+        function ($scope, $rootScope, $routeParams, TestService, testingDetails, sensorList, $interval, ComponentService, DeviceService, UnitService, NotificationService, $http, ENDPOINT_URI, HttpService) {
+
             const vm = this;
 
             //Selectors that allow the selection of different ui cards
@@ -11,15 +12,10 @@ app.controller('TestingChartController',
             const HISTORICAL_CHART_CARD_SELECTOR = ".historical-chart-card";
             const DEPLOYMENT_CARD_SELECTOR = ".deployment-card";
             const COMPONENT_ID = testingDetails.id;
-            const COMPONENT_TYPE = vm.component_type;
             const COMPONENT_TYPE_URL = vm.component_type_url;
             const COMPONENT_OPERATOR_UNIT = vm.component_operator_unit;
 
-
             vm.sensorList = sensorList;
-
-
-
 
             //Stores the parameters and their values as assigned by the user
             vm.parameterValues = [];
@@ -46,8 +42,7 @@ app.controller('TestingChartController',
                 const interval = $interval(function () {
                     updateDeploymentState(true);
                     updateDeviceState();
-                }, 500);
-
+                }, 5000);
                 //Cancel interval on route change and enable the loading bar again
                 $scope.$on('$destroy', function () {
                     $interval.cancel(interval);
@@ -109,7 +104,7 @@ app.controller('TestingChartController',
             function updateDeviceState() {
                 vm.deviceState = 'LOADING';
                 //Retrieve device state
-                DeviceService.getDeviceState(vm.sensorList[0]._embedded.device.id).then(function (response) {
+                DeviceService.getDeviceState(vm.sensorList[0].device.id).then(function (response) {
                     //Success
                     vm.deviceState = response.content;
                 }, function (response) {
@@ -167,21 +162,19 @@ app.controller('TestingChartController',
                 //Show waiting screen
                 vm.startTest = 'STARTING_TEST';
 
-                //Execute start request
-                TestService.executeTest(COMPONENT_ID).success(function () {
-                    // If test completed successfully, update List of Test-Reports
-                    getPDFList();
-                    vm.startTest = "END_TEST";
-                    NotificationService.notify('Test completed successfully.', 'success');
-                }).error(function () {
+                //Perform request
+                TestService.startTest(COMPONENT_ID).then(function (response) {
+                    //Success
+                    if(response === true){
+                        getPDFList();
+                        vm.startTest = "END_TEST";
+                        NotificationService.notify('Test completed successfully.', 'success');
+                    }
+                }, function (response) {
+                    //Handle failure
                     vm.startTest = "ERROR_TEST";
                     NotificationService.notify('Error during the test.', 'error');
-
-                }).finally(function () {
-                    hideDeploymentWaitingScreen();
                 });
-
-
             }
 
             /**
@@ -193,10 +186,9 @@ app.controller('TestingChartController',
                 //Show waiting screen
                 showDeploymentWaitingScreen("Stopping...");
 
-                TestService.stopTest(COMPONENT_ID).success(function () {
+                TestService.stopTest(COMPONENT_ID).then(function () {
                     //Finally hide the waiting screen
                     vm.deploymentState = updateDeploymentState();
-                }).finally(function () {
                     hideDeploymentWaitingScreen();
                 });
 

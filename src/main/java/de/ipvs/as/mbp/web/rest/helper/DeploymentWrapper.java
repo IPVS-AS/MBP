@@ -47,7 +47,7 @@ public class DeploymentWrapper {
 	 *
 	 * @param component the {@link Component} to start.
 	 * @param parameterInstances the list of {@link ParameterInstance}s.
-	 * @return the resulting {@link ActionResponse}.
+	 * @return the resulting
      * @throws DeploymentException 
 	 */
     public void startComponent(Component component, List<ParameterInstance> parameterInstances) throws DeploymentException {

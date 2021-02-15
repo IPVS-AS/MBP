@@ -156,6 +156,7 @@ public class TestRerunOperatorService {
             }
         }
 
-       return responseEntity;
+        return responseEntity;
+
     }
 }

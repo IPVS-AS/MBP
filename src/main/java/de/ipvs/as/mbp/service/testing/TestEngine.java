@@ -1,6 +1,7 @@
 package de.ipvs.as.mbp.service.testing;
 
 
+import com.mongodb.util.JSON;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;
@@ -10,6 +11,7 @@ import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.repository.SensorRepository;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,6 @@ import org.springframework.validation.Errors;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -39,7 +39,6 @@ import java.util.stream.Stream;
 
 @Component
 public class TestEngine {
-
 
     @Autowired
     private TestDetailsRepository testDetailsRepository;
@@ -93,17 +92,18 @@ public class TestEngine {
     /**
      * Update the test configurations redefined by the user.
      *
-     * @param testID Id of the test to be modified
+     * @param testID  Id of the test to be modified
      * @param changes to be included
      * @return if update was successful or not
      */
-    public HttpEntity<Object> editTestConfig(String testID, String changes) {
+    public ResponseEntity<Boolean> editTestConfig(String testID, String changes) {
         try {
             TestDetails testToUpdate = testDetailsRepository.findById(testID).get();
 
             // Clear the configuration and rules field of the specific test
             testToUpdate.getConfig().clear();
             testToUpdate.getRules().clear();
+            testToUpdate.getRuleNames().clear();
 
             // convert the string of the request body to a JSONObject in order to continue working with it
             JSONObject updateInfos = new JSONObject(changes);
@@ -111,37 +111,52 @@ public class TestEngine {
             List<List<ParameterInstance>> newConfig = updateSenorConfig(updateInfos.get("config"));
             // Update the rules to be observed in the test
             List<Rule> newRuleList = updateRuleInformation(updateInfos);
+            List<String> newRuleNames = updateRuleNames(newRuleList);
 
             testToUpdate.setConfig(newConfig);
             testToUpdate.setRules(newRuleList);
+            testToUpdate.setRuleNames(newRuleNames);
             // Update the information if the selected rules be triggered during the test or not
             testToUpdate.setTriggerRules(updateInfos.getBoolean("triggerRules"));
 
 
             testDetailsRepository.save(testToUpdate);
 
-            return new ResponseEntity<>(HttpStatus.OK);
+            return ResponseEntity.status(HttpStatus.OK).body(true);
         } catch (Exception e) {
-            return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(false);
         }
     }
 
     /**
-     * Creates a list of the updated rules that should be observed within the test.
+     * Creates a list of the updated rule Names that should be observed within the test.
+     *
+     * @param newRuleList List of rules to be observed within the test
+     * @return List of the new rule names
+     */
+    private List<String> updateRuleNames(List<Rule> newRuleList) {
+        List<String> ruleNames = new ArrayList<>();
+        for (Rule rule : newRuleList) {
+            ruleNames.add(rule.getName());
+        }
 
+        return ruleNames;
+    }
+
+    /**
+     * Creates a list of the updated rules that should be observed within the test.
+     *
      * @param updateInfos update/editUseNewData information for the rules and the trigger rules
      * @return List of updated rules
      */
-    private List<Rule> updateRuleInformation( JSONObject updateInfos) throws JSONException {
-        Pattern pattern = Pattern.compile("rules/(.*)$");
+    private List<Rule> updateRuleInformation(JSONObject updateInfos) throws JSONException {
         JSONArray rules = (JSONArray) updateInfos.get("rules");
         List<Rule> newRules = new ArrayList<>();
         if (rules != null) {
             for (int i = 0; i < rules.length(); i++) {
-                Matcher m = pattern.matcher(rules.getString(i));
-                if (m.find()) {
-                    newRules.add(ruleRepository.findById(m.group(1)).get());
-                }
+                JSONObject ruleDetails = rules.getJSONObject(i);
+                String ruleName = ruleDetails.getString("name");
+                newRules.add(ruleRepository.findByName(ruleName).get());
             }
         }
         return newRules;
@@ -149,12 +164,11 @@ public class TestEngine {
 
 
     /**
-     *
      * Creates a list of the updated sensor configurations included into the test.
      *
      * @param config update/editUseNewData information for the sensor configuration
-     * @throws JSONException In case of parsing problems
      * @return List new sensor Configurations
+     * @throws JSONException In case of parsing problems
      */
     public List<List<ParameterInstance>> updateSenorConfig(Object config) throws JSONException {
         ParameterInstance instance;
@@ -225,26 +239,35 @@ public class TestEngine {
      * @param testId of the test the report to be deleted belongs to
      * @return if files could be deleted successfully or not
      */
-    public ResponseEntity deleteReport(String testId) {
+    public ResponseEntity<Boolean> deleteReport(String testId, Object path) {
+        String fileName = String.valueOf(path);
         ResponseEntity response;
 
         TestDetails testDetails = testDetailsRepository.findById(testId).get();
 
-        if (testDetails.isPdfExists()) {
-            Path pathTestReport = Paths.get(testDetails.getPathPDF());
-            Path pathDiagram = Paths.get(pathTestReport.getParent().toString(), testId + ".gif");
+        //Path pathTestReport = Paths.get(testDetails.getPathPDF()+ ""fileName);
+        try {
+            if (testDetails.isPdfExists()) {
+                File dir = new File(testDetails.getPathPDF());
+                FileFilter fileFilter = new WildcardFileFilter(fileName);
+                File[] files = dir.listFiles(fileFilter);
+                for (final File file : files) {
+                    if (!file.delete()) {
+                        System.err.println("Can't remove " + file.getAbsolutePath());
+                    }
+                }
 
-            try {
-                Files.delete(pathTestReport);
-                Files.delete(pathDiagram);
-                response = new ResponseEntity<>("Test report successfully deleted", HttpStatus.OK);
-            } catch (NoSuchFileException x) {
-                response = new ResponseEntity<>("Test report doesn't exist.", HttpStatus.NOT_FOUND);
-            } catch (IOException x) {
-                response = new ResponseEntity<>(x, HttpStatus.CONFLICT);
+                //  Files.delete(pathTestReport);
+                response = new ResponseEntity<>(true, HttpStatus.OK);
+
+            } else {
+                response = new ResponseEntity<>(true, HttpStatus.NOT_FOUND);
             }
-        } else {
-            response = new ResponseEntity<>("No available Test report for this Test.", HttpStatus.NOT_FOUND);
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace();
+            response = new ResponseEntity<>(false, HttpStatus.CONFLICT);
+
         }
         return response;
     }
@@ -375,15 +398,19 @@ public class TestEngine {
      *
      * @return response entity if insertion was successful or not
      */
-    public ResponseEntity<String> registerTestActuator() {
+    public ResponseEntity registerTestActuator() {
         //Validation errors
         Errors errors;
         ResponseEntity responseEntity = null;
+        Actuator testingActuator;
+
         Device testDevice;
 
 
         try {
-            Actuator testingActuator = actuatorRepository.findByName(ACTUATOR_NAME).get();
+
+
+            boolean testingActuatorExists = actuatorRepository.existsByName(ACTUATOR_NAME);
             Operator testActuatorAdapter = operatorRepository.findByName(ACTUATOR_NAME).get();
             testDevice = getTestDevice();
 
@@ -393,10 +420,12 @@ public class TestEngine {
                 registerTestDevice();
             } else {
                 // Check if Actuator is already existing
-                if (testingActuator == null) {
+                if (testingActuatorExists == false) {
                     // Check if the corresponding adapter is registered
                     if (testActuatorAdapter != null) {
                         //Enrich actuator for details
+
+
                         testingActuator = new Actuator();
                         testingActuator.setName(ACTUATOR_NAME);
                         testingActuator.setOwner(null);
@@ -406,19 +435,23 @@ public class TestEngine {
 
                         //Validate device
                         errors = new BeanPropertyBindingResult(testingActuator, "component");
-                       // actuatorValidator.validate(testingActuator, errors);
+                        // actuatorValidator.validate(testingActuator, errors);
 
                         actuatorRepository.insert(testingActuator);
 
-                        responseEntity = new ResponseEntity("Testing Actuator successfully created.", HttpStatus.CREATED);
+                        responseEntity = new ResponseEntity(HttpStatus.CREATED);
 
                     }
+                } else {
+                    responseEntity = new ResponseEntity(HttpStatus.BAD_REQUEST);
+
                 }
             }
 
 
         } catch (Exception e) {
-            responseEntity = new ResponseEntity("Error during creation of the Actuator.", HttpStatus.CONFLICT);
+            responseEntity = new ResponseEntity(HttpStatus.CONFLICT);
+
         }
         return responseEntity;
     }
@@ -459,9 +492,9 @@ public class TestEngine {
 
         // Go through the List of sensors and check if specific sensor is available
         Iterator iterator = sensorList.listIterator();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             Sensor tempSensor = (Sensor) iterator.next();
-            if(tempSensor.getName().equals(sensorName)){
+            if (tempSensor.getName().equals(sensorName)) {
                 sensorSimulator = tempSensor;
             }
 
@@ -471,14 +504,14 @@ public class TestEngine {
     }
 
 
-
     /**
      * Registers the wished sensor simulator if the corresponding adapter is already registered
      *
      * @param sensorName Name of the sensor simulator to be registered
      * @return ResponseEntity if the registration was successful or not
      */
-    public ResponseEntity<String> registerSensorSimulator(String sensorName) {
+    public ResponseEntity registerSensorSimulator(String sensorName) {
+
         ResponseEntity<String> responseEntity;
 
         Operator sensorAdapter = operatorRepository.findByName(sensorName).get();
@@ -488,7 +521,8 @@ public class TestEngine {
         try {
             // Check if corresponding adapter exists
             if (sensorAdapter == null) {
-                return new ResponseEntity<>("Cloud not create Sensor.", HttpStatus.CONFLICT);
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
+
             } else if (testingDevice == null) {
                 registerTestDevice();
             } else if (sensorSimulator == null) {
@@ -515,15 +549,14 @@ public class TestEngine {
                 sensorRepository.insert(sensorSimulator);
 
             }
-            responseEntity = new ResponseEntity<>("Sensor successfully created", HttpStatus.OK);
+            responseEntity = new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception e) {
-            responseEntity = new ResponseEntity<>("Error during creation of the Sensor.", HttpStatus.CONFLICT);
+            responseEntity = new ResponseEntity<>(HttpStatus.CONFLICT);
+
         }
 
         return responseEntity;
     }
-
-
 
     /**
      * Checks if the one and three dimensional sensor simulators are already registered.
@@ -562,11 +595,20 @@ public class TestEngine {
      * @return Response entity if registration was successful
      */
     public void registerThreeDimSensorSimulator(String sensorName) {
-       //TODO
-
+        //TODO
     }
 
+    /**
+     * Delete Tets with specific test id.
+     *
+     * @param testId
+     */
+    public void deleteTest(String testId) {
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
 
+        if (testDetailsRepository.existsById(testId)) {
+            testDetailsRepository.deleteById(testId);
+        }
 
-
+    }
 }

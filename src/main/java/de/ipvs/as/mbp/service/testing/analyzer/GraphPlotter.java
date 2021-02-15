@@ -67,7 +67,7 @@ public class GraphPlotter {
     private static XYSeriesCollection createDataset(TestDetails test) {
         XYSeriesCollection dataSet = new XYSeriesCollection();
 
-        // Get the list of generated values within the specific test 
+        // Get the list of generated values within the specific test
         Map<String, LinkedHashMap<Long, Double>> generatedValues = test.getSimulationList();
 
         if (generatedValues != null && generatedValues.size() > 0) {
@@ -88,7 +88,6 @@ public class GraphPlotter {
                 dataSet.addSeries(series);
             }
         }
-
 
         return dataSet;
     }
