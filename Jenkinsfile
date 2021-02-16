@@ -46,6 +46,6 @@ def do_static_analysis(host, project) {
 
 def do_deploy(file, host, context) {
     withCredentials([usernamePassword(credentialsId: 'c21e88ab-24e8-406a-8667-2c0dce78de71', passwordVariable: 'password', usernameVariable: 'username')]) {
-        sh "curl -v -u ${username}:${password} -T ${file} --upload-file 'http://${host}:8888/manager/text/deploy?path=/${context}&update=true'"
+        sh "curl -v -u ${username}:${password} -X PUT -T ${file} 'http://${host}:8888/manager/text/deploy?path=/${context}&update=true'"
     }
 }
