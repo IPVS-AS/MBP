@@ -13,16 +13,31 @@
                         <th>Username</th>
                         <th>First name</th>
                         <th>Last name</th>
+                        <th style="text-align:center;">Admin</th>
+                        <th style="text-align:center;">System user</th>
+                        <th style="text-align:center;">Login possible</th>
                         <th></th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr id="{{user.id}}" ng-repeat="user in displayedCollection">
-                        <td>{{user.username}}&nbsp;<i ng-show="user.isAdmin" class="material-icons"
-                                                      style="vertical-align: bottom;">star</i></td>
+                        <td>{{user.username}}&nbsp</td>
                         <td>{{user.firstName}}</td>
                         <td>{{user.lastName}}</td>
+                        <td style="text-align:center;">
+                            <i class="material-icons">{{user.isAdmin ? "done" : "clear"}}</i>
+                        </td>
+                        <td style="text-align:center;">
+                            <i class="material-icons">{{user.isSystemUser ? "done" : "clear"}}</i>
+                        </td>
+                        <td style="text-align:center;">
+                            <i class="material-icons">{{user.isLoginable ? "done" : "clear"}}</i>
+                        </td>
                         <td>
+                            <button class="btn bg-primary btn-circle waves-effect waves-circle waves-float"
+                                    ng-click="ctrl.newPassword.userId = user.id; ctrl.showPasswordModal()">
+                                <i class="material-icons" style="font-size:14px;">edit</i>
+                            </button>
                             <button ng-hide="user.isSystemUser || user.isAdmin"
                                     class="btn bg-primary btn-circle waves-effect waves-circle waves-float"
                                     ng-click="ctrl.promoteUser(user.id)">
@@ -32,11 +47,6 @@
                                     class="btn bg-primary btn-circle waves-effect waves-circle waves-float"
                                     ng-click="ctrl.degradeUser(user.id)">
                                 <i class="material-icons" style="font-size:14px;">star_border</i>
-                            </button>
-                            <button ng-hide="user.isSystemUser"
-                                    class="btn bg-primary btn-circle waves-effect waves-circle waves-float"
-                                    ng-click="ctrl.newPassword.userId = user.id; ctrl.showPasswordModal()">
-                                <i class="material-icons" style="font-size:14px;">edit</i>
                             </button>
                             <form ng-submit="deleteUserCtrl.deleteItem()" style="display: inline-block">
                                 <button type="submit" ng-hide="user.isSystemUser"
@@ -48,14 +58,12 @@
                         </td>
                     </tr>
                     <tr ng-show="userListCtrl.items.length === 0">
-                        <td>No users available.</td>
-                        <td></td>
-                        <td></td>
+                        <td colspan="7">No users available.</td>
                     </tr>
                     </tbody>
                     <tfoot>
                     <tr>
-                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="7"></td>
                     </tr>
                     </tfoot>
                 </table>

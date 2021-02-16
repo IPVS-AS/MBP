@@ -64,6 +64,11 @@ public class User implements IACRequestingEntity {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private boolean isSystemUser = false;
 
+    @ACAttributeValue
+    @ApiModelProperty(notes = "Indicates whether it is possible to login into the user.")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private boolean isLoginable = true;
+
     public String getId() {
         return id;
     }
@@ -127,6 +132,15 @@ public class User implements IACRequestingEntity {
 
     public User setSystemUser(boolean isSystemUser) {
         this.isSystemUser = isSystemUser;
+        return this;
+    }
+
+    public boolean isLoginable(){
+        return isLoginable;
+    }
+
+    public User setLoginable(boolean loginable){
+        this.isLoginable = loginable;
         return this;
     }
 
