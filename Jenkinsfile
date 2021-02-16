@@ -51,5 +51,5 @@ def do_deploy(file, host, context) {
 }
 
 def find_file(pattern, folder) {
-    return sh "find ${folder} -name '${pattern}'"   
+    return sh(script: "find ${folder} -name '${pattern}'", returnStdout: true)
 }
