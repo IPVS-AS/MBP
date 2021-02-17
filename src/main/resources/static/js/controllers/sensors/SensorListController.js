@@ -5,10 +5,10 @@
  */
 app.controller('SensorListController',
     ['$scope', '$controller', '$interval', 'sensorList', 'addSensor', 'deleteSensor',
-        'deviceList', 'operatorList', 'sensorTypesList', 'accessControlPolicyList', 'ComponentService', 'NotificationService',
+        'deviceList', 'operatorList', 'sensorTypesList', 'accessControlPolicyList', 'ComponentService', 'NotificationService', 'OperatorService',
         function ($scope, $controller, $interval, sensorList, addSensor, deleteSensor,
                   deviceList, operatorList, sensorTypesList, accessControlPolicyList, ComponentService,
-                  NotificationService) {
+                  NotificationService, OperatorService) {
             let vm = this;
 
             vm.operatorList = operatorList;
@@ -73,17 +73,38 @@ app.controller('SensorListController',
                     }
                 }
 
-                //Show the alert to the user and return the resulting promise
-                return Swal.fire({
-                    title: 'Delete sensor',
-                    type: 'warning',
-                    html: "Are you sure you want to delete sensor \"" + sensorName + "\"?",
-                    showCancelButton: true,
-                    confirmButtonText: 'Delete',
-                    confirmButtonClass: 'bg-red',
-                    focusConfirm: false,
-                    cancelButtonText: 'Cancel'
+                return OperatorService.getUsingTests(data.id).then(function (result) {
+                    var affectedWarning = "";
+
+                    //If the list is not empty, create a message that contains the names of all affected components
+                    if (result.length > 0) {
+
+                        affectedWarning = "<br/><br/>The following Tests are currently " +
+                            "<strong> using this sensor </strong>:<br/>";
+
+                        //Iterate over all affected components
+                        for (var i = 0; i < result.length; i++) {
+                            affectedWarning += "- ";
+                            affectedWarning += result[i].name;
+                            affectedWarning += "<br/>";
+                        }
+                    }
+
+                    //Show the alert to the user and return the resulting promise
+                    return Swal.fire({
+                        title: 'Delete sensor',
+                        type: 'warning',
+                        html: "Are you sure you want to delete the sensor <strong>"
+                            + sensorName + "</strong>?" + affectedWarning,
+                        showCancelButton: true,
+                        confirmButtonText: 'Delete',
+                        confirmButtonClass: 'bg-red',
+                        focusConfirm: false,
+                        cancelButtonText: 'Cancel'
+                    });
+
                 });
+
             }
 
             /**

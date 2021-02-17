@@ -11,6 +11,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
         const URL_TEST_STOP = ENDPOINT_URI + '/test-details/test/stop/';
         const URL_REPORT_LIST = ENDPOINT_URI + '/test-details/pdfList/';
         const URL_REPORT_EXISTS = ENDPOINT_URI + '/test-details/pdfExists/';
+        const URL_REPORT_DELETE = ENDPOINT_URI + '/test-details/deleteTestReport/';
         const URL_TESTDEVICE_REGISTER = ENDPOINT_URI + '/test-details/registerTestDevice';
         const URL_TESTACTUATOR_REGISTER = ENDPOINT_URI + '/test-details/registerTestActuator';
         const URL_ONEDIM_SENSOR_REGISTER = ENDPOINT_URI + '/test-details/registerSensorSimulator';
@@ -37,11 +38,10 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
         /**
          * [Public]
          *
-         * Performs a server request in order to execute a test given by its id.
-         * @param testId The id of the test to be executed
-         * @returns {*}
+         * Performs a server request in order to start the current test (in case it has been stopped before).
+         * @param testId The id of the test to be started
          */
-        function executeTest(testId) {
+        function startTest(testId){
             return HttpService.postRequest(URL_TEST_START + testId);
         }
 
@@ -67,10 +67,9 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             return HttpService.getRequest(URL_REPORT_LIST + testId).then(function (response) {
                 const pdfList = {};
                 let pdfDetails = [];
-                let responseArray = [];
+                if (Object.keys(response).length > 0) {
+                    angular.forEach(response, function (value, key) {
 
-                if (Object.keys(response.data).length > 0) {
-                    angular.forEach(response.data, function (value, key) {
                         pdfDetails.push({
                             "date": key,
                             "path": value
@@ -79,7 +78,8 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
                     pdfList.pdfTable = pdfDetails;
                     return pdfList.pdfTable;
                 } else {
-                    document.getElementById("pdfTable").innerHTML = "There is no Test Report for this Test yet.";
+                    return document.getElementById("pdfTable").innerHTML = "There is no Test Report for this Test yet.";
+
                 }
             });
         }
@@ -93,9 +93,27 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * @returns {*}
          */
         function pdfExists(testId) {
-            return HttpService.getRequest(URL_REPORT_EXISTS + testId);
+            return HttpService.getRequest(URL_REPORT_EXISTS + testId)
+
         }
 
+
+        /**
+         * [Public]
+         *
+         * Performs a server request to delete a specific test report of a test.
+         */
+        function deleteTestReport(testId, path) {
+            return HttpService.postRequest(URL_REPORT_DELETE + testId, path).then(function (response)
+            {
+                if(response){
+                    NotificationService.notify('Test Report successfully deleted.', 'success');
+                } else {
+                    NotificationService.notify('Error during deletion.', 'error');
+                }
+                return getPDFList(testId);
+            });
+        }
 
         /**
          * [Public]
@@ -174,7 +192,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * Creates a server request to get all rules to be observed during the test.
          */
         function getRuleListTest(testId) {
-            return HttpService.postRequest(URL_RULE_LIST_TEST + testId);
+            return HttpService.getRequest(URL_RULE_LIST_TEST + testId);
         }
 
         /**
@@ -211,6 +229,28 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             });
         }
 
+        /**
+         * [Private]
+         *
+         * Returns a list of all rule names included into the test.
+         *
+         * @param rules link included into the test
+         * @param ruleList list of all registered rules
+         */
+        function getRuleNames(rules, ruleList) {
+            let ruleNames = [];
+            angular.forEach(rules, function (rule) {
+               angular.forEach(ruleList, function (ruleInList) {
+                    if(ruleInList._links.self.href === rule ){
+                        ruleNames.push(ruleInList.name);
+                    }
+               })
+            });
+            return ruleNames;
+
+
+        }
+
 
         /**
          * [Public]
@@ -219,14 +259,15 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          *
          * @param sensors of the test for which the configurations should be saved
          * @param realSensors list of real sensors included in the test
-         * @param parameterValues list of parameter values of the real sensors
+         * @param realParameterValues list of parameter values of the real sensors
          * @param config configurations about the sensors included in the test made by the user
          * @param rules selected rules to be observed in the test
          * @param executeRules information if rules should be triggered through the test
          * @param data object
          */
-        function getTestData(sensors, realSensors, realParameterValues, config, rules, executeRules, data) {
+        function getTestData(sensors, realSensors, realParameterValues, config, rules, ruleList ,executeRules, data) {
 
+            let ruleNames = getRuleNames(rules, ruleList);
             // to check if the user has selected at least one sensor
             let checkRealSensor = false;
             let checkSimSensor = false;
@@ -235,6 +276,8 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             let newTestObject = {};
             newTestObject.config = [];
             newTestObject.type = [];
+            newTestObject.ruleNames = ruleNames;
+
             let parameterValues = [];
 
             // random values Angle and Axis for the GPS-Sensor
@@ -266,7 +309,8 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
                                         "name": "ConfigName",
                                         "value": realSensors[i].name
                                     });
-                                    const requiredParams = realSensors[i]._embedded.adapter.parameters;
+                                    const requiredParams = realSensors[i].operator.parameters;
+
 
 
                                     //Iterate over all parameters
@@ -835,15 +879,6 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
                 }
             }
 
-            if (checkSimSensor === false && checkRealSensor === false) {
-                NotificationService.notify('Choose at least one sensor', 'error')
-            }
-
-
-            if (executeRulesTemp === 'undefined') {
-                NotificationService.notify('A decision must be made.', 'error')
-            }
-
             vm.executeRules = executeRulesTemp === 'true';
             newTestObject.triggerRules = executeRules;
 
@@ -854,7 +889,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
 
         //Expose public methods
         return {
-            executeTest: executeTest,
+            startTest: startTest,
             stopTest: stopTest,
             getPDFList: getPDFList,
             editConfig: editConfig,
@@ -866,8 +901,9 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             registerRerunOperator: registerRerunOperator,
             downloadReport: downloadReport,
             getRuleListTest: getRuleListTest,
-            updateTest: updateTest
+            updateTest: updateTest,
+            deleteTestReport: deleteTestReport
+
         }
     }
 ]);
-
