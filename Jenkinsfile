@@ -32,7 +32,7 @@ pipeline {
         
         stage ('Deploy'){
             steps {
-                do_deploy("target/MBP-0.1.war", "localhost", "deploy/${env.BRANCH_NAME}")
+                do_deploy(find_file("target/", "MBP-*.war"), "localhost", "deploy/${env.BRANCH_NAME}")
              }
         }
     }
@@ -48,4 +48,8 @@ def do_deploy(file, host, context) {
     withCredentials([usernamePassword(credentialsId: 'c21e88ab-24e8-406a-8667-2c0dce78de71', passwordVariable: 'password', usernameVariable: 'username')]) {
         sh "curl -v -u ${username}:${password} -T ${file} 'http://${host}:8888/manager/text/deploy?path=/${context}&update=true'"
     }
+}
+
+def find_file(folder, pattern) {
+    return sh(script: "find ${folder} -name '${pattern}'", returnStdout: true).trim()
 }

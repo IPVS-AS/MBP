@@ -26,12 +26,12 @@ def main(argv):
 
   #### parse input arguments ######
   paramArray = json.loads(argv[0])
-  print(paramArray)
+  #print(paramArray)
   for param in paramArray:
     if not (PAR_FIELD_NAME in param and PAR_FIELD_VALUE in param):
       continue
     elif param[PAR_FIELD_NAME].lower() == PAR_FIELD_NAME_INTERVAL.lower():
-      INTERVAL_BETWEEN_SENDING_DATA = param[PAR_FIELD_VALUE]
+      INTERVAL_BETWEEN_SENDING_DATA = int(param[PAR_FIELD_VALUE])
     elif param[PAR_FIELD_NAME].lower() == MIFLORA_FIELD_NAME_SENSOR.lower():
       targetSensor = param[PAR_FIELD_VALUE]
     elif param[PAR_FIELD_NAME].lower() == MIFLORA_FIELD_NAME_MAC.lower():
