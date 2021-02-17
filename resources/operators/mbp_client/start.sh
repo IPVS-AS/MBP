@@ -7,7 +7,7 @@ cd $DIR
 ENTRY_FILE_NAME=`cat $DIR/entry-file-name`
 #-----------------------------------
 
-nohup python3 $ENTRY_FILE_NAME > start.log &
+nohup python3 $ENTRY_FILE_NAME $2 > start.log &
 
 # output PID of last job running in background
 echo $! > pid.txt

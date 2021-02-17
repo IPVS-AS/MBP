@@ -1,21 +1,18 @@
-<img src="https://user-images.githubusercontent.com/44437898/91723420-03d5f300-eb9c-11ea-9867-b2cc1d188929.png" width="850" >
+<p align="center">
+  <img alt="MBP logo" src="https://github.com/IPVS-AS/MBP/wiki/images/home-mbp.png" width="500">
+</p>
 
-This project contains the **Multi-purpose Binding and Provisioning Platform (MBP)**, an IoT platform developed for easy binding, provisioning, and management of IoT environments. 
-Furthermore, the MBP enables the simple realization of IoT applications, such as heating, ventilation, air conditioning (HVAC) systems, by allowing users to create rules for the IoT environment, in a straightforward and event-condition-action fashion. 
-The efficient and timely data processing of IoT environments are assured through underlying complex event processing technologies.
-An Android-based smartphone application that connects to the MBP is provided as the GitHub project [MBP2Go](https://github.com/IPVS-AS/MBP2Go).
+This project contains the **Multi-purpose Binding and Provisioning Platform (MBP)**, an IoT platform developed for easy deployment, management and monitoring of IoT environments. The MBP enables the simple realization of IoT applications, such as heating, ventilation, air conditioning (HVAC) systems, by allowing users to create rules for their IoT environments, in a straightforward and event-condition-action fashion. 
 
-![MBP Home](resources/gifs/user-registration.gif)
-MBP UI (based on [Bootstrap templates](https://startbootstrap.com/template-overviews/sb-admin-2/))
+Please take a look on our :book: [Wiki](https://github.com/IPVS-AS/MBP/wiki) for more information about the MBP, it includes:
 
-How to install and use the MBP is explained in the following.
+* :computer: [Installation guides](https://github.com/IPVS-AS/MBP/wiki/Installation): providing installation instructions for the MBP.
 
-[1 Installation](https://github.com/IPVS-AS/MBP/wiki/Installation)
+* :rocket: [Quick start](https://github.com/IPVS-AS/MBP/wiki/Quick-Start): showing how to connect an IoT device (Raspberry Pi) and a temperature sensor to the MBP, in order to visualize temperature values in the MBP dashboard.
 
-[2 Quick Start](https://github.com/IPVS-AS/MBP/wiki/Quick-Start)
+  
 
-[3 MBP REST API](https://github.com/IPVS-AS/MBP/wiki/API-Reference)
-
+---
 
 ## Haftungsausschluss
 
