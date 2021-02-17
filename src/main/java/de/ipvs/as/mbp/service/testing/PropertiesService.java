@@ -14,7 +14,7 @@ import java.util.Properties;
  * It implicitly stores the settings persistently in a properties file on disk and enables changes of the settings.
  */
 @Service
-@PropertySource(value="classpath:config.properties")
+@PropertySource(value = "classpath:config.properties")
 public class PropertiesService {
 
     //The name of the file in which the settings are supposed to be stored
@@ -53,15 +53,13 @@ public class PropertiesService {
     }
 
 
-    public List<String> getPropertiesList() throws IOException{
+    public List<String> getPropertiesList() throws IOException {
         // Check if properties have already been loaded from the file
         if (properties == null) {
             loadSettingsFile();
         }
 
         return null;
-
-
 
 
     }
