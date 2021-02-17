@@ -155,7 +155,6 @@ app.directive('historicalGeoMapChart', ['$timeout', '$interval', function ($time
                     var newVal = [];
 
                     if (scope.fieldCollectionId === 'default') {
-                        console.log(value);
                         // Push time
                         newVal.push(value[0]);
                         // Push coordinates
@@ -198,7 +197,6 @@ app.directive('historicalGeoMapChart', ['$timeout', '$interval', function ($time
             return scope.jsonPath;
         }, function (newValue, oldValue) {
             //Update chart if jsonPath was changed
-            console.log("JSONPATh updated");
             updateChart();
         });
 

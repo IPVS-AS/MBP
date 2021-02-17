@@ -336,7 +336,7 @@
                                     <!-- item.name group -->
                                     <label>JsonPath to double value:</label>
                                     <div
-                                         ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
+                                            ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
                                         <div ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
 
                                             <json-path-input ng-model="visItem.visFieldToPathMappingInput.value"
@@ -377,7 +377,7 @@
                                     <!-- item.name group -->
                                     <label>JsonPath to double array:</label>
                                     <div
-                                         ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
+                                            ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
                                         <div class="form-line"
                                              ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
 
@@ -407,24 +407,24 @@
                                     </div>
                                 </div>
 
-<!--
-                                <json-path-input ng-model="visItem.visFieldToPathMappingInput.value"
-                                                 json-path-list="visItem.getJsonPathsByFieldCollectionName('default').value"
-                                                 number-of-needed-wildcards="0"
-                                                 field-collection-id-input="visItem.fieldCollectionIdInput"
-                                                 path-type="default"
-                                </json-path-input>
-                                <br>
-                                <json-path-input ng-model="visItem.visFieldToPathMappingInput.arrVal"
-                                                 json-path-list="visItem.getJsonPathsByFieldCollectionName('arrVal').arrVal"
-                                                 number-of-needed-wildcards="1"
-                                                 field-collection-id-input="visItem.fieldCollectionIdInput"
-                                                 path-type="arrVal"
-                                </json-path-input>
-                                -->
+                                <!--
+                                                                <json-path-input ng-model="visItem.visFieldToPathMappingInput.value"
+                                                                                 json-path-list="visItem.getJsonPathsByFieldCollectionName('default').value"
+                                                                                 number-of-needed-wildcards="0"
+                                                                                 field-collection-id-input="visItem.fieldCollectionIdInput"
+                                                                                 path-type="default"
+                                                                </json-path-input>
+                                                                <br>
+                                                                <json-path-input ng-model="visItem.visFieldToPathMappingInput.arrVal"
+                                                                                 json-path-list="visItem.getJsonPathsByFieldCollectionName('arrVal').arrVal"
+                                                                                 number-of-needed-wildcards="1"
+                                                                                 field-collection-id-input="visItem.fieldCollectionIdInput"
+                                                                                 path-type="arrVal"
+                                                                </json-path-input>
+                                                                -->
                             </div>
 
-                            <!-- GeoMap case -->
+                            <!-- GeoMap modal case -->
                             <div ng-if="visItem.visId === 'geoMap'">
 
                                 <div ng-if="visItem.hasVisualizationOptionFieldCollectionWithName('default')">
@@ -436,25 +436,30 @@
 			                    </span>
                                     </div>
                                     <!-- item.name group -->
-                                    <div class="form-group"
-                                         ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
+                                    <div
+                                            ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
                                         <div class="form-line"
                                              ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
                                             <label>JsonPath to double latitude:</label>
-                                            <input class="form-control" type="text"
-                                                   placeholder="JsonPath"
-                                                   ng-model="visItem.visFieldToPathMappingInput.latitude"
-                                                   ng-focus="visItem.fieldCollectionIdInput = 'default'"
-                                                   list="jsonPathSuggestions-geoMap-defaultLtd-{{visItem.instanceId}}"/>
-                                            <datalist id="jsonPathSuggestions-geoMap-defaultLtd-{{visItem.instanceId}}">
-                                                <option ng-repeat="pathItem in visItem.getJsonPathsByFieldCollectionName('default').latitude"
-                                                        value="{{pathItem}}">{{pathItem.path}}
-                                                    [{{pathItem.unit ? pathItem.unit :
-                                                            "None"}}]
-                                                </option>
-                                            </datalist>
+                                            <ng-container>
+                                                <json-path-input ng-model="visItem.visFieldToPathMappingInput.latitude"
+                                                                 json-path-list="visItem.getJsonPathsByFieldCollectionName('default').latitude"
+                                                                 number-of-needed-wildcards="0"
+                                                                 field-collection-id-input="visItem.fieldCollectionIdInput"
+                                                                 path-type="default"
+                                                </json-path-input>
+                                            </ng-container>
 
                                             <label>JsonPath to double longitude:</label>
+                                            <ng-container>
+                                                <json-path-input ng-model="visItem.visFieldToPathMappingInput.longitude"
+                                                                 json-path-list="visItem.getJsonPathsByFieldCollectionName('default').longitude"
+                                                                 number-of-needed-wildcards="0"
+                                                                 field-collection-id-input="visItem.fieldCollectionIdInput"
+                                                                 path-type="default"
+                                                </json-path-input>
+                                            </ng-container>
+                                            <!--
                                             <input class="form-control" type="text"
                                                    placeholder="JsonPath"
                                                    ng-model="visItem.visFieldToPathMappingInput.longitude"
@@ -467,6 +472,7 @@
                                                             "None"}}]
                                                 </option>
                                             </datalist>
+                                            -->
                                         </div>
                                         <span class="help-block"
                                               ng-show="addDeviceTypeCtrl.item.errors.name">{{addDeviceTypeCtrl.item.errors.name}}</span>
@@ -490,7 +496,7 @@
 </div>
 <!-- ============== ALL VISUALIZATIONS END ================ -->
 
-<!-- Create new visualization component button -->
+<!-- Create new visualization component card -->
 <div class="row clearfix">
     <div class="col-lg-12">
         <div class="card create-new-vis-card-card">
@@ -500,27 +506,37 @@
             </div>
             <div class="body text-center">
                 <div class="row clearfix">
-                    <table class="table table-hover">
-                        <tbody>
-                        <tr>
-                            <th>
-                                <button type="button"
-                                        class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
-                                        ng-click="componentDetailsCtrl.onCreateNewVisualizationClicked()">
-                                    <i class="material-icons">add</i>
-                                </button>
-                            </th>
-                            <th>
-                                <select class="form-control show-tick" ng-model="componentDetailsCtrl.nextChartToAdd">
-                                    <option value="" disabled>Select...</option>
-                                    <option ng-repeat="visId in componentDetailsCtrl.idOfAllApplicableVisualizations"
-                                            value="{{visId}}">{{visId}}
-                                    </option>
-                                </select>
-                            </th>
-                        </tr>
-                        </tbody>
-                    </table>
+                    <!--
+                    <div class="col-md-1">
+                        <button type="button"
+                                class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                                ng-click="componentDetailsCtrl.onCreateNewVisualizationClicked()">
+                            <i class="material-icons">add</i>
+                        </button>
+                    </div>
+                    <div class="col-md-1">
+                        <select class="form-control show-tick" ng-model="componentDetailsCtrl.nextChartToAdd">
+                            <option value="" disabled>Select...</option>
+                            <option ng-repeat="visId in componentDetailsCtrl.idOfAllApplicableVisualizations"
+                                    value="{{visId}}">{{visId}}
+                            </option>
+                        </select>
+                    </div>
+                    -->
+                    <div style="margin: 0 auto;">
+                    <button type="button" style="float:left;"
+                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                            ng-click="componentDetailsCtrl.onCreateNewVisualizationClicked()">
+                        <i class="material-icons">add</i>
+                    </button>
+                    <select class="form-control show-tick" ng-model="componentDetailsCtrl.nextChartToAdd"
+                            style="float:left; max-width: 400px;">
+                        <option value="" disabled>Select...</option>
+                        <option ng-repeat="visId in componentDetailsCtrl.idOfAllApplicableVisualizations"
+                                value="{{visId}}">{{visId}}
+                        </option>
+                    </select>
+                    </div>
                 </div>
             </div>
         </div>

@@ -5,7 +5,7 @@
 /**
  * Directive which allows the user to define event patterns based on components.
  */
-app.directive('cepQueryEditor' ['$compile', function ($compile) {
+app.directive('cepQueryEditor', ['$compile', function ($compile) {
 
     const CLASS_MAIN_CONTAINER = 'cep-query-editor';
     const CLASS_PATTERN_CONTAINER = 'pattern-container';
@@ -35,6 +35,8 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
     const KEY_SOURCE_RESOURCE_NAME = "source_resource";
     const KEY_ELEMENT_KEY = 'element_key';
     const KEY_OPERATOR_INDEX = 'op_index';
+
+    const KEY_EVENT_FILTER_CONDITION = "filter_condition_bindings";
 
     //List of all available operators for the condition picker
     const CONDITION_PICKER_OPERATORS = [{
@@ -99,6 +101,8 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
         scope.ruleJsonPathBindings = new Map();
         // Map for accessing component infos by their corresponding event name (filter name). Needed for the json path input
         scope.eventComponentMapping = new Map();
+
+        scope.sourcesMapForFilterConditions = new Map();
 
         const OPERATOR_TYPES_LIST = [{
             name: 'Before',
@@ -277,6 +281,8 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
                 let aliasInput = $('<input class="form-control" type="text" placeholder="Alias" maxlength="50">');
                 aliasInput.val(alias);
                 aliasInput.on('change', function () {
+                    console.log("ON CHANGE");
+
                     let newAliasValue = aliasInput.val();
 
                     //Do not allow alias with less than 3 chars or other alias that start with the alias prefix
@@ -287,6 +293,8 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
 
                     //Write new value
                     element.data(KEY_SOURCE_ALIAS, newAliasValue);
+
+                    console.log(newAliasValue);
 
                     //Find the corresponding filter
                     for (let i = 0; i < conditionsPickerFilters.length; i++) {
@@ -321,17 +329,61 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
                         element.html(CONDITION_PICKER_OPERATORS[nextIndex].sign);
                     });
 
-                let conditionValueInput = $('<input type="number" class="form-control" name="conditionValue">').css({
+                let conditionValueInput = $('<input class="form-control" name="conditionValue">').css({
                     'display': 'inline-block',
                     'width': '100px',
                     'text-align': 'center'
                 });
 
-                let conditionContainer = $('<div>')
+                let deleteValueInput = $();
+
+                // Init the data structures of the element to organize the angular bindings. has jsonPath object and value
+                element.data(KEY_EVENT_FILTER_CONDITION, []);
+                scope.sourcesMapForFilterConditions.set(element.data(KEY_ID), []);
+
+                let addFilterConditionButton = $('<button type="button" style="display: inline-block"' +
+                    'class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0">').html("Add condition").on('click', function() {
+                        console.log("test");
+                        console.log(element);
+                        console.log("test-end");
+                        element.data(KEY_EVENT_FILTER_CONDITION).push({
+                            jsonPath: {},
+                            value: ""
+                        });
+                        scope.sourcesMapForFilterConditions.get(element.data(KEY_ID)).push({
+                            jsonPath: {},
+                            value: ""
+                        });
+                        if (scope.test.length == 0) {
+                            scope.test.push(0);
+
+                        } else {
+                            scope.test.push(scope.test[scope.test.length - 1] + 1);
+                        }
+                        console.log(scope.sourcesMapForFilterConditions);
+                        console.log(scope.sourcesMapForFilterConditions.get(element.data(KEY_ID)));
+                        scope.$apply();
+                });
+
+                scope.test = [];
+
+                var angularFilterConditionValueInputs = "<div class=\"filter-condition-super-container\" ng-repeat=\"i in sourcesMapForFilterConditions.get(" + element.data(KEY_ID) + ")\">Test</div>";
+                //console.log(angularFilterConditionValueInputs);
+                //var angularFilterConditionValueInputs = "<div ng-repeat=\"i in test\">Test</div>";
+
+                var compiledHtml = $compile(angularFilterConditionValueInputs)(scope);
+
+                let conditionContainer = $('<div class="filter-condition-container">')
                     .append($('<span>').html('Value').css({'font-size': '16px', 'vertical-align': 'middle'}))
                     .append(conditionOperatorSelect)
                     .append(conditionValueInput)
+                    .append(compiledHtml)
                     .hide();
+
+                console.log(conditionContainer.get(0).outerHTML);
+
+
+                scope.$apply();
 
                 let conditionSwitch = $('<div class="switch"><label>Off<input type="checkbox" name="conditionSwitch"><span class="lever"></span>On</label></div>');
                 conditionSwitch.find('input').on('change', function () {
@@ -350,9 +402,13 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
                     .append('<label>Filter condition:</label>')
                     .append('<br/>')
                     .append(conditionSwitch)
+                    .append(addFilterConditionButton)
                     .append(conditionContainer));
             },
             querify: (element, detailsPage) => {
+                console.log("ELEMENT/DETAILS_PAGE")
+                console.log(element);
+                console.log(detailsPage);
                 let resourceName = element.data(KEY_SOURCE_RESOURCE_NAME);
                 let componentData = element.data(KEY_SOURCE_COMPONENT_DATA);
                 let alias = element.data(KEY_SOURCE_ALIAS);
@@ -760,7 +816,7 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
                 let filterObject = {
                     'id': filterId,
                     'label': filterLabel,
-                    'type': 'double',
+                    'type': 'string',
                     'operators': CONDITIONS_PICKER_OPERATORS_PLAIN
                 };
 
@@ -1105,17 +1161,69 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
                         }
                     }
 
-                    //Abort if rule is not an aggregation condition
-                    if (typeof (aggregationWindowOptions[rule.id]) === 'undefined') {
-                        return;
+                    /**
+                     * Validates the types of the value input of conditions.
+                     *
+                     * @param value The value which should be validated against the expected type
+                     * @param type The data type which is expected to the data type of value.
+                     */
+                    function validateTypes(value, type) {
+                        console.log(typeof value);
+                        switch (type) {
+                            case "int":
+                            // Fallthrough
+                            case "long":
+                                var x = parseFloat(value);
+                                if((isNaN(value) || (x | 0) !== x)) {
+                                    addValidationError('Value must be a ' + type + "!");
+                                }
+                                break;
+                            case "boolean":
+                                if (!(value == "true" || value == "false" || typeof value === "boolean")) {
+                                    addValidationError("Value must be either true or false!");
+                                }
+                                break;
+                            case "double":
+                            // Fallthrough
+                            case "decimal128":
+                                if (isNaN(value)) {
+                                    addValidationError("Value must be a number!");
+                                }
+                                break;
+                            case "date":
+                                // TODO: Check if the date format is valid
+                                break;
+                            case "binary":
+                                // TODO: Check if the date format is valid
+                                break;
+                            default:
+                                // Case for strings etc.
+                        }
                     }
 
                     let validationResult = event.value;
 
-                    if (aggregationWindowOptions[rule.id].type == null) {
-                        addValidationError('No aggregation window selected');
-                    } else if (aggregationWindowOptions[rule.id].size < 1) {
-                        addValidationError('No aggregation window size provided');
+                    console.log("VALIDATION");
+                    console.log(rule);
+                    console.log(value);
+                    console.log(event);
+
+                    // Check whether a json path was selected
+                    if (!rule.data.jsonPath.type) {
+                        addValidationError('No json path selected!');
+                        event.value = validationResult;
+                        return;
+                    }
+
+                    validateTypes(value, rule.data.jsonPath.type);
+
+                    // Validation for time windows
+                    if (typeof (aggregationWindowOptions[rule.id]) !== 'undefined') {
+                        if (aggregationWindowOptions[rule.id].type == null) {
+                            addValidationError('No aggregation window selected');
+                        } else if (aggregationWindowOptions[rule.id].size < 1) {
+                            addValidationError('No aggregation window size provided');
+                        }
                     }
 
                     event.value = validationResult;
@@ -1235,7 +1343,7 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
 
                     let ruleElement = rule.$el;
                     let filterContainer = $(ruleElement.find('div.rule-filter-container'));
-                    let filterSelect = $(filterContainer.find('select'));
+                    let filterSelect = $(filterContainer.find('select.form-control:not(.json-path-select)'));
                     let valueContainer = $(ruleElement.find('div.rule-value-container'));
 
                     //Apply styling
@@ -1248,11 +1356,23 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
                         return;
                     }
 
-                    rule.data = {jsonPath: ""};
+
+                    rule.data = {
+                        jsonPath: {
+                            path: "",
+                            type: "",
+                        }
+                    };
                     scope.ruleJsonPathBindings.set(rule.id, rule);
 
                     // Get the name of the event type (filter) which is currently selected for this rule
                     let selectedFilter = filterSelect.find('option:selected').text();
+
+                    console.log("RULE-ID:");
+                    console.log(rule);
+                    console.log(selectedFilter);
+                    console.log(scope.ruleJsonPathBindings.get(rule.id).data.jsonPath);
+                    console.log(scope.eventComponentMapping);
 
                     // Prepare the jsonPath input with all needed bindings
                     scope.fieldCollectionId = "";
@@ -1268,12 +1388,21 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
                     var compiledJsonPathInput = $compile(jsonPathInput)(scope);
 
                     // Add a the jsonPath input within a new container to the rule element
-                    var componentFieldContainer = $('<div class="btn-group">').append(compiledJsonPathInput);
-                    if (ruleElement.has("json-path-input").length) {
+                    var componentFieldContainer = $('<div class="btn-group json-path-input-container" style="margin-left: 5px">').append(compiledJsonPathInput);
+                    if (filterContainer.has("json-path-input").length) {
                         // Remove old json-path-inputs
-                        ruleElement.find("json-path-input").remove();
+                        filterContainer.find(".json-path-input-container").remove();
                     }
-                    ruleElement.append(componentFieldContainer);
+                    if (filterSelect.val() != '-1') {
+                        filterContainer.append(componentFieldContainer);
+                        scope.$apply();
+                    }
+                    console.log("filter select:", filterSelect.val());
+
+                    if ((filterSelect.val() === '-1')) {
+                        delete aggregationWindowOptions[rule.id];
+                        return;
+                    }
 
 
                     //Get filter type
@@ -1282,10 +1411,6 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
                         return;
                     }
 
-                    if ((filterSelect.val() === '-1')) {
-                        delete aggregationWindowOptions[rule.id];
-                        return;
-                    }
 
                     if (typeof (aggregationWindowOptions[rule.id]) !== 'undefined' &&
                         valueContainer.find('button.dropdown-toggle').length) {
@@ -1393,6 +1518,12 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
                 return "(" + parsedConditions.join(" " + conditionsObject.condition + " ") + ")";
             }
 
+            var value =  conditionsObject.value;
+            // Add "" for string types
+            if (conditionsObject.data.jsonPath.type === "string") {
+                value = "\"" + conditionsObject.value + "\"";
+            }
+
             //Object is a single condition
             let conditionType = conditionsObject.conditionType;
 
@@ -1403,7 +1534,7 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
                 //Condition is a single event, get event alias
                 let eventAlias = getAliasForPatternEvent(conditionsObject.id);
 
-                return "(" + eventAlias + ".`" + conditionsObject.data.jsonPath.path.substring(1) + "`" + operator + " " + conditionsObject.value + ")";
+                return "(" + eventAlias + ".`" + conditionsObject.data.jsonPath.path.substring(1) + "`" + operator + " " + value + ")";
             }
 
             //Condition is an aggregation
@@ -1420,7 +1551,7 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
             return "((SELECT " + aggregationFunction + "(`" + conditionsObject.data.jsonPath.path.substring(1) +
                 "`) FROM " + sourceReference +
                 ".win:" + windowOptions.type + "(" + windowOptions.size + windowUnit + ")) " +
-                operator + " " + conditionsObject.value + ")";
+                operator + " " + value + ")";
         }
 
         function initErrorArea() {
@@ -1611,6 +1742,15 @@ app.directive('cepQueryEditor' ['$compile', function ($compile) {
 
             initOptions();
         })();
+
+        //Watch the jsonPath parameter
+        scope.$watch(function () {
+            return scope.ruleJsonPathBindings;
+        }, function (newValue, oldValue) {
+            //Update chart if jsonPath was changed
+            console.log(scope.ruleJsonPathBindings);
+        });
+
 
         /*
         Defines the exposed API.

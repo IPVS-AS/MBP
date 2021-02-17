@@ -72,7 +72,6 @@ app.directive('liveGeoMapChart', ['$timeout', '$interval', function ($timeout, $
                     return;
                 }
 
-                console.log("get data");
                 //Retrieve the most recent component data
                 scope.getData({
                     numberLogs: CHART_MAX_ELEMENTS,
@@ -87,16 +86,12 @@ app.directive('liveGeoMapChart', ['$timeout', '$interval', function ($timeout, $
                     // As the directive takes the jsonPath parameter as string a conversion to an object is necessary
                     var jsonPathAsObj = JSON.parse(scope.jsonPath);
 
-                    console.log("Start JsonPath retrieval");
                     // Retrieve double values from the values by using JsonPath
                     values = values.map(applyJsonPath);
 
                     function applyJsonPath(value, index, array) {
                         var newVal = [];
-                        console.log(jsonPathAsObj.latitude.path);
-                        console.log(jsonPathAsObj.longitude.path);
                         if (scope.fieldCollectionId === 'default') {
-                            console.log(value);
                             // Push time
                             newVal.push(value[0]);
                             // Push coordinates
@@ -114,10 +109,6 @@ app.directive('liveGeoMapChart', ['$timeout', '$interval', function ($timeout, $
                         }
                         return newVal;
                     }
-                    console.log("LIVECHARTVALS");
-                    console.log(values);
-
-                    console.log("End JsonPath retrieval");
 
                     /*
                      * The server requests returns a number of most recent logs; however, it is possible
@@ -158,7 +149,6 @@ app.directive('liveGeoMapChart', ['$timeout', '$interval', function ($timeout, $
                     // Display data, as only the current live position is visualized no extra handlings are needed
                     displayData(values);
 
-                    console.log("Added points to chart");
                     //Update lastDate with the most recent log that was added to the chart
                     lastDate = values[0][0];
                 }).then(function () {
