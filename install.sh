@@ -63,8 +63,8 @@ sudo systemctl start tomcat8;
 echo "\nBuilding .war file...\n"
 sudo mvn clean install
 
-# Deploy Web Application Archive to Tomcat
+# Deploy Web Application Archive to Tomcat (using wildcards for file name)
 echo "\nDeploying .war file...\n"
-sudo mv target/MBP-0.1.war /var/lib/tomcat8/webapps/MBP.war
+find target/ -name "MBP-*.war" -print0 | xargs -0 -I {} sudo mv {} /var/lib/tomcat8/webapps/MBP.war
 
 echo "\nInstallation finished"
