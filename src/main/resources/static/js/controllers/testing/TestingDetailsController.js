@@ -4,8 +4,8 @@
  * Controller for the test details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('TestingDetailsController',
-    ['$scope', '$controller', 'TestService', 'testingDetails', 'sensorList', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'ENDPOINT_URI', 'ruleList',
-        function ($scope, $controller, TestService, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, ENDPOINT_URI, ruleList) {
+    ['$scope', '$controller', 'TestService', 'testingDetails', 'sensorList', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'HttpService', 'ENDPOINT_URI', 'ruleList',
+        function ($scope, $controller, TestService, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, HttpService, ENDPOINT_URI, ruleList) {
             //Initialization of variables that are used in the frontend by angular
             const vm = this;
             vm.ruleList = ruleList;
@@ -110,7 +110,10 @@ app.controller('TestingDetailsController',
             function checkSimulator(type) {
                 return SIMULATOR_LIST.some(function (sensorType) {
                     return type === sensorType;
+
                 });
+
+
             }
 
             /**
@@ -153,27 +156,27 @@ app.controller('TestingDetailsController',
              * The names and actions of this rules will be formatted for the user view.
              */
             function getTestRules() {
-                TestService.getRuleListTest(COMPONENT_ID).success(function (response) {
-                    $scope.ruleList = response;
-                });
+                $scope.ruleList = TestService.getRuleListTest(COMPONENT_ID);
+                console.log(testingDetails.rules.length);
 
-                $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
-                    for (let i = 0; i < responseRules._embedded.rules.length; i++) {
-                        if (i === 0) {
-                            vm.ruleNames = vm.ruleNames + responseRules._embedded.rules[i].name;
-                            vm.actionNames = vm.actionNames + responseRules._embedded.rules[i].actionNames;
-                        } else {
-                            vm.ruleNames = vm.ruleNames + ", " + responseRules._embedded.rules[i].name;
-                            for (let x = 0; x < responseRules._embedded.rules[i].actionNames.length; x++) {
-                                if (vm.actionNames.includes(responseRules._embedded.rules[i].actionNames[x])) {
 
-                                } else {
-                                    vm.actionNames = vm.actionNames + ", " + responseRules._embedded.rules[i].actionNames[x];
-                                }
+                for (let i = 0; i < testingDetails.rules.length; i++) {
+                    if (i === 0) {
+                        vm.ruleNames = vm.ruleNames + testingDetails.rules[i].name;
+                        vm.actionNames = vm.actionNames + testingDetails.rules[i].actionNames;
+                        console.log(vm.ruleNames, vm.actionNames)
+                    } else {
+                        vm.ruleNames = vm.ruleNames + ", " + testingDetails.rules[i].name;
+                        for (let x = 0; x < testingDetails.rules[i].actionNames.length; x++) {
+                            if (vm.actionNames.includes(testingDetails.rules[i].actionNames[x])) {
+
+                            } else {
+                                vm.actionNames = vm.actionNames + ", " + testingDetails.rules[i].actionNames[x];
                             }
                         }
                     }
-                });
+                }
+
             }
 
 
@@ -196,6 +199,17 @@ app.controller('TestingDetailsController',
              */
             function downloadPDF(path) {
                 window.open('api/test-details/downloadPDF/' + path, '_blank');
+            }
+
+            /**
+             * [Public]
+             *
+             * Creates a server request to delete a certain Test Report for the specific Test
+             */
+            function deletePDF(pdfPath) {
+                TestService.deleteTestReport(COMPONENT_ID, pdfPath.toString()).then(function (response) {
+                    $scope.pdfTable = response;
+                });
             }
 
 
@@ -247,7 +261,7 @@ app.controller('TestingDetailsController',
                 }
 
                 // Server Request with the updated test information in the request body
-                TestService.updateTest(COMPONENT_ID, JSON.stringify(testingDetails)).success(function successCallback() {
+                TestService.updateTest(COMPONENT_ID, testingDetails).then(function successCallback() {
                     //Close modal on success
                     $("#editTestModal").modal('toggle');
                     getConfig();
@@ -266,13 +280,13 @@ app.controller('TestingDetailsController',
 
                 // Get the new list of selected rules for the test
                 vm.rulesUpdate = $rootScope.selectedRules.rules;
+                console.log(vm.rulesUpdate);
 
                 if (vm.executeRules === 'undefined') {
                     NotificationService.notify('A decision must be made.', 'error')
                 }
 
-
-                vm.newTestObject = TestService.getTestData(testingDetails.type, vm.selectedRealSensor, vm.parameterVal, $rootScope.config, $rootScope.selectedRules.rules, vm.executeRules);
+                vm.newTestObject = TestService.getTestData(testingDetails.type, vm.selectedRealSensor, vm.parameterVal, $rootScope.config, $rootScope.selectedRules.rules, ruleList, vm.executeRules);
             }
 
             /**
@@ -688,14 +702,14 @@ app.controller('TestingDetailsController',
                 });
 
 
-                $http.get(testingDetails._links.rules.href).success(function successCallback(responseRules) {
-                    for (let i = 0; i < responseRules._embedded.rules.length; i++) {
-                        vm.rules.push(responseRules._embedded.rules[i]._links.self.href);
-
-                    }
-                    $rootScope.selectedRules = {rules: vm.rules};
-                });
-
+                for (let i = 0; i < testingDetails.rules.length; i++) {
+                    ruleList.forEach(function (rule) {
+                        if (rule.name === testingDetails.rules[i].name) {
+                            vm.rules.push(rule);
+                        }
+                    });
+                }
+                $rootScope.selectedRules = {rules: vm.rules};
 
                 if (testingDetails.triggerRules === true) {
                     vm.executeRules = "true";
@@ -704,8 +718,6 @@ app.controller('TestingDetailsController',
                 }
 
             }
-
-
 
             //Extend the controller object for the public functions to make them available from outside
             angular.extend(vm, $controller('TestingChartController as testingChartCtrl',
@@ -724,8 +736,10 @@ app.controller('TestingDetailsController',
                 downloadPDF: downloadPDF,
                 getPDFList: getPDFList,
                 editConfig: editConfig,
-                editTestConfiguration: updateTest
+                editTestConfiguration: updateTest,
+                deletePDF: deletePDF
             });
         }
 
     ]);
+

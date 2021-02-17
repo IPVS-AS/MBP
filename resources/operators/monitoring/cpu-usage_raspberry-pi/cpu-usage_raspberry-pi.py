@@ -102,6 +102,7 @@ def main(argv):
          t = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
          outputValue = os.popen('mpstat 15 1 | grep -A 5 "%idle" | tail -n 1 | awk -F " " \'{print 100 -  $ 12}\'a').readline()
          outputValue = outputValue.replace("\n","")
+         outputValue = outputValue.replace(",",".")
          msg_pub = {"component": component.upper(), "id": component_id, "value": "%f" % float(outputValue) }
          publisher.sendMessage (topic_pub, json.dumps(msg_pub))
    except:
