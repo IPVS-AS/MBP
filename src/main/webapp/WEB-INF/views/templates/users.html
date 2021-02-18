@@ -1,106 +1,104 @@
 <div class="row clearfix" ng-hide="ng-hide">
-
-  <div class="col-lg-7">
-    <div class="card">
-      <div class="header">
-        <h2>
-          Registered users
-        </h2>
-      </div>
-      <div class="body">
-        <!-- Loader -->
-        <div class="row clearfix" ng-show="vm.dataLoading">
-          <div class="col-xs-12 align-center">
-            <div class="preloader">
-              <div class="spinner-layer pl-blue">
-                <div class="circle-clipper left">
-                  <div class="circle"></div>
-                </div>
-                <div class="circle-clipper right">
-                  <div class="circle"></div>
-                </div>
-              </div>
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <h2>
+                    Registered users
+                </h2>
             </div>
-          </div>
-        </div>
-        <table class="table table-hover" ng-show="vm.users && !vm.dataLoading" st-table="vm.users">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>First name</th>
-              <th>Last name</th>
-              <th>Operations</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr id="{{v.id}}" ng-repeat="v in vm.users">
-              <td>{{v.username}}</td>
-              <td>{{v.firstName}}</td>
-              <td>{{v.lastName}}</td>
-              <td>
-                <button class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float" ng-click="vm.changeUpdate(v)">
-                  <i class="material-icons" style="font-size: 16px">edit</i>
-                </button>
-                <button class="btn bg-red btn-circle waves-effect waves-circle waves-float" ng-click="vm.deleteUser(v.username)">
-                  <i class="material-icons" style="font-size: 16px">delete</i>
-                </button>
-              </td>
-            </tr>
-            <tr ng-show="vm.users.length === 0">
-              <td>No values received yet.</td>
-              <td></td>
-              <td></td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-lg-5">
-    <div class="card">
-      <div class="header">
-        <h2>
-          {{vm.processName}}
-        </h2>
-      </div>
-      <div class="body">
-        <form ng-submit="vm.createUpdateUser()">
-          <div class="row clearfix">
-            <div class="col-xs-12">
-              <div class="form-group" ng-class="{ 'has-error': form.firstName.$dirty && form.firstName.$error.required }">
-                <input type="text" name="firstName" placeholder="First name" id="firstName" class="form-control" ng-model="vm.user.firstName" required="required"/>
-                <span ng-show="form.firstName.$dirty && form.firstName.$error.required" class="help-block">First name is required</span>
-              </div>
-              <div class="form-group" ng-class="{ 'has-error': form.lastName.$dirty && form.lastName.$error.required }">
-                <input type="text" name="lastName" placeholder="Last name" id="Text1" class="form-control" ng-model="vm.user.lastName" required="required"/>
-                <span ng-show="form.lastName.$dirty && form.lastName.$error.required" class="help-block">Last name is required</span>
-              </div>
-              <div class="form-group" ng-class="{ 'has-error': form.username.$dirty && form.username.$error.required }">
-                <input type="text" name="username" placeholder="Username" id="username" class="form-control" ng-model="vm.user.username" required="required"/>
-                <span ng-show="form.username.$dirty && form.username.$error.required" class="help-block">Username is required</span>
-              </div>
-              <div class="form-group" ng-class="{ 'has-error': form.password.$dirty && form.password.$error.required }">
-                <input type="password" name="password" placeholder="Password" id="password" class="form-control" ng-model="vm.user.password" required="required"/>
-                <span ng-show="form.password.$dirty && form.password.$error.required" class="help-block">Password is required</span>
-              </div>
-              <div class="col-xs-12">
-                <!-- buttons -->
-                <div class="form-actions align-right">
-                  <button type="submit" ng-disabled="form.$invalid || vm.dataLoading" class="btn btn-primary">{{vm.processName}}</button>
-                  <button class="btn btn-primary" ng-show="vm.update" ng-click="vm.changeRegister()">New user</button>
-                  <img ng-if="vm.dataLoading" src="images/loading.gif"/>
-                </div>
-              </div>
+            <div class="body">
+                <table class="table table-hover" st-table="displayedCollection" st-safe-src="userListCtrl.items">
+                    <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>First name</th>
+                        <th>Last name</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="{{user.id}}" ng-repeat="user in displayedCollection">
+                        <td>{{user.username}}&nbsp;<i ng-show="user.isAdmin" class="material-icons"
+                                                      style="vertical-align: bottom;">star</i></td>
+                        <td>{{user.firstName}}</td>
+                        <td>{{user.lastName}}</td>
+                        <td>
+                            <button ng-hide="user.isSystemUser || user.isAdmin"
+                                    class="btn bg-primary btn-circle waves-effect waves-circle waves-float"
+                                    ng-click="ctrl.promoteUser(user.id)">
+                                <i class="material-icons" style="font-size:14px;">star</i>
+                            </button>
+                            <button ng-hide="user.isSystemUser || (!user.isAdmin)"
+                                    class="btn bg-primary btn-circle waves-effect waves-circle waves-float"
+                                    ng-click="ctrl.degradeUser(user.id)">
+                                <i class="material-icons" style="font-size:14px;">star_border</i>
+                            </button>
+                            <button ng-hide="user.isSystemUser"
+                                    class="btn bg-primary btn-circle waves-effect waves-circle waves-float"
+                                    ng-click="ctrl.newPassword.userId = user.id; ctrl.showPasswordModal()">
+                                <i class="material-icons" style="font-size:14px;">edit</i>
+                            </button>
+                            <form ng-submit="deleteUserCtrl.deleteItem()" style="display: inline-block">
+                                <button type="submit" ng-hide="user.isSystemUser"
+                                        class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                        ng-click="deleteUserCtrl.item.id = user.id">
+                                    <i class="material-icons" style="font-size:14px;">delete</i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr ng-show="userListCtrl.items.length === 0">
+                        <td>No users available.</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                    </tr>
+                    </tfoot>
+                </table>
             </div>
-          </form>
         </div>
-      </div>
     </div>
 
-  </div>
+    <!-- Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change user password
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form ng-submit="ctrl.changePassword()">
+                    <fieldset>
+                        <div class="modal-body">
+                            <!-- item.name group -->
+                            <div class="form-group" ng-class="{'has-error' : ctrl.newPassword.error }">
+                                <div class="form-line"
+                                     ng-class="{'focused error' : ctrl.generation.error }">
+                                    <input type="password" class="form-control"
+                                           placeholder="New password" ng-model="ctrl.newPassword.password"/>
+                                </div>
+                                <span class="help-block"
+                                      ng-show="ctrl.generation.error">{{ctrl.newPassword.error}}</span>
+                            </div>
+                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" class="btn btn-primary m-t-0 waves-effect">Update password</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- #END# Modal -->
+</div>

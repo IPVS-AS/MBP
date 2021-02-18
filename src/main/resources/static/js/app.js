@@ -68,8 +68,17 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
 
             // Users
             .when(viewPrefix + '/users', {
+                category: 'users',
                 templateUrl: 'templates/users',
-                controller: 'UsersController as vm'
+                controller: 'UserListController as ctrl',
+                resolve: {
+                    userList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('users');
+                    }],
+                    deleteUser: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.deleteOne, 'users');
+                    }],
+                }
             })
 
             // Environment Model
@@ -518,7 +527,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                         return angular.bind(this, HttpService.addOne, 'test-details');
                     }],
                     ruleList: ['HttpService', function (HttpService) {
-                            return HttpService.getAll('rules');
+                        return HttpService.getAll('rules');
                     }],
                     sensorList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('sensors');

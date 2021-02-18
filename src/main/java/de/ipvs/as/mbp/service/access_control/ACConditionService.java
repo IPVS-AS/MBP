@@ -80,9 +80,8 @@ public class ACConditionService {
 					.setName(requestDto.getName())
 					.setDescription(requestDto.getDescription())
 					.setOwnerId(ownerId);
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-			throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "Policy ondition could not be parsed!");
+		} catch (Exception e) {
+			throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "Policy condition could not be parsed!");
 		}
 		
 		return conditionRepository.save(condition);
