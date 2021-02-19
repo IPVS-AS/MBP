@@ -314,74 +314,105 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
                 });
 
                 let operatorStartIndex = 0;
-                let conditionOperatorSelect = $('<span class="clickable" name="conditionOperator">').css({
-                    'font-size': '30px',
-                    'font-weight': 'bold',
-                    'vertical-align': 'middle',
-                    'margin-left': '10px',
-                    'margin-right': '10px'
-                }).html(CONDITION_PICKER_OPERATORS[operatorStartIndex].sign).data(KEY_OPERATOR_INDEX, operatorStartIndex)
-                    .on('click', function () {
-                        let element = $(this);
-                        let currentIndex = element.data(KEY_OPERATOR_INDEX) || 0;
-                        let nextIndex = (currentIndex + 1) % CONDITION_PICKER_OPERATORS.length;
-                        element.data(KEY_OPERATOR_INDEX, nextIndex);
-                        element.html(CONDITION_PICKER_OPERATORS[nextIndex].sign);
-                    });
-
-                let conditionValueInput = $('<input class="form-control" name="conditionValue">').css({
-                    'display': 'inline-block',
-                    'width': '100px',
-                    'text-align': 'center'
-                });
-
                 let deleteValueInput = $();
 
                 // Init the data structures of the element to organize the angular bindings. has jsonPath object and value
                 element.data(KEY_EVENT_FILTER_CONDITION, []);
-                scope.sourcesMapForFilterConditions.set(element.data(KEY_ID), []);
+                scope.sourcesMapForFilterConditions.set(element.data(KEY_ID), new Map());
 
-                let addFilterConditionButton = $('<button type="button" style="display: inline-block"' +
-                    'class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0">').html("Add condition").on('click', function() {
-                        console.log("test");
-                        console.log(element);
-                        console.log("test-end");
-                        element.data(KEY_EVENT_FILTER_CONDITION).push({
-                            jsonPath: {},
-                            value: ""
-                        });
-                        scope.sourcesMapForFilterConditions.get(element.data(KEY_ID)).push({
-                            jsonPath: {},
-                            value: ""
-                        });
-                        if (scope.test.length == 0) {
-                            scope.test.push(0);
+                var countOfFilterConditionForms = 0;
 
-                        } else {
-                            scope.test.push(scope.test[scope.test.length - 1] + 1);
+                let addFilterConditionButton = $('<button type="button" class="btn btn-xs btn-success" ' +
+                    'data-add="rule"><i class="material-icons">add</i> Condition</button>').on('click', function () {
+
+                    // Generate id
+                    var id = "" + element.data(KEY_ID) + "+" + countOfFilterConditionForms;
+
+                    // Add a new map entry for storing the ui filter condition contents in bindings properly
+                    scope.sourcesMapForFilterConditions.get(element.data(KEY_ID)).set(id,
+                        {
+                            jsonPath: {},
+                            operator: CONDITION_PICKER_OPERATORS[0],
+                            value: ""
                         }
-                        console.log(scope.sourcesMapForFilterConditions);
-                        console.log(scope.sourcesMapForFilterConditions.get(element.data(KEY_ID)));
-                        scope.$apply();
+                    );
+
+                    appendFilterConditionToForm("" + element.data(KEY_ID) + "+" + countOfFilterConditionForms++);
+                    scope.$apply();
+                }).css({
+                    'margin-top': '10px'
                 });
+                ;
 
-                scope.test = [];
+                /**
+                 * Adds a condition element for the filter of event types in their details view.
+                 *
+                 * @param index Index of the condition to append in the format "<source_id>+<conditionIdWithinSourceFilter">
+                 */
+                var appendFilterConditionToForm = function (index) {
+                    var filterConditionForm = $('<div class="filter-condition-form"' + '>');
 
-                var angularFilterConditionValueInputs = "<div class=\"filter-condition-super-container\" ng-repeat=\"i in sourcesMapForFilterConditions.get(" + element.data(KEY_ID) + ")\">Test</div>";
-                //console.log(angularFilterConditionValueInputs);
-                //var angularFilterConditionValueInputs = "<div ng-repeat=\"i in test\">Test</div>";
+                    var operatorStartIndex = 0;
+                    var conditionOperatorSelect = $('<span class="clickable" name="conditionOperator">').css({
+                        'font-size': '30px',
+                        'font-weight': 'bold',
+                        'vertical-align': 'middle',
+                        'margin-left': '10px',
+                        'margin-right': '10px'
+                    }).html(CONDITION_PICKER_OPERATORS[operatorStartIndex].sign).data(KEY_OPERATOR_INDEX, operatorStartIndex)
+                        .on('click', function () {
+                            let thisElement = $(this);
+                            let currentIndex = thisElement.data(KEY_OPERATOR_INDEX) || 0;
+                            let nextIndex = (currentIndex + 1) % CONDITION_PICKER_OPERATORS.length;
+                            thisElement.data(KEY_OPERATOR_INDEX, nextIndex);
+                            thisElement.html(CONDITION_PICKER_OPERATORS[nextIndex].sign);
+                            // Update the bindings map
+                            scope.sourcesMapForFilterConditions.get(element.data(KEY_ID)).get(index).operator = CONDITION_PICKER_OPERATORS[nextIndex];
+                        });
 
-                var compiledHtml = $compile(angularFilterConditionValueInputs)(scope);
+                    var conditionValueInput = $('<input class="form-control" name="conditionValue">').css({
+                        'display': 'inline-block',
+                        'width': '100px',
+                        'text-align': 'center'
+                    }).on('change', function () {
+                        // Update the value in the bindings object
+                        scope.sourcesMapForFilterConditions.get(element.data(KEY_ID)).get(index).value = $(this).val();
+                    });
 
-                let conditionContainer = $('<div class="filter-condition-container">')
-                    .append($('<span>').html('Value').css({'font-size': '16px', 'vertical-align': 'middle'}))
-                    .append(conditionOperatorSelect)
-                    .append(conditionValueInput)
-                    .append(compiledHtml)
+                    var conditionRemoveButton = $('<button type="button" class="btn btn-xs btn-danger"' +
+                        ' data-delete="rule"><i class="material-icons">delete</i></button>').on('click', function () {
+                        scope.sourcesMapForFilterConditions.get(element.data(KEY_ID)).delete(index);
+                        filterConditionForm.remove();
+                        console.log(scope.sourcesMapForFilterConditions);
+                    }).css({
+                        'display': 'inline-block',
+                        'margin-left': '10px',
+                        'margin-right': '10px'
+                    });
+
+                    // Prepare the jsonPath input with all needed bindings
+                    var jsonFiltInpHtml =
+                        "<ng-container><json-path-input style=\"display: inline-block;\" ng-model=\"sourcesMapForFilterConditions.get(" + element.data(KEY_ID) + ").get(\'" + index + "\').jsonPath\" " +
+                        "json-path-list=\"eventComponentMapping.get(\'" + element.data(KEY_SOURCE_ALIAS) + "\').operator.dataModel.jsonPathsToLeafNodes\"" +
+                        "number-of-needed-wildcards=\"0\"" +
+                        "</json-path-input></ng-container>";
+
+
+                    var jsonPathFilterInput = $compile(jsonFiltInpHtml)(scope);
+
+                    filterConditionForm.append(jsonPathFilterInput)
+                        .append(conditionOperatorSelect)
+                        .append(conditionValueInput)
+                        .append(conditionRemoveButton);
+                    conditionOptionsContainer.append(filterConditionForm);
+                }
+
+                var conditionOptionsContainer = $('<div class="filter-condition-option-container">');
+
+                var conditionContainer = $('<div class="filter-condition-container">')
+                    .append(conditionOptionsContainer)
+                    .append(addFilterConditionButton)
                     .hide();
-
-                console.log(conditionContainer.get(0).outerHTML);
-
 
                 scope.$apply();
 
@@ -402,13 +433,9 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
                     .append('<label>Filter condition:</label>')
                     .append('<br/>')
                     .append(conditionSwitch)
-                    .append(addFilterConditionButton)
                     .append(conditionContainer));
             },
             querify: (element, detailsPage) => {
-                console.log("ELEMENT/DETAILS_PAGE")
-                console.log(element);
-                console.log(detailsPage);
                 let resourceName = element.data(KEY_SOURCE_RESOURCE_NAME);
                 let componentData = element.data(KEY_SOURCE_COMPONENT_DATA);
                 let alias = element.data(KEY_SOURCE_ALIAS);
@@ -418,16 +445,34 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
                 let conditionString = "";
 
                 if (conditionSwitch.prop('checked')) {
-                    let conditionOperatorIndex = detailsPage.find('span[name="conditionOperator"]').data(KEY_OPERATOR_INDEX);
-                    let conditionOperator = CONDITION_PICKER_OPERATORS[conditionOperatorIndex];
-                    let conditionValue = detailsPage.find('input[name="conditionValue"]').val();
 
                     conditionString += "(";
-                    conditionString += "value " + conditionOperator.operator + " " + conditionValue;
+
+                    var forEachCount = 0;
+                    // Iterate over all map entries for the filter conditions of this event type and adapt the conditionString
+                    scope.sourcesMapForFilterConditions.get(element.data(KEY_ID)).forEach(function (value, key, map) {
+                        if (!value.jsonPath.path) {
+                            return;
+                        }
+
+                        var condValue = value.value;
+                        if (value.jsonPath.type === "string") {
+                            condValue = "\"" + condValue + "\"";
+                        }
+
+                        conditionString += "`" + value.jsonPath.path.substring(1) + "` " + value.operator.operator + " " + condValue;
+
+                        // Add the AND for consecutive conditions
+                        if (map.size > 0 && forEachCount < map.size - 1) {
+                            conditionString += " AND ";
+                        }
+
+                        forEachCount++;
+                    });
                     conditionString += ")";
                 }
-
                 return alias + "=" + resourceName + "_" + componentData.id + conditionString;
+
             }
         };
 
@@ -790,7 +835,6 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
             let eventAlias = element.data(KEY_SOURCE_ALIAS);
 
             // Update the maps holding the mapping information: event-name --> component infos
-            // TODO Maybe generalize this a bit more and make sure that the map keeps always up to date
             scope.eventComponentMapping.set(eventAlias, element.data(KEY_SOURCE_COMPONENT_DATA));
             scope.eventComponentMapping.set(element.data(KEY_SOURCE_COMPONENT_DATA).name, element.data(KEY_SOURCE_COMPONENT_DATA));
 
@@ -1174,7 +1218,7 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
                             // Fallthrough
                             case "long":
                                 var x = parseFloat(value);
-                                if((isNaN(value) || (x | 0) !== x)) {
+                                if ((isNaN(value) || (x | 0) !== x)) {
                                     addValidationError('Value must be a ' + type + "!");
                                 }
                                 break;
@@ -1197,7 +1241,7 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
                                 // TODO: Check if the date format is valid
                                 break;
                             default:
-                                // Case for strings etc.
+                            // Case for strings etc.
                         }
                     }
 
@@ -1356,7 +1400,6 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
                         return;
                     }
 
-
                     rule.data = {
                         jsonPath: {
                             path: "",
@@ -1368,20 +1411,10 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
                     // Get the name of the event type (filter) which is currently selected for this rule
                     let selectedFilter = filterSelect.find('option:selected').text();
 
-                    console.log("RULE-ID:");
-                    console.log(rule);
-                    console.log(selectedFilter);
-                    console.log(scope.ruleJsonPathBindings.get(rule.id).data.jsonPath);
-                    console.log(scope.eventComponentMapping);
-
                     // Prepare the jsonPath input with all needed bindings
-                    scope.fieldCollectionId = "";
-                    scope.pathType = "";
                     var jsonPathInput = "<json-path-input ng-model=\"ruleJsonPathBindings.get(\'" + rule.id + "\').data.jsonPath\"" +
                         "json-path-list=\"eventComponentMapping.get(\'" + selectedFilter + "\').operator.dataModel.jsonPathsToLeafNodes\"" +
                         "number-of-needed-wildcards=\"0\"" +
-                        "field-collection-id-input=\"fieldCollectionId\"" +
-                        "path-type=\"pathType\"" +
                         "</json-path-input>";
 
                     // Compile the html so that angular can apply the bindings properly
@@ -1518,7 +1551,7 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
                 return "(" + parsedConditions.join(" " + conditionsObject.condition + " ") + ")";
             }
 
-            var value =  conditionsObject.value;
+            var value = conditionsObject.value;
             // Add "" for string types
             if (conditionsObject.data.jsonPath.type === "string") {
                 value = "\"" + conditionsObject.value + "\"";
@@ -1798,4 +1831,5 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
         }
     };
 }
+
 ]);
