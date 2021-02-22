@@ -31,16 +31,33 @@ public class VisualizationCollection {
         visIdMapping.put(
                 "doubleVis",
                 new Visualization("doubleVis")
-                        .addFieldsToVisualize(new VisualizationFields("default").addNewPrimitiveType("value", IoTDataTypes.DOUBLE))
-                        .addFieldsToVisualize(new VisualizationFields("arrVal").addNewArray("arrVal", IoTDataTypes.DOUBLE))
+                        .addFieldsToVisualize(new VisualizationFields("default")
+                                .addNewPrimitiveType("value", IoTDataTypes.DECIMAL128)
+                                .addNewPrimitiveType("value", IoTDataTypes.DOUBLE)
+                                .addNewPrimitiveType("value", IoTDataTypes.LONG)
+                                .addNewPrimitiveType("value", IoTDataTypes.INT)
+                        )
+                        .addFieldsToVisualize(new VisualizationFields("arrVal")
+                                .addNewArray("arrVal", IoTDataTypes.DECIMAL128, 1)
+                                .addNewArray("arrVal", IoTDataTypes.DOUBLE,1)
+                                .addNewArray("arrVal", IoTDataTypes.LONG, 1)
+                                .addNewArray("arrVal", IoTDataTypes.INT, 1)
+                        )
         );
 
         // Map
         visIdMapping.put(
                 "geoMap",
                 new Visualization("geoMap")
-                        .addFieldsToVisualize(new VisualizationFields("default").addNewPrimitiveType("latitude", IoTDataTypes.DOUBLE)
-                                .addNewPrimitiveType("longitude", IoTDataTypes.DOUBLE))
+                        .addFieldsToVisualize(new VisualizationFields("default")
+                                .addNewPrimitiveType("latitude", IoTDataTypes.DECIMAL128)
+                                .addNewPrimitiveType("latitude", IoTDataTypes.DOUBLE)
+                                .addNewPrimitiveType("latitude", IoTDataTypes.LONG)
+                                .addNewPrimitiveType("latitude", IoTDataTypes.INT)
+                                .addNewPrimitiveType("longitude", IoTDataTypes.DECIMAL128)
+                                .addNewPrimitiveType("longitude", IoTDataTypes.DOUBLE)
+                                .addNewPrimitiveType("longitude", IoTDataTypes.LONG)
+                                .addNewPrimitiveType("longitude", IoTDataTypes.INT))
         );
     }
 

@@ -1,11 +1,6 @@
 package de.ipvs.as.mbp.domain.visualization.repo;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
-import org.mozilla.javascript.annotations.JSConstructor;
-
-import javax.swing.*;
-import java.util.List;
+import java.util.Objects;
 
 /**
  * Groups data model node information for visualization purposes. Stores the json path
@@ -62,5 +57,18 @@ public class PathUnitPair {
     public PathUnitPair setUnit(String unit) {
         this.unit = unit;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PathUnitPair that = (PathUnitPair) o;
+        return path.equals(that.path);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(path);
     }
 }

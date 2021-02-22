@@ -87,7 +87,7 @@ public class ValueLogReceiveVerifier {
                     lastDocument.append(currNode.getName(), nextList);
 
                     // Call the function for the childs recursively (dimensions are treated here as childs)
-                    for (int i = 0; i < currNode.getDimension(); i++) {
+                    for (int i = 0; i < currNode.getSize(); i++) {
                         validateChild(currNode.getChildren().get(0), nextArr, null, null, nextList, i);
                     }
                     break;
@@ -151,7 +151,7 @@ public class ValueLogReceiveVerifier {
                     lastList.add(nextList);
 
                     // Call the function for the childs recursively (call it that often like dimensions)
-                    for (int i = 0; i < currNode.getDimension(); i++) {
+                    for (int i = 0; i < currNode.getSize(); i++) {
                         validateChild(currNode.getChildren().get(0), nextArr, null, null, nextList, i);
                     }
                     break;

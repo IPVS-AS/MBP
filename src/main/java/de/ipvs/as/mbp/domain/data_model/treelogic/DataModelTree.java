@@ -256,63 +256,158 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
     }
 
     /**
-     * Get all possible visualization mappings
+     * Get all possible visualization mappings.  Uses the {@link DataModelTree#leafNodes} list which
+     * must be already initialized by calling {@link DataModelTree#initLeafNodeList()} beforehand.
      */
-    public List<VisMappingInfo> getPossibleVisualizationMappings() {
+    public List<VisMappingInfo> getAllPossibleVisualizationsMappings() {
         List<VisMappingInfo> allMappings = new ArrayList<>();
 
         // For all visualizations
         for (Visualization v : VisualizationCollection.visIdMapping.values()) {
+            VisMappingInfo currVisInfo = getVisInfoPerVisualization(v);
 
-            VisMappingInfo currVisInfo = new VisMappingInfo();
-            currVisInfo.setVisName(v.getId());
-
-            // For all visualization field collections
-            for (VisualizationFields field : v.getFieldsToVisualize()) {
-                VisualizationMappings currMapping = new VisualizationMappings(field.getFieldName());
-
-                for (Map.Entry<String, DataModelTreeNode> visField : field.getFieldsToVisualize().entrySet()) {
-
-                    List<PathUnitPair> jsonPathsWithUnits = new ArrayList<>();
-
-                    // Subtree search for getting all possible data model visualization mappings
-                    List<DataModelTreeNode> foundSubtreeRoots = this.findSubtreeByTypes(visField.getValue()).getKey();
-
-                    // Check if subtrees were found, if not, jump to the next iteration
-                    if (foundSubtreeRoots == null || foundSubtreeRoots.size() <= 0) {
-                        continue;
-                    }
-
-                    // Check all found subtree roots and add them as possible mapping
-                    for (DataModelTreeNode node : foundSubtreeRoots) {
-                        if (node.getType() == IoTDataTypes.ARRAY) {
-                            jsonPathsWithUnits.add(
-                                    new PathUnitPair().setPath(node.getInternPathToNode())
-                                            .setName(node.getName())
-                                            .setUnit(node.getUnit())
-                                            .setType(node.getType()
-                                                    .getValue())
-                                            .setDimension(node.getDimension()));
-                        } else {
-                            jsonPathsWithUnits.add(new PathUnitPair().setPath(node.getInternPathToNode())
-                                    .setName(node.getName()).setUnit(node.getUnit()).setType(node.getType().getValue())
-                            );
-                        }
-                        currMapping.addVisualizationField(visField.getKey(), jsonPathsWithUnits);
-                    }
-                }
-
-                // Check if for all needed vis fields a mapping exists
-                if (currMapping.getJsonPathPerVisualizationField().size() == field.getFieldsToVisualize().size()) {
-                    // Yes -->
-                    currVisInfo.addVisMapping(currMapping);
-                }
-            }
             if (currVisInfo.getMappingPerVisualizationField() != null && currVisInfo.getMappingPerVisualizationField().size() > 0) {
                 allMappings.add(currVisInfo);
             }
         }
+
         return allMappings;
+    }
+
+    /**
+     * Creates a {@link VisMappingInfo} object for one {@link Visualization} which fits this {@link DataModelTree}.
+     *
+     * @param vis The visualization for which the mapping object should be created.
+     * @return The mapping object with the mapping possibilities to use the visualization for this data model tree.
+     */
+    private VisMappingInfo getVisInfoPerVisualization(Visualization vis) {
+        VisMappingInfo currVisInfo = new VisMappingInfo();
+        currVisInfo.setVisName(vis.getId());
+
+        // For all visualization field collections
+        for (VisualizationFields field : vis.getFieldsToVisualize()) {
+            VisualizationMappings currMapping = getVisMappingForVisualizationField(field);
+
+            // Check if for all needed vis fields a mapping exists
+            if (currMapping.getJsonPathPerVisualizationField().size() == field.getFieldsToVisualize().size()) {
+                // Yes --> add the mapping to the vis info
+                currVisInfo.addVisMapping(currMapping);
+            }
+        }
+
+        return currVisInfo;
+    }
+
+    /**
+     * Creates a {@link VisualizationMappings} object for a given {@link VisualizationFields} object
+     * based on this {@link DataModelTree}.
+     *
+     * @param field The visualization field to map to a VisualizationMapping
+     * @return The VisualizationMapping object.
+     */
+    private VisualizationMappings getVisMappingForVisualizationField(VisualizationFields field) {
+        VisualizationMappings currMapping = new VisualizationMappings(field.getFieldName());
+
+        for (Map.Entry<String, List<DataModelTreeNode>> visField : field.getFieldsToVisualize().entrySet()) {
+
+            List<PathUnitPair> jsonPathsWithUnits = new ArrayList<>();
+
+            for (DataModelTreeNode node : visField.getValue()) {
+                List<PathUnitPair> pathsToAdd = getJsonPathsPerDataModelTreeNodeRoot(node);
+
+                // Add the pathsToAdd but with taking care that no duplicates are added
+                if (pathsToAdd.size() > 0) {
+                    for (PathUnitPair pathToAdd : pathsToAdd) {
+                        if (!jsonPathsWithUnits.contains(pathToAdd)) {
+                            jsonPathsWithUnits.add(pathToAdd);
+                        }
+                    }
+                }
+            }
+
+            if (jsonPathsWithUnits.size() > 0) {
+                currMapping.addVisualizationField(visField.getKey(), jsonPathsWithUnits);
+            }
+
+        }
+
+        return currMapping;
+    }
+
+
+    /**
+     * Tries to match one {@link DataModelTreeNode} (which can be a root node of a tree) to
+     * this {@link DataModelTree} and returns a list of all jsonPaths that can be considered
+     * for this match.
+     * It is intended that the tree of the rootNode is only one tree path (each node has
+     * only one child). By this, it is possible to model multi-dimensional arrays for
+     * visualizations but nothing more complex.
+     *
+     * @param rootNode The root of the model to match this DataaModelTree with.
+     * @return All matching jsonPaths wrapped in a {@link PathUnitPair} object.
+     */
+    private List<PathUnitPair> getJsonPathsPerDataModelTreeNodeRoot(DataModelTreeNode rootNode) {
+        List<PathUnitPair> allPathsForSubtree = new ArrayList<>();
+
+        // Count the number of arrays the rootNode defines.
+        Map.Entry<DataModelTreeNode, Integer> leafNodeWithArrayDimension = this.getLeafNodeOfRootWithArrayDimensions(rootNode);
+        int arrayAmountCount = leafNodeWithArrayDimension.getValue();
+        DataModelTreeNode leafNodeOfRoot = leafNodeWithArrayDimension.getKey();
+
+        /*
+         Check for each leaf node of the data model tree, if it matches the type and the array dimensions.
+         Matching the array dimensions means that the data model tree leaf node has at least the number of specified
+         visualization array dimensions as array parents.
+         */
+        for (DataModelTreeNode leafNode : this.leafNodes) {
+            // Get the number of array parents of the leaf node
+            int arrParentCount = 0;
+            DataModelTreeNode nextNodeToInvestigate = leafNode;
+            while (true) {
+                if (nextNodeToInvestigate.getType() == IoTDataTypes.ARRAY) {
+                    arrParentCount++;
+                }
+                if (nextNodeToInvestigate.getParent() != null) {
+                    nextNodeToInvestigate = nextNodeToInvestigate.getParent();
+                } else {
+                    break;
+                }
+            }
+
+            if (leafNode.getType() == leafNodeOfRoot.getType() &&
+            arrParentCount >= arrayAmountCount) {
+                allPathsForSubtree.add(
+                        // TODO What is a good name / type / size for a multidimensional array?
+                        new PathUnitPair()
+                        .setName(leafNode.getName())
+                        .setType(rootNode.getType().getValue())
+                        .setDimension(rootNode.getSize())
+                        .setUnit(leafNode.getUnit())
+                        .setPath(leafNode.getInternPathToNode())
+                );
+            }
+        }
+
+        return allPathsForSubtree;
+    }
+
+    private Map.Entry<DataModelTreeNode, Integer> getLeafNodeOfRootWithArrayDimensions(DataModelTreeNode root) {
+        int arrayAmountCount = 0;
+        DataModelTreeNode currNodeToInvestigate = root;
+        DataModelTreeNode leafNodeOfRoot;
+        while (true) {
+            if (currNodeToInvestigate.getType() == IoTDataTypes.ARRAY) {
+                arrayAmountCount++;
+            }
+
+            if (currNodeToInvestigate.getChildren().size() <= 0) {
+                leafNodeOfRoot = currNodeToInvestigate;
+                break;
+            } else {
+                currNodeToInvestigate = currNodeToInvestigate.getChildren().get(0);
+            }
+        }
+        return new AbstractMap.SimpleEntry<>(leafNodeOfRoot, arrayAmountCount);
     }
 
     /**
@@ -503,8 +598,8 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                     JSONArray newArr = new JSONArray();
                     lastObject.put(currNode.getName(), newArr);
                     // Call the function for the childs recursively (call it that often like dimensions)
-                    for (int i = 0; i < currNode.getDimension(); i++) {
-                        System.out.println(currNode.getDimension());
+                    for (int i = 0; i < currNode.getSize(); i++) {
+                        System.out.println(currNode.getSize());
                         getJSONFromChild(currNode.getChildren().get(0), newArr, null);
                     }
                 } else if (currNode.getType() == IoTDataTypes.DECIMAL128
@@ -544,7 +639,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                     JSONArray newArr = new JSONArray();
                     lastArray.put(newArr);
                     // Call the function for the childs recursively (call it that often like dimensions)
-                    for (int i = 0; i < currNode.getDimension(); i++) {
+                    for (int i = 0; i < currNode.getSize(); i++) {
                         getJSONFromChild(currNode.getChildren().get(0), newArr, null);
                     }
                 } else if (currNode.getType() == IoTDataTypes.DECIMAL128

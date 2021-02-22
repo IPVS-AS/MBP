@@ -4,8 +4,7 @@ import de.ipvs.as.mbp.domain.data_model.DataTreeNode;
 import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Represents a data type list of a visualization. One {@link Visualization} can
@@ -13,7 +12,7 @@ import java.util.Map;
  */
 public class VisualizationFields {
 
-    private Map<String, DataModelTreeNode> fieldsToVisualize;
+    private Map<String, List<DataModelTreeNode>> fieldsToVisualize;
 
     /**
      * A data type field needs to have a name to be able to distinguish between those
@@ -30,11 +29,11 @@ public class VisualizationFields {
         return fieldName;
     }
 
-    public Map<String, DataModelTreeNode> getFieldsToVisualize() {
+    public Map<String, List<DataModelTreeNode>> getFieldsToVisualize() {
         return fieldsToVisualize;
     }
 
-    public void setFieldsToVisualize(Map<String, DataModelTreeNode> fieldsToVisualize) {
+    public void setFieldsToVisualize(Map<String, List<DataModelTreeNode>> fieldsToVisualize) {
         this.fieldsToVisualize = fieldsToVisualize;
     }
 
@@ -42,31 +41,77 @@ public class VisualizationFields {
         this.fieldName = fieldName;
     }
 
-    public VisualizationFields addNewArray(String fieldName, IoTDataTypes primitiveTypeOfArray) {
+
+    /**
+     * Adds an array tree to the visualization fields.
+     *
+     * @param fieldName The name of the fields.
+     * @param primitiveTypeOfArray The type of the array contents.
+     * @param dimension The dimension of the array (can be multi-dimensional)
+     * @return A reference to this {@link VisualizationFields} object for chaining.
+     */
+    public VisualizationFields addNewArray(String fieldName, IoTDataTypes primitiveTypeOfArray, int dimension) {
         if (!IoTDataTypes.isPrimitive(primitiveTypeOfArray)) {
             // For visualizations only arrays with a primitive type are valid.
             return this;
         }
-        DataModelTreeNode arrRoot = getNewDataModelTreeNode(fieldName, IoTDataTypes.ARRAY);
+
         DataModelTreeNode typeNode = getNewDataModelTreeNode(fieldName, primitiveTypeOfArray);
 
-        arrRoot.addOneChildren(typeNode);
-        typeNode.addParent(arrRoot);
+        List<DataModelTreeNode> arrayNodes = new ArrayList<>();
+        for (int i = 0; i < dimension; i++) {
+            DataModelTreeNode nextArrNode  = getNewDataModelTreeNode(fieldName, IoTDataTypes.ARRAY);
+            arrayNodes.add(nextArrNode);
+        }
 
-        this.fieldsToVisualize.put(fieldName, arrRoot);
+        for (int i = 0; i < arrayNodes.size(); i++) {
+            // If the last array is reached, add the typeNode as child
+            if (i == arrayNodes.size()-1) {
+                arrayNodes.get(i).addOneChildren(typeNode);
+                typeNode.addParent(arrayNodes.get(i));
+            } else if (i == 0) {
+                continue;
+            } else {
+                arrayNodes.get(i).addParent(arrayNodes.get(i-1));
+                arrayNodes.get(i-1).addOneChildren(arrayNodes.get(i));
+            }
+        }
+
+        if (!this.fieldsToVisualize.containsKey(fieldName)) {
+            List<DataModelTreeNode> nodeToAddList = new ArrayList<>();
+            nodeToAddList.add(arrayNodes.get(0));
+            this.fieldsToVisualize.put(fieldName, nodeToAddList);
+        } else {
+            this.fieldsToVisualize.get(fieldName).add(arrayNodes.get(0));
+        }
         return this;
     }
 
+    /**
+     * Adds a primitive {@link IoTDataTypes} field to the visualization.
+     *
+     * @param fieldName The name of the field.
+     * @param primitiveType The type of the field.
+     * @return this {@link VisualizationFields} for chaining.
+     */
     public VisualizationFields addNewPrimitiveType(String fieldName, IoTDataTypes primitiveType) {
         if (!IoTDataTypes.isPrimitive(primitiveType)) {
             return this;
         }
-        this.fieldsToVisualize.put(fieldName, getNewDataModelTreeNode(fieldName, primitiveType));
+
+        if (!this.fieldsToVisualize.containsKey(fieldName)) {
+            List<DataModelTreeNode> nodeToAddList = new ArrayList<>();
+            nodeToAddList.add(getNewDataModelTreeNode(fieldName, primitiveType));
+            this.fieldsToVisualize.put(fieldName, nodeToAddList);
+        } else {
+            this.fieldsToVisualize.get(fieldName).add(getNewDataModelTreeNode(fieldName, primitiveType));
+        }
         return this;
     }
 
 
-    private static DataModelTreeNode getNewDataModelTreeNode(String fieldName, IoTDataTypes type) {
+
+    public static DataModelTreeNode getNewDataModelTreeNode(String fieldName, IoTDataTypes type) {
         DataTreeNode node = new DataTreeNode();
         node.setName(fieldName);
         node.setType(type.getValue());

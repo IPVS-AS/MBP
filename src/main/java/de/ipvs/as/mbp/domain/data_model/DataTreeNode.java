@@ -27,7 +27,7 @@ public class DataTreeNode {
     private List<String> children;
 
     /**
-     * Arrays do have dimensions.
+     * The size of the array.
      */
     private int dimension;
 

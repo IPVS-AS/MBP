@@ -3,7 +3,6 @@ package de.ipvs.as.mbp.domain.data_model.treelogic;
 import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.domain.data_model.DataTreeNode;
 import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
-import de.ipvs.as.mbp.util.Validation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +31,7 @@ public class DataModelTreeNode {
 
     private String unit;
 
-    private int dimension;
+    private int size;
 
     private List<String> treePath;
 
@@ -73,9 +72,9 @@ public class DataModelTreeNode {
 
         // Add dimension for arrays. If not an array set the dimension value to -1 as default.
         if (this.type != null && this.type == IoTDataTypes.ARRAY) {
-            this.dimension = repoTreeNode.getDimension();
+            this.size = repoTreeNode.getDimension();
         } else {
-            this.dimension = -1;
+            this.size = -1;
         }
 
         this.treePath = new ArrayList<>();
@@ -106,12 +105,12 @@ public class DataModelTreeNode {
         this.type = type;
     }
 
-    public int getDimension() {
-        return dimension;
+    public int getSize() {
+        return size;
     }
 
-    public void setDimension(int dimension) {
-        this.dimension = dimension;
+    public void setSize(int size) {
+        this.size = size;
     }
 
     public void addOneChildren(DataModelTreeNode childrenToAdd) {
@@ -164,7 +163,7 @@ public class DataModelTreeNode {
             // This node is an array --> We need array brackets to signal the array
             tmpPath += "[*]";
             // This is an (mbp) intern representation of JsonPath which stores the dimension of a path too
-            tmpInternPath += "[#" + this.dimension + "#]";
+            tmpInternPath += "[#" + this.size + "#]";
         }
 
         this.treePath.add(tmpPath);
