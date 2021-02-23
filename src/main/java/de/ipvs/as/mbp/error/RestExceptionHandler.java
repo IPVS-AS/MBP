@@ -95,6 +95,18 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
+    @ExceptionHandler(NoSystemUserException.class)
+    public ResponseEntity<ApiError> handleNoSystemUser(NoSystemUserException e) {
+        ApiError error = new ApiError(HttpStatus.FORBIDDEN, LocalDateTime.now(), e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
+    @ExceptionHandler(UserNotLoginableException.class)
+    public ResponseEntity<ApiError> handleUserNotLoginable(UserNotLoginableException e) {
+        ApiError error = new ApiError(HttpStatus.FORBIDDEN, LocalDateTime.now(), e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
     @ExceptionHandler(MBPException.class)
     public ResponseEntity<ApiError> handleMBPException(MBPException e) {
         ApiError error = new ApiError(e.getStatus() == null ? HttpStatus.INTERNAL_SERVER_ERROR : e.getStatus(), LocalDateTime.now(), e.getMessage());

@@ -3,16 +3,17 @@ package de.ipvs.as.mbp;
 import de.ipvs.as.mbp.domain.entity_type.ActuatorType;
 import de.ipvs.as.mbp.domain.entity_type.DeviceType;
 import de.ipvs.as.mbp.domain.entity_type.SensorType;
+import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.repository.ActuatorTypeRepository;
 import de.ipvs.as.mbp.repository.DeviceTypeRepository;
 import de.ipvs.as.mbp.repository.SensorTypeRepository;
+import de.ipvs.as.mbp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static de.ipvs.as.mbp.domain.entity_type.ActuatorType.createActuatorType;
 import static de.ipvs.as.mbp.domain.entity_type.DeviceType.createDeviceType;
@@ -23,8 +24,69 @@ import static de.ipvs.as.mbp.domain.entity_type.SensorType.createSensorType;
  */
 @Configuration
 public class DefaultEntitiesConfiguration {
+    //Default admin password
+    private static final String DEFAULT_ADMIN_PASSWORD = "12345";
 
+    //Path to images of entity types
     private static final String IMAGE_PATH = "images/";
+
+    /**
+     * Creates a bean representing a whitelist of paths to directories of operators that are supposed
+     * to be available as default operators.
+     *
+     * @return The path whitelist bean
+     */
+    @Bean(name = "defaultOperatorWhitelist")
+    public List<String> defaultOperatorWhitelist() {
+        List<String> operatorPaths = Arrays.asList("/operators/extraction/temperature_stub");
+        return Collections.unmodifiableList(operatorPaths);
+    }
+
+    /**
+     * Sets up a list of default users and adds them to the user repository if not already existing.
+     *
+     * @param userRepository  The user repository (auto-wired)
+     * @param passwordEncoder Password encoder component for encoding default passwords
+     */
+    @Autowired
+    public void defaultUsers(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        //Create list of default users
+        List<User> defaultUsers = Arrays.asList(
+                //Admin user
+                new User().setUsername("admin")
+                        .setFirstName("admin")
+                        .setLastName("admin")
+                        .setPassword(passwordEncoder.encode(DEFAULT_ADMIN_PASSWORD))
+                        .setAdmin(true)
+                        .setSystemUser(true),
+                //MBP user
+                new User().setUsername("mbp")
+                        .setFirstName("MBP")
+                        .setLastName("Platform")
+                        .setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
+                        .setSystemUser(true)
+                        .setLoginable(false),
+                //Device client user for OAuth
+                new User().setUsername("device-client")
+                        .setFirstName("Device")
+                        .setLastName("Client")
+                        .setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
+                        .setSystemUser(true)
+                        .setLoginable(false)
+        );
+
+        //Iterate over all default users
+        for (User user : defaultUsers) {
+            //Try to find default user by username
+            Optional<User> foundUser = userRepository.findByUsername(user.getUsername());
+
+            //Check whether user was found and whether it is a system user
+            if ((!foundUser.isPresent()) || (!foundUser.get().isSystemUser())) {
+                //Add user to repository
+                userRepository.insert(user);
+            }
+        }
+    }
 
     /**
      * Sets up a list of default device types and adds them to the device type repository.
@@ -120,17 +182,5 @@ public class DefaultEntitiesConfiguration {
         if (sensorTypeRepository.count() <= 0) {
             sensorTypeRepository.insert(sensorTypes);
         }
-    }
-
-    /**
-     * Creates a bean representing a whitelist of paths to directories of operators that are supposed
-     * to be available as default operators.
-     *
-     * @return The path whitelist bean
-     */
-    @Bean(name = "defaultOperatorWhitelist")
-    public List<String> defaultOperatorWhitelist() {
-        List<String> operatorPaths = Arrays.asList("/operators/extraction/temperature_stub");
-        return Collections.unmodifiableList(operatorPaths);
     }
 }

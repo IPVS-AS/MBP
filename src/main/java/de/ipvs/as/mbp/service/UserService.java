@@ -89,7 +89,7 @@ public class UserService {
 
         //Check whether user is a system user
         if (user.isSystemUser()) {
-            throw new MBPException(HttpStatus.FORBIDDEN, "User with id '" + userId + "' is a system user and cannot be deleted.");
+            throw new MBPException(HttpStatus.FORBIDDEN, "User with id '" + userId + "' is a system user and thus cannot be deleted.");
         }
 
         // Delete the user
@@ -160,11 +160,11 @@ public class UserService {
      * Changes the password of an existing user, given by its user ID, to a new one. The new password has to be passed
      * in plain text and will then be hashed.
      *
-     * @param userId The ID of the user for which the password is supposed to be changed
+     * @param userId      The ID of the user for which the password is supposed to be changed
      * @param newPassword The new password to set (in plain text)
      * @return The updated user object
      */
-    public User changePassword(String userId, String newPassword){
+    public User changePassword(String userId, String newPassword) {
         //Retrieve the user from repository
         User user = this.getForId(userId);
 
