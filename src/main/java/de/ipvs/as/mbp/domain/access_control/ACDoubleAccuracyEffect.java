@@ -53,6 +53,8 @@ public class ACDoubleAccuracyEffect extends ACAbstractEffect {
 		//return valueLog.setValue(apply(valueLog.getValue()));
 		return null;
 	}
+
+
 	
 	// - - -
 

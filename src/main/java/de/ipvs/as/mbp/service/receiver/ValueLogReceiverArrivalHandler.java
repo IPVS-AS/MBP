@@ -100,44 +100,17 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
             // Validate the value object part of the json object and transfer the json to a document representation
             valueLog.setValue(ValueLogReceiveVerifier.validateJsonValueAndGetDocument(
                     // Retrieve the root node of the value json object which must be part of the mqtt message by convention
-                    json.getJSONObject("value"),
+                    json.getJSONObject(JSON_KEY_VALUE),
                     // Get the data model tree of the component as this is needed to infer the right database types
                     dataModelTreeCache.getDataModelOfComponent(componentID)
             ));
         } else {
             // Extra case for monitoring operators as they don't have data models and are just expected to send numbers
-            double monitoringOperatorVal = json.getDouble("value");
+            double monitoringOperatorVal = json.getDouble( JSON_KEY_VALUE);
             Document valueDoubleDoc = new Document();
-            valueDoubleDoc.append("value", monitoringOperatorVal);
+            valueDoubleDoc.append(JSON_KEY_VALUE, monitoringOperatorVal);
             valueLog.setValue(valueDoubleDoc);
         }
-
-        /*
-        //TODO ONLY TEST REMOVE LATER
-        VisualsDataTreesCollections coll = new VisualsDataTreesCollections();
-        DataModelTree tree = dataModelTreeCache.getDataModelOfSensor(componentID, componentType);
-        Map.Entry<List<DataModelTreeNode>, List<List<Map<String, String>>>>
-                // z or newRoot
-                test = tree.findSubtreeByTypes(coll.getVisById("string1").getVisualisableDataModels().get(0));
-        System.out.println("All sub tree roots:");
-        for (DataModelTreeNode n : test.getKey()) {
-            System.out.print(n.getName() + ", ");
-        }
-        System.out.println("");
-
-        List<List<Map<String, String>>> stringMap = test.getValue();
-        for (List<Map<String, String>> stringMapping : stringMap) {
-            System.out.println("---START MAPPING Subtree---");
-            for (Map<String, String> m : stringMapping) {
-                for (Map.Entry<String, String> e : m.entrySet()) {
-                    System.out.println(e.getKey() + ": " + e.getValue());
-                }
-                System.out.println("---END OF THIS MAPPING---");
-            }
-        }
-        */
-
-        // TODO REMOVE END
 
         valueLog.setComponent(componentType);
 

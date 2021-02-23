@@ -15,7 +15,6 @@ public class CEPValueLogParseInstruction {
     private IoTDataTypes type;
 
     public CEPValueLogParseInstruction(String fieldName, JsonPath fieldPath, IoTDataTypes type) {
-        // TODO
         this.fieldName = fieldName.replaceAll("`", "");
         this.fieldPath = fieldPath;
         this.type = type;

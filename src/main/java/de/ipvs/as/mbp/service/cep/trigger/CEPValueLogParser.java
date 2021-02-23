@@ -1,6 +1,5 @@
 package de.ipvs.as.mbp.service.cep.trigger;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.bson.Document;
 import org.springframework.stereotype.Service;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
@@ -9,11 +8,7 @@ import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
 import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPEventType;
 
-import java.time.Instant;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * <p>Service which provides methods to parse a {@link ValueLog} to a Map with the
@@ -35,6 +30,16 @@ public class CEPValueLogParser {
 
     public CEPValueLogParser() {
         cachedParseInstructions = new HashMap<>();
+
+        // Add standard parse instructions for monitoring values
+        CEPValueLogParseInstruction monitoringParseInstructions = new CEPValueLogParseInstruction(
+                "value",
+                JsonPath.compile("$['value']"),
+                IoTDataTypes.DOUBLE
+        );
+        HashSet<CEPValueLogParseInstruction> monitoringInstructionSet = new HashSet();
+        monitoringInstructionSet.add(monitoringParseInstructions);
+        cachedParseInstructions.put("MONITORING", monitoringInstructionSet);
     }
 
     /**
@@ -52,6 +57,11 @@ public class CEPValueLogParser {
         //Sanity check
         if (valueLog == null) {
             throw new IllegalArgumentException("Value log must not be null.");
+        }
+
+        // Extra handling for monitoring components
+        if (valueLog.getComponent().equals("MONITORING")) {
+            eventTypeName = "MONITORING";
         }
 
         Map<String, Object> returnMap = new HashMap<>();

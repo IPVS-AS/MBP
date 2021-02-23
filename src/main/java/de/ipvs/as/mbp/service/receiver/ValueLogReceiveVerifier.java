@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Provides methods to verify a given value log in a JSON representation
@@ -39,6 +40,30 @@ public class ValueLogReceiveVerifier {
         for (DataModelTreeNode node : dataModel.getRoot().getChildren()) {
             validateChild(node, null, valueRoot, doc, null, -1);
         }
+
+        // TODO REMOVE DEBUGGING OUTPUT
+        System.out.println("-------------------");
+        for (Object o : doc.values()) {
+            System.out.println(o.getClass() + " : " + o);
+        }
+        System.out.println("-------------------");
+
+        for (Map.Entry<String, Object> e : doc.entrySet()) {
+            System.out.println(e.getKey() + " : " + e.getValue());
+        }
+        System.out.println("-------------------");
+        for (String key :  doc.keySet()) {
+            System.out.println(key + " : " + doc.get(key));
+        }
+        System.out.println("-------------------");
+        for (String key :  doc.keySet()) {
+            System.out.println(key + " : " + doc.get(key));
+        }
+        System.out.println("-------------------");
+        doc.forEach((key, value ) -> System.out.println(key + " : " + value));
+        // TODO REMOVE DEBUGGING OUTPUT
+
+
         return doc;
     }
 

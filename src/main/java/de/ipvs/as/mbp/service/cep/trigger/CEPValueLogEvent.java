@@ -2,6 +2,7 @@ package de.ipvs.as.mbp.service.cep.trigger;
 
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPEvent;
+import org.bson.Document;
 
 import java.time.Instant;
 import java.util.Map;
@@ -30,12 +31,6 @@ public class CEPValueLogEvent extends CEPEvent {
         }
         this.valueLog = valueLog;
 
-        //Convert value string of value log to double
-        // TODO NOT SUPPORTED AT THE MOMENT
-        // TODO ADD HERE HANDLING
-        //double value = valueLog.getValue();
-        double value = 5.0;
-
         //Get Instant object from value log
         Instant time = valueLog.getTime();
 
@@ -43,7 +38,8 @@ public class CEPValueLogEvent extends CEPEvent {
         long unixSeconds = time.getEpochSecond();
 
         if (this.valueLog.getComponent().equals("MONOTORING") || this.valueLog.getComponent().equals("DEVICE")) {
-            //Set event fields
+            // Set event fields for monitoring operators and devices which aren't expected to have data models
+            double value = ((Document) valueLog.getValue().get("value")).getDouble("value");
             this.addValue("value", value);
             this.addValue("time", unixSeconds);
             return;
@@ -51,7 +47,7 @@ public class CEPValueLogEvent extends CEPEvent {
 
         this.addValue("time", unixSeconds);
 
-        // Set event fields
+        // Set event fields for actuator and sensor components
         for (Map.Entry<String, Object> entry : parsedLog.entrySet()) {
             this.addValue(entry.getKey(), entry.getValue());
         }
