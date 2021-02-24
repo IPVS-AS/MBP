@@ -645,29 +645,29 @@ public class TestReport {
         String anomalyDtr = "";
 
         switch (sensorType) {
-            case "TestingTemperatureSensor":
+            case "TESTING_TemperatureSensor":
                 kindOfSensor = "Temperature Sensor";
                 break;
-            case "TestingTemperatureSensorPl":
+            case "TESTING_TemperatureSensorPl":
                 kindOfSensor = "Temperature Sensor (planned)";
                 break;
-            case "TestingHumiditySensor":
+            case "TESTING_HumiditySensor":
                 kindOfSensor = "Humidity sensor";
                 break;
-            case "TestingHumiditySensorPl":
+            case "TESTING_HumiditySensorPl":
                 kindOfSensor = "Humidity Sensor (planned)";
                 break;
-            case "TestingGPSSensor":
+            case "TESTING_GPSSensor":
                 kindOfSensor = "GPS sensor";
                 break;
-            case "TestingGPSSensorPl":
+            case "TESTING_GPSSensorPl":
                 kindOfSensor = "GPS Sensor (planned)";
                 break;
-            case "TestingAccelerationSensor":
+            case "TESTING_AccelerationSensor":
                 kindOfSensor = "Acceleration Sensor";
                 basicAnomaly = false;
                 break;
-            case "TestingAccelerationSensorPl":
+            case "TESTING_AccelerationSensorPl":
                 kindOfSensor = "Acceleration Sensor (planned)";
                 basicAnomaly = false;
                 break;
@@ -696,8 +696,8 @@ public class TestReport {
         }
 
         switch (sensorType) {
-            case "TestingTemperatureSensor":
-            case "TestingTemperatureSensorPl":
+            case "TESTING_TemperatureSensor":
+            case "TESTING_TemperatureSensorPl":
                 if (event == 1) {
                     eventStr = "Temperature rise";
                 } else if (event == 2) {
@@ -715,8 +715,8 @@ public class TestReport {
 
 
                 break;
-            case "TestingHumiditySensor":
-            case "TestingHumiditySensorPl":
+            case "TESTING_HumiditySensor":
+            case "TESTING_HumiditySensorPl":
                 if (event == 1) {
                     eventStr = "Humidity rise";
                 } else if (event == 2) {
@@ -733,8 +733,8 @@ public class TestReport {
                 }
 
                 break;
-            case "TestingGPSSensorPl":
-            case "TestingGPSSensor":
+            case "TESTING_GPSSensorPl":
+            case "TESTING_GPSSensor":
                 if (event == 1) {
                     eventStr = "Approach";
                 } else if (event == 2) {
@@ -751,8 +751,8 @@ public class TestReport {
                 }
 
                 break;
-            case "TestingAccelerationSensor":
-            case "TestingAccelerationSensorPl":
+            case "TESTING_AccelerationSensor":
+            case "TESTING_AccelerationSensorPl":
                 if (event == 1) {
                     eventStr = "Object is not moving";
                 } else if (event == 2) {

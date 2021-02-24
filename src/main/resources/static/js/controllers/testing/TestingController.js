@@ -10,18 +10,18 @@ app.controller('TestingController',
 
             // Constant list of the sensor simulators, that can be included in the test
             const SIMULATOR_LIST = {
-                TEMPERATURE: 'TestingTemperatureSensor',
-                TEMPERATURE_PL: 'TestingTemperatureSensorPl',
-                HUMIDITY: 'TestingHumiditySensor',
-                HUMIDITY_PL: 'TestingHumiditySensorPl',
-                ACCELERATION: 'TestingAccelerationSensor',
-                ACCELERATION_PL: 'TestingAccelerationSensorPl',
-                GPS: 'TestingGPSSensor',
-                GPS_PL: 'TestingGPSSensorPl'
+                TEMPERATURE: 'TESTING_TemperatureSensor',
+                TEMPERATURE_PL: 'TESTING_TemperatureSensorPl',
+                HUMIDITY: 'TESTING_HumiditySensor',
+                HUMIDITY_PL: 'TESTING_HumiditySensorPl',
+                ACCELERATION: 'TESTING_AccelerationSensor',
+                ACCELERATION_PL: 'TESTING_AccelerationSensorPl',
+                GPS: 'TESTING_GPSSensor',
+                GPS_PL: 'TESTING_GPSSensorPl'
             };
 
-            const TESTING_DEVICE = "TestingDevice";
-            const TESTING_ACTUATOR = "TestingActuator";
+            const TESTING_DEVICE = "TESTING_Device";
+            const TESTING_ACTUATOR = "TESTING_Actuator";
             const RERUN_OPERATOR = "RERUN_OPERATOR";
 
 
@@ -40,9 +40,7 @@ app.controller('TestingController',
             vm.addRealSensor = false;
             vm.executeRules = "true";
 
-            /**
-             * test
-             */
+
             (function initController() {
                 vm.availableSensors = [];
                 //Check if the test list was retrieved successfully

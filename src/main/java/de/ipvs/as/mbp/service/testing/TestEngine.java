@@ -65,6 +65,9 @@ public class TestEngine {
     @Value("#{'${testingTool.threeDimensionalSensor}'.split(',')}")
     List<String> THREE_DIM_SIMULATOR_LIST;
 
+    @Value("#{'${testingTool.sensorSimulators}'.split(',')}")
+    List<String> SIMULATOR_LIST;
+
 
     //To resolve ${} in @Value
     @Bean

@@ -28,8 +28,6 @@ public class DefaultEntitiesConfiguration {
     private static final String DEFAULT_ADMIN_PASSWORD = "12345";
 
     //Path to images of entity types
-    private static final String IMAGE_PATH = "images/";
-
     /**
      * Creates a bean representing a whitelist of paths to directories of operators that are supposed
      * to be available as default operators.
@@ -41,6 +39,28 @@ public class DefaultEntitiesConfiguration {
         List<String> operatorPaths = Arrays.asList("/operators/extraction/temperature_stub");
         return Collections.unmodifiableList(operatorPaths);
     }
+
+    private static final String IMAGE_PATH = "images/";
+
+    @Bean(name = "rerunOperatorWhitelist")
+    public List<String > rerunOperatorWhitelist(){
+        List<String> operatorPaths = Arrays.asList("/operators/extraction/simulators/rerun_adapter"
+        );
+        return Collections.unmodifiableList(operatorPaths);
+    }
+
+
+    @Bean(name = "defaultTestComponentsWhiteList")
+    public List<String > defaultTestComponentsWhiteList(){
+        List<String> operatorPaths = Arrays.asList("/operators/extraction/simulators/sensoradapter_temp_planned",
+                "/operators/extraction/simulators/sensoradapter_temp",
+                "/operators/extraction/simulators/sensoradapter_hum",
+                "/operators/extraction/simulators/sensoradapter_hum_planned",
+                "/operators/control/simulators/actuator_adapter_testing"
+                );
+        return Collections.unmodifiableList(operatorPaths);
+    }
+
 
     /**
      * Sets up a list of default users and adds them to the user repository if not already existing.
