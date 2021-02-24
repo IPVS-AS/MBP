@@ -14,12 +14,21 @@ app.controller('SensorListController',
             vm.operatorList = operatorList;
             vm.deviceList = deviceList;
 
+
+            // Constant list of the sensor simulators, that can be included in the test
+            const SIMULATOR_LIST = {
+                TEMPERATURE: 'TESTING_TemperatureSensor',
+                TEMPERATURE_PL: 'TESTING_TemperatureSensorPl',
+                HUMIDITY: 'TESTING_HumiditySensor',
+                HUMIDITY_PL: 'TESTING_HumiditySensorPl',
+            };
+
             /**
              * Initializing function, sets up basic things.
              */
             (function initController() {
                 loadSensorStates();
-
+                getListWoSimulators();
                 //Interval for updating sensor states on a regular basis
                 let interval = $interval(function () {
                     loadSensorStates();
@@ -178,6 +187,31 @@ app.controller('SensorListController',
                 });
             }
 
+            function getListWoSimulators() {
+                let simExists = false;
+                let notSimExists = false;
+                let tempSensorList = sensorList;
+
+                const index = sensorList.indexOf()
+
+
+                angular.forEach(SIMULATOR_LIST, function (value) {
+                    sensorList.some(function (sensor) {
+                        if (sensor.name === value) {
+                            const index = tempSensorList.indexOf(sensor);
+                            if(index !== -1){
+                                tempSensorList.splice(index,1)
+                            }
+                        }
+                    });
+
+                });
+
+
+                $scope.simExists = tempSensorList.length;
+
+            }
+
             //Expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {
                 sensorListCtrl: $controller('ItemListController as sensorListCtrl', {
@@ -220,6 +254,8 @@ app.controller('SensorListController',
                         //Add sensor to sensor list
                         vm.sensorListCtrl.pushItem(sensor);
 
+                        getListWoSimulators();
+
                         //Retrieve state of the new sensor
                         getSensorState(sensor.id);
                     }
@@ -235,6 +271,7 @@ app.controller('SensorListController',
                 function () {
                     let id = vm.deleteSensorCtrl.result;
                     vm.sensorListCtrl.removeItem(id);
+                    getListWoSimulators();
                 }
             );
 

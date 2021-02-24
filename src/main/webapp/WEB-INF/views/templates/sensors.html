@@ -98,7 +98,7 @@
                                 </form>
                             </td>
                     </tr>
-                    <tr ng-show="sensorListCtrl.items.length === 0">
+                    <tr ng-show="sensorListCtrl.items.length === 0 || simExists === 0 ">
                         <td>No registered sensors</td>
                         <td></td>
                         <td></td>

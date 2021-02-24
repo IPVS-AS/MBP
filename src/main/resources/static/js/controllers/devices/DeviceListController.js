@@ -176,6 +176,7 @@ app.controller('DeviceListController',
                 });
             }
 
+
             // expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {
                 deviceListCtrl: $controller('ItemListController as deviceListCtrl', {
