@@ -5,17 +5,6 @@ app.controller('OperatorListController',
         function ($scope, $rootScope, $controller, $q, operatorList, operatorPreprocessing, addOperator, deleteOperator, FileReader, parameterTypesList, OperatorService, NotificationService) {
             let vm = this;
 
-            vm.dzServiceOptions = {
-                paramName: 'serviceFile',
-                maxFilesize: '100',
-                maxFiles: 1
-            };
-
-            vm.dzServiceCallbacks = {
-                'addedfile': function (file) {
-                    vm.addOperatorCtrl.item.serviceFile = file;
-                }
-            };
             vm.dzRoutinesOptions = {
                 paramName: 'routinesFile',
                 addRemoveLinks: true,
@@ -33,12 +22,17 @@ app.controller('OperatorListController',
                     vm.addOperatorCtrl.item.routineFiles.push(file);
                 },
                 'removedfile': function (file) {
-                    vm.addOperatorCtrl.item.routineFiles.splice(vm.addOperatorCtrl.item.routineFiles.indexOf(file), 1);
+                    //Sanity check
+                    if (vm.addOperatorCtrl.item.routineFiles) {
+                        vm.addOperatorCtrl.item.routineFiles.splice(vm.addOperatorCtrl.item.routineFiles.indexOf(file), 1);
+                    } else {
+                        vm.addOperatorCtrl.item.routineFiles = [];
+                    }
                 },
 
             };
 
-            //List of added methods
+            //Dropzone methods are injected into this object
             vm.dzMethods = {};
 
             //List of added parameters
@@ -224,6 +218,9 @@ app.controller('OperatorListController',
 
                         //Add new item to list
                         vm.operatorListCtrl.pushItem(data);
+
+                        //Clear dropzone files
+                        vm.dzMethods.removeAllFiles(true);
 
                         //Clear parameter array
                         vm.parameters.length = 0;
