@@ -30,6 +30,8 @@ app.directive('jsonPathInput', ['UnitService', '$compile', function (UnitService
         // List of bindings for the dynamically created array dimension input fields
         scope.arrInputBinding = [];
 
+        scope.selectedBinding = null;
+
         // The jsonPath which should be edited
         var pathItemToEdit = {};
 
@@ -46,7 +48,9 @@ app.directive('jsonPathInput', ['UnitService', '$compile', function (UnitService
          *
          * @param pathItem Object with all the necessary json path information.
          */
-        scope.onSelectPathItem = function (pathItem) {
+        scope.onSelectPathItem = function () {
+            var pathItem = JSON.parse(scope.selectedBinding);
+
             // Remove all the old input fields
             removeInputFields();
             console.log(scope.fieldCollectionIdInput);
@@ -90,7 +94,6 @@ app.directive('jsonPathInput', ['UnitService', '$compile', function (UnitService
             // Call the method to update the bindings even if no array dimension inputs are necessary
             scope.onDimensionInput();
         }
-
         /**
          * [private]
          * Removes all currently added input fields.

@@ -1,8 +1,9 @@
 <!-- Dropdown for choosing one of all available json paths -->
-<select class="form-control show-tick json-path-select" ng-focus="fieldCollectionIdInput = pathType">
-    <option value="" ng-show="false">Choose a path</option>
+<select class="form-control show-tick json-path-select" ng-focus="fieldCollectionIdInput = pathType"
+        ng-model="selectedBinding"
+        ng-change="onSelectPathItem()">
     <option ng-repeat="pathItem in jsonPathList" value="{{pathItem}}"
-            ng-click="onSelectPathItem(pathItem)">{{pathItem.name}} ({{pathItem.type}}: {{pathItem.path}})
+    >{{pathItem.name}} ({{pathItem.type}}: {{pathItem.path}})
     </option>
 </select>
 
