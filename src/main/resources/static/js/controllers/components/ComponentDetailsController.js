@@ -206,9 +206,10 @@ app.controller('ComponentDetailsController',
                             NotificationService.notify('Component started successfully.', 'success');
                         },
                         function (response) {
-                            //Failure
-                            vm.deploymentState = 'UNKNOWN';
-                            NotificationService.notify('Starting failed.', 'error');
+                            //Failure, check status code of response
+                            if(response.status !== 400){
+                                vm.deploymentState = 'UNKNOWN';
+                            }
                         }).then(function () {
                     //Finally hide the waiting screen
                     hideDeploymentWaitingScreen();
