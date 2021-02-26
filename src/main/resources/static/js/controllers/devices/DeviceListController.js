@@ -10,6 +10,9 @@ app.controller('DeviceListController',
                   deviceTypesList, NotificationService) {
             let vm = this;
 
+            //Set field for password visibility
+            vm.hidePassword = true;
+
             /**
              * Initializing function, sets up basic things.
              */
