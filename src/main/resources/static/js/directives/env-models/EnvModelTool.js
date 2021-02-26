@@ -288,9 +288,12 @@ app.directive('envModelTool',
                         },
                         helper: () => {
                             //Create helper element
-                            return $("<div/>", {
-                                class: element.attr('class')
-                            })
+                            let helper = $('<div/>').attr("class", element.attr('class'));
+
+                            //Add background image if necessary
+                            helper.css('background-image', element.css('background-image'));
+
+                            return helper;
                         },
                         revert: false
                     });
@@ -476,6 +479,11 @@ app.directive('envModelTool',
                         'width': node.width + 'px',
                         'height': node.height + 'px'
                     });
+
+                    //Set background if available
+                    if (node.hasOwnProperty("background")) {
+                        element.css('background-image', node.background);
+                    }
 
                     //Append the data to the element
                     element.data(node);
@@ -994,6 +1002,11 @@ app.directive('envModelTool',
                         nodeObject['nodeType'] = "actuator";
                     } else if (element.hasClass("sensor")) {
                         nodeObject['nodeType'] = "sensor";
+                    }
+
+                    //Set background if necessary
+                    if (element.hasClass("device") || element.hasClass("actuator") || element.hasClass("sensor")) {
+                        nodeObject['background'] = element.css('background-image');
                     }
 
                     //Return the final object

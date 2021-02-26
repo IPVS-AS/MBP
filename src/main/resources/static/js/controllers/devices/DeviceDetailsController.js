@@ -374,13 +374,7 @@ app.controller('DeviceDetailsController',
                 //Execute enable request
                 MonitoringService.enableMonitoring(DEVICE_ID, operator.id, parameterValuesList).then(
                     function (response) {
-                        //Success, check if every thing worked well
-                        if (!response.success) {
-                            operator.state = 'UNKNOWN';
-                            NotificationService.notify('Error during monitoring enabling: ' + response.globalMessage, 'error');
-                            return;
-                        }
-                        //Notify user
+                        //Success, notify user
                         operator.state = 'RUNNING';
                         operator.enable = true;
                         NotificationService.notify('Monitoring enabled successfully.', 'success');
@@ -408,13 +402,7 @@ app.controller('DeviceDetailsController',
                 //Execute disable request
                 MonitoringService.disableMonitoring(DEVICE_ID, operator.id).then(
                     function (response) {
-                        //Success, check if every thing worked well
-                        if (!response.success) {
-                            operator.state = 'UNKNOWN';
-                            NotificationService.notify('Error during monitoring disabling: ' + response.globalMessage, 'error');
-                            return;
-                        }
-                        //Notify user
+                        //Success, notify user
                         operator.state = 'READY';
                         operator.enable = false;
                         NotificationService.notify('Monitoring disabled successfully.', 'success');

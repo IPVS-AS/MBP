@@ -14,7 +14,6 @@ import javax.persistence.GeneratedValue;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import java.io.Serializable;
 import java.util.Locale;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
@@ -24,9 +23,7 @@ import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
  */
 @Document
 @ApiModel(description = "Model for user entities")
-public class User implements Serializable, IACRequestingEntity {
-
-    private static final long serialVersionUID = 1L;
+public class User implements IACRequestingEntity {
 
     @Id
     @GeneratedValue
@@ -60,7 +57,17 @@ public class User implements Serializable, IACRequestingEntity {
 
     @ACAttributeValue
     @ApiModelProperty(notes = "Indicates whether the user is an admin user.", required = true)
-    private boolean isAdmin;
+    private boolean isAdmin = false;
+
+    @ACAttributeValue
+    @ApiModelProperty(notes = "Indicates whether the user is a system user.")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private boolean isSystemUser = false;
+
+    @ACAttributeValue
+    @ApiModelProperty(notes = "Indicates whether it is possible to login into the user.")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private boolean isLoginable = true;
 
     public String getId() {
         return id;
@@ -115,6 +122,25 @@ public class User implements Serializable, IACRequestingEntity {
 
     public User setAdmin(boolean isAdmin) {
         this.isAdmin = isAdmin;
+        return this;
+    }
+
+    @JsonProperty("isSystemUser")
+    public boolean isSystemUser() {
+        return isSystemUser;
+    }
+
+    public User setSystemUser(boolean isSystemUser) {
+        this.isSystemUser = isSystemUser;
+        return this;
+    }
+
+    public boolean isLoginable(){
+        return isLoginable;
+    }
+
+    public User setLoginable(boolean loginable){
+        this.isLoginable = loginable;
         return this;
     }
 

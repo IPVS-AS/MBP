@@ -82,7 +82,7 @@ app.controller('EnvModelListController',
                 //Pass model ID to the controller
                 vm.updateEnvModelCtrl.item.id = currentModelID;
                 console.log(vm.updateEnvModelCtrl.item);
-                //Create requeest for updating the model
+                //Create request for updating the model
                 vm.updateEnvModelCtrl.updateItem().then(function (data) {
                     //Check for success
                     if (vm.updateEnvModelCtrl.success) {

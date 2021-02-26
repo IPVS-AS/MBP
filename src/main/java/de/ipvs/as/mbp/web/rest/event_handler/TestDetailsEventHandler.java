@@ -1,13 +1,16 @@
 package de.ipvs.as.mbp.web.rest.event_handler;
 
-import java.io.IOException;
+import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.repository.SensorRepository;
+import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.core.annotation.HandleAfterDelete;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.stereotype.Component;
@@ -30,14 +33,13 @@ public class TestDetailsEventHandler {
      * @param testDetails Test with details to be created
      */
     @HandleBeforeCreate
-    public void testStarted(TestDetails testDetails) throws IOException {
+
+    public void testStarted(TestDetails testDetails) {
+
 
         List<Sensor> sensorArray = new ArrayList<>();
 
-        List<String> f = testDetails.getType();
-
-
-        if(testDetails.getType().size() > 0){
+        if (testDetails.getType().size() > 0) {
             // checks if the sensors for the test are registered. If not this will be done in the following, if the specific operators are existing.
             for (String sensType : testDetails.getType()) {
                 Sensor sensor = sensorRepository.findByName(sensType).get();
@@ -45,12 +47,27 @@ public class TestDetailsEventHandler {
             }
         }
 
-
-        // checks if the testing actuator is registered
-        //  Actuator actuator = actuatorRepository.findByName("TestingActuator");
-
         testDetails.setSensor(sensorArray);
     }
+
+    /**
+     * Called in case a test is supposed to be deleted. This method then takes care of deleting all
+     * files saved that are associated with this test.
+     *
+     * @param testDetails
+     */
+    @HandleAfterDelete
+    public void afterTestDelete(TestDetails testDetails) {
+        File dir = new File(testDetails.getPathPDF());
+        FileFilter fileFilter = new WildcardFileFilter(testDetails.getId() + "*");
+        File[] files = dir.listFiles(fileFilter);
+        for (final File file : files) {
+            if (!file.delete()) {
+                System.err.println("Can't remove " + file.getAbsolutePath());
+            }
+        }
+    }
+
 
 
 }

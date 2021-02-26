@@ -88,7 +88,7 @@ app.controller('KeyPairListController',
              * [Public]
              * Copies the currently displayed public key to the clipboard.
              */
-            function copyPublicKeyToClipboard(){
+            function copyPublicKeyToClipboard() {
                 //Find textarea of the modal and select it
                 let textArea = SHOW_PUBLIC_KEY_MODAL.find('textarea');
                 textArea.select();
@@ -145,30 +145,35 @@ app.controller('KeyPairListController',
                     }
                 }
 
-
                 //Ask the server for all devices that use this key pair
                 return KeyPairService.getUsingDevices(keyPairID).then(function (result) {
-                    let affectedWarning = "";
+                    //Check if list is empty
+                    if (result.length > 0) {
+                        //Not empty, entity cannot be deleted
+                        let errorText = "The key pair <strong>" + keyPairName + "</strong> is still used by the " +
+                            "following devices and thus cannot be deleted:<br/><br/>";
 
-                    //If the list is not empty, create a message that contains the names of all affected devices
-                    if (result.data.length > 0) {
-                        affectedWarning = "<br/><br/><strong>The following devices are currently " +
-                            "using this key pair and will be deleted as well:</strong><br/>";
-
-                        //Iterate over all affected components
-                        for (let i = 0; i < result.data.length; i++) {
-                            affectedWarning += "- ";
-                            affectedWarning += result.data[i].name;
-                            affectedWarning += "<br/>";
+                        //Iterate over all affected entities
+                        for (let i = 0; i < result.length; i++) {
+                            errorText += "- " + result[i].name + "<br/>";
                         }
+
+                        // Show error message
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Deletion impossible',
+                            html: errorText
+                        })
+
+                        // Return new promise as result
+                        return Promise.resolve({value: false});
                     }
 
-                    //Show the alert to the user and return the resulting promise
+                    //Show confirm prompt to the user and return the resulting promise
                     return Swal.fire({
                         title: 'Delete key pair',
-                        type: 'warning',
-                        html: "Are you sure you want to delete the key pair \"" +
-                            keyPairName + "\"?" + affectedWarning,
+                        icon: 'warning',
+                        html: "Are you sure you want to delete the key pair \"<strong>" + keyPairName + "</strong>\"?",
                         showCancelButton: true,
                         confirmButtonText: 'Delete',
                         confirmButtonClass: 'bg-red',

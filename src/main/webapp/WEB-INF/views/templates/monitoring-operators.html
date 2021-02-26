@@ -17,6 +17,27 @@
                 </div>
             </div>
             <div class="body">
+                <div class="row">
+                    <div class="col-lg-8"></div>
+                    <div class="col-lg-4">
+                        <div class="form-group list-filter">
+                            <div class="input-group">
+                                <div class="form-line">
+                                    <input class="form-control ng-pristine ng-valid ng-touched"
+                                           type="text" placeholder="Filter by name..."
+                                           ng-model="operatorListCtrl.filterTerm">
+                                </div>
+                                <span class="input-group-addon">
+                                    <button type="button" class="list-filter-clear"
+                                            ng-show="operatorListCtrl.filterTerm.length > 0"
+                                            ng-click="operatorListCtrl.filterTerm = ''">
+                                        <i class="material-icons">clear</i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <ul class="nav nav-tabs tab-nav-right" role="tablist" id="operatorFilter">
                     <li role="presentation" class="active">
                         <a data-target="#operatorTable-all" data-toggle="tab"><strong>All</strong></a>
@@ -39,7 +60,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr ng-repeat="item in displayedCollection">
+                            <tr ng-repeat="item in displayedCollection | filter:operatorListCtrl.nameFilter">
                                 <td>{{item.name}}</td>
                                 <td>
                                     <span ng-repeat="deviceType in item.deviceTypes">
@@ -52,7 +73,8 @@
                                 <td>
                                     <form ng-submit="deleteOperatorCtrl.deleteItem()"
                                           style="display: inline-block">
-                                        <button type="submit" class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                        <button type="submit"
+                                                class="btn bg-red btn-circle waves-effect waves-circle waves-float"
                                                 ng-click="deleteOperatorCtrl.item.id = item.id">
                                             <i class="material-icons" style="font-size:14px;">delete</i>
                                         </button>
@@ -86,7 +108,8 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <tr id="{{item.id}}" ng-repeat="item in displayedCollection"
+                            <tr id="{{item.id}}"
+                                ng-repeat="item in displayedCollection | filter:operatorListCtrl.nameFilter"
                                 ng-show="(deviceType.id == 'all') || (item.deviceTypesList.indexOf(deviceType.id) !== -1)">
                                 <td>{{item.name}}</td>
                                 <td>{{item.description}}</td>
@@ -130,7 +153,8 @@
                         <div class="modal-body">
                             <!-- "global" error for addItem -->
                             <div class="form-group" ng-class="{'has-error' : addOperatorCtrl.item.errors.global}">
-                                <span class="alert alert-danger" ng-show="addOperatorCtrl.item.errors.global"> {{addOperatorCtrl.item.errors.global}} </span>
+                                <span class="alert alert-danger"
+                                      ng-show="addOperatorCtrl.item.errors.global"> {{addOperatorCtrl.item.errors.global}} </span>
                             </div>
                             <!-- item.name group -->
                             <div class="form-group" ng-class="{'has-error' : addOperatorCtrl.item.errors.name }">
@@ -139,7 +163,8 @@
                                     <input class="form-control" id="operator-form-input-name" type="text"
                                            placeholder="Name *" ng-model="addOperatorCtrl.item.name"/>
                                 </div>
-                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.name">{{addOperatorCtrl.item.errors.name}}</span>
+                                <span class="help-block"
+                                      ng-show="addOperatorCtrl.item.errors.name">{{addOperatorCtrl.item.errors.name}}</span>
                             </div>
                             <!-- item.deviceTypes group -->
                             <div class="form-group" ng-class="{'has-error' : addOperatorCtrl.item.errors.deviceTypes }">
@@ -147,11 +172,12 @@
                                      ng-class="{'focused error' : addOperatorCtrl.item.errors.deviceTypes }">
                                     <select class="form-control selectpicker" title="Device types *"
                                             data-header="Device types *"
-                                            ng-options="deviceType.href as deviceType.name for deviceType in ctrl.deviceTypesList"
+                                            ng-options="deviceType.id as deviceType.name for deviceType in ctrl.deviceTypesList"
                                             ng-model="addOperatorCtrl.item.deviceTypes" multiple>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.deviceTypes">{{addOperatorCtrl.item.errors.deviceTypes}}</span>
+                                <span class="help-block"
+                                      ng-show="addOperatorCtrl.item.errors.deviceTypes">{{addOperatorCtrl.item.errors.deviceTypes}}</span>
                             </div>
                             <!-- item.description group -->
                             <div class="form-group"
@@ -161,7 +187,8 @@
                                     <input class="form-control no-resize" placeholder="Describe this operator..."
                                            ng-model="addOperatorCtrl.item.description">
                                 </div>
-                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.description">{{addOperatorCtrl.item.errors.description}}</span>
+                                <span class="help-block"
+                                      ng-show="addOperatorCtrl.item.errors.description">{{addOperatorCtrl.item.errors.description}}</span>
                             </div>
                             <!-- item.unit group -->
                             <div class="form-group"
@@ -170,7 +197,8 @@
                                      ng-class="{'focused error' : addOperatorCtrl.item.errors.unit }">
                                     <unit-input ng-model="addOperatorCtrl.item.unit"></unit-input>
                                 </div>
-                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.unit">{{addOperatorCtrl.item.errors.unit}}</span>
+                                <span class="help-block"
+                                      ng-show="addOperatorCtrl.item.errors.unit">{{addOperatorCtrl.item.errors.unit}}</span>
                             </div>
                             <!-- item.routine group -->
                             <label>Operator scripts: *</label>
@@ -181,19 +209,21 @@
                                          callbacks="ctrl.dzRoutinesCallbacks" methods="ctrl.dzMethods"
                                          ng-dropzone></div>
                                     <div style="display:none;">
-                                      <div id='tpl' class="dz-preview dz-file-preview ">
-                                        <div class="dz-details col-lg-4 col-sm-6 col-12">
-                                            <div class="dz-filename"><span data-dz-name></span></div>
-                                            <img data-dz-thumbnail />
+                                        <div id='tpl' class="dz-preview dz-file-preview ">
+                                            <div class="dz-details col-lg-4 col-sm-6 col-12">
+                                                <div class="dz-filename"><span data-dz-name></span></div>
+                                                <img data-dz-thumbnail/>
+                                            </div>
+                                            <div class="dz-progress"><span class="dz-upload"
+                                                                           data-dz-uploadprogress></span></div>
+                                            <div class="dz-success-mark"><span>✔</span></div>
+                                            <div class="dz-error-mark"><span>✘</span></div>
+                                            <div class="dz-error-message"><span data-dz-errormessage></span></div>
                                         </div>
-                                        <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress></span></div>
-                                        <div class="dz-success-mark"><span>✔</span></div>
-                                        <div class="dz-error-mark"><span>✘</span></div>
-                                        <div class="dz-error-message"><span data-dz-errormessage></span></div>
-                                       </div>
-                                     </div>
+                                    </div>
                                 </div>
-                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.routines">{{addOperatorCtrl.item.errors.routines}}</span>
+                                <span class="help-block"
+                                      ng-show="addOperatorCtrl.item.errors.routines">{{addOperatorCtrl.item.errors.routines}}</span>
                             </div>
                             <!-- item.parameters group -->
                             <label>Parameters:</label>
@@ -262,7 +292,8 @@
                                 </div>
                             </div>
                             <!-- item.accessControlPolicyIds group -->
-                            <div class="form-group" ng-class="{'has-error' : addOperatorCtrl.item.errors.accessControlPolicyIds }">
+                            <div class="form-group"
+                                 ng-class="{'has-error' : addOperatorCtrl.item.errors.accessControlPolicyIds }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addOperatorCtrl.item.errors.accessControlPolicyIds }">
                                     <select multiple class="form-control selectpicker" title="Access Control Policies"
@@ -273,7 +304,8 @@
                                         <option/>
                                     </select>
                                 </div>
-                                <span class="help-block" ng-show="addOperatorCtrl.item.errors.accessControlPolicyIds">{{addOperatorCtrl.item.errors.accessControlPolicyIds}}</span>
+                                <span class="help-block"
+                                      ng-show="addOperatorCtrl.item.errors.accessControlPolicyIds">{{addOperatorCtrl.item.errors.accessControlPolicyIds}}</span>
                             </div>
                             <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                         </div>

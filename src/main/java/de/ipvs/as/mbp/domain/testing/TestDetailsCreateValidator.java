@@ -15,8 +15,8 @@ public class TestDetailsCreateValidator implements ICreateValidator<TestDetails>
      *
      * @param entity The entity to validate on creation
      */
-    @Override
     public void validateCreatable(TestDetails entity) {
+
         //Sanity check
         if (entity == null) {
             throw new EntityValidationException("The entity is invalid.");
@@ -31,9 +31,15 @@ public class TestDetailsCreateValidator implements ICreateValidator<TestDetails>
         }
 
         // Check if rule choice is empty
-        if (entity.getRules() == null) {
+        if (entity.getSensor() ==  null || entity.getSensor().isEmpty()) {
+            exception.addInvalidField("sensors", "At least one Sensor Simulator or Real Sensor must be selected!");
+        }
+
+        // Check if rule choice is empty
+        if (entity.getRules() == null || entity.getRules().isEmpty()) {
             exception.addInvalidField("rules", "At least one rule must be selected!");
         }
+
 
         //Throw exception if there are invalid fields
         if (exception.hasInvalidFields()) {

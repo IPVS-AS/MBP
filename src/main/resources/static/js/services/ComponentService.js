@@ -120,9 +120,7 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             }
 
             //Execute request
-            return HttpService.getRequest(URL_PREFIX + component + 's/' + componentId + URL_VALUE_LOGS_SUFFIX, {
-                params: parameters
-            }).then(function (response) {
+            return HttpService.getRequest(URL_PREFIX + component + 's/' + componentId + URL_VALUE_LOGS_SUFFIX, parameters).then(function (response) {
                 //Process received logs in order to be able to display them in a chart
                 return processValueLogs(response.content);
             });

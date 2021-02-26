@@ -128,7 +128,7 @@ public class RestConfiguration implements RepositoryRestConfigurer {
                 //Link actuator with deployment
                 Link link = null;
                 try {
-                    link = linkTo(WebMvcLinkBuilder.methodOn(RestDeploymentController.class).deployActuator(id, null)).withRel("deploy");
+                    link = linkTo(WebMvcLinkBuilder.methodOn(RestDeploymentController.class).deployActuator(null, id)).withRel("deploy");
                 } catch (EntityNotFoundException | MissingPermissionException e) {
                     // Does not matter here since only link building
                     e.printStackTrace();

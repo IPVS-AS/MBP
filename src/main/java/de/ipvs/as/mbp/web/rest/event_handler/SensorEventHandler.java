@@ -25,6 +25,7 @@ public class SensorEventHandler {
     @Autowired
     private SSHDeployer sshDeployer;
 
+
     /**
      * Called in case a sensor was created. This method then takes care of registering a corresponding
      * event type at the CEP engine.
@@ -45,6 +46,7 @@ public class SensorEventHandler {
     @HandleBeforeDelete
     public void beforeSensorDelete(Sensor sensor) throws IOException {
         sshDeployer.undeployIfRunning(sensor);
+
     }
 
     /**

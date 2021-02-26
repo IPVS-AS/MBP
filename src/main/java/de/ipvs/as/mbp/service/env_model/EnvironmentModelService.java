@@ -1,9 +1,6 @@
 package de.ipvs.as.mbp.service.env_model;
 
-import de.ipvs.as.mbp.domain.component.Actuator;
-import de.ipvs.as.mbp.domain.component.Component;
-import de.ipvs.as.mbp.domain.component.ComponentCreateValidator;
-import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.component.*;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.device.DeviceCreateValidator;
 import de.ipvs.as.mbp.domain.env_model.EnvironmentModel;
@@ -64,6 +61,9 @@ public class EnvironmentModelService {
 
     @Autowired
     private SensorRepository sensorRepository;
+
+    @Autowired
+    private ComponentCreateEventHandler componentCreateEventHandler;
 
     @Autowired
     private UserService userService;
@@ -280,7 +280,7 @@ public class EnvironmentModelService {
      * Deploys the components of an environment model.
      *
      * @param model The model whose components are supposed to be deployed
-     * @throws DeploymentException
+     * @throws DeploymentException In case of an error during deployment
      */
     public void deployComponents(EnvironmentModel model) throws DeploymentException {
         //Sanity check
@@ -329,7 +329,6 @@ public class EnvironmentModelService {
                     deploymentErrors.put(nodeId, "Impossible to deploy, device is not available.");
                     continue;
                 case READY:
-                    // TODO: Something to do here?
                     break;
                 default:
                     break;
@@ -395,10 +394,8 @@ public class EnvironmentModelService {
                     publishEntityState(model, nodeId, component, EntityState.REGISTERED);
                     continue;
                 case DEPLOYED:
-                    // TODO: Something to do here?
                     break;
                 case RUNNING:
-                    // TODO: Something to do here?
                     break;
                 default:
                     break;
@@ -471,7 +468,6 @@ public class EnvironmentModelService {
                     startErrors.put(nodeId, "Impossible to start, device is not available.");
                     continue;
                 case DEPLOYED:
-                    // TODO: Something to do here?
                     break;
                 default:
                     break;
@@ -498,7 +494,7 @@ public class EnvironmentModelService {
      * Stops the components of an environment model.
      *
      * @param model The model whose components are supposed to be stopped
-     * @throws DeploymentException
+     * @throws DeploymentException In case of a failure on undeployment
      */
     public void stopComponents(EnvironmentModel model) throws DeploymentException {
         //Sanity check
@@ -541,7 +537,6 @@ public class EnvironmentModelService {
                     publishEntityState(model, nodeId, component, EntityState.REGISTERED);
                     continue;
                 case RUNNING:
-                    // TODO: Something to do here?
                     break;
                 default:
                     break;
@@ -802,12 +797,21 @@ public class EnvironmentModelService {
             throw new IllegalArgumentException("Component must not be null.");
         }
 
+        //Store registered Component
+        Component registeredComponent = null;
+
+
         //Insert component into its repository and return the new id
         if (component instanceof Actuator) {
-            return actuatorRepository.insert((Actuator) component).getId();
+            registeredComponent = actuatorRepository.insert((Actuator) component);
         } else {
-            return sensorRepository.insert((Sensor) component).getId();
+            registeredComponent = sensorRepository.insert((Sensor) component);
         }
+
+        //Call creation handler for this component
+        componentCreateEventHandler.onCreate(registeredComponent);
+
+        return registeredComponent.getId();
     }
 
 

@@ -148,7 +148,7 @@
                                 <div class="form-line"
                                      ng-class="{'focused error' : addRuleCtrl.item.errors.trigger }">
                                     <select class="form-control show-tick" ng-model="addRuleCtrl.item.trigger"
-                                            ng-options="t._links.self.href as (t.name) for t in ctrl.ruleTriggerList">
+                                            ng-options="t.id as (t.name) for t in ctrl.ruleTriggerList">
                                         <option disabled selected value>Select condition *</option>
                                     </select>
                                 </div>
@@ -161,7 +161,7 @@
                                      ng-class="{'focused error' : addRuleCtrl.item.errors.actions }">
                                     <select class="form-control selectpicker" title="Rule actions *"
                                             data-header="Rule actions *"
-                                            ng-options="action._links.self.href as (action.name) for action in ctrl.ruleActionList"
+                                            ng-options="action.id as (action.name) for action in ctrl.ruleActionList"
                                             ng-model="addRuleCtrl.item.actions" multiple>
                                     </select>
                                 </div>
