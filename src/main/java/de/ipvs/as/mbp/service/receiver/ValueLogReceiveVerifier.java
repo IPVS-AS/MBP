@@ -2,6 +2,8 @@ package de.ipvs.as.mbp.service.receiver;
 
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
+import de.ipvs.as.mbp.util.DocumentUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.bson.Document;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -10,10 +12,7 @@ import org.json.JSONObject;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Provides methods to verify a given value log in a JSON representation
@@ -21,6 +20,22 @@ import java.util.Map;
  * in compliance with a specified {@link DataModelTree}.
  */
 public class ValueLogReceiveVerifier {
+
+    private static final String[] ALLOWED_DATE_PARSE_FORMATS = {
+            "dd-MM-yyyy",
+            "yyyy-MM-dd",
+            "dd.MM.yyyy",
+            "yyyy-MM-dd HH:mm:ss",
+            "yyyy-MM-dd HH:mm:ss X",
+            "yyyy-MM-dd HH:mm:ss.SSS",
+            "yyyy-MM-dd HH:mm:ss.SSS X",
+            "dd.MM.yyyy HH:mm:ss",
+            "dd.MM.yyyy HH:mm:ss.SS",
+            "dd.MM.yyyy HH:mm:ss X",
+            "dd.MM.yyyy HH:mm:ss.SS X",
+            "yyyy-MM-dd'T'HH:mm:ssXXX",
+            "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+    };
 
     /**
      * Validates if a JSON string matches a specified data model and returns
@@ -32,7 +47,7 @@ public class ValueLogReceiveVerifier {
      *
      * @param valueRoot The root object of the JSON "value" object which is contained
      *                  by all mqtt messages originated from a sensor producing component.
-     * @return A BSON document which can be inserted to the MongoDB.
+     * @return A document which can be inserted to the MongoDB.
      */
     public static Document validateJsonValueAndGetDocument(JSONObject valueRoot, DataModelTree dataModel) throws JSONException, ParseException {
         System.out.println(valueRoot.toString(1));
@@ -61,6 +76,27 @@ public class ValueLogReceiveVerifier {
         }
         System.out.println("-------------------");
         doc.forEach((key, value ) -> System.out.println(key + " : " + value));
+        System.out.println("-------------------");
+        System.out.println("========================");
+        for (DataModelTreeNode leafNode : dataModel.getLeafNodes()) {
+            System.out.println("----------- " + leafNode.getInternPathToNode() + " ---------");
+            DocumentUtils parser = new DocumentUtils(leafNode, new ArrayDeque<>());
+            for (Object o : parser.getValuesByDataModelTreeNode(doc)) {
+                System.out.println(o + " : " + o.getClass() + " : " + o.toString());
+            };
+            parser.editValuesByDataModelTreeNode(doc, 14.123);
+            System.out.println("-----------   ---------");
+        }
+        System.out.println("========================");
+        for (DataModelTreeNode leafNode : dataModel.getLeafNodes()) {
+            System.out.println("----------- " + leafNode.getInternPathToNode() + " ---------");
+            DocumentUtils parser = new DocumentUtils(leafNode, new ArrayDeque<>());
+            for (Object o : parser.getValuesByDataModelTreeNode(doc)) {
+                System.out.println(o + " : " + o.getClass() + " : " + o.toString());
+            };
+            System.out.println("-----------   ---------");
+        }
+
         // TODO REMOVE DEBUGGING OUTPUT
 
 
@@ -138,7 +174,7 @@ public class ValueLogReceiveVerifier {
                     break;
                 case BINARY:
                     String nextBinaryAsString = lastObject.getString(currNode.getName());
-                    lastDocument.append(currNode.getName(), nextBinaryAsString.getBytes());
+                    lastDocument.append(currNode.getName(), Base64.getDecoder().decode(nextBinaryAsString));
                     break;
                 case STRING:
                     String nextString = lastObject.getString(currNode.getName());
@@ -149,8 +185,7 @@ public class ValueLogReceiveVerifier {
                     lastDocument.append(currNode.getName(), nextBool);
                     break;
                 case DATE:
-                    String nextDateAsString = lastObject.getString(currNode.getName());
-                    Date nextDate = new SimpleDateFormat("yyyy-mm-ddTHH:MM:ss").parse(nextDateAsString);
+                    Date nextDate = parseDate(currNode.getName(), null, -1, lastObject);
                     lastDocument.append(currNode.getName(), nextDate);
                     break;
             }
@@ -201,7 +236,7 @@ public class ValueLogReceiveVerifier {
                     break;
                 case BINARY:
                     String nextBinaryAsString = lastArray.getString(arrIndex);
-                    lastList.add(nextBinaryAsString.getBytes());
+                    lastList.add(Base64.getDecoder().decode(nextBinaryAsString));
                     break;
                 case STRING:
                     String nextString = lastArray.getString(arrIndex);
@@ -213,12 +248,55 @@ public class ValueLogReceiveVerifier {
                     break;
                 case DATE:
                     String nextDateAsString = lastArray.getString(arrIndex);
-                    Date nextDate = new SimpleDateFormat("yyyy-mm-ddTHH:MM:ss").parse(nextDateAsString);
+                    Date nextDate = parseDate(null, lastArray, arrIndex, null);
                     lastList.add(nextDate);
                     break;
                 default:
                     throw new JSONException("Not a valid mqtt message value");
             }
         }
+    }
+
+    private static Date parseDate(String keyName, JSONArray lastArray, int arrIndex, JSONObject lastObject) throws JSONException, ParseException {
+        Object dateValueToParse = null;
+        Date parsedDate;
+
+        // Check whether the data must be extracted from an array or an object
+        if (lastObject != null && lastArray == null) {
+            // Extract the data from an object
+            dateValueToParse = lastObject.get(keyName);
+        } else if (lastArray != null && lastObject == null) {
+            // Extract the data from an array
+            dateValueToParse = lastArray.get(arrIndex);
+        }
+
+        if (dateValueToParse == null) {
+            throw new JSONException("Error while validating mqtt value message. Expected Date is null.");
+        }
+
+        if (dateValueToParse instanceof Long) {
+            // The data is provided as unix time stamp in milliseconds (milliseconds since Jan 01 1970 (GMT)
+            parsedDate = new Date((long) dateValueToParse);
+        } else if (dateValueToParse instanceof String) {
+            // The date is provided as string, try some formats to parse them
+            parsedDate = DateUtils.parseDateStrictly((String) dateValueToParse, ALLOWED_DATE_PARSE_FORMATS);
+        } else {
+            throw new JSONException("Error while validating mqtt value message. Expected Date is null.");
+        }
+
+        return parsedDate;
+    }
+
+    public static Date parseDateString(String stringToParse) throws ParseException {
+        return DateUtils.parseDateStrictly(stringToParse, ALLOWED_DATE_PARSE_FORMATS);
+    }
+
+    public static Date parseDateLong(Long epochTimeInMs) {
+        return new Date(epochTimeInMs);
+    }
+
+    private byte[] parseBinary(String keyName, JSONArray lastArray, int arrIndex, JSONObject lastObject) {
+
+        return new byte[]{0, 2, 3};
     }
 }

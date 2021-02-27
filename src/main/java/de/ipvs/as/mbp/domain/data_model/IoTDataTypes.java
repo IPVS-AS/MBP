@@ -2,29 +2,59 @@ package de.ipvs.as.mbp.domain.data_model;
 
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPPrimitiveDataTypes;
 
+import java.math.BigDecimal;
+import java.util.Date;
+
 /**
  * An enum for storing all available tree node types for a data model tree together with
  * their string value representation for interfering types from strings.
  */
 public enum IoTDataTypes implements Comparable<IoTDataTypes> {
 
-    DOUBLE("double", CEPPrimitiveDataTypes.DOUBLE),
-    STRING("string", CEPPrimitiveDataTypes.STRING),
-    BINARY("binary", null),
-    BOOLEAN("boolean", CEPPrimitiveDataTypes.BOOLEAN),
-    DATE("date", null),
-    INT("int", CEPPrimitiveDataTypes.INTEGER),
-    LONG("long", CEPPrimitiveDataTypes.LONG),
-    DECIMAL128("decimal128", CEPPrimitiveDataTypes.BIG_DECIMAL),
-    OBJECT("object", null),
-    ARRAY("array", null);
+    DOUBLE("double",
+            CEPPrimitiveDataTypes.DOUBLE,
+            Double.class),
+    STRING("string",
+            CEPPrimitiveDataTypes.STRING,
+            String.class),
+    BINARY("binary",
+            null,
+            Byte[].class),
+    BOOLEAN("boolean",
+            CEPPrimitiveDataTypes.BOOLEAN,
+            Boolean.class),
+    DATE("date",
+            null,
+            Date.class),
+    INT("int",
+            CEPPrimitiveDataTypes.INTEGER,
+            Integer.class),
+    LONG("long",
+            CEPPrimitiveDataTypes.LONG,
+            Long.class),
+    DECIMAL128("decimal128",
+            CEPPrimitiveDataTypes.BIG_DECIMAL,
+            BigDecimal.class),
+    OBJECT("object",
+            null,
+            null),
+    ARRAY("array",
+            null,
+            null);
 
     private final String value;
     private final CEPPrimitiveDataTypes cepType;
+    private Class<?> referenceClass;
 
-    IoTDataTypes(String value, CEPPrimitiveDataTypes cepType) {
+
+    IoTDataTypes(String value, CEPPrimitiveDataTypes cepType, Class<?> referenceClass) {
         this.value = value;
         this.cepType = cepType;
+        this.referenceClass = referenceClass;
+    }
+
+    public Class<?> getReferenceClass() {
+        return referenceClass;
     }
 
     public String getValue() {
@@ -49,6 +79,7 @@ public enum IoTDataTypes implements Comparable<IoTDataTypes> {
 
     /**
      * Returns whether a given data type is primitve (no array and no object).
+     *
      * @param type the {@link IoTDataTypes} to check.
      * @return true if the type is primitive, false if not
      */

@@ -19,9 +19,9 @@ public class DataModelTreeNode {
      * The data tree node representation as it is stored in the repository
      * {@link de.ipvs.as.mbp.domain.data_model.DataModel DataModel}
      */
-    private DataTreeNode repositoryTreeNode;
+    private final DataTreeNode repositoryTreeNode;
 
-    private List<DataModelTreeNode> children;
+    private final List<DataModelTreeNode> children;
 
     private DataModelTreeNode parent;
 
@@ -33,21 +33,11 @@ public class DataModelTreeNode {
 
     private int size;
 
-    private List<String> treePath;
+    private List<DataModelTreeNode> predecessors;
 
     private JsonPath pathToNode;
 
-    private List<String> internTreePathHistory;
     private String internPathToNode;
-
-
-    public List<String> getInternTreePathHistory() {
-        return internTreePathHistory;
-    }
-
-    public void setInternTreePathHistory(List<String> internTreePath) {
-        this.internTreePathHistory = internTreePath;
-    }
 
     public String getInternPathToNode() {
         return internPathToNode;
@@ -68,7 +58,7 @@ public class DataModelTreeNode {
         this.name = repoTreeNode.getName();
         this.type = IoTDataTypes.getDataTypeWithValue(repoTreeNode.getType().toLowerCase());
         this.unit = repoTreeNode.getUnit();
-        this.internTreePathHistory = new ArrayList<>();
+        this.predecessors = new ArrayList<>();
 
         // Add dimension for arrays. If not an array set the dimension value to -1 as default.
         if (this.type != null && this.type == IoTDataTypes.ARRAY) {
@@ -76,8 +66,6 @@ public class DataModelTreeNode {
         } else {
             this.size = -1;
         }
-
-        this.treePath = new ArrayList<>();
     }
 
     public String getUnit() {
@@ -125,35 +113,37 @@ public class DataModelTreeNode {
         this.parent = parentToAdd;
     }
 
-    public List<String> getTreePath() {
-        return treePath;
+    public List<DataModelTreeNode> getPredecessors() {
+        return predecessors;
+    }
+
+    public void setPredecessors(List<DataModelTreeNode> predecessors) {
+        this.predecessors = predecessors;
     }
 
     /**
-     * Execute in preorder after the whole tree is build
+     * To execute in preorder after the whole tree is build. Updates
+     * the {@link DataModelTreeNode#predecessors} and the json paths
+     * to this node.
      */
     public void updateTreePath() {
 
+        // Special case if this node is the root node of a tree. Then the json path is only "$"
         if (this.parent == null) {
             this.pathToNode = JsonPath.compile("$");
             this.internPathToNode = "$";
-            this.treePath.add(pathToNode.getPath());
-            this.internTreePathHistory.add(internPathToNode);
             return;
         }
+
+        // Update the predecessors list
+        this.predecessors.addAll(this.parent.getPredecessors());
+        this.predecessors.add(this.parent);
 
         String tmpPath = "";
         String tmpInternPath = "";
 
-        // Get all the path fragments of the parents
-        this.treePath.addAll(this.parent.getTreePath());
-        this.internTreePathHistory.addAll(this.parent.getInternTreePathHistory());
-
-
-        if (this.parent.getType() == IoTDataTypes.ARRAY) {
-            // If the parent is an array then the current node is not allowed to have a name
-
-        } else {
+        // If the parent is an array then the current node is not allowed to have a name
+        if (this.parent.getType() != IoTDataTypes.ARRAY) {
             // Parent is no array --> names are needed
             tmpPath += "." + this.getName();
             tmpInternPath += "['" + this.getName() + "']";
@@ -166,19 +156,10 @@ public class DataModelTreeNode {
             tmpInternPath += "[#" + this.size + "#]";
         }
 
-        this.treePath.add(tmpPath);
-        this.internTreePathHistory.add(tmpInternPath);
-
-        String finalPath = "";
-        String finalInternPath = "";
-
-        for (int i = 0; i < this.treePath.size(); i++) {
-            finalPath += this.treePath.get(i);
-            finalInternPath += this.internTreePathHistory.get(i);
-        }
-
+        String finalPath = this.parent.getJsonPathToNode().getPath() + tmpPath;
         this.pathToNode = JsonPath.compile(finalPath);
-        this.internPathToNode = finalInternPath;
+
+        this.internPathToNode = this.parent.getInternPathToNode() + tmpInternPath;
     }
 
     /**
@@ -204,19 +185,13 @@ public class DataModelTreeNode {
      * @return true if node has no parents and should be therefore a root, otherwise false
      */
     public boolean isRoot() {
-        if (this.getParent() == null) {
-            return true;
-        }
-        return false;
+        return this.getParent() == null;
     }
 
     /**
      * @return true if the node is a leaf, that means has no children - otherwise returns false
      */
     public boolean isLeaf() {
-        if (this.getChildren().size() <= 0) {
-            return true;
-        }
-        return false;
+        return this.getChildren().size() <= 0;
     }
 }

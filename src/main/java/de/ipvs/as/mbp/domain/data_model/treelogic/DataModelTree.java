@@ -533,7 +533,6 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                     " not allowed to have a parent which is also a child.");
         }
 
-
         // Throw exception if there are invalid fields so far
         if (exception.hasInvalidFields()) {
             throw exception;
@@ -677,7 +676,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
         PreOrderIterator it = new PreOrderIterator(rootNodeModel);
         while (it.hasNext()) {
             DataModelTreeNode next = it.next();
-            retString.append(next.getTreePath()).append(" ").append(next.getName()).append(" jsonPath: ").append(next.getJsonPathToNode().getPath()).append("\n");
+            retString.append(next.getName()).append(" jsonPath: ").append(next.getJsonPathToNode().getPath()).append("\n");
         }
         return retString.toString();
     }

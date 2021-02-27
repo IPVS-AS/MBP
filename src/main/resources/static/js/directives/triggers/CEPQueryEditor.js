@@ -456,7 +456,7 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
                         }
 
                         var condValue = value.value;
-                        if (value.jsonPath.type === "string") {
+                        if (value.jsonPath.type === "string" || value.jsonPath.type === "binary") {
                             condValue = "\"" + condValue + "\"";
                         }
 
@@ -1553,7 +1553,7 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
 
             var value = conditionsObject.value;
             // Add "" for string types
-            if (conditionsObject.data.jsonPath.type === "string") {
+            if (conditionsObject.data.jsonPath.type === "string" || value.jsonPath.type === "binary" ) {
                 value = "\"" + conditionsObject.value + "\"";
             }
 

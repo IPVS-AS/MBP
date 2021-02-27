@@ -1,5 +1,8 @@
 package de.ipvs.as.mbp.service.cep.trigger;
 
+import com.jayway.jsonpath.ReadContext;
+import de.ipvs.as.mbp.error.MBPException;
+import de.ipvs.as.mbp.service.receiver.ValueLogReceiveVerifier;
 import org.bson.Document;
 import org.springframework.stereotype.Service;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
@@ -8,6 +11,8 @@ import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
 import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPEventType;
 
+import java.math.BigDecimal;
+import java.text.ParseException;
 import java.util.*;
 
 /**
@@ -79,21 +84,41 @@ public class CEPValueLogParser {
         Document values = valueLog.getValue();
         String jsonValue = values.toJson();
 
+        // Parse the json path for the JsonPath library once
+        ReadContext ctx = JsonPath.parse(jsonValue);
+
         // Apply the parse instructions
         for (CEPValueLogParseInstruction instruction : parseInstructions) {
-            if (IoTDataTypes.hasCepPrimitiveDataType(instruction.getType())) {
-                returnMap.put(instruction.getFieldName(), instruction.getFieldPath().read(jsonValue));
+            if (instruction.getType() == IoTDataTypes.DOUBLE || instruction.getType() == IoTDataTypes.INT ||
+                    instruction.getType() == IoTDataTypes.STRING
+            || instruction.getType() == IoTDataTypes.BOOLEAN) {
+                returnMap.put(instruction.getFieldName(), ctx.read(instruction.getFieldPath()));
             } else {
+                LinkedHashMap<String, Object> extractedObj = ctx.read(instruction.getFieldPath());
                 switch (instruction.getType()) {
+                    case LONG:
+                        returnMap.put(instruction.getFieldName(),Long.parseLong((String) extractedObj.get("$numberLong")));
+                        break;
+                    case DECIMAL128:
+                        returnMap.put(instruction.getFieldName(), new BigDecimal((String) extractedObj.get("$numberDecimal")));
+                        break;
                     case DATE:
-                        // TODO DOES THIS WORK? HOW ARE DATES SENDED VIA JSON?
-                        Date parsedDate = new Date();
-                        parsedDate.setTime(instruction.getFieldPath().read(jsonValue));
+                        Date parsedDate = null;
+                        if (extractedObj.get("$date") instanceof Long) {
+                            parsedDate = ValueLogReceiveVerifier.parseDateLong((Long) extractedObj.get("$date"));
+                        } else if (extractedObj.get(extractedObj.keySet().toArray()[0]) instanceof String) {
+                            try {
+                                parsedDate = ValueLogReceiveVerifier.parseDateString((String) extractedObj.get("$date"));
+                            } catch (ParseException e) {
+                                throw new IllegalArgumentException("Error by converting date for CEP.");
+                            }
+                        }
                         returnMap.put(instruction.getFieldName(), parsedDate.getTime());
                         break;
                     case BINARY:
-                        String binaryString = instruction.getFieldPath().read(jsonValue);
-                        returnMap.put(instruction.getFieldName(), binaryString);
+                        // For CEP no binary type exists --> handle it as string
+                        String getBinaryString = (String) extractedObj.get("$binary");
+                        returnMap.put(instruction.getFieldName(), getBinaryString);
                         break;
                     default:
                         continue;
