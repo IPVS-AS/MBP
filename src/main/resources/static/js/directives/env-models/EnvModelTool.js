@@ -1427,7 +1427,7 @@ app.directive('envModelTool',
                     let valueContainer = $('<div class="component-value">').css({
                         'left': x + 'px',
                         'top': y + 'px',
-                        'font-size': '10px',
+                        'font-size': '12px',
                         'opacity': '0'
                     }).on('mouseover', function () {
                         // If the user hovers over the value display, the values should be still visible

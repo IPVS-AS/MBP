@@ -56,50 +56,6 @@ public class ValueLogReceiveVerifier {
             validateChild(node, null, valueRoot, doc, null, -1);
         }
 
-        // TODO REMOVE DEBUGGING OUTPUT
-        System.out.println("-------------------");
-        for (Object o : doc.values()) {
-            System.out.println(o.getClass() + " : " + o);
-        }
-        System.out.println("-------------------");
-
-        for (Map.Entry<String, Object> e : doc.entrySet()) {
-            System.out.println(e.getKey() + " : " + e.getValue());
-        }
-        System.out.println("-------------------");
-        for (String key :  doc.keySet()) {
-            System.out.println(key + " : " + doc.get(key));
-        }
-        System.out.println("-------------------");
-        for (String key :  doc.keySet()) {
-            System.out.println(key + " : " + doc.get(key));
-        }
-        System.out.println("-------------------");
-        doc.forEach((key, value ) -> System.out.println(key + " : " + value));
-        System.out.println("-------------------");
-        System.out.println("========================");
-        for (DataModelTreeNode leafNode : dataModel.getLeafNodes()) {
-            System.out.println("----------- " + leafNode.getInternPathToNode() + " ---------");
-            DocumentUtils parser = new DocumentUtils(leafNode, new ArrayDeque<>());
-            for (Object o : parser.getValuesByDataModelTreeNode(doc)) {
-                System.out.println(o + " : " + o.getClass() + " : " + o.toString());
-            };
-            parser.editValuesByDataModelTreeNode(doc, 14.123);
-            System.out.println("-----------   ---------");
-        }
-        System.out.println("========================");
-        for (DataModelTreeNode leafNode : dataModel.getLeafNodes()) {
-            System.out.println("----------- " + leafNode.getInternPathToNode() + " ---------");
-            DocumentUtils parser = new DocumentUtils(leafNode, new ArrayDeque<>());
-            for (Object o : parser.getValuesByDataModelTreeNode(doc)) {
-                System.out.println(o + " : " + o.getClass() + " : " + o.toString());
-            };
-            System.out.println("-----------   ---------");
-        }
-
-        // TODO REMOVE DEBUGGING OUTPUT
-
-
         return doc;
     }
 

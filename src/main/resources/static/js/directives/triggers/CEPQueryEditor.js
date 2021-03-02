@@ -400,11 +400,16 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
 
                     var jsonPathFilterInput = $compile(jsonFiltInpHtml)(scope);
 
+                    // TODO Add AND between inputs
+                    // $('<div class="filter-condition-form"' + '>');
+                    var andLabelBetweenInputs = $('<div class="filter-condition-form">').text("AND");
+
                     filterConditionForm.append(jsonPathFilterInput)
                         .append(conditionOperatorSelect)
                         .append(conditionValueInput)
                         .append(conditionRemoveButton);
                     conditionOptionsContainer.append(filterConditionForm);
+
                 }
 
                 var conditionOptionsContainer = $('<div class="filter-condition-option-container">');
@@ -1553,7 +1558,7 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
 
             var value = conditionsObject.value;
             // Add "" for string types
-            if (conditionsObject.data.jsonPath.type === "string" || value.jsonPath.type === "binary" ) {
+            if (conditionsObject.data.jsonPath.type === "string" || conditionsObject.data.jsonPath.type === "binary" ) {
                 value = "\"" + conditionsObject.value + "\"";
             }
 
