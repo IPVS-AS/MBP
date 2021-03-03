@@ -5,12 +5,15 @@ import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.component.ComponentDTO;
 import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.error.EntityAlreadyExistsException;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
+import de.ipvs.as.mbp.error.EntityStillInUseException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.OperatorRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
+import de.ipvs.as.mbp.repository.TestDetailsRepository;
 import de.ipvs.as.mbp.service.UserEntityService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +48,9 @@ public class RestSensorController {
 
     @Autowired
     private DeviceRepository deviceRepository;
+
+    @Autowired
+    private TestDetailsRepository testDetailsRepository;
 
     @Autowired
     private UserEntityService userEntityService;
@@ -111,9 +117,20 @@ public class RestSensorController {
             @ApiResponse(code = 404, message = "Sensor or requesting user not found!")})
     public ResponseEntity<Void> delete(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-            @PathVariable("sensorId") String sensorId) throws EntityNotFoundException, MissingPermissionException {
-        // Delete the sensor (includes access-control)
-        userEntityService.deleteWithAccessControlCheck(sensorRepository, sensorId, ACAccessRequest.valueOf(accessRequestHeader));
+            @PathVariable("sensorId") String sensorId) throws EntityNotFoundException, MissingPermissionException, EntityStillInUseException {
+        //Get access request
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+        //Retrieve all test details that use the given sensor
+        List<TestDetails> affectedTestDetails = userEntityService.filterForAdminOwnerAndPolicies(() -> testDetailsRepository.findAllBySensorId(sensorId), ACAccessType.READ, accessRequest);
+
+        //Check if there are affected test details
+        if (!affectedTestDetails.isEmpty()) {
+            throw new EntityStillInUseException("The sensor is still used by at least one test and thus cannot be deleted.");
+        }
+
+        // Delete the sensor (including access control)
+        userEntityService.deleteWithAccessControlCheck(sensorRepository, sensorId, accessRequest);
         return ResponseEntity.noContent().build();
     }
 
