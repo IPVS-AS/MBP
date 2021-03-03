@@ -54,7 +54,7 @@ public class EntityTypeIcon {
      * @return The size of the content in bytes
      */
     public long getSize() {
-        return content.getBytes().length * 3 / 4;
+        return content.getBytes().length * 3L / 4;
     }
 
     /**
@@ -80,21 +80,5 @@ public class EntityTypeIcon {
         } catch (Exception ignored) {
             return null;
         }
-    }
-
-    public static EntityTypeIcon fromFile(File file) throws IOException {
-        //Sanity check
-        if (file == null) {
-            throw new IllegalArgumentException("File must not be null.");
-        }
-
-        byte[] fileBytes = new byte[(int) file.length()];
-
-        FileInputStream fileInputStreamReader = new FileInputStream(file);
-        fileInputStreamReader.read(fileBytes);
-
-        String base64String = new String(Base64.encodeBase64(fileBytes), StandardCharsets.UTF_8);
-
-        return new EntityTypeIcon(file.getName(), base64String);
     }
 }

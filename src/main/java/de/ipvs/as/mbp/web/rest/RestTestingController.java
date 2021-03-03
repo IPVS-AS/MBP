@@ -16,13 +16,6 @@ import de.ipvs.as.mbp.service.testing.TestEngine;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
 import de.ipvs.as.mbp.service.testing.executor.TestExecutor;
 import de.ipvs.as.mbp.service.testing.rerun.TestRerunService;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import java.io.IOException;
-
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -36,11 +29,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -102,7 +96,7 @@ public class RestTestingController {
     public ResponseEntity<EntityModel<TestDetails>> one(
             @PathVariable("testId") String testId) {
         // Retrieve the corresponding test
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
+        TestDetails testDetails = testDetailsRepository.findById(testId).get(); // TODO Check isPresent() before get()
         return ResponseEntity.ok(userEntityService.entityToEntityModel(testDetails));
     }
 
@@ -117,13 +111,13 @@ public class RestTestingController {
 
         for (String ruleName : requestDto.getRuleNames()) {
             if (ruleRepository.existsByName(ruleName)) {
-                rules.add(ruleRepository.findByName(ruleName).get());
+                rules.add(ruleRepository.findByName(ruleName).get()); // TODO Check isPresent() before get()
             }
         }
 
         for (String sensorName : requestDto.getType()) {
             if (sensorRepository.existsByName(sensorName)) {
-                sensors.add(sensorRepository.findByName(sensorName).get());
+                sensors.add(sensorRepository.findByName(sensorName).get()); // TODO Check isPresent() before get()
             }
         }
 
@@ -164,7 +158,7 @@ public class RestTestingController {
      */
     @PostMapping(value = "/test/{testId}")
     public ResponseEntity<Boolean> executeTest(@PathVariable(value = "testId") String testId) {
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
+        TestDetails testDetails = testDetailsRepository.findById(testId).get(); // TODO Check isPresent() before get()
         try {
             // Start the test and get Map of sensor values
             testExecutor.executeTest(testDetails);
@@ -199,18 +193,15 @@ public class RestTestingController {
      * @return ResponseEntity (if successful or not)
      */
     @PostMapping(value = "/rerun-components/{testId}")
-    public ResponseEntity editRerunComponents(@PathVariable(value = "testId") String testId) {
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
-        ResponseEntity responseEntity;
+    public ResponseEntity<Void> editRerunComponents(@PathVariable(value = "testId") String testId) {
+        TestDetails testDetails = testDetailsRepository.findById(testId).get(); // TODO Check isPresent() before get()
         try {
             // Add or deletes Rerun Components for the specific test
             testRerunService.editRerunComponents(testDetails);
-            responseEntity = new ResponseEntity(HttpStatus.OK);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
-            responseEntity = new ResponseEntity(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
-
-        return responseEntity;
     }
 
 
@@ -221,13 +212,13 @@ public class RestTestingController {
      * @return HttpsStatus and HashMap with all Reports regarding to the specific test
      */
     @GetMapping(value = "/pdfList/{testId}")
-    public ResponseEntity getPDFList(@PathVariable(value = "testId") String testId) {
+    public ResponseEntity<Map<Long, String>> getPDFList(@PathVariable(value = "testId") String testId) {
         return testEngine.getPDFList(testId);
     }
 
     @GetMapping(value = "/ruleList/{testId}")
     public List<Rule> ruleList(@PathVariable(value = "testId") String testId) {
-        TestDetails test = testDetailsRepository.findById(testId).get();
+        TestDetails test = testDetailsRepository.findById(testId).get(); // TODO Check isPresent() before get()
 
         // get  information about the status of the rules before the execution of the test
         return testAnalyzer.getCorrespondingRules(test);
@@ -240,7 +231,7 @@ public class RestTestingController {
      * @return HttpStatus
      */
     @GetMapping(value = "/downloadPDF/{path}")
-    public ResponseEntity openPDF(@PathVariable(value = "path") String path) throws IOException {
+    public ResponseEntity<Serializable> openPDF(@PathVariable(value = "path") String path) throws IOException {
         return testEngine.downloadPDF(path);
     }
 
@@ -252,7 +243,7 @@ public class RestTestingController {
      */
     @GetMapping(value = "/pdfExists/{testId}")
     public boolean pdfExists(@PathVariable(value = "testId") String testId) {
-        TestDetails test = testDetailsRepository.findById(testId).get();
+        TestDetails test = testDetailsRepository.findById(testId).get(); // TODO Check isPresent() before get()
         return test.isPdfExists();
     }
 
@@ -312,7 +303,7 @@ public class RestTestingController {
      * @return response entity if the registration was successful or not
      */
     @PostMapping(value = "/registerTestDevice")
-    public ResponseEntity registerTestDevice() {
+    public ResponseEntity<Void> registerTestDevice() {
         return testEngine.registerTestDevice();
     }
 
@@ -322,7 +313,7 @@ public class RestTestingController {
      * @return response entity if the registration was successful or not
      */
     @PostMapping(value = "/registerTestActuator")
-    public ResponseEntity registerTestActuator() {
+    public ResponseEntity<Void> registerTestActuator() {
         return testEngine.registerTestActuator();
     }
 
@@ -332,7 +323,7 @@ public class RestTestingController {
      * @return response entity if the registration was successful or not
      */
     @PostMapping(value = "/registerSensorSimulator")
-    public ResponseEntity registerSensorSimulator(@RequestBody String sensorName) {
+    public ResponseEntity<Void> registerSensorSimulator(@RequestBody String sensorName) {
         return testEngine.registerSensorSimulator(sensorName);
     }
 
@@ -345,6 +336,4 @@ public class RestTestingController {
     public Boolean checkRegistration(@RequestBody String sensorName) {
         return testEngine.isSimulatorRegistr(sensorName);
     }
-
-
 }

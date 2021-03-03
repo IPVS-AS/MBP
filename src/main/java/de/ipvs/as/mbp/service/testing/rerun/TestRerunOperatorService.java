@@ -43,11 +43,8 @@ public class TestRerunOperatorService {
     /**
      * Loads default operators from the resources directory and adds them to the operator repository so that they
      * can be used in actuators and sensors by all users.
-     *
      */
-    public ResponseEntity addRerunOperators() {
-        ResponseEntity responseEntity = null;
-
+    public ResponseEntity<Void> addRerunOperators() {
         //Iterate over all default operator paths
         for (String operatorPath : rerunOperatorWhitelist) {
             //Create new operator object to add it later to the repository
@@ -124,7 +121,7 @@ public class TestRerunOperatorService {
                     //Determine mime type of the file
                     String operatorFileMime = servletContext.getMimeType(operatorFilePath);
 
-                    if((operatorFileMime == null) || (operatorFileMime.isEmpty())){
+                    if ((operatorFileMime == null) || (operatorFileMime.isEmpty())) {
                         operatorFileMime = "application/octet-stream";
                     }
 
@@ -148,15 +145,14 @@ public class TestRerunOperatorService {
 
                 //Insert new operator into repository
                 operatorRepository.insert(newOperator);
-                responseEntity = new ResponseEntity(HttpStatus.OK);
+                return ResponseEntity.ok().build();
 
             } catch (Exception e) {
                 e.printStackTrace();
-                responseEntity = new ResponseEntity(HttpStatus.CONFLICT);
+                return new ResponseEntity<>(HttpStatus.CONFLICT);
             }
         }
-
-        return responseEntity;
-
+        //TODO Change line into whatever needs to be returned here. Originally, this returned null here which is error-prone
+        return ResponseEntity.ok().build();
     }
 }

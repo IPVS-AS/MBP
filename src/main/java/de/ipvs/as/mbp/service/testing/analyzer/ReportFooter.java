@@ -44,7 +44,7 @@ public class ReportFooter implements IEventHandler{
         Rectangle pageSize = page.getPageSize();
         PdfCanvas pdfCanvas = new PdfCanvas(
                 page.getLastContentStream(), page.getResources(), pdf);
-        Canvas canvas = new Canvas(pdfCanvas, pdf, pageSize);
+        Canvas canvas = new Canvas(pdfCanvas, pdf, pageSize); //TODO canvas is never closed
         Paragraph p = new Paragraph().add(String.valueOf(pageNumber)).add("  /").addStyle(footerStyle);
         canvas.showTextAligned(p, x, y, TextAlignment.RIGHT).setFontSize(8);
         pdfCanvas.addXObject(placeholder, x + space, y - descent);
@@ -57,7 +57,7 @@ public class ReportFooter implements IEventHandler{
      * @param pdf document to be manipulated
      */
     public void writeTotal(PdfDocument pdf) {
-        Canvas canvas = new Canvas(placeholder, pdf);
+        Canvas canvas = new Canvas(placeholder, pdf); //TODO canvas is never closed
         Paragraph pages = new Paragraph().add(String.valueOf(pdf.getNumberOfPages())).addStyle(footerStyle);
         canvas.setFontSize(8).showTextAligned(pages,
                 0, descent, TextAlignment.LEFT);

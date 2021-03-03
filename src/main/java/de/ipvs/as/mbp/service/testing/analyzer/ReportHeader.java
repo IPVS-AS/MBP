@@ -49,7 +49,7 @@ public class ReportHeader implements IEventHandler {
 
             // Create a canvas component w specific font size/color
             PdfCanvas pdfCanvas = new PdfCanvas(page.getLastContentStream(), page.getResources(), pdf);
-            Canvas canvas = new Canvas(pdfCanvas, pdf, pageSize);
+            Canvas canvas = new Canvas(pdfCanvas, pdf, pageSize); //TODO canvas is never closed
             canvas.setFontSize(8f);
             canvas.setFontColor(new DeviceRgb(0, 191, 255));
 

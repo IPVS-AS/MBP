@@ -1,16 +1,14 @@
 package de.ipvs.as.mbp.service.testing;
 
 
-import com.mongodb.util.JSON;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
-import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
-import de.ipvs.as.mbp.repository.SensorRepository;
+import de.ipvs.as.mbp.repository.*;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
-
 
 import java.io.*;
 import java.nio.file.Files;
@@ -53,10 +50,10 @@ public class TestEngine {
     private PropertiesService propertiesService;
 
     @Autowired
-    ActuatorRepository actuatorRepository;
+    private ActuatorRepository actuatorRepository;
 
     @Autowired
-    OperatorRepository operatorRepository;
+    private OperatorRepository operatorRepository;
 
     @Autowired
     private SensorRepository sensorRepository;
@@ -98,7 +95,7 @@ public class TestEngine {
      */
     public ResponseEntity<Boolean> editTestConfig(String testID, String changes) {
         try {
-            TestDetails testToUpdate = testDetailsRepository.findById(testID).get();
+            TestDetails testToUpdate = testDetailsRepository.findById(testID).get(); // TODO Check isPresent() before get()
 
             // Clear the configuration and rules field of the specific test
             testToUpdate.getConfig().clear();
@@ -156,7 +153,7 @@ public class TestEngine {
             for (int i = 0; i < rules.length(); i++) {
                 JSONObject ruleDetails = rules.getJSONObject(i);
                 String ruleName = ruleDetails.getString("name");
-                newRules.add(ruleRepository.findByName(ruleName).get());
+                newRules.add(ruleRepository.findByName(ruleName).get()); // TODO Check isPresent() before get()
             }
         }
         return newRules;
@@ -207,7 +204,7 @@ public class TestEngine {
         Pattern pattern = Pattern.compile("(.*?)_");
         Matcher m = pattern.matcher(path);
         if (m.find()) {
-            test = testDetailsRepository.findById(m.group(1)).get();
+            test = testDetailsRepository.findById(m.group(1)).get(); // TODO Check isPresent() before get()
         }
 
 
@@ -241,9 +238,8 @@ public class TestEngine {
      */
     public ResponseEntity<Boolean> deleteReport(String testId, Object path) {
         String fileName = String.valueOf(path);
-        ResponseEntity response;
 
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
+        TestDetails testDetails = testDetailsRepository.findById(testId).get(); // TODO Check isPresent() before get()
 
         //Path pathTestReport = Paths.get(testDetails.getPathPDF()+ ""fileName);
         try {
@@ -251,25 +247,22 @@ public class TestEngine {
                 File dir = new File(testDetails.getPathPDF());
                 FileFilter fileFilter = new WildcardFileFilter(fileName);
                 File[] files = dir.listFiles(fileFilter);
-                for (final File file : files) {
+                for (final File file : files) { // TODO NullPointerException may occur (files could be null)
                     if (!file.delete()) {
                         System.err.println("Can't remove " + file.getAbsolutePath());
                     }
                 }
 
                 //  Files.delete(pathTestReport);
-                response = new ResponseEntity<>(true, HttpStatus.OK);
+                return new ResponseEntity<>(true, HttpStatus.OK);
 
             } else {
-                response = new ResponseEntity<>(true, HttpStatus.NOT_FOUND);
+                return new ResponseEntity<>(true, HttpStatus.NOT_FOUND);
             }
-            return response;
         } catch (Exception e) {
             e.printStackTrace();
-            response = new ResponseEntity<>(false, HttpStatus.CONFLICT);
-
+            return new ResponseEntity<>(false, HttpStatus.CONFLICT);
         }
-        return response;
     }
 
 
@@ -282,7 +275,7 @@ public class TestEngine {
     public ResponseEntity<Map<Long, String>> getPDFList(String testId) {
         ResponseEntity<Map<Long, String>> pdfList;
         Map<Long, String> nullList = new TreeMap<>();
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
+        TestDetails testDetails = testDetailsRepository.findById(testId).get(); // TODO Check isPresent() before get()
         try {
             if (testDetails.isPdfExists()) {
                 Stream<Path> pathStream = Files.find(Paths.get(testDetails.getPathPDF()), 10, (path, basicFileAttributes) -> {
@@ -357,10 +350,8 @@ public class TestEngine {
      *
      * @return response entity if insertion was successful or not
      */
-    public ResponseEntity registerTestDevice() {
-        ResponseEntity responseEntity;
-        Device testDevice = null;
-
+    public ResponseEntity<Void> registerTestDevice() {
+        Device testDevice;
 
         try {
             // Check if device with this name is already registered
@@ -383,14 +374,10 @@ public class TestEngine {
             // errors = new BeanPropertyBindingResult(testDevice, "device");
             //deviceCreateValidator.validate(device, errors); TODO
 
-            responseEntity = new ResponseEntity<>(HttpStatus.OK);
+            return ResponseEntity.ok().build();
         } catch (Exception exception) {
-            responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return responseEntity;
-
-
     }
 
     /**
@@ -398,20 +385,17 @@ public class TestEngine {
      *
      * @return response entity if insertion was successful or not
      */
-    public ResponseEntity registerTestActuator() {
+    public ResponseEntity<Void> registerTestActuator() {
         //Validation errors
         Errors errors;
-        ResponseEntity responseEntity = null;
         Actuator testingActuator;
 
         Device testDevice;
 
 
         try {
-
-
             boolean testingActuatorExists = actuatorRepository.existsByName(ACTUATOR_NAME);
-            Operator testActuatorAdapter = operatorRepository.findByName(ACTUATOR_NAME).get();
+            Operator testActuatorAdapter = operatorRepository.findByName(ACTUATOR_NAME).get(); // TODO Check isPresent() before get()
             testDevice = getTestDevice();
 
             // Check if testing device and actuator are already registered
@@ -420,40 +404,35 @@ public class TestEngine {
                 registerTestDevice();
             } else {
                 // Check if Actuator is already existing
-                if (testingActuatorExists == false) {
+                if (!testingActuatorExists) {
                     // Check if the corresponding adapter is registered
-                    if (testActuatorAdapter != null) {
-                        //Enrich actuator for details
+                    //Enrich actuator for details
 
 
-                        testingActuator = new Actuator();
-                        testingActuator.setName(ACTUATOR_NAME);
-                        testingActuator.setOwner(null);
-                        testingActuator.setDevice(testDevice);
-                        testingActuator.setOperator(testActuatorAdapter);
-                        testingActuator.setComponentType("Buzzer");
+                    testingActuator = new Actuator();
+                    testingActuator.setName(ACTUATOR_NAME);
+                    testingActuator.setOwner(null);
+                    testingActuator.setDevice(testDevice);
+                    testingActuator.setOperator(testActuatorAdapter);
+                    testingActuator.setComponentType("Buzzer");
 
-                        //Validate device
-                        errors = new BeanPropertyBindingResult(testingActuator, "component");
-                        // actuatorValidator.validate(testingActuator, errors);
+                    //Validate device
+                    errors = new BeanPropertyBindingResult(testingActuator, "component"); //TODO The result saved in errors is never used?
+                    // actuatorValidator.validate(testingActuator, errors);
 
-                        actuatorRepository.insert(testingActuator);
+                    actuatorRepository.insert(testingActuator);
 
-                        responseEntity = new ResponseEntity(HttpStatus.CREATED);
-
-                    }
+                    return new ResponseEntity<>(HttpStatus.CREATED);
                 } else {
-                    responseEntity = new ResponseEntity(HttpStatus.BAD_REQUEST);
-
+                    return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
                 }
             }
-
-
         } catch (Exception e) {
-            responseEntity = new ResponseEntity(HttpStatus.CONFLICT);
-
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
-        return responseEntity;
+
+        //TODO Change line into whatever needs to be returned here. Originally, this returned null here which is error-prone
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -468,9 +447,7 @@ public class TestEngine {
         List<Device> testDeviceList = deviceRepository.findAll();
 
         // Go through the List of devices and check if testing Device is available
-        Iterator iterator = testDeviceList.listIterator();
-        while (iterator.hasNext()) {
-            Device tempDevice = (Device) iterator.next();
+        for (Device tempDevice : testDeviceList) {
             if (tempDevice.getName().equals(TEST_DEVICE)) {
                 testDevice = tempDevice;
                 break;
@@ -491,9 +468,7 @@ public class TestEngine {
         List<Sensor> sensorList = sensorRepository.findAll();
 
         // Go through the List of sensors and check if specific sensor is available
-        Iterator iterator = sensorList.listIterator();
-        while (iterator.hasNext()) {
-            Sensor tempSensor = (Sensor) iterator.next();
+        for (Sensor tempSensor : sensorList) {
             if (tempSensor.getName().equals(sensorName)) {
                 sensorSimulator = tempSensor;
             }
@@ -510,20 +485,14 @@ public class TestEngine {
      * @param sensorName Name of the sensor simulator to be registered
      * @return ResponseEntity if the registration was successful or not
      */
-    public ResponseEntity registerSensorSimulator(String sensorName) {
-
-        ResponseEntity<String> responseEntity;
-
-        Operator sensorAdapter = operatorRepository.findByName(sensorName).get();
+    public ResponseEntity<Void> registerSensorSimulator(String sensorName) {
+        Operator sensorAdapter = operatorRepository.findByName(sensorName).get();// TODO Check isPresent() before get()
         Device testingDevice = getTestDevice();
         Sensor sensorSimulator = getSensorSimulator(sensorName);
 
         try {
             // Check if corresponding adapter exists
-            if (sensorAdapter == null) {
-                return new ResponseEntity<>(HttpStatus.CONFLICT);
-
-            } else if (testingDevice == null) {
+            if (testingDevice == null) {
                 registerTestDevice();
             } else if (sensorSimulator == null) {
                 //Enrich actuator for details
@@ -549,13 +518,10 @@ public class TestEngine {
                 sensorRepository.insert(sensorSimulator);
 
             }
-            responseEntity = new ResponseEntity<>(HttpStatus.OK);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
-            responseEntity = new ResponseEntity<>(HttpStatus.CONFLICT);
-
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
-
-        return responseEntity;
     }
 
     /**
@@ -565,7 +531,7 @@ public class TestEngine {
      * @return Boolean if the sensor is already registered or not
      */
     public Boolean isSimulatorRegistr(String sensor) {
-        Boolean registered = false;
+        boolean registered = false;
         String dimX = sensor + "X";
         String dimY = sensor + "Y";
         String dimZ = sensor + "Z";
@@ -604,7 +570,7 @@ public class TestEngine {
      * @param testId
      */
     public void deleteTest(String testId) {
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();  // TODO Check isPresent() before get()
 
         if (testDetailsRepository.existsById(testId)) {
             testDetailsRepository.deleteById(testId);
