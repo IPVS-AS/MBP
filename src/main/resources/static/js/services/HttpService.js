@@ -365,6 +365,19 @@ app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'Notifica
                 if ((typeof data !== 'object') || (typeof data.page !== 'object')) {
                     return 0;
                 }
+
+                angular.forEach(data._embedded, function (value) {
+
+                        if (actuator.name === value) {
+                            const index = tempActuatorList.indexOf(actuator);
+                            if(index !== -1){
+                                tempActuatorList.splice(index,1)
+                            }
+                        }
+
+                });
+                let object = data._embedded[category]
+                console.log(object)
                 return data.page.totalElements || 0;
             });
         }

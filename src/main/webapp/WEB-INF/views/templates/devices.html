@@ -109,7 +109,7 @@
                             </form>
                         </td>
                     </tr>
-                    <tr ng-show="deviceListCtrl.items.length === 0">
+                    <tr ng-show="deviceListCtrl.items.length === 0 || simExists === 0 ">
                         <td>No devices registered.</td>
                         <td></td>
                         <td></td>

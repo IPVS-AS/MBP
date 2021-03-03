@@ -10,6 +10,11 @@ app.controller('ActuatorListController',
                   deviceList, operatorList, actuatorTypesList, accessControlPolicyList, ComponentService, NotificationService) {
             let vm = this;
 
+            // Constant list of the actuator simulators, that can be included in the test
+            const SIMULATOR_LIST = {
+                ACTUATOR: 'TESTING_Actuator'
+            };
+
             vm.operatorList = operatorList;
             vm.deviceList = deviceList;
 
@@ -18,6 +23,7 @@ app.controller('ActuatorListController',
              */
             (function initController() {
                 loadActuatorStates();
+                getListWoSimulators();
 
                 //Interval for updating actuator states on a regular basis
                 let interval = $interval(function () {
@@ -52,6 +58,8 @@ app.controller('ActuatorListController',
                 }
                 return "#";
             };
+
+
 
             /**
              * [Public]
@@ -156,6 +164,39 @@ app.controller('ActuatorListController',
                 });
             }
 
+            function getListWoSimulators() {
+                let tempActuatorList = actuatorList;
+
+                angular.forEach(SIMULATOR_LIST, function (value) {
+                    actuatorList.some(function (actuator) {
+                        if (actuator.name === value) {
+                            const index = tempActuatorList.indexOf(actuator);
+                            if(index !== -1){
+                                tempActuatorList.splice(index,1)
+                            }
+                        }
+                    });
+
+                });
+
+                $scope.simExists = tempActuatorList.length;
+
+            }
+
+            /**
+             * [Public]
+             * @returns {function(...[*]=)}
+             */
+            $scope.hideSimulators = function () {
+                return function (item) {
+                    if (item.name.indexOf("TESTING_") === -1){
+                        return true;
+                    }
+                    return false;
+                };
+            };
+
+
             //Expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {
                 actuatorListCtrl: $controller('ItemListController as actuatorListCtrl', {
@@ -197,6 +238,7 @@ app.controller('ActuatorListController',
 
                         //Add actuator to actuator list
                         vm.actuatorListCtrl.pushItem(actuator);
+                        getListWoSimulators();
 
                         //Retrieve state of the new actuator
                         getActuatorState(actuator.id);
@@ -213,6 +255,7 @@ app.controller('ActuatorListController',
                 function () {
                     let id = vm.deleteActuatorCtrl.result;
                     vm.actuatorListCtrl.removeItem(id);
+                    getListWoSimulators();
                 }
             );
 

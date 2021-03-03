@@ -10,11 +10,18 @@ app.controller('DeviceListController',
                   deviceTypesList, NotificationService) {
             let vm = this;
 
+            // Constant list of the sensor simulators, that can be included in the test
+            const SIMULATOR_LIST = {
+                TESTING_DEVICE: 'TESTING_Device'
+            };
+
+
             /**
              * Initializing function, sets up basic things.
              */
             (function initController() {
                 loadDeviceStates();
+                getListWoSimulators();
 
                 //Interval for updating device states  on a regular basis
                 let interval = $interval(function () {
@@ -177,6 +184,26 @@ app.controller('DeviceListController',
             }
 
 
+            function getListWoSimulators() {
+                let tempDeviceList = deviceList;
+
+                angular.forEach(SIMULATOR_LIST, function (value) {
+                    deviceList.some(function (device) {
+                        if (device.name === value) {
+                            const index = tempDeviceList.indexOf(device);
+                            if(index !== -1){
+                                tempDeviceList.splice(index,1)
+                            }
+                        }
+                    });
+
+                });
+
+                $scope.simExists = tempDeviceList.length;
+
+            }
+
+
             // expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {
                 deviceListCtrl: $controller('ItemListController as deviceListCtrl', {
@@ -233,6 +260,7 @@ app.controller('DeviceListController',
 
                         //Add device to device list
                         vm.deviceListCtrl.pushItem(device);
+                        getListWoSimulators();
 
                         //Retrieve state of the new device
                         getDeviceState(device.id);
@@ -250,6 +278,7 @@ app.controller('DeviceListController',
                     let id = vm.deleteDeviceCtrl.result;
 
                     vm.deviceListCtrl.removeItem(id);
+                    getListWoSimulators();
                 }
             );
         }

@@ -1,7 +1,7 @@
 {
   "name": "TESTING_TemperatureSensor",
   "description": "Operator for simulating the sensor data of a temperature sensor.",
-  "unit": "No Unit",
+  "unit": "°C",
   "files": [
     "TempSim.jar",
     "install.sh",

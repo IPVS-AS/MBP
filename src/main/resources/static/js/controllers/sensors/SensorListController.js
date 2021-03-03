@@ -188,12 +188,7 @@ app.controller('SensorListController',
             }
 
             function getListWoSimulators() {
-                let simExists = false;
-                let notSimExists = false;
                 let tempSensorList = sensorList;
-
-                const index = sensorList.indexOf()
-
 
                 angular.forEach(SIMULATOR_LIST, function (value) {
                     sensorList.some(function (sensor) {
@@ -204,13 +199,25 @@ app.controller('SensorListController',
                             }
                         }
                     });
-
                 });
-
 
                 $scope.simExists = tempSensorList.length;
 
             }
+
+            /**
+             * [Public]
+             * @returns {function(...[*]=)}
+             */
+            $scope.hideSimulators = function () {
+                return function (item) {
+                    if (item.name.indexOf("TESTING_") === -1){
+                        return true;
+                    }
+                    return false;
+                };
+            };
+
 
             //Expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {

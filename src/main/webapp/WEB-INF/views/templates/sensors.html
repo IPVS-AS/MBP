@@ -167,7 +167,7 @@
                                      ng-class="{'focused error' : addSensorCtrl.item.errors.operator }">
                                     <select class="form-control show-tick" id="sensor-form-select-operator"
                                             ng-model="addSensorCtrl.item.operatorId"
-                                            ng-options="t.id as (t.name) for t in ctrl.operatorList">
+                                            ng-options="t.id as (t.name) for t in ctrl.operatorList | filter:hideSimulators()">
                                         <option value="">Select extraction operator *
                                         <option/>
                                     </select>
@@ -180,7 +180,7 @@
                                 <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.device }">
                                     <select class="form-control show-tick" id="sensor-form-select-device"
                                             ng-model="addSensorCtrl.item.deviceId"
-                                            ng-options="d.id as (d.name) for d in ctrl.deviceList">
+                                            ng-options="d.id as (d.name) for d in ctrl.deviceList | filter:hideSimulators()">
                                         <option value="">Select device *
                                         <option/>
                                     </select>

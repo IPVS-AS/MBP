@@ -1,7 +1,7 @@
 {
   "name": "TESTING_TemperatureSensorPl",
   "description": "Operator for simulating the sensor data of a planned temperature sensor.",
-  "unit": "No Unit",
+  "unit": "°C",
   "files": [
     "PlannedTempSim.jar",
     "install.sh",

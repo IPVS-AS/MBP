@@ -1,7 +1,7 @@
 {
   "name": "TESTING_HumiditySensorPl",
   "description": "Operator for simulating the sensor data of a planned humidity sensor.",
-  "unit": "No Unit",
+  "unit": "%",
   "files": [
     "HumSimPlanned.jar",
     "install.sh",
