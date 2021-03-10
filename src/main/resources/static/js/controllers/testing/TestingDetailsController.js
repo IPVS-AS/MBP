@@ -18,16 +18,15 @@ app.controller('TestingDetailsController',
             const RERUN_PREFIX = "RERUN_";
             const CONFIG_NAME_REAL_SENSOR = "ConfigRealSensors";
             // Constant list of the sensor simulators, that can be included in the test
-            const SIMULATOR_LIST = {
-                TEMPERATURE: 'TESTING_TemperatureSensor',
-                TEMPERATURE_PL: 'TESTING_TemperatureSensorPl',
-                HUMIDITY: 'TESTING_HumiditySensor',
-                HUMIDITY_PL: 'TESTING_HumiditySensorPl',
-                ACCELERATION: 'TESTING_AccelerationSensor',
-                ACCELERATION_PL: 'TESTING_AccelerationSensorPl',
-                GPS: 'TESTING_GPSSensor',
-                GPS_PL: 'TESTING_GPSSensorPl'
-            };
+            const SIMULATOR_LIST = ['TestingTemperatureSensor',
+                'TestingTemperatureSensorPl',
+                'TestingHumiditySensor',
+                'TestingHumiditySensorPl',
+                'TestingAccelerationSensor',
+                'TestingAccelerationSensorPl',
+                'TestingGPSSensor',
+                'TestingGPSSensorPl'];
+
 
 
             // Storing variables
@@ -110,6 +109,7 @@ app.controller('TestingDetailsController',
              * @returns {boolean}
              */
             function checkSimulator(type) {
+                console.log(SIMULATOR_LIST);
                 return SIMULATOR_LIST.some(function (sensorType) {
                     return type === sensorType;
 

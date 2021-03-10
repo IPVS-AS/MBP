@@ -366,19 +366,22 @@ app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'Notifica
                     return 0;
                 }
 
-                angular.forEach(data._embedded, function (value) {
+                let counter = data.page.totalElements;
 
-                        if (actuator.name === value) {
-                            const index = tempActuatorList.indexOf(actuator);
-                            if(index !== -1){
-                                tempActuatorList.splice(index,1)
-                            }
+
+                angular.forEach(data._embedded,
+                    function(value, key) {
+                        if(key === "sensors" || key === "devices" || key === "actuators"){
+                                value.some(function (component) {
+                                    if (component.name.includes("TESTING_")) {
+                                        counter = counter -1;
+                                    }
+                                });
                         }
+                    });
 
-                });
-                let object = data._embedded[category]
-                console.log(object)
-                return data.page.totalElements || 0;
+
+                return counter || 0;
             });
         }
 

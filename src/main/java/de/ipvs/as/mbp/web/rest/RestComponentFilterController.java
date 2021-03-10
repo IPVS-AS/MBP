@@ -169,5 +169,4 @@ public class RestComponentFilterController {
         componentExcerpts.addAll(userEntityService.filterForAdminOwnerAndPolicies(() -> sensorRepository.findAllByOperatorId(deviceId), ACAccessType.READ, accessRequest));
         return ResponseEntity.ok(componentExcerpts);
     }
-
 }

@@ -45,6 +45,38 @@ app.controller('SettingsController',
 
             /**
              * [Public]
+             * Issues a REST request in order to reinstall default components for the Testing-Tool from the resources directory of the
+             * MBP repository. These components are invisible for the user but can be uses via the Testing-Tool.
+             *
+             * @returns A promise of the created REST request
+             */
+            function reinstallTestingComponents(){
+                // Perform request
+                return SettingsService.reinstallTestingComponents().then(function () {
+                    //Success callback
+                    NotificationService.notify('The default testing components were reinstalled successfully.', 'success');
+                })
+
+            }
+
+            /**
+             * [Public]
+             * Issues a REST request in order to redeploy default components for the Testing-Tool from the resources directory of the
+             * MBP repository. These components are invisible for the user but can be uses via the Testing-Tool.
+             *
+             * @returns A promise of the created REST request
+             */
+            function reinstallTestingComponents(){
+                // Perform request
+                return SettingsService.redeployTestingComponents().then(function () {
+                    //Success callback
+                    NotificationService.notify('The default testing components were redeployed successfully.', 'success');
+                })
+
+            }
+
+            /**
+             * [Public]
              * Issues a REST request in order to save the settings.
              *
              * @returns A promise of the created REST request
@@ -64,6 +96,7 @@ app.controller('SettingsController',
             //Expose functions that are triggered externally
             angular.extend(vm, {
                 addDefaultOperators: addDefaultOperators,
+                reinstallTestingComponents: reinstallTestingComponents,
                 saveSettings: saveSettings
             });
         }
