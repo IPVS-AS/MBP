@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.ServletContext;
 import java.io.File;
@@ -72,6 +71,7 @@ public class DefaultTestingComponents {
     private final String TEST_DEVICE_USERNAME;
     private final String TEST_DEVICE_PASSWORD;
     private final String ACTUATOR_NAME;
+    private final String TEST_PREFIX;
     private final List<String> SENSOR_SIMULATORS = Arrays.asList("TESTING_TemperatureSensor", "TESTING_TemperatureSensorPl", "TESTING_HumiditySensor", "TESTING_HumiditySensorPl");
 
 
@@ -82,6 +82,7 @@ public class DefaultTestingComponents {
         TEST_DEVICE_USERNAME = propertiesService.getPropertiesString("testingTool.testDeviceUserName");
         TEST_DEVICE_PASSWORD = propertiesService.getPropertiesString("testingTool.testDevicePassword");
         ACTUATOR_NAME = propertiesService.getPropertiesString("testingTool.actuatorName");
+        TEST_PREFIX = propertiesService.getPropertiesString("testingTool.testComponentIdentifier");
         this.defaultTestComponentsWhiteList = defaultTestComponentsWhiteList;
         this.servletContext = servletContext;
         this.operatorRepository = operatorRepository;
@@ -356,14 +357,14 @@ public class DefaultTestingComponents {
 
             // Delete all sensor simulators via the prefix "TESTING_" that all testing components contains
             for (Sensor sensor : allSensors) {
-                if (sensor.getName().contains("TESTING_")) {
+                if (sensor.getName().contains(TEST_PREFIX)) {
                     sensorRepository.delete(sensor);
                 }
             }
 
             // Delete all operators needed for the simulators via the prefix "TESTING_" that all testing components contains
             for (Operator operator : allOperators) {
-                if (operator.getName().contains("TESTING_")) {
+                if (operator.getName().contains(TEST_PREFIX)) {
                     operatorRepository.delete(operator);
                 }
             }
@@ -400,7 +401,7 @@ public class DefaultTestingComponents {
 
             // Delete all sensor simulators via the prefix "TESTING_" that all testing components contains
             for (Sensor sensor : allSensors) {
-                if (sensor.getName().contains("TESTING_")) {
+                if (sensor.getName().contains(TEST_PREFIX)) {
                     if(deploymentWrapper.isComponentRunning(sensor)){
                         deploymentWrapper.undeployComponent(sensor);
                     }
@@ -412,11 +413,5 @@ public class DefaultTestingComponents {
         }catch (Exception e){
             return new ResponseEntity(HttpStatus.CONFLICT);
         }
-
-
-
-
     }
-
-
 }
