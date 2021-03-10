@@ -7,6 +7,7 @@ import de.ipvs.as.mbp.domain.component.ComponentCreateEventHandler;
 import de.ipvs.as.mbp.domain.component.ComponentCreateValidator;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;
+import de.ipvs.as.mbp.domain.device.DeviceCreateEventHandler;
 import de.ipvs.as.mbp.domain.device.DeviceCreateValidator;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
@@ -72,6 +73,9 @@ public class TestEngine {
 
     @Autowired
     private DeviceCreateValidator deviceCreateValidator;
+
+    @Autowired
+    DeviceCreateEventHandler deviceCreateEventHandler;
 
 
     @Value("#{'${testingTool.threeDimensionalSensor}'.split(',')}")
@@ -391,6 +395,7 @@ public class TestEngine {
             // Validate & insert device
             deviceCreateValidator.validateCreatable(testDevice);
             deviceRepository.insert(testDevice);
+            deviceCreateEventHandler.onCreate(testDevice);
 
 
             responseEntity = new ResponseEntity<>(HttpStatus.OK);
