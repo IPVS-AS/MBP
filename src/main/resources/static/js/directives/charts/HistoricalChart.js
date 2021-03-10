@@ -35,6 +35,7 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
         //Define chart settings that can be adjusted by the user
         scope.settings = {
             numberOfValues: CHART_INITIAL_ELEMENTS_NUMBER,
+            timeAxis: true,
             mostRecent: true
         };
 
@@ -50,6 +51,9 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                 },
                 chart: {
                     zoomType: 'xy'
+                },
+                xAxis: {
+                    type: 'datetime'
                 },
                 series: [{
                     name: 'Value',
@@ -81,9 +85,25 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                 }
             });
 
-            //Watch value border and update chart on change
+            //Watch time axis setting and update chart on change
             scope.$watch(
                 function () {
+                    //Check time axis setting for changes
+                    return scope.settings.timeAxis;
+                },
+                function () {
+                    //Update axis type on change
+                    chart.xAxis[0].update({
+                        type: 'datetime',
+                        ordinal: !scope.settings.timeAxis
+                    }, true);
+                }
+            );
+
+            //Watch order setting and update chart on change
+            scope.$watch(
+                function () {
+                    //Check order setting for changes
                     return scope.settings.mostRecent;
                 },
                 function () {
@@ -133,10 +153,26 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                     values = values.reverse();
                 }
 
+                //Create array for values with milliseconds as time
+                let timeValues = [];
+
+                //Iterate over all values
+                for (let i = 0; i < values.length; i++) {
+                    //Split timestamp string
+                    let splittedTimestamp = values[i][0].split(".");
+
+                    //Get milliseconds from time string
+                    let milliseconds = Date.parse(splittedTimestamp[1] + "." + splittedTimestamp[0] + "" +
+                        "." + splittedTimestamp[2]);
+
+                    //Add value object to milliseconds array
+                    timeValues.push([milliseconds, values[i][1]]);
+                }
+
                 //Update chart
                 chart.series[0].update({
-                    data: values
-                }, true); //True: Redraw chart
+                    data: timeValues
+                }, true); //Redraw chart
 
                 //Loading finished
                 scope.loadingFinish();
@@ -163,6 +199,7 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             '<br/>' +
             '<table>' +
             '<tr>' +
+            '<th style="min-width: 130px">Time axis:</th>' +
             '<th style="min-width: 195px">Values to display:</th>' +
             '<th style="width: 100%">Number of values:</th>' +
             '</tr>' +
@@ -170,11 +207,20 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             '<td>' +
             '<div class="switch">' +
             '<label>' +
+            'Off' +
+            '<input type="checkbox" ng-model="settings.timeAxis">' +
+            '<span class="lever"></span>' +
+            'On' +
+            '</label></div>' +
+            '</td>' +
+            '<td>' +
+            '<div class="switch">' +
+            '<label>' +
             'Oldest' +
             '<input type="checkbox" ng-model="settings.mostRecent">' +
             '<span class="lever"></span>' +
             'Most recent' +
-            '</label>' +
+            '</label></div>' +
             '</td>' +
             '<td>' +
             '<div class="range-slider">' +
