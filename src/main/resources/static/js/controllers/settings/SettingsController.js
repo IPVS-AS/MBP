@@ -66,7 +66,7 @@ app.controller('SettingsController',
              *
              * @returns A promise of the created REST request
              */
-            function reinstallTestingComponents(){
+            function redeployTestingComponents(){
                 // Perform request
                 return SettingsService.redeployTestingComponents().then(function () {
                     //Success callback
@@ -97,6 +97,7 @@ app.controller('SettingsController',
             angular.extend(vm, {
                 addDefaultOperators: addDefaultOperators,
                 reinstallTestingComponents: reinstallTestingComponents,
+                redeployTestingComponents: redeployTestingComponents,
                 saveSettings: saveSettings
             });
         }
