@@ -92,10 +92,7 @@ public class RestSettingsController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
     public ResponseEntity<Void> reinstallTestingComponents()  {
 
-        // First delete all default testing components
-        defaultTestingComponents.deleteAllComponents();
-
-        // Call corresponding service function
+        // Delete & reinstall all default testing components
         defaultTestingComponents.deleteAllComponents();
         defaultTestingComponents.addAllComponents();
 
@@ -105,13 +102,12 @@ public class RestSettingsController {
 
 
     /**
-     * Called when the client wants to redeploy the invisible default components for the Testing-Tool and
-     * make them available for usage in the Testing-Tool by all users.
+     * Called when the client wants to redeploy the invisible default components for the Testing-Tool.
      *
      * @return A response entity containing the result of the request
      */
     @PostMapping(value = "/test-components-redeploy")
-    @ApiOperation(value = "Redeploy the default sensors/actuator from the resource directory of the MBP and makes them available for usage in the Testing-Tool by all users.", produces = "application/hal+json")
+    @ApiOperation(value = "Redeploy the default sensors/actuator from the resource directory of the MBP for usage in the Testing-Tool by all users.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
     public ResponseEntity<Void> redeployTestingComponents()  {
 

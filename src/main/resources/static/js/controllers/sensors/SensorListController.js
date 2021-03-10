@@ -5,9 +5,9 @@
  */
 app.controller('SensorListController',
     ['$scope', '$controller', '$interval', 'sensorList', 'addSensor', 'deleteSensor',
-        'deviceList', 'operatorList', 'sensorTypesList', 'accessControlPolicyList', 'ComponentService', 'NotificationService', 'OperatorService',
+        'deviceList', 'operatorList', 'sensorTypesList', 'accessControlPolicyList', 'ComponentService', 'DefaultComponentsService', 'NotificationService', 'OperatorService',
         function ($scope, $controller, $interval, sensorList, addSensor, deleteSensor,
-                  deviceList, operatorList, sensorTypesList, accessControlPolicyList, ComponentService,
+                  deviceList, operatorList, sensorTypesList, accessControlPolicyList, ComponentService, DefaultComponentsService,
                   NotificationService, OperatorService) {
             let vm = this;
 
@@ -15,20 +15,12 @@ app.controller('SensorListController',
             vm.deviceList = deviceList;
 
 
-            // Constant list of the sensor simulators, that can be included in the test
-            const SIMULATOR_LIST = {
-                TEMPERATURE: 'TESTING_TemperatureSensor',
-                TEMPERATURE_PL: 'TESTING_TemperatureSensorPl',
-                HUMIDITY: 'TESTING_HumiditySensor',
-                HUMIDITY_PL: 'TESTING_HumiditySensorPl',
-            };
-
             /**
              * Initializing function, sets up basic things.
              */
             (function initController() {
                 loadSensorStates();
-                getListWoSimulators();
+                $scope.simExists = DefaultComponentsService.getListWoSimulators(sensorList);
                 //Interval for updating sensor states on a regular basis
                 let interval = $interval(function () {
                     loadSensorStates();
@@ -187,31 +179,13 @@ app.controller('SensorListController',
                 });
             }
 
-            function getListWoSimulators() {
-                let tempSensorList = sensorList;
-
-                angular.forEach(SIMULATOR_LIST, function (value) {
-                    sensorList.some(function (sensor) {
-                        if (sensor.name === value) {
-                            const index = tempSensorList.indexOf(sensor);
-                            if(index !== -1){
-                                tempSensorList.splice(index,1)
-                            }
-                        }
-                    });
-                });
-
-                $scope.simExists = tempSensorList.length;
-
-            }
-
             /**
              * [Public]
              * @returns {function(...[*]=)}
              */
             $scope.hideSimulators = function () {
                 return function (item) {
-                    if (item.name.indexOf("TESTING_") === -1){
+                    if (item.name.indexOf("TESTING_") === -1) {
                         return true;
                     }
                     return false;
@@ -261,7 +235,7 @@ app.controller('SensorListController',
                         //Add sensor to sensor list
                         vm.sensorListCtrl.pushItem(sensor);
 
-                        getListWoSimulators();
+                        $scope.simExists = DefaultComponentsService.getListWoSimulators(sensorList);
 
                         //Retrieve state of the new sensor
                         getSensorState(sensor.id);
@@ -278,7 +252,7 @@ app.controller('SensorListController',
                 function () {
                     let id = vm.deleteSensorCtrl.result;
                     vm.sensorListCtrl.removeItem(id);
-                    getListWoSimulators();
+                    $scope.simExists = DefaultComponentsService.getListWoSimulators(sensorList);
                 }
             );
 

@@ -170,8 +170,6 @@ app.controller('ComponentDetailsController',
             function undeploy() {
                 //Show waiting screen
                 showDeploymentWaitingScreen("Undeploying...");
-                console.log("--------------------------------------------------------------------------")
-                console.log(componentDetails._links.deploy.href);
                 //Execute undeployment request
                 ComponentService.undeploy(componentDetails._links.deploy.href).then(
                     function (response) {

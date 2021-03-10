@@ -1,9 +1,11 @@
 package de.ipvs.as.mbp.service.testing;
 
 import de.ipvs.as.mbp.domain.component.Actuator;
+import de.ipvs.as.mbp.domain.component.ComponentCreateEventHandler;
 import de.ipvs.as.mbp.domain.component.ComponentCreateValidator;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;
+import de.ipvs.as.mbp.domain.device.DeviceCreateEventHandler;
 import de.ipvs.as.mbp.domain.device.DeviceCreateValidator;
 import de.ipvs.as.mbp.domain.operator.Code;
 import de.ipvs.as.mbp.domain.operator.Operator;
@@ -60,6 +62,12 @@ public class DefaultTestingComponents {
     private ComponentCreateValidator componentCreateValidator;
 
     @Autowired
+    private ComponentCreateEventHandler componentCreateEventHandler;
+
+    @Autowired
+    private DeviceCreateEventHandler deviceCreateEventHandler;
+
+    @Autowired
     private DeploymentWrapper deploymentWrapper;
 
     @Autowired
@@ -75,7 +83,9 @@ public class DefaultTestingComponents {
     private final List<String> SENSOR_SIMULATORS = Arrays.asList("TESTING_TemperatureSensor", "TESTING_TemperatureSensorPl", "TESTING_HumiditySensor", "TESTING_HumiditySensorPl");
 
 
-    public DefaultTestingComponents(List<String> defaultTestComponentsWhiteList, ServletContext servletContext, OperatorRepository operatorRepository, DeviceRepository deviceRepository, DeviceCreateValidator deviceCreateValidator, ActuatorRepository actuatorRepository, ComponentCreateValidator componentCreateValidator, SensorRepository sensorRepository, DeploymentWrapper deploymentWrapper) throws IOException {
+    public DefaultTestingComponents(List<String> defaultTestComponentsWhiteList, ServletContext servletContext, OperatorRepository operatorRepository, DeviceRepository deviceRepository, DeviceCreateValidator deviceCreateValidator, ActuatorRepository actuatorRepository, ComponentCreateValidator componentCreateValidator, ComponentCreateEventHandler componentCreateEventHandler, DeviceCreateEventHandler  deviceCreateEventHandler,
+                                    SensorRepository sensorRepository, DeploymentWrapper deploymentWrapper) throws IOException {
+        // Get needed Strings out of the properties to create the testing components
         propertiesService = new PropertiesService();
         TEST_DEVICE = propertiesService.getPropertiesString("testingTool.testDeviceName");
         TEST_DEVICE_IP = propertiesService.getPropertiesString("testingTool.ipAddressTestDevice");
@@ -83,6 +93,8 @@ public class DefaultTestingComponents {
         TEST_DEVICE_PASSWORD = propertiesService.getPropertiesString("testingTool.testDevicePassword");
         ACTUATOR_NAME = propertiesService.getPropertiesString("testingTool.actuatorName");
         TEST_PREFIX = propertiesService.getPropertiesString("testingTool.testComponentIdentifier");
+
+
         this.defaultTestComponentsWhiteList = defaultTestComponentsWhiteList;
         this.servletContext = servletContext;
         this.operatorRepository = operatorRepository;
@@ -91,8 +103,11 @@ public class DefaultTestingComponents {
         this.sensorRepository = sensorRepository;
         this.deviceCreateValidator = deviceCreateValidator;
         this.componentCreateValidator = componentCreateValidator;
+        this.componentCreateEventHandler = componentCreateEventHandler;
+        this.deviceCreateEventHandler = deviceCreateEventHandler;
         this.deploymentWrapper = deploymentWrapper;
 
+        //
         deleteAllComponents();
         addAllComponents();
 
@@ -124,8 +139,10 @@ public class DefaultTestingComponents {
                     sensorSimulator.setOperator(operatorRepository.findByName(sensorName).get());
                     sensorSimulator.setDevice(deviceRepository.findByName(TEST_DEVICE).get());
 
+                    // Validate, insert and create a new event handler for the new sensor simulator
                     componentCreateValidator.validateCreatable(sensorSimulator);
                     sensorRepository.insert(sensorSimulator);
+                    componentCreateEventHandler.onCreate(sensorSimulator);
 
                 }
             }
@@ -141,6 +158,11 @@ public class DefaultTestingComponents {
     }
 
 
+    /**
+     * Registers the testing device which is used for testing purposes.
+     *
+     * @return http status whether it was successful or not
+     */
     private ResponseEntity addDevice() {
         ResponseEntity responseEntity = null;
         Device testDevice = null;
@@ -159,9 +181,10 @@ public class DefaultTestingComponents {
                 testDevice.setPassword(TEST_DEVICE_PASSWORD);
 
 
-                // Insert the new testing device into the device repository
+                // Validate, insert and create a new event handler for the new testing device
                 deviceCreateValidator.validateCreatable(testDevice);
                 deviceRepository.insert(testDevice);
+                deviceCreateEventHandler.onCreate(testDevice);
 
 
                 responseEntity = new ResponseEntity<>(HttpStatus.OK);
@@ -176,7 +199,7 @@ public class DefaultTestingComponents {
 
 
     /**
-     * Registers the Testing Actuator which is used for testing purposes and does't make any real actions.
+     * Registers the Testing Actuator which is used for testing purposes and doesn't make any real actions.
      *
      * @return response entity if insertion was successful or not
      */
@@ -200,8 +223,10 @@ public class DefaultTestingComponents {
                     testingActuator.setOperator(operatorRepository.findByName(ACTUATOR_NAME).get());
                     testingActuator.setComponentType("Buzzer");
 
+                    // Validate, insert and add event handler for the new actuator
                     componentCreateValidator.validateCreatable(testingActuator);
                     actuatorRepository.insert(testingActuator);
+                    componentCreateEventHandler.onCreate(testingActuator);
 
                     responseEntity = new ResponseEntity(HttpStatus.CREATED);
 
@@ -225,6 +250,8 @@ public class DefaultTestingComponents {
     /**
      * Loads default operators from the resources directory and adds them to the operator repository so that they
      * can be used in actuators and sensors by all users.
+     *
+     * @return  http status whether it was successful or not
      */
     public ResponseEntity addSimulatorOperators() {
         ResponseEntity responseEntity = null;
@@ -341,19 +368,26 @@ public class DefaultTestingComponents {
         return responseEntity;
     }
 
+    /**
+     * Deletes all default components needed by the testing-tool automatically created by starting the mbp.
+     *
+     * @return http status whether it was successful or not
+     */
     public ResponseEntity deleteAllComponents() {
 
         try {
-            Device testingDevice = deviceRepository.findByName(TEST_DEVICE).get();
-            Actuator testingActuator = actuatorRepository.findByName(ACTUATOR_NAME).get();
             List<Operator> allOperators = operatorRepository.findAll();
             List<Sensor> allSensors = sensorRepository.findAll();
 
-            // Delete the testing-device
-            deviceRepository.delete(testingDevice);
+            // Delete the testing-device if exists
+            if (deviceRepository.existsByName(TEST_DEVICE)) {
+                deviceRepository.delete(deviceRepository.findByName(TEST_DEVICE).get());
+            }
 
-            // Delete the testing-device
-            actuatorRepository.delete(testingActuator);
+            // Delete the testing-device if existing
+            if (actuatorRepository.existsByName(ACTUATOR_NAME)) {
+                actuatorRepository.delete(actuatorRepository.findByName(ACTUATOR_NAME).get());
+            }
 
             // Delete all sensor simulators via the prefix "TESTING_" that all testing components contains
             for (Sensor sensor : allSensors) {
@@ -375,6 +409,11 @@ public class DefaultTestingComponents {
         }
     }
 
+    /**
+     * Adding all default components needed by the testing-tool.
+     *
+     * @return http status whether it was successful or not
+     */
     public ResponseEntity addAllComponents() {
         try {
             addSimulatorOperators();
@@ -388,13 +427,18 @@ public class DefaultTestingComponents {
         }
     }
 
-    public ResponseEntity redeployComponents(){
+    /**
+     * Redeploys all default components needed by the testing-tool.
+     *
+     * @return http status whether it was successful or not
+     */
+    public ResponseEntity redeployComponents() {
         Actuator testingActuator = actuatorRepository.findByName(ACTUATOR_NAME).get();
         List<Sensor> allSensors = sensorRepository.findAll();
 
-        try{
+        try {
             // Check if Actuator is currently running
-            if(deploymentWrapper.isComponentRunning(testingActuator)){
+            if (deploymentWrapper.isComponentRunning(testingActuator)) {
                 deploymentWrapper.undeployComponent(testingActuator);
             }
             deploymentWrapper.deployComponent(testingActuator);
@@ -402,7 +446,7 @@ public class DefaultTestingComponents {
             // Delete all sensor simulators via the prefix "TESTING_" that all testing components contains
             for (Sensor sensor : allSensors) {
                 if (sensor.getName().contains(TEST_PREFIX)) {
-                    if(deploymentWrapper.isComponentRunning(sensor)){
+                    if (deploymentWrapper.isComponentRunning(sensor)) {
                         deploymentWrapper.undeployComponent(sensor);
                     }
                     deploymentWrapper.deployComponent(sensor);
@@ -410,7 +454,7 @@ public class DefaultTestingComponents {
             }
 
             return new ResponseEntity(HttpStatus.OK);
-        }catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity(HttpStatus.CONFLICT);
         }
     }

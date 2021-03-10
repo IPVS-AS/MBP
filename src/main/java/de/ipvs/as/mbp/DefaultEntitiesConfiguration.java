@@ -28,6 +28,8 @@ public class DefaultEntitiesConfiguration {
     private static final String DEFAULT_ADMIN_PASSWORD = "12345";
 
     //Path to images of entity types
+    private static final String IMAGE_PATH = "images/";
+
     /**
      * Creates a bean representing a whitelist of paths to directories of operators that are supposed
      * to be available as default operators.
@@ -40,24 +42,32 @@ public class DefaultEntitiesConfiguration {
         return Collections.unmodifiableList(operatorPaths);
     }
 
-    private static final String IMAGE_PATH = "images/";
-
+    /**
+     * Creates a bean representing a whitelist of paths to directories of operators that are used
+     * to rerun a test in the testing-tool.
+     *
+     * @return The path whitelist bean
+     */
     @Bean(name = "rerunOperatorWhitelist")
-    public List<String > rerunOperatorWhitelist(){
-        List<String> operatorPaths = Arrays.asList("/operators/extraction/simulators/rerun_adapter"
-        );
+    public List<String> rerunOperatorWhitelist() {
+        List<String> operatorPaths = Arrays.asList("/operators/extraction/simulators/rerun_adapter");
         return Collections.unmodifiableList(operatorPaths);
     }
 
-
+    /**
+     * Creates a bean representing a whitelist of paths to directories of operators that are supposed
+     * to be available as default operators for the testing tool.
+     *
+     * @return The path whitelist bean
+     */
     @Bean(name = "defaultTestComponentsWhiteList")
-    public List<String > defaultTestComponentsWhiteList(){
+    public List<String> defaultTestComponentsWhiteList() {
         List<String> operatorPaths = Arrays.asList("/operators/extraction/simulators/sensoradapter_temp_planned",
                 "/operators/extraction/simulators/sensoradapter_temp",
                 "/operators/extraction/simulators/sensoradapter_hum",
                 "/operators/extraction/simulators/sensoradapter_hum_planned",
                 "/operators/control/simulators/actuator_adapter_testing"
-                );
+        );
         return Collections.unmodifiableList(operatorPaths);
     }
 
