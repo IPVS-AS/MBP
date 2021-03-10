@@ -3,8 +3,11 @@ package de.ipvs.as.mbp.service.testing;
 
 import com.mongodb.util.JSON;
 import de.ipvs.as.mbp.domain.component.Actuator;
+import de.ipvs.as.mbp.domain.component.ComponentCreateEventHandler;
+import de.ipvs.as.mbp.domain.component.ComponentCreateValidator;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;
+import de.ipvs.as.mbp.domain.device.DeviceCreateValidator;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
@@ -60,6 +63,15 @@ public class TestEngine {
 
     @Autowired
     private SensorRepository sensorRepository;
+
+    @Autowired
+    private ComponentCreateValidator componentCreateValidator;
+
+    @Autowired
+    ComponentCreateEventHandler componentCreateEventHandler;
+
+    @Autowired
+    private DeviceCreateValidator deviceCreateValidator;
 
 
     @Value("#{'${testingTool.threeDimensionalSensor}'.split(',')}")
@@ -376,12 +388,10 @@ public class TestEngine {
                 testDevice.setPassword(TEST_DEVICE_PASSWORD);
             }
 
-            // Insert the new testing device into the device repository
+            // Validate & insert device
+            deviceCreateValidator.validateCreatable(testDevice);
             deviceRepository.insert(testDevice);
 
-            //Validate device
-            // errors = new BeanPropertyBindingResult(testDevice, "device");
-            //deviceCreateValidator.validate(device, errors); TODO
 
             responseEntity = new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception exception) {
@@ -433,11 +443,11 @@ public class TestEngine {
                         testingActuator.setOperator(testActuatorAdapter);
                         testingActuator.setComponentType("Buzzer");
 
-                        //Validate device
-                        errors = new BeanPropertyBindingResult(testingActuator, "component");
-                        // actuatorValidator.validate(testingActuator, errors);
 
+                        // Validate & insert testing actuator
+                        componentCreateValidator.validateCreatable(testingActuator);
                         actuatorRepository.insert(testingActuator);
+                        componentCreateEventHandler.onCreate(testingActuator);
 
                         responseEntity = new ResponseEntity(HttpStatus.CREATED);
 
@@ -542,11 +552,11 @@ public class TestEngine {
                 sensorSimulator.setOperator(sensorAdapter);
                 sensorSimulator.setDevice(testingDevice);
 
-                //Validate device
-                //errors = new BeanPropertyBindingResult(sensorSimulator, "component");
-                // sensorValidator.validate(sensorSimulator, errors);
-
+                //Validate & insert sensor
+                componentCreateValidator.validateCreatable(sensorSimulator);
                 sensorRepository.insert(sensorSimulator);
+                componentCreateEventHandler.onCreate(sensorSimulator);
+
 
             }
             responseEntity = new ResponseEntity<>(HttpStatus.OK);
