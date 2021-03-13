@@ -4,10 +4,7 @@
 # This install script provides a fully automated installation of the MBP.                                               #
 # It requires systemd as the running init system.                                                                       #
 # It installs Java, Mosquitto, MongoDB and Tomcat8 to run the MBP.                                                      #
-# Moreover it installs git and maven to build the necessary files.                                                      #
-#                                                                                                                       #
-# After the installation you will find a folder named connde in the directory the script was started.                   #
-# This folder contains all source code of the MBP and can be used to build it.                                          #
+# Moreover it installs maven to build the necessary files.                                                              #
 #########################################################################################################################
 
 echo "write hostname\n"
@@ -67,4 +64,31 @@ sudo mvn clean install
 echo "\nDeploying .war file...\n"
 find target/ -name "MBP-*.war" -print0 | xargs -0 -I {} sudo mv {} /var/lib/tomcat8/webapps/MBP.war
 
-echo "\nInstallation finished"
+# retrieve status
+MOSQUITTO_STATUS=$(systemctl is-active mosquitto)
+MONGODB_STATUS=$(systemctl is-active mongodb)
+TOMCAT_STATUS=$(systemctl is-active tomcat*)
+WAR_FILE_STATUS="undeployed"
+if [ -e /var/lib/tomcat*/webapps/MBP.war ]
+then
+  WAR_FILE_STATUS="deployed"
+fi
+
+# output status
+echo "---------------------------"
+echo "Software components status:"
+echo "> Mosquitto: $MOSQUITTO_STATUS"
+echo "> MongoDB: $MONGODB_STATUS"
+echo "> Tomcat: $TOMCAT_STATUS"
+echo "> MBP WAR file: $WAR_FILE_STATUS"
+echo "---------------------------------------------------------"
+
+if [ $MOSQUITTO_STATUS = "active" ] && [ $MONGODB_STATUS = "active" ] && [ $TOMCAT_STATUS = "active" ] && [ $WAR_FILE_STATUS = "deployed" ]
+then
+  echo "Installation finished SUCCESSFULLY!"
+  echo "The MBP should be running on http://localhost:8080/MBP"
+else
+  echo "Installation INCOMPLETED!"
+  echo "At least one of the required components is not active"
+fi
+echo "---------------------------------------------------------"
