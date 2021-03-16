@@ -5,15 +5,13 @@
 /**
  * Directive which creates a chart for displaying live values with a certain refresh time.
  * In addition, a fake progress bar is added to visualize the timespan between refreshments.
- *
- * @author Jan
  */
 app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interval) {
     //Maximum number of elements that may be displayed in the chart
     const CHART_MAX_ELEMENTS = 20;
 
-    //Interval with that the chart data is refreshed (seconds)
-    const REFRESH_DELAY_SECONDS = 15;
+    //Initial interval for refreshing the chart (seconds)
+    const INIT_REFRESH_INTERVAL = 15;
 
     /**
      * Linking function, glue code
@@ -22,15 +20,25 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
      * @param element Elements of the directive
      * @param attrs Attributes of the directive
      */
-    var link = function (scope, element, attrs) {
+    let link = function (scope, element, attrs) {
 
         //Chart objects
-        var chartContainer = element.find('.chart-container').get(0);
-        var chart = null;
-        var chartInterval = null;
+        let chartContainer = element.find('.chart-container').get(0);
+        let chart = null;
+        let chartInterval = null;
+        let chartIntervalUpdate = false;
 
         //Progress jQuery element
-        var progressBar = element.find('.progress-bar');
+        let progressBar = element.find('.progress-bar');
+
+        //Slider objects
+        let sliderContainer = element.find('.chart-slider');
+
+        //Define chart settings that can be adjusted by the user
+        scope.settings = {
+            timeAxis: true,
+            refreshInterval: INIT_REFRESH_INTERVAL
+        };
 
         /**
          * [Private]
@@ -59,19 +67,14 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                 },
                 xAxis: {
                     type: 'datetime',
-                    labels: {
-                        format: '{value}'
-                    }
+                    ordinal: false
                 },
                 yAxis: {
                     opposite: false
                 },
                 navigator: {
                     xAxis: {
-                        type: 'datetime',
-                        labels: {
-                            format: '{value}'
-                        }
+                        type: 'datetime'
                     }
                 },
                 series: [{
@@ -92,6 +95,41 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
 
             //Data will be loaded
             scope.loadingStart();
+
+            //Initialize slider
+            sliderContainer.ionRangeSlider({
+                skin: "flat",
+                type: "single",
+                grid: true,
+                grid_num: 5,
+                grid_snap: true,
+                step: 1,
+                min: 5,
+                max: 60,
+                from: scope.settings.refreshInterval,
+                onFinish: function (data) {
+                    //Save new value
+                    scope.settings.refreshInterval = data.from;
+
+                    //Trigger re-definition of interval
+                    chartIntervalUpdate = true;
+                }
+            });
+
+            //Watch time axis setting and update chart on change
+            scope.$watch(
+                function () {
+                    //Check time axis setting for changes
+                    return scope.settings.timeAxis;
+                },
+                function () {
+                    //Update axis type on change
+                    chart.xAxis[0].update({
+                        type: 'datetime',
+                        ordinal: !scope.settings.timeAxis
+                    }, true);
+                }
+            );
         }
 
         /**
@@ -101,15 +139,25 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
          */
         function initChartUpdate() {
             //Counts the number of retrieved logs for ensuring the log limit
-            var count = 0;
+            let count = 0;
 
             //Get series from the chart that is supposed to be updated
-            var series = chart.series[0];
+            let series = chart.series[0];
 
-            var lastDate = null;
+            let lastDate = null;
 
             //Define the update function that can be called on a regular basis
-            var intervalFunction = function () {
+            let intervalFunction = function () {
+                //Re-define interval with new delay if necessary
+                if (chartIntervalUpdate) {
+                    //Re-define interval
+                    $interval.cancel(chartInterval);
+                    chartInterval = $interval(intervalFunction, 1000 * scope.settings.refreshInterval);
+
+                    //Defuse flag
+                    chartIntervalUpdate = false;
+                }
+
                 //Ensure that the chart has already been initialized
                 if (chart == null) {
                     console.error("The live chart has not been initialized yet.");
@@ -142,14 +190,14 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                     //Check if there is already data in the chart
                     if (lastDate == null) {
                         //No data in the chart, thus add all received value logs
-                        for (var i = values.length - 1; i >= 0; i--) {
+                        for (let i = values.length - 1; i >= 0; i--) {
                             series.addPoint(values[i], true, (++count >= CHART_MAX_ELEMENTS));
                         }
                     } else {
                         /* There is already data in the chart, so iterate over all value logs but
                          only take the ones from the array that occur before the log with lastDate */
-                        var insert = false;
-                        for (var i = values.length - 1; i >= 0; i--) {
+                        let insert = false;
+                        for (let i = values.length - 1; i >= 0; i--) {
                             //Try to find the log with lastdate in the array
                             if (values[i][0] === lastDate) {
                                 insert = true;
@@ -162,7 +210,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                         /* In case the log with lastDate could not be found, this means that all data is relevant
                          and needs to be added to the chart */
                         if (!insert) {
-                            for (var i = values.length - 1; i >= 0; i--) {
+                            for (let i = values.length - 1; i >= 0; i--) {
                                 series.addPoint(values[i], true, (++count >= CHART_MAX_ELEMENTS));
                             }
                         }
@@ -174,12 +222,12 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                     scope.loadingFinish();
 
                     //Visualize the time until the next refreshment
-                    runProgress(REFRESH_DELAY_SECONDS);
+                    runProgress(scope.settings.refreshInterval);
                 });
             };
 
             //Create an interval that calls the update function on a regular basis
-            chartInterval = $interval(intervalFunction, 1000 * REFRESH_DELAY_SECONDS);
+            chartInterval = $interval(intervalFunction, 1000 * scope.settings.refreshInterval);
 
             //Ensure that the interval is cancelled in case the user switches the page
             scope.$on('$destroy', function () {
@@ -207,7 +255,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
         function runProgress(time) {
             progressBar.stop(true).width(0).animate({
                 width: "100%",
-            }, 15 * 1000);
+            }, scope.settings.refreshInterval * 1000);
         }
 
         //Watch the unit parameter
@@ -234,7 +282,30 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
             '<span class="sr-only"></span>' +
             '</div>' +
             '</div>' +
-            '<div class="chart-container"></div>',
+            '<div class="chart-container"></div>' +
+            '<br/>' +
+            '<table>' +
+            '<tr>' +
+            '<th style="min-width: 130px">Time axis:</th>' +
+            '<th style="width: 100%">Update interval (seconds):</th>' +
+            '</tr>' +
+            '<tr>' +
+            '<td>' +
+            '<div class="switch">' +
+            '<label>' +
+            'Off' +
+            '<input type="checkbox" ng-model="settings.timeAxis">' +
+            '<span class="lever"></span>' +
+            'On' +
+            '</label></div>' +
+            '</td>' +
+            '<td>' +
+            '<div class="range-slider">' +
+            '<input type="text" class="chart-slider"/>' +
+            '</div>' +
+            '</td>' +
+            '<tr>' +
+            '</table>',
         link: link,
         scope: {
             //The unit in which the values are supposed to be displayed

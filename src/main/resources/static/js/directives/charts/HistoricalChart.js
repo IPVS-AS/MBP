@@ -23,20 +23,20 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
      * @param element Elements of the directive
      * @param attrs Attributes of the directive
      */
-    var link = function (scope, element, attrs) {
+    let link = function (scope, element, attrs) {
 
         //Chart objects
-        var chartContainer = element.find('.chart-container').get(0);
-        var chart = null;
+        let chartContainer = element.find('.chart-container').get(0);
+        let chart = null;
 
         //Slider objects
-        var sliderContainer = element.find('.chart-slider');
+        let sliderContainer = element.find('.chart-slider');
 
         //Define chart settings that can be adjusted by the user
         scope.settings = {
-            numberOfValues: CHART_INITIAL_ELEMENTS_NUMBER,
             timeAxis: true,
-            mostRecent: true
+            mostRecent: true,
+            numberOfValues: CHART_INITIAL_ELEMENTS_NUMBER
         };
 
         /**
@@ -153,25 +153,9 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                     values = values.reverse();
                 }
 
-                //Create array for values with milliseconds as time
-                let timeValues = [];
-
-                //Iterate over all values
-                for (let i = 0; i < values.length; i++) {
-                    //Split timestamp string
-                    let splittedTimestamp = values[i][0].split(".");
-
-                    //Get milliseconds from time string
-                    let milliseconds = Date.parse(splittedTimestamp[1] + "." + splittedTimestamp[0] + "" +
-                        "." + splittedTimestamp[2]);
-
-                    //Add value object to milliseconds array
-                    timeValues.push([milliseconds, values[i][1]]);
-                }
-
                 //Update chart
                 chart.series[0].update({
-                    data: timeValues
+                    data: values
                 }, true); //Redraw chart
 
                 //Loading finished
