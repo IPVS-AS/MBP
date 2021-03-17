@@ -6,9 +6,12 @@
 ###########################################################################################
 
 echo "This will uninstall the MBP from your device."
-read -n1 -p "\nDo you also want to uninstall Tomcat? [y,n]" un_tomcat 
-read -n1 -p "\nDo you also want to uninstall MongoDB? [y,n]" un_mongo
-read -n1 -p "\nDo you also want to uninstall mosquitto? [y,n]" un_mosquitto
+read -n1 -p "Do you also want to uninstall Tomcat? [y,n]" un_tomcat 
+echo ""
+read -n1 -p "Do you also want to uninstall MongoDB? [y,n]" un_mongo
+echo ""
+read -n1 -p "Do you also want to uninstall mosquitto? [y,n]" un_mosquitto
+echo ""
 
 echo "Stopping Tomcat..."
 sudo systemctl stop tomcat*
