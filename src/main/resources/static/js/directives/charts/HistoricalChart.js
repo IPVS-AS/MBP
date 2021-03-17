@@ -161,8 +161,8 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                 numberLogs: scope.settings.numberOfValues,
                 descending: scope.settings.mostRecent,
                 unit: scope.unit,
-                startTime: scope.settings.startTime ? new Date(scope.settings.startTime).getTime() / 1000 : -1,
-                endTime: scope.settings.endTime ? new Date(scope.settings.endTime).getTime() / 1000 : -1
+                startTime: scope.settings.startTime ? new Date(scope.settings.startTime).getTime() : -1,
+                endTime: scope.settings.endTime ? new Date(scope.settings.endTime).getTime() : -1
             }).then(function (values) {
                 //Reverse the values array if ordered in descending order
                 if (scope.settings.mostRecent) {

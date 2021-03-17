@@ -252,11 +252,11 @@ app.controller('ComponentDetailsController',
              * order, false in ascending order. By default, the logs are retrieved in ascending
              * order ([oldest log] --> ... --> [most recent log])
              * @param unit The unit in which the values are supposed to be retrieved
-             * @param timeStart Start time for filtering
-             * @param timeEnd End time for filtering
+             * @param startTime Start time for filtering
+             * @param endTime End time for filtering
              * @returns A promise that passes the logs as a parameter
              */
-            function retrieveComponentData(numberLogs, descending, unit, timeStart, timeEnd) {
+            function retrieveComponentData(numberLogs, descending, unit, startTime, endTime) {
                 //Set default order
                 let order = 'asc';
 
@@ -269,8 +269,8 @@ app.controller('ComponentDetailsController',
                 let pageDetails = {
                     sort: 'time,' + order,
                     size: numberLogs,
-                    timeStart: timeStart || "",
-                    timeEnd: timeEnd || ""
+                    startTime: startTime || "",
+                    endTime: endTime || ""
                 };
 
                 //Perform the server request in order to retrieve the data

@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.measure.converter.UnitConverter;
 import javax.measure.quantity.Quantity;
 import javax.measure.unit.Unit;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -215,9 +217,12 @@ public class RestValueLogController {
 
         //Filter value logs for start time if provided
         if ((startTime != null) && (startTime > 0)) {
-            valueLogsList = valueLogsList.stream().filter(valueLog -> {
-                return valueLog.getTime().toEpochMilli() >= startTime;
-            }).collect(Collectors.toList());
+            valueLogsList = valueLogsList.stream().filter(valueLog -> valueLog.getTime().toEpochMilli() >= startTime).collect(Collectors.toList());
+        }
+
+        //Filter value logs for end time if provided
+        if ((endTime != null) && (endTime > 0)) {
+            valueLogsList = valueLogsList.stream().filter(valueLog -> valueLog.getTime().toEpochMilli() < endTime).collect(Collectors.toList());
         }
 
         // Convert value logs to target unit if required
@@ -245,8 +250,26 @@ public class RestValueLogController {
             valueLogsList.forEach(effect::apply);
         }
 
+        // Iterate over all specified sort parameters
+        for (Sort.Order order : pageable.getSort()) {
+            // Only sorting for time property is supported, thus ignore the other ones
+            if (!order.getProperty().equals("time")) {
+                continue;
+            }
+
+            // Check sort direction and adjust document if necessary
+            if (order.isDescending()) {
+                Collections.reverse(valueLogsList);
+            }
+
+            // Only ordering for time is supported, so no need to consider other properties
+            break;
+        }
+
         //Create Page from results
-        return new PageImpl<>(valueLogsList, pageable, valueLogsList.size());
+        final int start = (int) pageable.getOffset();
+        final int end = Math.min((start + pageable.getPageSize()), valueLogsList.size());
+        return new PageImpl<>(valueLogsList.subList(start, end), pageable, valueLogsList.size());
     }
 
 }
