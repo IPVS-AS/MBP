@@ -14,8 +14,8 @@ echo "Stopping Tomcat..."
 sudo systemctl stop tomcat*
 
 echo "Removing MBP..."
-sudo rm /var/lib/tomcat8/webapps/MBP.war
-sudo rm -rf /var/lib/tomcat8/webapps/MBP
+sudo rm /var/lib/tomcat*/webapps/MBP.war
+sudo rm -rf /var/lib/tomcat*/webapps/MBP
 
 
 # Uninstall Tomcat if desired
