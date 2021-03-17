@@ -207,7 +207,7 @@ app.controller('ComponentDetailsController',
                         },
                         function (response) {
                             //Failure, check status code of response
-                            if(response.status !== 400){
+                            if (response.status !== 400) {
                                 vm.deploymentState = 'UNKNOWN';
                             }
                         }).then(function () {
@@ -252,9 +252,11 @@ app.controller('ComponentDetailsController',
              * order, false in ascending order. By default, the logs are retrieved in ascending
              * order ([oldest log] --> ... --> [most recent log])
              * @param unit The unit in which the values are supposed to be retrieved
+             * @param timeStart Start time for filtering
+             * @param timeEnd End time for filtering
              * @returns A promise that passes the logs as a parameter
              */
-            function retrieveComponentData(numberLogs, descending, unit) {
+            function retrieveComponentData(numberLogs, descending, unit, timeStart, timeEnd) {
                 //Set default order
                 let order = 'asc';
 
@@ -266,7 +268,9 @@ app.controller('ComponentDetailsController',
                 //Initialize parameters for the server request
                 let pageDetails = {
                     sort: 'time,' + order,
-                    size: numberLogs
+                    size: numberLogs,
+                    timeStart: timeStart || "",
+                    timeEnd: timeEnd || ""
                 };
 
                 //Perform the server request in order to retrieve the data

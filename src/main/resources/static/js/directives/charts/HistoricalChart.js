@@ -25,18 +25,20 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
      */
     let link = function (scope, element, attrs) {
 
-        //Chart objects
+        //Chart elements
         let chartContainer = element.find('.chart-container').get(0);
         let chart = null;
 
-        //Slider objects
+        //Slider elements
         let sliderContainer = element.find('.chart-slider');
 
         //Define chart settings that can be adjusted by the user
         scope.settings = {
             timeAxis: true,
             mostRecent: true,
-            numberOfValues: CHART_INITIAL_ELEMENTS_NUMBER
+            numberOfValues: CHART_INITIAL_ELEMENTS_NUMBER,
+            startTime: "",
+            endTime: ""
         };
 
         /**
@@ -112,6 +114,18 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                 }
             );
 
+            //Watch time filter setting and update chart on change
+            scope.$watch(
+                function () {
+                    //Check start time and end time for changes
+                    return scope.settings.startTime + scope.settings.endTime;
+                },
+                function () {
+                    //Update chart on change
+                    updateChart();
+                }
+            );
+
             //Expose public api
             scope.api = {
                 updateChart: updateChart
@@ -146,7 +160,9 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             scope.getData({
                 numberLogs: scope.settings.numberOfValues,
                 descending: scope.settings.mostRecent,
-                unit: scope.unit
+                unit: scope.unit,
+                startTime: scope.settings.startTime ? new Date(scope.settings.startTime).getTime() / 1000 : -1,
+                endTime: scope.settings.endTime ? new Date(scope.settings.endTime).getTime() / 1000 : -1
             }).then(function (values) {
                 //Reverse the values array if ordered in descending order
                 if (scope.settings.mostRecent) {
@@ -211,7 +227,17 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             '<input type="text" class="chart-slider"/>' +
             '</div>' +
             '</td>' +
+            '</tr>' +
             '<tr>' +
+            '<th>Start time:</th>' +
+            '<th>End time:</th>' +
+            '<th></th>' +
+            '</tr>' +
+            '<tr>' +
+            '<td><input type="datetime-local" style="width: 170px; margin-right: 10px;" ng-model="settings.startTime"></td>' +
+            '<td><input type="datetime-local" style="width: 170px;" ng-model="settings.endTime"></td>' +
+            '<td><button class="btn btn-primary waves-effect" style="width: 100px; height:30px;" ng-click="settings.startTime=\'\';settings.endTime=\'\'">Clear</button></td>' +
+            '</tr>' +
             '</table>',
         link: link,
         scope: {

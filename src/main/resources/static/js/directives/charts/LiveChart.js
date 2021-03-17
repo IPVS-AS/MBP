@@ -304,7 +304,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
             '<input type="text" class="chart-slider"/>' +
             '</div>' +
             '</td>' +
-            '<tr>' +
+            '</tr>' +
             '</table>',
         link: link,
         scope: {
