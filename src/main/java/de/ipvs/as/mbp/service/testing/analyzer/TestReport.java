@@ -96,13 +96,6 @@ public class TestReport {
     final Color darkBlue = new DeviceRgb(0, 191, 255);
     final Color darkGrey = new DeviceRgb(182, 182, 182);
     final Color mbpBlue = new DeviceRgb(0, 191, 255);
-    PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
-    final Style white = new Style().setFont(font).setFontSize(12).setFontColor(ColorConstants.WHITE);
-    final Style headerFont = new Style().setFont(font).setFontSize(10).setFontColor(mbpBlue);
-    final Style tableHeader = new Style().setFont(font).setFontSize(12).setFontColor(ColorConstants.BLACK);
-    final Style pageFont = new Style().setFont(font).setFontSize(22).setFontColor(ColorConstants.BLACK);
-    final Style titleFont = new Style().setFont(font).setFontSize(22).setFontColor(ColorConstants.BLACK);
-    final Style boldUnderlined = new Style().setFont(font).setFontSize(17).setFontColor(ColorConstants.BLACK).setUnderline();
 
     /**
      * Generates the Test-Report with the Chart of the simulated Values and other important information for the user.
@@ -112,6 +105,15 @@ public class TestReport {
      * @return path where the TestReport can be found
      */
     public String generateTestReport(String testId, List<Rule> rulesBefore) throws Exception {
+
+        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+        final Style white = new Style().setFont(font).setFontSize(12).setFontColor(ColorConstants.WHITE);
+        final Style headerFont = new Style().setFont(font).setFontSize(10).setFontColor(mbpBlue);
+        final Style tableHeader = new Style().setFont(font).setFontSize(12).setFontColor(ColorConstants.BLACK);
+        final Style pageFont = new Style().setFont(font).setFontSize(22).setFontColor(ColorConstants.BLACK);
+        final Style titleFont = new Style().setFont(font).setFontSize(22).setFontColor(ColorConstants.BLACK);
+        final Style boldUnderlined = new Style().setFont(font).setFontSize(17).setFontColor(ColorConstants.BLACK).setUnderline();
+
         int counterRules = 0;
         TestDetails test = testDetailsRepository.findById(testId).get();
         // Create a new pdf, which is named with the ID of the specific test
@@ -148,14 +150,14 @@ public class TestReport {
         com.itextpdf.layout.element.Paragraph subtitle = new com.itextpdf.layout.element.Paragraph().add("Test-Details: ").addStyle(boldUnderlined).setTextAlignment(TextAlignment.CENTER);
 
         // Sensor information
-        Table simulationSensors = getSimulationConfig(test);
-        Table realSensors = getRealSensorConfig(test);
+        Table simulationSensors = getSimulationConfig(test, tableHeader, white);
+        Table realSensors = getRealSensorConfig(test,tableHeader, white);
 
         // Actuator information
-        Table actuatorInfos = getActuatorInfos();
+        Table actuatorInfos = getActuatorInfos(white);
 
         // Rule information
-        Table ruleInfos = getRuleInfos(test);
+        Table ruleInfos = getRuleInfos(test,white);
         doc.add(new com.itextpdf.layout.element.Paragraph("\n"));
 
         // Rule details
@@ -185,11 +187,11 @@ public class TestReport {
         // Add new table to get the details for each rule
         for (Rule rule : rulesBefore) {
             if (test.isUseNewData()) {
-                ruleDetails = getRuleDetails(test, rule, counterRules);
+                ruleDetails = getRuleDetails(test, rule, counterRules,tableHeader);
                 counterRules += 1;
             } else {
                 if (rule.getName().contains(RERUN_IDENTIFIER)) {
-                    ruleDetails = getRuleDetails(test, rule, counterRules);
+                    ruleDetails = getRuleDetails(test, rule, counterRules,tableHeader);
                     counterRules += 1;
                 }
             }
@@ -250,7 +252,7 @@ public class TestReport {
      * @param test test for which the test report is created
      * @return table with all sensor simulators and the configurations of them
      **/
-    private Table getSimulationConfig(TestDetails test) {
+    private Table getSimulationConfig(TestDetails test, Style tableHeader, Style white) {
         boolean sensorSimulation = false;
         int counter = 0;
         String rerunInfo = "";
@@ -264,7 +266,7 @@ public class TestReport {
         Table tableSensorSim = new Table(4);
         tableSensorSim.setWidth(UnitValue.createPercentValue(100));
 
-        tableSensorSim.addCell(headerCell("Simulated Sensor(s)"));
+        tableSensorSim.addCell(headerCell("Simulated Sensor(s)", white));
 
         for (String type : test.getType()) {
 
@@ -401,7 +403,7 @@ public class TestReport {
      * @param test test for which the test report is created
      * @return table with user configurations of the test
      */
-    private Table getRealSensorConfig(TestDetails test) {
+    private Table getRealSensorConfig(TestDetails test, Style tableHeader, Style white) {
         int counter = 0;
         boolean realSensors = false;
         String rerunInfo = "";
@@ -415,7 +417,7 @@ public class TestReport {
         Table tableRealSensors = new Table(4);
         tableRealSensors.setWidth(UnitValue.createPercentValue(100));
 
-        tableRealSensors.addCell(headerCell("Real Sensor(s)"));
+        tableRealSensors.addCell(headerCell("Real Sensor(s)", white));
 
         for (String type : test.getType()) {
             // Check if sensor is no sensor simulator
@@ -458,14 +460,14 @@ public class TestReport {
      *
      * @return table with the actuator information
      */
-    private Table getActuatorInfos() {
+    private Table getActuatorInfos(Style white) {
         String infoText = "The actuator used for the tests does not trigger any actions if the corresponding rule is triggered. It functions as a dummy.";
 
         // Table configurations
         Table actuatorInfo = new Table(4);
         actuatorInfo.setWidth(UnitValue.createPercentValue(100));
 
-        actuatorInfo.addCell(headerCell("Simulated actuator"));
+        actuatorInfo.addCell(headerCell("Simulated actuator", white));
         actuatorInfo.addCell(tableCell(new com.itextpdf.layout.element.Paragraph(infoText), null, 4));
 
         return actuatorInfo;
@@ -479,7 +481,7 @@ public class TestReport {
      * @param rule detail information of the selected rules before the test
      * @return PDFTable with all important information about the rules in the test of a specific application
      */
-    private Table getRuleDetails(TestDetails test, Rule rule, int counterRules) {
+    private Table getRuleDetails(TestDetails test, Rule rule, int counterRules, Style tableHeader) {
         int executionsAfter;
         String lastExecutionBefore = "NEVER";
         String lastExecutionAfter = "NEVER";
@@ -572,7 +574,7 @@ public class TestReport {
      * @param test test for which the test report is created
      * @return table with detailed rule information
      */
-    public Table getRuleInfos(TestDetails test) {
+    public Table getRuleInfos(TestDetails test, Style white) {
         StringBuilder rulesUser = new StringBuilder();
         String rulesExecuted;
         String triggerRules;
@@ -584,7 +586,7 @@ public class TestReport {
         ruleInfos.setWidth(UnitValue.createPercentValue(100));
 
         //Set header
-        ruleInfos.addCell(headerCell("Rule-Information"));
+        ruleInfos.addCell(headerCell("Rule-Information", white));
 
         // Creates a text depending on whether the rules chosen by the user should be triggered or not
         if (test.isTriggerRules()) {
@@ -805,7 +807,7 @@ public class TestReport {
      * @param phrase of the header
      * @return PdfPCell as header
      */
-    public Cell headerCell(String phrase) {
+    public Cell headerCell(String phrase, Style white) {
         Cell headerCell = new Cell(1, 4).add(new com.itextpdf.layout.element.Paragraph(phrase)).addStyle(white).setTextAlignment(TextAlignment.CENTER);
         headerCell.setHorizontalAlignment(HorizontalAlignment.CENTER);
         headerCell.setBackgroundColor(darkGrey);
