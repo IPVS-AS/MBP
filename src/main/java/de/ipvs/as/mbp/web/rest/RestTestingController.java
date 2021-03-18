@@ -277,7 +277,7 @@ public class RestTestingController {
      */
     @PostMapping(value = "/editConfig/{testId}")
     public ResponseEntity<List<List<ParameterInstance>>> editConfig(@PathVariable(value = "testId") String testId,
-                                                                    @RequestBody String useNewData) {
+                                                                    @RequestBody boolean useNewData) {
         List<List<ParameterInstance>> configList = testRerunService.editUseNewData(testId, useNewData);
         return new ResponseEntity<>(configList, HttpStatus.OK);
     }
