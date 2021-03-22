@@ -253,8 +253,6 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
                 JsonPath jsonPath = JsonPath.compile(path);
                 // Remove the $ from the json path
                 path = path.substring(1);
-                // Add
-                // TODO path = "`" + path + "`";
                 // No arrays are in the path --> just add the path as field
                 if (IoTDataTypes.hasCepPrimitiveDataType(typeOfNode)) {
                     eventType.addField(path, typeOfNode.getCepType());

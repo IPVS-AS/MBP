@@ -26,13 +26,13 @@ public class ValueLogReceiveVerifier {
             "yyyy-MM-dd",
             "dd.MM.yyyy",
             "yyyy-MM-dd HH:mm:ss",
-            "yyyy-MM-dd HH:mm:ss X",
+            "yyyy-MM-dd HH:mm:ssXXX",
             "yyyy-MM-dd HH:mm:ss.SSS",
-            "yyyy-MM-dd HH:mm:ss.SSS X",
+            "yyyy-MM-dd HH:mm:ss.SSSXXX",
             "dd.MM.yyyy HH:mm:ss",
             "dd.MM.yyyy HH:mm:ss.SS",
-            "dd.MM.yyyy HH:mm:ss X",
-            "dd.MM.yyyy HH:mm:ss.SS X",
+            "dd.MM.yyyy HH:mm:ssXXX",
+            "dd.MM.yyyy HH:mm:ss.SSXXX",
             "yyyy-MM-dd'T'HH:mm:ssXXX",
             "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
     };

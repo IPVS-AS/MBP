@@ -1,6 +1,5 @@
 package de.ipvs.as.mbp.util;
 
-import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
 import org.bson.Document;
@@ -9,21 +8,30 @@ import java.util.*;
 
 /**
  * Provides methods to access a {@link Document} based on a given {@link de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree}.
+ * This access includes read operations and write operations to modify a given Document.
  */
 public class DocumentUtils {
 
-    private ArrayDeque<DataModelTreeNode> pathQueue;
+    /**
+     * Stores array indices to resolve list indices in the {@link Document}. The order of the
+     * indices stored in the queue must be the same as it would occur in a json path.
+     */
     private ArrayDeque<Integer> arrayIndexQueue;
+
+    /**
+     * Represents a slice of the {@link de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree} in the
+     * order from the root to the leaves.
+     */
     private List<DataModelTreeNode> pathList;
 
-    public DocumentUtils(JsonPath jsonPath) {
-
-    }
-
-    public DocumentUtils(String jsonPath) {
-
-    }
-
+    /**
+     * Returns a dequeue of array indices of all prefecessor nodes of a given {@link DataModelTreeNode}
+     * with each index being the maximum possible index according to the
+     * {@link de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree} array size information.
+     *
+     * @param node The DataModelTreeNode for which the max predecessor array indices should be calculated.
+     * @return Dequeue with all maximum predecessor array indices in the order from root node.
+     */
     public static ArrayDeque<Integer> getMaxArrayIndexOfQueueOfNode(DataModelTreeNode node) {
         // Get all the predecessors of the node and add the node itself to it
         List<DataModelTreeNode> predecessorsOfNode = node.getPredecessors();
@@ -39,13 +47,20 @@ public class DocumentUtils {
         for (int i = predecessorsOfNode.size() - 1; i >= 0; i--) {
             DataModelTreeNode currNode = predecessorsOfNode.get(i);
             if (currNode.getType() == IoTDataTypes.ARRAY) {
-                maxArrayIndexQueue.addFirst(currNode.getSize()-1);
+                maxArrayIndexQueue.addFirst(currNode.getSize() - 1);
             }
         }
 
         return maxArrayIndexQueue;
     }
 
+    /**
+     * Creates a new instance to access {@link Document} (read and modify)
+     *
+     * @param node            The {@link DataModelTreeNode} which represents the data position to retrieve/modify.
+     * @param arrayIndexQueue Array indices dequeue to resolve list indices in the {@link Document}. The order of the
+     *                        indices stored in the queue must be the same as it would occur in a json path.
+     */
     public DocumentUtils(DataModelTreeNode node, ArrayDeque<Integer> arrayIndexQueue) {
         // Get all the predecessors of the node and add the node itself to it
         List<DataModelTreeNode> predecessorsOfNode = node.getPredecessors();
@@ -58,15 +73,17 @@ public class DocumentUtils {
 
         this.pathList = predecessorsOfNode;
 
-        // Add nodes to a queue
-        this.pathQueue = new ArrayDeque<>();
-        for (int i = predecessorsOfNode.size() - 1; i >= 0; i--) {
-            pathQueue.addFirst(predecessorsOfNode.get(i));
-        }
-
         this.arrayIndexQueue = arrayIndexQueue;
     }
 
+    /**
+     * Retrieves all objects of a {@link Document} which correspond to a certain data model tree
+     * position, specified by a {@link DataModelTreeNode}
+     * (passed with constructor call: e.g. {@link DocumentUtils#DocumentUtils(DataModelTreeNode, ArrayDeque)}).
+     *
+     * @param docToRead The document which should be read at a specified position.
+     * @return A list of all objects stored in the docToRead which belong to the DataModelTreeNode.
+     */
     public List<Object> getValuesByDataModelTreeNode(Document docToRead) {
         List<Object> retObjects = new ArrayList<>();
 
@@ -76,7 +93,15 @@ public class DocumentUtils {
         return retObjects;
     }
 
-    public  List<Object> editValuesByDataModelTreeNode(Document docToRead, Object newValue) {
+    /**
+     * Overwrites the objects at the specified {@link DataModelTreeNode} position of a document with a new object.
+     *
+     * @param docToRead The document which should be modified.
+     * @param newValue  The new object which should replace the object(s) at the specified {@link DataModelTreeNode}
+     *                  position (was specified by constructor call).
+     * @return A list of all objects which belong to the DataModelTreeNode.
+     */
+    public List<Object> editValuesByDataModelTreeNode(Document docToRead, Object newValue) {
         List<Object> retObjects = new ArrayList<>();
 
         extractNextDataStructure(retObjects, 0, docToRead, -1, arrayIndexQueue, newValue);
@@ -84,6 +109,21 @@ public class DocumentUtils {
         return retObjects;
     }
 
+    /**
+     * Method used to recursively iterate over a {@link Document} and edit entries of this document at
+     * specified positions.
+     *
+     * @param returnObjects The list which should contain at the end of the recursion all objects at the specified
+     *                      DataModelTreeNode position.
+     * @param nextNodeIndex Index which acts as pointer for the {@link DocumentUtils#pathList} to keep track of the current
+     *                      node which is handled.
+     * @param currentDataStructureToHandle Data structure which was handled at the last recursion step which is either
+     *                                     a single Java object representing a primtive type or an ArrayList.
+     * @param arrIndex The next array index to consider.
+     * @param arrIndicesQueue The {@link DocumentUtils#arrayIndexQueue}.
+     * @param newValueForEdit If not null this object will be used to overwrite all objects which are retrieved at the
+     *                        specified DataModelTreeNode position.
+     */
     private void extractNextDataStructure(List<Object> returnObjects, int nextNodeIndex, Object currentDataStructureToHandle, int arrIndex, ArrayDeque<Integer> arrIndicesQueue, Object newValueForEdit) {
         DataModelTreeNode node = this.pathList.get(nextNodeIndex);
 
@@ -126,11 +166,11 @@ public class DocumentUtils {
                 // Wildcard mode
 
                 for (int i = 0; i < node.getSize(); i++) {
-                    extractNextDataStructure(returnObjects, nextNodeIndex+1, nextDataStructureToHandle, i, arrIndicesQueue, newValueForEdit);
+                    extractNextDataStructure(returnObjects, nextNodeIndex + 1, nextDataStructureToHandle, i, arrIndicesQueue, newValueForEdit);
                 }
             } else {
                 // No wildcard
-                extractNextDataStructure(returnObjects, nextNodeIndex+1, nextDataStructureToHandle, chosenAccessIndexForChild, arrIndicesQueue, newValueForEdit);
+                extractNextDataStructure(returnObjects, nextNodeIndex + 1, nextDataStructureToHandle, chosenAccessIndexForChild, arrIndicesQueue, newValueForEdit);
             }
 
         } else if (typeOfNode == IoTDataTypes.OBJECT) {
@@ -143,7 +183,7 @@ public class DocumentUtils {
                 nextDataStructureToHandle = (Document) ((List<Object>) currentDataStructureToHandle).get(arrIndex);
             }
 
-            extractNextDataStructure(returnObjects, nextNodeIndex+1, nextDataStructureToHandle, -1, arrIndicesQueue, newValueForEdit);
+            extractNextDataStructure(returnObjects, nextNodeIndex + 1, nextDataStructureToHandle, -1, arrIndicesQueue, newValueForEdit);
         }
     }
 
