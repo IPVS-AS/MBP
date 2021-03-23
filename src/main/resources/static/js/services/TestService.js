@@ -126,7 +126,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * @returns {*}
          */
         function editConfig(testId, useNewData) {
-            return HttpService.postRequest(ENDPOINT_URI + '/test-details/editConfig/' + testId, useNewData).success(function success(response) {
+            return HttpService.postRequest(ENDPOINT_URI + '/test-details/editConfig/' + testId, useNewData).then(function success(response) {
                 NotificationService.notify('Successfully updated.', 'success');
                 return response.success;
             });

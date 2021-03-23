@@ -8221,13 +8221,13 @@ fieldset[disabled] .form-control {
 }
 
 .wizard > .steps .current a {
-    background: #2184be;
+    background: #004191;
     color: #fff;
     cursor: default;
 }
 
 .wizard > .steps .current a:hover, .wizard > .steps .current a:active {
-    background: #2184be;
+    background: #004191;
     color: #fff;
     cursor: default;
 }
@@ -8279,7 +8279,7 @@ fieldset[disabled] .form-control {
 }
 
 .wizard > .actions a {
-    background: #009688;
+    background: #004191;
     color: #fff;
     display: block;
     padding: 0.5em 1em;
@@ -8291,7 +8291,7 @@ fieldset[disabled] .form-control {
 }
 
 .wizard > .actions a:hover, .wizard > .actions a:active {
-    background: #009688;
+    background: #084da0;
     color: #fff;
     display: block;
     padding: 0.5em 1em;
@@ -8426,11 +8426,11 @@ fieldset[disabled] .form-control {
 }
 
 .wizard .steps .done a {
-    background-color: rgba(0, 150, 136, 0.6);
+    background-color: rgba(0, 81, 158, 0.6);
 }
 
 .wizard .steps .done a:hover, .wizard .steps .done a:active, .wizard .steps .done a:focus {
-    background-color: rgba(0, 150, 136, 0.5);
+    background-color: rgba(0, 81, 158, 0.5);
 }
 
 .wizard .steps .error a {
@@ -8438,11 +8438,11 @@ fieldset[disabled] .form-control {
 }
 
 .wizard .steps .current a {
-    background-color: #009688;
+    background-color: #004191;
 }
 
 .wizard .steps .current a:active, .wizard .steps .current a:focus, .wizard .steps .current a:hover {
-    background-color: #009688;
+    background-color: #004191;
 }
 
 /* Waves ======================================= */

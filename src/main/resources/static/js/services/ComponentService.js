@@ -93,7 +93,7 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
          * @returns {*}
          */
         function getValueLogStats(componentId, component, unit) {
-            var parameters = {};
+            let parameters = {};
 
             //Check if unit was provided
             if (unit) {
@@ -115,7 +115,7 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
          * @returns {*}
          */
         function getValueLogs(componentId, component, pageDetails, unit) {
-            var parameters = pageDetails;
+            let parameters = pageDetails;
             //Check if unit was provided
             if (unit) {
                 parameters.unit = unit;
@@ -153,19 +153,19 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
          */
         function processValueLogs(receivedLogs) {
             //Array that stores the finally formatted value logs
-            var finalValues = [];
+            let finalValues = [];
 
             console.log("Start processing value logs")
 
             //Iterate over all received value logs
-            for (var i = 0; i < receivedLogs.length; i++) {
+            for (let i = 0; i < receivedLogs.length; i++) {
                 //Extract value and time for the current log and format them
-                var value = receivedLogs[i].value;
-                var time = receivedLogs[i].time.epochSecond * 1000;
+                let value = receivedLogs[i].value;
+                let time = receivedLogs[i].time.epochSecond * 1000;
                 time = dateToString(new Date(time));
 
                 //Create a (time, value) tuple and add it to the array
-                var tuple = [time, value];
+                let tuple = [time, value];
                 finalValues.push(tuple);
             }
 
@@ -176,7 +176,6 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             return finalValues;
         }
 
-        // TODO Handle also actuators and monitoring operators...
         /**
          * [Public]
          * Performs a server put request to update the active visualizations of one component.
@@ -189,7 +188,6 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             return HttpService.putRequest(URL_PREFIX + URL_ACTIVE_VISUALIZATION_SUFFIX + "/" + componentId, activeVisualization);
         }
 
-        // TODO handle also actuators, monitoring operators...
         /**
          * [Public]
          * Performs a server delete request to remove an active visualization from a components document.
@@ -210,16 +208,16 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
          */
         function dateToString(date) {
             //Retrieve all properties from the date object
-            var year = date.getFullYear();
-            var month = '' + (date.getMonth() + 1);
-            var day = '' + date.getDate();
-            var hours = '' + date.getHours();
-            var minutes = '' + date.getMinutes();
-            var seconds = '' + date.getSeconds();
+            let year = date.getFullYear();
+            let month = '' + (date.getMonth() + 1);
+            let day = '' + date.getDate();
+            let hours = '' + date.getHours();
+            let minutes = '' + date.getMinutes();
+            let seconds = '' + date.getSeconds();
 
             //Add a leading zero (if necessary) to all properties except the year
-            var values = [day, month, hours, minutes, seconds];
-            for (var i = 0; i < values.length; i++) {
+            let values = [day, month, hours, minutes, seconds];
+            for (let i = 0; i < values.length; i++) {
                 if (values[i].length < 2) {
                     values[i] = '0' + values[i];
                 }

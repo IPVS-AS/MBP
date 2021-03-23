@@ -12,7 +12,7 @@ app.controller('MonitoringOperatorListController',
                 'bg-amber', 'bg-orange', 'bg-deep-orange'];
 
 
-            var vm = this;
+            let vm = this;
 
             /**
              * Initializing function, sets up basic things.
@@ -25,8 +25,8 @@ app.controller('MonitoringOperatorListController',
                 }
 
                 //Extend device types for color
-                for (var i = 0; i < deviceTypesList.length; i++) {
-                    var colorIndex = i % DEVICE_TYPES_COLORS.length;
+                for (let i = 0; i < deviceTypesList.length; i++) {
+                    let colorIndex = i % DEVICE_TYPES_COLORS.length;
                     deviceTypesList[i].color = DEVICE_TYPES_COLORS[colorIndex];
                 }
 
@@ -52,16 +52,16 @@ app.controller('MonitoringOperatorListController',
                 }
 
                 //List to collect all type ids
-                var typesIdList = [];
+                let typesIdList = [];
 
                 //Iterate over all device type objects of this operator
-                for (var i = 0; i < operator.deviceTypes.length; i++) {
+                for (let i = 0; i < operator.deviceTypes.length; i++) {
                     //Add device type id to list
                     typesIdList.push(operator.deviceTypes[i].id);
 
                     //Find and add matching color for this device type
                     operator.deviceTypes[i].color = 'label-default';
-                    for (var j = 0; j < deviceTypesList.length; j++) {
+                    for (let j = 0; j < deviceTypesList.length; j++) {
                         if (deviceTypesList[j].id === operator.deviceTypes[i].id) {
                             operator.deviceTypes[i].color = deviceTypesList[j].color;
                             break;

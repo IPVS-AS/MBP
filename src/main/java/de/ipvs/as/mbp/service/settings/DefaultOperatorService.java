@@ -157,6 +157,9 @@ public class DefaultOperatorService {
                     newOperator.addRoutine(newCode);
                 }
 
+                //Replace possibly bad line breaks in the operator files
+                newOperator.replaceLineBreaks();
+
                 //Insert new operator into repository
                 operatorRepository.insert(newOperator);
                 inserted = true;

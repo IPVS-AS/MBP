@@ -4,10 +4,7 @@ import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.domain.user.UserAuthData;
-import de.ipvs.as.mbp.error.EntityNotFoundException;
-import de.ipvs.as.mbp.error.InvalidPasswordException;
-import de.ipvs.as.mbp.error.MBPException;
-import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
+import de.ipvs.as.mbp.error.*;
 import de.ipvs.as.mbp.repository.UserRepository;
 import de.ipvs.as.mbp.repository.projection.UserExcerpt;
 import de.ipvs.as.mbp.service.UserService;
@@ -97,9 +94,14 @@ public class RestUserController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 403, message = "Invalid password!"),
             @ApiResponse(code = 404, message = "User or requesting user not found!")})
-    public ResponseEntity<User> authenticate(@RequestBody @ApiParam(value = "Authentication data", required = true) UserAuthData authData) throws InvalidPasswordException {
+    public ResponseEntity<User> authenticate(@RequestBody @ApiParam(value = "Authentication data", required = true) UserAuthData authData) throws InvalidPasswordException, UserNotLoginableException {
         // Retrieve user from database
         User user = userService.getForUsername(authData.getUsername().toLowerCase(Locale.ENGLISH));
+
+        //Check if login into user is possible
+        if (!user.isLoginable()) {
+            throw new UserNotLoginableException("This user is a system user and thus login is impossible.");
+        }
 
         // Check password
         if (userService.checkPassword(user.getId(), authData.getPassword())) {

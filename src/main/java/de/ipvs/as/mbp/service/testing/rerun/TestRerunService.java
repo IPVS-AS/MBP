@@ -93,12 +93,12 @@ public class TestRerunService {
      * @param useNewData information if a test should be repeated
      * @return the updated configuration list
      */
-    public List<List<ParameterInstance>> editUseNewData(String testId, String useNewData) {
+    public List<List<ParameterInstance>> editUseNewData(String testId, boolean useNewData) {
         TestDetails testDetails = testDetailsRepository.findById(testId).get();
         List<List<ParameterInstance>> configList = testDetails.getConfig();
 
 
-        if (!Boolean.parseBoolean(useNewData)) {
+        if (!useNewData) {
             testDetails.setUseNewData(false);
 
         } else {
@@ -112,13 +112,13 @@ public class TestRerunService {
         for (List<ParameterInstance> config : configList) {
             for (ParameterInstance parameterInstance : config) {
                 if (parameterInstance.getName().equals("useNewData")) {
-                    parameterInstance.setValue(Boolean.valueOf(useNewData));
+                    parameterInstance.setValue(useNewData);
                 }
             }
         }
 
         testDetails.setConfig(configList);
-        testDetails.setUseNewData(Boolean.parseBoolean(useNewData));
+        testDetails.setUseNewData(useNewData);
 
         // save the changes in the database
         testDetailsRepository.save(testDetails);
@@ -207,7 +207,7 @@ public class TestRerunService {
         String newSensorName = RERUN_IDENTIFIER + realSensorName;
 
         try {
-            if (sensorRepository.findByName(newSensorName) == null) {
+            if (!sensorRepository.findByName(newSensorName).isPresent()) {
                 if (rerunOperator != null && testingDevice != null) {
                     // Set all relevant information
                     newSensor.setName(newSensorName);
@@ -260,7 +260,7 @@ public class TestRerunService {
         boolean notRegister = false;
 
         for (Rule rule : applicationRules) {
-            if (ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()) == null) {
+            if (!ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).isPresent()) {
                 // create new rule
                 Rule rerunRule = new Rule();
                 rerunRule.setName(RERUN_IDENTIFIER + rule.getName());
@@ -268,7 +268,7 @@ public class TestRerunService {
                 rerunRule.setActions(rule.getActions());
 
                 // create/adjust trigger querey
-                if (ruleTriggerRepository.findByName(RERUN_IDENTIFIER + rule.getTrigger().getName()) == null) {
+                if (!ruleTriggerRepository.findByName(RERUN_IDENTIFIER + rule.getTrigger().getName()).isPresent()) {
                     // create new trigger
                     RuleTrigger newTrigger = new RuleTrigger();
                     newTrigger.setDescription(rule.getTrigger().getDescription());
@@ -347,7 +347,7 @@ public class TestRerunService {
     public ResponseEntity<String> addRerunOperators() {
         ResponseEntity<String> response;
         try {
-            if (operatorRepository.findByName(RERUN_OPERATOR) == null) {
+            if (!operatorRepository.findByName(RERUN_OPERATOR).isPresent()) {
                 //Call corresponding service function
                 rerunOperatorService.addRerunOperators();
                 response = new ResponseEntity<>("Adapter successfully created", HttpStatus.OK);

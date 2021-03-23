@@ -97,6 +97,9 @@ public class RestOperatorController {
                 .setUnit(requestDTO.getUnit())
                 .setAccessControlPolicyIds(requestDTO.getAccessControlPolicyIds());
 
+        //Replace bad line breaks of plain text operator files
+        operator.replaceLineBreaks();
+
         // Save operator in the database
         Operator createdOperator = userEntityService.create(operatorRepository, operator);
         return ResponseEntity.ok(userEntityService.entityToEntityModel(createdOperator));

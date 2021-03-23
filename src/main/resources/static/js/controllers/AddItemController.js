@@ -32,8 +32,10 @@ app.controller('AddItemController', ['$rootScope', 'entity', 'addItem', 'Notific
                     vm.item.errors = response.responseJSON.detailMessages || {};
                 }
             ).then(function () {
-                //Trigger angular $watch checks
-                $rootScope.$digest();
+                //Trigger angular digest for $watch checks if not already in progress
+                if (!$rootScope.$$phase) {
+                    $rootScope.$digest();
+                }
             });
         }
 

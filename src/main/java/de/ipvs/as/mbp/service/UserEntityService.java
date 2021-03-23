@@ -5,9 +5,7 @@ import de.ipvs.as.mbp.domain.access_control.*;
 import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
-import de.ipvs.as.mbp.error.EntityNotFoundException;
-import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
-import de.ipvs.as.mbp.error.MissingPermissionException;
+import de.ipvs.as.mbp.error.*;
 import de.ipvs.as.mbp.repository.ACPolicyRepository;
 import de.ipvs.as.mbp.repository.UserEntityRepository;
 import de.ipvs.as.mbp.service.access_control.ACPolicyEvaluationService;
@@ -114,6 +112,9 @@ public class UserEntityService {
         // Retrieve the entity from the database
         E entity = repository.findById(entityId).orElseThrow(() -> new EntityNotFoundException("Entity", entityId));
 
+        //User must be loginable
+        requireLoginable();
+
         // Check owner
         if (!checkAdmin() && !checkOwner(entity)) {
             // Not the owner -> check policies
@@ -145,9 +146,13 @@ public class UserEntityService {
         return Optional.empty();
     }
 
-    public <E extends UserEntity> E create(UserEntityRepository<E> repository, E entity) throws EntityNotFoundException {
+    public <E extends UserEntity> E create(UserEntityRepository<E> repository, E entity) throws EntityNotFoundException
+    {
         //Retrieve the currently logged in user from the database
         User user = userService.getLoggedInUser();
+
+        //User must be loginable
+        requireLoginable(user);
 
         //Set owner user manually
         entity.setOwner(user);
@@ -197,6 +202,9 @@ public class UserEntityService {
         // Retrieve the entity from the database
         E entity = getForId(repository, entityId);
 
+        //User must be loginable
+        requireLoginable();
+
         if ((!checkAdmin() && !checkOwner(entity))) {
             // Not the owner -> check policies
             requirePermission(repository, entityId, ACAccessType.DELETE, accessRequest);
@@ -230,13 +238,16 @@ public class UserEntityService {
         validators.forEach(v -> v.validateDeletable(entity));
     }
 
-    public <E extends IACRequestedEntity> List<E> filterForAdminOwnerAndPolicies(Supplier<List<E>> entitiesSupplier, ACAccessType accessType, ACAccessRequest accessRequest) {
+    public <E extends IACRequestedEntity> List<E> filterForAdminOwnerAndPolicies(Supplier<List<E>> entitiesSupplier, ACAccessType accessType, ACAccessRequest accessRequest)  {
         return filterForAdminOwnerAndPolicies(entitiesSupplier.get(), accessType, accessRequest);
     }
 
-    public <E extends IACRequestedEntity> List<E> filterForAdminOwnerAndPolicies(List<E> entities, ACAccessType accessType, ACAccessRequest accessRequest) {
+    public <E extends IACRequestedEntity> List<E> filterForAdminOwnerAndPolicies(List<E> entities, ACAccessType accessType, ACAccessRequest accessRequest)  {
         // Retrieve the currently logged in user from the database
         User user = userService.getLoggedInUser();
+
+        //User must be loginable
+        requireLoginable(user);
 
         // Admin users are allowed to access everything
         if (user.isAdmin()) {
@@ -306,6 +317,34 @@ public class UserEntityService {
 
     public <E extends IACRequestedEntity> boolean checkOwner(User user, E entity) {
         return checkOwner(user.getId(), entity);
+    }
+
+    public void requireSystemUser() throws NoSystemUserException {
+        requireSystemUser(userService.getLoggedInUser());
+    }
+
+    public void requireSystemUser(String userId) throws NoSystemUserException {
+        requireSystemUser(userService.getForId(userId));
+    }
+
+    public void requireSystemUser(User user) throws NoSystemUserException {
+        if (!user.isSystemUser()) {
+            throw new NoSystemUserException();
+        }
+    }
+
+    public void requireLoginable()  {
+        requireLoginable(userService.getLoggedInUser());
+    }
+
+    public void requireLoginable(String userId)  {
+        requireLoginable(userService.getForId(userId));
+    }
+
+    public void requireLoginable(User user){
+        if (!user.isLoginable()) {
+            throw new UserNotLoginableException();
+        }
     }
 
     public <E extends UserEntity> void requirePermission(UserEntityRepository<E> repository, String entityId, ACAccessType accessType, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
