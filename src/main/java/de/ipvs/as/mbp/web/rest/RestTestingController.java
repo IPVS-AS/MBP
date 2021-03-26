@@ -3,11 +3,13 @@ package de.ipvs.as.mbp.web.rest;
 
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.domain.testing.TestDetailsCreateValidator;
 import de.ipvs.as.mbp.domain.testing.TestDetailsDTO;
+import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.repository.RuleRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.repository.TestDetailsRepository;
@@ -111,7 +113,7 @@ public class RestTestingController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
             @ApiResponse(code = 409, message = "Test already exists!")})
     public ResponseEntity<EntityModel<TestDetails>> create(
-            @RequestBody TestDetailsDTO requestDto) {
+            @RequestBody TestDetailsDTO requestDto) throws EntityNotFoundException {
         List<Rule> rules = new ArrayList<>();
         List<Sensor> sensors = new ArrayList<>();
 
@@ -138,10 +140,10 @@ public class RestTestingController {
         testDetails.setRules(rules);
         testDetails.setSensor(sensors);
 
-        testDetailsCreateValidator.validateCreatable(testDetails);
         // Save test in the database
-        testDetailsRepository.save(testDetails);
-        return ResponseEntity.ok(userEntityService.entityToEntityModel(testDetails));
+        TestDetails createdTest = userEntityService.create(testDetailsRepository, testDetails);
+
+        return ResponseEntity.ok(userEntityService.entityToEntityModel(createdTest));
     }
 
 

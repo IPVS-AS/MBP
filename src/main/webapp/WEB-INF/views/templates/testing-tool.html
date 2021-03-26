@@ -53,6 +53,7 @@
                         <th>Sensor(s)</th>
                         <th>Rule(s)</th>
                         <th>Latest Test Report</th>
+                        <th>Owner</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -71,6 +72,7 @@
                                 </button>
                             </form>
                         </td>
+                        <td>{{item.ownerName ? item.ownerName : "None"}}</td>
                         <td>
                             <form ng-submit="deleteTestCtrl.deleteItem()" style="margin-top: 3px;">
                                 <button type="submit" class="btn btn-danger m-t-0 waves-effect"
@@ -1313,183 +1315,6 @@
                                             </div>
                                         </td>
                                     </tr>
-                                    <!--
-                                    <tr>
-                                        <td>GPS Sensor</td>
-                                        <td>Sensor Simulator that simulates sensor data of a GPS sensor. The
-                                            simulated data are movements of a human or animal to or from a set point
-                                            of position.
-                                        </td>
-                                        <td>
-                                            <div ng-switch="gps"
-                                                 ng-click="ctrl.checkSensorReg('TestingGPSSensor')"
-                                                 class="clickable">
-                                                <div ng-switch-when="LOADING">
-                                                    <div class="preloader pl-size-xs">
-                                                        <div class="spinner-layer pl-blue">
-                                                            <div class="circle-clipper left">
-                                                                <div class="circle"></div>
-                                                            </div>
-                                                            <div class="circle-clipper right">
-                                                                <div class="circle"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div ng-switch-when="NOT_REGISTERED">
-                                                    <span class="label label-danger">Not Registered</span>
-                                                </div>
-                                                <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
-                                                    <form ng-submit="ctrl.registerTestingDevice()">
-                                                        <button type="submit"
-                                                                class="btn bg-blue m-t-0 waves-effect"
-                                                                ng-click="ctrl.registerThreeDimSensor('TestingGPSSensor')">
-                                                            Register
-                                                        </button>
-                                                    </form>
-
-                                                </div>
-                                                <div ng-switch-when="REGISTERED">
-                                                    <span class="label label-success">Registered</span>
-                                                </div>
-                                                <div ng-switch-default>
-                                                    <span class="label label-default">Unknown</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>GPS Sensor (Planned)</td>
-                                        <td>Sensor Simulator that simulates sensor data of a GPS sensor, where the
-                                            simulation time and number of events and anomalies can be scheduled. The
-                                            simulated data are movements of a human or animal to or from a set point
-                                            of position.
-                                        </td>
-                                        <td>
-                                            <div ng-switch="gpsPl"
-                                                 ng-click="ctrl.checkSensorReg('TestingGPSSensorPl')"
-                                                 class="clickable">
-                                                <div ng-switch-when="LOADING">
-                                                    <div class="preloader pl-size-xs">
-                                                        <div class="spinner-layer pl-blue">
-                                                            <div class="circle-clipper left">
-                                                                <div class="circle"></div>
-                                                            </div>
-                                                            <div class="circle-clipper right">
-                                                                <div class="circle"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div ng-switch-when="NOT_REGISTERED">
-                                                    <span class="label label-danger">Not Registered</span>
-                                                </div>
-                                                <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
-                                                    <form ng-submit="ctrl.registerTestingDevice()">
-                                                        <button type="submit"
-                                                                class="btn bg-blue m-t-0 waves-effect"
-                                                                ng-click="ctrl.registerThreeDimSensor('TestingGPSSensorPl')">
-                                                            Register
-                                                        </button>
-                                                    </form>
-
-                                                </div>
-                                                <div ng-switch-when="REGISTERED">
-                                                    <span class="label label-success">Registered</span>
-                                                </div>
-                                                <div ng-switch-default>
-                                                    <span class="label label-default">Unknown</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Acceleration Sensor</td>
-                                        <td>Sensor Simulator that simulates sensor data of a Acceleration Sensor. It
-                                            simulates the idle state or the movement/acceleration of an object.
-                                        </td>
-                                        <td>
-                                            <div ng-switch="acc"
-                                                 ng-click="ctrl.checkSensorReg('TestingAccelerationSensor')"
-                                                 class="clickable">
-                                                <div ng-switch-when="LOADING">
-                                                    <div class="preloader pl-size-xs">
-                                                        <div class="spinner-layer pl-blue">
-                                                            <div class="circle-clipper left">
-                                                                <div class="circle"></div>
-                                                            </div>
-                                                            <div class="circle-clipper right">
-                                                                <div class="circle"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div ng-switch-when="NOT_REGISTERED">
-                                                    <span class="label label-danger">Not Registered</span>
-                                                </div>
-                                                <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
-                                                    <form ng-submit="ctrl.registerTestingDevice()">
-                                                        <button type="submit"
-                                                                class="btn bg-blue m-t-0 waves-effect"
-                                                                ng-click="ctrl.registerThreeDimSensor('TestingAccelerationSensor')">
-                                                            Register
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                                <div ng-switch-when="REGISTERED">
-                                                    <span class="label label-success">Registered</span>
-                                                </div>
-                                                <div ng-switch-default>
-                                                    <span class="label label-default">Unknown</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Acceleration Sensor (Planned)</td>
-                                        <td>Sensor Simulator that simulates sensor data of a Acceleration Sensor,
-                                            where the simulation time and number of events and anomalies can be
-                                            scheduled. It
-                                            simulates the idle state or the movement/acceleration of an object.
-                                        </td>
-                                        <td>
-                                            <div ng-switch="accPl"
-                                                 ng-click="ctrl.checkSensorReg('TestingAccelerationSensorPl')"
-                                                 class="clickable">
-                                                <div ng-switch-when="LOADING">
-                                                    <div class="preloader pl-size-xs">
-                                                        <div class="spinner-layer pl-blue">
-                                                            <div class="circle-clipper left">
-                                                                <div class="circle"></div>
-                                                            </div>
-                                                            <div class="circle-clipper right">
-                                                                <div class="circle"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div ng-switch-when="NOT_REGISTERED">
-                                                    <span class="label label-danger">Not Registered</span>
-                                                </div>
-                                                <div style="margin-top: 5px;" ng-switch-when="NOT_REGISTERED">
-                                                    <form ng-submit="ctrl.registerTestingDevice()">
-                                                        <button type="submit"
-                                                                class="btn bg-blue m-t-0 waves-effect"
-                                                                ng-click="ctrl.registerThreeDimSensor('TestingAccelerationSensorPl')">
-                                                            Register
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                                <div ng-switch-when="REGISTERED">
-                                                    <span class="label label-success">Registered</span>
-                                                </div>
-                                                <div ng-switch-default>
-                                                    <span class="label label-default">Unknown</span>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
--->
                                     </tbody>
                                 </table>
 

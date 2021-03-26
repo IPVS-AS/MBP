@@ -53,7 +53,7 @@
                                 <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>&nbsp;
                                 <i ng-show="item.wasModelled" class="material-icons" style="vertical-align: bottom;">view_quilt</i>
                             </td>
-                            <td class="align-center" ng-if="item.name.indexOf('TESTING_') === -1">
+                            <td class="align-center" ng-if="item.name.indexOf('TESTING_') === -1 ">
                                 <div ng-switch="item.state" ng-click="item.reloadState()" class="clickable">
                                     <div ng-switch-when="LOADING">
                                         <div class="preloader pl-size-xs">
