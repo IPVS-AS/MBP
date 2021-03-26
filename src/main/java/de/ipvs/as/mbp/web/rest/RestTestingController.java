@@ -2,6 +2,7 @@ package de.ipvs.as.mbp.web.rest;
 
 
 import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
@@ -10,6 +11,7 @@ import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.domain.testing.TestDetailsCreateValidator;
 import de.ipvs.as.mbp.domain.testing.TestDetailsDTO;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
+import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.RuleRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.repository.TestDetailsRepository;
@@ -153,8 +155,13 @@ public class RestTestingController {
             @ApiResponse(code = 401, message = "Not authorized to delete the test!"),
             @ApiResponse(code = 404, message = "Test or requesting user not found!")})
     public ResponseEntity<Void> delete(
-            @PathVariable("testId") String testId) {
-        testEngine.deleteTest(testId);
+            @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+            @PathVariable("testId") String testId) throws MissingPermissionException, EntityNotFoundException {
+        // Parse the access-request information
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+        // Delete the device (includes access-control)
+        userEntityService.deleteWithAccessControlCheck(testDetailsRepository, testId, accessRequest);
         return ResponseEntity.noContent().build();
     }
 
