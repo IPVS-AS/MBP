@@ -42,7 +42,7 @@ public class MonitoringHelper {
      * @param monitoringOperatorId The id of the monitoring operator to wrap
      * @return Null, if either the device or the monitoring operator could not be found
      * in their repositories or the user is not authorized for them; otherwise the deployable monitoring component
-     * @throws EntityNotFoundException
+     * @throws EntityNotFoundException In case an entity was not found
      */
     public MonitoringComponent createMonitoringComponent(String deviceId, String monitoringOperatorId) throws EntityNotFoundException {
         // Retrieve corresponding device and operator from the database

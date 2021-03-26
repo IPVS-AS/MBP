@@ -33,7 +33,7 @@ public class TestRerunOperatorService {
     private ServletContext servletContext;
 
     @Autowired
-    private List<String> rerunOperatorWhitelist;
+    private List<String> defaultRerunOperatorWhitelist;
 
     @Autowired
     private OperatorRepository operatorRepository;
@@ -49,7 +49,7 @@ public class TestRerunOperatorService {
         ResponseEntity responseEntity = null;
 
         //Iterate over all default operator paths
-        for (String operatorPath : rerunOperatorWhitelist) {
+        for (String operatorPath : defaultRerunOperatorWhitelist) {
             //Create new operator object to add it later to the repository
             Operator newOperator = new Operator();
 

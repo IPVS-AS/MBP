@@ -14,26 +14,29 @@ class AnalogInputReader(object):
     self.spi.max_speed_hz = 1000000 # 1 MHz for SPI
     self.adc_channel = adc_channel
 
-  def read_adc(self, ad_pin):
+  def read_adc(self):
     # read SPI data from MCP3004 chip, 4 possible adc’s (0 thru 3)
-    if ((ad_pin > 3) or (ad_pin < 0)):
+    if ((self.adc_channel > 3) or (self.adc_channel < 0)):
       return -1
-    r = self.spi.xfer2([1,8+ad_pin <<4,0])
+    r = self.spi.xfer2([1,8+self.adc_channel <<4,0])
     adcout = ((r[1] &3) <<8)+r[2]
     return adcout
 
-  def get_level(self, ad_pin):
-    value = self.read_adc(ad_pin)
+  def get_level(self):
+    value = self.read_adc()
     volts = (value*3.3)/1024
     return (volts, value)
 
   def read_temperature(self):
-    v0 = self.get_level(self.adc_channel)
+    v0 = self.get_level()
     temperature = ((v0[0] * 100) - 50) # celsius
     return temperature
 
   def read_light(self):
     """light dependent resistor (LDR): resistence of the light sensor decreases when light intensity increases"""
-    v0 = self.get_level(self.adc_channel)
-    resistenceSensor = ((1023 - v0[1])*10)/v0[1]
-    return resistenceSensor
+    v0 = self.get_level()
+    if v0[1] > 0:
+      resistenceSensor = ((1023 - v0[1])*10)/v0[1]
+      return resistenceSensor
+    else:
+      return 0

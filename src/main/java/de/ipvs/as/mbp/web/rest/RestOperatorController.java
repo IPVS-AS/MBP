@@ -82,6 +82,9 @@ public class RestOperatorController {
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @ApiParam(value = "Page parameters", required = true) Pageable pageable,
             @RequestBody Operator operator) throws EntityAlreadyExistsException, EntityNotFoundException {
+        //Replace bad line breaks of plain text operator files
+        operator.replaceLineBreaks();
+
         // Save operator in the database
         Operator createdOperator = userEntityService.create(operatorRepository, operator);
         return ResponseEntity.ok(userEntityService.entityToEntityModel(createdOperator));

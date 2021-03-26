@@ -1,14 +1,18 @@
 
 package de.ipvs.as.mbp.service.receiver;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import de.ipvs.as.mbp.repository.ActuatorRepository;
+import de.ipvs.as.mbp.repository.DeviceRepository;
+import de.ipvs.as.mbp.repository.MonitoringOperatorRepository;
+import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.service.mqtt.MQTTService;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Background service that receives incoming MQTT value log messages that comply to certain topics. The service
@@ -22,18 +26,27 @@ public class ValueLogReceiver {
     private static final String[] SUBSCRIBE_TOPICS = {"device/#", "sensor/#", "actuator/#", "monitoring/#"};
 
     //Set ob observers which want to be notified about incoming value logs
-    private Set<ValueLogReceiverObserver> observerSet;
+    private final Set<ValueLogReceiverObserver> observerSet;
 
     /**
      * Initializes the value logger service.
+     *
+     * @param mqttService                  The MQTTService for receiving MQTT messages (auto-wired)
+     * @param actuatorRepository           Repository in which the actuators are stored (auto-wired)
+     * @param sensorRepository             Repository in which the sensors are stored (auto-wired)
+     * @param deviceRepository             Repository in which the devices are stored (auto-wired)
+     * @param monitoringOperatorRepository Repository in which the monitoring operators are stored (auto-wired)
      */
     @Autowired
-    public ValueLogReceiver(MQTTService mqttService) {
+    public ValueLogReceiver(MQTTService mqttService, ActuatorRepository actuatorRepository,
+                            SensorRepository sensorRepository, DeviceRepository deviceRepository,
+                            MonitoringOperatorRepository monitoringOperatorRepository) {
         //Initialize set of observers
         observerSet = new HashSet<>();
 
         //Create MQTT callback handler
-        ValueLogReceiverArrivalHandler handler = new ValueLogReceiverArrivalHandler(observerSet);
+        ValueLogReceiverArrivalHandler handler = new ValueLogReceiverArrivalHandler(observerSet, actuatorRepository,
+                sensorRepository, deviceRepository, monitoringOperatorRepository);
 
         //Register callback handler at MQTT service
         mqttService.setMqttCallback(handler);

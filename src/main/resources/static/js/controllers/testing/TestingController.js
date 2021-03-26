@@ -333,7 +333,7 @@ app.controller('TestingController',
              * Register the one dimensional Sensor-Simulator for the Test of IoT-Applications.
              */
             function registerOneDimSensor(sensor) {
-                TestService.registerOneDimSensor(sensor).success(function () {
+                TestService.registerOneDimSensor(sensor).then(function () {
                     //Notify the user
                     NotificationService.notify('Entity successfully created.', 'success')
                     checkSensorReg(sensor);

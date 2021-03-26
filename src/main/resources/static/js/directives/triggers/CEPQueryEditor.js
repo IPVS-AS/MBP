@@ -1181,8 +1181,10 @@ app.directive('cepQueryEditor', [function () {
                     }
 
                     //Apply styling
-                    $('button[data-add="rule"]').html('<i class="material-icons">add</i> Condition');
-                    $('button[data-add="group"]').html('<i class="material-icons">add_circle_outline</i> Group');
+                    $('button[data-add="rule"]').html('<i class="material-icons">add</i> Condition')
+                        .removeClass("btn-success").addClass("bg-mbp-blue").css('color', 'white');
+                    $('button[data-add="group"]').html('<i class="material-icons">add_circle_outline</i> Group')
+                        .removeClass("btn-success").addClass("bg-mbp-blue").css('color', 'white');
                     $('button[data-delete="rule"]').html('<i class="material-icons">delete</i>');
                     $('button[data-delete="group"]').html('<i class="material-icons">delete_forever</i> Group');
 

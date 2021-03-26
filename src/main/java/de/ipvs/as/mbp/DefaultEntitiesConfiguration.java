@@ -43,18 +43,6 @@ public class DefaultEntitiesConfiguration {
     }
 
     /**
-     * Creates a bean representing a whitelist of paths to directories of operators that are used
-     * to rerun a test in the testing-tool.
-     *
-     * @return The path whitelist bean
-     */
-    @Bean(name = "rerunOperatorWhitelist")
-    public List<String> rerunOperatorWhitelist() {
-        List<String> operatorPaths = Arrays.asList("/operators/extraction/simulators/rerun_adapter");
-        return Collections.unmodifiableList(operatorPaths);
-    }
-
-    /**
      * Creates a bean representing a whitelist of paths to directories of operators that are supposed
      * to be available as default operators for the testing tool.
      *
@@ -71,6 +59,17 @@ public class DefaultEntitiesConfiguration {
         return Collections.unmodifiableList(operatorPaths);
     }
 
+    /**
+     * Creates a bean representing a whitelist of paths to directories of operators that are supposed
+     * to be available as default operators for test reruns.
+     *
+     * @return The path whitelist bean
+     */
+    @Bean(name = "defaultRerunOperatorWhitelist")
+    public List<String> defaultRerunOperatorWhitelist() {
+        List<String> operatorPaths = Arrays.asList("/operators/extraction/simulators/rerun_adapter");
+        return Collections.unmodifiableList(operatorPaths);
+    }
 
     /**
      * Sets up a list of default users and adds them to the user repository if not already existing.
