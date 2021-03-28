@@ -32,6 +32,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
@@ -141,6 +142,7 @@ public class RestTestingController {
             }
         }
 
+
         // Create sensor from request DTO
         TestDetails testDetails = new TestDetails();
         testDetails.setName(requestDto.getName());
@@ -151,6 +153,7 @@ public class RestTestingController {
         testDetails.setConfig(requestDto.getConfig());
         testDetails.setRules(rules);
         testDetails.setSensor(sensors);
+        testDetails.setAccessControlPolicyIds(requestDto.getAccessControlPolicyIds());
 
         // Save test in the database
         TestDetails createdTest = userEntityService.create(testDetailsRepository, testDetails);

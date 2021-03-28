@@ -5,8 +5,8 @@
  * Controller for the sensor list page.
  */
 app.controller('TestingController',
-    ['$scope', '$controller', '$interval', '$http', 'TestService', 'HttpService', 'testList', '$rootScope', 'addTest', 'deleteTest', 'ruleList', 'sensorList', '$q', 'ComponentService', 'FileReader', 'ENDPOINT_URI', 'NotificationService',
-        function ($scope, $controller, $interval, $http, TestService, HttpService, testList, $rootScope, addTest, deleteTest, ruleList, sensorList, $q, ComponentService, FileReader, ENDPOINT_URI, NotificationService) {
+    ['$scope', '$controller', '$interval', '$http', 'TestService', 'HttpService', 'testList', '$rootScope', 'addTest', 'deleteTest', 'ruleList', 'sensorList', '$q', 'ComponentService', 'FileReader', 'ENDPOINT_URI', 'NotificationService', 'accessControlPolicyList',
+        function ($scope, $controller, $interval, $http, TestService, HttpService, testList, $rootScope, addTest, deleteTest, ruleList, sensorList, $q, ComponentService, FileReader, ENDPOINT_URI, NotificationService, accessControlPolicyList) {
 
             // Constant list of the sensor simulators, that can be included in the test
             const SIMULATOR_LIST = {
@@ -345,8 +345,6 @@ app.controller('TestingController',
                 checkSensorReg(sensor);
 
 
-
-
             }
 
             /**
@@ -516,6 +514,9 @@ app.controller('TestingController',
                     deleteItem: deleteTest,
                     confirmDeletion: confirmDelete
                 }),
+
+                accessControlPolicyList: accessControlPolicyList,
+
                 executeTest: executeTest,
                 editConfig: editConfig,
                 stopTest: stopTest,
