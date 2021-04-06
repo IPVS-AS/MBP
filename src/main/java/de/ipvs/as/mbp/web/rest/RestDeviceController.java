@@ -42,8 +42,6 @@ import io.swagger.annotations.ApiResponses;
 
 /**
  * REST Controller for managing {@link Device}s.
- * 
- * @author Jakob Benz
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH + "/devices")

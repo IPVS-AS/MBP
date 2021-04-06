@@ -51,12 +51,6 @@ public class WebServletConfiguration implements WebMvcConfigurer {
         configurer.defaultContentType(MediaTypes.HAL_JSON);
     }
 
-//    @Override
-//    public void setApplicationContext(ApplicationContext ac)
-//            throws BeansException {
-//        this.applicationContext = ac;
-//    }
-
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         System.out.println("load addResourceHandlers");
@@ -79,7 +73,6 @@ public class WebServletConfiguration implements WebMvcConfigurer {
         argumentResolvers.add(resolver);
     }
 
-    /* start Thymeleaf */
     @Bean
     public ViewResolver viewResolver() {
         ThymeleafViewResolver resolver = new ThymeleafViewResolver();
@@ -104,5 +97,4 @@ public class WebServletConfiguration implements WebMvcConfigurer {
         resolver.setTemplateMode(TemplateMode.HTML);
         return resolver;
     }
-    /* end Thymeleaf */
 }
