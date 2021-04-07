@@ -1,6 +1,7 @@
 package de.ipvs.as.mbp.web.rest;
 
 import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.settings.MBPInfo;
 import de.ipvs.as.mbp.domain.settings.Settings;
 import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
@@ -90,11 +91,16 @@ public class RestSettingsController {
     @PostMapping(value = "/default-test-components")
     @ApiOperation(value = "Loads default components from the resource directory of the MBP and makes them available for usage in the Testing-Tool by all users.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
-    public ResponseEntity<Void> reinstallTestingComponents()  {
+    public ResponseEntity<Void> reinstallTestingComponents(
+            @RequestHeader("X-MBP-Access-Request") String accessRequestHeader)  {
+        // Parse the access-request information
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
 
         // Delete & reinstall all default testing components
         defaultTestingComponents.deleteAllComponents();
         defaultTestingComponents.addAllComponents();
+        defaultTestingComponents.checkForComponentsTests(accessRequest);
 
         // Respond
         return ResponseEntity.ok().build();

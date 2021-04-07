@@ -11,7 +11,7 @@ app.factory('SettingsService', ['HttpService', 'ENDPOINT_URI',
         const URL_DOCUMENTATION_META_DATA = ENDPOINT_URI + '/docs';
         const URL_MBP_INFO = ENDPOINT_URI + '/settings/mbpinfo';
         const URL_REINSTALL_TEST_COMPONENTS = ENDPOINT_URI + '/settings/default-test-components';
-        const URL_REDEPLOY_TEST_COMPONENTS = ENDPOINT_URI + '/settings/test-components-redeploy'
+        const URL_REDEPLOY_TEST_COMPONENTS = ENDPOINT_URI + '/settings/test-components-redeploy';
 
         /**
          * [Public]
@@ -39,8 +39,6 @@ app.factory('SettingsService', ['HttpService', 'ENDPOINT_URI',
          * @returns {*}
          */
         function redeployTestingComponents(){
-            console.log("---------------------------------------------------")
-            console.log("hier im Reedeploy")
             return HttpService.postRequest(URL_REDEPLOY_TEST_COMPONENTS)
         }
 

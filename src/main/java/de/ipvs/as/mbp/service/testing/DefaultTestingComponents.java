@@ -1,5 +1,7 @@
 package de.ipvs.as.mbp.service.testing;
 
+import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
+import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.ComponentCreateEventHandler;
 import de.ipvs.as.mbp.domain.component.ComponentCreateValidator;
@@ -11,10 +13,9 @@ import de.ipvs.as.mbp.domain.operator.Code;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.operator.parameters.Parameter;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterType;
-import de.ipvs.as.mbp.repository.ActuatorRepository;
-import de.ipvs.as.mbp.repository.DeviceRepository;
-import de.ipvs.as.mbp.repository.OperatorRepository;
-import de.ipvs.as.mbp.repository.SensorRepository;
+import de.ipvs.as.mbp.domain.testing.TestDetails;
+import de.ipvs.as.mbp.repository.*;
+import de.ipvs.as.mbp.service.UserEntityService;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -37,6 +38,10 @@ public class DefaultTestingComponents {
 
     @Autowired
     private List<String> defaultTestComponentsWhiteList;
+
+    @Autowired
+    private TestDetailsRepository testDetailsRepository;
+
     @Autowired
     private ServletContext servletContext;
 
@@ -71,8 +76,7 @@ public class DefaultTestingComponents {
     private DeploymentWrapper deploymentWrapper;
 
     @Autowired
-    private TestEngine testEngine;
-
+    private UserEntityService userEntityService;
 
     private final String TEST_DEVICE;
     private final String TEST_DEVICE_IP;
@@ -84,7 +88,7 @@ public class DefaultTestingComponents {
 
 
     public DefaultTestingComponents(List<String> defaultTestComponentsWhiteList, ServletContext servletContext, OperatorRepository operatorRepository, DeviceRepository deviceRepository, DeviceCreateValidator deviceCreateValidator, ActuatorRepository actuatorRepository, ComponentCreateValidator componentCreateValidator, ComponentCreateEventHandler componentCreateEventHandler, DeviceCreateEventHandler  deviceCreateEventHandler,
-                                    SensorRepository sensorRepository, DeploymentWrapper deploymentWrapper) throws IOException {
+                                    SensorRepository sensorRepository, TestDetailsRepository  testDetailsRepository) throws IOException {
         // Get needed Strings out of the properties to create the testing components
         propertiesService = new PropertiesService();
         TEST_DEVICE = propertiesService.getPropertiesString("testingTool.testDeviceName");
@@ -105,8 +109,8 @@ public class DefaultTestingComponents {
         this.componentCreateValidator = componentCreateValidator;
         this.componentCreateEventHandler = componentCreateEventHandler;
         this.deviceCreateEventHandler = deviceCreateEventHandler;
-        this.deploymentWrapper = deploymentWrapper;
 
+        this.testDetailsRepository = testDetailsRepository;
         //
         deleteAllComponents();
         addAllComponents();
@@ -420,11 +424,17 @@ public class DefaultTestingComponents {
             addDevice();
             addActuatorSimulator();
             addSensorSimulator();
-
             return new ResponseEntity(HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity(HttpStatus.CONFLICT);
         }
+    }
+
+    public void checkForComponentsTests(ACAccessRequest accessRequest) {
+        //Retrieve all test details that use the given sensor
+        List<TestDetails> affectedTestDetails = userEntityService.filterForAdminOwnerAndPolicies(() -> testDetailsRepository.findAllBySensorName(), ACAccessType.READ, accessRequest);
+
+
     }
 
     /**
