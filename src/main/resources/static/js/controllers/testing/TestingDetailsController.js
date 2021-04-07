@@ -51,7 +51,7 @@ app.controller('TestingDetailsController',
                 getPDFList();
                 getTestRules();
                 getConfig();
-                disableReuse();
+                //disableReuse();
                 getTestSensorList();
                 // define the parameters of the real sensors included into the test
                 getRealSensorList();

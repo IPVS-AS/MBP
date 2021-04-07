@@ -106,17 +106,16 @@ public class RestSettingsController {
     public ResponseEntity<Void> reinstallTestingComponents(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader)  {
 
-        // Get all devices
-        List<TestDetails> testDetails = userEntityService.getAllWithAccessControlCheck(testDetailsRepository, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
-
-
 
 
 
         // Delete & reinstall all default testing components
-        defaultTestingComponents.deleteAllComponents();
-        defaultTestingComponents.addAllComponents();
-        defaultTestingComponents.checkForComponentsTests(testDetails);
+        defaultTestingComponents.replaceTestDevice();
+        defaultTestingComponents.replaceOperators();
+        defaultTestingComponents.replaceTestingActuator();
+        defaultTestingComponents.replaceSensorSimulators();
+
+
 
         // Respond
         return ResponseEntity.ok().build();
