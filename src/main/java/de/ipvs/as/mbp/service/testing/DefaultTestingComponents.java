@@ -436,18 +436,18 @@ public class DefaultTestingComponents {
                         // adjust trigger query of the sensor of the test
                         String triggerQuery = rule.getTrigger().getQuery();
                         // Regex to get out the sensor ID
-                        Pattern pattern = Pattern.compile("(?<=sensor_)(.*)(?=\\)])");
+                            Pattern pattern = Pattern.compile("(?<=sensor_)([0-9a-zA-Z]*)");
                         Matcher matcher = pattern.matcher(triggerQuery);
                         while (matcher.find()) {
                             String sensorID = matcher.group();
-                            if (oldId.equals(sensorID)) {
+                            if (sensorID.contains(oldId)) {
                                 Sensor updatedSensor = sensorRepository.findByName(sensorName).get();
                                 if (updatedSensor != null) {
                                     // replace the sensor id in the trigger query with the rerun sensor id
                                     triggerQuery = triggerQuery.replace(oldId, updatedSensor.getId());
                                     newTrigger.setQuery(triggerQuery);
                                     ruleTriggerRepository.save(newTrigger);
-                                } 
+                                }
 
                             }
                         }
