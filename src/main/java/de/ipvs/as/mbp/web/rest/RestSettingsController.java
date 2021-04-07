@@ -2,9 +2,13 @@ package de.ipvs.as.mbp.web.rest;
 
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
+import de.ipvs.as.mbp.domain.access_control.ACAccessType;
+import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.settings.MBPInfo;
 import de.ipvs.as.mbp.domain.settings.Settings;
+import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
+import de.ipvs.as.mbp.repository.TestDetailsRepository;
 import de.ipvs.as.mbp.service.UserEntityService;
 import de.ipvs.as.mbp.service.mqtt.MQTTService;
 import de.ipvs.as.mbp.service.settings.DefaultOperatorService;
@@ -16,11 +20,16 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
  * REST Controller for settings related REST requests.
@@ -44,6 +53,9 @@ public class RestSettingsController {
 
     @Autowired
     private UserEntityService userEntityService;
+
+    @Autowired
+    private TestDetailsRepository testDetailsRepository;
 
     /**
      * Returns information about the running MBP app instance and the environment in which it is operated.
@@ -93,14 +105,18 @@ public class RestSettingsController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
     public ResponseEntity<Void> reinstallTestingComponents(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader)  {
-        // Parse the access-request information
-        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+        // Get all devices
+        List<TestDetails> testDetails = userEntityService.getAllWithAccessControlCheck(testDetailsRepository, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
+
+
+
 
 
         // Delete & reinstall all default testing components
         defaultTestingComponents.deleteAllComponents();
         defaultTestingComponents.addAllComponents();
-        defaultTestingComponents.checkForComponentsTests(accessRequest);
+        defaultTestingComponents.checkForComponentsTests(testDetails);
 
         // Respond
         return ResponseEntity.ok().build();

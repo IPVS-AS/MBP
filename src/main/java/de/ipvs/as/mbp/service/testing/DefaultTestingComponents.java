@@ -430,9 +430,9 @@ public class DefaultTestingComponents {
         }
     }
 
-    public void checkForComponentsTests(ACAccessRequest accessRequest) {
-        //Retrieve all test details that use the given sensor
-        List<TestDetails> affectedTestDetails = userEntityService.filterForAdminOwnerAndPolicies(() -> testDetailsRepository.findAllBySensorName(), ACAccessType.READ, accessRequest);
+    public void checkForComponentsTests(List<TestDetails> testDetails) {
+
+        System.out.println(testDetails);
 
 
     }

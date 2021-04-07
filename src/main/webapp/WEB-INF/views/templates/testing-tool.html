@@ -1498,11 +1498,17 @@
                     </fieldset>
                 </form>
             </div>
-
         </div>
-
     </div>
-
-    <!-- #END# Modal -->
+    <p id="ignorePDF">don't print this to pdf</p>
+    <div class="test-report">
+        <p><font size="3" color="red">print this to pdf</font></p>
+        <p>Das ist ein Test.</p>
+    </div>
+    <button id="getPDF"
+            class="btn bg-blue m-t-0 waves-effect"
+            ng-click="ctrl.getPDF()">
+        Print to pdf
+    </button>
 </div>
 

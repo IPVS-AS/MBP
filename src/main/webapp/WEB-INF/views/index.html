@@ -95,6 +95,18 @@
 
     <!-- GitHub Fork Ribbon -->
     <link th:href="@{/plugins/gh-fork-ribbon/gh-fork-ribbon.min.css}" rel="stylesheet"/>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/2.3.4/jspdf.plugin.autotable.min.js"></script>
+
+
+    <script src="path/to/dom-to-image-more.min.js" />
+    <script>
+        domtoimage.toPng(node)
+        //...
+    </script>
+
 </head>
 
 <body class="theme-blue" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
@@ -434,5 +446,8 @@
 <script th:src="@{/js/controllers/user/RegisterController.js}"></script>
 <script th:src="@{/js/controllers/user/UserListController.js}"></script>
 <script th:src="@{/js/controllers/env-models/EnvModelListController.js}"></script>
+
+
+
 </body>
 </html>
