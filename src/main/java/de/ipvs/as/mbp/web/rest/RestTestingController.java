@@ -2,12 +2,17 @@ package de.ipvs.as.mbp.web.rest;
 
 
 import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
+import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.domain.testing.TestDetailsCreateValidator;
 import de.ipvs.as.mbp.domain.testing.TestDetailsDTO;
+import de.ipvs.as.mbp.error.EntityNotFoundException;
+import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.RuleRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.repository.TestDetailsRepository;
@@ -27,6 +32,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
@@ -84,25 +90,34 @@ public class RestTestingController {
     public ResponseEntity<PagedModel<EntityModel<TestDetails>>> all(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
+        // Parse the access-request information
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
-        // Retrieve the corresponding tests
-        List<TestDetails> testDetails = testDetailsRepository.findAll();
+        // Retrieve the corresponding devices (includes access-control)
+        List<TestDetails> tests = userEntityService.getPageWithAccessControlCheck(testDetailsRepository, ACAccessType.READ, accessRequest, pageable);
 
         // Create self link
         Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
 
-        return ResponseEntity.ok(userEntityService.entitiesToPagedModel(testDetails, selfLink, pageable));
-    }
 
+
+        return ResponseEntity.ok(userEntityService.entitiesToPagedModel(tests, selfLink, pageable));
+    }
     @GetMapping(path = "/{testId}", produces = "application/hal+json")
     @ApiOperation(value = "Retrieves an existing tests identified by its id.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
             @ApiResponse(code = 401, message = "Not authorized to access the test!"),
             @ApiResponse(code = 404, message = "Test or requesting user not found!")})
     public ResponseEntity<EntityModel<TestDetails>> one(
-            @PathVariable("testId") String testId) {
+            @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+            @PathVariable("testId") String testId,
+            @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
+        // Parse the access-request information
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+
         // Retrieve the corresponding test
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
+        TestDetails testDetails = userEntityService.getForIdWithAccessControlCheck(testDetailsRepository, testId, ACAccessType.READ, accessRequest);
         return ResponseEntity.ok(userEntityService.entityToEntityModel(testDetails));
     }
 
@@ -111,7 +126,7 @@ public class RestTestingController {
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
             @ApiResponse(code = 409, message = "Test already exists!")})
     public ResponseEntity<EntityModel<TestDetails>> create(
-            @RequestBody TestDetailsDTO requestDto) {
+            @RequestBody TestDetailsDTO requestDto) throws EntityNotFoundException {
         List<Rule> rules = new ArrayList<>();
         List<Sensor> sensors = new ArrayList<>();
 
@@ -127,6 +142,7 @@ public class RestTestingController {
             }
         }
 
+
         // Create sensor from request DTO
         TestDetails testDetails = new TestDetails();
         testDetails.setName(requestDto.getName());
@@ -137,11 +153,12 @@ public class RestTestingController {
         testDetails.setConfig(requestDto.getConfig());
         testDetails.setRules(rules);
         testDetails.setSensor(sensors);
+        testDetails.setAccessControlPolicyIds(requestDto.getAccessControlPolicyIds());
 
-        testDetailsCreateValidator.validateCreatable(testDetails);
         // Save test in the database
-        testDetailsRepository.save(testDetails);
-        return ResponseEntity.ok(userEntityService.entityToEntityModel(testDetails));
+        TestDetails createdTest = userEntityService.create(testDetailsRepository, testDetails);
+
+        return ResponseEntity.ok(userEntityService.entityToEntityModel(createdTest));
     }
 
 
@@ -151,8 +168,13 @@ public class RestTestingController {
             @ApiResponse(code = 401, message = "Not authorized to delete the test!"),
             @ApiResponse(code = 404, message = "Test or requesting user not found!")})
     public ResponseEntity<Void> delete(
-            @PathVariable("testId") String testId) {
-        testEngine.deleteTest(testId);
+            @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+            @PathVariable("testId") String testId) throws MissingPermissionException, EntityNotFoundException {
+        // Parse the access-request information
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+        // Delete the device (includes access-control)
+        userEntityService.deleteWithAccessControlCheck(testDetailsRepository, testId, accessRequest);
         return ResponseEntity.noContent().build();
     }
 

@@ -159,8 +159,6 @@ app.controller('TestingDetailsController',
              */
             function getTestRules() {
                 $scope.ruleList = TestService.getRuleListTest(COMPONENT_ID);
-                console.log(testingDetails.rules.length);
-
 
                 for (let i = 0; i < testingDetails.rules.length; i++) {
                     if (i === 0) {
