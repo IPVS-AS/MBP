@@ -88,6 +88,8 @@ public class DefaultTestingComponents {
     @Autowired
     private TestAnalyzer testAnalyzer;
 
+    @Autowired
+    RuleTriggerRepository ruleTriggerRepository;
 
     private final String TEST_DEVICE;
     private final String TEST_DEVICE_IP;
@@ -99,7 +101,7 @@ public class DefaultTestingComponents {
 
 
     public DefaultTestingComponents(List<String> defaultTestComponentsWhiteList, ServletContext servletContext, OperatorRepository operatorRepository, DeviceRepository deviceRepository, DeviceCreateValidator deviceCreateValidator, ActuatorRepository actuatorRepository, ComponentCreateValidator componentCreateValidator, ComponentCreateEventHandler componentCreateEventHandler, DeviceCreateEventHandler deviceCreateEventHandler,
-                                    SensorRepository sensorRepository, TestDetailsRepository testDetailsRepository, RuleRepository ruleRepository) throws IOException {
+                                    SensorRepository sensorRepository, TestDetailsRepository testDetailsRepository, RuleRepository ruleRepository, RuleTriggerRepository ruleTriggerRepository, TestAnalyzer testAnalyzer) throws IOException {
         // Get needed Strings out of the properties to create the testing components
         propertiesService = new PropertiesService();
         TEST_DEVICE = propertiesService.getPropertiesString("testingTool.testDeviceName");
@@ -121,8 +123,9 @@ public class DefaultTestingComponents {
         this.componentCreateEventHandler = componentCreateEventHandler;
         this.deviceCreateEventHandler = deviceCreateEventHandler;
         this.ruleRepository = ruleRepository;
-
+        this.ruleTriggerRepository = ruleTriggerRepository;
         this.testDetailsRepository = testDetailsRepository;
+        this.testAnalyzer = testAnalyzer;
 
         replaceTestDevice();
         replaceOperators();
@@ -391,8 +394,9 @@ public class DefaultTestingComponents {
             for (String sensorName : SENSOR_SIMULATORS) {
 
                 List<TestDetails> affectedTestDetails = null;
+                String sensorId = null;
                 if (sensorRepository.findByName(sensorName).isPresent()) {
-                    String sensorId = sensorRepository.findByName(sensorName).get().getId();
+                    sensorId = sensorRepository.findByName(sensorName).get().getId();
                     affectedTestDetails = testDetailsRepository.findAllBySensorId(sensorId);
 
                 }
@@ -401,8 +405,9 @@ public class DefaultTestingComponents {
                     sensorRepository.delete(sensorRepository.findByName(sensorName).get());
                 }
                 addSensorSimulator(sensorName);
-                if (affectedTestDetails.size() >= 1) {
+                if (affectedTestDetails != null && affectedTestDetails.size() >= 1) {
                     replaceSimulatorInTest(affectedTestDetails);
+                    replaceSimulatorInRule(affectedTestDetails, sensorId, sensorName);
                 }
 
             }
@@ -412,6 +417,59 @@ public class DefaultTestingComponents {
         }
 
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    private void replaceSimulatorInRule(List<TestDetails> affectedTests, String oldId, String sensorName) {
+        for (TestDetails test : affectedTests) {
+            List<Rule> affectedRules = testAnalyzer.getCorrespondingRules(test);
+
+            for (Rule rule : affectedRules) {
+                if (ruleRepository.findByName(rule.getName()).isPresent()) {
+                    // create new rule
+                    Rule updatedRule = ruleRepository.findByName(rule.getName()).get();
+
+                    // adjust trigger querey
+                    if (ruleTriggerRepository.findByName(rule.getTrigger().getName()).isPresent()) {
+                        // create new trigger
+                        RuleTrigger newTrigger = ruleTriggerRepository.findByName(rule.getTrigger().getName()).get();
+
+                        // adjust trigger query of the sensor of the test
+                        String triggerQuery = rule.getTrigger().getQuery();
+                        // Regex to get out the sensor ID
+                        Pattern pattern = Pattern.compile("(?<=sensor_)(.*)(?=\\)])");
+                        Matcher matcher = pattern.matcher(triggerQuery);
+                        while (matcher.find()) {
+                            String sensorID = matcher.group();
+                            if (oldId.equals(sensorID)) {
+                                Sensor updatedSensor = sensorRepository.findByName(sensorName).get();
+                                if (updatedSensor != null) {
+                                    // replace the sensor id in the trigger query with the rerun sensor id
+                                    triggerQuery = triggerQuery.replace(oldId, updatedSensor.getId());
+                                    newTrigger.setQuery(triggerQuery);
+                                    ruleTriggerRepository.save(newTrigger);
+                                } 
+
+                            }
+                        }
+                        // set the created trigger of the rerun rule
+                        updatedRule.setTrigger(newTrigger);
+                        ruleRepository.save(updatedRule);
+                        List<Rule> ruleList = test.getRules();
+                        int index = ruleList.indexOf(updatedRule);
+                        Rule replacedRule= ruleRepository.findByName(updatedRule.getName()).get();
+                        ruleList.set(index, replacedRule);
+                        test.setRules(ruleList);
+                        testDetailsRepository.save(test);
+                    }
+
+
+
+
+                }
+            }
+
+
+        }
     }
 
 
