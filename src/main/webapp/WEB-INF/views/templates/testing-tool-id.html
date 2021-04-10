@@ -1074,6 +1074,13 @@
                     <h2>
                         Live sensor values&nbsp;<i class="material-icons" style="color: red;">live_tv</i>
                     </h2>
+                    <ul class="header-dropdown m-r--5">
+                        <li>
+                            <input class="form-control interval-input" type="number"
+                                   ng-model="testingChartCtrl.liveChart.interval"/>
+                            <span style="vertical-align: bottom;">s&nbsp;</span>
+                        </li>
+                    </ul>
                 </div>
 
 
@@ -1082,7 +1089,8 @@
                                 loading-finish="testingChartCtrl.liveChart.loadingFinish()"
                                 get-data="testingChartCtrl.liveChart.getData(numberLogs, descending, '', sensor)"
                                 is-updateable="testingChartCtrl.liveChart.isUpdateable()"
-                                unit="{{testingChartCtrl.displayUnit}}">
+                                unit="{{testingChartCtrl.displayUnit}}"
+                                interval="{{testingChartCtrl.liveChart.interval}}">
                     </live-chart>
                 </div>
             </div>

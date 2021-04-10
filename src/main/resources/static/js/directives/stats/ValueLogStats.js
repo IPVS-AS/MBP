@@ -8,9 +8,6 @@
  * @author Jan
  */
 app.directive('valueLogStats', ['$interval', function ($interval) {
-    //Time interval with that the value statistics are supposed to be refreshed
-    const REFRESH_DELAY_SECONDS = 60 * 2;
-
     /**
      * Linking function, glue code
      *
@@ -58,7 +55,7 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
          */
         function createUpdateInterval() {
             //Create an interval that calls the update function on a regular basis
-            updateInterval = $interval(updateStats, 1000 * REFRESH_DELAY_SECONDS);
+            updateInterval = $interval(updateStats, 1000 * scope.interval);
 
             //Ensure that the interval is cancelled in case the user switches the page
             scope.$on('$destroy', function () {
@@ -82,6 +79,16 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
         }, function (newValue, oldValue) {
             //Update statistics if unit was changed
             updateStats();
+        });
+
+        //Watch the interval parameter
+        scope.$watch(function () {
+            return scope.interval;
+        }, function (newValue, oldValue) {
+            //Create new update interval with the new value
+            scope.interval = newValue;
+            cancelUpdateInterval();
+            createUpdateInterval();
         });
 
         //Expose public api
@@ -159,6 +166,8 @@ app.directive('valueLogStats', ['$interval', function ($interval) {
             loadingFinish: '&loadingFinish',
             //Function for updating the value stats data
             getStats: '&getStats',
+            //Refresh interval
+            interval: '@interval'
         }
     };
 }]);
