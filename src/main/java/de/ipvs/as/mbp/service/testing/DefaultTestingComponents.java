@@ -17,6 +17,7 @@ import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.repository.*;
+import de.ipvs.as.mbp.repository.projection.ComponentExcerpt;
 import de.ipvs.as.mbp.service.UserEntityService;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
@@ -419,6 +420,8 @@ public class DefaultTestingComponents {
         return new ResponseEntity(HttpStatus.OK);
     }
 
+
+
     private void replaceSimulatorInRule(String oldId, String sensorName) {
         List<RuleTrigger> triggerList = ruleTriggerRepository.findAll();
         for (RuleTrigger ruleTrigger : triggerList) {
@@ -510,18 +513,32 @@ public class DefaultTestingComponents {
 
     public ResponseEntity replaceTestDevice() {
         try {
+            String oldDeviceId = null;
             // Delete the testing-device if exists
             if (deviceRepository.existsByName(TEST_DEVICE)) {
+                oldDeviceId = deviceRepository.findByName(TEST_DEVICE).get().getId();
                 deviceRepository.delete(deviceRepository.findByName(TEST_DEVICE).get());
             }
             addDevice();
-
+            replaceDeviceInRerun(oldDeviceId);
             // Add the new testing-device
         } catch (Exception e) {
             return new ResponseEntity(HttpStatus.CONFLICT);
         }
 
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    public void replaceDeviceInRerun(String oldDeviceId){
+        List<ComponentExcerpt> sensorList = sensorRepository.findAllByDeviceId(oldDeviceId);
+        for(ComponentExcerpt senor : sensorList){
+            if(senor.getName().contains("RERUN_")){
+                Sensor sensorUpdate =  sensorRepository.findByName(senor.getName()).get();
+                sensorUpdate.setDevice(deviceRepository.findByName(TEST_DEVICE).get());
+                sensorRepository.save(sensorUpdate);
+            }
+        }
+
     }
 
     public void replaceOperators() {

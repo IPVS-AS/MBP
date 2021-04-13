@@ -51,7 +51,7 @@ app.controller('TestingDetailsController',
                 getPDFList();
                 getTestRules();
                 getConfig();
-                //disableReuse();
+                disableReuse();
                 getTestSensorList();
                 // define the parameters of the real sensors included into the test
                 getRealSensorList();
@@ -109,7 +109,6 @@ app.controller('TestingDetailsController',
              * @returns {boolean}
              */
             function checkSimulator(type) {
-                console.log(SIMULATOR_LIST);
                 return SIMULATOR_LIST.some(function (sensorType) {
                     return type === sensorType;
 
