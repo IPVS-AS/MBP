@@ -4,6 +4,9 @@ import de.ipvs.as.mbp.domain.settings.BrokerLocation;
 import de.ipvs.as.mbp.domain.settings.MBPInfo;
 import de.ipvs.as.mbp.domain.settings.Settings;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -16,6 +19,7 @@ import java.util.Properties;
  * It implicitly stores the settings persistently in a properties file on disk and enables changes of the settings.
  */
 @Service
+@PropertySource("classpath:git.properties")
 public class SettingsService {
 
     //The name of the file in which the settings are supposed to be stored
@@ -170,5 +174,21 @@ public class SettingsService {
         properties = new Properties();
         properties.load(inputStream);
         inputStream.close();
+    }
+
+    /**
+     * Create configurer for the injection of git-related property values, based on the git.properties file.
+     *
+     * @return The resulting property configurer
+     */
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer gitPropertiesConfigurer() {
+        //Create new property configurer and make it tolerant
+        PropertySourcesPlaceholderConfigurer propsConfig = new PropertySourcesPlaceholderConfigurer();
+        propsConfig.setIgnoreResourceNotFound(true);
+        propsConfig.setIgnoreUnresolvablePlaceholders(true);
+
+        //Return final configurer
+        return propsConfig;
     }
 }
