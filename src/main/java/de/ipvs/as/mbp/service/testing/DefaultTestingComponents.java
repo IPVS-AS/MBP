@@ -1,7 +1,5 @@
 package de.ipvs.as.mbp.service.testing;
 
-import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
-import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.ComponentCreateEventHandler;
 import de.ipvs.as.mbp.domain.component.ComponentCreateValidator;
@@ -13,19 +11,15 @@ import de.ipvs.as.mbp.domain.operator.Code;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.operator.parameters.Parameter;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterType;
-import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.repository.projection.ComponentExcerpt;
-import de.ipvs.as.mbp.service.UserEntityService;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
-import net.sf.cglib.asm.$ByteVector;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,52 +39,54 @@ import java.util.regex.Pattern;
 public class DefaultTestingComponents {
 
     @Autowired
-    private List<String> defaultTestComponentsWhiteList;
+    private final List<String> defaultTestComponentsWhiteList;
 
     @Autowired
-    private TestDetailsRepository testDetailsRepository;
+    private final TestDetailsRepository testDetailsRepository;
 
     @Autowired
-    private ServletContext servletContext;
+    private final ServletContext servletContext;
 
     @Autowired
-    private OperatorRepository operatorRepository;
+    private final OperatorRepository operatorRepository;
 
     @Autowired
-    private ActuatorRepository actuatorRepository;
+    private final ActuatorRepository actuatorRepository;
 
     @Autowired
-    private DeviceRepository deviceRepository;
+    private final DeviceRepository deviceRepository;
 
     @Autowired
-    private SensorRepository sensorRepository;
+    private final SensorRepository sensorRepository;
 
     @Autowired
-    private DeviceCreateValidator deviceCreateValidator;
+    private final DeviceCreateValidator deviceCreateValidator;
 
     @Autowired
-    private PropertiesService propertiesService;
+    private final PropertiesService propertiesService;
 
     @Autowired
-    private ComponentCreateValidator componentCreateValidator;
+    private final ComponentCreateValidator componentCreateValidator;
 
     @Autowired
-    private ComponentCreateEventHandler componentCreateEventHandler;
+    private final ComponentCreateEventHandler componentCreateEventHandler;
 
     @Autowired
-    private DeviceCreateEventHandler deviceCreateEventHandler;
+    private final DeviceCreateEventHandler deviceCreateEventHandler;
 
     @Autowired
     private DeploymentWrapper deploymentWrapper;
 
     @Autowired
-    private RuleRepository ruleRepository;
+    private final RuleRepository ruleRepository;
 
     @Autowired
-    private TestAnalyzer testAnalyzer;
+    private final TestAnalyzer testAnalyzer;
 
     @Autowired
     RuleTriggerRepository ruleTriggerRepository;
+
+    private static final String DESCRIPTOR_FILE = "operator.json";
 
     private final String TEST_DEVICE;
     private final String TEST_DEVICE_IP;
@@ -140,54 +136,56 @@ public class DefaultTestingComponents {
      *
      * @return ResponseEntity if the registration was successful or not
      */
-    public ResponseEntity addSensorSimulator(String simulatorName) {
+    public ResponseEntity<String> addSensorSimulator(String simulatorName) {
         ResponseEntity<String> responseEntity;
 
         try {
-            if (!sensorRepository.existsByName(simulatorName)) {
+            if (!sensorRepository.findByName(simulatorName).isPresent()) {
                 Sensor sensorSimulator = new Sensor();
 
                 //Enrich actuator for details
                 sensorSimulator.setName(simulatorName);
                 sensorSimulator.setOwner(null);
-
-                if (simulatorName.contains("Temperature")) {
-                    sensorSimulator.setComponentType("Temperature");
-                } else if (simulatorName.contains("Humidity")) {
-                    sensorSimulator.setComponentType("Humidity");
+                sensorSimulator.setComponentType(componentType(simulatorName));
+                if (operatorRepository.findByName(simulatorName).isPresent() && deviceRepository.findByName(TEST_DEVICE).isPresent()) {
+                    sensorSimulator.setOperator(operatorRepository.findByName(simulatorName).get());
+                    sensorSimulator.setDevice(deviceRepository.findByName(TEST_DEVICE).get());
                 }
-
-                sensorSimulator.setOperator(operatorRepository.findByName(simulatorName).get());
-                sensorSimulator.setDevice(deviceRepository.findByName(TEST_DEVICE).get());
 
                 // Validate, insert and create a new event handler for the new sensor simulator
                 componentCreateValidator.validateCreatable(sensorSimulator);
                 sensorRepository.insert(sensorSimulator);
                 componentCreateEventHandler.onCreate(sensorSimulator);
-
             }
-
             responseEntity = new ResponseEntity<>(HttpStatus.OK);
-
 
         } catch (Exception e) {
             responseEntity = new ResponseEntity<>(HttpStatus.CONFLICT);
-
         }
 
         return responseEntity;
     }
 
+    /**
+     * Returns the type of the sensor simulator that can be "Temperature" or "Humidity".
+     *
+     * @param simulatorName name of the senor simulator to be registered
+     * @return type of sensor
+     */
+    public String componentType(String simulatorName) {
+        if (simulatorName.contains("Temperature")) {
+            return "Temperature";
+        } else {
+            return "Humidity";
+        }
+    }
+
 
     /**
      * Registers the testing device which is used for testing purposes.
-     *
-     * @return http status whether it was successful or not
      */
-    private ResponseEntity addDevice() {
-        ResponseEntity responseEntity = null;
-        Device testDevice = null;
-
+    private void addDevice() {
+        Device testDevice;
 
         try {
             // Check if device with this name is already registered
@@ -206,31 +204,22 @@ public class DefaultTestingComponents {
                 deviceCreateValidator.validateCreatable(testDevice);
                 deviceRepository.insert(testDevice);
                 deviceCreateEventHandler.onCreate(testDevice);
-
-
-                responseEntity = new ResponseEntity<>(HttpStatus.OK);
             }
 
         } catch (Exception exception) {
-            responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            exception.printStackTrace();
         }
 
-        return responseEntity;
     }
 
 
     /**
      * Registers the Testing Actuator which is used for testing purposes and doesn't make any real actions.
-     *
-     * @return response entity if insertion was successful or not
      */
-    public ResponseEntity addActuatorSimulator() {
-        ResponseEntity responseEntity = null;
+    public void addActuatorSimulator() {
         Actuator testingActuator;
 
-
         try {
-
             // Check if Actuator is already existing
             if (!actuatorRepository.existsByName(ACTUATOR_NAME)) {
                 // Check if the corresponding adapter is registered
@@ -240,42 +229,31 @@ public class DefaultTestingComponents {
                     testingActuator = new Actuator();
                     testingActuator.setName(ACTUATOR_NAME);
                     testingActuator.setOwner(null);
-                    testingActuator.setDevice(deviceRepository.findByName(TEST_DEVICE).get());
-                    testingActuator.setOperator(operatorRepository.findByName(ACTUATOR_NAME).get());
                     testingActuator.setComponentType("Buzzer");
+                    if (deviceRepository.findByName(TEST_DEVICE).isPresent() && operatorRepository.findByName(ACTUATOR_NAME).isPresent()) {
+                        testingActuator.setDevice(deviceRepository.findByName(TEST_DEVICE).get());
+                        testingActuator.setOperator(operatorRepository.findByName(ACTUATOR_NAME).get());
+                    }
 
                     // Validate, insert and add event handler for the new actuator
                     componentCreateValidator.validateCreatable(testingActuator);
                     actuatorRepository.insert(testingActuator);
                     componentCreateEventHandler.onCreate(testingActuator);
 
-                    responseEntity = new ResponseEntity(HttpStatus.CREATED);
-
                 }
-            } else {
-                responseEntity = new ResponseEntity(HttpStatus.BAD_REQUEST);
-
             }
-
-
-        } catch (Exception e) {
-            responseEntity = new ResponseEntity(HttpStatus.CONFLICT);
+        } catch (Exception exception) {
+            exception.printStackTrace();
 
         }
-        return responseEntity;
     }
-
-    private static final String DESCRIPTOR_FILE = "operator.json";
 
 
     /**
      * Loads default operators from the resources directory and adds them to the operator repository so that they
      * can be used in actuators and sensors by all users.
-     *
-     * @return http status whether it was successful or not
      */
-    public ResponseEntity addSimulatorOperators() {
-        ResponseEntity responseEntity = null;
+    public void addSimulatorOperators() {
 
         //Iterate over all default operator paths
         for (String operatorPath : defaultTestComponentsWhiteList) {
@@ -377,145 +355,126 @@ public class DefaultTestingComponents {
 
                     //Insert new operator into repository
                     operatorRepository.insert(newOperator);
-                    responseEntity = new ResponseEntity(HttpStatus.OK);
                 }
-
-
             } catch (Exception e) {
                 e.printStackTrace();
-                responseEntity = new ResponseEntity(HttpStatus.CONFLICT);
             }
         }
-        return responseEntity;
     }
 
+    /**
+     * Replaces the installed sensor simulator with a new one, replaces the old test device
+     * and replaces the sensor simulators in the tests and rules that uses this simulator.
+     *
+     * @return if the replacement was successful or not.
+     */
     public ResponseEntity replaceSensorSimulators() {
         try {
 
+            // Replace each sensor simulator and their occurrences in the tests and rules one after the other.
             for (String sensorName : SENSOR_SIMULATORS) {
-
                 List<TestDetails> affectedTestDetails = null;
-                String sensorId = null;
-                if (sensorRepository.findByName(sensorName).isPresent()) {
-                    sensorId = sensorRepository.findByName(sensorName).get().getId();
-                    affectedTestDetails = testDetailsRepository.findAllBySensorId(sensorId);
+                String oldSensorId = null;
 
+                // Get a list of the tests which uses the specific sensor simulator to be replaced
+                if (sensorRepository.findByName(sensorName).isPresent()) {
+                    oldSensorId = sensorRepository.findByName(sensorName).get().getId();
+                    affectedTestDetails = testDetailsRepository.findAllBySensorId(oldSensorId);
                 }
 
+                // Delete the sensor simulator
                 if (sensorRepository.existsByName(sensorName)) {
                     sensorRepository.delete(sensorRepository.findByName(sensorName).get());
                 }
+
+                // Install the sensor simulator
                 addSensorSimulator(sensorName);
+
+                // Replace the reinstalled sensor simulator in the affected tests
                 if (affectedTestDetails != null && affectedTestDetails.size() >= 1) {
                     replaceSimulatorInTest(affectedTestDetails);
                 }
-                replaceSimulatorInRule(sensorId, sensorName);
 
+                // Replace the reinstalled sensor simulator in the affected rules.
+                replaceSimulatorInRule(oldSensorId, sensorName);
             }
 
-        } catch (Exception e) {
-
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            return new ResponseEntity(HttpStatus.CONFLICT);
         }
 
         return new ResponseEntity(HttpStatus.OK);
     }
 
 
-
-    private void replaceSimulatorInRule(String oldId, String sensorName) {
+    /**
+     * Replaces the reinstalled sensor simulator in the rules in which the sensor simulator is used in the conditions.
+     *
+     * @param oldSensorId Old Id of the reinstalled sensor, to find the rule conditions which still uses the old sensor simulator
+     * @param sensorName  Name of the reinstalled sensor
+     */
+    private void replaceSimulatorInRule(String oldSensorId, String sensorName) {
         List<RuleTrigger> triggerList = ruleTriggerRepository.findAll();
         for (RuleTrigger ruleTrigger : triggerList) {
-            if(ruleTrigger.getQuery().contains(oldId)){
-                // create new trigger
-                RuleTrigger newTrigger = ruleTrigger;
+            if (ruleTrigger.getQuery().contains(oldSensorId)) {
 
                 // adjust trigger query of the sensor of the test
                 String triggerQuery = ruleTrigger.getQuery();
+
                 // Regex to get out the sensor ID
                 Pattern pattern = Pattern.compile("(?<=sensor_)([0-9a-zA-Z]*)");
                 Matcher matcher = pattern.matcher(triggerQuery);
                 while (matcher.find()) {
                     String sensorID = matcher.group();
-                    if (sensorID.contains(oldId)) {
-                        Sensor updatedSensor = sensorRepository.findByName(sensorName).get();
-                        if (updatedSensor != null) {
+                    if (sensorID.contains(oldSensorId)) {
+                        if (sensorRepository.findByName(sensorName).isPresent()) {
+                            Sensor updatedSensor = sensorRepository.findByName(sensorName).get();
                             // replace the sensor id in the trigger query with the rerun sensor id
-                            triggerQuery = triggerQuery.replace(oldId, updatedSensor.getId());
-                            newTrigger.setQuery(triggerQuery);
-                            ruleTriggerRepository.save(newTrigger);
+                            triggerQuery = triggerQuery.replace(oldSensorId, updatedSensor.getId());
+                            ruleTrigger.setQuery(triggerQuery);
+                            ruleTriggerRepository.save(ruleTrigger);
                         }
+
                     }
                 }
             }
         }
     }
 
-
+    /**
+     * Replaces the reinstalled sensor simulator in the tests in which the sensor simulator is used.
+     *
+     * @param affectedTests List of the tests affected by the sensor simulator reinstallation
+     */
     public void replaceSimulatorInTest(List<TestDetails> affectedTests) {
         for (TestDetails test : affectedTests) {
             List<Sensor> sensorList = test.getSensor();
             for (Sensor sensor : sensorList) {
-                int index = sensorList.indexOf(sensor);
-                Sensor replacedSensor = sensorRepository.findByName(sensor.getName()).get();
-
-                sensorList.set(index, replacedSensor);
+                if (sensorRepository.findByName(sensor.getName()).isPresent()) {
+                    // Get the index of the reinstalled sensor and replace it with the new one
+                    int index = sensorList.indexOf(sensor);
+                    Sensor replacedSensor = sensorRepository.findByName(sensor.getName()).get();
+                    sensorList.set(index, replacedSensor);
+                }
 
             }
+            // Save the modified test
             test.setSensor(sensorList);
             testDetailsRepository.save(test);
-
         }
-
-
     }
-
 
     /**
-     * Deletes all default components needed by the testing-tool automatically created by starting the mbp.
+     * Replaces the test device used for test purposes and replaces the device in the rerun sensors.
      *
-     * @return http status whether it was successful or not
+     * @return if the replacement was successful or not.
      */
-    public ResponseEntity deleteAllComponents() {
-
-        try {
-            List<Operator> allOperators = operatorRepository.findAll();
-            List<Sensor> allSensors = sensorRepository.findAll();
-
-            // Delete the testing-device if exists
-            if (deviceRepository.existsByName(TEST_DEVICE)) {
-                deviceRepository.delete(deviceRepository.findByName(TEST_DEVICE).get());
-            }
-
-            // Delete the testing-device if existing
-            if (actuatorRepository.existsByName(ACTUATOR_NAME)) {
-                actuatorRepository.delete(actuatorRepository.findByName(ACTUATOR_NAME).get());
-            }
-
-            // Delete all sensor simulators via the prefix "TESTING_" that all testing components contains
-            for (Sensor sensor : allSensors) {
-                if (sensor.getName().contains(TEST_PREFIX)) {
-                    sensorRepository.delete(sensor);
-                }
-            }
-
-            // Delete all operators needed for the simulators via the prefix "TESTING_" that all testing components contains
-            for (Operator operator : allOperators) {
-                if (operator.getName().contains(TEST_PREFIX)) {
-                    operatorRepository.delete(operator);
-                }
-            }
-
-            return new ResponseEntity(HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity(HttpStatus.CONFLICT);
-        }
-    }
-
     public ResponseEntity replaceTestDevice() {
         try {
             String oldDeviceId = null;
             // Delete the testing-device if exists
-            if (deviceRepository.existsByName(TEST_DEVICE)) {
+            if (deviceRepository.findByName(TEST_DEVICE).isPresent()) {
                 oldDeviceId = deviceRepository.findByName(TEST_DEVICE).get().getId();
                 deviceRepository.delete(deviceRepository.findByName(TEST_DEVICE).get());
             }
@@ -529,18 +488,30 @@ public class DefaultTestingComponents {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    public void replaceDeviceInRerun(String oldDeviceId){
+    /**
+     * Replaces the reinstalled test device in the rerun sensors.
+     *
+     * @param oldDeviceId old device id to find the rerun sensors using the replaced test device
+     */
+    public void replaceDeviceInRerun(String oldDeviceId) {
         List<ComponentExcerpt> sensorList = sensorRepository.findAllByDeviceId(oldDeviceId);
-        for(ComponentExcerpt senor : sensorList){
-            if(senor.getName().contains("RERUN_")){
-                Sensor sensorUpdate =  sensorRepository.findByName(senor.getName()).get();
-                sensorUpdate.setDevice(deviceRepository.findByName(TEST_DEVICE).get());
-                sensorRepository.save(sensorUpdate);
+        for (ComponentExcerpt senor : sensorList) {
+            if (senor.getName().contains("RERUN_")) {
+                if (sensorRepository.findByName(senor.getName()).isPresent() && deviceRepository.findByName(TEST_DEVICE).isPresent()) {
+                    Sensor sensorUpdate = sensorRepository.findByName(senor.getName()).get();
+                    sensorUpdate.setDevice(deviceRepository.findByName(TEST_DEVICE).get());
+                    sensorRepository.save(sensorUpdate);
+
+                }
+
             }
         }
 
     }
 
+    /**
+     * Reinstals the operators of the default testing components.
+     */
     public void replaceOperators() {
         try {
             List<Operator> allOperators = operatorRepository.findAll();
@@ -550,19 +521,23 @@ public class DefaultTestingComponents {
                     operatorRepository.delete(operator);
                 }
             }
+            // Install all operators needed for the testing simulators
             addSimulatorOperators();
-        } catch (Exception e) {
-
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
-
-
     }
 
 
+    /**
+     * Replaces the testing actuator with a new one.
+     *
+     * @return if the replacement was successful or not.
+     */
     public ResponseEntity replaceTestingActuator() {
         try {
             // Delete the testing-device if existing
-            if (actuatorRepository.existsByName(ACTUATOR_NAME)) {
+            if (actuatorRepository.findByName(ACTUATOR_NAME).isPresent()) {
                 actuatorRepository.delete(actuatorRepository.findByName(ACTUATOR_NAME).get());
             }
 
@@ -580,15 +555,21 @@ public class DefaultTestingComponents {
      * @return http status whether it was successful or not
      */
     public ResponseEntity redeployComponents() {
-        Actuator testingActuator = actuatorRepository.findByName(ACTUATOR_NAME).get();
-        List<Sensor> allSensors = sensorRepository.findAll();
-
+        Actuator testingActuator = null;
         try {
-            // Check if Actuator is currently running
-            if (deploymentWrapper.isComponentRunning(testingActuator)) {
-                deploymentWrapper.undeployComponent(testingActuator);
+            if (actuatorRepository.findByName(ACTUATOR_NAME).isPresent()) {
+                testingActuator = actuatorRepository.findByName(ACTUATOR_NAME).get();
             }
-            deploymentWrapper.deployComponent(testingActuator);
+
+            List<Sensor> allSensors = sensorRepository.findAll();
+
+            // Check if Actuator is currently running and redeploy it
+            if (testingActuator != null) {
+                if (deploymentWrapper.isComponentRunning(testingActuator)) {
+                    deploymentWrapper.undeployComponent(testingActuator);
+                }
+                deploymentWrapper.deployComponent(testingActuator);
+            }
 
             // Delete all sensor simulators via the prefix "TESTING_" that all testing components contains
             for (Sensor sensor : allSensors) {
