@@ -46,7 +46,8 @@
                 </div>
             </div>
             <div class="body">
-                <table class="table table-hover" st-table="displayedCollection" st-safe-src="testListCtrl.items">
+                <table class="table table-hover" st-table="displayedCollection" st-safe-src="testListCtrl.items"
+                       id="tableTest">
                     <thead>
                     <tr>
                         <th>Name</th>
@@ -520,7 +521,8 @@
                                      ng-class="{'has-error' : addTestCtrl.item.errors.accessControlPolicyIds }">
                                     <div class="form-line"
                                          ng-class="{'focused error' : addTestCtrl.item.errors.accessControlPolicyIds }">
-                                        <select multiple class="form-control selectpicker" title="Access Control Policies"
+                                        <select multiple class="form-control selectpicker"
+                                                title="Access Control Policies"
                                                 data-header="Access Control Policies"
                                                 ng-model="addTestCtrl.item.accessControlPolicyIds"
                                                 ng-options="p.id as (p.name) for p in ctrl.accessControlPolicyList">
@@ -547,7 +549,6 @@
         </div>
         <!-- #END# Modal -->
     </div>
-
 
 
     <!-- Modal Register Components for Testing -->
@@ -886,5 +887,16 @@
             </div>
         </div>
     </div>
+    <p id="ignorePDF">don't print this to pdf</p>
+    <div class="test-report">
+        <p><font size="3" color="red">print this to pdf</font></p>
+        <p>Das ist ein Test.</p>
+    </div>
+    <button id="getPDF"
+            class="btn bg-blue m-t-0 waves-effect"
+            ng-click="ctrl.getPDF()">
+        Print to pdf
+    </button>
+
 </div>
 

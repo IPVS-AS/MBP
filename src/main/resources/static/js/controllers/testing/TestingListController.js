@@ -151,6 +151,30 @@ app.controller('TestingController',
                 });
             }
 
+
+            function getPDF(divId, title) {
+                console.log(document.getElementById("tableTest"));
+                domtoimage.toPng(document.getElementById("tableTest"))
+                    .then(function (blob) {
+
+
+                        var doc = new jsPDF();
+
+                        doc.setFontSize(40);
+                        doc.setFontSize(18);
+                        doc.text(18, 25, "Test-Report");
+                        doc.addImage(blob, 'PNG', 15, 80, 180, 10, "Sensors", "NONE", 0);
+
+
+
+
+
+                        doc.save('TestReport.pdf');
+                    });
+
+            }
+
+
             /**
              * [Public]
              *
@@ -534,6 +558,7 @@ app.controller('TestingController',
                 registerTestingActuator: registerTestingActuator,
                 addSimulators: addSimulators,
                 addRealSensor: addRealSensor,
+                getPDF: getPDF
             });
             // $watch 'addTest' result and add to 'testList'
             $scope.$watch(
