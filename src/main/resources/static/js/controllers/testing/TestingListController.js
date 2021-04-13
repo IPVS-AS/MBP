@@ -487,47 +487,6 @@ app.controller('TestingController',
             }
 
 
-
-            function getPDF(divId, title) {
-            /**
-                domtoimage.toPng(document.getElementById('content2'))
-                    .then(function (blob) {
-                        var pdf = new jsPDF('l', 'pt', [$('#content2').width(), $('#content2').height()]);
-
-                        pdf.addImage(blob, 'PNG', 0, 0, $('#content2').width(), $('#content2').height());
-                        pdf.save("test.pdf");
-
-                        that.options.api.optionsChanged();
-                    });
-
-***/
-                var doc = new jsPDF();
-
-                // We'll make our own renderer to skip this editor
-                var specialElementHandlers = {
-                    '#getPDF': function(element, renderer){
-                        return true;
-                    },
-                    '.controls': function(element, renderer){
-                        return true;
-                    }
-                };
-
-                // All units are in the set measurement for the document
-                // This can be changed to "pt" (points), "mm" (Default), "cm", "in"
-                doc.fromHTML($('.test-report').get(0), 15, 15, {
-                    'width': 170,
-                    'elementHandlers': specialElementHandlers
-                });
-
-                doc.save('Generated.pdf');
-            }
-
-
-
-
-
-
             // expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {
                 testListCtrl: $controller('ItemListController as testListCtrl',
@@ -575,8 +534,6 @@ app.controller('TestingController',
                 registerTestingActuator: registerTestingActuator,
                 addSimulators: addSimulators,
                 addRealSensor: addRealSensor,
-                getPDF:getPDF
-
             });
             // $watch 'addTest' result and add to 'testList'
             $scope.$watch(

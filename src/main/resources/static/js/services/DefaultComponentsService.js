@@ -26,7 +26,7 @@ app.factory('DefaultComponentsService', [
 
             angular.forEach(SIMULATOR_LIST, function (value) {
                 componentList.some(function (component) {
-                    if (component.name === value) {
+                    if (component.name === value || component.name.includes("RERUN_")) {
                         const index = tempComponentList.indexOf(component);
                         if(index !== -1){
                             tempComponentList.splice(index,1)
