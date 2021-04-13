@@ -94,6 +94,7 @@ public class DefaultTestingComponents {
     private final String TEST_DEVICE_PASSWORD;
     private final String ACTUATOR_NAME;
     private final String TEST_PREFIX;
+
     private final List<String> SENSOR_SIMULATORS = Arrays.asList("TESTING_TemperatureSensor", "TESTING_TemperatureSensorPl", "TESTING_HumiditySensor", "TESTING_HumiditySensorPl");
 
 

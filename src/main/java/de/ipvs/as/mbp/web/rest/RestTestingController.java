@@ -5,7 +5,6 @@ import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.component.Sensor;
-import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
@@ -32,7 +31,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
@@ -80,8 +78,6 @@ public class RestTestingController {
     @Autowired
     private SensorRepository sensorRepository;
 
-    @Autowired
-    private TestDetailsCreateValidator testDetailsCreateValidator;
 
     @GetMapping(produces = "application/hal+json")
     @ApiOperation(value = "Retrieves all existing tests available for the requesting entity.", produces = "application/hal+json")
@@ -110,8 +106,7 @@ public class RestTestingController {
             @ApiResponse(code = 404, message = "Test or requesting user not found!")})
     public ResponseEntity<EntityModel<TestDetails>> one(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-            @PathVariable("testId") String testId,
-            @ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
+            @PathVariable("testId") String testId) throws EntityNotFoundException, MissingPermissionException {
         // Parse the access-request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
@@ -131,13 +126,13 @@ public class RestTestingController {
         List<Sensor> sensors = new ArrayList<>();
 
         for (String ruleName : requestDto.getRuleNames()) {
-            if (ruleRepository.existsByName(ruleName)) {
+            if (ruleRepository.findByName(ruleName).isPresent()) {
                 rules.add(ruleRepository.findByName(ruleName).get());
             }
         }
 
         for (String sensorName : requestDto.getType()) {
-            if (sensorRepository.existsByName(sensorName)) {
+            if (sensorRepository.findByName(sensorName).isPresent()) {
                 sensors.add(sensorRepository.findByName(sensorName).get());
             }
         }
@@ -186,10 +181,12 @@ public class RestTestingController {
      */
     @PostMapping(value = "/test/{testId}")
     public ResponseEntity<Boolean> executeTest(@PathVariable(value = "testId") String testId) {
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
         try {
-            // Start the test and get Map of sensor values
-            testExecutor.executeTest(testDetails);
+            if(testDetailsRepository.findById(testId).isPresent()){
+                TestDetails testDetails = testDetailsRepository.findById(testId).get();
+                // Start the test and get Map of sensor values
+                testExecutor.executeTest(testDetails);
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
@@ -222,12 +219,16 @@ public class RestTestingController {
      */
     @PostMapping(value = "/rerun-components/{testId}")
     public ResponseEntity editRerunComponents(@PathVariable(value = "testId") String testId) {
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
         ResponseEntity responseEntity;
         try {
-            // Add or deletes Rerun Components for the specific test
-            testRerunService.editRerunComponents(testDetails);
-            responseEntity = new ResponseEntity(HttpStatus.OK);
+            if( testDetailsRepository.findById(testId).isPresent()){
+                TestDetails testDetails = testDetailsRepository.findById(testId).get();
+                // Add or deletes Rerun Components for the specific test
+                testRerunService.editRerunComponents(testDetails);
+                responseEntity = new ResponseEntity(HttpStatus.OK);
+            } else {
+                responseEntity = new ResponseEntity((HttpStatus.NOT_FOUND));
+            }
         } catch (Exception e) {
             responseEntity = new ResponseEntity(HttpStatus.NOT_FOUND);
         }
@@ -249,10 +250,8 @@ public class RestTestingController {
 
     @GetMapping(value = "/ruleList/{testId}")
     public List<Rule> ruleList(@PathVariable(value = "testId") String testId) {
-        TestDetails test = testDetailsRepository.findById(testId).get();
-
         // get  information about the status of the rules before the execution of the test
-        return testAnalyzer.getCorrespondingRules(test);
+        return testAnalyzer.getCorrespondingRules(testDetailsRepository.findById(testId).get());
     }
 
 
