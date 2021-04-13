@@ -407,8 +407,8 @@ public class DefaultTestingComponents {
                 addSensorSimulator(sensorName);
                 if (affectedTestDetails != null && affectedTestDetails.size() >= 1) {
                     replaceSimulatorInTest(affectedTestDetails);
-                    replaceSimulatorInRule(affectedTestDetails, sensorId, sensorName);
                 }
+                replaceSimulatorInRule(sensorId, sensorName);
 
             }
 
@@ -419,56 +419,31 @@ public class DefaultTestingComponents {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    private void replaceSimulatorInRule(List<TestDetails> affectedTests, String oldId, String sensorName) {
-        for (TestDetails test : affectedTests) {
-            List<Rule> affectedRules = testAnalyzer.getCorrespondingRules(test);
+    private void replaceSimulatorInRule(String oldId, String sensorName) {
+        List<RuleTrigger> triggerList = ruleTriggerRepository.findAll();
+        for (RuleTrigger ruleTrigger : triggerList) {
+            if(ruleTrigger.getQuery().contains(oldId)){
+                // create new trigger
+                RuleTrigger newTrigger = ruleTrigger;
 
-            for (Rule rule : affectedRules) {
-                if (ruleRepository.findByName(rule.getName()).isPresent()) {
-                    // create new rule
-                    Rule updatedRule = ruleRepository.findByName(rule.getName()).get();
-
-                    // adjust trigger querey
-                    if (ruleTriggerRepository.findByName(rule.getTrigger().getName()).isPresent()) {
-                        // create new trigger
-                        RuleTrigger newTrigger = ruleTriggerRepository.findByName(rule.getTrigger().getName()).get();
-
-                        // adjust trigger query of the sensor of the test
-                        String triggerQuery = rule.getTrigger().getQuery();
-                        // Regex to get out the sensor ID
-                            Pattern pattern = Pattern.compile("(?<=sensor_)([0-9a-zA-Z]*)");
-                        Matcher matcher = pattern.matcher(triggerQuery);
-                        while (matcher.find()) {
-                            String sensorID = matcher.group();
-                            if (sensorID.contains(oldId)) {
-                                Sensor updatedSensor = sensorRepository.findByName(sensorName).get();
-                                if (updatedSensor != null) {
-                                    // replace the sensor id in the trigger query with the rerun sensor id
-                                    triggerQuery = triggerQuery.replace(oldId, updatedSensor.getId());
-                                    newTrigger.setQuery(triggerQuery);
-                                    ruleTriggerRepository.save(newTrigger);
-                                }
-
-                            }
+                // adjust trigger query of the sensor of the test
+                String triggerQuery = ruleTrigger.getQuery();
+                // Regex to get out the sensor ID
+                Pattern pattern = Pattern.compile("(?<=sensor_)([0-9a-zA-Z]*)");
+                Matcher matcher = pattern.matcher(triggerQuery);
+                while (matcher.find()) {
+                    String sensorID = matcher.group();
+                    if (sensorID.contains(oldId)) {
+                        Sensor updatedSensor = sensorRepository.findByName(sensorName).get();
+                        if (updatedSensor != null) {
+                            // replace the sensor id in the trigger query with the rerun sensor id
+                            triggerQuery = triggerQuery.replace(oldId, updatedSensor.getId());
+                            newTrigger.setQuery(triggerQuery);
+                            ruleTriggerRepository.save(newTrigger);
                         }
-                        // set the created trigger of the rerun rule
-                        updatedRule.setTrigger(newTrigger);
-                        ruleRepository.save(updatedRule);
-                        List<Rule> ruleList = test.getRules();
-                        int index = ruleList.indexOf(updatedRule);
-                        Rule replacedRule= ruleRepository.findByName(updatedRule.getName()).get();
-                        ruleList.set(index, replacedRule);
-                        test.setRules(ruleList);
-                        testDetailsRepository.save(test);
                     }
-
-
-
-
                 }
             }
-
-
         }
     }
 
