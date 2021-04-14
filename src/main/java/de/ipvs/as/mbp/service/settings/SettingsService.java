@@ -25,8 +25,8 @@ public class SettingsService {
     @Value("${mqtt_broker.default.location}")
     private String defaultBrokerLocation;
 
-    @Value("${mqtt_broker.default.address}")
-    private String defaultBrokerAddress;
+    @Value("${mqtt_broker.default.host}")
+    private String defaultBrokerHost;
 
     @Value("${git.branch}")
     private String branch;

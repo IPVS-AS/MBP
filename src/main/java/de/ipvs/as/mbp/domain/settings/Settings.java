@@ -1,6 +1,5 @@
 package de.ipvs.as.mbp.domain.settings;
 
-import de.ipvs.as.mbp.util.Validation;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -87,12 +86,12 @@ public class Settings {
     public void setBrokerIPAddress(String brokerIPAddress) {
         //Sanity check
         if ((brokerIPAddress == null) || brokerIPAddress.isEmpty()) {
-            throw new IllegalArgumentException("Broker IP address must not be null.");
+            throw new IllegalArgumentException("Broker IP address must not be null or empty.");
         }
-        //Check if provided ip address is of a valid format
-        if (!Validation.isValidIPAddress(brokerIPAddress)) {
-            throw new IllegalArgumentException("Invalid broker IP address provided.");
-        }
+        //Check if provided ip address is of a valid format --> removed to allow host names as well
+        //if (!Validation.isValidIPAddress(brokerIPAddress)) {
+        //    throw new IllegalArgumentException("Invalid broker IP address provided.");
+        //}
 
         this.brokerIPAddress = brokerIPAddress;
     }
