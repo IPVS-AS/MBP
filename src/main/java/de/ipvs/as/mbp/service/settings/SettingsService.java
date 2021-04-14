@@ -103,7 +103,7 @@ public class SettingsService {
 
         //Set fields to default values
         defaultSettings.setBrokerLocation(BrokerLocation.valueOf(defaultBrokerLocation));
-        defaultSettings.setBrokerIPAddress(defaultBrokerAddress);
+        defaultSettings.setBrokerIPAddress(defaultBrokerHost);
 
         return defaultSettings;
     }
