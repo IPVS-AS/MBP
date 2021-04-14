@@ -1,26 +1,16 @@
 package de.ipvs.as.mbp.service.mqtt;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
-import org.apache.commons.codec.binary.Base64;
-import de.ipvs.as.mbp.service.settings.SettingsService;
 import de.ipvs.as.mbp.domain.settings.BrokerLocation;
 import de.ipvs.as.mbp.domain.settings.Settings;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import de.ipvs.as.mbp.service.settings.SettingsService;
+import org.apache.commons.codec.binary.Base64;
+import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -31,13 +21,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 /**
  * This services provides means and support for MQTT-related tasks. It allows to publish and receive MQTT messages at
  * various topics and uses the settings service in order to determine its configuration.
  * topics
  */
 @Service
-@PropertySource(value = "classpath:application.properties")
+@DependsOn("applicationPropertiesConfigurer")
 @EnableScheduling
 public class MQTTService {
     //URL frame of the broker to use (protocol and port, address will be filled in)
@@ -46,7 +42,7 @@ public class MQTTService {
     private static final String CLIENT_ID = "mbp-client-" + getUniqueClientSuffix();
 
     //Autowired components
-    private SettingsService settingsService;
+    private final SettingsService settingsService;
 
     //Stores the reference of the mqtt client
     private MqttClient mqttClient = null;
@@ -126,7 +122,7 @@ public class MQTTService {
 
         MqttConnectOptions connectOptions = null;
 
-        switch(settings.getBrokerLocation()) {
+        switch (settings.getBrokerLocation()) {
             case LOCAL_SECURE:
                 requestOAuth2Token();
                 connectOptions = new MqttConnectOptions();
@@ -176,7 +172,6 @@ public class MQTTService {
      * If a secured broker is used, the initialization is delayed for 60 seconds (because the authorization server is integrated and needs to startup as well).
      * The OAuth2 access token for the MBP is only valid for 10 minutes, the scheduled task ensures to refresh this token every 10 minutes,
      * if the {@link BrokerLocation} is LOCAL_SECURE or REMOTE_SECURE.
-     *
      */
     @Scheduled(initialDelay = 60000, fixedDelay = 600000)
     private void refreshOAuth2Token() throws MqttException, IOException {
@@ -195,7 +190,7 @@ public class MQTTService {
             //Instantiate memory persistence
             MemoryPersistence persistence = new MemoryPersistence();
 
-            switch(settings.getBrokerLocation()) {
+            switch (settings.getBrokerLocation()) {
                 case LOCAL_SECURE:
                     requestOAuth2Token();
                     break;
@@ -348,13 +343,15 @@ public class MQTTService {
      */
     private HttpHeaders createHeaders(String username, String password) {
         return new HttpHeaders() {
-			private static final long serialVersionUID = 5554119924235604741L;
-		{
-            String auth = username + ":" + password;
-            byte[] encodedAuth = Base64.encodeBase64(
-                    auth.getBytes(StandardCharsets.US_ASCII));
-            String authHeader = "Basic " + new String(encodedAuth);
-            set("Authorization", authHeader);
-        }};
+            private static final long serialVersionUID = 5554119924235604741L;
+
+            {
+                String auth = username + ":" + password;
+                byte[] encodedAuth = Base64.encodeBase64(
+                        auth.getBytes(StandardCharsets.US_ASCII));
+                String authHeader = "Basic " + new String(encodedAuth);
+                set("Authorization", authHeader);
+            }
+        };
     }
 }

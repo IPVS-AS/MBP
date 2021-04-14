@@ -6,8 +6,10 @@ import de.ipvs.as.mbp.constants.Constants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
@@ -105,14 +107,18 @@ public class MongoConfiguration extends AbstractMongoClientConfiguration {
     }
 
     /**
-     * Create configurer for the injection of application-related property values, based on the
+     * Create a configurer for the injection of application-related property values, based on the
      * application.properties file.
      *
      * @return The resulting property configurer
      */
     @Bean
-    public static PropertySourcesPlaceholderConfigurer propertyConfigurer() {
-        //Create new property configurer
-        return new PropertySourcesPlaceholderConfigurer();
+    public static PropertySourcesPlaceholderConfigurer applicationPropertiesConfigurer() {
+        //Create corresponding property configurer and make it tolerant
+        PropertySourcesPlaceholderConfigurer propsConfig = new PropertySourcesPlaceholderConfigurer();
+        propsConfig.setIgnoreUnresolvablePlaceholders(true);
+
+        //Return final configurer
+        return propsConfig;
     }
 }

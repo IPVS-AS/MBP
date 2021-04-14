@@ -62,7 +62,7 @@ public class RestSettingsController {
      * in actuators and sensors by all users.
      *
      * @return A response entity containing the result of the request
-     * @throws MissingAdminPrivilegesException In case of insufficient permissions
+     * @throws MissingAdminPrivilegesException In case the current user misses admin privileges
      */
     @PostMapping(value = "/default-operators")
     @ApiOperation(value = "Loads default operators from the resource directory of the MBP and makes them available for usage in actuators and sensors by all users.", produces = "application/hal+json")
@@ -81,20 +81,14 @@ public class RestSettingsController {
      * Called when the client wants to retrieve the settings.
      *
      * @return The settings object
-     * @throws MissingAdminPrivilegesException
+     * @throws MissingAdminPrivilegesException In case the current user misses admin privileges
      */
     @GetMapping
     @ApiOperation(value = "Retrieves the current settings of the platform", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success")})
     public ResponseEntity<Settings> getSettings() throws MissingAdminPrivilegesException {
         //Get settings from settings service and return them
-        Settings settings;
-        try {
-            settings = settingsService.getSettings();
-        } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity<>(settings, HttpStatus.OK);
+        return new ResponseEntity<>(settingsService.getSettings(), HttpStatus.OK);
     }
 
     /**
@@ -102,7 +96,7 @@ public class RestSettingsController {
      *
      * @param settings The settings to update
      * @return OK (200) in case everything was successful
-     * @throws MissingAdminPrivilegesException
+     * @throws MissingAdminPrivilegesException In case the current user misses admin privileges
      */
     @PostMapping
     @ApiOperation(value = "Modifies the current settings of the platform", produces = "application/hal+json")
