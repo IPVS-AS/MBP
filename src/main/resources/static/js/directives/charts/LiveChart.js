@@ -12,9 +12,6 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
     //Maximum number of elements that may be displayed in the chart
     const CHART_MAX_ELEMENTS = 20;
 
-    //Interval with that the chart data is refreshed (seconds)
-    const REFRESH_DELAY_SECONDS = 15;
-
     /**
      * Linking function, glue code
      *
@@ -174,12 +171,12 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
                     scope.loadingFinish();
 
                     //Visualize the time until the next refreshment
-                    runProgress(REFRESH_DELAY_SECONDS);
+                    runProgress(scope.interval);
                 });
             };
 
             //Create an interval that calls the update function on a regular basis
-            chartInterval = $interval(intervalFunction, 1000 * REFRESH_DELAY_SECONDS);
+            chartInterval = $interval(intervalFunction, 1000 * scope.interval);
 
             //Ensure that the interval is cancelled in case the user switches the page
             scope.$on('$destroy', function () {
@@ -207,7 +204,7 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
         function runProgress(time) {
             progressBar.stop(true).width(0).animate({
                 width: "100%",
-            }, 15 * 1000);
+            }, time * 1000);
         }
 
         //Watch the unit parameter
@@ -217,6 +214,16 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
             //Update chart if unit was changed
             cancelChartUpdate();
             initChart();
+            initChartUpdate();
+        });
+
+        //Watch the interval parameter
+        scope.$watch(function () {
+            return scope.interval;
+        }, function (newValue, oldValue) {
+            //Create new update interval with the new value
+            scope.interval = newValue;
+            cancelChartUpdate();
             initChartUpdate();
         });
 
@@ -245,7 +252,9 @@ app.directive('liveChart', ['$timeout', '$interval', function ($timeout, $interv
             //Function for updating the displayed data
             getData: '&getData',
             //Function that checks whether the chart is allowed to update its data
-            isUpdateable: '&isUpdateable'
+            isUpdateable: '&isUpdateable',
+            //Refresh interval
+            interval: '@interval'
         }
     };
 }]);

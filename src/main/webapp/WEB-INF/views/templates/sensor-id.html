@@ -163,7 +163,12 @@
                 </h2>
                 <ul class="header-dropdown m-r--5">
                     <li>
-                        <a ng-click="valueLogStatsApi.updateStats()" class="clickable">
+                        <input class="form-control interval-input" type="number"
+                               ng-model="componentDetailsCtrl.valueLogStats.interval"/>
+                        <span style="vertical-align: bottom;">s&nbsp;</span>
+                    </li>
+                    <li>
+                        <a ng-click="valueLogStatsApi.updateStats()" class="clickable" style="vertical-align: top;">
                             <i class="material-icons">refresh</i>
                         </a>
                     </li>
@@ -186,7 +191,8 @@
                                  loading-start="componentDetailsCtrl.valueLogStats.loadingStart()"
                                  loading-finish="componentDetailsCtrl.valueLogStats.loadingFinish()"
                                  get-stats="componentDetailsCtrl.valueLogStats.getStats(unit)"
-                                 unit="{{componentDetailsCtrl.displayUnit}}">
+                                 unit="{{componentDetailsCtrl.displayUnit}}"
+                                 interval="{{componentDetailsCtrl.valueLogStats.interval}}">
                 </value-log-stats>
                 <div style="height: 20px"></div>
                 
@@ -205,13 +211,21 @@
             <div class="header">
             	<i class="material-icons" style="position: absolute; margin-top: 1px">live_tv</i>
                 <h2 style="margin-left: 35px;">Live Chart</h2>
+                <ul class="header-dropdown m-r--5">
+                    <li>
+                        <input class="form-control interval-input" type="number"
+                               ng-model="componentDetailsCtrl.liveChart.interval"/>
+                        <span style="vertical-align: bottom;">s&nbsp;</span>
+                    </li>
+                </ul>
             </div>
             <div class="body">
                 <live-chart loading-start="componentDetailsCtrl.liveChart.loadingStart()"
                             loading-finish="componentDetailsCtrl.liveChart.loadingFinish()"
                             get-data="componentDetailsCtrl.liveChart.getData(numberLogs, descending, unit)"
                             is-updateable="componentDetailsCtrl.liveChart.isUpdateable()"
-                            unit="{{componentDetailsCtrl.displayUnit}}">
+                            unit="{{componentDetailsCtrl.displayUnit}}"
+                            interval="{{componentDetailsCtrl.liveChart.interval}}">
                 </live-chart>
             </div>
         </div>

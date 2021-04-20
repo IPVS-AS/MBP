@@ -271,7 +271,8 @@ app.controller('TestingChartController',
                 vm.valueLogStats = {
                     loadingStart: loadingStart,
                     loadingFinish: loadingFinish,
-                    getStats: getStats
+                    getStats: getStats,
+                    interval: 120
                 };
             }
 
@@ -313,7 +314,8 @@ app.controller('TestingChartController',
                     loadingStart: loadingStart,
                     loadingFinish: loadingFinish,
                     isUpdateable: isUpdateable,
-                    getData: retrieveComponentData
+                    getData: retrieveComponentData,
+                    interval: 15
                 };
             }
 

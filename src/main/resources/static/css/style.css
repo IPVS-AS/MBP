@@ -10812,3 +10812,11 @@ html.ie11 .bs-searchbox .form-control {
     width: 90%;
 }
 
+/* Refresh interval input */
+.interval-input {
+    display: inline-block;
+    height: 25px;
+    font-size: smaller;
+    padding: 3px;
+    width: 50px;
+}

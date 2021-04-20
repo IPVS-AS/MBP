@@ -174,8 +174,13 @@
                     </h2>
                     <ul class="header-dropdown m-r--5">
                         <li>
+                            <input class="form-control interval-input" type="number"
+                                   ng-model="operator.valueUpdateInterval"/>
+                            <span style="vertical-align: bottom;">s&nbsp;</span>
+                        </li>
+                        <li>
                             <a class="clickable"
-                               ng-click="operator.historicalChartApi.updateChart(); operator.valueLogStatsApi.updateStats();">
+                               ng-click="operator.historicalChartApi.updateChart(); operator.valueLogStatsApi.updateStats();"  style="vertical-align: top;">
                                 <i class="material-icons">refresh</i>
                             </a>
                         </li>
@@ -186,7 +191,7 @@
                             </a>
                         </li>-->
                         <li>
-                            <a class="clickable" data-toggle="collapse" data-target="#card-body-{{operator.id}}">
+                            <a class="clickable" data-toggle="collapse" data-target="#card-body-{{operator.id}}"  style="vertical-align: top;">
                                 <i class="material-icons">keyboard_arrow_down</i>
                             </a>
                         </li>
@@ -229,7 +234,8 @@
                                         loading-start="operator.loadingLive.start()"
                                         loading-finish="operator.loadingLive.finish()"
                                         get-data="operator.getData(numberLogs, descending, unit)"
-                                        unit="{{operator.displayUnit}}">
+                                        unit="{{operator.displayUnit}}"
+                                        interval="{{operator.valueUpdateInterval}}">
                             </live-chart>
                         </div>
                         <div role="tabpanel" class="tab-pane fade in active" id="historical-chart-{{operator.id}}">
@@ -246,7 +252,8 @@
                                              loading-start="operator.loadingStats.start()"
                                              loading-finish="operator.loadingStats.finish()"
                                              get-stats="operator.getStats(unit)"
-                                             unit="{{operator.displayUnit}}">
+                                             unit="{{operator.displayUnit}}"
+                                             interval="{{operator.valueUpdateInterval}}">
                             </value-log-stats>
                         </div>
                     </div>

@@ -49,6 +49,7 @@ app.controller('DeviceDetailsController',
                     operator.onMonitoringToggle = createMonitoringToggleFunction(compatibleOperators[i].id);
                     operator.getData = createDataRetrievalFunction(compatibleOperators[i].id);
                     operator.isUpdateable = createUpdateCheckFunction(compatibleOperators[i].id);
+                    operator.valueUpdateInterval = 15;
                     operator.getStats = createStatsRetrievalFunction(compatibleOperators[i].id);
                     operator.loadingLive = createLoadingFunctions(compatibleOperators[i].id, LIVE_CHART_SELECTOR_PREFIX,
                         "Loading live chart...");
