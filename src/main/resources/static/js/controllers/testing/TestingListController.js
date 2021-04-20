@@ -25,6 +25,7 @@ app.controller('TestingController',
             const RERUN_OPERATOR = "RERUN_OPERATOR";
 
 
+
             const vm = this;
             vm.ruleList = ruleList;
             //Stores the parameters and their values as assigned by the user

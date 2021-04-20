@@ -8,13 +8,14 @@ import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
-import de.ipvs.as.mbp.domain.testing.TestDetailsCreateValidator;
 import de.ipvs.as.mbp.domain.testing.TestDetailsDTO;
+import de.ipvs.as.mbp.domain.testing.TestReport;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.RuleRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.repository.TestDetailsRepository;
+import de.ipvs.as.mbp.repository.TestReportRepository;
 import de.ipvs.as.mbp.service.UserEntityService;
 import de.ipvs.as.mbp.service.testing.TestEngine;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import java.io.IOException;
+import java.util.Map;
 
 
 import io.swagger.annotations.ApiOperation;
@@ -78,6 +80,8 @@ public class RestTestingController {
     @Autowired
     private SensorRepository sensorRepository;
 
+    @Autowired
+    private TestReportRepository testReportRepository;
 
     @GetMapping(produces = "application/hal+json")
     @ApiOperation(value = "Retrieves all existing tests available for the requesting entity.", produces = "application/hal+json")
@@ -96,9 +100,9 @@ public class RestTestingController {
         Link selfLink = linkTo(methodOn(getClass()).all(accessRequestHeader, pageable)).withSelfRel();
 
 
-
         return ResponseEntity.ok(userEntityService.entitiesToPagedModel(tests, selfLink, pageable));
     }
+
     @GetMapping(path = "/{testId}", produces = "application/hal+json")
     @ApiOperation(value = "Retrieves an existing tests identified by its id.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
@@ -109,7 +113,6 @@ public class RestTestingController {
             @PathVariable("testId") String testId) throws EntityNotFoundException, MissingPermissionException {
         // Parse the access-request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
-
 
         // Retrieve the corresponding test
         TestDetails testDetails = userEntityService.getForIdWithAccessControlCheck(testDetailsRepository, testId, ACAccessType.READ, accessRequest);
@@ -173,6 +176,9 @@ public class RestTestingController {
         return ResponseEntity.noContent().build();
     }
 
+
+
+
     /**
      * Starts the selected Test and creates the TestReport with the corresponding line chart.
      *
@@ -182,7 +188,7 @@ public class RestTestingController {
     @PostMapping(value = "/test/{testId}")
     public ResponseEntity<Boolean> executeTest(@PathVariable(value = "testId") String testId) {
         try {
-            if(testDetailsRepository.findById(testId).isPresent()){
+            if (testDetailsRepository.findById(testId).isPresent()) {
                 TestDetails testDetails = testDetailsRepository.findById(testId).get();
                 // Start the test and get Map of sensor values
                 testExecutor.executeTest(testDetails);
@@ -221,7 +227,7 @@ public class RestTestingController {
     public ResponseEntity editRerunComponents(@PathVariable(value = "testId") String testId) {
         ResponseEntity responseEntity;
         try {
-            if( testDetailsRepository.findById(testId).isPresent()){
+            if (testDetailsRepository.findById(testId).isPresent()) {
                 TestDetails testDetails = testDetailsRepository.findById(testId).get();
                 // Add or deletes Rerun Components for the specific test
                 testRerunService.editRerunComponents(testDetails);
@@ -244,7 +250,8 @@ public class RestTestingController {
      * @return HttpsStatus and HashMap with all Reports regarding to the specific test
      */
     @GetMapping(value = "/pdfList/{testId}")
-    public ResponseEntity getPDFList(@PathVariable(value = "testId") String testId) {
+    public ResponseEntity<Map<Integer, TestReport>> getPDFList(@PathVariable(value = "testId") String testId) {
+
         return testEngine.getPDFList(testId);
     }
 
@@ -261,8 +268,8 @@ public class RestTestingController {
      * @return HttpStatus
      */
     @GetMapping(value = "/downloadPDF/{path}")
-    public ResponseEntity openPDF(@PathVariable(value = "path") String path) throws IOException {
-        return testEngine.downloadPDF(path);
+    public void openPDF(@PathVariable(value = "path") String path) throws IOException {
+        // return testEngine.downloadPDF(path);
     }
 
     /**
@@ -272,9 +279,9 @@ public class RestTestingController {
      * @return boolean, if pdf exists
      */
     @GetMapping(value = "/pdfExists/{testId}")
-    public boolean pdfExists(@PathVariable(value = "testId") String testId) {
+    public void pdfExists(@PathVariable(value = "testId") String testId) {
         TestDetails test = testDetailsRepository.findById(testId).get();
-        return test.isPdfExists();
+        // return test.isPdfExists();
     }
 
     /**
@@ -284,8 +291,8 @@ public class RestTestingController {
      * @return if deletion worked or not
      */
     @PostMapping(value = "/deleteTestReport/{testId}")
-    public ResponseEntity<Boolean> deleteTestReport(@PathVariable(value = "testId") String testId, @RequestBody Object fileName) {
-        return testEngine.deleteReport(testId, fileName);
+    public void deleteTestReport(@PathVariable(value = "testId") String testId, @RequestBody Object fileName) {
+        //return testEngine.deleteReport(testId, fileName);
     }
 
 

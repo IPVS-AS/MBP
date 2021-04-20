@@ -8,21 +8,19 @@ import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
-
-import javax.persistence.GeneratedValue;
-
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
+import javax.persistence.GeneratedValue;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-@MBPEntity(createValidator = TestDetailsCreateValidator.class, deleteValidator = TestDetailsDeleteValidator.class)
-public class TestDetails extends UserEntity {
+@MBPEntity
+public class TestReport extends UserEntity {
 
-    public TestDetails() {
+    public TestReport() {
 
     }
 
@@ -30,7 +28,6 @@ public class TestDetails extends UserEntity {
     @GeneratedValue
     private String id;
 
-    @Indexed(unique = true)
     private String name;
 
     @DBRef
@@ -55,10 +52,6 @@ public class TestDetails extends UserEntity {
 
     private String successful;
 
-    private boolean pdfExists;
-
-    private String pathPDF;
-
     private Map<String, List<Double>> triggerValues;
 
     private List<String> rulesExecuted;
@@ -67,7 +60,6 @@ public class TestDetails extends UserEntity {
 
     private boolean triggerRules;
 
-    private boolean useNewData;
 
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy HH:mm:ss")
@@ -90,42 +82,6 @@ public class TestDetails extends UserEntity {
      */
     public void setTriggerRules(boolean triggerRules) {
         this.triggerRules = triggerRules;
-    }
-
-    /**
-     * Retruns the path of the test report
-     *
-     * @return pathPDF
-     */
-    public String getPathPDF() {
-        return pathPDF;
-    }
-
-    /**
-     * Sets the path of the test report
-     *
-     * @param pathPDF path, where the test report is saved
-     */
-    public void setPathPDF(String pathPDF) {
-        this.pathPDF = pathPDF;
-    }
-
-    /**
-     * Returns, wether a test report exists
-     *
-     * @return pdfExists
-     */
-    public boolean isPdfExists() {
-        return pdfExists;
-    }
-
-    /**
-     * Sets, wether a test report exists
-     *
-     * @param pdfExists boolean if the test report exists or not
-     */
-    public void setPdfExists(boolean pdfExists) {
-        this.pdfExists = pdfExists;
     }
 
     /**
@@ -379,25 +335,6 @@ public class TestDetails extends UserEntity {
     public void setConfig(List<List<ParameterInstance>> config) {
         this.config = config;
     }
-
-    /**
-     * Returns the information whether data from the last test run should be used again or not.
-     *
-     * @return useNewData boolean whether data from the last test run should be used again or not.
-     */
-    public boolean isUseNewData() {
-        return useNewData;
-    }
-
-    /**
-     * Sets the information whether data from the last test run should be used again or not.
-     *
-     * @param useNewData boolean whether data from the last test run should be used again or not.
-     */
-    public void setUseNewData(boolean useNewData) {
-        this.useNewData = useNewData;
-    }
-
 
     /**
      * Returns a list with the names of the rules of the application to be tested.

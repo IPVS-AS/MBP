@@ -5,15 +5,16 @@ import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
+import de.ipvs.as.mbp.domain.testing.TestReport;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.TestDetailsRepository;
+import de.ipvs.as.mbp.repository.TestReportRepository;
 import de.ipvs.as.mbp.service.rules.RuleEngine;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
-import de.ipvs.as.mbp.service.testing.analyzer.GraphPlotter;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
-import de.ipvs.as.mbp.service.testing.analyzer.TestReport;
 import de.ipvs.as.mbp.web.rest.RestDeploymentController;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -32,10 +33,7 @@ import java.util.*;
 public class TestExecutor {
 
     @Autowired
-    private GraphPlotter graphPlotter;
-
-    @Autowired
-    private TestReport testReport;
+    private TestReportRepository testReportRepository;
 
     @Autowired
     private TestDetailsRepository testDetailsRepository;
@@ -147,8 +145,10 @@ public class TestExecutor {
     public void executeTest(TestDetails test) throws Exception {
 
         // Set the exact start time of the test
-        test.setStartTestTimeNow();
-        testDetailsRepository.save(test);
+        TestReport testReport = new TestReport();
+        testReport.setName(test.getName());
+        testReport.setStartTestTimeNow();
+        String reportId = testReportRepository.save(testReport).getId();
 
         // get  information about the status of the rules before the execution of the test
         List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(test);
@@ -161,9 +161,9 @@ public class TestExecutor {
 
         // Get List of all simulated Values
         Map<String, LinkedHashMap<Long, Double>> valueList =
-                testAnalyzer.isFinished(test.getId());
-        saveValues(test, valueList);
-        analyzeTest(test, rulesBefore);
+                testAnalyzer.isFinished(reportId, test.getId());
+        saveValues(test, reportId,valueList);
+        analyzeTest(test, reportId,rulesBefore);
 
 
     }
@@ -174,19 +174,12 @@ public class TestExecutor {
      * @param test        that was executed
      * @param rulesBefore status of the rules before the test was executed
      */
-    private void analyzeTest(TestDetails test, List<Rule> rulesBefore)
-            throws Exception {
+    private void analyzeTest(TestDetails test, String reportId,List<Rule> rulesBefore) {
         // Check the test for success
-        testAnalyzer.testSuccess(test.getId());
+        testAnalyzer.testSuccess(test.getId(), reportId);
         TestDetails testDetails =
                 testDetailsRepository.findById(test.getId()).get();
 
-        // Create test report with graph of sensor values as a pdf
-        graphPlotter.createGraph(testDetails);
-        String pdfPath =
-                testReport.generateTestReport(testDetails.getId(), rulesBefore);
-        testDetails.setPathPDF(pdfPath);
-        testDetails.setPdfExists(true);
 
         // save success and path of test report to database
         testDetailsRepository.save(testDetails);
@@ -198,10 +191,11 @@ public class TestExecutor {
      * @param test      executed test
      * @param valueList generated value list
      */
-    private void saveValues(TestDetails test,
+    private void saveValues(TestDetails test, String reportId,
                             Map<String, LinkedHashMap<Long, Double>> valueList) {
 
         Map<String, LinkedHashMap<Long, Double>> valueListTest = new HashMap<>();
+        TestReport testReport = testReportRepository.findById(reportId).get();
         TestDetails testDetails =
                 testDetailsRepository.findById(test.getId()).get();
 
@@ -212,11 +206,13 @@ public class TestExecutor {
                     valueListTest.put(sensor.getName(), temp);
                     // list.remove(sensor.getId());
                     // save list of sensor values to database
-                    testDetails.setSimulationList(valueListTest);
+                    testReport.setSimulationList(valueListTest);
+                    testDetails.setSimulationList(valueList);
                 }
 
             }
         }
+        testReportRepository.save(testReport);
         testDetailsRepository.save(testDetails);
 
     }

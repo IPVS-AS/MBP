@@ -4,12 +4,10 @@ import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
+import de.ipvs.as.mbp.domain.testing.TestReport;
 import de.ipvs.as.mbp.domain.testing.Testing;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
-import de.ipvs.as.mbp.repository.RuleRepository;
-import de.ipvs.as.mbp.repository.RuleTriggerRepository;
-import de.ipvs.as.mbp.repository.TestDetailsRepository;
-import de.ipvs.as.mbp.repository.TestRepository;
+import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiverObserver;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
@@ -53,6 +51,9 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
 
     @Autowired
     private DeploymentWrapper deploymentWrapper;
+
+    @Autowired
+    private TestReportRepository testReportRepository;
 
     private final String RERUN_IDENTIFIER;
 
@@ -136,19 +137,21 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
     /**
      * Sets the End time of the test, if every Sensor of a test is finished.
      *
-     * @param testId Id of the the running test
+     * @param reportId Id of the the report in which to save the information of the test end time
      * @return value-list of the simulated Sensor
      */
-    public Map<String, LinkedHashMap<Long, Double>> isFinished(String testId) {
+    public Map<String, LinkedHashMap<Long, Double>> isFinished(String reportId, String testId) {
         boolean response = true;
+        TestReport testReport = testReportRepository.findById(reportId).get();
         TestDetails test = testDetailsRepository.findById(testId).get();
+
         while (response) {
             // testRunning
             response = areSensorsRunning(test);
         }
         // set and save end time
-        test.setEndTestTimeNow();
-        testDetailsRepository.save(test);
+        testReport.setEndTestTimeNow();
+        testReportRepository.save(testReport);
 
         return testEngine.getTestValues();
     }
@@ -192,8 +195,10 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      *
      * @param testId ID of the executed test
      */
-    public void testSuccess(String testId) {
+    public void testSuccess(String testId, String reportId) {
         TestDetails test = testDetailsRepository.findById(testId).get();
+        TestReport testReport = testReportRepository.findById(reportId).get();
+
         List<String> ruleNames = new ArrayList<>();
         List<Rule> ruleList = test.getRules();
 
@@ -209,16 +214,16 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
         }
 
         // get trigger values
-        Map<String, List<Double>> triggerValues = getTriggerValues(testId);
+        Map<String, List<Double>> triggerValues = getTriggerValues(testId, reportId);
         // get rules executed
         List<String> rulesExecuted = getRulesExecuted(triggerValues);
         //calculate success
         String successResponse = successCalc(test, triggerValues, ruleNames);
 
         // save the information
-        test.setTriggerValues(triggerValues);
-        test.setSuccessful(successResponse);
-        test.setRulesExecuted(rulesExecuted);
+        testReport.setTriggerValues(triggerValues);
+        testReport.setSuccessful(successResponse);
+        testReport.setRulesExecuted(rulesExecuted);
         testDetailsRepository.save(test);
     }
 
@@ -228,16 +233,17 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      * @param testId ID of the executed test
      * @return List of trigger-values
      */
-    public Map<String, List<Double>> getTriggerValues(String testId) {
+    public Map<String, List<Double>> getTriggerValues(String testId, String reportId) {
         Map<String, List<Double>> testValues = new HashMap<>();
 
 
         TestDetails testDetails = testDetailsRepository.findById(testId).get();
+        TestReport testReport = testReportRepository.findById(reportId).get();
         List<String> ruleNames = new ArrayList<>();
         List<String> triggerID = new ArrayList<>();
 
-        Integer startTime = testDetails.getStartTimeUnix();
-        long endTime = testDetails.getEndTimeUnix();
+        Integer startTime = testReport.getStartTimeUnix();
+        long endTime = testReport.getEndTimeUnix();
 
         // get all triggerID's and rule names of the corresponding rules to the test
         List<Rule> corresRules = getCorrespondingRules(testDetails);
@@ -321,7 +327,6 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
 
         return executedRules;
     }
-
 
 
 }

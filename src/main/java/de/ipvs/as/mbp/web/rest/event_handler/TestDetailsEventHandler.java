@@ -50,23 +50,7 @@ public class TestDetailsEventHandler {
         testDetails.setSensor(sensorArray);
     }
 
-    /**
-     * Called in case a test is supposed to be deleted. This method then takes care of deleting all
-     * files saved that are associated with this test.
-     *
-     * @param testDetails
-     */
-    @HandleAfterDelete
-    public void afterTestDelete(TestDetails testDetails) {
-        File dir = new File(testDetails.getPathPDF());
-        FileFilter fileFilter = new WildcardFileFilter(testDetails.getId() + "*");
-        File[] files = dir.listFiles(fileFilter);
-        for (final File file : files) {
-            if (!file.delete()) {
-                System.err.println("Can't remove " + file.getAbsolutePath());
-            }
-        }
-    }
+
 
 
 

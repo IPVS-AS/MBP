@@ -73,7 +73,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
 
                         pdfDetails.push({
                             "date": key,
-                            "path": value
+                            "report": value
                         });
                     });
                     pdfList.pdfTable = pdfDetails;

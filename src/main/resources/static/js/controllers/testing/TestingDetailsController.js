@@ -8,10 +8,12 @@ app.controller('TestingDetailsController',
         function ($scope, $controller, TestService, TestReportService,testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, HttpService, ENDPOINT_URI, ruleList) {
             //Initialization of variables that are used in the frontend by angular
             const vm = this;
+            console.log(testingDetails)
             vm.ruleList = ruleList;
             vm.test = testingDetails;
             vm.executeRules = true;
             vm.sensorType = testingDetails.type;
+
 
             // ID of the Test
             const COMPONENT_ID = $routeParams.id;
@@ -184,7 +186,7 @@ app.controller('TestingDetailsController',
             function getPDFList() {
                 vm.pdfDetails = [];
                 TestService.getPDFList(COMPONENT_ID).then(function (response) {
-                    $scope.pdfTable = response;
+                   console.log(response)
                 });
             }
 
