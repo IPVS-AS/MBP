@@ -148,6 +148,11 @@ public class TestExecutor {
         TestReport testReport = new TestReport();
         testReport.setName(test.getName());
         testReport.setStartTestTimeNow();
+        testReport.setConfig(test.getConfig());
+        testReport.setRules(test.getRules());
+        testReport.setRuleNames(test.getRuleNames());
+        testReport.setSensor(test.getSensor());
+        testReport.setTriggerRules(test.isTriggerRules());
         String reportId = testReportRepository.save(testReport).getId();
 
         // get  information about the status of the rules before the execution of the test

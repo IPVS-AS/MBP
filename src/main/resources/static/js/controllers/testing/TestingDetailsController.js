@@ -4,8 +4,8 @@
  * Controller for the test details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('TestingDetailsController',
-    ['$scope', '$controller', 'TestService', 'TestReportService','testingDetails', 'sensorList', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'HttpService', 'ENDPOINT_URI', 'ruleList',
-        function ($scope, $controller, TestService, TestReportService,testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, HttpService, ENDPOINT_URI, ruleList) {
+    ['$scope', '$controller', 'TestService', 'TestReportService', 'testingDetails', 'sensorList', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'HttpService', 'ENDPOINT_URI', 'ruleList',
+        function ($scope, $controller, TestService, TestReportService, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, HttpService, ENDPOINT_URI, ruleList) {
             //Initialization of variables that are used in the frontend by angular
             const vm = this;
             console.log(testingDetails)
@@ -13,6 +13,7 @@ app.controller('TestingDetailsController',
             vm.test = testingDetails;
             vm.executeRules = true;
             vm.sensorType = testingDetails.type;
+            var testReport = null;
 
 
             // ID of the Test
@@ -162,7 +163,6 @@ app.controller('TestingDetailsController',
                     if (i === 0) {
                         vm.ruleNames = vm.ruleNames + testingDetails.rules[i].name;
                         vm.actionNames = vm.actionNames + testingDetails.rules[i].actionNames;
-                        console.log(vm.ruleNames, vm.actionNames)
                     } else {
                         vm.ruleNames = vm.ruleNames + ", " + testingDetails.rules[i].name;
                         for (let x = 0; x < testingDetails.rules[i].actionNames.length; x++) {
@@ -177,6 +177,15 @@ app.controller('TestingDetailsController',
 
             }
 
+            $scope.openReport = function (report) {
+                console.log("-----------------------------------------------------------------hier drinnen")
+                testReport = report.report;
+                $scope.testReportAnzeige = testReport;
+                console.log($scope.testReportAnzeige);
+                console.log(report)
+                $('#testReport').modal('show');
+            };
+
 
             /**
              * [Public]
@@ -186,7 +195,7 @@ app.controller('TestingDetailsController',
             function getPDFList() {
                 vm.pdfDetails = [];
                 TestService.getPDFList(COMPONENT_ID).then(function (response) {
-                   console.log(response)
+                    console.log(response)
                 });
             }
 
@@ -293,16 +302,11 @@ app.controller('TestingDetailsController',
                 console.log(document.getElementById("tableTest"));
                 domtoimage.toPng(document.getElementById("tableTest"))
                     .then(function (blob) {
-                        domtoimage.toPng(document.getElementById("bild"))
-                            .then(function (bild) {
 
-                                TestReportService.generateReport(bild);
-                                console.log(blob)
+                        TestReportService.generateReport(blob);
+                        console.log(blob)
 
-                                console.log(bild)
-                            });
                     });
-
 
 
             }

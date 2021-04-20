@@ -33,6 +33,7 @@ app.controller('TestingChartController',
                 updateDeploymentState();
                 updateDeviceState();
 
+                getPDFList();
                 //Initialize charts
                 initLiveChart();
                 initHistoricalChart();
