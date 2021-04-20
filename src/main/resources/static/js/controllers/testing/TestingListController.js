@@ -163,7 +163,7 @@ app.controller('TestingController',
                         doc.setFontSize(40);
                         doc.setFontSize(18);
                         doc.text(18, 25, "Test-Report");
-                        doc.addImage(blob, 'PNG', 15, 80, 180, 10, "Sensors", "NONE", 0);
+                        doc.addImage(blob, 'PNG', 15, 40, 180, 18, "Sensors", "NONE", 0);
 
 
 

@@ -4,8 +4,8 @@
  * Controller for the test details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('TestingDetailsController',
-    ['$scope', '$controller', 'TestService', 'testingDetails', 'sensorList', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'HttpService', 'ENDPOINT_URI', 'ruleList',
-        function ($scope, $controller, TestService, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, HttpService, ENDPOINT_URI, ruleList) {
+    ['$scope', '$controller', 'TestService', 'TestReportService','testingDetails', 'sensorList', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'HttpService', 'ENDPOINT_URI', 'ruleList',
+        function ($scope, $controller, TestService, TestReportService,testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, HttpService, ENDPOINT_URI, ruleList) {
             //Initialization of variables that are used in the frontend by angular
             const vm = this;
             vm.ruleList = ruleList;
@@ -26,7 +26,6 @@ app.controller('TestingDetailsController',
                 'TestingAccelerationSensorPl',
                 'TestingGPSSensor',
                 'TestingGPSSensorPl'];
-
 
 
             // Storing variables
@@ -113,8 +112,6 @@ app.controller('TestingDetailsController',
                     return type === sensorType;
 
                 });
-
-
             }
 
             /**
@@ -287,6 +284,27 @@ app.controller('TestingDetailsController',
 
                 vm.newTestObject = TestService.getTestData(testingDetails.type, vm.selectedRealSensor, vm.parameterVal, $rootScope.config, $rootScope.selectedRules.rules, ruleList, vm.executeRules);
             }
+
+
+            function getPDF(divId, title) {
+
+                console.log(document.getElementById("tableTest"));
+                domtoimage.toPng(document.getElementById("tableTest"))
+                    .then(function (blob) {
+                        domtoimage.toPng(document.getElementById("bild"))
+                            .then(function (bild) {
+
+                                TestReportService.generateReport(bild);
+                                console.log(blob)
+
+                                console.log(bild)
+                            });
+                    });
+
+
+
+            }
+
 
             /**
              * [Private]
@@ -736,7 +754,8 @@ app.controller('TestingDetailsController',
                 getPDFList: getPDFList,
                 editConfig: editConfig,
                 editTestConfiguration: updateTest,
-                deletePDF: deletePDF
+                deletePDF: deletePDF,
+                getPDF: getPDF
             });
         }
 
