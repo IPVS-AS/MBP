@@ -523,7 +523,7 @@ app.controller('ComponentDetailsController',
             vm.idOfAllApplicableVisualizations = vm.availableVisualizationsMappings.map(visObj => visObj.visName);
 
             // Binding for the next chart to add (visualization id)
-            vm.nextChartToAdd = "";
+            vm.nextChartToAdd = "select";
 
             // Represents one instance of a currently active visualization
             class ActiveVisualization {
@@ -619,6 +619,11 @@ app.controller('ComponentDetailsController',
             // Actions when the "Add a chart" button is clicked
             var cardCount = 0;
             function onCreateNewVisualizationClicked() {
+
+                if (vm.nextChartToAdd === "select") {
+                    return;
+                }
+
                 var visToAdd = new ActiveVisualization(cardCount.toString(), vm.nextChartToAdd);
                 cardCount += 1;
 

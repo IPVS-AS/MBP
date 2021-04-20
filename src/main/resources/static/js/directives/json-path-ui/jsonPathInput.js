@@ -8,8 +8,6 @@
  * modifications like array dimensions. It is possible to bind the
  * final input to extern variables as well as to display error
  * messages in the case of invalid input.
- *
- * @author Tim
  */
 app.directive('jsonPathInput', ['UnitService', '$compile', function (UnitService, $compile) {
 
@@ -25,7 +23,6 @@ app.directive('jsonPathInput', ['UnitService', '$compile', function (UnitService
         element.bind('focus', function() {
 
         })
-
 
         // List of bindings for the dynamically created array dimension input fields
         scope.arrInputBinding = [];
@@ -50,11 +47,11 @@ app.directive('jsonPathInput', ['UnitService', '$compile', function (UnitService
          */
         scope.onSelectPathItem = function () {
             var pathItem = JSON.parse(scope.selectedBinding);
+            console.log(scope.selectedBinding);
 
             // Remove all the old input fields
             removeInputFields();
-            console.log(scope.fieldCollectionIdInput);
-            console.log(scope.pathType);
+
             scope.fieldCollectionIdInput = scope.pathType;
 
             // Get a copy of the path item to edit things etc.

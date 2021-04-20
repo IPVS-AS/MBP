@@ -34,9 +34,9 @@
                         <td>{{componentDetailsCtrl.component.operator.name}}</td>
                     </tr>
                     <tr>
-                        <th>Unit:</th>
-                        <td>{{componentDetailsCtrl.component.operator.unit ?
-                                componentDetailsCtrl.component.operator.unit : 'None'}}
+                        <th>Data model:</th>
+                        <td>{{componentDetailsCtrl.component.operator.dataModel ?
+                                componentDetailsCtrl.component.operator.dataModel.name : 'None'}}
                         </td>
                     </tr>
                     <tr>
@@ -319,7 +319,6 @@
                 <form ng-submit="componentDetailsCtrl.updateJsonPath(visItem)">
                     <fieldset>
                         <div class="modal-body">
-                            Modal for item {{visItem.instanceId}}
 
                             <!-- START: Modal cases for each visualization and available vis field collections -->
                             <div ng-if="visItem.visId === 'doubleVis'">
@@ -334,7 +333,7 @@
 			                    </span>
                                     </div>
                                     <!-- item.name group -->
-                                    <label>JsonPath to double value:</label>
+                                    <label>JsonPath to number value:</label>
                                     <div
                                             ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
                                         <div ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
@@ -363,7 +362,7 @@
 			                    </span>
                                     </div>
                                     <!-- item.name group -->
-                                    <label>JsonPath to double array:</label>
+                                    <label>JsonPath to number array:</label>
                                     <div
                                             ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
                                         <div class="form-line"
@@ -400,7 +399,7 @@
                                             ng-class="{'has-error' : addDeviceTypeCtrl.item.errors.name }">
                                         <div class="form-line"
                                              ng-class="{'focused error' : addDeviceTypeCtrl.item.errors.name }">
-                                            <label>JsonPath to double latitude:</label>
+                                            <label>JsonPath to number latitude:</label>
                                             <ng-container>
                                                 <json-path-input ng-model="visItem.visFieldToPathMappingInput.latitude"
                                                                  json-path-list="visItem.getJsonPathsByFieldCollectionName('default').latitude"
@@ -409,8 +408,7 @@
                                                                  path-type="default"
                                                 </json-path-input>
                                             </ng-container>
-
-                                            <label>JsonPath to double longitude:</label>
+                                            <label style="margin-top: 10px">JsonPath to number longitude:</label>
                                             <ng-container>
                                                 <json-path-input ng-model="visItem.visFieldToPathMappingInput.longitude"
                                                                  json-path-list="visItem.getJsonPathsByFieldCollectionName('default').longitude"
@@ -461,9 +459,11 @@
                     </button>
                     <select class="form-control show-tick" ng-model="componentDetailsCtrl.nextChartToAdd"
                             style="float:left; max-width: 400px; margin-left: 10px">
-                        <option value="" disabled>Select...</option>
+                        <option value="select" disabled>Select...</option>
                         <option ng-repeat="visId in componentDetailsCtrl.idOfAllApplicableVisualizations"
-                                value="{{visId}}">{{visId}}
+                                value="{{visId}}">
+                            {{visId === 'doubleVis' ? "Line Chart" : ""}}
+                            {{visId === 'geoMap' ? "Map" : ""}}
                         </option>
                     </select>
                     </div>

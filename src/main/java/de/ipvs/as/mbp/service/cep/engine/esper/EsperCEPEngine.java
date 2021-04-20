@@ -139,9 +139,6 @@ public class EsperCEPEngine implements CEPEngine {
             }
         }
 
-        // Mehrdimensionale Arrays FUNKEN NICHT
-        //queryBuilder.append(", test string[]");
-
         //Close query
         queryBuilder.append(")");
 

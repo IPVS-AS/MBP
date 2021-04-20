@@ -4,6 +4,9 @@ app.controller('DataModelListController',
     ['$scope', '$controller', '$q', 'dataModelList', 'addDataModel', 'deleteDataModel', 'DataModelService', 'OperatorService', 'NotificationService',
         function ($scope, $controller, $q, dataModelList, addDataModel, deleteDataModel, DataModelService, OperatorService, NotificationService) {
             var vm = this;
+
+            vm.showDataModelTextBox = false;
+
             vm.treeNodes = "";
 
             /**

@@ -116,7 +116,7 @@ public class CEPValueLogParser {
                         returnMap.put(instruction.getFieldName(), parsedDate.getTime());
                         break;
                     case BINARY:
-                        // For CEP no binary type exists --> handle it as string
+                        // For CEP no binary type exists --> handle it as string TODO binary exists in esper maybe add it later
                         String getBinaryString = (String) extractedObj.get("$binary");
                         returnMap.put(instruction.getFieldName(), getBinaryString);
                         break;

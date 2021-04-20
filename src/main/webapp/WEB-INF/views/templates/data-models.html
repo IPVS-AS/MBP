@@ -27,7 +27,7 @@
                             <th>Name</th>
                             <th>Description</th>
                             <th>Data example</th>
-                         <!--   <th>Amount of data tree nodes</th> -->
+                            <!--   <th>Amount of data tree nodes</th> -->
                             <th>Owner</th>
                         </tr>
                         </thead>
@@ -39,48 +39,48 @@
                                    class="material-icons" style="vertical-align: bottom;">lock</i>
                             </td>
                             <td>{{item.description}}</td>
-                         <td>
-                             <button class="btn btn-default" role="button"
-                                     data-html="true" data-toggle="popover"
-                                     data-placement="top" title="MQTT message example"
-                                     data-content="<pre style=&quot;height: auto; max-height: 200px; overflow: auto;
+                            <td>
+                                <button class="btn btn-default" role="button"
+                                        data-html="true" data-toggle="popover"
+                                        data-placement="top" title="MQTT message example"
+                                        data-content="<pre style=&quot;height: auto; max-height: 200px; overflow: auto;
                                                     background-color: #eeeeee; word-break: normal !important;
                                                     word-wrap: normal !important;
                                                     white-space: pre !important;&quot;
                                                     >{{item.jsonexample ? ctrl.formatJSON(item.jsonexample) : 'Not available'}}</pre>">
-                                 MQTT message example
-                             </button>
-                           </td>
-                           <td>{{item.ownerName ? item.ownerName : "None"}}</td>
-                           <td>
-                               <form ng-submit="deleteDataModelCtrl.deleteItem()" style="display: inline-block">
-                                   <button type="submit" ng-hide="item.defaultEntity"
-                                           class="btn bg-red btn-circle waves-effect waves-circle waves-float"
-                                           ng-click="deleteDataModelCtrl.item.id = item.id">
-                                       <i class="material-icons" style="font-size:14px;">delete</i>
-                                   </button>
-                               </form>
-                           </td>
-                       </tr>
-                       <tr ng-show="dataModelListCtrl.items.length === 0">
-                           <td>No data models registered.</td>
-                           <td></td>
-                           <td></td>
-                           <td></td>
-                       </tr>
-                       </tbody>
-                       <tfoot>
-                       <tr>
-                           <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
-                           </td>
-                       </tr>
-                       </tfoot>
-                   </table>
-               </table>
-           </div>
-       </div>
-   </div>
-   <!-- #END# List of Operators Card -->
+                                    MQTT message example
+                                </button>
+                            </td>
+                            <td>{{item.ownerName ? item.ownerName : "None"}}</td>
+                            <td>
+                                <form ng-submit="deleteDataModelCtrl.deleteItem()" style="display: inline-block">
+                                    <button type="submit" ng-hide="item.defaultEntity"
+                                            class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                            ng-click="deleteDataModelCtrl.item.id = item.id">
+                                        <i class="material-icons" style="font-size:14px;">delete</i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr ng-show="dataModelListCtrl.items.length === 0">
+                            <td>No data models registered.</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td class="text-center" st-pagination="" st-items-by-page="10" colspan="3">
+                            </td>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- #END# List of Data Models Card -->
     <!-- Modal -->
     <div class="modal fade" id="addDataModelModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -124,13 +124,19 @@
                             <div class="form-group" ng-class="{'has-error' : addDataModelCtrl.item.errors.treeNodes}">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addDataModelCtrl.item.errors.treeNodes}">
-                                    <textarea class="form-control" id="data-model-form-input-treeNodes" type="text"
-                                           placeholder="Add here the data model tree" ng-model="ctrl.treeNodes">
+                                    <dm-input ng-model="ctrl.treeNodes"></dm-input>
+                                    <button type="button" class="btn btn-secondary m-t-0 waves-effect"
+                                            ng-click="showDataModelTextBox = !showDataModelTextBox">{{showDataModelTextBox ? "Hide" : "Show"}} json definition
+                                    </button>
+                                    <textarea ng-show="showDataModelTextBox" class="form-control"
+                                              id="data-model-form-input-treeNodes" type="text"
+                                              placeholder="Add here the data model tree" ng-model="ctrl.treeNodes">
                                     </textarea>
                                 </div>
                                 <span class="help-block"
                                       ng-show="addDataModelCtrl.item.errors.treeNodes">{{addDataModelCtrl.item.errors.treeNodes}}</span>
                             </div>
+
                             <!-- item.accessControlPolicyIds group -->
                             <div class="form-group"
                                  ng-class="{'has-error' : addDataModelCtrl.item.errors.accessControlPolicyIds }">

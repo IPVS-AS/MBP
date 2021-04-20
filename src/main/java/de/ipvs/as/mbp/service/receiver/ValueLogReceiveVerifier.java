@@ -67,7 +67,7 @@ public class ValueLogReceiveVerifier {
      * @param currNode     The current node which should be investigated. Or in the view of a method
      *                     caller: The node to handle next.
      * @param lastArray    The JSONArray which was created last by the parent node. If the parent node
-     *                     did not create an array, then set this to null (!).
+     *                     did not create an array, then this should be set to null (!).
      * @param lastObject   The JSONObject which was created last by the parent node. If the parent node
      *                     did not create an object, then set this to null (!).
      * @param lastDocument The document which was created last by one of the parent nodes.
@@ -88,7 +88,7 @@ public class ValueLogReceiveVerifier {
                     JSONObject nextObject = lastObject.getJSONObject(currNode.getName());
                     if (nextObject.has(currNode.getName()))
                         throw new JSONException("Not a valid JSON as specified in the data model");
-
+                    // TODO Unused json exception... error
                     Document nextObjDoc = new Document();
                     lastDocument.append(currNode.getName(), nextObjDoc);
 

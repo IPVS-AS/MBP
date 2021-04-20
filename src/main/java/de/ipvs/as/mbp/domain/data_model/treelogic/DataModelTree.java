@@ -16,6 +16,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -554,9 +555,9 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
 
         String retString = "";
 
-        // Start with root
-        JSONObject root = new JSONObject();
-        for (DataModelTreeNode node : this.rootNodeModel.getChildren()) {
+            // Start with root
+            JSONObject root = new JSONObject();
+            for (DataModelTreeNode node : this.rootNodeModel.getChildren()) {
             getJSONFromChild(node, null, root);
         }
         try {
@@ -596,7 +597,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                 } else if (currNode.getType() == IoTDataTypes.ARRAY) {
                     JSONArray newArr = new JSONArray();
                     lastObject.put(currNode.getName(), newArr);
-                    // Call the function for the childs recursively (call it that often like dimensions)
+                    // Call the function for the childs recursively (call it that often as the array size   )
                     for (int i = 0; i < currNode.getSize(); i++) {
                         System.out.println(currNode.getSize());
                         getJSONFromChild(currNode.getChildren().get(0), newArr, null);
@@ -617,10 +618,12 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                     lastObject.put(currNode.getName(), "String");
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.DATE) {
-                    lastObject.put(currNode.getName(), "Date");
+                    lastObject.put(currNode.getName(), new SimpleDateFormat(
+                            "yyyy-MM-dd'T'HH:mm:ss").format(new Date())
+                    );
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.BINARY) {
-                    lastObject.put(currNode.getName(), "Binary");
+                    lastObject.put(currNode.getName(), "Base64 binary string");
                     // As primitive no children to be expected --> return
                 }
 
@@ -657,10 +660,11 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                     lastArray.put("String");
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.DATE) {
-                    lastArray.put("Date");
+                    lastArray.put( new SimpleDateFormat(
+                            "yyyy-MM-dd'T'HH:mm:ss").format(new Date()));
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.BINARY) {
-                    lastArray.put("Binary");
+                    lastArray.put("Base64 binary string");
                     // As primitive no children to be expected --> return
                 }
             }
