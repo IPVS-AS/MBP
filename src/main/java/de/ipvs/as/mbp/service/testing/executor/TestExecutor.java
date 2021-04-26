@@ -2,6 +2,7 @@ package de.ipvs.as.mbp.service.testing.executor;
 
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.operator.parameters.Parameter;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Starts the test and all its components. Then analyzes the results.
@@ -142,13 +144,13 @@ public class TestExecutor {
      *
      * @param test test to be executed
      */
-    public void executeTest(TestDetails test) throws Exception {
+    public void executeTest(TestDetails test)  {
 
         // Set the exact start time of the test
         TestReport testReport = new TestReport();
         testReport.setName(test.getName());
         testReport.setStartTestTimeNow();
-        testReport.setConfig(test.getConfig());
+        testReport.setConfig(getTestReportConfig(test));
         testReport.setRules(test.getRules());
         testReport.setRuleNames(test.getRuleNames());
         testReport.setSensor(test.getSensor());
@@ -167,10 +169,95 @@ public class TestExecutor {
         // Get List of all simulated Values
         Map<String, LinkedHashMap<Long, Double>> valueList =
                 testAnalyzer.isFinished(reportId, test.getId());
-        saveValues(test, reportId,valueList);
-        analyzeTest(test, reportId,rulesBefore);
+        saveValues(test, reportId, valueList);
+        analyzeTest(test, reportId, rulesBefore);
 
 
+    }
+
+    private List<List<ParameterInstance>> getTestReportConfig(TestDetails test) {
+        List<List<ParameterInstance>> reportConfig = new ArrayList<>();
+
+        for (int i = 0; i < test.getConfig().size(); i++) {
+            List<ParameterInstance> ojh = test.getConfig().get(i);
+            List<ParameterInstance> simul = ojh.stream().filter(item -> item.getValue().toString().contains("TESTING_")).collect(Collectors.toList());
+            if (simul.size() > 0) {
+                List<ParameterInstance> newConfig = new ArrayList<>();
+                newConfig = convertConfigInstances(ojh);
+                reportConfig.add(newConfig);
+            }
+
+        }
+        return reportConfig;
+
+
+    }
+
+    private List<ParameterInstance> convertConfigInstances(List<ParameterInstance> configInstance) {
+        List<ParameterInstance> convertedConfig = new ArrayList<>();
+        ParameterInstance type = null;
+        for (ParameterInstance instance : configInstance) {
+            Object i = instance.getValue();
+            if (instance.getName().equals("ConfigName")) {
+                type = getSensorType(instance.getValue());
+                convertedConfig.add(type);
+            } else if (instance.getName().equals("event")) {
+                convertedConfig.add(getEventType(type.getValue().toString(),Integer.parseInt(instance.getValue().toString())));
+            } else if (instance.getName().equals("anomaly")) {
+                convertedConfig.add(getAnomalyType(Integer.parseInt(instance.getValue().toString())));
+            }
+        }
+
+        return convertedConfig;
+    }
+
+    private ParameterInstance getEventType(String type, int event) {
+        ParameterInstance eventType = new ParameterInstance();
+        String simType ="";
+        if(type.equals("Temperature")){
+            simType ="Temperature";
+        } else {
+            simType ="Humidity";
+        }
+
+        eventType.setName("eventType");
+        if (event == 1) {
+            eventType.setValue(simType +" rise");
+        } else if (event == 2) {
+            eventType.setValue(simType +" drop");
+        } else {
+            eventType.setValue("-");
+        }
+        return eventType;
+    }
+
+
+    private ParameterInstance getAnomalyType(int anomaly) {
+        ParameterInstance anomalyType = new ParameterInstance();
+        anomalyType.setName("anomalyType");
+        if (anomaly == 3) {
+            anomalyType.setValue("Outliers");
+        } else if (anomaly == 4) {
+            anomalyType.setValue("Missing values");
+        } else if (anomaly == 5) {
+            anomalyType.setValue("Wrong value type");
+        } else {
+            anomalyType.setValue("No combination");
+        }
+        return anomalyType;
+    }
+
+
+    private ParameterInstance getSensorType(Object sensorName) {
+        String name = String.valueOf(sensorName);
+        ParameterInstance sensorType = new ParameterInstance();
+        sensorType.setName("Type");
+        if (name.contains("Temperature")) {
+            sensorType.setValue("Temperature");
+        } else {
+            sensorType.setValue("Humidity");
+        }
+        return sensorType;
     }
 
     /**
@@ -179,7 +266,7 @@ public class TestExecutor {
      * @param test        that was executed
      * @param rulesBefore status of the rules before the test was executed
      */
-    private void analyzeTest(TestDetails test, String reportId,List<Rule> rulesBefore) {
+    private void analyzeTest(TestDetails test, String reportId, List<Rule> rulesBefore) {
         // Check the test for success
         testAnalyzer.testSuccess(test.getId(), reportId);
         TestDetails testDetails =

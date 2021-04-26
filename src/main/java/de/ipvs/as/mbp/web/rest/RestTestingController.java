@@ -261,6 +261,10 @@ public class RestTestingController {
         return testAnalyzer.getCorrespondingRules(testDetailsRepository.findById(testId).get());
     }
 
+    @GetMapping(value = "/real-sensor-list/{testId}")
+    public List<Sensor> realSensorList(@PathVariable(value = "testId") String testId){
+        return testEngine.getRealSensors(testId);
+    }
 
     /**
      * Opens the selected Test-Report from the Test list

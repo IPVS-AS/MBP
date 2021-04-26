@@ -1153,32 +1153,18 @@
                                         <th class="align-center">Type</th>
                                         <th class="align-center">Event</th>
                                         <th class="align-center">Anomaly</th>
-                                        <th class="align-center">Simulation-Time</th>
-                                        <th class="align-center">#Events</th>
-                                        <th class="align-center">#Anoamlies</th>
 
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <!-- TODO: sensor simulator list with configurations -->
-                                    <tr>
-                                        <td class="align-center">
-                                            Temperature
+                                    <tr ng-repeat="testConfig in configTable">
+
+                                        <td class="align-center">{{testConfig.type}}
+                                        </td>
+                                        <td class="align-center"> {{testConfig.event}}
                                         </td>
                                         <td class="align-center">
-                                            Temperature Drop
-                                        </td>
-                                        <td class="align-center">
-                                            Outlier
-                                        </td>
-                                        <td class="align-center">
-                                            1 h
-                                        </td>
-                                        <td class="align-center">
-                                            3
-                                        </td>
-                                        <td class="align-center">
-                                            4
+                                            {{testConfig.anomaly}}
                                         </td>
                                     </tr>
 
@@ -1193,6 +1179,97 @@
                             </div>
                         </div>
 
+                        <!-- real sensor information group -->
+                        <div class="card deployment-card">
+                            <div class="header">
+                                <i class="material-icons" style="position: absolute">call_split</i>
+                                <h2 style="margin-left: 35px;">
+                                    Involved Real-Sensors
+                                </h2>
+                            </div>
+                            <div class="body">
+                                <table class="table table-hover" st-table="displayedCollection">
+                                    <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th class="align-center">State</th>
+                                        <th>Sensor type</th>
+                                        <th>Extraction operator</th>
+                                        <th>Device</th>
+                                        <th>Owner</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr id="{{item.id}}"
+                                        ng-repeat="item in testReportAnzeige.sensor">
+                                        <td ng-if="item.name.indexOf('TESTING_') === -1">
+                                            <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>&nbsp;
+                                            <i ng-show="item.wasModelled" class="material-icons"
+                                               style="vertical-align: bottom;">view_quilt</i>
+                                        </td>
+                                        <td class="align-center" ng-if="item.name.indexOf('TESTING_') === -1 ">
+                                            <div ng-switch="item.state" ng-click="item.reloadState()" class="clickable">
+                                                <div ng-switch-when="LOADING">
+                                                    <div class="preloader pl-size-xs">
+                                                        <div class="spinner-layer pl-blue">
+                                                            <div class="circle-clipper left">
+                                                                <div class="circle"></div>
+                                                            </div>
+                                                            <div class="circle-clipper right">
+                                                                <div class="circle"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div ng-switch-when="NOT_READY">
+                                                    <span class="label label-danger">Unavailable</span>
+                                                </div>
+                                                <div ng-switch-when="READY">
+                                                    <span class="label label-success">Ready</span>
+                                                </div>
+                                                <div ng-switch-when="DEPLOYED">
+                                                    <span class="label bg-mbp-mid-blue">Installed</span>
+                                                </div>
+                                                <div ng-switch-when="RUNNING">
+                                                    <span class="label label-info">Running</span>
+                                                </div>
+                                                <div ng-switch-default>
+                                                    <span class="label label-default">Unknown</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td ng-if="item.name.indexOf('TESTING_') === -1">{{item.componentType}}</td>
+                                        <td ng-if="item.name.indexOf('TESTING_') === -1">{{item.operator.name}}</td>
+                                        <td ng-if="item.name.indexOf('TESTING_') === -1">{{item.device.name}}</td>
+                                        <td ng-if="item.name.indexOf('TESTING_') === -1">
+                                            {{item.ownerName ? item.ownerName : "None"}}
+                                        </td>
+                                        <td ng-if="item.name.indexOf('TESTING_') === -1">
+                                            <form ng-submit="deleteSensorCtrl.deleteItem()"
+                                                  style="display:inline-block">
+                                                <button type="submit"
+                                                        class="btn bg-red btn-circle waves-effect waves-circle waves-float"
+                                                        ng-click="deleteSensorCtrl.item.id = item.id">
+                                                    <i class="material-icons" style="font-size:14px;">delete</i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    <tr ng-show="sensorListCtrl.items.length === 0 || simExists === 0 ">
+                                        <td>No registered sensors</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    </tbody>
+                                    <tfoot>
+                                    <tr>
+                                        <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
 
                         <!-- rule information group -->
                         <div class="card deployment-card">
@@ -1252,7 +1329,18 @@
                                 <h3>Next Steps:</h3>
                                 <p> &ensp; &ensp; Step 1 - Check which values led to the failure of the
                                     Test. </p>
-                                <p> &ensp; &ensp; Step 3 - Adjust ..... </p>
+                                <p> &ensp; &ensp; Step 2 - Adjust your rules or repeat the test under the same
+                                    conditions </p>
+                                <ul>
+                                    <li> - Set too sensitive: increase the time window / window length, set the average
+                                        higher, ...
+                                    </li>
+                                    <li> - Set too coarse: reduce the time window/window length, set the average lower,
+                                        ...
+                                    </li>
+                                </ul>
+                                <p> &ensp; &ensp; Step 3 - Start the test again and observe how the results change. </p>
+
 
                             </div>
 

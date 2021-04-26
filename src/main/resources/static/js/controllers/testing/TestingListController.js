@@ -525,10 +525,12 @@ app.controller('TestingController',
                         entity: 'test',
                         addItem: function (data) {
                             let selectedSensorsReal = vm.selectedRealSensor;
+                            let selectedSimulators = vm.selectedSensors;
+
                             let parameterValuesReal = vm.parameterVal;
 
 
-                            const newTestObject = TestService.getTestData(vm.selectedSensors, selectedSensorsReal, parameterValuesReal, vm.config, vm.rules, ruleList, vm.executeRules, data);
+                            const newTestObject = TestService.getTestData(selectedSimulators, selectedSensorsReal, parameterValuesReal, vm.config, vm.rules, ruleList, vm.executeRules, data);
 
 
                             return addTest(newTestObject);

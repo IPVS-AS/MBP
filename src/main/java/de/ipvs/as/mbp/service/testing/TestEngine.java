@@ -128,6 +128,21 @@ public class TestEngine {
         return pdfList;
     }
 
+    public List<Sensor> getRealSensors(String testId){
+        List<Sensor> realSensors = new ArrayList<>();
+        try{
+            TestDetails test = testDetailsRepository.findById(testId).get();
+            List<Sensor> allSensors = test.getSensor();
+            for(Sensor sensor: allSensors){
+                if(!sensor.getName().contains("TESTING_")){
+                    realSensors.add(sensor);
+                }
+            }
+        }catch (Exception e ){
+        }
+
+        return realSensors;
+    }
 
     /**
      * Update the test configurations redefined by the user.

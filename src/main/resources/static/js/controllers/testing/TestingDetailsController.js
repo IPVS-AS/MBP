@@ -181,11 +181,47 @@ app.controller('TestingDetailsController',
                 console.log("-----------------------------------------------------------------hier drinnen")
                 testReport = report.report;
                 $scope.testReportAnzeige = testReport;
+                convertConfig(testReport);
+                $scope.realSensorList = TestService.getRealSensorList(COMPONENT_ID);
+                console.log($scope.realSensorList);
+                console.log(testReport)
                 console.log($scope.testReportAnzeige);
                 console.log(report)
                 $('#testReport').modal('show');
             };
 
+
+            function convertConfig(testReport) {
+                let simulationConfig=[];
+                let config = {};
+
+                angular.forEach(testReport.config, function (config, key) {
+                    let type = "";
+                    let event = "";
+                    let anomaly = "";
+                    angular.forEach(config, function (configDetails, key) {
+                        console.log(configDetails)
+
+                        if(configDetails["name"] === "Type"){
+                            type = configDetails["value"];
+                        } else if(configDetails["name"] === "eventType"){
+                            event = configDetails["value"];
+                        } else if(configDetails["name"] === "anomalyType") {
+                            anomaly = configDetails["value"];
+                        }
+                    });
+
+                    simulationConfig.push({
+                        "type": type,
+                        "event": event,
+                        "anomaly":anomaly
+                    })
+                    console.log(simulationConfig)
+
+                });
+                config.configTable = simulationConfig;
+                $scope.configTable =  config.configTable;
+            }
 
             /**
              * [Public]
@@ -382,6 +418,7 @@ app.controller('TestingDetailsController',
 
                 }
                 $rootScope.selectedRealSensor = vm.selectedRealSensor;
+
 
                 testingDetails.config.forEach(function (config) {
                     for (let n = 0; n < config.length; n++) {
