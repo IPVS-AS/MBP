@@ -43,11 +43,6 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(EntityStillInUseException.class)
     public ResponseEntity<ApiError> handleEntityStillInUseExists(EntityStillInUseException exception) {
-        //TODO remove
-        //Write exception into exception log repository
-        exceptionLogService.writeExceptionLog(exception);
-
-
         //Create API error from exception and return corresponding response entity
         ApiError error = new ApiError(HttpStatus.CONFLICT, Instant.now(), exception.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
