@@ -10,6 +10,7 @@ public class MBPInfo {
     private String buildTime = "";
     private String branch = "";
     private BrokerLocation brokerLocation = BrokerLocation.LOCAL;
+    private boolean demoMode = false;
 
     public MBPInfo() {
 
@@ -61,5 +62,13 @@ public class MBPInfo {
 
     public void setBrokerLocation(BrokerLocation brokerLocation) {
         this.brokerLocation = brokerLocation;
+    }
+
+    public boolean isDemoMode() {
+        return demoMode;
+    }
+
+    public void setDemoMode(boolean demoMode) {
+        this.demoMode = demoMode;
     }
 }

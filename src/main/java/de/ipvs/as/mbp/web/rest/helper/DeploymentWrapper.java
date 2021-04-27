@@ -1,18 +1,18 @@
 package de.ipvs.as.mbp.web.rest.helper;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.operator.parameters.Parameter;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.error.DeploymentException;
-import de.ipvs.as.mbp.service.deploy.ComponentState;
-import de.ipvs.as.mbp.service.deploy.SSHDeployer;
+import de.ipvs.as.mbp.service.deployment.ComponentState;
+import de.ipvs.as.mbp.service.deployment.DeployerDispatcher;
+import de.ipvs.as.mbp.service.deployment.IDeployer;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Component that wraps the methods provided by the SSHDeployer in order to offer consistent deployment features
@@ -24,33 +24,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DeploymentWrapper {
 
     @Autowired
-    private SSHDeployer sshDeployer;
+    private DeployerDispatcher deployerDispatcher;
 
     /**
      * Checks if a component is currently running.
      *
      * @param component the {@link Component} to check.
      * @return {@code true} if and only the component is running; {@code false} otherwise.
-     * @throws DeploymentException
      */
-    public boolean isComponentRunning(Component component) throws DeploymentException {
-        try {
-        	// Determine component status
-            return sshDeployer.isComponentRunning(component);
-        } catch (IOException e) {
-        	throw new DeploymentException("An error occurred while checking the component status.");
-        }
+    public boolean isComponentRunning(Component component) {
+        //Find suitable deployer component
+        IDeployer deployer = deployerDispatcher.getDeployer();
+
+        // Determine component status
+        return deployer.isComponentRunning(component);
     }
 
     /**
-	 * Starts a component using the given parameters.
-	 *
-	 * @param component the {@link Component} to start.
-	 * @param parameterInstances the list of {@link ParameterInstance}s.
-	 * @return the resulting
-     * @throws DeploymentException 
-	 */
-    public void startComponent(Component component, List<ParameterInstance> parameterInstances) throws DeploymentException {
+     * Starts a component using the given parameters.
+     *
+     * @param component          the {@link Component} to start.
+     * @param parameterInstances the list of {@link ParameterInstance}s.
+     */
+    public void startComponent(Component component, List<ParameterInstance> parameterInstances) {
         // Get adapter for parameter comparison
         Operator operator = component.getOperator();
 
@@ -71,90 +67,89 @@ public class DeploymentWrapper {
 
             // Check if no valid instance was found for this parameter
             if (!matchFound) {
-            	throw new DeploymentException("Invalid parameter configuration.").addInvalidParameter(parameter.getName(), "Parameter " + parameter.getName() + " is invalid or missing.");
+                throw new DeploymentException("Invalid parameter configuration.").addInvalidParameter(parameter.getName(), "Parameter " + parameter.getName() + " is invalid or missing.");
             }
         }
 
-        try {
-        	// Start component
-            sshDeployer.startComponent(component, parameterInstances);
-        } catch (IOException e) {
-        	throw new DeploymentException("An error occurred while starting the component.");
-        }
+        //Find suitable deployer component
+        IDeployer deployer = deployerDispatcher.getDeployer();
+
+        // Start component
+        deployer.startComponent(component, parameterInstances);
     }
 
     /**
      * Stops a component on its remote device.
      *
      * @param component the {@link Component} to stop.
-     * @throws DeploymentException 
      */
-    public void stopComponent(Component component) throws DeploymentException {
-        try {
-        	// Undeploy component
-            sshDeployer.stopComponent(component);
-        } catch (IOException e) {
-        	throw new DeploymentException("An error occurred while stopping the component.");
-        }
+    public void stopComponent(Component component) {
+        //Find suitable deployer component
+        IDeployer deployer = deployerDispatcher.getDeployer();
+
+        // Undeploy component
+        deployer.stopComponent(component);
     }
 
     /**
      * Deploys a component onto its device.
      *
      * @param component the {@link Component} to deploy.
-     * @throws DeploymentException 
      */
-    public void deployComponent(Component component) throws DeploymentException {
-        try {
-        	// Deploy component
-            sshDeployer.deployComponent(component);
-        } catch (IOException e) {
-        	throw new DeploymentException("An error occurred while deploying the component.");
-        }
+    public void deployComponent(Component component) {
+        //Find suitable deployer component
+        IDeployer deployer = deployerDispatcher.getDeployer();
+
+        // Deploy component
+        deployer.deployComponent(component);
     }
 
     /**
      * Undeploys a component onto its device.
      *
      * @param component the {@link Component} to undeploy.
-     * @throws DeploymentException 
      */
-    public void undeployComponent(Component component) throws DeploymentException {
-        try {
-        	// Undeploy component
-            sshDeployer.undeployComponent(component);
-        } catch (IOException e) {
-        	throw new DeploymentException("An error occurred while undeploying the component.");
-        }
+    public void undeployComponent(Component component) {
+        //Find suitable deployer component
+        IDeployer deployer = deployerDispatcher.getDeployer();
+
+        // Undeploy component
+        deployer.undeployComponent(component);
     }
 
-	/**
-	 * Retrieve the status for each given component.
-	 *
-	 * @param componentList the list of {@link Component}s.
-	 * @return a map holding the {@link ComponentState} for each component identified by its id.
-	 */
-	public Map<String, ComponentState> getStatesAllComponents(List<Component> componentList) {
-		// Create result map (component id -> component state)
-		Map<String, ComponentState> resultMap = new HashMap<>();
+    /**
+     * Retrieve the status for each given component.
+     *
+     * @param componentList the list of {@link Component}s.
+     * @return a map holding the {@link ComponentState} for each component identified by its id.
+     */
+    public Map<String, ComponentState> getStatesAllComponents(List<Component> componentList) {
+        //Find suitable deployer component
+        IDeployer deployer = deployerDispatcher.getDeployer();
 
-		// Iterate over all components and determine their state
-		for (Component component : componentList) {
-			ComponentState state = sshDeployer.determineComponentState(component);
-			resultMap.put(component.getId(), state);
-		}
+        // Create result map (component id -> component state)
+        Map<String, ComponentState> resultMap = new HashMap<>();
 
-		return resultMap;
-	}
+        // Iterate over all components and determine their state
+        for (Component component : componentList) {
+            ComponentState state = deployer.retrieveComponentState(component);
+            resultMap.put(component.getId(), state);
+        }
 
-	/**
-	 * Retrieve the status for a given component.
-	 *
-	 * @param component the {@link Component}.
-	 * @return the {@link ComponentState}.
-	 */
-	public ComponentState getComponentState(Component component) {
-		// Determine component state
-		return sshDeployer.determineComponentState(component);
-	}
+        return resultMap;
+    }
+
+    /**
+     * Retrieve the status for a given component.
+     *
+     * @param component the {@link Component}.
+     * @return the {@link ComponentState}.
+     */
+    public ComponentState getComponentState(Component component) {
+        //Find suitable deployer component
+        IDeployer deployer = deployerDispatcher.getDeployer();
+
+        // Determine component state
+        return deployer.retrieveComponentState(component);
+    }
 }

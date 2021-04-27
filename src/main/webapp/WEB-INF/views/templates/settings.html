@@ -1,7 +1,7 @@
 <div class="row clearfix" ng-hide>
 
     <!-- MQTT Broker settings card -->
-    <div class="col-lg-5">
+    <div class="col-lg-7">
         <div class="card">
             <div class="header">
                 <h2>
@@ -44,17 +44,15 @@
                         </div>
                     </div>
                 </div>
-
-
                 <h2 class="card-inside-title">MQTT Broker</h2>
                 <div class="row clearfix">
                     <div class="col-xs-12">
-                        <span class="help-block">Please specify whether you want to use a local or a remote
-                            MQTT broker. If you change the settings, the MBP will adjust itself at runtime.
-                            However, already deployed sensors need to be redeployed.
-                        </span>
                         <form ng-submit="ctrl.saveSettings()">
                             <fieldset id="settings-form">
+                                <h2 class="card-inside-title">MQTT Broker</h2>
+                                <span class="help-block">Please specify whether you want to use a local or a remote
+                                MQTT broker. If you change the settings, the MBP will adjust itself at runtime.
+                                However, already deployed sensors need to be redeployed.</span>
                                 <div class="form-group">
                                     <div class="radio">
                                         <input type="radio" class="with-gap" id="broker_location_local"
@@ -89,9 +87,22 @@
                                     </div>
                                     <span class="help-block">IP address of the MQTT broker to use</span>
                                 </div>
+                                <h2 class="card-inside-title">Demonstration mode</h2>
+                                <span class="help-block">The demo mode allows to test and demonstrate the features
+                                of the MBP without actually deploying operators on real devices.
+                                Instead, the arrival of sensor values is simulated.</span>
+                                <span class="help-block">As long as the demo mode is active, components cannot be actually
+                                (un-)deployed anymore and also a fake status is displayed for them.</span>
+                                <div class="form-group">
+                                    <div class="switch">
+                                        <label>Off
+                                            <input type="checkbox" ng-model="ctrl.settings.demoMode">
+                                            <span class="lever"></span>On</label>
+                                    </div>
+                                </div>
                                 <div class="form-group align-left">
                                     <button type="submit" class="btn btn-primary m-t-15 waves-effect">
-                                        Save
+                                        Save settings
                                     </button>
                                 </div>
                             </fieldset>
@@ -106,9 +117,29 @@
     <div class="col-lg-5">
         <div class="card">
             <div class="header">
-                <h2>
-                    REST API Documentation
-                </h2>
+                <h2>Control functions</h2>
+            </div>
+            <div class="body">
+                <h2 class="card-inside-title">Default operators</h2>
+                <div class="row clearfix">
+                    <div class="col-xs-12">
+                        <span class="help-block">This will load some default operators from the <code>resources</code>
+                            directory of the MBP's repository and make them available for usage in sensors.
+                        </span>
+                        <form ng-submit="ctrl.addDefaultOperators()">
+                            <div class="form-group align-left">
+                                <button type="submit" class="btn btn-primary m-t-15 waves-effect">
+                                    Add operators
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="header">
+                <h2>REST API Documentation</h2>
             </div>
             <div class="body">
                 <h2 class="card-inside-title">Swagger documentation</h2>

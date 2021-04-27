@@ -5,7 +5,6 @@ import de.ipvs.as.mbp.domain.settings.MBPInfo;
 import de.ipvs.as.mbp.domain.settings.Settings;
 import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
 import de.ipvs.as.mbp.service.UserEntityService;
-import de.ipvs.as.mbp.service.mqtt.MQTTService;
 import de.ipvs.as.mbp.service.settings.DefaultOperatorService;
 import de.ipvs.as.mbp.service.settings.SettingsService;
 import de.ipvs.as.mbp.service.testing.DefaultTestingComponents;
@@ -37,9 +36,6 @@ public class RestSettingsController {
 
     @Autowired
     private SettingsService settingsService;
-
-    @Autowired
-    private MQTTService mqttService;
 
     @Autowired
     private UserEntityService userEntityService;
@@ -153,18 +149,11 @@ public class RestSettingsController {
     @PostMapping
     @ApiOperation(value = "Modifies the current settings of the platform", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to modify the settings")})
-    public ResponseEntity<Void> saveSettings(@RequestBody Settings settings) throws MissingAdminPrivilegesException {
+    public ResponseEntity<Void> saveSettings(@RequestBody Settings settings) throws MissingAdminPrivilegesException, IOException, MqttException {
         userEntityService.requireAdmin();
 
-        // Save settings and re-initialize MQTT service, since it needs to use a different IP address now
-        try {
-            settingsService.saveSettings(settings);
-            mqttService.initialize();
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
+        // Update settings and update MBP components if necessary
+        settingsService.updateSettings(settings);
 
         //Everything fine
         return ResponseEntity.ok().build();

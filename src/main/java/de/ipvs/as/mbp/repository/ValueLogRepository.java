@@ -208,7 +208,7 @@ public class ValueLogRepository {
 		// Replace root elements with value log sub-documents
 		aggregateStages.add(Aggregates.replaceRoot("$values"));
 
-		// Fine-grained Sorting on value log level
+		// Fine-grained sorting on value log level
 		aggregateStages.add(Aggregates.sort(fineSortDocument));
 
 		// Fine-grained offset for pagination on value log level (if necessary)
