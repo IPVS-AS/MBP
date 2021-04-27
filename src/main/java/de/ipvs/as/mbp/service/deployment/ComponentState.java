@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.service.deploy;
+package de.ipvs.as.mbp.service.deployment;
 
 /**
  * Enumerates all possible availability states of components.

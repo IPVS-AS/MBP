@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.service.ssh;
+package de.ipvs.as.mbp.service.deployment.ssh;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

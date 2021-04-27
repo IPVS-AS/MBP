@@ -1,20 +1,10 @@
 package de.ipvs.as.mbp.service.mqtt;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-
-import org.apache.commons.codec.binary.Base64;
-import de.ipvs.as.mbp.service.settings.SettingsService;
 import de.ipvs.as.mbp.domain.settings.BrokerLocation;
 import de.ipvs.as.mbp.domain.settings.Settings;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import de.ipvs.as.mbp.service.settings.SettingsService;
+import org.apache.commons.codec.binary.Base64;
+import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,6 +20,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * This services provides means and support for MQTT-related tasks. It allows to publish and receive MQTT messages at
@@ -118,39 +114,50 @@ public class MQTTService {
         //Stores the address of the desired mqtt broker
         String brokerAddress = "localhost";
 
-        //Determine from settings if a remote broker should be used instead
+        //Retrieve desired broker address from settings
         Settings settings = settingsService.getSettings();
+        brokerAddress = settings.getBrokerIPAddress();
+
+        //Pass settings to main initialization function
+        initialize(settings.getBrokerLocation(), brokerAddress);
+    }
+
+    /**
+     * Initializes, configures and starts the MQTT client that belongs to this service.
+     * If the MQTT client is already running, it will e terminated, disconnected and restarted with new settings.
+     * According to the broker location, the mqtt client is initiated with or without OAuth2  authentication.
+     *
+     * @param brokerLocation The broker location to use
+     * @param brokerAddress  The address of the broker to use
+     * @throws MqttException In case of an error during execution of mqtt operations
+     * @throws IOException   In case of an I/O issue
+     */
+    public void initialize(BrokerLocation brokerLocation, String brokerAddress) throws MqttException, IOException {
+        //Disconnect the old mqtt client if already connected
+        if ((mqttClient != null) && (mqttClient.isConnected())) {
+            mqttClient.disconnectForcibly();
+        }
 
         //Instantiate memory persistence
         MemoryPersistence persistence = new MemoryPersistence();
 
         MqttConnectOptions connectOptions = null;
 
-        switch(settings.getBrokerLocation()) {
-            case LOCAL_SECURE:
-                requestOAuth2Token();
-                connectOptions = new MqttConnectOptions();
-                connectOptions.setCleanSession(true);
-                connectOptions.setUserName(accessToken);
-                connectOptions.setPassword("any".toCharArray());
-                break;
-            case REMOTE_SECURE:
-                //Retrieve IP address of external broker from settings
-                brokerAddress = settings.getBrokerIPAddress();
-                requestOAuth2Token();
-                connectOptions = new MqttConnectOptions();
-                connectOptions.setCleanSession(true);
-                connectOptions.setUserName(accessToken);
-                connectOptions.setPassword("any".toCharArray());
-                break;
-            case REMOTE:
-                //Retrieve IP address of external broker from settings
-                brokerAddress = settings.getBrokerIPAddress();
-                break;
-            default:
-                break;
-
+        //Check if secure mode is desired
+        if (brokerLocation.equals(BrokerLocation.LOCAL_SECURE) || brokerLocation.equals(BrokerLocation.REMOTE_SECURE)) {
+            requestOAuth2Token();
+            connectOptions = new MqttConnectOptions();
+            connectOptions.setCleanSession(true);
+            connectOptions.setUserName(accessToken);
+            connectOptions.setPassword("any".toCharArray());
         }
+
+        //Check whether broker is local
+        if (brokerLocation.equals(BrokerLocation.LOCAL) || brokerLocation.equals(BrokerLocation.LOCAL_SECURE)) {
+            //Override broker address with localhost
+            brokerAddress = "localhost";
+        }
+
         //Create new mqtt client with the full broker URL
         mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
         if (connectOptions != null) {
@@ -176,7 +183,6 @@ public class MQTTService {
      * If a secured broker is used, the initialization is delayed for 60 seconds (because the authorization server is integrated and needs to startup as well).
      * The OAuth2 access token for the MBP is only valid for 10 minutes, the scheduled task ensures to refresh this token every 10 minutes,
      * if the {@link BrokerLocation} is LOCAL_SECURE or REMOTE_SECURE.
-     *
      */
     @Scheduled(initialDelay = 60000, fixedDelay = 600000)
     private void refreshOAuth2Token() throws MqttException, IOException {
@@ -195,7 +201,7 @@ public class MQTTService {
             //Instantiate memory persistence
             MemoryPersistence persistence = new MemoryPersistence();
 
-            switch(settings.getBrokerLocation()) {
+            switch (settings.getBrokerLocation()) {
                 case LOCAL_SECURE:
                     requestOAuth2Token();
                     break;
@@ -348,13 +354,15 @@ public class MQTTService {
      */
     private HttpHeaders createHeaders(String username, String password) {
         return new HttpHeaders() {
-			private static final long serialVersionUID = 5554119924235604741L;
-		{
-            String auth = username + ":" + password;
-            byte[] encodedAuth = Base64.encodeBase64(
-                    auth.getBytes(StandardCharsets.US_ASCII));
-            String authHeader = "Basic " + new String(encodedAuth);
-            set("Authorization", authHeader);
-        }};
+            private static final long serialVersionUID = 5554119924235604741L;
+
+            {
+                String auth = username + ":" + password;
+                byte[] encodedAuth = Base64.encodeBase64(
+                        auth.getBytes(StandardCharsets.US_ASCII));
+                String authHeader = "Basic " + new String(encodedAuth);
+                set("Authorization", authHeader);
+            }
+        };
     }
 }

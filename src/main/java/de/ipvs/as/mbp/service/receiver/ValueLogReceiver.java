@@ -1,6 +1,7 @@
 
 package de.ipvs.as.mbp.service.receiver;
 
+import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.MonitoringOperatorRepository;
@@ -28,6 +29,9 @@ public class ValueLogReceiver {
     //Set ob observers which want to be notified about incoming value logs
     private final Set<ValueLogReceiverObserver> observerSet;
 
+    //Instance of the used handler for arriving value logs
+    private ValueLogReceiverArrivalHandler arrivalHandler;
+
     /**
      * Initializes the value logger service.
      *
@@ -45,11 +49,11 @@ public class ValueLogReceiver {
         observerSet = new HashSet<>();
 
         //Create MQTT callback handler
-        ValueLogReceiverArrivalHandler handler = new ValueLogReceiverArrivalHandler(observerSet, actuatorRepository,
-                sensorRepository, deviceRepository, monitoringOperatorRepository);
+        arrivalHandler = new ValueLogReceiverArrivalHandler(observerSet, actuatorRepository, sensorRepository,
+                deviceRepository, monitoringOperatorRepository);
 
         //Register callback handler at MQTT service
-        mqttService.setMqttCallback(handler);
+        mqttService.setMqttCallback(arrivalHandler);
 
         //Subscribe all topics that are relevant for receiving value logs
         for (String topic : SUBSCRIBE_TOPICS) {
@@ -59,7 +63,21 @@ public class ValueLogReceiver {
                 e.printStackTrace();
             }
         }
+    }
 
+    /**
+     * Injects a given value log into the stream of received value logs and passes it to all observers accordingly.
+     *
+     * @param valueLog The value log to inject
+     */
+    public void injectValueLog(ValueLog valueLog) {
+        //Sanity check
+        if (valueLog == null) {
+            throw new IllegalArgumentException("Value log must not be null,");
+        }
+
+        //Inject value log into the used arrival handler
+        arrivalHandler.notifyObservers(valueLog);
     }
 
     /**
