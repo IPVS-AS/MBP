@@ -100,10 +100,11 @@ app.controller('ExceptionLogController',
                             render: function (data, type, row) {
                                 //Create button for displaying a modal showing the stack trace
                                 return '<button type="button" ' +
-                                    'class="btn bg-blue waves-effect waves-circle waves-float m-t-0" ' +
+                                    'class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0" ' +
                                     'data-toggle="modal" data-target="#showStackTraceModal" ' +
                                     'data-backdrop="static" data-keyboard="false" ' +
-                                    'data-stacktrace="' + data + '">Show</button>';
+                                    'data-stacktrace="' + data + '">' +
+                                    '<i class="material-icons">remove_red_eye</i></button>';
                             }
                         }
                     ],
