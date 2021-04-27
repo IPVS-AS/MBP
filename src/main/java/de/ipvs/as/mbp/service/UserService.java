@@ -187,8 +187,8 @@ public class UserService {
      *
      * @throws EntityNotFoundException
      */
-    public void requireAdmin() throws EntityNotFoundException, MissingAdminPrivilegesException {
-        User user = userRepository.findByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new EntityNotFoundException("User", SecurityUtils.getCurrentUserUsername()));
+    public void requireAdmin() throws MissingAdminPrivilegesException {
+        User user = userRepository.findByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(MissingAdminPrivilegesException::new);
         if (!user.isAdmin()) {
             throw new MissingAdminPrivilegesException();
         }
