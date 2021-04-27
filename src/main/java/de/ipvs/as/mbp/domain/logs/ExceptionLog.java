@@ -1,7 +1,5 @@
 package de.ipvs.as.mbp.domain.logs;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import de.ipvs.as.mbp.util.InstantSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -21,7 +19,7 @@ public class ExceptionLog {
     @ApiModelProperty(notes = "Log ID", example = "5c8f7ad66f9e3c1bacb0fa99", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true, required = true)
     private String id;
 
-    @ApiModelProperty(notes = "Exception type", example = "DeploymentException", required = true)
+    @ApiModelProperty(notes = "Type of the exception", example = "DeploymentException", required = true)
     private String exceptionType;
 
     @ApiModelProperty(notes = "Message of the exception")
@@ -33,12 +31,11 @@ public class ExceptionLog {
     @ApiModelProperty(notes = "Root cause message of the exception")
     private String rootCauseMessage;
 
-    @JsonSerialize(using = InstantSerializer.class)
     @ApiModelProperty(notes = "Timestamp when the exception was thrown.")
-    private Instant timestamp;
+    private Instant time;
 
     @ApiModelProperty(notes = "Name of the user that was active when the exception was thrown")
-    private String userName;
+    private String username;
 
     /**
      * Creates a new exception log.
@@ -58,9 +55,9 @@ public class ExceptionLog {
      * Creates a new exception log from a given exception and user name.
      */
 
-    public ExceptionLog(Exception exception, String userName) {
+    public ExceptionLog(Exception exception, String username) {
         //Get exception class
-        this.exceptionType = exception.getClass().getName();
+        this.exceptionType = exception.getClass().getSimpleName();
 
         //Get exception message
         this.message = exception.getMessage();
@@ -72,10 +69,10 @@ public class ExceptionLog {
         this.rootCauseMessage = ExceptionUtils.getRootCauseMessage(exception);
 
         //Set timestamp
-        this.timestamp = Instant.now();
+        this.time = Instant.now();
 
         //Store username
-        this.userName = userName;
+        this.username = username;
     }
 
     public String getId() {
@@ -123,21 +120,21 @@ public class ExceptionLog {
         return this;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
-    public ExceptionLog setUserName(String userName) {
-        this.userName = userName;
+    public ExceptionLog setUsername(String username) {
+        this.username = username;
         return this;
     }
 
-    public Instant getTimestamp() {
-        return timestamp;
+    public Instant getTime() {
+        return time;
     }
 
-    public ExceptionLog setTimestamp(Instant timestamp) {
-        this.timestamp = timestamp;
+    public ExceptionLog setTime(Instant time) {
+        this.time = time;
         return this;
     }
 }

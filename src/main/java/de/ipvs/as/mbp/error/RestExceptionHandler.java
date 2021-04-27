@@ -26,6 +26,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @ExceptionHandler(EntityValidationException.class)
     public ResponseEntity<ApiError> handleValidationError(EntityValidationException exception) {
+        //Create API error
         ApiError error;
 
         //Decide about status code
@@ -42,6 +43,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(EntityStillInUseException.class)
     public ResponseEntity<ApiError> handleEntityStillInUseExists(EntityStillInUseException exception) {
+        //TODO remove
+        //Write exception into exception log repository
+        exceptionLogService.writeExceptionLog(exception);
+
+
         //Create API error from exception and return corresponding response entity
         ApiError error = new ApiError(HttpStatus.CONFLICT, Instant.now(), exception.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
@@ -49,36 +55,42 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(MissingPermissionException.class)
     public ResponseEntity<ApiError> handleMissingPermission(MissingPermissionException exception) {
+        //Create API error from exception and return corresponding response entity
         ApiError error = new ApiError(HttpStatus.UNAUTHORIZED, Instant.now(), exception.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
     @ExceptionHandler(MissingAdminPrivilegesException.class)
     public ResponseEntity<ApiError> handleMissingAdminPrivileges(MissingAdminPrivilegesException exception) {
+        //Create API error from exception and return corresponding response entity
         ApiError error = new ApiError(HttpStatus.UNAUTHORIZED, Instant.now(), exception.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
     @ExceptionHandler(MissingOwnerPrivilegesException.class)
     public ResponseEntity<ApiError> handleMissingOwnerPrivileges(MissingOwnerPrivilegesException exception) {
+        //Create API error from exception and return corresponding response entity
         ApiError error = new ApiError(HttpStatus.UNAUTHORIZED, Instant.now(), exception.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
     @ExceptionHandler(InvalidPasswordException.class)
     public ResponseEntity<ApiError> handleInvalidPassword(InvalidPasswordException exception) {
+        //Create API error from exception and return corresponding response entity
         ApiError error = new ApiError(HttpStatus.FORBIDDEN, Instant.now(), exception.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(NoSystemUserException.class)
     public ResponseEntity<ApiError> handleNoSystemUser(NoSystemUserException exception) {
+        //Create API error from exception and return corresponding response entity
         ApiError error = new ApiError(HttpStatus.FORBIDDEN, Instant.now(), exception.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(UserNotLoginableException.class)
     public ResponseEntity<ApiError> handleUserNotLoginable(UserNotLoginableException exception) {
+        //Create API error from exception and return corresponding response entity
         ApiError error = new ApiError(HttpStatus.FORBIDDEN, Instant.now(), exception.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
@@ -105,8 +117,10 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         exceptionLogService.writeExceptionLog(exception);
 
         //Create API error from exception and return corresponding response entity
-        ApiError error = new ApiError(exception.getStatus() == null ? HttpStatus.INTERNAL_SERVER_ERROR : exception.getStatus(), Instant.now(), exception.getMessage());
-        return ResponseEntity.status(exception.getStatus() == null ? HttpStatus.INTERNAL_SERVER_ERROR : exception.getStatus()).body(error);
+        exception.getStatus();
+        ApiError error = new ApiError(exception.getStatus(), Instant.now(), exception.getMessage());
+        exception.getStatus();
+        return ResponseEntity.status(exception.getStatus()).body(error);
     }
 
     @ExceptionHandler(MBPException.class)

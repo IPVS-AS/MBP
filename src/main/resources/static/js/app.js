@@ -514,7 +514,22 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            // Testing-Tool
+            //Exception logs
+            .when(viewPrefix + '/exception-logs', {
+                category: 'exception-logs',
+                templateUrl: 'templates/exception-logs',
+                controller: 'ExceptionLogController as ctrl',
+                resolve: {
+                    exceptionLogs: ['LogService', function (LogService) {
+                        //Retrieve settings initially
+                        return LogService.getExceptionLogs(10, 0, "time,desc").then(function (response) {
+                            return response;
+                        });
+                    }]
+                }
+            })
+
+            //Testing-Tool
             .when(viewPrefix + '/testing-tool', {
                 category: 'test-details',
                 templateUrl: 'templates/testing-tool',
@@ -535,7 +550,6 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     deleteTest: ['HttpService', function (HttpService) {
                         // bind category parameter
                         return angular.bind(this, HttpService.deleteOne, 'test-details');
-
                     }]
                 }
             })
