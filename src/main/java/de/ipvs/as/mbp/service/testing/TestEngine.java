@@ -108,14 +108,14 @@ public class TestEngine {
      * @param testId ID of the test from which all reports are to be found
      * @return hashMap with the date and path to every report regarding to the specific test
      */
-    public ResponseEntity<Map<Integer, TestReport>> getPDFList(String testId) {
-        ResponseEntity<Map<Integer, TestReport>> pdfList = null;
-        Map<Integer, TestReport> nullList = new TreeMap<>();
+    public ResponseEntity<Map<Long, TestReport>> getPDFList(String testId) {
+        ResponseEntity<Map<Long, TestReport>> pdfList = null;
+        Map<Long, TestReport> nullList = new TreeMap<>();
         TestDetails testDetails = testDetailsRepository.findById(testId).get();
         try {
             if(testReportRepository.existsByName(testDetails.getName())){
                 for(TestReport testReport : testReportRepository.findAllByName(testDetails.getName())){
-                    nullList.put(testReport.getStartTimeUnix(), testReport);
+                    nullList.put(Long.valueOf(testReport.getStartTimeUnix()), testReport);
                 }
                 
             }
@@ -128,21 +128,7 @@ public class TestEngine {
         return pdfList;
     }
 
-    public List<Sensor> getRealSensors(String testId){
-        List<Sensor> realSensors = new ArrayList<>();
-        try{
-            TestDetails test = testDetailsRepository.findById(testId).get();
-            List<Sensor> allSensors = test.getSensor();
-            for(Sensor sensor: allSensors){
-                if(!sensor.getName().contains("TESTING_")){
-                    realSensors.add(sensor);
-                }
-            }
-        }catch (Exception e ){
-        }
 
-        return realSensors;
-    }
 
     /**
      * Update the test configurations redefined by the user.

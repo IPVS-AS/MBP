@@ -134,25 +134,13 @@
                         </thead>
                         <tbody>
                         <tr ng-repeat="testReport in pdfTable | orderBy:'-date'">
-                            <td>{{pdf.date * 1000 | date:'dd.MM.yyyy HH:mm:ss'}}</td>
+                            <td>{{testReport.date * 1000 | date:'dd.MM.yyyy HH:mm:ss'}}</td>
                             <td>
                                 <form ng-submit="openReport(testReport)" style="display: inline-block">
-                                    <button type="submit" class="btn btn-default m-t-0 waves-effect">
-                                        <i class="material-icons" style="font-size: 15px;">get_app</i>
+                                    <button type="submit" class="btn bg-cyan waves-effect">
+                                        <span>Open Test Report</span>
                                     </button>
                                 </form>
-                                <!--
-                                <form ng-submit="ctrl.downloadPDF(pdf.path)">
-                                    <button type="submit" class="btn btn-primary btn-lg"
-                                            id="downloadReport">
-                                        <i class="material-icons">get_app</i>
-                                        <span>
-
-                                        </span>
-                                        <span>Download PDF</span>
-                                    </button>
-                                </form>
-                                -->
                             </td>
                             <td>
                                 <form ng-submit="ctrl.deletePDF(pdf.path)" style="margin-top: 3px;">
@@ -1138,7 +1126,7 @@
 
 
                         <!-- sensor simulators information group -->
-                        <div class="card deployment-card">
+                        <div class="card deployment-card" ng-if="configTable.length >0">
                             <div class="header">
                                 <i class="material-icons" style="position: absolute">call_split</i>
                                 <h2 style="margin-left: 35px;">
@@ -1150,20 +1138,20 @@
                                        st-safe-src="ruleListCtrl.items">
                                     <thead>
                                     <tr>
-                                        <th class="align-center">Type</th>
-                                        <th class="align-center">Event</th>
-                                        <th class="align-center">Anomaly</th>
+                                        <th>Type</th>
+                                        <th>Event</th>
+                                        <th>Anomaly</th>
 
                                     </tr>
                                     </thead>
                                     <tbody>
                                     <tr ng-repeat="testConfig in configTable">
 
-                                        <td class="align-center">{{testConfig.type}}
+                                        <td>{{testConfig.type}}
                                         </td>
-                                        <td class="align-center"> {{testConfig.event}}
+                                        <td> {{testConfig.event}}
                                         </td>
-                                        <td class="align-center">
+                                        <td>
                                             {{testConfig.anomaly}}
                                         </td>
                                     </tr>
@@ -1180,7 +1168,7 @@
                         </div>
 
                         <!-- real sensor information group -->
-                        <div class="card deployment-card">
+                        <div class="card deployment-card" ng-if="realSensorList.length > 0">
                             <div class="header">
                                 <i class="material-icons" style="position: absolute">call_split</i>
                                 <h2 style="margin-left: 35px;">
@@ -1200,15 +1188,16 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <tr id="{{item.id}}"
-                                        ng-repeat="item in testReportAnzeige.sensor">
-                                        <td ng-if="item.name.indexOf('TESTING_') === -1">
-                                            <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>&nbsp;
+                                    <tr id="{{realSensor.id}}"
+                                        ng-repeat="realSensor in realSensorList">
+                                        <td>
+                                            <a>{{realSensor.name}}</a>&nbsp;
                                             <i ng-show="item.wasModelled" class="material-icons"
                                                style="vertical-align: bottom;">view_quilt</i>
                                         </td>
-                                        <td class="align-center" ng-if="item.name.indexOf('TESTING_') === -1 ">
-                                            <div ng-switch="item.state" ng-click="item.reloadState()" class="clickable">
+                                        <td class="align-center">
+                                            <div ng-switch="item.state" ng-click="realSensor.reloadState()"
+                                                 class="clickable">
                                                 <div ng-switch-when="LOADING">
                                                     <div class="preloader pl-size-xs">
                                                         <div class="spinner-layer pl-blue">
@@ -1238,28 +1227,13 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td ng-if="item.name.indexOf('TESTING_') === -1">{{item.componentType}}</td>
-                                        <td ng-if="item.name.indexOf('TESTING_') === -1">{{item.operator.name}}</td>
-                                        <td ng-if="item.name.indexOf('TESTING_') === -1">{{item.device.name}}</td>
-                                        <td ng-if="item.name.indexOf('TESTING_') === -1">
-                                            {{item.ownerName ? item.ownerName : "None"}}
+                                        <td>{{realSensor.componentType}}</td>
+                                        <td>{{realSensor.operator.name}}</td>
+                                        <td>{{realSensor.device.name}}</td>
+                                        <td>
+                                            {{realSensor.ownerName ? realSensor.ownerName : "None"}}
                                         </td>
-                                        <td ng-if="item.name.indexOf('TESTING_') === -1">
-                                            <form ng-submit="deleteSensorCtrl.deleteItem()"
-                                                  style="display:inline-block">
-                                                <button type="submit"
-                                                        class="btn bg-red btn-circle waves-effect waves-circle waves-float"
-                                                        ng-click="deleteSensorCtrl.item.id = item.id">
-                                                    <i class="material-icons" style="font-size:14px;">delete</i>
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                    <tr ng-show="sensorListCtrl.items.length === 0 || simExists === 0 ">
-                                        <td>No registered sensors</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+
                                     </tr>
                                     </tbody>
                                     <tfoot>
@@ -1268,6 +1242,37 @@
                                     </tr>
                                     </tfoot>
                                 </table>
+                            </div>
+                        </div>
+
+
+                        <div ng-repeat="sensor in ctrl.sensorList">
+                            <!-- Historical Values Card -->
+                            <div class="row clearfix" ng-init="testingChartCtrl.specifyChart(sensor)">
+                                <div class="col-lg-12">
+                                    <div class="card historical-chart-card">
+                                        <div class="header">
+                                            <h2>
+                                                Historical sensor values: {{sensor.name}}
+                                            </h2>
+                                            <ul class="header-dropdown m-r--5">
+                                                <li>
+                                                    <a ng-click="historicalChartApi.updateChart()" class="clickable">
+                                                        <i class="material-icons">refresh</i>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="body">
+                                            <historical-chart api="historicalChartApi"
+                                                              loading-start="testingChartCtrl.historicalChart.loadingStart()"
+                                                              loading-finish="testingChartCtrl.historicalChart.loadingFinish()"
+                                                              get-data="testingChartCtrl.historicalChart.getData(numberLogs, descending, unit, sensor)"
+                                                              unit=" ">
+                                            </historical-chart>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -1285,10 +1290,10 @@
                                     <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th class="align-center">Condition</th>
-                                        <th class="align-center">Actions</th>
-                                        <th class="align-center">Times Triggered</th>
-                                        <th class="align-center">Last</th>
+                                        <th>Condition</th>
+                                        <th>Times Triggered Before</th>
+                                        <th>Times Triggered After</th>
+                                        <th>Trigger Values</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -1296,21 +1301,34 @@
                                         <td>
                                             {{rule.name}}
                                         </td>
-                                        <td class="align-center">
-                                            {{rule.triggerName}}
+                                        <td>
+                                            <div>
+                                                <a class="clickable" data-toggle="collapse"
+                                                   data-target="#query-{{rule.id}}">
+                                                    Condition
+                                                </a>
+                                                <div id="query-{{rule.id}}" class="collapse">
+                                                    <code>{{rule.trigger.query}}</code>
+                                                </div>
+                                            </div>
                                         </td>
-                                        <td class="align-center">
-                                            {{rule.actionNames.join(", ")}}
-                                        </td>
-                                        <td class="align-center">
+                                        <td>
                                             {{rule.executions}}
                                         </td>
-                                        <td class="align-center">
-                                            {{rule.lastExecution ? rule.lastExecution : "Never"}}
+                                        <td>
+                                            {{rule.executions}}
                                         </td>
-                                    </tr>
-                                    <tr ng-show="ctrl.ruleList.length === 0">
-                                        <td>No rules registered.</td>
+                                        <td>
+                                            <div>
+                                                <a class="clickable" data-toggle="collapse"
+                                                   data-target="#query-{{rule.wid}}">
+                                                    Show Trigger values
+                                                </a>
+                                                <div id="query-{{rule.wid}}" class="collapse">
+                                                    <code>{{rule.executions}}</code>
+                                                </div>
+                                            </div>
+                                        </td>
                                     </tr>
                                     </tbody>
                                     <tfoot>
@@ -1418,12 +1436,6 @@
             </div>
         </div>
     </div>
-    <p id="ignorePDF">don't print this to pdf</p>
-    <div class="test-report">
-        <p><font size="3" color="red">print this to pdf</font></p>
-        <p>Das ist ein Test.</p>
-    </div>
-
 </div>
 
 

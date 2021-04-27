@@ -17,7 +17,6 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
         const URL_ONEDIM_SENSOR_REGISTER = ENDPOINT_URI + '/test-details/registerSensorSimulator';
         const URL_RERUN_OPERATOR_REGISTER = ENDPOINT_URI + '/test-details/addRerunOperator';
         const URL_RULE_LIST_TEST = ENDPOINT_URI + "/test-details/ruleList/";
-        const URL_REAL_SENSOR_LIST = ENDPOINT_URI + "/test-details/real-sensor-list/";
         const URL_DOWNLOAD_REPORT = 'api/test-details/downloadPDF/';
         const URL_UPDATE_TEST = ENDPOINT_URI + '/test-details/updateTest/';
         const vm = this;
@@ -71,15 +70,11 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
                 let pdfDetails = [];
                 if (Object.keys(response).length > 0) {
                     angular.forEach(response, function (value, key) {
-
                         pdfDetails.push({
-                            "date": key,
+                            "date": Number(key),
                             "report": value
                         });
                     });
-                    console.log("----------------------------------------------------------------------------------------------")
-                    console.log(pdfDetails)
-                    console.log(response)
                     pdfList.pdfTable = pdfDetails;
                     return pdfList.pdfTable;
                 } else {
@@ -200,9 +195,6 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             return HttpService.getRequest(URL_RULE_LIST_TEST + testId);
         }
 
-        function getRealSensorList(testId){
-            return HttpService.getRequest(URL_REAL_SENSOR_LIST + testId);
-        }
 
         /**
          * [Public]
@@ -909,8 +901,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             downloadReport: downloadReport,
             getRuleListTest: getRuleListTest,
             updateTest: updateTest,
-            deleteTestReport: deleteTestReport,
-            getRealSensorList: getRealSensorList
+            deleteTestReport: deleteTestReport
 
         }
     }

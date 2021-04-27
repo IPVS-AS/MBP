@@ -250,7 +250,7 @@ public class RestTestingController {
      * @return HttpsStatus and HashMap with all Reports regarding to the specific test
      */
     @GetMapping(value = "/pdfList/{testId}")
-    public ResponseEntity<Map<Integer, TestReport>> getPDFList(@PathVariable(value = "testId") String testId) {
+    public ResponseEntity<Map<Long, TestReport>> getPDFList(@PathVariable(value = "testId") String testId) {
 
         return testEngine.getPDFList(testId);
     }
@@ -261,10 +261,6 @@ public class RestTestingController {
         return testAnalyzer.getCorrespondingRules(testDetailsRepository.findById(testId).get());
     }
 
-    @GetMapping(value = "/real-sensor-list/{testId}")
-    public List<Sensor> realSensorList(@PathVariable(value = "testId") String testId){
-        return testEngine.getRealSensors(testId);
-    }
 
     /**
      * Opens the selected Test-Report from the Test list

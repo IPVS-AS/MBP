@@ -178,21 +178,27 @@ app.controller('TestingDetailsController',
             }
 
             $scope.openReport = function (report) {
-                console.log("-----------------------------------------------------------------hier drinnen")
                 testReport = report.report;
                 $scope.testReportAnzeige = testReport;
                 convertConfig(testReport);
-                $scope.realSensorList = TestService.getRealSensorList(COMPONENT_ID);
-                console.log($scope.realSensorList);
-                console.log(testReport)
-                console.log($scope.testReportAnzeige);
-                console.log(report)
+                getRealSensorList();
+                console.log("-----------------------------------------------------------------hier drinnen")
+                console.log(vm.sensorListTest);
                 $('#testReport').modal('show');
             };
 
+            function getRealSensorList() {
+                $scope.realSensorList = []
+                angular.forEach(vm.sensorListTest, function (sensor, key) {
+                    if (!sensor.name.includes("TESTING_")) {
+                        $scope.realSensorList.push(sensor)
+                    }
+                });
+                console.log($scope.realSensorList)
+            }
 
             function convertConfig(testReport) {
-                let simulationConfig=[];
+                let simulationConfig = [];
                 let config = {};
 
                 angular.forEach(testReport.config, function (config, key) {
@@ -200,13 +206,11 @@ app.controller('TestingDetailsController',
                     let event = "";
                     let anomaly = "";
                     angular.forEach(config, function (configDetails, key) {
-                        console.log(configDetails)
-
-                        if(configDetails["name"] === "Type"){
+                        if (configDetails["name"] === "Type") {
                             type = configDetails["value"];
-                        } else if(configDetails["name"] === "eventType"){
+                        } else if (configDetails["name"] === "eventType") {
                             event = configDetails["value"];
-                        } else if(configDetails["name"] === "anomalyType") {
+                        } else if (configDetails["name"] === "anomalyType") {
                             anomaly = configDetails["value"];
                         }
                     });
@@ -214,13 +218,12 @@ app.controller('TestingDetailsController',
                     simulationConfig.push({
                         "type": type,
                         "event": event,
-                        "anomaly":anomaly
+                        "anomaly": anomaly
                     })
-                    console.log(simulationConfig)
 
                 });
                 config.configTable = simulationConfig;
-                $scope.configTable =  config.configTable;
+                $scope.configTable = config.configTable;
             }
 
             /**
@@ -333,18 +336,11 @@ app.controller('TestingDetailsController',
             }
 
 
-            function getPDF(divId, title) {
-
-                console.log(document.getElementById("tableTest"));
+            function getPDF() {
                 domtoimage.toPng(document.getElementById("tableTest"))
                     .then(function (blob) {
-
                         TestReportService.generateReport(blob);
-                        console.log(blob)
-
                     });
-
-
             }
 
 
