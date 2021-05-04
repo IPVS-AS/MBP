@@ -53,7 +53,7 @@ app.controller('TestingDetailsController',
                 getPDFList();
                 getTestRules();
                 getConfig();
-                disableReuse();
+              //  disableReuse();
                 getTestSensorList();
                 // define the parameters of the real sensors included into the test
                 getRealSensorList();
@@ -158,7 +158,7 @@ app.controller('TestingDetailsController',
              */
             function getTestRules() {
                 $scope.ruleList = TestService.getRuleListTest(COMPONENT_ID);
-
+                console.log(ruleList);
                 for (let i = 0; i < testingDetails.rules.length; i++) {
                     if (i === 0) {
                         vm.ruleNames = vm.ruleNames + testingDetails.rules[i].name;
@@ -182,10 +182,18 @@ app.controller('TestingDetailsController',
                 $scope.testReportAnzeige = testReport;
                 convertConfig(testReport);
                 getRealSensorList();
-                console.log("-----------------------------------------------------------------hier drinnen")
-                console.log(vm.sensorListTest);
+                getRuleInformation(testReport);
                 $('#testReport').modal('show');
             };
+
+            function getRuleInformation(testReport){
+                const rulesBefore = testReport.ruleInformationBefore;
+                const rulesAfter = testReport.ruleInformationAfter;
+                console.log(rulesAfter, rulesBefore)
+
+
+            }
+
 
             function getRealSensorList() {
                 $scope.realSensorList = []
@@ -214,12 +222,15 @@ app.controller('TestingDetailsController',
                             anomaly = configDetails["value"];
                         }
                     });
+                    if(type && event && anomaly ){
+                        console.log("------------------------------------------------")
+                        simulationConfig.push({
+                            "type": type,
+                            "event": event,
+                            "anomaly": anomaly
+                        })
+                    }
 
-                    simulationConfig.push({
-                        "type": type,
-                        "event": event,
-                        "anomaly": anomaly
-                    })
 
                 });
                 config.configTable = simulationConfig;

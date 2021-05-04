@@ -2,7 +2,6 @@ package de.ipvs.as.mbp.service.testing.executor;
 
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Sensor;
-import de.ipvs.as.mbp.domain.operator.parameters.Parameter;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
@@ -15,7 +14,6 @@ import de.ipvs.as.mbp.service.testing.PropertiesService;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
 import de.ipvs.as.mbp.web.rest.RestDeploymentController;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -146,33 +144,52 @@ public class TestExecutor {
      */
     public void executeTest(TestDetails test)  {
 
-        // Set the exact start time of the test
         TestReport testReport = new TestReport();
-        testReport.setName(test.getName());
-        testReport.setStartTestTimeNow();
-        testReport.setConfig(getTestReportConfig(test));
-        testReport.setRules(test.getRules());
-        testReport.setRuleNames(test.getRuleNames());
-        testReport.setSensor(test.getSensor());
-        testReport.setTriggerRules(test.isTriggerRules());
-        String reportId = testReportRepository.save(testReport).getId();
+        try{
+            // Set the exact start time of the test
+            testReport.setName(test.getName());
+            testReport.setStartTestTimeNow();
+            testReport.setConfig(getTestReportConfig(test));
+            testReport.setRules(test.getRules());
+            testReport.setRuleNames(test.getRuleNames());
+            testReport.setSensor(test.getSensor());
+            testReport.setTriggerRules(test.isTriggerRules());
+            // get  information about the status of the rules before the execution of the test
+            List<Rule>  rulesBefore = testAnalyzer.getCorrespondingRules(test);
+            testReport.setRuleInformationBefore(rulesBefore);
+            String reportId = testReportRepository.save(testReport).getId();
 
-        // get  information about the status of the rules before the execution of the test
-        List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(test);
+            // add test and sensors to the activation list
+            activateTest(test);
 
-        // add test and sensors to the activation list
-        activateTest(test);
+            // start all components relevant for the test
+            startTest(testDetailsRepository.findById(test.getId()).get());
 
-        // start all components relevant for the test
-        startTest(testDetailsRepository.findById(test.getId()).get());
+            // Get List of all simulated Values
+            Map<String, LinkedHashMap<Long, Double>> valueList =
+                    testAnalyzer.isFinished(reportId, test.getId());
 
-        // Get List of all simulated Values
-        Map<String, LinkedHashMap<Long, Double>> valueList =
-                testAnalyzer.isFinished(reportId, test.getId());
-        saveValues(test, reportId, valueList);
-        analyzeTest(test, reportId, rulesBefore);
+            saveRulesAfter(test, reportId);
+            saveValues(test, reportId, valueList);
+            analyzeTest(test, reportId, rulesBefore);
+        } catch (Exception e){
+            testReport.setEndTestTimeNow();
+            testReport.setSuccessful("ERROR DURING TEST");
+            List<Rule>  rulesAfter = testAnalyzer.getCorrespondingRules(test);
+            testReport.setRuleInformationAfter(rulesAfter);
+            testReportRepository.save(testReport);
+
+        }
 
 
+
+    }
+
+    private void saveRulesAfter(TestDetails test, String reportId) {
+        List<Rule>  rulesAfter = testAnalyzer.getCorrespondingRules(test);
+        TestReport report = testReportRepository.findById(reportId).get();
+        report.setRuleInformationAfter(rulesAfter);
+        testReportRepository.save(report);
     }
 
     private List<List<ParameterInstance>> getTestReportConfig(TestDetails test) {
@@ -181,11 +198,16 @@ public class TestExecutor {
         for (int i = 0; i < test.getConfig().size(); i++) {
             List<ParameterInstance> ojh = test.getConfig().get(i);
             List<ParameterInstance> simul = ojh.stream().filter(item -> item.getValue().toString().contains("TESTING_")).collect(Collectors.toList());
-            if (simul.size() > 0) {
-                List<ParameterInstance> newConfig = new ArrayList<>();
-                newConfig = convertConfigInstances(ojh);
-                reportConfig.add(newConfig);
+            if(ojh.size() > 0){
+                if (simul.size() > 0) {
+                    List<ParameterInstance> newConfig;
+                    newConfig = convertConfigInstances(ojh);
+                    reportConfig.add(newConfig);
+                } else{
+                    reportConfig.add(ojh);
+                }
             }
+
 
         }
         return reportConfig;
@@ -225,7 +247,7 @@ public class TestExecutor {
             eventType.setValue(simType +" rise");
         } else if (event == 2) {
             eventType.setValue(simType +" drop");
-        } else {
+        } else if(event == 3){
             eventType.setValue("-");
         }
         return eventType;

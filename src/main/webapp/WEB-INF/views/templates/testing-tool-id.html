@@ -50,6 +50,7 @@
                         <td> {{ctrl.ruleNames}}
                         </td>
                     </tr>
+                    <!--
                     <tr id=" ">
                         <th>Reuse Data:</th>
                         <td>
@@ -62,9 +63,9 @@
                             </div>
                         </td>
                     </tr>
+                    -->
                     </tbody>
                 </table>
-                <br/>
                 <br/>
                 <div>
                     <span ng-show="testingChartCtrl.deploymentState=='READY' || testingChartCtrl.deploymentState =='DEPLOYED'">
@@ -129,6 +130,7 @@
                             <th>Test Report
                                 <Report></Report>
                             </th>
+                            <th>Rerun Test</th>
                             <th></th>
                         </tr>
                         </thead>
@@ -138,9 +140,15 @@
                             <td>
                                 <form ng-submit="openReport(testReport)" style="display: inline-block">
                                     <button type="submit" class="btn bg-cyan waves-effect">
-                                        <span>Open Test Report</span>
+                                        <span>Open Report</span>
                                     </button>
                                 </form>
+                            </td>
+                            <td>
+                                <button class="btn bg-cyan waves-effect" ng-click=""
+                                       type="button">
+                                    <i class="material-icons">play_arrow</i>
+                                </button>
                             </td>
                             <td>
                                 <form ng-submit="ctrl.deletePDF(pdf.path)" style="margin-top: 3px;">
@@ -1109,7 +1117,9 @@
                                                 <div ng-switch-when="Not Successful">
                                                     <span class="label label-danger">{{testReportAnzeige.successful}}</span>
                                                 </div>
-
+                                                <div ng-switch-when="ERROR DURING TEST">
+                                                    <span class="label label-danger">{{testReportAnzeige.successful}}</span>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -1180,7 +1190,6 @@
                                     <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th class="align-center">State</th>
                                         <th>Sensor type</th>
                                         <th>Extraction operator</th>
                                         <th>Device</th>
@@ -1190,42 +1199,7 @@
                                     <tbody>
                                     <tr id="{{realSensor.id}}"
                                         ng-repeat="realSensor in realSensorList">
-                                        <td>
-                                            <a>{{realSensor.name}}</a>&nbsp;
-                                            <i ng-show="item.wasModelled" class="material-icons"
-                                               style="vertical-align: bottom;">view_quilt</i>
-                                        </td>
-                                        <td class="align-center">
-                                            <div ng-switch="item.state" ng-click="realSensor.reloadState()"
-                                                 class="clickable">
-                                                <div ng-switch-when="LOADING">
-                                                    <div class="preloader pl-size-xs">
-                                                        <div class="spinner-layer pl-blue">
-                                                            <div class="circle-clipper left">
-                                                                <div class="circle"></div>
-                                                            </div>
-                                                            <div class="circle-clipper right">
-                                                                <div class="circle"></div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div ng-switch-when="NOT_READY">
-                                                    <span class="label label-danger">Unavailable</span>
-                                                </div>
-                                                <div ng-switch-when="READY">
-                                                    <span class="label label-success">Ready</span>
-                                                </div>
-                                                <div ng-switch-when="DEPLOYED">
-                                                    <span class="label bg-mbp-mid-blue">Installed</span>
-                                                </div>
-                                                <div ng-switch-when="RUNNING">
-                                                    <span class="label label-info">Running</span>
-                                                </div>
-                                                <div ng-switch-default>
-                                                    <span class="label label-default">Unknown</span>
-                                                </div>
-                                            </div>
+                                        <td>{{realSensor.name}}
                                         </td>
                                         <td>{{realSensor.componentType}}</td>
                                         <td>{{realSensor.operator.name}}</td>
@@ -1289,6 +1263,38 @@
                                        st-safe-src="ruleListCtrl.items">
                                     <thead>
                                     <tr>
+                                        <th>The selected rule(s) should be triggered</th>
+                                        <th>Rules, which should be triggered</th>
+                                        <th>Rules, which were triggered</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <td >
+                                        <div ng-switch="testReportAnzeige.triggerRules">
+                                            <div ng-switch-when="true">Yes</div>
+                                            <div ng-switch-when="false">No</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {{ctrl.ruleNames}}
+                                    </td>
+                                    <td>
+                                        {{testReportAnzeige.rulesExecuted.join(', ')}}
+                                    </td>
+                                    </tbody>
+                                    <tfoot>
+                                    <tr>
+                                        <td class="text-center" st-pagination="" st-items-by-page="10"
+                                            colspan="4"></td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+
+
+                                <table class="table table-hover" st-table="displayedCollection"
+                                       st-safe-src="ruleListCtrl.items">
+                                    <thead>
+                                    <tr>
                                         <th>Name</th>
                                         <th>Condition</th>
                                         <th>Times Triggered Before</th>
@@ -1297,7 +1303,7 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <tr ng-repeat="rule in ctrl.ruleList">
+                                    <tr ng-repeat="rule in testReportAnzeige.ruleInformationBefore">
                                         <td>
                                             {{rule.name}}
                                         </td>
@@ -1315,16 +1321,15 @@
                                         <td>
                                             {{rule.executions}}
                                         </td>
-                                        <td>
-                                            {{rule.executions}}
-                                        </td>
+
+                                        <td ng-repeat="ruleAfter in testReportAnzeige.ruleInformationAfter | filter: rule.name">{{ruleAfter.executions}}</td>
                                         <td>
                                             <div>
                                                 <a class="clickable" data-toggle="collapse"
-                                                   data-target="#query-{{rule.wid}}">
+                                                   data-target="#query-{{rule}}">
                                                     Show Trigger values
                                                 </a>
-                                                <div id="query-{{rule.wid}}" class="collapse">
+                                                <div id="query-{{rule}}" class="collapse">
                                                     <code>{{rule.executions}}</code>
                                                 </div>
                                             </div>

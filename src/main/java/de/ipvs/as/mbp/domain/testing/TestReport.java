@@ -8,7 +8,6 @@ import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import javax.persistence.GeneratedValue;
@@ -60,7 +59,9 @@ public class TestReport extends UserEntity {
 
     private boolean triggerRules;
 
+    private List<Rule> ruleInformationBefore;
 
+    private List<Rule> ruleInformationAfter;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy HH:mm:ss")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -352,6 +353,22 @@ public class TestReport extends UserEntity {
      */
     public void setRuleNames(List<String> ruleNames) {
         this.ruleNames = ruleNames;
+    }
+
+    public List<Rule> getRuleInformationBefore() {
+        return ruleInformationBefore;
+    }
+
+    public void setRuleInformationBefore(List<Rule> ruleInformationBefore) {
+        this.ruleInformationBefore = ruleInformationBefore;
+    }
+
+    public List<Rule> getRuleInformationAfter() {
+        return ruleInformationAfter;
+    }
+
+    public void setRuleInformationAfter(List<Rule> ruleInformationAfter) {
+        this.ruleInformationAfter = ruleInformationAfter;
     }
 }
 
