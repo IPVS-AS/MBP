@@ -292,57 +292,58 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
 
 
             try {
-
                 if (!angular.isUndefined(realSensors)) {
-
                     checkRealSensor = true;
-                    if (!angular.isUndefined(realParameterValues)) {
+                    if (!angular.isUndefined(realSensors)) {
                         for (let x = 0; x < realSensors.length; x++) {
                             newTestObject.type.push(realSensors[x].name);
                         }
+                        if(!angular.isUndefined(realParameterValues)){
+                            angular.forEach(realParameterValues, function (parameters, key) {
+                                for (let i = 0; i < realSensors.length; i++) {
 
-                        angular.forEach(realParameterValues, function (parameters, key) {
-                            for (let i = 0; i < realSensors.length; i++) {
-
-                                if (realSensors[i].name === key) {
-                                    parameterValues = [];
-                                    parameterValues.push({
-                                        "name": "ConfigName",
-                                        "value": realSensors[i].name
-                                    });
-                                    const requiredParams = realSensors[i].operator.parameters;
-
-                                    //Iterate over all parameters
-                                    for (let i = 0; i < requiredParams.length; i++) {
-                                        //Set empty default values for these parameters
-                                        var value = "";
-
-                                        if (requiredParams[i].type === "Switch") {
-                                            value = true;
-                                        }
-                                        if (requiredParams[i].name === "device_code") {
-                                            console.log("Requesting code for required parameter device_code.");
-                                            value = getDeviceCode();
-                                            continue;
-                                        }
-
-                                        //For each parameter, add a tuple (name, value) to the globally accessible parameter array
+                                    if (realSensors[i].name === key) {
+                                        parameterValues = [];
                                         parameterValues.push({
-                                            "name": requiredParams[i].name,
-                                            "value": parameters[i]
+                                            "name": "ConfigName",
+                                            "value": realSensors[i].name
                                         });
+                                        const requiredParams = realSensors[i].operator.parameters;
+
+                                        //Iterate over all parameters
+                                        for (let i = 0; i < requiredParams.length; i++) {
+                                            //Set empty default values for these parameters
+                                            var value = "";
+
+                                            if (requiredParams[i].type === "Switch") {
+                                                value = true;
+                                            }
+                                            if (requiredParams[i].name === "device_code") {
+                                                console.log("Requesting code for required parameter device_code.");
+                                                value = getDeviceCode();
+                                                continue;
+                                            }
+
+                                            //For each parameter, add a tuple (name, value) to the globally accessible parameter array
+                                            parameterValues.push({
+                                                "name": requiredParams[i].name,
+                                                "value": parameters[i]
+                                            });
+                                        }
+                                        newTestObject.config.push(parameterValues);
                                     }
-                                    newTestObject.config.push(parameterValues);
                                 }
-                            }
-                        });
-                        newTestObject.config.push([{
-                            "name": "ConfigRealSensors",
-                            "value": realParameterValues
-                        }]);
+                            });
+                            newTestObject.config.push([{
+                                "name": "ConfigRealSensors",
+                                "value": realParameterValues
+                            }]);
+
+                        }
+
+
                     }
                 }
-
 
                 if (!angular.isUndefined(sensors)) {
                     checkSimSensor = true;

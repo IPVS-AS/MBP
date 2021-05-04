@@ -1,5 +1,6 @@
 package de.ipvs.as.mbp.service.testing;
 
+import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.ComponentCreateEventHandler;
 import de.ipvs.as.mbp.domain.component.ComponentCreateValidator;
@@ -13,9 +14,13 @@ import de.ipvs.as.mbp.domain.operator.parameters.Parameter;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterType;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
+import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.repository.projection.ComponentExcerpt;
+import de.ipvs.as.mbp.service.UserEntityService;
+import de.ipvs.as.mbp.service.event_handler.ICreateEventHandler;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
+import de.ipvs.as.mbp.service.validation.ICreateValidator;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -30,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -86,6 +92,9 @@ public class DefaultTestingComponents {
     @Autowired
     RuleTriggerRepository ruleTriggerRepository;
 
+    @Autowired
+    private UserEntityService userEntityService;
+
     private static final String DESCRIPTOR_FILE = "operator.json";
 
     private final String TEST_DEVICE;
@@ -99,7 +108,7 @@ public class DefaultTestingComponents {
 
 
     public DefaultTestingComponents(List<String> defaultTestComponentsWhiteList, ServletContext servletContext, OperatorRepository operatorRepository, DeviceRepository deviceRepository, DeviceCreateValidator deviceCreateValidator, ActuatorRepository actuatorRepository, ComponentCreateValidator componentCreateValidator, ComponentCreateEventHandler componentCreateEventHandler, DeviceCreateEventHandler deviceCreateEventHandler,
-                                    SensorRepository sensorRepository, TestDetailsRepository testDetailsRepository, RuleRepository ruleRepository, RuleTriggerRepository ruleTriggerRepository, TestAnalyzer testAnalyzer) throws IOException {
+                                    SensorRepository sensorRepository, TestDetailsRepository testDetailsRepository, RuleRepository ruleRepository, RuleTriggerRepository ruleTriggerRepository, TestAnalyzer testAnalyzer, UserEntityService userEntityService) throws IOException {
         // Get needed Strings out of the properties to create the testing components
         propertiesService = new PropertiesService();
         TEST_DEVICE = propertiesService.getPropertiesString("testingTool.testDeviceName");
@@ -124,6 +133,7 @@ public class DefaultTestingComponents {
         this.ruleTriggerRepository = ruleTriggerRepository;
         this.testDetailsRepository = testDetailsRepository;
         this.testAnalyzer = testAnalyzer;
+        this.userEntityService = userEntityService;
 
         replaceTestDevice();
         replaceOperators();
@@ -197,13 +207,17 @@ public class DefaultTestingComponents {
                 testDevice.setName(TEST_DEVICE);
                 testDevice.setComponentType("Computer");
                 testDevice.setIpAddress(TEST_DEVICE_IP);
+    			testDevice.setDate(LocalDateTime.now().toString());
                 testDevice.setUsername(TEST_DEVICE_USERNAME);
                 testDevice.setPassword(TEST_DEVICE_PASSWORD);
 
-
                 // Validate, insert and create a new event handler for the new testing device
                 deviceCreateValidator.validateCreatable(testDevice);
-                deviceRepository.insert(testDevice);
+
+
+
+                // Save device in the database
+                deviceRepository.save(testDevice);
                 deviceCreateEventHandler.onCreate(testDevice);
             }
 
