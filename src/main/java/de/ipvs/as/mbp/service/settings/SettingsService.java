@@ -1,8 +1,12 @@
 package de.ipvs.as.mbp.service.settings;
 
+import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.settings.BrokerLocation;
 import de.ipvs.as.mbp.domain.settings.MBPInfo;
 import de.ipvs.as.mbp.domain.settings.Settings;
+import de.ipvs.as.mbp.service.deployment.demo.DemoDeployer;
+import de.ipvs.as.mbp.service.mqtt.MQTTService;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +26,9 @@ public class SettingsService {
     private static final String SETTINGS_FILE_NAME = "config.properties";
 
     //Keys that are used to store the settings in the file
-    private static final String SETTINGS_KEY_BROKER_LOCATION = "broker_location";
-    private static final String SETTINGS_KEY_BROKER_IP_ADDRESS = "broker_url";
+    private static final String SETTINGS_KEY_BROKER_LOCATION = "settings.broker.location";
+    private static final String SETTINGS_KEY_BROKER_IP_ADDRESS = "settings.broker.address";
+    private static final String SETTINGS_KEY_DEMO_MODE = "settings.demo_mode";
 
     //Auto-injected data
     @Value("${git.branch}")
@@ -100,22 +105,25 @@ public class SettingsService {
         BrokerLocation brokerLocation = BrokerLocation.valueOf(properties.getProperty(SETTINGS_KEY_BROKER_LOCATION,
                 settings.getBrokerLocation().toString()));
         String brokerIPAddress = properties.getProperty(SETTINGS_KEY_BROKER_IP_ADDRESS, settings.getBrokerIPAddress());
+        boolean demoMode = Boolean.parseBoolean(properties.getProperty(SETTINGS_KEY_DEMO_MODE,
+                Boolean.toString(settings.isDemoMode())));
 
         //Adjust the settings object accordingly
         settings.setBrokerLocation(brokerLocation);
         settings.setBrokerIPAddress(brokerIPAddress);
+        settings.setDemoMode(demoMode);
 
         return settings;
     }
 
     /**
-     * Saves all settings that are provided as part of the settings object persistently in the settings file. After
-     * a call of this method, the new settings will be returned by the service.
+     * Takes a settings object and saves the individual settings persistently. In addition, it is checked which
+     * settings were updated in comparison to the previous settings and affected MBP components are updated accordingly,
+     * if necessary.
      *
-     * @param settings The settings to save
-     * @throws IOException In case of an I/O issue while writing the settings file
+     * @param settings The updated settings
      */
-    public void saveSettings(Settings settings) throws IOException {
+    public void updateSettings(Settings settings) throws IOException, MqttException {
         //Sanity check
         if (settings == null) {
             throw new IllegalArgumentException("Settings must not be null.");
@@ -126,15 +134,31 @@ public class SettingsService {
             loadSettingsFile();
         }
 
-        //Retrieve settings properties from the provided object
-        BrokerLocation brokerLocation = settings.getBrokerLocation();
-        String brokerURL = settings.getBrokerIPAddress();
+        //Create new properties object for the updated settings
+        Properties updatedProperties = new Properties();
 
-        //Take those setting and replace the old ones
-        properties.setProperty(SETTINGS_KEY_BROKER_LOCATION, brokerLocation.toString());
-        properties.setProperty(SETTINGS_KEY_BROKER_IP_ADDRESS, brokerURL);
+        //Add properties according to the updated settings
+        updatedProperties.setProperty(SETTINGS_KEY_BROKER_LOCATION, settings.getBrokerLocation().toString());
+        updatedProperties.setProperty(SETTINGS_KEY_BROKER_IP_ADDRESS, settings.getBrokerIPAddress());
+        updatedProperties.setProperty(SETTINGS_KEY_DEMO_MODE, Boolean.toString(settings.isDemoMode()));
 
-        //Write the settings file with the new settings
+        //Check whether MQTT broker settings changed
+        if ((!updatedProperties.getProperty(SETTINGS_KEY_BROKER_LOCATION).equals(properties.getProperty(SETTINGS_KEY_BROKER_LOCATION))) ||
+                (!updatedProperties.getProperty(SETTINGS_KEY_BROKER_IP_ADDRESS).equals(properties.getProperty(SETTINGS_KEY_BROKER_IP_ADDRESS)))) {
+            //Broker settings changed, get MQTT service and reinitialize the connection
+            MQTTService mqttService = DynamicBeanProvider.get(MQTTService.class);
+            mqttService.initialize(settings.getBrokerLocation(), settings.getBrokerIPAddress());
+        }
+
+        //Check whether the demo mode setting changed
+        if (!updatedProperties.getProperty(SETTINGS_KEY_DEMO_MODE).equals(properties.getProperty(SETTINGS_KEY_DEMO_MODE))) {
+            //Retrieve demo deployer component bean
+            DemoDeployer demoDeployer = DynamicBeanProvider.get(DemoDeployer.class);
+            demoDeployer.resetDeployedComponents();
+        }
+
+        //Overwrite properties with the updated ones and write them to file
+        this.properties = updatedProperties;
         writeSettingsFile();
     }
 
