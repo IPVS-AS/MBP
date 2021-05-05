@@ -1,0 +1,37 @@
+{
+  "name": "TESTING_TemperatureSensor",
+  "description": "Operator for simulating the sensor data of a temperature sensor.",
+  "unit": "°C",
+  "files": [
+    "TempSim.jar",
+    "install.sh",
+    "start.sh",
+    "stop.sh",
+    "running.sh"
+  ],
+  "parameters": [
+    {
+      "name": "event",
+      "type": "Number",
+      "unit": "",
+      "mandatory": false
+    },
+    {
+      "name": "anomaly",
+      "type": "Number",
+      "unit": "",
+      "mandatory": false
+    },{
+      "name": "room",
+      "type": "Text",
+      "unit": "",
+      "mandatory": false
+    },{
+      "name": "useNewData",
+      "type": "Switch",
+      "unit": "",
+      "mandatory": false
+    }
+
+  ]
+}

@@ -5,6 +5,26 @@ app.controller('OperatorListController',
         function ($scope, $rootScope, $controller, $q, operatorList, operatorPreprocessing, addOperator, deleteOperator, FileReader, parameterTypesList, OperatorService, NotificationService) {
             let vm = this;
 
+            // Constant list of the operators for the sensor simulators, that can be included in the test
+            const SIMULATOR_LIST = {
+                TEMPERATURE: 'TESTING_TemperatureSensor',
+                TEMPERATURE_PL: 'TESTING_TemperatureSensorPl',
+                HUMIDITY: 'TESTING_HumiditySensor',
+                HUMIDITY_PL: 'TESTING_HumiditySensorPl',
+                ACTUATOR: 'TESTING_Actuator'
+            };
+
+            vm.dzServiceOptions = {
+                paramName: 'serviceFile',
+                maxFilesize: '100',
+                maxFiles: 1
+            };
+
+            vm.dzServiceCallbacks = {
+                'addedfile': function (file) {
+                    vm.addOperatorCtrl.item.serviceFile = file;
+                }
+            };
             vm.dzRoutinesOptions = {
                 paramName: 'routinesFile',
                 addRemoveLinks: true,
@@ -13,6 +33,7 @@ app.controller('OperatorListController',
                 maxFilesize: '100',
                 maxFiles: 99
             };
+
 
             vm.dzRoutinesCallbacks = {
                 'addedfile': function (file) {
@@ -59,6 +80,7 @@ app.controller('OperatorListController',
              * Initializing function, sets up basic things.
              */
             (function initController() {
+                getListWoSimulators()
                 //Validity check for parameter types
                 if (parameterTypesList.length < 1) {
                     NotificationService.notify("Could not load parameter types.", "error");
@@ -104,6 +126,26 @@ app.controller('OperatorListController',
 
                 return FileReader.readMultipleAsDataURL(files, $scope);
             }
+
+            function getListWoSimulators() {
+                let tempOperatorList = operatorList;
+
+                angular.forEach(SIMULATOR_LIST, function (value) {
+                    operatorList.some(function (operator) {
+                        if (operator.name === value) {
+                            const index = tempOperatorList.indexOf(operator);
+                            if (index !== -1) {
+                                tempOperatorList.splice(index, 1)
+                            }
+                        }
+                    });
+
+                });
+
+                $scope.simExists = tempOperatorList.length;
+
+            }
+
 
             /**
              * [Public]
@@ -219,6 +261,8 @@ app.controller('OperatorListController',
                         //Add new item to list
                         vm.operatorListCtrl.pushItem(data);
 
+                        getListWoSimulators();
+
                         //Clear dropzone files
                         vm.dzMethods.removeAllFiles(true);
 
@@ -237,6 +281,7 @@ app.controller('OperatorListController',
                 function () {
                     let id = vm.deleteOperatorCtrl.result;
                     vm.operatorListCtrl.removeItem(id);
+                    getListWoSimulators();
                 }
             );
 

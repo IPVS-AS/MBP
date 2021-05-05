@@ -44,6 +44,23 @@ public class DefaultEntitiesConfiguration {
 
     /**
      * Creates a bean representing a whitelist of paths to directories of operators that are supposed
+     * to be available as default operators for the testing tool.
+     *
+     * @return The path whitelist bean
+     */
+    @Bean(name = "defaultTestComponentsWhiteList")
+    public List<String> defaultTestComponentsWhiteList() {
+        List<String> operatorPaths = Arrays.asList("/operators/extraction/simulators/sensoradapter_temp_planned",
+                "/operators/extraction/simulators/sensoradapter_temp",
+                "/operators/extraction/simulators/sensoradapter_hum",
+                "/operators/extraction/simulators/sensoradapter_hum_planned",
+                "/operators/control/simulators/actuator_adapter_testing"
+        );
+        return Collections.unmodifiableList(operatorPaths);
+    }
+
+    /**
+     * Creates a bean representing a whitelist of paths to directories of operators that are supposed
      * to be available as default operators for test reruns.
      *
      * @return The path whitelist bean

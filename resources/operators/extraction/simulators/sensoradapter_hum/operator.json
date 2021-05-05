@@ -1,0 +1,37 @@
+{
+  "name": "TESTING_HumiditySensor",
+  "description": "Operator for simulating the sensor data of a humidity sensor.",
+  "unit": "%",
+  "files": [
+    "HumSim.jar",
+    "install.sh",
+    "start.sh",
+    "stop.sh",
+    "running.sh"
+  ],
+  "parameters": [
+    {
+      "name": "event",
+      "type": "Number",
+      "unit": "",
+      "mandatory": false
+    },
+    {
+      "name": "anomaly",
+      "type": "Number",
+      "unit": "",
+      "mandatory": false
+    },{
+      "name": "room",
+      "type": "Text",
+      "unit": "",
+      "mandatory": false
+    },{
+      "name": "useNewData",
+      "type": "Switch",
+      "unit": "",
+      "mandatory": false
+    }
+
+  ]
+}

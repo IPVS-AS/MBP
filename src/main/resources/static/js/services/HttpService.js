@@ -365,7 +365,23 @@ app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'Notifica
                 if ((typeof data !== 'object') || (typeof data.page !== 'object')) {
                     return 0;
                 }
-                return data.page.totalElements || 0;
+
+                let counter = data.page.totalElements;
+
+
+                angular.forEach(data._embedded,
+                    function(value, key) {
+                        if(key === "sensors" || key === "devices" || key === "actuators"){
+                                value.some(function (component) {
+                                    if (component.name.includes("TESTING_")) {
+                                        counter = counter -1;
+                                    }
+                                });
+                        }
+                    });
+
+
+                return counter || 0;
             });
         }
 

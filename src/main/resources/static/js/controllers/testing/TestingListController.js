@@ -5,23 +5,23 @@
  * Controller for the sensor list page.
  */
 app.controller('TestingController',
-    ['$scope', '$controller', '$interval', '$http', 'TestService', 'HttpService', 'testList', '$rootScope', 'addTest', 'deleteTest', 'ruleList', 'sensorList', '$q', 'ComponentService', 'FileReader', 'ENDPOINT_URI', 'NotificationService',
-        function ($scope, $controller, $interval, $http, TestService, HttpService, testList, $rootScope, addTest, deleteTest, ruleList, sensorList, $q, ComponentService, FileReader, ENDPOINT_URI, NotificationService) {
+    ['$scope', '$controller', '$interval', '$http', 'TestService', 'HttpService', 'testList', '$rootScope', 'addTest', 'deleteTest', 'ruleList', 'sensorList', '$q', 'ComponentService', 'FileReader', 'ENDPOINT_URI', 'NotificationService', 'accessControlPolicyList',
+        function ($scope, $controller, $interval, $http, TestService, HttpService, testList, $rootScope, addTest, deleteTest, ruleList, sensorList, $q, ComponentService, FileReader, ENDPOINT_URI, NotificationService, accessControlPolicyList) {
 
             // Constant list of the sensor simulators, that can be included in the test
             const SIMULATOR_LIST = {
-                TEMPERATURE: 'TestingTemperatureSensor',
-                TEMPERATURE_PL: 'TestingTemperatureSensorPl',
-                HUMIDITY: 'TestingHumiditySensor',
-                HUMIDITY_PL: 'TestingHumiditySensorPl',
-                ACCELERATION: 'TestingAccelerationSensor',
-                ACCELERATION_PL: 'TestingAccelerationSensorPl',
-                GPS: 'TestingGPSSensor',
-                GPS_PL: 'TestingGPSSensorPl'
+                TEMPERATURE: 'TESTING_TemperatureSensor',
+                TEMPERATURE_PL: 'TESTING_TemperatureSensorPl',
+                HUMIDITY: 'TESTING_HumiditySensor',
+                HUMIDITY_PL: 'TESTING_HumiditySensorPl',
+                ACCELERATION: 'TESTING_AccelerationSensor',
+                ACCELERATION_PL: 'TESTING_AccelerationSensorPl',
+                GPS: 'TESTING_GPSSensor',
+                GPS_PL: 'TESTING_GPSSensorPl'
             };
 
-            const TESTING_DEVICE = "TestingDevice";
-            const TESTING_ACTUATOR = "TestingActuator";
+            const TESTING_DEVICE = "TESTING_Device";
+            const TESTING_ACTUATOR = "TESTING_Actuator";
             const RERUN_OPERATOR = "RERUN_OPERATOR";
 
 
@@ -40,9 +40,7 @@ app.controller('TestingController',
             vm.addRealSensor = false;
             vm.executeRules = "true";
 
-            /**
-             * test
-             */
+
             (function initController() {
                 vm.availableSensors = [];
                 //Check if the test list was retrieved successfully
@@ -347,8 +345,6 @@ app.controller('TestingController',
                 checkSensorReg(sensor);
 
 
-
-
             }
 
             /**
@@ -490,6 +486,7 @@ app.controller('TestingController',
 
             }
 
+
             // expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {
                 testListCtrl: $controller('ItemListController as testListCtrl',
@@ -518,6 +515,9 @@ app.controller('TestingController',
                     deleteItem: deleteTest,
                     confirmDeletion: confirmDelete
                 }),
+
+                accessControlPolicyList: accessControlPolicyList,
+
                 executeTest: executeTest,
                 editConfig: editConfig,
                 stopTest: stopTest,
@@ -533,8 +533,7 @@ app.controller('TestingController',
                 checkActuatorReg: checkActuatorReg,
                 registerTestingActuator: registerTestingActuator,
                 addSimulators: addSimulators,
-                addRealSensor: addRealSensor
-
+                addRealSensor: addRealSensor,
             });
             // $watch 'addTest' result and add to 'testList'
             $scope.$watch(

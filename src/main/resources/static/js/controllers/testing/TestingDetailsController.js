@@ -28,6 +28,7 @@ app.controller('TestingDetailsController',
                 'TestingGPSSensorPl'];
 
 
+
             // Storing variables
             vm.sensorListTest = [];
             vm.sensorListTestNames = [];
@@ -157,8 +158,6 @@ app.controller('TestingDetailsController',
              */
             function getTestRules() {
                 $scope.ruleList = TestService.getRuleListTest(COMPONENT_ID);
-                console.log(testingDetails.rules.length);
-
 
                 for (let i = 0; i < testingDetails.rules.length; i++) {
                     if (i === 0) {
@@ -376,7 +375,7 @@ app.controller('TestingDetailsController',
                         if (parameterInstance.name === "ConfigName") {
                             let configName = parameterInstance.value;
                             switch (configName) {
-                                case 'TestingTemperatureSensor':
+                                case 'TESTING_TemperatureSensor':
                                     config.forEach(function (parameterInstance) {
                                         if (parameterInstance.name === "event") {
                                             if ((parameterInstance.name === "event" && parameterInstance.value === "3") || (parameterInstance.name === "event" && parameterInstance.value === "4") || (parameterInstance.name === "event" && parameterInstance.value === "5") || (parameterInstance.name === "event" && parameterInstance.value === "6")) {
@@ -413,7 +412,7 @@ app.controller('TestingDetailsController',
                                         }
                                     });
                                     break;
-                                case 'TestingHumiditySensor':
+                                case 'TESTING_HumiditySensor':
                                     config.forEach(function (parameterInstance) {
                                         if (parameterInstance.name === "event") {
                                             if (parameterInstance.name === "event" && parameterInstance.value === '3' || parameterInstance.name === "event" && parameterInstance.value === '4' || parameterInstance.name === "event" && parameterInstance.value === '5' || parameterInstance.name === "event" && parameterInstance.value === '6') {
@@ -450,7 +449,7 @@ app.controller('TestingDetailsController',
                                     });
 
                                     break;
-                                case 'TestingTemperatureSensorPl':
+                                case 'TESTING_TemperatureSensorPl':
                                     config.forEach(function (parameterInstance) {
                                         if (parameterInstance.name === "event") {
                                             if (parameterInstance.name === "event" && parameterInstance.value === '3' || parameterInstance.name === "event" && parameterInstance.value === '4' || parameterInstance.name === "event" && parameterInstance.value === '5' || parameterInstance.name === "event" && parameterInstance.value === '6') {
@@ -507,7 +506,7 @@ app.controller('TestingDetailsController',
 
 
                                     break;
-                                case 'TestingHumiditySensorPl':
+                                case 'TESTING_HumiditySensorPl':
                                     config.forEach(function (parameterInstance) {
                                         if (parameterInstance.name === "event") {
                                             if (parameterInstance.name === "event" && parameterInstance.value === '3' || parameterInstance.name === "event" && parameterInstance.value === '4' || parameterInstance.name === "event" && parameterInstance.value === '5' || parameterInstance.name === "event" && parameterInstance.value === '6') {
@@ -565,7 +564,7 @@ app.controller('TestingDetailsController',
 
 
                                     break;
-                                case 'TestingGPSSensor':
+                                case 'TESTING_GPSSensor':
                                     config.forEach(function (parameterInstance) {
                                         if (parameterInstance.name === "event") {
                                             if (parameterInstance.name === "event") {
@@ -598,7 +597,7 @@ app.controller('TestingDetailsController',
                                     $rootScope.config.reactionMetersGPS = reactionMetersGPS;
 
                                     break;
-                                case 'TestingGPSSensorPl':
+                                case 'TESTING_GPSSensorPl':
                                     config.forEach(function (parameterInstance) {
                                         if (parameterInstance.name === "event") {
                                             eventGPSPl = parameterInstance.value;
@@ -638,7 +637,7 @@ app.controller('TestingDetailsController',
 
                                     });
                                     break;
-                                case 'TestingAccelerationSensor':
+                                case 'TESTING_AccelerationSensor':
                                     config.forEach(function (parameterInstance) {
                                         if (parameterInstance.name === "event") {
                                             eventAcc = parameterInstance.value;
@@ -661,7 +660,7 @@ app.controller('TestingDetailsController',
                                     $rootScope.config.sensitivityClassAcc = sensitivityClassAcc;
 
                                     break;
-                                case 'TestingAccelerationSensorPl':
+                                case 'TESTING_AccelerationSensorPl':
                                     config.forEach(function (parameterInstance) {
                                         if (parameterInstance.name === "event") {
                                             eventAccPl = parameterInstance.value;
