@@ -10,7 +10,7 @@ import java.util.*;
  * Provides methods to access a {@link Document} based on a given {@link de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree}.
  * This access includes read operations and write operations to modify a given Document.
  */
-public class DocumentUtils {
+public class DocumentReader {
 
     /**
      * Stores array indices to resolve list indices in the {@link Document}. The order of the
@@ -25,7 +25,7 @@ public class DocumentUtils {
     private List<DataModelTreeNode> pathList;
 
     /**
-     * Returns a dequeue of array indices of all prefecessor nodes of a given {@link DataModelTreeNode}
+     * Returns a dequeue of array indices of all predecessor nodes of a given {@link DataModelTreeNode}
      * with each index being the maximum possible index according to the
      * {@link de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree} array size information.
      *
@@ -61,7 +61,7 @@ public class DocumentUtils {
      * @param arrayIndexQueue Array indices dequeue to resolve list indices in the {@link Document}. The order of the
      *                        indices stored in the queue must be the same as it would occur in a json path.
      */
-    public DocumentUtils(DataModelTreeNode node, ArrayDeque<Integer> arrayIndexQueue) {
+    public DocumentReader(DataModelTreeNode node, ArrayDeque<Integer> arrayIndexQueue) {
         // Get all the predecessors of the node and add the node itself to it
         List<DataModelTreeNode> predecessorsOfNode = node.getPredecessors();
         predecessorsOfNode.add(node);
@@ -79,7 +79,7 @@ public class DocumentUtils {
     /**
      * Retrieves all objects of a {@link Document} which correspond to a certain data model tree
      * position, specified by a {@link DataModelTreeNode}
-     * (passed with constructor call: e.g. {@link DocumentUtils#DocumentUtils(DataModelTreeNode, ArrayDeque)}).
+     * (passed with constructor call: e.g. {@link DocumentReader#DocumentReader(DataModelTreeNode, ArrayDeque)}).
      *
      * @param docToRead The document which should be read at a specified position.
      * @return A list of all objects stored in the docToRead which belong to the DataModelTreeNode.
@@ -115,12 +115,12 @@ public class DocumentUtils {
      *
      * @param returnObjects The list which should contain at the end of the recursion all objects at the specified
      *                      DataModelTreeNode position.
-     * @param nextNodeIndex Index which acts as pointer for the {@link DocumentUtils#pathList} to keep track of the current
+     * @param nextNodeIndex Index which acts as pointer for the {@link DocumentReader#pathList} to keep track of the current
      *                      node which is handled.
      * @param currentDataStructureToHandle Data structure which was handled at the last recursion step which is either
      *                                     a single Java object representing a primtive type or an ArrayList.
      * @param arrIndex The next array index to consider.
-     * @param arrIndicesQueue The {@link DocumentUtils#arrayIndexQueue}.
+     * @param arrIndicesQueue The {@link DocumentReader#arrayIndexQueue}.
      * @param newValueForEdit If not null this object will be used to overwrite all objects which are retrieved at the
      *                        specified DataModelTreeNode position.
      */

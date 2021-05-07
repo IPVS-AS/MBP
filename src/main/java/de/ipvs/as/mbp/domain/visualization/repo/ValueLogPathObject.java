@@ -6,7 +6,7 @@ import java.util.Objects;
  * Groups data model node information for visualization purposes. Stores the json path
  * to the node as well as properties like its name, unit, type and dimension.
  */
-public class PathUnitPair {
+public class ValueLogPathObject {
 
     private String path;
     private String name;
@@ -18,7 +18,7 @@ public class PathUnitPair {
         return name;
     }
 
-    public PathUnitPair setName(String name) {
+    public ValueLogPathObject setName(String name) {
         this.name = name;
         return this;
     }
@@ -27,7 +27,7 @@ public class PathUnitPair {
         return dimension;
     }
 
-    public PathUnitPair setDimension(int dimension) {
+    public ValueLogPathObject setDimension(int dimension) {
         this.dimension = dimension;
         return this;
     }
@@ -36,7 +36,7 @@ public class PathUnitPair {
         return type;
     }
 
-    public PathUnitPair setType(String type) {
+    public ValueLogPathObject setType(String type) {
         this.type = type;
         return this;
     }
@@ -45,7 +45,7 @@ public class PathUnitPair {
         return path;
     }
 
-    public PathUnitPair setPath(String path) {
+    public ValueLogPathObject setPath(String path) {
         this.path = path;
         return this;
     }
@@ -54,7 +54,7 @@ public class PathUnitPair {
         return unit;
     }
 
-    public PathUnitPair setUnit(String unit) {
+    public ValueLogPathObject setUnit(String unit) {
         this.unit = unit;
         return this;
     }
@@ -63,7 +63,7 @@ public class PathUnitPair {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        PathUnitPair that = (PathUnitPair) o;
+        ValueLogPathObject that = (ValueLogPathObject) o;
         return path.equals(that.path);
     }
 

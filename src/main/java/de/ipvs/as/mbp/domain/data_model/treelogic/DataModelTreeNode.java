@@ -62,7 +62,7 @@ public class DataModelTreeNode {
 
         // Add dimension for arrays. If not an array set the dimension value to -1 as default.
         if (this.type != null && this.type == IoTDataTypes.ARRAY) {
-            this.size = repoTreeNode.getDimension();
+            this.size = repoTreeNode.getSize();
         } else {
             this.size = -1;
         }

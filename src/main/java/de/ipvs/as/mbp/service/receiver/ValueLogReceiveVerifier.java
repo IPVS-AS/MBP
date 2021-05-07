@@ -2,7 +2,6 @@ package de.ipvs.as.mbp.service.receiver;
 
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTreeNode;
-import de.ipvs.as.mbp.util.DocumentUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.bson.Document;
 import org.json.JSONArray;
@@ -11,7 +10,6 @@ import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -50,8 +48,9 @@ public class ValueLogReceiveVerifier {
      * @return A document which can be inserted to the MongoDB.
      */
     public static Document validateJsonValueAndGetDocument(JSONObject valueRoot, DataModelTree dataModel) throws JSONException, ParseException {
-        System.out.println(valueRoot.toString(1));
         Document doc = new Document();
+
+        // Start the recursive validation by calling the function over all children of the data model root node
         for (DataModelTreeNode node : dataModel.getRoot().getChildren()) {
             validateChild(node, null, valueRoot, doc, null, -1);
         }
@@ -86,9 +85,7 @@ public class ValueLogReceiveVerifier {
 
                 case OBJECT:
                     JSONObject nextObject = lastObject.getJSONObject(currNode.getName());
-                    if (nextObject.has(currNode.getName()))
-                        throw new JSONException("Not a valid JSON as specified in the data model");
-                    // TODO Unused json exception... error
+
                     Document nextObjDoc = new Document();
                     lastDocument.append(currNode.getName(), nextObjDoc);
 
@@ -109,14 +106,11 @@ public class ValueLogReceiveVerifier {
                     }
                     break;
                 case DOUBLE:
-                    System.out.println("Double --> object last: " + currNode.getName());
-                    //System.out.println("last object: " + lastObject.toString(1));
                     double nextDouble = lastObject.getDouble(currNode.getName());
                     lastDocument.append(currNode.getName(), nextDouble);
                     break;
                 case DECIMAL128:
-                    // TODO Find a way to retrieve decimal128 values from JSON without using strings
-                    // Big Decimal must be send as strings
+                    // Big Decimal must be sent as strings as the json parsers cant parse to BigDecimal
                     BigDecimal nextBD = new BigDecimal(lastObject.getString(currNode.getName()));
                     lastDocument.append(currNode.getName(), nextBD);
                     break;
@@ -149,8 +143,6 @@ public class ValueLogReceiveVerifier {
             switch (currNode.getType()) {
                 case OBJECT:
                     JSONObject nextObject = lastArray.getJSONObject(arrIndex);
-                    if (nextObject.has(currNode.getName()))
-                        throw new JSONException("Not a valid JSON as specified in the data model");
 
                     Document nextObjDoc = new Document();
                     lastList.add(nextObjDoc);
@@ -172,13 +164,11 @@ public class ValueLogReceiveVerifier {
                     }
                     break;
                 case DOUBLE:
-                    System.out.println("Double --> array last: " + currNode.getName());
                     double nextDouble = lastArray.getDouble(arrIndex);
                     lastList.add(nextDouble);
                     break;
                 case DECIMAL128:
-                    // TODO Find a way to retrieve decimal128 values from JSON without using strings
-                    // Big Decimal must be send as strings
+                    // Big Decimal must be sent as strings as the json parsers cant parse to BigDecimal
                     BigDecimal nextBD = new BigDecimal(lastArray.getString(arrIndex));
                     lastList.add(nextBD);
                     break;
@@ -203,7 +193,6 @@ public class ValueLogReceiveVerifier {
                     lastList.add(nextBool);
                     break;
                 case DATE:
-                    String nextDateAsString = lastArray.getString(arrIndex);
                     Date nextDate = parseDate(null, lastArray, arrIndex, null);
                     lastList.add(nextDate);
                     break;
@@ -250,9 +239,5 @@ public class ValueLogReceiveVerifier {
     public static Date parseDateLong(Long epochTimeInMs) {
         return new Date(epochTimeInMs);
     }
-
-    private byte[] parseBinary(String keyName, JSONArray lastArray, int arrIndex, JSONObject lastObject) {
-
-        return new byte[]{0, 2, 3};
-    }
+    
 }

@@ -36,7 +36,7 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
     @Autowired
     private DataModelTreeCache dataModelTreeCache;
 
-    // To store event type information to the parser service
+    // To store event type information in the parser service (to convert complex ValueLog data to CEPEvent representation)
     @Autowired
     private CEPValueLogParser cepValueLogParser;
 
@@ -269,17 +269,16 @@ public class CEPTriggerService implements ValueLogReceiverObserver {
 
         }
 
-        //Add fields to this event type that all derived events need to implement
-        //eventType.addField("value", CEPPrimitiveDataTypes.DOUBLE);
-        // Time is a default field as this is the time a component value arrives at the application logic
+        // Add a time data field as default event field
         eventType.addField("time", CEPPrimitiveDataTypes.LONG);
 
         // Add the parseInstructions to the parser cache
         cepValueLogParser.addInstructionsForEventType(eventType.getName(), pathInstructions);
-        // TODO WHERE TO UNREGISTER THE EVENT TYPE?
 
         //Register event type
         engine.registerEventType(eventType);
+        // TODO Is it somehow foreseen to remove event types again form the engine?
+        //      (same applies then also to the cepValueLogParser
     }
 
     /**

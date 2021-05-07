@@ -76,27 +76,42 @@ app.directive('dmInput', [function () {
                     scope.add(data);
                 }
             } else if (data.type === "object") {
-                data.dimension = undefined;
+                data.size = undefined;
             } else {
                 // Primitive type
                 data.nodes = [];
-                data.dimension = undefined;
+                data.size = undefined;
             }
             scope.parseToDataModelJson();
         }
 
+        /**
+         * [public]
+         *  Converts the javascript represenation of the data model created by this directive to
+         *  a json format which can be read by the MBP server.
+         */
         scope.parseToDataModelJson = function () {
             var listToAdd = [];
             addChildNode(listToAdd, {name: ""}, scope.tree[0]);
             scope.bindedModel = JSON.stringify(listToAdd, null, '\t');
         }
 
+        /**
+         * [private]
+         * Part of the recursive function to convert the data model javascript notation to
+         * a json in a format the MBP server expects. This method calls all children
+         * of a data model node recursively and adds this json definition to a list.
+         *
+         * @param listToAdd The list which contains all data model nodes as json at the end of recursion.
+         * @param parent The current parent of the node.
+         * @param nextChild The current child to handle or in a view of a caller: the next child to handle.
+         */
         var addChildNode = function (listToAdd, parent, nextChild) {
             var node = {
                 name: nextChild.name,
                 description: nextChild.description,
                 type: nextChild.type,
-                dimension: nextChild.dimension,
+                size: nextChild.size,
                 unit: nextChild.unit,
                 parent: parent.name,
                 children: []
@@ -107,10 +122,15 @@ app.directive('dmInput', [function () {
                 addChildNode(listToAdd, nextChild, nextChild.nodes[i]);
             }
 
-
             listToAdd.push(node);
         }
 
+        /**
+         * [public]
+         * Sets the "edit" attribute of a data model node to false for all successors of a given
+         * node.
+         * @param data The node of which all successors edit field should set to false.
+         */
         scope.recursivelySetEditToFalse = function(data) {
             data.edit = false;
             if (data.nodes.length >= 1) {
@@ -121,15 +141,16 @@ app.directive('dmInput', [function () {
         }
 
         scope.tree = [{name: "RootObj", expanded: true, type: "object", nodes: [], isRoot: true, edit: false,
-        dimension: undefined, description: "", unit: ""}];
+        size: undefined, description: "", unit: ""}];
     };
 
     //Configure and expose the directive
     return {
         restrict: 'E', //Elements only
-        templateUrl: 'templates/data-model-input.html',
+        templateUrl: 'templates/data-model-input-template.html',
         link: link,
         scope: {
+            // Binds a string variable holding the json output of the data model input tool
             bindedModel: "=ngModel"
         }
     };

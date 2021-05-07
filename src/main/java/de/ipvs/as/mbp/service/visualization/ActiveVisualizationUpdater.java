@@ -1,20 +1,12 @@
 package de.ipvs.as.mbp.service.visualization;
 
-import com.jayway.jsonpath.JsonPath;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.component.Sensor;
-import de.ipvs.as.mbp.domain.visualization.Visualization;
-import de.ipvs.as.mbp.domain.visualization.VisualizationFields;
 import de.ipvs.as.mbp.domain.visualization.repo.ActiveVisualization;
-import de.ipvs.as.mbp.domain.visualization.VisualizationCollection;
-import de.ipvs.as.mbp.domain.visualization.repo.PathUnitPair;
 import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
-import de.ipvs.as.mbp.repository.ComponentRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
-import de.ipvs.as.mbp.util.Validation;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +16,7 @@ import java.util.List;
 
 /**
  * Provides access operations to the database for
- * managing the visualization views.
+ * managing the visualization views for single components.
  */
 @Service
 public class ActiveVisualizationUpdater {
@@ -46,9 +38,6 @@ public class ActiveVisualizationUpdater {
      * @return The sensor which was updated.
      */
     public Component updateOrCreateActiveVisualization(Component componentToUpdate, ActiveVisualization visToCreateOrUpdate) {
-
-        // Validate the input TODO remove comment
-        // this.validateVisualizationSettings(visToCreateOrUpdate, sensorToUpdate);
 
         List<ActiveVisualization> currActiveVisualizationsOfSensor = componentToUpdate.getActiveVisualizations();
 
@@ -111,56 +100,4 @@ public class ActiveVisualizationUpdater {
         throw new MBPException(HttpStatus.NOT_FOUND, "No visual component with the id " + visualComponentId + " found!");
     }
 
-    private void validateVisualizationSettings(ActiveVisualization visToValidate, Component component) throws MBPException {
-
-        // 0) Check if a id is given
-        if (Validation.isNullOrEmpty(visToValidate.getVisId())) {
-            throw new MBPException(HttpStatus.NOT_FOUND, "An id of the visualization component is missing.");
-        }
-
-        // 0) Check if a field collection id is given
-        if (Validation.isNullOrEmpty(visToValidate.getFieldCollectionId())) {
-            throw new MBPException(HttpStatus.NOT_FOUND, "An id of the visualization field collection is missing.");
-        }
-
-        // 1) Check if a json key to json path mapping exists
-        if (visToValidate.getVisFieldToPathMapping() == null || visToValidate.getVisFieldToPathMapping().size() <= 0) {
-            throw new MBPException(HttpStatus.NOT_FOUND, "Visualization settings map is missing!");
-        }
-
-        // 2) Check if the id matches an existing visual component
-        if (!VisualizationCollection.visIdMapping.containsKey(visToValidate.getVisId())) {
-            throw new MBPException(HttpStatus.NOT_FOUND,
-                    "The visual component with the id " + visToValidate.getVisId() + " does not exist.");
-        }
-
-        // 3) Check if the key fields of the json key to json path map are all valid and complete
-        Visualization vis = VisualizationCollection.visIdMapping.get(visToValidate.getVisId());
-        boolean hasValid = false;
-        for (VisualizationFields fields : vis.getFieldsToVisualize()) {
-            if (!visToValidate.getVisFieldToPathMapping().keySet().equals(
-                    VisualizationCollection.visIdMapping.get(fields.getFieldsToVisualize().keySet())))
-            {
-                hasValid = true;
-            }
-        }
-        if (!hasValid) {
-            throw new MBPException(HttpStatus.NOT_FOUND,
-                    "For visual component with the id " + visToValidate.getVisId() + ", invalid visualization" +
-                            "parameters were provided.");
-        }
-
-        // 4) Check if all value fields of the visual component map are valid json paths
-        String jsonDataModelExample = component.getOperator().getDataModel().getJSONExample();
-        try {
-            JSONObject exampleObj = new JSONObject(jsonDataModelExample);
-            for (PathUnitPair pathToValidate : visToValidate.getVisFieldToPathMapping().values()) {
-                JsonPath testPath = JsonPath.compile(pathToValidate.getPath());
-                testPath.read(exampleObj.getJSONObject("value").toString());
-            }
-        } catch (Exception e) {
-            throw new MBPException(HttpStatus.NOT_ACCEPTABLE, "Invalid json path provided.");
-        }
-
-    }
 }

@@ -74,11 +74,7 @@ public class PreOrderIterator implements Iterator<DataModelTreeNode> {
     private boolean hasListDuplicates(List<DataModelTreeNode> listToCheck) {
         Set<DataModelTreeNode> set = new HashSet<>();
         set.addAll(listToCheck);
-        if (listToCheck.size() != set.size()) {
-            return true;
-        } else {
-            return false;
-        }
+        return listToCheck.size() != set.size();
     }
 
     /**
@@ -91,17 +87,12 @@ public class PreOrderIterator implements Iterator<DataModelTreeNode> {
 
     @Override
     public boolean hasNext() {
-        if (visitedNodes.size() > 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return visitedNodes.size() > 0;
     }
 
     @Override
     public DataModelTreeNode next() {
-        DataModelTreeNode nextElement = visitedNodes.remove(0);
-        return nextElement;
+        return visitedNodes.remove(0);
     }
 
     @Override

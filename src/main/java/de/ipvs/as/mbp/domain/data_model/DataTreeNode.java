@@ -29,14 +29,14 @@ public class DataTreeNode {
     /**
      * The size of the array.
      */
-    private int dimension;
+    private int size;
 
-    public int getDimension() {
-        return dimension;
+    public int getSize() {
+        return size;
     }
 
-    public void setDimension(int dimension) {
-        this.dimension = dimension;
+    public void setSize(int size) {
+        this.size = size;
     }
 
     public String getUnit() {

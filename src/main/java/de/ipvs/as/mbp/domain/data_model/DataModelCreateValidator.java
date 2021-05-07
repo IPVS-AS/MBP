@@ -1,7 +1,7 @@
 package de.ipvs.as.mbp.domain.data_model;
 
 import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
-import de.ipvs.as.mbp.domain.visualization.repo.PathUnitPair;
+import de.ipvs.as.mbp.domain.visualization.repo.ValueLogPathObject;
 import de.ipvs.as.mbp.domain.visualization.repo.VisMappingInfo;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.service.validation.ICreateValidator;
@@ -48,7 +48,7 @@ public class DataModelCreateValidator implements ICreateValidator<DataModel> {
         DataModelTree tree = new DataModelTree(entity.getTreeNodes());
         entity.setJSONExample(tree.getJSONExample());
         entity.setJsonPathsToLeafNodes(tree.getLeafNodes().stream().map(
-                node -> new PathUnitPair().setName(node.getName()).setDimension(node.getSize()).setType(node.getType().getValue())
+                node -> new ValueLogPathObject().setName(node.getName()).setDimension(node.getSize()).setType(node.getType().getName())
                         .setPath(node.getInternPathToNode()).setUnit(node.getUnit())).collect(Collectors.toList()));
         entity.setPossibleVisMappings((ArrayList<VisMappingInfo>) tree.getAllPossibleVisualizationsMappings());
 

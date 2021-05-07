@@ -57,8 +57,6 @@ public class RestVisualizationController {
             @RequestBody @ApiParam(value = "An ActiveComponentVisualization instance", required = true) ActiveVisualization visSettings)
             throws EntityNotFoundException, MissingPermissionException {
 
-        System.out.println("Put test");
-
         Sensor sensor = null;
         Actuator actuator = null;
         try {
@@ -66,7 +64,7 @@ public class RestVisualizationController {
             userEntityService.requirePermission(sensorRepository, componentId, ACAccessType.UPDATE, ACAccessRequest.valueOf(accessRequestHeader));
             sensor = sensorRepository.findById(componentId).orElse(null);
         } catch (EntityNotFoundException e) {
-            // Catch this exception as these cases are handled seperately in the following code
+            // Catch this exception as these cases are already handled seperately in the following code
         }
 
         try {
@@ -76,7 +74,6 @@ public class RestVisualizationController {
         } catch (EntityNotFoundException e) {
             // Catch this exception as these cases are handled seperately in the following code
         }
-
 
         Component componentToUpdate = null;
         if (sensor != null) {
@@ -105,7 +102,6 @@ public class RestVisualizationController {
             @PathVariable("componentId") String componentId,
             @PathVariable("activeVisualComponentId") String visualId) throws EntityNotFoundException, MissingPermissionException {
         // Delete the data model (includes access-control)
-
         Sensor sensor = null;
         Actuator actuator = null;
         try {
@@ -141,6 +137,4 @@ public class RestVisualizationController {
         }
         return ResponseEntity.noContent().build();
     }
-
-
 }

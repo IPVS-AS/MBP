@@ -2,14 +2,12 @@ package de.ipvs.as.mbp.domain.data_model;
 
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
-import de.ipvs.as.mbp.domain.visualization.repo.PathUnitPair;
+import de.ipvs.as.mbp.domain.visualization.repo.ValueLogPathObject;
 import de.ipvs.as.mbp.domain.visualization.repo.VisMappingInfo;
-import de.ipvs.as.mbp.domain.visualization.repo.VisualizationMappings;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 
 import javax.persistence.GeneratedValue;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,15 +43,15 @@ public class DataModel extends UserEntity {
     /**
      * All json paths to the leaf nodes of the model
      */
-    private List<PathUnitPair> jsonPathsToLeafNodes;
+    private List<ValueLogPathObject> jsonPathsToLeafNodes;
 
     // ------
 
-    public List<PathUnitPair> getJsonPathsToLeafNodes() {
+    public List<ValueLogPathObject> getJsonPathsToLeafNodes() {
         return jsonPathsToLeafNodes;
     }
 
-    public void setJsonPathsToLeafNodes(List<PathUnitPair> jsonPathsToLeafNodes) {
+    public void setJsonPathsToLeafNodes(List<ValueLogPathObject> jsonPathsToLeafNodes) {
         this.jsonPathsToLeafNodes = jsonPathsToLeafNodes;
     }
 

@@ -79,7 +79,6 @@ public class RestDataModelController {
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @ApiParam(value = "Page parameters", required = true) Pageable pageable) {
 
-        System.out.println("GET test");
         // Parse the access-request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 

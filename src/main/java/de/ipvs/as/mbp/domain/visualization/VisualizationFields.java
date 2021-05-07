@@ -114,7 +114,7 @@ public class VisualizationFields {
     public static DataModelTreeNode getNewDataModelTreeNode(String fieldName, IoTDataTypes type) {
         DataTreeNode node = new DataTreeNode();
         node.setName(fieldName);
-        node.setType(type.getValue());
+        node.setType(type.getName());
         DataModelTreeNode modelNode = new DataModelTreeNode(node);
         modelNode.setType(type);
         modelNode.setName(fieldName);

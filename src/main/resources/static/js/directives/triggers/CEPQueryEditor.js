@@ -1252,11 +1252,6 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
 
                     let validationResult = event.value;
 
-                    console.log("VALIDATION");
-                    console.log(rule);
-                    console.log(value);
-                    console.log(event);
-
                     // Check whether a json path was selected
                     if (!rule.data.jsonPath.type) {
                         addValidationError('No json path selected!');
@@ -1782,15 +1777,6 @@ app.directive('cepQueryEditor', ['$compile', function ($compile) {
 
             initOptions();
         })();
-
-        //Watch the jsonPath parameter
-        scope.$watch(function () {
-            return scope.ruleJsonPathBindings;
-        }, function (newValue, oldValue) {
-            //Update chart if jsonPath was changed
-            console.log(scope.ruleJsonPathBindings);
-        });
-
 
         /*
         Defines the exposed API.

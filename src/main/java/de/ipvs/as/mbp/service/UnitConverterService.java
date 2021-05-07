@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import javax.measure.converter.UnitConverter;
 
 /**
+ * TODO Must be updated if it should be used with complex iot data
  * Service that provides means for converting values from one unit into another unit.
  *
  * @author Jan
@@ -27,14 +28,10 @@ public class UnitConverterService {
      */
     public void convertValueLogValue(ValueLog valueLog, UnitConverter converter) {
         //Get value of current log
-        // TODO NOT SUPPORTED AT THE MOMENT
         double value = Double.valueOf(valueLog.getValue().getDouble("value"));
-        //double value = 5.0;
 
         //Convert value
-        // TODO NOT SUPPORTED AT THE MOMENT
         double convertedValue = converter.convert(value);
-        //double convertedValue = 10.0;
 
         //Determine rounding constant
         double roundingConst = Math.pow(10, ROUNDING_DECIMAL_PLACES);

@@ -16,19 +16,6 @@ public class VisualizationCollection {
     static {
 
         visIdMapping.put(
-                "stringVis1",
-                new Visualization("stringVis1").addFieldsToVisualize(
-                        new VisualizationFields("default").addNewPrimitiveType("stringVal", IoTDataTypes.STRING))
-        );
-
-        visIdMapping.put(
-                "arrLong",
-                new Visualization("arrLong").addFieldsToVisualize(
-                        new VisualizationFields("default").addNewPrimitiveType("arrVal", IoTDataTypes.LONG))
-
-        );
-
-        visIdMapping.put(
                 "doubleVis",
                 new Visualization("doubleVis")
                         .addFieldsToVisualize(new VisualizationFields("default")

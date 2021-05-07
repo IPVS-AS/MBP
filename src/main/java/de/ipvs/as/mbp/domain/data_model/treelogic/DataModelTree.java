@@ -5,12 +5,13 @@ import de.ipvs.as.mbp.domain.data_model.DataModel;
 import de.ipvs.as.mbp.domain.data_model.DataTreeNode;
 import de.ipvs.as.mbp.domain.data_model.IoTDataTypes;
 import de.ipvs.as.mbp.domain.visualization.VisualizationFields;
-import de.ipvs.as.mbp.domain.visualization.repo.PathUnitPair;
+import de.ipvs.as.mbp.domain.visualization.repo.ValueLogPathObject;
 import de.ipvs.as.mbp.domain.visualization.VisualizationCollection;
 import de.ipvs.as.mbp.domain.visualization.repo.VisMappingInfo;
 import de.ipvs.as.mbp.domain.visualization.repo.VisualizationMappings;
 import de.ipvs.as.mbp.domain.visualization.Visualization;
 import de.ipvs.as.mbp.error.EntityValidationException;
+import de.ipvs.as.mbp.util.Permutations;
 import de.ipvs.as.mbp.util.Validation;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -136,7 +137,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                     "much roots.");
         } else {
             // Check if root is object
-            if (!rootCandidates.get(0).getType().toLowerCase().equals(IoTDataTypes.OBJECT.getValue())) {
+            if (!rootCandidates.get(0).getType().toLowerCase().equals(IoTDataTypes.OBJECT.getName())) {
                 exception.addInvalidField("treeNodes", "Tree root must be an object.");
             }
         }
@@ -311,14 +312,14 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
 
         for (Map.Entry<String, List<DataModelTreeNode>> visField : field.getFieldsToVisualize().entrySet()) {
 
-            List<PathUnitPair> jsonPathsWithUnits = new ArrayList<>();
+            List<ValueLogPathObject> jsonPathsWithUnits = new ArrayList<>();
 
             for (DataModelTreeNode node : visField.getValue()) {
-                List<PathUnitPair> pathsToAdd = getJsonPathsPerDataModelTreeNodeRoot(node);
+                List<ValueLogPathObject> pathsToAdd = getJsonPathsPerDataModelTreeNodeRoot(node);
 
                 // Add the pathsToAdd but with taking care that no duplicates are added
                 if (pathsToAdd.size() > 0) {
-                    for (PathUnitPair pathToAdd : pathsToAdd) {
+                    for (ValueLogPathObject pathToAdd : pathsToAdd) {
                         if (!jsonPathsWithUnits.contains(pathToAdd)) {
                             jsonPathsWithUnits.add(pathToAdd);
                         }
@@ -345,10 +346,10 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
      * visualizations but nothing more complex.
      *
      * @param rootNode The root of the model to match this DataaModelTree with.
-     * @return All matching jsonPaths wrapped in a {@link PathUnitPair} object.
+     * @return All matching jsonPaths wrapped in a {@link ValueLogPathObject} object.
      */
-    private List<PathUnitPair> getJsonPathsPerDataModelTreeNodeRoot(DataModelTreeNode rootNode) {
-        List<PathUnitPair> allPathsForSubtree = new ArrayList<>();
+    private List<ValueLogPathObject> getJsonPathsPerDataModelTreeNodeRoot(DataModelTreeNode rootNode) {
+        List<ValueLogPathObject> allPathsForSubtree = new ArrayList<>();
 
         // Count the number of arrays the rootNode defines.
         Map.Entry<DataModelTreeNode, Integer> leafNodeWithArrayDimension = this.getLeafNodeOfRootWithArrayDimensions(rootNode);
@@ -376,15 +377,15 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
             }
 
             if (leafNode.getType() == leafNodeOfRoot.getType() &&
-            arrParentCount >= arrayAmountCount) {
+                    arrParentCount >= arrayAmountCount) {
                 allPathsForSubtree.add(
                         // TODO What is a good name / type / size for a multidimensional array?
-                        new PathUnitPair()
-                        .setName(leafNode.getName())
-                        .setType(rootNode.getType().getValue())
-                        .setDimension(rootNode.getSize())
-                        .setUnit(leafNode.getUnit())
-                        .setPath(leafNode.getInternPathToNode())
+                        new ValueLogPathObject()
+                                .setName(leafNode.getName())
+                                .setType(rootNode.getType().getName())
+                                .setDimension(rootNode.getSize())
+                                .setUnit(leafNode.getUnit())
+                                .setPath(leafNode.getInternPathToNode())
                 );
             }
         }
@@ -479,7 +480,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
 
         // Set the dimension to -1 if not an array
         if (IoTDataTypes.getDataTypeWithValue(nodeToValidate.getType().toLowerCase()) != IoTDataTypes.ARRAY) {
-            nodeToValidate.setDimension(-1);
+            nodeToValidate.setSize(-1);
         }
 
         // Are both, parent and children null or empty?
@@ -503,7 +504,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
         }
 
         // Check if: type = object --> at least one children
-        if (nodeToValidate.getType().toLowerCase().equals(IoTDataTypes.OBJECT.getValue())) {
+        if (nodeToValidate.getType().toLowerCase().equals(IoTDataTypes.OBJECT.getName())) {
             if (nodeToValidate.getChildren() == null || nodeToValidate.getChildren().size() <= 0) {
                 exception.addInvalidField("treeNodes", "Node " + nodeToValidate.getName() + " is " +
                         " an object but has no children.");
@@ -511,12 +512,12 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
         }
 
         // Check if: type = array --> exactly one children and always with a dimension >= 1
-        if (nodeToValidate.getType().toLowerCase().equals(IoTDataTypes.ARRAY.getValue())) {
+        if (nodeToValidate.getType().toLowerCase().equals(IoTDataTypes.ARRAY.getName())) {
             if (nodeToValidate.getChildren() == null || nodeToValidate.getChildren().size() != 1) {
                 exception.addInvalidField("treeNodes", "Node " + nodeToValidate.getName() + " is " +
                         " an array and needs exactly one child.");
             }
-            if (nodeToValidate.getDimension() <= 1) {
+            if (nodeToValidate.getSize() <= 1) {
                 exception.addInvalidField("treeNodes", "Node " + nodeToValidate.getName() + " is " +
                         " an array and needs a predefined dimension.");
             }
@@ -555,17 +556,13 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
 
         String retString = "";
 
-            // Start with root
-            JSONObject root = new JSONObject();
-            for (DataModelTreeNode node : this.rootNodeModel.getChildren()) {
+        // Start with root
+        JSONObject root = new JSONObject();
+        for (DataModelTreeNode node : this.rootNodeModel.getChildren()) {
             getJSONFromChild(node, null, root);
         }
-        try {
-            retString = "{\"value\": " + root.toString() + "}";
-            System.out.println(root.toString(1));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        retString = "{\"value\": " + root.toString() + "}";
+
         return retString;
     }
 
@@ -599,7 +596,6 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                     lastObject.put(currNode.getName(), newArr);
                     // Call the function for the childs recursively (call it that often as the array size   )
                     for (int i = 0; i < currNode.getSize(); i++) {
-                        System.out.println(currNode.getSize());
                         getJSONFromChild(currNode.getChildren().get(0), newArr, null);
                     }
                 } else if (currNode.getType() == IoTDataTypes.DECIMAL128
@@ -660,7 +656,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                     lastArray.put("String");
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.DATE) {
-                    lastArray.put( new SimpleDateFormat(
+                    lastArray.put(new SimpleDateFormat(
                             "yyyy-MM-dd'T'HH:mm:ss").format(new Date()));
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.BINARY) {

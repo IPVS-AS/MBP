@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.domain.data_model.treelogic;
+package de.ipvs.as.mbp.util;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

@@ -2,8 +2,6 @@ package de.ipvs.as.mbp.domain.visualization.repo;
 
 import org.bson.types.ObjectId;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,7 +18,7 @@ public class ActiveVisualization {
 
     private String fieldCollectionId;
 
-    private Map<String, PathUnitPair> visFieldToPathMapping;
+    private Map<String, ValueLogPathObject> visFieldToPathMapping;
 
     public ActiveVisualization() {
         this.instanceId = new ObjectId().toString();
@@ -47,16 +45,16 @@ public class ActiveVisualization {
         return this;
     }
 
-    public Map<String, PathUnitPair> getVisFieldToPathMapping() {
+    public Map<String, ValueLogPathObject> getVisFieldToPathMapping() {
         return visFieldToPathMapping;
     }
 
-    public ActiveVisualization setVisFieldToPathMapping(Map<String, PathUnitPair> visFieldToPathMapping) {
+    public ActiveVisualization setVisFieldToPathMapping(Map<String, ValueLogPathObject> visFieldToPathMapping) {
         this.visFieldToPathMapping = visFieldToPathMapping;
         return this;
     }
 
-    public ActiveVisualization addFieldToPathMapping(String field, PathUnitPair path) {
+    public ActiveVisualization addFieldToPathMapping(String field, ValueLogPathObject path) {
         this.visFieldToPathMapping.put(field, path);
         return this;
     }

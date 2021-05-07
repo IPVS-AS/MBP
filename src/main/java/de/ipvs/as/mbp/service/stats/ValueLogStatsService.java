@@ -97,7 +97,8 @@ public class ValueLogStatsService {
         //Iterate over all value logs in the list
         for (ValueLog log : valueLogList) {
             //Get value of the current log
-            // TODO NOT SUPPORTED AT THE MOMENT
+            // TODO NOT SUPPORTED AT THE MOMENT:
+            //  Use the DocumentReader-Service for reading all double values of a complex log
             //double logValue = log.getValue();
             double logValue = 5.0;
 

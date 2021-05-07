@@ -137,7 +137,6 @@ public class CEPValueLogParser {
      * @param parseInstructions A set of single {@link CEPValueLogParseInstruction}s.
      */
     public void addInstructionsForEventType(String eventTypeName, Set<CEPValueLogParseInstruction> parseInstructions) {
-        System.out.println("Added " + eventTypeName);
         this.cachedParseInstructions.put(eventTypeName, parseInstructions);
     }
 

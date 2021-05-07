@@ -1,7 +1,5 @@
 package de.ipvs.as.mbp.domain.visualization.repo;
 
-import de.ipvs.as.mbp.domain.visualization.repo.PathUnitPair;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +19,7 @@ public class VisualizationMappings {
     /**
      * Key: name of the visualization field, Value: List of json paths which lead to data fields compatible for the field
      */
-    private Map<String, List<PathUnitPair>> jsonPathPerVisualization;
+    private Map<String, List<ValueLogPathObject>> jsonPathPerVisualization;
 
     /**
      * Name of the field collection. A field collection summarizes multiple data fields a visualization
@@ -35,7 +33,7 @@ public class VisualizationMappings {
         this.fieldCollectionName = fieldCollectionName;
     }
 
-    public Map<String, List<PathUnitPair>> getJsonPathPerVisualizationField() {
+    public Map<String, List<ValueLogPathObject>> getJsonPathPerVisualizationField() {
         return jsonPathPerVisualization;
     }
 
@@ -47,11 +45,11 @@ public class VisualizationMappings {
         this.fieldCollectionName = fieldCollectionName;
     }
 
-    public void setJsonPathPerVisualizationField(Map<String, List<PathUnitPair>> jsonPathPerVisualizationField) {
+    public void setJsonPathPerVisualizationField(Map<String, List<ValueLogPathObject>> jsonPathPerVisualizationField) {
         this.jsonPathPerVisualization = jsonPathPerVisualizationField;
     }
 
-    public void addVisualizationField(String id, List<PathUnitPair> jsonPathsWithUnits) {
+    public void addVisualizationField(String id, List<ValueLogPathObject> jsonPathsWithUnits) {
         jsonPathPerVisualization.put(id, jsonPathsWithUnits);
     }
 

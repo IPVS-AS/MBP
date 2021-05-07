@@ -20,7 +20,7 @@ import java.util.*;
  * with the respective {@link de.ipvs.as.mbp.domain.component.Component#getId() component id}
  * as key.</p>
  *
- * <p><b>IMPORTANT NOTE</b>: The current (very simple) implementation of this cache
+ * <p><b>NOTE</b>: The current (very simple) implementation of this cache
  * does not consider that in VERY rare cases it would be at least theoretically
  * possible that the MongoDB generates a not unique ObjectID for a new sensor (e.g.
  * id which matches an old deleted sensor because of hash function collision).
@@ -29,7 +29,8 @@ import java.util.*;
  * seems to be very unlikely it can be neglected for the current local use of MBP,
  * as additional data base checks if something is still up-to-date would make the
  * cache less efficient.
- * But it must be handled as soon as the editing of data models is somehow enabled.
+ * But it must be handled as soon as the editing of data models is somehow enabled (then entries
+ * should be removed anyway).
  * Interesting links covering this topic: <br>
  * -https://docs.mongodb.com/manual/reference/method/ObjectId/#ObjectIDs-BSONObjectIDSpecification <br>
  * -https://stackoverflow.com/questions/5303869/mongodb-are-mongoids-unique-across-collections <br>
@@ -59,7 +60,7 @@ public class DataModelTreeCache {
 
     private DataModelTreeCache() {
         // Init the data models cache
-        System.out.println("Cache started.");
+        System.out.println("Data model cache started.");
         this.cachedDataModels = new HashMap<>();
     }
 
@@ -79,8 +80,6 @@ public class DataModelTreeCache {
         } else {
             // No, the data model is not present in the application logic yet --> get it from the db and add it to the
             // data model cache to avoid further db accesses
-            System.out.println("Get model from database:");
-
             DataModel dataModel = getDataModelByComponentIdFromDB(componentId);
 
             if (dataModel == null) {
@@ -88,11 +87,9 @@ public class DataModelTreeCache {
                 return null;
             }
 
-            System.out.println(dataModel.getName());
             // Build the data model tree from the data model
             DataModelTree tree = new DataModelTree(dataModel.getTreeNodes());
             this.cachedDataModels.put(componentId, new AbstractMap.SimpleEntry<>(tree, new Date()));
-            System.out.println(tree.toString());
             return tree;
         }
     }

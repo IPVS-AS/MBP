@@ -47,7 +47,6 @@ app.directive('jsonPathInput', ['UnitService', '$compile', function (UnitService
          */
         scope.onSelectPathItem = function () {
             var pathItem = JSON.parse(scope.selectedBinding);
-            console.log(scope.selectedBinding);
 
             // Remove all the old input fields
             removeInputFields();
@@ -77,7 +76,6 @@ app.directive('jsonPathInput', ['UnitService', '$compile', function (UnitService
                         inputOptions: [],
                     }
                     // Check if we need wildcards, if yes add * as input option
-                    console.log("XX " + scope.numberOfNeededWildcards);
                     if (parseInt(scope.numberOfNeededWildcards) > 0) {
                         newArrBinding.inputOptions.push("*");
                     }

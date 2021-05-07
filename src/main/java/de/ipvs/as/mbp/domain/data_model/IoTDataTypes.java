@@ -42,13 +42,13 @@ public enum IoTDataTypes implements Comparable<IoTDataTypes> {
             null,
             null);
 
-    private final String value;
+    private final String name;
     private final CEPPrimitiveDataTypes cepType;
     private Class<?> referenceClass;
 
 
-    IoTDataTypes(String value, CEPPrimitiveDataTypes cepType, Class<?> referenceClass) {
-        this.value = value;
+    IoTDataTypes(String name, CEPPrimitiveDataTypes cepType, Class<?> referenceClass) {
+        this.name = name;
         this.cepType = cepType;
         this.referenceClass = referenceClass;
     }
@@ -57,8 +57,8 @@ public enum IoTDataTypes implements Comparable<IoTDataTypes> {
         return referenceClass;
     }
 
-    public String getValue() {
-        return value;
+    public String getName() {
+        return name;
     }
 
     /**
@@ -97,7 +97,7 @@ public enum IoTDataTypes implements Comparable<IoTDataTypes> {
     public static IoTDataTypes getDataTypeWithValue(String value) {
         IoTDataTypes[] allIoTDataTypes = IoTDataTypes.values();
         for (IoTDataTypes allIoTDataType : allIoTDataTypes) {
-            if (value.equals(allIoTDataType.getValue())) {
+            if (value.equals(allIoTDataType.getName())) {
                 return allIoTDataType;
             }
         }
@@ -114,7 +114,7 @@ public enum IoTDataTypes implements Comparable<IoTDataTypes> {
         String testString = typeString.toLowerCase();
         IoTDataTypes[] allIoTDataTypes = IoTDataTypes.values();
         for (IoTDataTypes allIoTDataType : allIoTDataTypes) {
-            if (allIoTDataType.getValue().equals(testString)) {
+            if (allIoTDataType.getName().equals(testString)) {
                 return true;
             }
         }
