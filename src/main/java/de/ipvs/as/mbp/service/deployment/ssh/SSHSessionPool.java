@@ -1,7 +1,8 @@
-package de.ipvs.as.mbp.service.ssh;
+package de.ipvs.as.mbp.service.deployment.ssh;
 
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.key_pair.KeyPair;
+import de.ipvs.as.mbp.service.deployment.ssh.SSHSession;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;

@@ -16,7 +16,7 @@ import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.projection.MonitoringOperatorExcerpt;
 import de.ipvs.as.mbp.service.UserEntityService;
 import de.ipvs.as.mbp.service.UserService;
-import de.ipvs.as.mbp.service.deploy.ComponentState;
+import de.ipvs.as.mbp.service.deployment.ComponentState;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
 import de.ipvs.as.mbp.web.rest.helper.MonitoringHelper;
 import io.swagger.annotations.*;

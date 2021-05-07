@@ -9,11 +9,9 @@ import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.repository.*;
-import de.ipvs.as.mbp.repository.SensorRepository;
+import de.ipvs.as.mbp.service.cep.trigger.CEPTriggerService;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
-import de.ipvs.as.mbp.web.rest.event_handler.SensorEventHandler;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,7 +53,7 @@ public class TestRerunService {
     private SensorRepository sensorRepository;
 
     @Autowired
-    private SensorEventHandler sensorEventHandler;
+    private CEPTriggerService triggerService;
 
     @Autowired
     private PropertiesService propertiesService;
@@ -85,11 +82,10 @@ public class TestRerunService {
     }
 
 
-
     /**
      * Update the UseNewData field of the test and edits the rerun components.
      *
-     * @param testId of the test to be
+     * @param testId     of the test to be
      * @param useNewData information if a test should be repeated
      * @return the updated configuration list
      */
@@ -218,9 +214,7 @@ public class TestRerunService {
                     //Insert new sensor into repository
                     sensorRepository.insert(newSensor);
                     sensorRepository.save(newSensor);
-                    sensorEventHandler.afterSensorCreate(newSensor);
-
-
+                    triggerService.registerComponentEventType(newSensor);
                 }
             }
             if (!testDetails.getSensor().contains(sensorRepository.findByName(newSensorName))) {

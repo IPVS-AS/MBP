@@ -166,7 +166,7 @@ class ValueLogReceiverArrivalHandler implements MqttCallback {
      *
      * @param valueLog The received value log
      */
-    private void notifyObservers(ValueLog valueLog) {
+    public void notifyObservers(ValueLog valueLog) {
         //Sanity check
         if (valueLog == null) {
             throw new IllegalArgumentException("Value log must not be null.");

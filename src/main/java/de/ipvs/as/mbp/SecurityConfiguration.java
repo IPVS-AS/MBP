@@ -19,6 +19,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
  * Security configuration
+ *
  * @author Imeri Amil
  */
 
@@ -27,59 +28,60 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-	@Bean
-	public RestAuthenticationEntryPoint restAuthenticationEntryPoint() {
-		return new RestAuthenticationEntryPoint();
-	}
+    @Bean
+    public RestAuthenticationEntryPoint restAuthenticationEntryPoint() {
+        return new RestAuthenticationEntryPoint();
+    }
 
     @Bean
     public UserDetailsService mongoUserDetails() {
         return new UserDetailsServiceImpl();
     }
 
-	@Bean
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-	@Override
+    @Override
     public void configure(AuthenticationManagerBuilder auth) {
         try {
-        	UserDetailsService userDetailsService = mongoUserDetails();
+            UserDetailsService userDetailsService = mongoUserDetails();
             auth
-                .userDetailsService(userDetailsService)
+                    .userDetailsService(userDetailsService)
                     .passwordEncoder(passwordEncoder());
         } catch (Exception e) {
             throw new BeanInitializationException("Security configuration failed", e);
         }
     }
 
-	@Override
-	public void configure(WebSecurity web) throws Exception {
-	    web.ignoring()
-	    .antMatchers(HttpMethod.OPTIONS, "/**")
-	    .antMatchers("/resources/**")
-	    .antMatchers("/webapp/**")
-	    .antMatchers("/login", "/templates/register")
- 		.antMatchers(HttpMethod.POST, "/api//users/authenticate")
-	    .antMatchers(HttpMethod.POST, "/api/users")
-	    .antMatchers(HttpMethod.POST,"/api/checkOauthTokenUser")
-	    .antMatchers(HttpMethod.POST,"/api/checkOauthTokenSuperuser")
-        .antMatchers(HttpMethod.POST,"/api/checkOauthTokenAcl");
-	}
+    @Override
+    public void configure(WebSecurity web) throws Exception {
+        web.ignoring()
+                .antMatchers(HttpMethod.OPTIONS, "/**")
+                .antMatchers("/resources/**")
+                .antMatchers("/webapp/**")
+                .antMatchers("/login", "/templates/register")
+                .antMatchers(HttpMethod.GET, RestConfiguration.BASE_PATH + "/settings/mbpinfo")
+                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/users/authenticate")
+                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/users")
+                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/checkOauthTokenUser")
+                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/checkOauthTokenSuperuser")
+                .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/checkOauthTokenAcl");
+    }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-		http
-			.csrf().disable()
-			.httpBasic().authenticationEntryPoint(restAuthenticationEntryPoint())
-			.and()
-				.authorizeRequests()
-				.antMatchers(HttpMethod.POST, "/api/authenticate").permitAll()
-				.antMatchers("/api/**").authenticated()
-			.and()
-			.logout()
-				.logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/login")
-				.invalidateHttpSession(true).deleteCookies("JSESSIONID");
+        http
+                .csrf().disable()
+                .httpBasic().authenticationEntryPoint(restAuthenticationEntryPoint())
+                .and()
+                .authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/api/authenticate").permitAll()
+                .antMatchers("/api/**").authenticated()
+                .and()
+                .logout()
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/login")
+                .invalidateHttpSession(true).deleteCookies("JSESSIONID");
     }
 }

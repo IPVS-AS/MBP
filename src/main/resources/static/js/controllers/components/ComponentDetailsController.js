@@ -170,7 +170,6 @@ app.controller('ComponentDetailsController',
             function undeploy() {
                 //Show waiting screen
                 showDeploymentWaitingScreen("Undeploying...");
-
                 //Execute undeployment request
                 ComponentService.undeploy(componentDetails._links.deploy.href).then(
                     function (response) {
@@ -207,7 +206,7 @@ app.controller('ComponentDetailsController',
                         },
                         function (response) {
                             //Failure, check status code of response
-                            if(response.status !== 400){
+                            if (response.status !== 400) {
                                 vm.deploymentState = 'UNKNOWN';
                             }
                         }).then(function () {
@@ -252,9 +251,11 @@ app.controller('ComponentDetailsController',
              * order, false in ascending order. By default, the logs are retrieved in ascending
              * order ([oldest log] --> ... --> [most recent log])
              * @param unit The unit in which the values are supposed to be retrieved
+             * @param startTime Start time for filtering
+             * @param endTime End time for filtering
              * @returns A promise that passes the logs as a parameter
              */
-            function retrieveComponentData(numberLogs, descending, unit) {
+            function retrieveComponentData(numberLogs, descending, unit, startTime, endTime) {
                 //Set default order
                 let order = 'asc';
 
@@ -266,7 +267,9 @@ app.controller('ComponentDetailsController',
                 //Initialize parameters for the server request
                 let pageDetails = {
                     sort: 'time,' + order,
-                    size: numberLogs
+                    size: numberLogs,
+                    startTime: startTime || "",
+                    endTime: endTime || ""
                 };
 
                 //Perform the server request in order to retrieve the data

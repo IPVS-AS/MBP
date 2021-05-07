@@ -5,21 +5,22 @@
  */
 app.controller('SensorListController',
     ['$scope', '$controller', '$interval', 'sensorList', 'addSensor', 'deleteSensor',
-        'deviceList', 'operatorList', 'sensorTypesList', 'accessControlPolicyList', 'ComponentService', 'NotificationService', 'OperatorService',
+        'deviceList', 'operatorList', 'sensorTypesList', 'accessControlPolicyList', 'ComponentService', 'DefaultComponentsService', 'NotificationService', 'OperatorService',
         function ($scope, $controller, $interval, sensorList, addSensor, deleteSensor,
-                  deviceList, operatorList, sensorTypesList, accessControlPolicyList, ComponentService,
+                  deviceList, operatorList, sensorTypesList, accessControlPolicyList, ComponentService, DefaultComponentsService,
                   NotificationService, OperatorService) {
             let vm = this;
 
             vm.operatorList = operatorList;
             vm.deviceList = deviceList;
 
+
             /**
              * Initializing function, sets up basic things.
              */
             (function initController() {
                 loadSensorStates();
-
+                $scope.simExists = DefaultComponentsService.getListWoSimulators(sensorList);
                 //Interval for updating sensor states on a regular basis
                 let interval = $interval(function () {
                     loadSensorStates();
@@ -182,6 +183,20 @@ app.controller('SensorListController',
                 });
             }
 
+            /**
+             * [Public]
+             * @returns {function(...[*]=)}
+             */
+            $scope.hideSimulators = function () {
+                return function (item) {
+                    if (item.name.indexOf("TESTING_") === -1) {
+                        return true;
+                    }
+                    return false;
+                };
+            };
+
+
             //Expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {
                 sensorListCtrl: $controller('ItemListController as sensorListCtrl', {
@@ -224,6 +239,8 @@ app.controller('SensorListController',
                         //Add sensor to sensor list
                         vm.sensorListCtrl.pushItem(sensor);
 
+                        $scope.simExists = DefaultComponentsService.getListWoSimulators(sensorList);
+
                         //Retrieve state of the new sensor
                         getSensorState(sensor.id);
                     }
@@ -239,6 +256,7 @@ app.controller('SensorListController',
                 function () {
                     let id = vm.deleteSensorCtrl.result;
                     vm.sensorListCtrl.removeItem(id);
+                    $scope.simExists = DefaultComponentsService.getListWoSimulators(sensorList);
                 }
             );
 

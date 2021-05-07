@@ -182,7 +182,8 @@
                     <button class="btn btn-primary m-t-0 waves-effect" ng-click="ctrl.onDisplayUnitChange()">
                         Update
                     </button>
-                </div>-->
+                </div>
+                -->
 
                 <value-log-stats api="valueLogStatsApi"
                                  loading-start="componentDetailsCtrl.valueLogStats.loadingStart()"
@@ -249,7 +250,7 @@
                                 <live-chart
                                         loading-start="componentDetailsCtrl.liveChart.loadingStart(visItem.instanceId)"
                                         loading-finish="componentDetailsCtrl.liveChart.loadingFinish(visItem.instanceId)"
-                                        get-data="componentDetailsCtrl.liveChart.getData(numberLogs, descending, unit)"
+                                        get-data="componentDetailsCtrl.liveChart.getData(numberLogs, descending, unit, startTime, endTime)"
                                         is-updateable="componentDetailsCtrl.liveChart.isUpdateable()"
                                         unit="{{componentDetailsCtrl.displayUnit}}"
                                         json-path="{{visItem.visFieldToPathMapping}}"
@@ -278,7 +279,7 @@
                                         api="$parent.historicalChartApi"
                                         loading-start="componentDetailsCtrl.historicalChart.loadingStart(visItem.instanceId)"
                                         loading-finish="componentDetailsCtrl.historicalChart.loadingFinish(visItem.instanceId)"
-                                        get-data="componentDetailsCtrl.historicalChart.getData(numberLogs, descending, unit)"
+                                        get-data="componentDetailsCtrl.historicalChart.getData(numberLogs, descending, unit, startTime, endTime)"
                                         unit="{{componentDetailsCtrl.displayUnit}}"
                                         json-path="{{visItem.visFieldToPathMapping}}"
                                         field-collection-id="{{visItem.fieldCollectionId}}">

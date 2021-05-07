@@ -3,7 +3,7 @@
 'use strict';
 
 /**
- * Directive whreich creates a chart for displaying historical values. Control elements are provided with
+ * Directive which creates a chart for displaying historical values. Control elements are provided with
  * which the user has the possibility to select the data that he wants to display.
  *
  * @author Jan
@@ -23,19 +23,22 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
      * @param element Elements of the directive
      * @param attrs Attributes of the directive
      */
-    var link = function (scope, element, attrs) {
+    let link = function (scope, element, attrs) {
 
-        //Chart objects
-        var chartContainer = element.find('.chart-container').get(0);
-        var chart = null;
+        //Chart elements
+        let chartContainer = element.find('.chart-container').get(0);
+        let chart = null;
 
-        //Slider objects
-        var sliderContainer = element.find('.chart-slider');
+        //Slider elements
+        let sliderContainer = element.find('.chart-slider');
 
         //Define chart settings that can be adjusted by the user
         scope.settings = {
-            numberOfValues: CHART_INITIAL_ELEMENTS_NUMBER,
+            timeAxis: true,
             mostRecent: true,
+            numberOfValues: CHART_INITIAL_ELEMENTS_NUMBER,
+            startTime: "",
+            endTime: ""
         };
 
         /**
@@ -43,7 +46,6 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
          * Initializes the chart.
          */
         function initChart() {
-
             //Create chart
             chart = Highcharts.chart(chartContainer, {
                 title: {
@@ -51,6 +53,9 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                 },
                 chart: {
                     zoomType: 'xy'
+                },
+                xAxis: {
+                    type: 'datetime'
                 },
                 series: [{
                     name: 'Value',
@@ -82,10 +87,38 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                 }
             });
 
-            //Watch value border and update chart on change
+            //Watch time axis setting and update chart on change
             scope.$watch(
                 function () {
+                    //Check time axis setting for changes
+                    return scope.settings.timeAxis;
+                },
+                function () {
+                    //Update axis type on change
+                    chart.xAxis[0].update({
+                        type: 'datetime',
+                        ordinal: !scope.settings.timeAxis
+                    }, true);
+                }
+            );
+
+            //Watch order setting and update chart on change
+            scope.$watch(
+                function () {
+                    //Check order setting for changes
                     return scope.settings.mostRecent;
+                },
+                function () {
+                    //Update chart on change
+                    updateChart();
+                }
+            );
+
+            //Watch time filter setting and update chart on change
+            scope.$watch(
+                function () {
+                    //Check start time and end time for changes
+                    return scope.settings.startTime + scope.settings.endTime;
                 },
                 function () {
                     //Update chart on change
@@ -128,6 +161,8 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                 numberLogs: scope.settings.numberOfValues,
                 descending: scope.settings.mostRecent,
                 unit: scope.unit,
+                startTime: scope.settings.startTime ? new Date(scope.settings.startTime).getTime() : -1,
+                endTime: scope.settings.endTime ? new Date(scope.settings.endTime).getTime() : -1
             }).then(function (values) {
                 //Reverse the values array if ordered in descending order
                 if (scope.settings.mostRecent) {
@@ -160,7 +195,7 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
                         name: jsonPathAsObj.value.name,
                         tooltip: {valueSuffix: ' ' + (jsonPathAsObj.value.unit ? jsonPathAsObj.value.unit : '')},
                         data: values
-                    }, true); //True: Redraw chart
+                    }, true); //Redraw chart
                 } else {
                     // Check if enough series are existing - if not add the missing ones
 
@@ -234,6 +269,7 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             '<br/>' +
             '<table>' +
             '<tr>' +
+            '<th style="min-width: 130px">Time axis:</th>' +
             '<th style="min-width: 195px">Values to display:</th>' +
             '<th style="width: 100%">Number of values:</th>' +
             '</tr>' +
@@ -241,18 +277,37 @@ app.directive('historicalChart', ['$timeout', '$interval', function ($timeout, $
             '<td>' +
             '<div class="switch">' +
             '<label>' +
+            'Off' +
+            '<input type="checkbox" ng-model="settings.timeAxis">' +
+            '<span class="lever"></span>' +
+            'On' +
+            '</label></div>' +
+            '</td>' +
+            '<td>' +
+            '<div class="switch">' +
+            '<label>' +
             'Oldest' +
             '<input type="checkbox" ng-model="settings.mostRecent">' +
             '<span class="lever"></span>' +
             'Most recent' +
-            '</label>' +
+            '</label></div>' +
             '</td>' +
             '<td>' +
             '<div class="range-slider">' +
             '<input type="text" class="chart-slider"/>' +
             '</div>' +
             '</td>' +
+            '</tr>' +
             '<tr>' +
+            '<th>Start time:</th>' +
+            '<th>End time:</th>' +
+            '<th></th>' +
+            '</tr>' +
+            '<tr>' +
+            '<td><input type="datetime-local" style="width: 170px; margin-right: 10px;" ng-model="settings.startTime"></td>' +
+            '<td><input type="datetime-local" style="width: 170px;" ng-model="settings.endTime"></td>' +
+            '<td><button class="btn btn-primary waves-effect" style="width: 100px; height:30px;" ng-click="settings.startTime=\'\';settings.endTime=\'\'">Clear</button></td>' +
+            '</tr>' +
             '</table>',
         link: link,
         scope: {

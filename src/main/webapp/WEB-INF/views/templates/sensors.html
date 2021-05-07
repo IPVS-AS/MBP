@@ -49,11 +49,11 @@
                     </thead>
                     <tbody>
                     <tr id="{{item.id}}" ng-repeat="item in displayedCollection | filter:sensorListCtrl.nameFilter">
-                        <td>
+                        <td ng-if="item.name.indexOf('TESTING_') === -1">
                             <a ng-href="{{detailsLink(item)}}">{{item.name}}</a>&nbsp;
                             <i ng-show="item.wasModelled" class="material-icons" style="vertical-align: bottom;">view_quilt</i>
                         </td>
-                        <td class="align-center">
+                        <td class="align-center" ng-if="item.name.indexOf('TESTING_') === -1 ">
                             <div ng-switch="item.state" ng-click="item.reloadState()" class="clickable">
                                 <div ng-switch-when="LOADING">
                                     <div class="preloader pl-size-xs">
@@ -84,11 +84,11 @@
                                 </div>
                             </div>
                         </td>
-                        <td>{{item.componentType}}</td>
-                        <td>{{item.operator.name}}</td>
-                        <td>{{item.device.name}}</td>
-                        <td>{{item.ownerName ? item.ownerName : "None"}}</td>
-                        <td>
+                        <td ng-if="item.name.indexOf('TESTING_') === -1">{{item.componentType}}</td>
+                        <td ng-if="item.name.indexOf('TESTING_') === -1">{{item.operator.name}}</td>
+                        <td ng-if="item.name.indexOf('TESTING_') === -1">{{item.device.name}}</td>
+                        <td ng-if="item.name.indexOf('TESTING_') === -1">{{item.ownerName ? item.ownerName : "None"}}</td>
+                        <td ng-if="item.name.indexOf('TESTING_') === -1">
                             <form ng-submit="deleteSensorCtrl.deleteItem()" style="display:inline-block">
                                 <button type="submit"
                                         class="btn bg-red btn-circle waves-effect waves-circle waves-float"
@@ -98,7 +98,7 @@
                             </form>
                         </td>
                     </tr>
-                    <tr ng-show="sensorListCtrl.items.length === 0">
+                    <tr ng-show="sensorListCtrl.items.length === 0 || simExists === 0 ">
                         <td>No registered sensors</td>
                         <td></td>
                         <td></td>
@@ -167,7 +167,7 @@
                                      ng-class="{'focused error' : addSensorCtrl.item.errors.operator }">
                                     <select class="form-control show-tick" id="sensor-form-select-operator"
                                             ng-model="addSensorCtrl.item.operatorId"
-                                            ng-options="t.id as (t.name) for t in ctrl.operatorList">
+                                            ng-options="t.id as (t.name) for t in ctrl.operatorList | filter:hideSimulators()">
                                         <option value="">Select extraction operator *
                                         <option/>
                                     </select>
@@ -180,7 +180,7 @@
                                 <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.device }">
                                     <select class="form-control show-tick" id="sensor-form-select-device"
                                             ng-model="addSensorCtrl.item.deviceId"
-                                            ng-options="d.id as (d.name) for d in ctrl.deviceList">
+                                            ng-options="d.id as (d.name) for d in ctrl.deviceList | filter:hideSimulators()">
                                         <option value="">Select device *
                                         <option/>
                                     </select>

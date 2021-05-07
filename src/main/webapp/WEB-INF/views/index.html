@@ -101,6 +101,18 @@
 
     <!-- jsonFormatter css -->
     <link th:href="@{/plugins/json-formatter/json-formatter.min.css}" rel="stylesheet"/>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/2.3.4/jspdf.plugin.autotable.min.js"></script>
+
+
+    <script src="path/to/dom-to-image-more.min.js" />
+    <script>
+        domtoimage.toPng(node)
+        //...
+    </script>
+
 </head>
 
 <body class="theme-blue" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
@@ -247,7 +259,7 @@
                     </li>
                 </ul>
             </li>
-            <li href="view/settings" menu-item="menu-item" ng-show="userData.isAdmin">
+            <li href="view/users" menu-item="menu-item" ng-show="userData.isAdmin">
                 <a href="view/users">
                     <i class="material-icons">people</i>
                     <span>User Management</span>
@@ -394,6 +406,7 @@
 <script th:src="@{/js/services/RuleService.js}"></script>
 <script th:src="@{/js/services/SettingsService.js}"></script>
 <script th:src="@{/js/services/TestService.js}"></script>
+<script th:src="@{/js/services/DefaultComponentsService.js}"></script>
 
 <script th:src="@{/js/services/RuleActionService.js}"></script>
 <script th:src="@{/js/services/RuleTriggerService.js}"></script>
@@ -432,7 +445,7 @@
 <script th:src="@{/js/controllers/key-pairs/KeyPairListController.js}"></script>
 <script th:src="@{/js/controllers/actuators/ActuatorListController.js}"></script>
 <script th:src="@{/js/controllers/sensors/SensorListController.js}"></script>
-<script th:src="@{/js/controllers/testing/TestingController.js}"></script>
+<script th:src="@{/js/controllers/testing/TestingListController.js}"></script>
 <script th:src="@{/js/controllers/testing/TestingDetailsController.js}"></script>
 <script th:src="@{/js/controllers/testing/TestingChartController.js}"></script>
 
@@ -457,5 +470,8 @@
 <script th:src="@{/js/controllers/user/RegisterController.js}"></script>
 <script th:src="@{/js/controllers/user/UserListController.js}"></script>
 <script th:src="@{/js/controllers/env-models/EnvModelListController.js}"></script>
+
+
+
 </body>
 </html>

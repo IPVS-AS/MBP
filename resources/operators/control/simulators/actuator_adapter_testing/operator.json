@@ -1,0 +1,12 @@
+{
+  "name": "TESTING_Actuator",
+  "description": "Operator for an actuator that does not trigger any functions.",
+  "unit": "No Unit",
+  "files": [
+    "actuator_testingTool.py",
+    "install.sh",
+    "start.sh",
+    "stop.sh",
+    "running.sh"
+  ]
+}

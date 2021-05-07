@@ -162,7 +162,6 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
                 //Extract value and time for the current log and format them
                 let value = receivedLogs[i].value;
                 let time = receivedLogs[i].time.epochSecond * 1000;
-                time = dateToString(new Date(time));
 
                 //Create a (time, value) tuple and add it to the array
                 let tuple = [time, value];
