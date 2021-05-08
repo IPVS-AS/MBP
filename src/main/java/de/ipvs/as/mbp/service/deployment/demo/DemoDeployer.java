@@ -9,6 +9,7 @@ import de.ipvs.as.mbp.service.deployment.ComponentState;
 import de.ipvs.as.mbp.service.deployment.DeviceState;
 import de.ipvs.as.mbp.service.deployment.IDeployer;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -246,12 +247,17 @@ public class DemoDeployer implements IDeployer {
      *
      * @return The generated random value
      */
-    private double generateValueLogValue() {
+    private Document generateValueLogValue() {
         //Generate random double
         double value = ThreadLocalRandom.current().nextDouble(VALUE_LOG_MIN, VALUE_LOG_MAX);
-
         //Round the generated value to two decimals
-        return Math.round(value * 1.0e2) / 1.0e2;
+        value = Math.round(value * 1.0e2) / 1.0e2;
+
+        // Store the value in a document
+        Document retDocument = new Document();
+        retDocument.append("value", value);
+
+        return retDocument;
     }
 
     /**

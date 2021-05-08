@@ -35,6 +35,8 @@ app.directive('historicalGeoMapChart', ['$timeout', '$interval', function ($time
         scope.settings = {
             numberOfValues: CHART_INITIAL_ELEMENTS_NUMBER,
             mostRecent: true,
+            startTime: "",
+            endTime: ""
         };
 
         /**
@@ -83,6 +85,18 @@ app.directive('historicalGeoMapChart', ['$timeout', '$interval', function ($time
             scope.api = {
                 updateChart: updateChart
             };
+
+            //Watch time filter setting and update chart on change
+            scope.$watch(
+                function () {
+                    //Check start time and end time for changes
+                    return scope.settings.startTime + scope.settings.endTime;
+                },
+                function () {
+                    //Update chart on change
+                    updateChart();
+                }
+            );
 
             //Populate the chart
             updateChart();
@@ -139,6 +153,8 @@ app.directive('historicalGeoMapChart', ['$timeout', '$interval', function ($time
                 numberLogs: scope.settings.numberOfValues,
                 descending: scope.settings.mostRecent,
                 unit: scope.unit,
+                startTime: scope.settings.startTime ? new Date(scope.settings.startTime).getTime() : -1,
+                endTime: scope.settings.endTime ? new Date(scope.settings.endTime).getTime() : -1
             }).then(function (values) {
                 //Reverse the values array if ordered in descending order
                 if (scope.settings.mostRecent) {
@@ -223,6 +239,7 @@ app.directive('historicalGeoMapChart', ['$timeout', '$interval', function ($time
             '<tr>' +
             '<th style="min-width: 195px">Values to display:</th>' +
             '<th style="width: 100%">Number of values:</th>' +
+            '<th></th>' +
             '</tr>' +
             '<tr>' +
             '<td>' +
@@ -239,7 +256,19 @@ app.directive('historicalGeoMapChart', ['$timeout', '$interval', function ($time
             '<input type="text" class="chart-slider"/>' +
             '</div>' +
             '</td>' +
+            '<td></td>' +
+            '</tr>' +
             '<tr>' +
+            '<th>Start time:</th>' +
+            '<th>End time:</th>' +
+            '<th></th>' +
+            '</tr>' +
+            '<tr>' +
+            '<td><input type="datetime-local" style="width: 170px; margin-right: 10px;" ng-model="settings.startTime"></td>' +
+            '<td><input type="datetime-local" style="width: 170px; margin-right: 10px" ng-model="settings.endTime">' +
+            '<button class="btn btn-primary waves-effect" style="width: 100px; height:30px;" ng-click="settings.startTime=\'\';settings.endTime=\'\'">Clear</button>' +
+            '</td>' +
+            '</tr>' +
             '</table>',
         link: link,
         scope: {

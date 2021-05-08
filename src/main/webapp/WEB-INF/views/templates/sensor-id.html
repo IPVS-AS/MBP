@@ -262,7 +262,7 @@
                                 <live-geo-map-chart
                                         loading-start="componentDetailsCtrl.liveChart.loadingStart(visItem.instanceId)"
                                         loading-finish="componentDetailsCtrl.liveChart.loadingFinish(visItem.instanceId)"
-                                        get-data="componentDetailsCtrl.liveChart.getData(numberLogs, descending, unit)"
+                                        get-data="componentDetailsCtrl.liveChart.getData(numberLogs, descending, unit, startTime, endTime)"
                                         is-updateable="componentDetailsCtrl.liveChart.isUpdateable()"
                                         unit="{{componentDetailsCtrl.displayUnit}}"
                                         json-path="{{visItem.visFieldToPathMapping}}"
@@ -291,7 +291,7 @@
                                         api="$parent.historicalChartApi"
                                         loading-start="componentDetailsCtrl.historicalChart.loadingStart(visItem.instanceId)"
                                         loading-finish="componentDetailsCtrl.historicalChart.loadingFinish(visItem.instanceId)"
-                                        get-data="componentDetailsCtrl.historicalChart.getData(numberLogs, descending, unit)"
+                                        get-data="componentDetailsCtrl.historicalChart.getData(numberLogs, descending, unit, startTime, endTime)"
                                         unit="{{componentDetailsCtrl.displayUnit}}"
                                         json-path="{{visItem.visFieldToPathMapping}}"
                                         field-collection-id="{{visItem.fieldCollectionId}}">
@@ -453,20 +453,20 @@
             <div class="body align-items-center justify-content-center">
                 <div class="row clearfix">
                     <div style="margin: 0 auto;">
-                    <button type="button" style="float:left; margin-left: 10px"
-                            class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
-                            ng-click="componentDetailsCtrl.onCreateNewVisualizationClicked()">
-                        <i class="material-icons">add</i>
-                    </button>
-                    <select class="form-control show-tick" ng-model="componentDetailsCtrl.nextChartToAdd"
-                            style="float:left; max-width: 400px; margin-left: 10px">
-                        <option value="select" disabled>Select...</option>
-                        <option ng-repeat="visId in componentDetailsCtrl.idOfAllApplicableVisualizations"
-                                value="{{visId}}">
-                            {{visId === 'doubleVis' ? "Line Chart" : ""}}
-                            {{visId === 'geoMap' ? "Map" : ""}}
-                        </option>
-                    </select>
+                        <button type="button" style="float:left; margin-left: 10px"
+                                class="btn bg-blue btn-circle waves-effect waves-circle waves-float m-t-0"
+                                ng-click="componentDetailsCtrl.onCreateNewVisualizationClicked()">
+                            <i class="material-icons">add</i>
+                        </button>
+                        <select class="form-control show-tick" ng-model="componentDetailsCtrl.nextChartToAdd"
+                                style="float:left; max-width: 400px; margin-left: 10px">
+                            <option value="select" disabled>Select...</option>
+                            <option ng-repeat="visId in componentDetailsCtrl.idOfAllApplicableVisualizations"
+                                    value="{{visId}}">
+                                {{visId === 'doubleVis' ? "Line Chart" : ""}}
+                                {{visId === 'geoMap' ? "Map" : ""}}
+                            </option>
+                        </select>
                     </div>
                 </div>
             </div>
