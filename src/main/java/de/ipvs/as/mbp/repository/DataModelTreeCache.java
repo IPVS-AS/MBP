@@ -58,17 +58,47 @@ public class DataModelTreeCache {
     @Autowired
     private ActuatorRepository actuatorRepository;
 
+    /**
+     * Data model with one "value" double data field
+     */
+    DataModelTree monitoringOperatorDataModel;
+
     private DataModelTreeCache() {
         // Init the data models cache
         System.out.println("Data model cache started.");
         this.cachedDataModels = new HashMap<>();
+        this.monitoringOperatorDataModel = createOperatorDataModel();
+    }
+
+    /**
+     * Create a {@link DataModelTree} for monitoring operators who dont have a user definied
+     * data model but a fixed data model with one double field.
+     * @return The data model of operators.
+     */
+    private DataModelTree createOperatorDataModel() {
+        // The root object of the data model
+        DataTreeNode root  = new DataTreeNode();
+        root.setType("object");
+        root.setName("root");
+        root.setChildren(Arrays.asList("value"));
+        root.setParent("");
+
+        // The child double field of the data model
+        DataTreeNode valueChild = new DataTreeNode();
+        valueChild.setType("double");
+        valueChild.setName("value");
+        valueChild.setChildren(new ArrayList<>());
+        valueChild.setParent("root");
+
+        return new DataModelTree(Arrays.asList(root, valueChild));
     }
 
     /**
      * Returns the data model by a given component id.
      *
      * @param componentId   MongoDB ObjectID of the entity
-     * @return the data model used by this entity
+     * @return the data model used by this entity. If the componentId is not known a default data model with
+     * one value double field is returned which is also used by monitoring operators by default.
      */
     public DataModelTree getDataModelOfComponent(String componentId) {
         // Is the data model is already cached?
@@ -83,8 +113,8 @@ public class DataModelTreeCache {
             DataModel dataModel = getDataModelByComponentIdFromDB(componentId);
 
             if (dataModel == null) {
-                // No data model of the component could be found
-                return null;
+                // No data model of the component could be found, maybe it is a monitoring operator --> give the monitoring data model back
+                return this.monitoringOperatorDataModel;
             }
 
             // Build the data model tree from the data model

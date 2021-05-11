@@ -1,18 +1,25 @@
 package de.ipvs.as.mbp.service.deployment.demo;
 
 import de.ipvs.as.mbp.domain.component.Component;
+import de.ipvs.as.mbp.domain.data_model.treelogic.DataModelTree;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.error.DeploymentException;
+import de.ipvs.as.mbp.repository.DataModelTreeCache;
 import de.ipvs.as.mbp.service.deployment.ComponentState;
 import de.ipvs.as.mbp.service.deployment.DeviceState;
 import de.ipvs.as.mbp.service.deployment.IDeployer;
+import de.ipvs.as.mbp.service.receiver.ValueLogReceiveVerifier;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
 import org.bson.Document;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import javax.json.JsonObject;
+import java.text.ParseException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +46,9 @@ public class DemoDeployer implements IDeployer {
 
     @Autowired
     private ValueLogReceiver valueLogReceiver;
+
+    @Autowired
+    private DataModelTreeCache dataModelCache;
 
     /**
      * Retrieves the current deployment state of a given component.
@@ -235,7 +245,20 @@ public class DemoDeployer implements IDeployer {
             valueLog.setTopic(component.getTopicName());
             valueLog.setQos(0);
             valueLog.setMessage("Randomly generated");
-            valueLog.setValue(generateValueLogValue());
+
+            // Get the data model of the component to generate a fitting value
+            DataModelTree dataModel = dataModelCache.getDataModelOfComponent(component.getId());
+
+            // Get example json payload from the data model, parse it to a document and set it as value log value
+            try {
+                JSONObject jsonValue = new JSONObject(dataModel.getJSONExample());
+                valueLog.setValue(ValueLogReceiveVerifier.validateJsonValueAndGetDocument(
+                        jsonValue.getJSONObject("value"),
+                        dataModel
+                ));
+            } catch (JSONException | ParseException e) {
+                e.printStackTrace();
+            }
 
             //Inject value log into the receiver component
             valueLogReceiver.injectValueLog(valueLog);

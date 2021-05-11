@@ -51,6 +51,5 @@ public class DataModelCreateValidator implements ICreateValidator<DataModel> {
                 node -> new ValueLogPathObject().setName(node.getName()).setDimension(node.getSize()).setType(node.getType().getName())
                         .setPath(node.getInternPathToNode()).setUnit(node.getUnit())).collect(Collectors.toList()));
         entity.setPossibleVisMappings((ArrayList<VisMappingInfo>) tree.getAllPossibleVisualizationsMappings());
-
     }
 }

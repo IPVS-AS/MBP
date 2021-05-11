@@ -13,12 +13,14 @@ import de.ipvs.as.mbp.domain.visualization.Visualization;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.util.Permutations;
 import de.ipvs.as.mbp.util.Validation;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 /**
@@ -600,18 +602,18 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                     }
                 } else if (currNode.getType() == IoTDataTypes.DECIMAL128
                         || currNode.getType() == IoTDataTypes.DOUBLE) {
-                    lastObject.put(currNode.getName(), 14.25);
+                    lastObject.put(currNode.getName(), getRandomDouble());
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.LONG) {
-                    lastObject.put(currNode.getName(), 20);
+                    lastObject.put(currNode.getName(), getRandomInteger());
                 } else if (currNode.getType() == IoTDataTypes.BOOLEAN) {
-                    lastObject.put(currNode.getName(), true);
+                    lastObject.put(currNode.getName(), getRandomBoolean());
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.INT) {
-                    lastObject.put(currNode.getName(), 4);
+                    lastObject.put(currNode.getName(), getRandomInteger());
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.STRING) {
-                    lastObject.put(currNode.getName(), "String");
+                    lastObject.put(currNode.getName(), getRandomString());
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.DATE) {
                     lastObject.put(currNode.getName(), new SimpleDateFormat(
@@ -619,7 +621,7 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                     );
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.BINARY) {
-                    lastObject.put(currNode.getName(), "Base64 binary string");
+                    lastObject.put(currNode.getName(), "QmFzZTY0QmluYXJ5U3RyaW5n");
                     // As primitive no children to be expected --> return
                 }
 
@@ -642,25 +644,25 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
                     }
                 } else if (currNode.getType() == IoTDataTypes.DECIMAL128
                         || currNode.getType() == IoTDataTypes.DOUBLE) {
-                    lastArray.put(14.25);
+                    lastArray.put(getRandomDouble());
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.LONG) {
-                    lastArray.put(20);
+                    lastArray.put(getRandomInteger());
                 } else if (currNode.getType() == IoTDataTypes.BOOLEAN) {
-                    lastArray.put(true);
+                    lastArray.put(getRandomBoolean());
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.INT) {
-                    lastArray.put(4);
+                    lastArray.put(getRandomInteger());
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.STRING) {
-                    lastArray.put("String");
+                    lastArray.put(getRandomString());
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.DATE) {
                     lastArray.put(new SimpleDateFormat(
                             "yyyy-MM-dd'T'HH:mm:ss").format(new Date()));
                     // As primitive no children to be expected --> return
                 } else if (currNode.getType() == IoTDataTypes.BINARY) {
-                    lastArray.put("Base64 binary string");
+                    lastArray.put("QmFzZTY0QmluYXJ5U3RyaW5n");
                     // As primitive no children to be expected --> return
                 }
             }
@@ -668,6 +670,22 @@ public class DataModelTree implements Iterable<DataModelTreeNode> {
             // TODO handle this properly
             e.printStackTrace();
         }
+    }
+
+    private long getRandomInteger() {
+        return ThreadLocalRandom.current().nextInt(100);
+    }
+
+    private double getRandomDouble() {
+        return Math.round(ThreadLocalRandom.current().nextDouble(0, 100) * 1.0e2) / 1.0e2;
+    }
+
+    private boolean getRandomBoolean() {
+        return ThreadLocalRandom.current().nextBoolean();
+    }
+
+    private String getRandomString() {
+        return RandomStringUtils.randomAlphabetic(ThreadLocalRandom.current().nextInt(30));
     }
 
     @Override
