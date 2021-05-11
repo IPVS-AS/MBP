@@ -16,7 +16,7 @@ import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.component.Actuator;
 import de.ipvs.as.mbp.domain.component.Component;
 import de.ipvs.as.mbp.domain.component.Sensor;
-import de.ipvs.as.mbp.service.deploy.ComponentState;
+import de.ipvs.as.mbp.service.deployment.ComponentState;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;

@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.service.rules.execution.component_deployment;
 
-import de.ipvs.as.mbp.service.deploy.ComponentState;
+import de.ipvs.as.mbp.service.deployment.ComponentState;
 
 /**
  * Enumeration of the available deployment actions within the component deployment executor. Each deployment action

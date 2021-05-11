@@ -138,7 +138,7 @@ public class RestEnvModelController {
         EnvironmentModel environmentModel = userEntityService.getForIdWithAccessControlCheck(environmentModelRepository, environmentModelId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
 
         // Determine entity states
-        environmentModelService.determineEntityStates(environmentModel);
+        environmentModelService.retrieveEntityStates(environmentModel);
         return ResponseEntity.ok().build();
     }
 
