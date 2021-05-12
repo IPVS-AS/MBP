@@ -145,20 +145,22 @@
                             <div class="form-group" ng-class="{'has-error' : addPolicyCtrl.item.errors.condition }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addPolicyCtrl.item.errors.condition }">
-                                    <select class="form-control show-tick" ng-model="addPolicyCtrl.item.conditionId"
+                                    <select class="form-control selectpicker show-tick" title="Condition *"
+                                            data-header="Condition *"
+                                            ng-model="addPolicyCtrl.item.conditionId"
                                             ng-options="c.id as (c.name) for c in ctrl.policyConditionList">
-                                        <option disabled selected value>Condition *</option>
+                                        <option value="" selected></option>
                                     </select>
                                 </div>
                                 <span class="help-block"
                                       ng-show="addPolicyCtrl.item.errors.condition">{{addPolicyCtrl.item.errors.condition}}</span>
                             </div>
                             <!-- item.accessTypes group -->
-                            <label>Access Types: *</label>
                             <div class="form-group" ng-class="{'has-error' : addPolicyCtrl.item.errors.accessTypes }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addPolicyCtrl.item.errors.accessTypes }">
-                                    <select multiple class="form-control selectpicker"
+                                    <select multiple class="form-control selectpicker" title="Access Types *"
+                                            data-header="Access Types *"
                                             ng-model="addPolicyCtrl.item.accessTypes">
                                         <option value="READ">Read</option>
                                         <option value="READ_VALUE_LOGS">Read Value Logs</option>
@@ -177,13 +179,14 @@
                                       ng-show="addPolicyCtrl.item.errors.accessTypes">{{addPolicyCtrl.item.errors.accessTypes}}</span>
                             </div>
                             <!-- item.effect group -->
-                            <label>Effect:</label>
                             <div class="form-group" ng-class="{'has-error' : addPolicyCtrl.item.errors.effect }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addPolicyCtrl.item.errors.effect }">
-                                    <select class="form-control show-tick" ng-model="addPolicyCtrl.item.effectId"
+                                    <select class="form-control selectpicker show-tick" title="Effect *"
+                                            data-header="Effect *"
+                                            ng-model="addPolicyCtrl.item.effectId"
                                             ng-options="e.id as (e.name) for e in ctrl.policyEffectList">
-                                        <option disabled selected value>Effect *</option>
+                                        <option value="" selected></option>
                                     </select>
                                 </div>
                                 <span class="help-block"

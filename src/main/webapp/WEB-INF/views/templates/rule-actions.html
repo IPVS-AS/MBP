@@ -121,9 +121,11 @@
                             <div class="form-group" ng-class="{'has-error' : addRuleActionCtrl.item.errors.type }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addRuleActionCtrl.item.errors.type }">
-                                    <select class="form-control show-tick" ng-model="addRuleActionCtrl.item.type"
-                                            ng-options="type.id as (type.name) for type in ctrl.ruleActionTypesList">
-                                        <option disabled selected value>Select action type *</option>
+                                    <select class="form-control selectpicker show-tick" title="Action Type *"
+                                            data-header="Action Type *"
+                                            ng-model="addRuleActionCtrl.item.type"
+                                            ng-options="t.id as (t.name) for t in ctrl.ruleActionTypesList">
+                                        <option value="" selected></option>
                                     </select>
                                 </div>
                                 <span class="help-block"
@@ -138,10 +140,11 @@
                                     <!-- item.parameters[actuator] group -->
                                     <div class="form-group">
                                         <div class="form-line">
-                                            <select class="form-control show-tick"
+                                            <select class="form-control selectpicker show-tick" title="Actuator *"
+                                                    data-header="Actuator *"
                                                     ng-model="addRuleActionCtrl.item.parameters['actuator']"
                                                     ng-options="actuator.id as (actuator.name) for actuator in ctrl.actuatorList">
-                                                <option disabled selected value>Select actuator *</option>
+                                                <option value="" selected></option>
                                             </select>
                                         </div>
                                     </div>
@@ -188,10 +191,11 @@
                                     <!-- item.parameters[component] group -->
                                     <div class="form-group">
                                         <div class="form-line">
-                                            <select class="form-control show-tick"
+                                            <select class="form-control selectpicker show-tick" title="Component *"
+                                                    data-header="Component *"
                                                     ng-options="(c.componentTypeName + '/' + c.id) as (c.name) group by c.type for c in ctrl.componentList"
                                                     ng-model="addRuleActionCtrl.item.parameters['component']">
-                                                <option disabled selected value>Select component *</option>
+                                                <option value="" selected></option>
                                             </select>
                                         </div>
                                     </div>
