@@ -550,6 +550,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     deleteTest: ['HttpService', function (HttpService) {
                         // bind category parameter
                         return angular.bind(this, HttpService.deleteOne, 'test-details');
+                    }],
+                    accessControlPolicyList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('policies');
                     }]
                 }
             })

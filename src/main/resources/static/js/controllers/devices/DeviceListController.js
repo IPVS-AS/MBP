@@ -4,20 +4,24 @@
  * Controller for the device list page.
  */
 app.controller('DeviceListController',
-    ['$scope', '$controller', '$interval', 'DeviceService', 'deviceList', 'addDevice', 'deleteDevice', 'keyPairList', 'accessControlPolicyList',
+    ['$scope', '$controller', '$interval', 'DeviceService', 'DefaultComponentsService', 'deviceList', 'addDevice', 'deleteDevice', 'keyPairList', 'accessControlPolicyList',
         'deviceTypesList', 'NotificationService',
-        function ($scope, $controller, $interval, DeviceService, deviceList, addDevice, deleteDevice, keyPairList, accessControlPolicyList,
+        function ($scope, $controller, $interval, DeviceService, DefaultComponentsService, deviceList, addDevice, deleteDevice, keyPairList, accessControlPolicyList,
                   deviceTypesList, NotificationService) {
             let vm = this;
 
+
             //Set field for password visibility
             vm.hidePassword = true;
+
 
             /**
              * Initializing function, sets up basic things.
              */
             (function initController() {
                 loadDeviceStates();
+
+                $scope.simExists = DefaultComponentsService.getListWoSimulators(deviceList);
 
                 //Interval for updating device states  on a regular basis
                 let interval = $interval(function () {
@@ -235,6 +239,7 @@ app.controller('DeviceListController',
 
                         //Add device to device list
                         vm.deviceListCtrl.pushItem(device);
+                        $scope.simExists = DefaultComponentsService.getListWoSimulators(deviceList);
 
                         //Retrieve state of the new device
                         getDeviceState(device.id);
@@ -252,6 +257,7 @@ app.controller('DeviceListController',
                     let id = vm.deleteDeviceCtrl.result;
 
                     vm.deviceListCtrl.removeItem(id);
+                    $scope.simExists = DefaultComponentsService.getListWoSimulators(deviceList);
                 }
             );
         }
