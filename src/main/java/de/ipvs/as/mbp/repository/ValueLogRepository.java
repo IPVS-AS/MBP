@@ -47,8 +47,9 @@ public class ValueLogRepository {
     // Number of value logs per document in the collection
     private static final long VALUES_PER_DOCUMENT = 80;
 
-    // Value log collection of the MongoDB
-    private final MongoCollection<ValueLog> valueLogCollection;
+    // Value log database and collection of the MongoDB
+    private MongoDatabase valueLogDatabase;
+    private MongoCollection<ValueLog> valueLogCollection;
 
     /**
      * Instantiates the repository by passing a reference to the MongoDB bean that
@@ -65,7 +66,7 @@ public class ValueLogRepository {
         String databaseName = mongoConfiguration.getMongoDatabase();
 
         // Get value log database and collection with codec registry
-        MongoDatabase valueLogDatabase = mongoClient.getDatabase(databaseName).withCodecRegistry(codecRegistry);
+        this.valueLogDatabase = mongoClient.getDatabase(databaseName).withCodecRegistry(codecRegistry);
         this.valueLogCollection = valueLogDatabase.getCollection(COLLECTION_NAME, ValueLog.class);
     }
 
@@ -205,7 +206,7 @@ public class ValueLogRepository {
         // Replace root elements with value log sub-documents
         aggregateStages.add(Aggregates.replaceRoot("$values"));
 
-        // Fine-grained Sorting on value log level
+        // Fine-grained sorting on value log level
         aggregateStages.add(Aggregates.sort(fineSortDocument));
 
         // Fine-grained offset for pagination on value log level (if necessary)

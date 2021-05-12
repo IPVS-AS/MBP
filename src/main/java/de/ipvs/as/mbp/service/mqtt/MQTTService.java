@@ -10,7 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.DependsOn;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -33,7 +33,7 @@ import java.util.UUID;
  * topics
  */
 @Service
-@DependsOn("applicationPropertiesConfigurer")
+@PropertySource(value = "classpath:application.properties")
 @EnableScheduling
 public class MQTTService {
     //URL frame of the broker to use (protocol and port, address will be filled in)
@@ -42,7 +42,7 @@ public class MQTTService {
     private static final String CLIENT_ID = "mbp-client-" + getUniqueClientSuffix();
 
     //Autowired components
-    private final SettingsService settingsService;
+    private SettingsService settingsService;
 
     //Stores the reference of the mqtt client
     private MqttClient mqttClient = null;
@@ -114,39 +114,50 @@ public class MQTTService {
         //Stores the address of the desired mqtt broker
         String brokerAddress = "localhost";
 
-        //Determine from settings if a remote broker should be used instead
+        //Retrieve desired broker address from settings
         Settings settings = settingsService.getSettings();
+        brokerAddress = settings.getBrokerIPAddress();
+
+        //Pass settings to main initialization function
+        initialize(settings.getBrokerLocation(), brokerAddress);
+    }
+
+    /**
+     * Initializes, configures and starts the MQTT client that belongs to this service.
+     * If the MQTT client is already running, it will e terminated, disconnected and restarted with new settings.
+     * According to the broker location, the mqtt client is initiated with or without OAuth2  authentication.
+     *
+     * @param brokerLocation The broker location to use
+     * @param brokerAddress  The address of the broker to use
+     * @throws MqttException In case of an error during execution of mqtt operations
+     * @throws IOException   In case of an I/O issue
+     */
+    public void initialize(BrokerLocation brokerLocation, String brokerAddress) throws MqttException, IOException {
+        //Disconnect the old mqtt client if already connected
+        if ((mqttClient != null) && (mqttClient.isConnected())) {
+            mqttClient.disconnectForcibly();
+        }
 
         //Instantiate memory persistence
         MemoryPersistence persistence = new MemoryPersistence();
 
         MqttConnectOptions connectOptions = null;
 
-        switch (settings.getBrokerLocation()) {
-            case LOCAL_SECURE:
-                requestOAuth2Token();
-                connectOptions = new MqttConnectOptions();
-                connectOptions.setCleanSession(true);
-                connectOptions.setUserName(accessToken);
-                connectOptions.setPassword("any".toCharArray());
-                break;
-            case REMOTE_SECURE:
-                //Retrieve IP address of external broker from settings
-                brokerAddress = settings.getBrokerIPAddress();
-                requestOAuth2Token();
-                connectOptions = new MqttConnectOptions();
-                connectOptions.setCleanSession(true);
-                connectOptions.setUserName(accessToken);
-                connectOptions.setPassword("any".toCharArray());
-                break;
-            case REMOTE:
-                //Retrieve IP address of external broker from settings
-                brokerAddress = settings.getBrokerIPAddress();
-                break;
-            default:
-                break;
-
+        //Check if secure mode is desired
+        if (brokerLocation.equals(BrokerLocation.LOCAL_SECURE) || brokerLocation.equals(BrokerLocation.REMOTE_SECURE)) {
+            requestOAuth2Token();
+            connectOptions = new MqttConnectOptions();
+            connectOptions.setCleanSession(true);
+            connectOptions.setUserName(accessToken);
+            connectOptions.setPassword("any".toCharArray());
         }
+
+        //Check whether broker is local
+        if (brokerLocation.equals(BrokerLocation.LOCAL) || brokerLocation.equals(BrokerLocation.LOCAL_SECURE)) {
+            //Override broker address with localhost
+            brokerAddress = "localhost";
+        }
+
         //Create new mqtt client with the full broker URL
         mqttClient = new MqttClient(String.format(BROKER_URL, brokerAddress), CLIENT_ID, persistence);
         if (connectOptions != null) {

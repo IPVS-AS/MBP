@@ -18,6 +18,7 @@ public class Settings {
     //All setting properties with default values
     private BrokerLocation brokerLocation = BrokerLocation.LOCAL;
     private String brokerIPAddress = "127.0.0.1";
+    private boolean demoMode = false;
 
     /**
      * Creates a new settings object with default values.
@@ -94,5 +95,23 @@ public class Settings {
         //}
 
         this.brokerIPAddress = brokerIPAddress;
+    }
+
+    /**
+     * Returns whether the demonstration mode is currently active.
+     *
+     * @return True, if the demonstration mode is active; false otherwise
+     */
+    public boolean isDemoMode() {
+        return demoMode;
+    }
+
+    /**
+     * Sets whether the demonstration mode is currently active.
+     *
+     * @param demoMode True, if the demonstration mode is active; false otherwise
+     */
+    public void setDemoMode(boolean demoMode) {
+        this.demoMode = demoMode;
     }
 }

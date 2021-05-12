@@ -1,0 +1,22 @@
+{
+  "name": "Parametrized Temperature Stub",
+  "description": "Stub operator simulating a temperature sensor with sending interval as parameter.",
+  "unit": "°C",
+  "files": [
+    "temperature_stub_param.py",
+    "../../mbp_client/mbp_client.py",
+    "../../mbp_client/install.sh",
+    "../../mbp_client/start.sh",
+    "../../mbp_client/stop.sh",
+    "../../mbp_client/running.sh",
+    "entry-file-name"
+  ],
+  "parameters": [
+    {
+      "name": "Interval",
+      "type": "number",
+      "unit": "s",
+      "mandatory": false
+    }
+  ]
+}

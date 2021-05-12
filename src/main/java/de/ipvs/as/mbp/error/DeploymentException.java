@@ -3,17 +3,10 @@ package de.ipvs.as.mbp.error;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author Jakob Benz
- */
 public class DeploymentException extends RuntimeException {
 
-	private static final long serialVersionUID = 1977271212350830935L;
-	
 	private Map<String, String> invalidParameters = new HashMap<>();
-	
-	// - - -
-	
+
 	public DeploymentException() {
 		super();
 	}
@@ -31,15 +24,11 @@ public class DeploymentException extends RuntimeException {
 		super(message);
 		this.invalidParameters = invalidParameters;
 	}
-	
-	// - - -
-	
+
 	public Map<String, String> getInvalidParameters() {
 		return invalidParameters;
 	}
-	
-	// - - -
-	
+
 	public DeploymentException addInvalidParameter(String key, String reason) {
 		invalidParameters.put(key, reason);
 		return this;
