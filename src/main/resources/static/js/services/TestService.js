@@ -4,7 +4,7 @@
  * Provides services for managing tests.
  */
 app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT_URI', 'NotificationService',
-    function (HttpService, $http,$resource, $q, ENDPOINT_URI, NotificationService) {
+    function (HttpService, $http, $resource, $q, ENDPOINT_URI, NotificationService) {
 
         //URLs for server requests
         const URL_TEST_START = ENDPOINT_URI + '/test-details/test/';
@@ -41,7 +41,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * Performs a server request in order to start the current test (in case it has been stopped before).
          * @param testId The id of the test to be started
          */
-        function startTest(testId){
+        function startTest(testId) {
             return HttpService.postRequest(URL_TEST_START + testId);
 
         }
@@ -104,9 +104,8 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * Performs a server request to delete a specific test report of a test.
          */
         function deleteTestReport(testId, path) {
-            return HttpService.postRequest(URL_REPORT_DELETE + testId, path).then(function (response)
-            {
-                if(response){
+            return HttpService.postRequest(URL_REPORT_DELETE + testId, path).then(function (response) {
+                if (response) {
                     NotificationService.notify('Test Report successfully deleted.', 'success');
                 } else {
                     NotificationService.notify('Error during deletion.', 'error');
@@ -241,11 +240,11 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
         function getRuleNames(rules, ruleList) {
             let ruleNames = [];
             angular.forEach(rules, function (rule) {
-               angular.forEach(ruleList, function (ruleInList) {
-                    if(ruleInList._links.self.href === rule ){
+                angular.forEach(ruleList, function (ruleInList) {
+                    if (ruleInList._links.self.href === rule) {
                         ruleNames.push(ruleInList.name);
                     }
-               })
+                })
             });
             return ruleNames;
 
@@ -266,7 +265,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * @param executeRules information if rules should be triggered through the test
          * @param data object
          */
-        function getTestData(sensors, realSensors, realParameterValues, config, rules, ruleList ,executeRules, data) {
+        function getTestData(sensors, realSensors, realParameterValues, config, rules, ruleList, executeRules, data) {
 
             let ruleNames = getRuleNames(rules, ruleList);
             // to check if the user has selected at least one sensor
@@ -293,56 +292,48 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
 
             try {
                 if (!angular.isUndefined(realSensors)) {
-                    checkRealSensor = true;
-                    if (!angular.isUndefined(realSensors)) {
-                        for (let x = 0; x < realSensors.length; x++) {
-                            newTestObject.type.push(realSensors[x].name);
-                        }
-                        if(!angular.isUndefined(realParameterValues)){
+                    for (let x = 0; x < realSensors.length; x++) {
+                        newTestObject.type.push(realSensors[x].name);
+                        parameterValues = [];
+                        parameterValues.push({
+                            "name": "ConfigName",
+                            "value": realSensors[x].name
+                        });
+                        if (!angular.isUndefined(realParameterValues)) {
                             angular.forEach(realParameterValues, function (parameters, key) {
-                                for (let i = 0; i < realSensors.length; i++) {
+                                if (key === realSensors[x].name) {
 
-                                    if (realSensors[i].name === key) {
-                                        parameterValues = [];
-                                        parameterValues.push({
-                                            "name": "ConfigName",
-                                            "value": realSensors[i].name
-                                        });
-                                        const requiredParams = realSensors[i].operator.parameters;
+                                    const requiredParams = realSensors[x].operator.parameters;
 
-                                        //Iterate over all parameters
-                                        for (let i = 0; i < requiredParams.length; i++) {
-                                            //Set empty default values for these parameters
-                                            var value = "";
+                                    //Iterate over all parameters
+                                    for (let i = 0; i < requiredParams.length; i++) {
+                                        //Set empty default values for these parameters
+                                        var value = "";
 
-                                            if (requiredParams[i].type === "Switch") {
-                                                value = true;
-                                            }
-                                            if (requiredParams[i].name === "device_code") {
-                                                console.log("Requesting code for required parameter device_code.");
-                                                value = getDeviceCode();
-                                                continue;
-                                            }
-
-                                            //For each parameter, add a tuple (name, value) to the globally accessible parameter array
-                                            parameterValues.push({
-                                                "name": requiredParams[i].name,
-                                                "value": parameters[i]
-                                            });
+                                        if (requiredParams[i].type === "Switch") {
+                                            value = true;
                                         }
-                                        newTestObject.config.push(parameterValues);
+                                        if (requiredParams[i].name === "device_code") {
+                                            console.log("Requesting code for required parameter device_code.");
+                                            value = getDeviceCode();
+                                            continue;
+                                        }
+
+                                        //For each parameter, add a tuple (name, value) to the globally accessible parameter array
+                                        parameterValues.push({
+                                            "name": requiredParams[i].name,
+                                            "value": parameters[i]
+                                        });
                                     }
                                 }
-                            });
-                            newTestObject.config.push([{
-                                "name": "ConfigRealSensors",
-                                "value": realParameterValues
-                            }]);
-
+                            })
                         }
+                        newTestObject.config.push(parameterValues);
 
 
                     }
+
+
                 }
 
                 if (!angular.isUndefined(sensors)) {

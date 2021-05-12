@@ -1297,8 +1297,7 @@
                                     <tr>
                                         <th>Name</th>
                                         <th>Condition</th>
-                                        <th>Times Triggered Before</th>
-                                        <th>Times Triggered After</th>
+                                        <th>Times Triggered during Test</th>
                                         <th>Trigger Values</th>
                                     </tr>
                                     </thead>
@@ -1317,9 +1316,6 @@
                                                     <code>{{rule.trigger.query}}</code>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td>
-                                            {{rule.executions}}
                                         </td>
 
                                         <td ng-repeat="ruleAfter in testReportAnzeige.ruleInformationAfter | filter: rule.name">{{ruleAfter.executions}}</td>

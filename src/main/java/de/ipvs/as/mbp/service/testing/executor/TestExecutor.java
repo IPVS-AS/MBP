@@ -9,6 +9,8 @@ import de.ipvs.as.mbp.domain.testing.TestReport;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.TestDetailsRepository;
 import de.ipvs.as.mbp.repository.TestReportRepository;
+import de.ipvs.as.mbp.service.deployment.DeployerDispatcher;
+import de.ipvs.as.mbp.service.deployment.IDeployer;
 import de.ipvs.as.mbp.service.rules.RuleEngine;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
@@ -55,6 +57,9 @@ public class TestExecutor {
 
     @Autowired
     private DeploymentWrapper deploymentWrapper;
+
+    @Autowired
+    private DeployerDispatcher deployerDispatcher;
 
 
     // List of all active Tests
@@ -416,13 +421,17 @@ public class TestExecutor {
     public void startSensors(Sensor testSensor,
                              List<ParameterInstance> parameterValues) {
 
-        boolean sensorDeployed = deploymentWrapper.isComponentRunning(testSensor);
 
-        if (!sensorDeployed) {
+        IDeployer deployer = deployerDispatcher.getDeployer();
+
+        if (!deployer.isComponentDeployed(testSensor)) {
             //if not deploy Sensor
-            deploymentWrapper.deployComponent(testSensor);
+            deployer.deployComponent(testSensor);
         }
-        deploymentWrapper.stopComponent(testSensor);
+
+        if(deployer.isComponentRunning(testSensor)){
+            deploymentWrapper.stopComponent(testSensor);
+        }
         deploymentWrapper.startComponent(testSensor, parameterValues);
     }
 
@@ -482,15 +491,15 @@ public class TestExecutor {
                 actuatorRepository.findByName(TESTING_ACTUATOR).get();
 
         testingActuator.getId();
-
-        boolean actuatorDeployed =
-                deploymentWrapper.isComponentRunning(testingActuator);
-        if (!actuatorDeployed) {
+        IDeployer deployer = deployerDispatcher.getDeployer();
+        if (!deployer.isComponentDeployed(testingActuator)) {
             //if false deploy actuator
-            deploymentWrapper.deployComponent(testingActuator);
+            deployer.deployComponent(testingActuator);
         }
-        // start the Actuator
-        deploymentWrapper.startComponent(testingActuator, new ArrayList<>());
+        if(!deployer.isComponentRunning(testingActuator)){
+            // start the Actuator
+            deploymentWrapper.startComponent(testingActuator, new ArrayList<>());
+        }
     }
 
     /**
