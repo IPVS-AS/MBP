@@ -174,15 +174,14 @@ public class TestExecutor {
             Map<String, LinkedHashMap<Long, Double>> valueList =
                     testAnalyzer.isFinished(reportId, test.getId());
 
-            saveRulesAfter(test, reportId);
+            saveAmountRulesTriggered(test, reportId, rulesBefore);
             saveValues(test, reportId, valueList);
             analyzeTest(test, reportId, rulesBefore);
         } catch (Exception e){
             testReport.setEndTestTimeNow();
             testReport.setSuccessful("ERROR DURING TEST");
             List<Rule>  rulesAfter = testAnalyzer.getCorrespondingRules(test);
-            testReport.setRuleInformationAfter(rulesAfter);
-            testReportRepository.save(testReport);
+            saveAmountRulesTriggered(test, testReport.getId(), rulesAfter);
 
         }
 
@@ -190,10 +189,18 @@ public class TestExecutor {
 
     }
 
-    private void saveRulesAfter(TestDetails test, String reportId) {
-        List<Rule>  rulesAfter = testAnalyzer.getCorrespondingRules(test);
+    private void saveAmountRulesTriggered(TestDetails test, String reportId, List<Rule> rulesBefore) {
         TestReport report = testReportRepository.findById(reportId).get();
-        report.setRuleInformationAfter(rulesAfter);
+        List<Rule>  rulesAfter = testAnalyzer.getCorrespondingRules(test);
+        Map<String, Integer> amountTriggered = new HashMap<>();
+        for (Rule ruleBefore : rulesBefore){
+            for(Rule ruleAfter: rulesAfter){
+                if(ruleAfter.getName().equals(ruleBefore.getName())){
+                    amountTriggered.put(ruleAfter.getName(), ruleBefore.getExecutions() - ruleAfter.getExecutions());
+                }
+            }
+        }
+        report.setAmountRulesTriggered(amountTriggered);
         testReportRepository.save(report);
     }
 

@@ -61,7 +61,7 @@ public class TestReport extends UserEntity {
 
     private List<Rule> ruleInformationBefore;
 
-    private List<Rule> ruleInformationAfter;
+    private Map<String, Integer> amountRulesTriggered;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy HH:mm:ss")
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -363,12 +363,12 @@ public class TestReport extends UserEntity {
         this.ruleInformationBefore = ruleInformationBefore;
     }
 
-    public List<Rule> getRuleInformationAfter() {
-        return ruleInformationAfter;
+    public Map<String, Integer> getAmountRulesTriggered() {
+        return amountRulesTriggered;
     }
 
-    public void setRuleInformationAfter(List<Rule> ruleInformationAfter) {
-        this.ruleInformationAfter = ruleInformationAfter;
+    public void setAmountRulesTriggered(Map<String, Integer> amountRulesTriggered) {
+        this.amountRulesTriggered = amountRulesTriggered;
     }
 }
 

@@ -1317,16 +1317,16 @@
                                                 </div>
                                             </div>
                                         </td>
-
-                                        <td ng-repeat="ruleAfter in testReportAnzeige.ruleInformationAfter | filter: rule.name">{{ruleAfter.executions}}</td>
+                                        <td ng-repeat="amountTriggerAfter in rulesTriggered | filter: rule.name">
+                                           {{amountTriggerAfter.executions}} </td>
                                         <td>
                                             <div>
                                                 <a class="clickable" data-toggle="collapse"
-                                                   data-target="#query-{{rule}}">
+                                                   data-target="#triggerValues-{{rule.id}}">
                                                     Show Trigger values
                                                 </a>
-                                                <div id="query-{{rule}}" class="collapse">
-                                                    <code>{{rule.executions}}</code>
+                                                <div id="triggerValues-{{rule.id}}" class="collapse">
+                                                    <code>{{testReportAnzeige.triggerValues}}</code>
                                                 </div>
                                             </div>
                                         </td>

@@ -8,7 +8,6 @@ app.controller('TestingDetailsController',
         function ($scope, $controller, TestService, TestReportService, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, HttpService, ENDPOINT_URI, ruleList) {
             //Initialization of variables that are used in the frontend by angular
             const vm = this;
-            console.log(testingDetails)
             vm.ruleList = ruleList;
             vm.test = testingDetails;
             vm.executeRules = true;
@@ -158,7 +157,6 @@ app.controller('TestingDetailsController',
              */
             function getTestRules() {
                 $scope.ruleList = TestService.getRuleListTest(COMPONENT_ID);
-                console.log(ruleList);
                 for (let i = 0; i < testingDetails.rules.length; i++) {
                     if (i === 0) {
                         vm.ruleNames = vm.ruleNames + testingDetails.rules[i].name;
@@ -181,17 +179,23 @@ app.controller('TestingDetailsController',
                 testReport = report.report;
                 $scope.testReportAnzeige = testReport;
                 convertConfig(testReport);
+                convertRulesTriggered(testReport.amountRulesTriggered);
                 getRealSensorList();
-                getRuleInformation(testReport);
                 $('#testReport').modal('show');
             };
 
-            function getRuleInformation(testReport){
-                const rulesBefore = testReport.ruleInformationBefore;
-                const rulesAfter = testReport.ruleInformationAfter;
-                console.log(rulesAfter, rulesBefore)
+            function convertRulesTriggered(amountRulesTriggered){
 
-
+                let amountRulesTriggeredList  = {};
+                let amountRulesTriggeredL= [];
+                angular.forEach(amountRulesTriggered, function (executions, rule) {
+                    amountRulesTriggeredL.push({
+                        "name": rule,
+                        "executions": executions
+                    })
+                });
+                amountRulesTriggeredList.table = amountRulesTriggeredL;
+                $scope.rulesTriggered = amountRulesTriggeredList.table;
             }
 
 
@@ -202,7 +206,6 @@ app.controller('TestingDetailsController',
                         $scope.realSensorList.push(sensor)
                     }
                 });
-                console.log($scope.realSensorList)
             }
 
             function convertConfig(testReport) {
@@ -223,7 +226,6 @@ app.controller('TestingDetailsController',
                         }
                     });
                     if(type && event && anomaly ){
-                        console.log("------------------------------------------------")
                         simulationConfig.push({
                             "type": type,
                             "event": event,
@@ -244,9 +246,7 @@ app.controller('TestingDetailsController',
              */
             function getPDFList() {
                 vm.pdfDetails = [];
-                TestService.getPDFList(COMPONENT_ID).then(function (response) {
-                    console.log(response)
-                });
+                TestService.getPDFList(COMPONENT_ID);
             }
 
             /**
@@ -337,7 +337,6 @@ app.controller('TestingDetailsController',
 
                 // Get the new list of selected rules for the test
                 vm.rulesUpdate = $rootScope.selectedRules.rules;
-                console.log(vm.rulesUpdate);
 
                 if (vm.executeRules === 'undefined') {
                     NotificationService.notify('A decision must be made.', 'error')
