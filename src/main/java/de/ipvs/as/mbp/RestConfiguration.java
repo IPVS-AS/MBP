@@ -34,8 +34,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 /**
  * Contains crucial rest configurations for the application.
- *
- * @author rafaelkperes, Jan
  */
 @Configuration
 public class RestConfiguration implements RepositoryRestConfigurer {
