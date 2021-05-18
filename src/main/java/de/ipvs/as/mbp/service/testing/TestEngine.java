@@ -495,4 +495,25 @@ public class TestEngine {
         }
 
     }
+
+    /**
+     * Delete a specific test report of a test.
+     *
+     * @param reportId
+     * @return
+     */
+    public ResponseEntity deleteReport(String reportId) {
+        ResponseEntity responseEntity = null;
+        try {
+            if (testReportRepository.existsById(reportId)) {
+                TestReport testReport = testReportRepository.findById(reportId).get();
+                testReportRepository.delete(testReport);
+                responseEntity = new ResponseEntity<>(HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            responseEntity = new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
+
+        return responseEntity;
+    }
 }

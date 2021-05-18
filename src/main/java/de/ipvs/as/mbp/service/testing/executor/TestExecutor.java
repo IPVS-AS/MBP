@@ -332,8 +332,8 @@ public class TestExecutor {
                     valueListTest.put(sensor.getName(), temp);
                     // list.remove(sensor.getId());
                     // save list of sensor values to database
-                    testReport.setSimulationList(valueList);
-                    testDetails.setSimulationList(valueList);
+                    testReport.setSimulationList(valueListTest);
+                    testDetails.setSimulationList(valueListTest);
                 }
 
             }

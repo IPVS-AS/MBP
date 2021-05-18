@@ -103,9 +103,10 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          *
          * Performs a server request to delete a specific test report of a test.
          */
-        function deleteTestReport(testId, path) {
-            return HttpService.postRequest(URL_REPORT_DELETE + testId, path).then(function (response) {
-                if (response) {
+        function deleteTestReport(reportId, testId) {
+            return HttpService.postRequest(URL_REPORT_DELETE + reportId).then(function (response)
+            {
+                if(response){
                     NotificationService.notify('Test Report successfully deleted.', 'success');
                 } else {
                     NotificationService.notify('Error during deletion.', 'error');

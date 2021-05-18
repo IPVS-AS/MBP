@@ -287,12 +287,12 @@ public class RestTestingController {
     /**
      * Deletes a specific test report of the specific test defined by the user.
      *
-     * @param testId id of the test from which the report should be deleted
+     * @param reportId id of the test report which should be deleted
      * @return if deletion worked or not
      */
-    @PostMapping(value = "/deleteTestReport/{testId}")
-    public void deleteTestReport(@PathVariable(value = "testId") String testId, @RequestBody Object fileName) {
-        //return testEngine.deleteReport(testId, fileName);
+    @PostMapping(value = "/deleteTestReport/{reportId}")
+    public ResponseEntity<Boolean> deleteTestReport(@PathVariable(value = "reportId") String reportId) {
+        return testEngine.deleteReport(reportId);
     }
 
 

@@ -263,8 +263,9 @@ app.controller('TestingDetailsController',
              *
              * Creates a server request to delete a certain Test Report for the specific Test
              */
-            function deletePDF(pdfPath) {
-                TestService.deleteTestReport(COMPONENT_ID, pdfPath.toString()).then(function (response) {
+            function deleteTestReport(reportId) {
+                console.log(reportId)
+                TestService.deleteTestReport(reportId, COMPONENT_ID).then(function (response) {
                     $scope.pdfTable = response;
                 });
             }
@@ -803,7 +804,7 @@ app.controller('TestingDetailsController',
                 getPDFList: getPDFList,
                 editConfig: editConfig,
                 editTestConfiguration: updateTest,
-                deletePDF: deletePDF,
+                deleteTestReport: deleteTestReport,
                 getPDF: getPDF
             });
         }

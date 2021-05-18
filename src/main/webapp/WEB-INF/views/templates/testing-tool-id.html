@@ -146,12 +146,12 @@
                             </td>
                             <td>
                                 <button class="btn bg-cyan waves-effect" ng-click=""
-                                       type="button">
+                                        type="button">
                                     <i class="material-icons">play_arrow</i>
                                 </button>
                             </td>
                             <td>
-                                <form ng-submit="ctrl.deletePDF(pdf.path)" style="margin-top: 3px;">
+                                <form ng-submit="ctrl.deleteTestReport(testReport.report.id)" style="margin-top: 3px;">
                                     <button type="submit" class="btn btn-danger m-t-0 waves-effect">
                                         Delete
                                     </button>
@@ -1269,7 +1269,7 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <td >
+                                    <td>
                                         <div ng-switch="testReportAnzeige.triggerRules">
                                             <div ng-switch-when="true">Yes</div>
                                             <div ng-switch-when="false">No</div>
@@ -1279,7 +1279,13 @@
                                         {{ctrl.ruleNames}}
                                     </td>
                                     <td>
-                                        {{testReportAnzeige.rulesExecuted.join(', ')}}
+                                        <div ng-if="testReportAnzeige.rulesExecuted.length >0">
+                                            {{testReportAnzeige.rulesExecuted.join(', ')}}
+                                        </div>
+
+                                        <div ng-if="testReportAnzeige.rulesExecuted.length == 0 || testReportAnzeige.rulesExecuted == undefined">
+                                            -
+                                        </div>
                                     </td>
                                     </tbody>
                                     <tfoot>
@@ -1318,17 +1324,20 @@
                                             </div>
                                         </td>
                                         <td ng-repeat="amountTriggerAfter in rulesTriggered | filter: rule.name">
-                                           {{amountTriggerAfter.executions}} </td>
+                                            {{amountTriggerAfter.executions}}
+                                        </td>
                                         <td>
-                                            <div>
-                                                <a class="clickable" data-toggle="collapse"
-                                                   data-target="#triggerValues-{{rule.id}}">
-                                                    Show Trigger values
-                                                </a>
-                                                <div id="triggerValues-{{rule.id}}" class="collapse">
-                                                    <code>{{testReportAnzeige.triggerValues}}</code>
+                                            <a class="clickable" data-toggle="collapse"
+                                               data-target="#triggerValues-{{rule.id}}">
+                                                Show Trigger values
+                                            </a>
+                                            <div id="triggerValues-{{rule.id}}" class="collapse">
+                                                <div ng-repeat="(ruleName, valueList) in testReportAnzeige.triggerValues | filter: rule.name">
+                                                    {{valueList}}
                                                 </div>
                                             </div>
+
+
                                         </td>
                                     </tr>
                                     </tbody>
@@ -1345,6 +1354,24 @@
                         <!-- next steps-->
                         <div ng-switch="testReportAnzeige.successful">
                             <div ng-switch-when="Not Successful">
+                                <h3>Next Steps:</h3>
+                                <p> &ensp; &ensp; Step 1 - Check which values led to the failure of the
+                                    Test. </p>
+                                <p> &ensp; &ensp; Step 2 - Adjust your rules or repeat the test under the same
+                                    conditions </p>
+                                <ul>
+                                    <li> - Set too sensitive: increase the time window / window length, set the average
+                                        higher, ...
+                                    </li>
+                                    <li> - Set too coarse: reduce the time window/window length, set the average lower,
+                                        ...
+                                    </li>
+                                </ul>
+                                <p> &ensp; &ensp; Step 3 - Start the test again and observe how the results change. </p>
+
+
+                            </div>
+                            <div ng-switch-when="">
                                 <h3>Next Steps:</h3>
                                 <p> &ensp; &ensp; Step 1 - Check which values led to the failure of the
                                     Test. </p>
