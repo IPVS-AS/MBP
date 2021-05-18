@@ -19,6 +19,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
         const URL_RULE_LIST_TEST = ENDPOINT_URI + "/test-details/ruleList/";
         const URL_DOWNLOAD_REPORT = 'api/test-details/downloadPDF/';
         const URL_UPDATE_TEST = ENDPOINT_URI + '/test-details/updateTest/';
+
         const vm = this;
 
         vm.parameterValues = [];

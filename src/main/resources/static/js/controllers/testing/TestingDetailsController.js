@@ -28,6 +28,8 @@ app.controller('TestingDetailsController',
                 'TestingAccelerationSensorPl',
                 'TestingGPSSensor',
                 'TestingGPSSensorPl'];
+            //URL for server requests
+            const URL_SIMULATION_VALUES = ENDPOINT_URI + '/test-details/test-report/';
 
 
             // Storing variables
@@ -52,7 +54,7 @@ app.controller('TestingDetailsController',
                 getPDFList();
                 getTestRules();
                 getConfig();
-              //  disableReuse();
+                //  disableReuse();
                 getTestSensorList();
                 // define the parameters of the real sensors included into the test
                 getRealSensorList();
@@ -100,6 +102,29 @@ app.controller('TestingDetailsController',
                     }
                 }
 
+            }
+
+
+            function getSimulationValuesTestReport(reportId) {
+                //Execute request
+                return HttpService.getRequest(URL_SIMULATION_VALUES + reportId).then(function (response) {
+                    console.log("------------------------------------------------------------------------------------CONVERTSIMVAL")
+                    console.log(convertSimulationValues(response));
+                    return convertSimulationValues(response);
+                });
+            }
+
+            function convertSimulationValues(response) {
+                let simulationValues = [];
+
+                angular.forEach(response, function (timeValue, sensorName) {
+                    simulationValues.push({
+                        name: 'sensorName',
+                        data: [timeValue]
+                    });
+                });
+                console.log(simulationValues)
+                return simulationValues;
             }
 
             /**
@@ -178,16 +203,17 @@ app.controller('TestingDetailsController',
             $scope.openReport = function (report) {
                 testReport = report.report;
                 $scope.testReportAnzeige = testReport;
+                getReportChart(testReport.id);
                 convertConfig(testReport);
                 convertRulesTriggered(testReport.amountRulesTriggered);
                 getRealSensorList();
                 $('#testReport').modal('show');
             };
 
-            function convertRulesTriggered(amountRulesTriggered){
+            function convertRulesTriggered(amountRulesTriggered) {
 
-                let amountRulesTriggeredList  = {};
-                let amountRulesTriggeredL= [];
+                let amountRulesTriggeredList = {};
+                let amountRulesTriggeredL = [];
                 angular.forEach(amountRulesTriggered, function (executions, rule) {
                     amountRulesTriggeredL.push({
                         "name": rule,
@@ -225,7 +251,7 @@ app.controller('TestingDetailsController',
                             anomaly = configDetails["value"];
                         }
                     });
-                    if(type && event && anomaly ){
+                    if (type && event && anomaly) {
                         simulationConfig.push({
                             "type": type,
                             "event": event,
@@ -268,6 +294,50 @@ app.controller('TestingDetailsController',
                 TestService.deleteTestReport(reportId, COMPONENT_ID).then(function (response) {
                     $scope.pdfTable = response;
                 });
+            }
+
+            function getReportChart(reportId) {
+                console.log(reportId)
+                console.log("----------------ROPORT CHART----------------------------------------------")
+                const chart = Highcharts.chart('reportChart', {
+                    chart: {renderTo: 'graph'},
+                    title: {
+                        text: 'Generated values during the Test',
+                        x: -20 //center
+                    },
+                    xAxis: {
+                        type: 'datetime'
+                    },
+                    yAxis: {
+                        plotLines: [{
+                            value: 0,
+                            width: 1,
+                            color: '#808080'
+                        }]
+                    },
+                    tooltip: {
+                        valueDecimals: 2,
+                        valuePrefix: '',
+                    },
+                    legend: {
+                        layout: 'vertical',
+                        align: 'right',
+                        verticalAlign: 'middle',
+                        borderWidth: 0,
+                        showInLegend: true
+                    },
+                    series: [{
+                        name: 'Installation',
+                        data: [[1621321403, 15], [ 1621321418, 27.57], [[ 1621321433, 30.57]]]
+                    }, {
+                        name: 'Manufacturing',
+                        data: [[1621321405, 25], [ 1621321420, 87.57], [[ 1621321455, 38.57]]]
+                    }, {
+                        name: 'Sales & Distribution',
+                        data: [[1621321415, 4], [ 1621321421, 8.57], [[ 1621321444, 38.57]]]
+                    }]
+                })
+                console.log(chart)
             }
 
 

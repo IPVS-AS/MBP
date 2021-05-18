@@ -1,5 +1,7 @@
 /* global app */
 
+'use strict';
+
 /**
  * Provides services for managing tests.
  */
@@ -26,8 +28,6 @@ app.factory('TestReportService', ['HttpService', '$http', '$resource', '$q', 'EN
             let data = [{id: 1, name: "Peter"}, {id: 2, name: "Chris"}];
             doc.table(20, 30, data);
             doc.save('TestReport.pdf');
-
-
         }
 
         //Expose public methods

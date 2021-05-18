@@ -19,6 +19,7 @@ import io.swagger.models.auth.In;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +31,7 @@ import org.springframework.validation.Errors;
 
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.*;
 
 @Component
@@ -67,7 +69,7 @@ public class TestEngine {
 
     @Autowired
     DeviceCreateEventHandler deviceCreateEventHandler;
-    
+
     @Autowired
     private TestReportRepository testReportRepository;
 
@@ -113,11 +115,11 @@ public class TestEngine {
         Map<Long, TestReport> nullList = new TreeMap<>();
         TestDetails testDetails = testDetailsRepository.findById(testId).get();
         try {
-            if(testReportRepository.existsByName(testDetails.getName())){
-                for(TestReport testReport : testReportRepository.findAllByName(testDetails.getName())){
+            if (testReportRepository.existsByName(testDetails.getName())) {
+                for (TestReport testReport : testReportRepository.findAllByName(testDetails.getName())) {
                     nullList.put(Long.valueOf(testReport.getStartTimeUnix()), testReport);
                 }
-                
+
             }
 
             pdfList = new ResponseEntity<>(nullList, HttpStatus.OK);
@@ -128,7 +130,36 @@ public class TestEngine {
         return pdfList;
     }
 
+    public Map<String, ArrayList> getSimulationValues(String reportId) {
+        Map<String, ArrayList> simulationValues = new HashMap();
 
+        if (testReportRepository.findById(reportId).isPresent()) {
+            TestReport testReport = testReportRepository.findById(reportId).get();
+
+            Map<String, LinkedHashMap<Long, Double>> simulationList = testReport.getSimulationList();
+
+            for (Map.Entry<String, LinkedHashMap<Long, Double>> entry : simulationList.entrySet()) {
+                ArrayList tupelList = new ArrayList();
+
+
+                String key = entry.getKey();
+                LinkedHashMap<Long, Double> valueList = entry.getValue();
+                for (Map.Entry<Long, Double> list : valueList.entrySet()) {
+                    ArrayList timeValueTupel = new ArrayList();
+                    timeValueTupel.add(list.getKey());
+                    timeValueTupel.add(list.getValue());
+                    tupelList.add(timeValueTupel);
+                }
+
+                simulationValues.put(key, tupelList);
+
+            }
+
+
+
+        }
+        return  simulationValues;
+    }
 
     /**
      * Update the test configurations redefined by the user.

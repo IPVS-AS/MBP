@@ -22,6 +22,7 @@ import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
 import de.ipvs.as.mbp.service.testing.executor.TestExecutor;
 import de.ipvs.as.mbp.service.testing.rerun.TestRerunService;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -254,6 +255,19 @@ public class RestTestingController {
 
         return testEngine.getPDFList(testId);
     }
+
+    /**
+     * Returns a specific Test Report regarding to a specific test.
+     *
+     * @param reportId ID of the test report to be found
+     * @return Https Status with the Report regarding to the specific test
+     */
+    @GetMapping(value = "/test-report/{reportId}")
+    public Map<String, ArrayList> getTestReport(@PathVariable(value = "reportId") String reportId) {
+
+        return testEngine.getSimulationValues(reportId);
+    }
+
 
     @GetMapping(value = "/ruleList/{testId}")
     public List<Rule> ruleList(@PathVariable(value = "testId") String testId) {

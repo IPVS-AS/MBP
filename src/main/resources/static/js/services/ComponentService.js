@@ -21,7 +21,6 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
         //URL suffix under which the value logs of a certain component can be retrieved
         const URL_VALUE_LOGS_SUFFIX = '/valueLogs';
 
-
         /**
          * [Public]
          * Performs a server request in order to start a certain component (in case it has been stopped before)m
@@ -102,6 +101,7 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             return HttpService.getRequest(URL_PREFIX + component + '/' + componentId + URL_GET_VALUE_LOG_STATS_SUFFIX, parameters);
         }
 
+
         /**
          * [Public]
          * Performs a server request in order to retrieve value logs for a certain component.
@@ -114,6 +114,8 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
          */
         function getValueLogs(componentId, component, pageDetails, unit) {
             let parameters = pageDetails;
+            console.log("---------------------------------------------------------------------------------------")
+            console.log(parameters)
             //Check if unit was provided
             if (unit) {
                 parameters.unit = unit;
@@ -164,6 +166,7 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             }
 
             //Return final value log array so that it is accessible in the promise
+            console.log(finalValues)
             return finalValues;
         }
 

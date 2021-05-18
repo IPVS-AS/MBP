@@ -210,6 +210,7 @@ app.controller('TestingChartController',
              * @returns A promise that passes the logs as a parameter
              */
             function retrieveComponentData(numberLogs, descending, unit, sensor) {
+                console.log("--------------------------------------COMPONENTDATA------------------------")
                 //Set default order
                 let order = 'asc';
 
@@ -224,7 +225,9 @@ app.controller('TestingChartController',
                     size: numberLogs
                 };
 
+
                 //Perform the server request in order to retrieve the data
+                console.log(ComponentService.getValueLogs(sensor.id, 'sensor', pageDetails, unit))
                 return ComponentService.getValueLogs(sensor.id, 'sensor', pageDetails, unit);
             }
 
