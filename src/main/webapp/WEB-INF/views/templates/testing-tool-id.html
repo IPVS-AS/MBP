@@ -1333,11 +1333,9 @@
                                             </a>
                                             <div id="triggerValues-{{rule.id}}" class="collapse">
                                                 <div ng-repeat="(ruleName, valueList) in testReportAnzeige.triggerValues | filter: rule.name">
-                                                    {{valueList}}
+                                                    <code>{{valueList.join(", ")}}</code>
                                                 </div>
                                             </div>
-
-
                                         </td>
                                     </tr>
                                     </tbody>
