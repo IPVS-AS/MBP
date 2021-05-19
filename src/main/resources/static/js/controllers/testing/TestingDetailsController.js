@@ -138,19 +138,6 @@ app.controller('TestingDetailsController',
                 });
             }
 
-            /**
-             * [Private]
-             *
-             * If no values have been generated for this test, the test cannot be repeated.
-             * The corresponding button becomes Disabled.
-             */
-            function disableReuse() {
-                if (testingDetails.simulationList === null) {
-                    document.getElementById("ReuseSwitch").disabled = true;
-                } else {
-                    document.getElementById("ReuseSwitch").removeAttribute('disabled');
-                }
-            }
 
             /**
              * [Private]
