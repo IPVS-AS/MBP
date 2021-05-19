@@ -1,7 +1,6 @@
 package de.ipvs.as.mbp.service;
 
 import de.ipvs.as.mbp.domain.user.User;
-import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
 import de.ipvs.as.mbp.repository.UserRepository;
@@ -184,11 +183,9 @@ public class UserService {
 
     /**
      * Checks whether the currently logged in user has admin privileges.
-     *
-     * @throws EntityNotFoundException
      */
-    public void requireAdmin() throws EntityNotFoundException, MissingAdminPrivilegesException {
-        User user = userRepository.findByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(() -> new EntityNotFoundException("User", SecurityUtils.getCurrentUserUsername()));
+    public void requireAdmin() throws MissingAdminPrivilegesException {
+        User user = userRepository.findByUsername(SecurityUtils.getCurrentUserUsername()).orElseThrow(MissingAdminPrivilegesException::new);
         if (!user.isAdmin()) {
             throw new MissingAdminPrivilegesException();
         }
