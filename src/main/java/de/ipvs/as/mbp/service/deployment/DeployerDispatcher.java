@@ -34,12 +34,7 @@ public class DeployerDispatcher {
      */
     public IDeployer getDeployer() {
         //Retrieve settings from service
-        Settings settings;
-        try {
-            settings = settingsService.getSettings();
-        } catch (IOException e) {
-            throw new DeploymentException("Cannot determine suitable deployer, because settings are unavailable.");
-        }
+        Settings settings = settingsService.getSettings();
 
         //Check for demonstration mode
         if (settings.isDemoMode()) {
