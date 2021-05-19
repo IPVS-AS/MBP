@@ -1219,8 +1219,18 @@
                             </div>
                         </div>
 
+                        <div class="card deployment-card" ng-if="realSensorList.length > 0">
+                            <div class="header">
+                                <i class="material-icons" style="position: absolute">show_chart</i>
+                                <h2 style="margin-left: 35px;">
+                                    Generated Sensor values during the test
+                                </h2>
+                            </div>
+                            <div class="body">
 
-                        <div id="reportChart"></div>
+                                <div id="reportChart"></div>
+                            </div>
+                        </div>
 
                         <!-- rule information group -->
                         <div class="card deployment-card">

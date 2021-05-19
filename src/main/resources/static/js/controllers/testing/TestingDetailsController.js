@@ -108,9 +108,7 @@ app.controller('TestingDetailsController',
             function getSimulationValuesTestReport(reportId) {
                 //Execute request
                 return HttpService.getRequest(URL_SIMULATION_VALUES + reportId).then(function (response) {
-                    console.log("------------------------------------------------------------------------------------CONVERTSIMVAL")
-                    console.log(convertSimulationValues(response));
-                    return convertSimulationValues(response);
+                    convertSimulationValues(response);
                 });
             }
 
@@ -119,12 +117,11 @@ app.controller('TestingDetailsController',
 
                 angular.forEach(response, function (timeValue, sensorName) {
                     simulationValues.push({
-                        name: 'sensorName',
-                        data: [timeValue]
+                        name: sensorName,
+                        data: timeValue
                     });
                 });
-                console.log(simulationValues)
-                return simulationValues;
+                getReportChart(simulationValues);
             }
 
             /**
@@ -203,7 +200,7 @@ app.controller('TestingDetailsController',
             $scope.openReport = function (report) {
                 testReport = report.report;
                 $scope.testReportAnzeige = testReport;
-                getReportChart(testReport.id);
+                getSimulationValuesTestReport(testReport.id);
                 convertConfig(testReport);
                 convertRulesTriggered(testReport.amountRulesTriggered);
                 getRealSensorList();
@@ -290,54 +287,39 @@ app.controller('TestingDetailsController',
              * Creates a server request to delete a certain Test Report for the specific Test
              */
             function deleteTestReport(reportId) {
-                console.log(reportId)
                 TestService.deleteTestReport(reportId, COMPONENT_ID).then(function (response) {
                     $scope.pdfTable = response;
                 });
             }
 
-            function getReportChart(reportId) {
-                console.log(reportId)
-                console.log("----------------ROPORT CHART----------------------------------------------")
-                const chart = Highcharts.chart('reportChart', {
-                    chart: {renderTo: 'graph'},
-                    title: {
-                        text: 'Generated values during the Test',
-                        x: -20 //center
+            function getReportChart(dataSeries) {
+                Highcharts.chart('reportChart', {
+                        chart: {
+                            type: 'line',
+                            zoomType: 'xy'
+                        }, title: {
+                        text: ''
                     },
-                    xAxis: {
-                        type: 'datetime'
-                    },
-                    yAxis: {
-                        plotLines: [{
-                            value: 0,
-                            width: 1,
-                            color: '#808080'
-                        }]
-                    },
-                    tooltip: {
-                        valueDecimals: 2,
-                        valuePrefix: '',
-                    },
-                    legend: {
-                        layout: 'vertical',
-                        align: 'right',
-                        verticalAlign: 'middle',
-                        borderWidth: 0,
-                        showInLegend: true
-                    },
-                    series: [{
-                        name: 'Installation',
-                        data: [[1621321403, 15], [ 1621321418, 27.57], [[ 1621321433, 30.57]]]
-                    }, {
-                        name: 'Manufacturing',
-                        data: [[1621321405, 25], [ 1621321420, 87.57], [[ 1621321455, 38.57]]]
-                    }, {
-                        name: 'Sales & Distribution',
-                        data: [[1621321415, 4], [ 1621321421, 8.57], [[ 1621321444, 38.57]]]
-                    }]
-                })
-                console.log(chart)
+                        xAxis: {
+                            type: 'datetime'
+                        },
+
+                        tooltip: {
+                            valueDecimals: 2,
+                            valuePrefix: '',
+                        },
+                        legend: {
+                            layout: 'horizontal',
+                            align: 'center',
+                            verticalAlign: 'bottom',
+                            x: 0,
+                            y: 0,
+                            showInLegend: true
+                        },
+                        series:dataSeries
+                    }
+                )
+
             }
 
 
