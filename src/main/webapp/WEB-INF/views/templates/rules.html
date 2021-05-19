@@ -147,9 +147,11 @@
                             <div class="form-group" ng-class="{'has-error' : addRuleCtrl.item.errors.trigger }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addRuleCtrl.item.errors.trigger }">
-                                    <select class="form-control show-tick" ng-model="addRuleCtrl.item.trigger"
+                                    <select class="form-control selectpicker show-tick" title="Condition *"
+                                            data-header="Condition *"
+                                            ng-model="addRuleCtrl.item.trigger"
                                             ng-options="t.id as (t.name) for t in ctrl.ruleTriggerList">
-                                        <option disabled selected value>Select condition *</option>
+                                        <option value="" selected></option>
                                     </select>
                                 </div>
                                 <span class="help-block"

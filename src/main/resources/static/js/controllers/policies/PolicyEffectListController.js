@@ -10,6 +10,19 @@ app.controller('PolicyEffectListController',
             var vm = this;
 
             /**
+             * Initializing function, sets up basic things.
+             */
+            (function initController() {
+                // Refresh policy effect action type select picker when the modal is opened
+                $('.modal').on('shown.bs.modal', function () {
+                    $('.selectpicker').selectpicker({
+                        showTick: true,
+                        refresh: true
+                    });
+                });
+            })();
+
+            /**
              * [Public]
              * Shows an alert to confirm the delete action.
              *

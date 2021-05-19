@@ -38,7 +38,27 @@ app.controller('RuleActionListController',
                     let colorIndex = i % ACTION_TYPES_COLORS.length;
                     ruleActionTypesList[i].color = ACTION_TYPES_COLORS[colorIndex];
                 }
+
+                // Refresh rule action select picker when the modal is opened
+                $('.modal').on('shown.bs.modal', function () {
+                    refreshSelectPicker()
+                });
+                // Refresh select pickers when action type is changed
+                $('.selectpicker').on('changed.bs.select', function () {
+                    refreshSelectPicker()
+                });
+
             })();
+
+            /**
+             * Refresh select pickers
+             */
+            function refreshSelectPicker() {
+                $('.selectpicker').selectpicker({
+                    showTick: true,
+                    refresh: true
+                });
+            }
 
             /**
              * [Public]

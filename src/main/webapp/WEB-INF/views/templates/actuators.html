@@ -152,12 +152,11 @@
                                  ng-class="{'has-error' : addActuatorCtrl.item.errors.componentType }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addActuatorCtrl.item.errors.componentType }">
-                                    <select class="form-control show-tick" id="actuator-form-select-component-type"
-                                            ng-model="addActuatorCtrl.item.componentType">
-                                        <option value="">Select actuator type *</option>
-                                        <option ng-repeat="type in ctrl.actuatorTypes" value="{{type.name}}">
-                                            {{type.name}}
-                                        </option>
+                                    <select class="form-control selectpicker show-tick" title="Actuator Type *"
+                                            data-header="Actuator Type *"
+                                            ng-model="addActuatorCtrl.item.componentType"
+                                            ng-options="t.name as t.name for t in ctrl.actuatorTypes">
+                                        <option value="" selected></option>
                                     </select>
                                 </div>
                                 <span class="help-block"
@@ -167,10 +166,11 @@
                             <div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.operator }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addActuatorCtrl.item.errors.operator }">
-                                    <select class="form-control show-tick" id="actuator-form-select-operator"
+                                    <select class="form-control selectpicker show-tick" title="Control Operator *"
+                                            data-header="Control Operator *"
                                             ng-model="addActuatorCtrl.item.operatorId"
                                             ng-options="t.id as (t.name) for t in ctrl.operatorList |  filter:hideSimulators()">
-                                        <option value="">Select control operator *
+                                        <option value="" selected></option>>
                                     </select>
                                 </div>
                                 <span class="help-block"
@@ -180,11 +180,11 @@
                             <div class="form-group" ng-class="{'has-error' : addActuatorCtrl.item.errors.device }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addActuatorCtrl.item.errors.device }">
-                                    <select class="form-control show-tick" id="actuator-form-select-device"
+                                    <select class="form-control selectpicker show-tick" title="Device *"
+                                            data-header="Device *"
                                             ng-model="addActuatorCtrl.item.deviceId"
                                             ng-options="d.id as (d.name) for d in ctrl.deviceList | filter:hideSimulators() ">
-                                        <option value="">Select device *
-                                        <option/>
+                                        <option value="" selected></option>
                                     </select>
                                 </div>
                                 <span class="help-block"
@@ -199,7 +199,6 @@
                                             data-header="Access Control Policies"
                                             ng-model="addActuatorCtrl.item.accessControlPolicyIds"
                                             ng-options="p.id as (p.name) for p in ctrl.accessControlPolicyList">
-                                        <option value="">Select access control policies
                                     </select>
                                 </div>
                                 <span class="help-block"
