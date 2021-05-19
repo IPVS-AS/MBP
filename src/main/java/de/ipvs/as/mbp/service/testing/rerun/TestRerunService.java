@@ -8,6 +8,7 @@ import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
+import de.ipvs.as.mbp.domain.testing.TestReport;
 import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.service.cep.trigger.CEPTriggerService;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
@@ -45,6 +46,8 @@ public class TestRerunService {
     @Autowired
     private RuleRepository ruleRepository;
 
+    @Autowired
+    private TestReportRepository testReportRepository;
 
     @Autowired
     private TestRerunOperatorService rerunOperatorService;
@@ -89,7 +92,7 @@ public class TestRerunService {
      * @param useNewData information if a test should be repeated
      * @return the updated configuration list
      */
-    public List<List<ParameterInstance>> editUseNewData(String testId, boolean useNewData) {
+   /* public List<List<ParameterInstance>> editUseNewData(String testId, boolean useNewData) {
         TestDetails testDetails = testDetailsRepository.findById(testId).get();
         List<List<ParameterInstance>> configList = testDetails.getConfig();
 
@@ -119,7 +122,7 @@ public class TestRerunService {
         // save the changes in the database
         testDetailsRepository.save(testDetails);
         return configList;
-    }
+    }*/
 
 
     /**
@@ -127,7 +130,7 @@ public class TestRerunService {
      *
      * @param test to be repeated
      */
-    public void editRerunComponents(TestDetails test) {
+    /*public void editRerunComponents(TestDetails test) {
         if (!test.isUseNewData()) {
             // add components needed for rerun the test
             addRerunComponents(test);
@@ -136,21 +139,25 @@ public class TestRerunService {
             deleteRerunComponents(test);
         }
     }
+*/
 
     /**
      * Adds operators, sensors and rules for repeating the test.
      *
-     * @param test to be repeated
+     * @param testReportId to be repeated
      */
-    public void addRerunComponents(TestDetails test) {
-        // add rerun operator if nt existing
+    public void addRerunComponents(String testReportId, TestDetails test) {
+        TestReport testReport = testReportRepository.findById(testReportId).get();
+
+        // add rerun operator if not existing
         addRerunOperators();
 
+
         // add rerun sensor for every sensor with a configuration in the test
-        for (List<ParameterInstance> config : test.getConfig()) {
+        for (List<ParameterInstance> config : testReport.getConfig()) {
             for (ParameterInstance parameterInstance : config) {
                 if (parameterInstance.getName().equals(CONFIG_SENSOR_NAME_KEY)) {
-                    addRerunSensors(parameterInstance.getValue().toString(), test);
+                    addRerunSensors(parameterInstance.getValue().toString(), testReport);
 
                 }
             }
@@ -194,7 +201,7 @@ public class TestRerunService {
      *
      * @param realSensorName name of the real sensor
      */
-    public void addRerunSensors(String realSensorName, TestDetails testDetails) {
+    public void addRerunSensors(String realSensorName, TestReport testReport) {
         Sensor newSensor = new Sensor();
         newSensor.setOwner(null);
 
@@ -217,9 +224,9 @@ public class TestRerunService {
                     triggerService.registerComponentEventType(newSensor);
                 }
             }
-            if (!testDetails.getSensor().contains(sensorRepository.findByName(newSensorName))) {
+            if (!testReport.getSensor().contains(sensorRepository.findByName(newSensorName))) {
                 // add sensor to the test sensor list
-                addSensor(newSensorName, testDetails);
+                addSensor(newSensorName, testReport);
             }
 
         } catch (Exception e) {
@@ -232,13 +239,13 @@ public class TestRerunService {
      * Adds and saves a sensor to the sensor list of the test
      *
      * @param sensorName to be saved/added
-     * @param test       in which the sensor should be added to
+     * @param testReport in which the sensor should be added to
      */
-    public void addSensor(String sensorName, TestDetails test) {
-        List<Sensor> sensors = test.getSensor();
+    public void addSensor(String sensorName, TestReport testReport) {
+        List<Sensor> sensors = testReport.getSensor();
         sensors.add(sensorRepository.findByName(sensorName).get());
-        test.setSensor(sensors);
-        testDetailsRepository.save(test);
+        testReport.setSensor(sensors);
+        testReportRepository.save(testReport);
     }
 
 

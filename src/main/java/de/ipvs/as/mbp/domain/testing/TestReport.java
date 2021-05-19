@@ -67,6 +67,8 @@ public class TestReport extends UserEntity {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Date endTestTime = null;
 
+    private Boolean useNewData;
+
     /**
      * Returns, if the selected rules of the test should be triggered or not
      *
@@ -369,6 +371,15 @@ public class TestReport extends UserEntity {
 
     public void setAmountRulesTriggered(Map<String, Integer> amountRulesTriggered) {
         this.amountRulesTriggered = amountRulesTriggered;
+    }
+
+
+    public Boolean getUseNewData() {
+        return useNewData;
+    }
+
+    public void setUseNewData(Boolean useNewData) {
+        this.useNewData = useNewData;
     }
 }
 

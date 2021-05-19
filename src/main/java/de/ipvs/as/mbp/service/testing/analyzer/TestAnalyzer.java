@@ -203,7 +203,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
         List<Rule> ruleList = test.getRules();
 
         // add all  names and triggerIDs of the rules of the application  tested
-        if (test.isUseNewData()) {
+        if (testReport.getUseNewData()) {
             for (Rule rule : ruleList) {
                 ruleNames.add(rule.getName());
             }

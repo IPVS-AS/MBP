@@ -10,6 +10,7 @@ import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.domain.testing.TestDetailsDTO;
 import de.ipvs.as.mbp.domain.testing.TestReport;
+import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.RuleRepository;
@@ -35,6 +36,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
@@ -120,12 +122,16 @@ public class RestTestingController {
         return ResponseEntity.ok(userEntityService.entityToEntityModel(testDetails));
     }
 
+
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
     @ApiOperation(value = "Retrieves an existing test entity identified by its id if it's available.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"),
             @ApiResponse(code = 409, message = "Test already exists!")})
     public ResponseEntity<EntityModel<TestDetails>> create(
-            @RequestBody TestDetailsDTO requestDto) throws EntityNotFoundException {
+            @RequestBody TestDetailsDTO requestDto
+    ) throws EntityNotFoundException {
+
+
         List<Rule> rules = new ArrayList<>();
         List<Sensor> sensors = new ArrayList<>();
 
@@ -148,7 +154,6 @@ public class RestTestingController {
         testDetails.setTriggerRules(requestDto.getTriggerRules());
         testDetails.setType(requestDto.getType());
         testDetails.setRuleNames(requestDto.getRuleNames());
-        testDetails.setUseNewData(requestDto.isUseNewData());
         testDetails.setConfig(requestDto.getConfig());
         testDetails.setRules(rules);
         testDetails.setSensor(sensors);
@@ -178,8 +183,6 @@ public class RestTestingController {
     }
 
 
-
-
     /**
      * Starts the selected Test and creates the TestReport with the corresponding line chart.
      *
@@ -187,12 +190,24 @@ public class RestTestingController {
      * @return list of the simulated values
      */
     @PostMapping(value = "/test/{testId}")
-    public ResponseEntity<Boolean> executeTest(@PathVariable(value = "testId") String testId) {
+    @ApiOperation(value = "Deletes an existing test entity identified by its id if it's available for the requesting entity.")
+    @ApiResponses({@ApiResponse(code = 204, message = "Success!"),
+            @ApiResponse(code = 401, message = "Not authorized to delete the test!"),
+            @ApiResponse(code = 404, message = "Test or requesting user not found!")})
+    public ResponseEntity<Boolean> executeTest(@PathVariable(value = "testId") String testId,
+                                               @RequestParam(value = "testReportId", required = false) String testReportId,
+                                               @RequestBody boolean useNewData
+    ) {
         try {
             if (testDetailsRepository.findById(testId).isPresent()) {
                 TestDetails testDetails = testDetailsRepository.findById(testId).get();
-                // Start the test and get Map of sensor values
-                testExecutor.executeTest(testDetails);
+                if (useNewData) {
+                    // Start the test and get Map of sensor values
+                    testExecutor.executeTest(testDetails);
+                } else {
+                    testExecutor.rerunTest(testDetails, testReportId);
+                }
+
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
@@ -224,7 +239,7 @@ public class RestTestingController {
      * @param testId ID of the specific test
      * @return ResponseEntity (if successful or not)
      */
-    @PostMapping(value = "/rerun-components/{testId}")
+  /*  @PostMapping(value = "/rerun-components/{testId}")
     public ResponseEntity editRerunComponents(@PathVariable(value = "testId") String testId) {
         ResponseEntity responseEntity;
         try {
@@ -242,7 +257,7 @@ public class RestTestingController {
 
         return responseEntity;
     }
-
+*/
 
     /**
      * Returns a HashMap with date and path to of all Test Reports regarding to a specific test.
@@ -317,12 +332,12 @@ public class RestTestingController {
      * @param useNewData boolean, whether a new data set should be used or not
      * @return edited configuration
      */
-    @PostMapping(value = "/editConfig/{testId}")
+   /* @PostMapping(value = "/editConfig/{testId}")
     public ResponseEntity<List<List<ParameterInstance>>> editConfig(@PathVariable(value = "testId") String testId,
                                                                     @RequestBody boolean useNewData) {
         List<List<ParameterInstance>> configList = testRerunService.editUseNewData(testId, useNewData);
         return new ResponseEntity<>(configList, HttpStatus.OK);
-    }
+    }*/
 
 
     /**

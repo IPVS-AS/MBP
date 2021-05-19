@@ -14,6 +14,7 @@ import de.ipvs.as.mbp.service.deployment.IDeployer;
 import de.ipvs.as.mbp.service.rules.RuleEngine;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
+import de.ipvs.as.mbp.service.testing.rerun.TestRerunService;
 import de.ipvs.as.mbp.web.rest.RestDeploymentController;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,9 @@ public class TestExecutor {
 
     @Autowired
     private DeployerDispatcher deployerDispatcher;
+
+    @Autowired
+    private TestRerunService testRerunService;
 
 
     // List of all active Tests
@@ -114,12 +118,12 @@ public class TestExecutor {
      *
      * @param test to be executed
      */
-    public void activateTest(TestDetails test) {
+    public void activateTest(TestDetails test, Boolean useNewData) {
         Map<String, TestDetails> activeTests = getActiveTests();
         Map<String, LinkedHashMap<Long, Double>> list =
                 testAnalyzer.getTestValues();
 
-        if (test.isUseNewData()) {
+        if (useNewData) {
             for (Sensor sensor : test.getSensor()) {
                 if (!sensor.getName().contains(RERUN_IDENTIFIER)) {
                     activeTests.put(sensor.getId(), test);
@@ -141,16 +145,78 @@ public class TestExecutor {
         testAnalyzer.setTestValues(list);
     }
 
+    public void rerunTest(TestDetails test, String testReportId) {
+        TestReport oldReport = testReportRepository.findById(testReportId).get();
+        TestReport testReport = new TestReport();
+        try {
+            // Set the exact start time of the test
+            testReport.setName(test.getName());
+            testReport.setStartTestTimeNow();
+            testReport.setSensor(test.getSensor());
+
+            // Dinge die sich ändern können
+            testReport.setConfig(oldReport.getConfig()); // alter Configuration wird übernommen
+            testReport.setRules(oldReport.getRules());
+            testReport.setRuleNames(oldReport.getRuleNames());
+            testReport.setTriggerRules(oldReport.isTriggerRules());
+
+            // get  information about the status of the rules before the execution of the test
+            List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(test);
+            testReport.setRuleInformationBefore(rulesBefore);
+            String reportId = testReportRepository.save(testReport).getId();
+
+
+            testRerunService.addRerunComponents(reportId, test);
+            // add test and sensors to the activation list
+            activateTest(test, false);
+
+            // Enable rules that belong to the test
+            enableRules(test);
+
+            // start Actuator
+            startActuator();
+
+
+            sensorRerunService(testReport);
+
+        } catch (Exception e) {
+
+        }
+
+    }
+
+    private void sensorRerunService(TestReport testReport) {
+        for (Sensor sensor : testReport.getSensor()) {
+            List<ParameterInstance> parametersWrapper = new ArrayList<>();
+            if (!SIMULATOR_LIST.contains(sensor.getName()) &&
+                    sensor.getName().contains(RERUN_IDENTIFIER)) {
+                deploymentWrapper.stopComponent(sensor);
+                for (Map.Entry<String, LinkedHashMap<Long, Double>> sensorValues : testReport.getSimulationList().entrySet()) {
+                    if (sensor.getName().contains(sensorValues.getKey())) {
+                        // Get parameter values for starting the sensors
+                        Map<String, ParameterInstance> parameterValues =
+                                createRerunParameters(sensorValues);
+                        parametersWrapper.add(parameterValues.get("interval"));
+                        parametersWrapper.add(parameterValues.get("value"));
+                    }
+                }
+                // Start rerun sensor
+                startSensors(sensor, parametersWrapper);
+            }
+        }
+
+    }
+
 
     /**
      * Starts the test and saves all values form the sensor.
      *
      * @param test test to be executed
      */
-    public void executeTest(TestDetails test)  {
+    public void executeTest(TestDetails test) {
 
         TestReport testReport = new TestReport();
-        try{
+        try {
             // Set the exact start time of the test
             testReport.setName(test.getName());
             testReport.setStartTestTimeNow();
@@ -159,13 +225,14 @@ public class TestExecutor {
             testReport.setRuleNames(test.getRuleNames());
             testReport.setSensor(test.getSensor());
             testReport.setTriggerRules(test.isTriggerRules());
+            testReport.setUseNewData(true);
             // get  information about the status of the rules before the execution of the test
-            List<Rule>  rulesBefore = testAnalyzer.getCorrespondingRules(test);
+            List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(test);
             testReport.setRuleInformationBefore(rulesBefore);
             String reportId = testReportRepository.save(testReport).getId();
 
             // add test and sensors to the activation list
-            activateTest(test);
+            activateTest(test, true);
 
             // start all components relevant for the test
             startTest(testDetailsRepository.findById(test.getId()).get());
@@ -177,25 +244,22 @@ public class TestExecutor {
             saveAmountRulesTriggered(test, reportId, rulesBefore);
             saveValues(test, reportId, valueList);
             analyzeTest(test, reportId, rulesBefore);
-        } catch (Exception e){
+        } catch (Exception e) {
             testReport.setEndTestTimeNow();
             testReport.setSuccessful("ERROR DURING TEST");
-            List<Rule>  rulesAfter = testAnalyzer.getCorrespondingRules(test);
+            List<Rule> rulesAfter = testAnalyzer.getCorrespondingRules(test);
             saveAmountRulesTriggered(test, testReport.getId(), rulesAfter);
 
         }
-
-
-
     }
 
     private void saveAmountRulesTriggered(TestDetails test, String reportId, List<Rule> rulesBefore) {
         TestReport report = testReportRepository.findById(reportId).get();
-        List<Rule>  rulesAfter = testAnalyzer.getCorrespondingRules(test);
+        List<Rule> rulesAfter = testAnalyzer.getCorrespondingRules(test);
         Map<String, Integer> amountTriggered = new HashMap<>();
-        for (Rule ruleBefore : rulesBefore){
-            for(Rule ruleAfter: rulesAfter){
-                if(ruleAfter.getName().equals(ruleBefore.getName())){
+        for (Rule ruleBefore : rulesBefore) {
+            for (Rule ruleAfter : rulesAfter) {
+                if (ruleAfter.getName().equals(ruleBefore.getName())) {
                     amountTriggered.put(ruleAfter.getName(), ruleBefore.getExecutions() - ruleAfter.getExecutions());
                 }
             }
@@ -210,12 +274,12 @@ public class TestExecutor {
         for (int i = 0; i < test.getConfig().size(); i++) {
             List<ParameterInstance> ojh = test.getConfig().get(i);
             List<ParameterInstance> simul = ojh.stream().filter(item -> item.getValue().toString().contains("TESTING_")).collect(Collectors.toList());
-            if(ojh.size() > 0){
+            if (ojh.size() > 0) {
                 if (simul.size() > 0) {
                     List<ParameterInstance> newConfig;
                     newConfig = convertConfigInstances(ojh);
                     reportConfig.add(newConfig);
-                } else{
+                } else {
                     reportConfig.add(ojh);
                 }
             }
@@ -236,7 +300,7 @@ public class TestExecutor {
                 type = getSensorType(instance.getValue());
                 convertedConfig.add(type);
             } else if (instance.getName().equals("event")) {
-                convertedConfig.add(getEventType(type.getValue().toString(),Integer.parseInt(instance.getValue().toString())));
+                convertedConfig.add(getEventType(type.getValue().toString(), Integer.parseInt(instance.getValue().toString())));
             } else if (instance.getName().equals("anomaly")) {
                 convertedConfig.add(getAnomalyType(Integer.parseInt(instance.getValue().toString())));
             }
@@ -247,19 +311,19 @@ public class TestExecutor {
 
     private ParameterInstance getEventType(String type, int event) {
         ParameterInstance eventType = new ParameterInstance();
-        String simType ="";
-        if(type.equals("Temperature")){
-            simType ="Temperature";
+        String simType = "";
+        if (type.equals("Temperature")) {
+            simType = "Temperature";
         } else {
-            simType ="Humidity";
+            simType = "Humidity";
         }
 
         eventType.setName("eventType");
         if (event == 1) {
-            eventType.setValue(simType +" rise");
+            eventType.setValue(simType + " rise");
         } else if (event == 2) {
-            eventType.setValue(simType +" drop");
-        } else if(event == 3){
+            eventType.setValue(simType + " drop");
+        } else if (event == 3) {
             eventType.setValue("-");
         }
         return eventType;
@@ -326,18 +390,17 @@ public class TestExecutor {
                 testDetailsRepository.findById(test.getId()).get();
 
         for (Sensor sensor : test.getSensor()) {
-            if (testDetails.isUseNewData()) {
-                if (valueList.get(sensor.getId()) != null) {
-                    LinkedHashMap<Long, Double> temp = valueList.get(sensor.getId());
-                    valueListTest.put(sensor.getName(), temp);
-                    // list.remove(sensor.getId());
-                    // save list of sensor values to database
-                    testReport.setSimulationList(valueListTest);
-                    testDetails.setSimulationList(valueListTest);
-                }
-
+            if (valueList.get(sensor.getId()) != null) {
+                LinkedHashMap<Long, Double> temp = valueList.get(sensor.getId());
+                valueListTest.put(sensor.getName(), temp);
+                // list.remove(sensor.getId());
+                // save list of sensor values to database
+                testReport.setSimulationList(valueListTest);
+                testDetails.setSimulationList(valueListTest);
             }
+
         }
+
         testReportRepository.save(testReport);
         testDetailsRepository.save(testDetails);
 
@@ -378,44 +441,20 @@ public class TestExecutor {
     private void sensorService(TestDetails test) {
 
         List<Sensor> testingSensors = test.getSensor();
-
-        if (!test.isUseNewData()) {
-            for (Sensor sensor : testingSensors) {
-                List<ParameterInstance> parametersWrapper = new ArrayList<>();
-
-
-                if (!SIMULATOR_LIST.contains(sensor.getName()) &&
-                        sensor.getName().contains(RERUN_IDENTIFIER)) {
-                    deploymentWrapper.stopComponent(sensor);
-                    for (Map.Entry<String, LinkedHashMap<Long, Double>> sensorValues : test
-                            .getSimulationList().entrySet()) {
-                        if (sensor.getName().contains(sensorValues.getKey())) {
-                            // Get parameter values for starting the sensors
-                            Map<String, ParameterInstance> parameterValues =
-                                    createRerunParameters(sensorValues);
-                            parametersWrapper.add(parameterValues.get("interval"));
-                            parametersWrapper.add(parameterValues.get("value"));
-                        }
-                    }
-                    // Start rerun sensor
-                    startSensors(sensor, parametersWrapper);
-                }
-            }
-        } else {
-            // start sensor of the test
-            for (Sensor sensor : testingSensors) {
-                String sensorName = sensor.getName();
-                for (List<ParameterInstance> configSensor : test.getConfig()) {
-                    for (ParameterInstance parameterInstance : configSensor) {
-                        if (parameterInstance.getName().equals(CONFIG_SENSOR_NAME_KEY) &&
-                                parameterInstance.getValue().equals(sensorName)) {
-                            // start the sensor with the right corresponding configuration
-                            startSensors(sensor, configSensor);
-                        }
+        // start sensor of the test
+        for (Sensor sensor : testingSensors) {
+            String sensorName = sensor.getName();
+            for (List<ParameterInstance> configSensor : test.getConfig()) {
+                for (ParameterInstance parameterInstance : configSensor) {
+                    if (parameterInstance.getName().equals(CONFIG_SENSOR_NAME_KEY) &&
+                            parameterInstance.getValue().equals(sensorName)) {
+                        // start the sensor with the right corresponding configuration
+                        startSensors(sensor, configSensor);
                     }
                 }
             }
         }
+
     }
 
 
@@ -436,7 +475,7 @@ public class TestExecutor {
             deployer.deployComponent(testSensor);
         }
 
-        if(deployer.isComponentRunning(testSensor)){
+        if (deployer.isComponentRunning(testSensor)) {
             deploymentWrapper.stopComponent(testSensor);
         }
         deploymentWrapper.startComponent(testSensor, parameterValues);
@@ -503,7 +542,7 @@ public class TestExecutor {
             //if false deploy actuator
             deployer.deployComponent(testingActuator);
         }
-        if(!deployer.isComponentRunning(testingActuator)){
+        if (!deployer.isComponentRunning(testingActuator)) {
             // start the Actuator
             deploymentWrapper.startComponent(testingActuator, new ArrayList<>());
         }

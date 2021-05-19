@@ -159,12 +159,13 @@ app.controller('TestingChartController',
              * Starts the current test (in case it has been stopped before) and shows a waiting screen during
              * the start progress.
              */
-            function startComponent() {
+            function startComponent(useNewData) {
+                console.log(useNewData)
                 //Show waiting screen
                 vm.startTest = 'STARTING_TEST';
 
                 //Perform request
-                TestService.startTest(COMPONENT_ID).then(function (response) {
+                TestService.startTest(COMPONENT_ID, useNewData).then(function (response) {
                     //Success
                     if(response === true){
                         getPDFList();
@@ -210,7 +211,6 @@ app.controller('TestingChartController',
              * @returns A promise that passes the logs as a parameter
              */
             function retrieveComponentData(numberLogs, descending, unit, sensor) {
-                console.log("--------------------------------------COMPONENTDATA------------------------")
                 //Set default order
                 let order = 'asc';
 
@@ -227,7 +227,6 @@ app.controller('TestingChartController',
 
 
                 //Perform the server request in order to retrieve the data
-                console.log(ComponentService.getValueLogs(sensor.id, 'sensor', pageDetails, unit))
                 return ComponentService.getValueLogs(sensor.id, 'sensor', pageDetails, unit);
             }
 

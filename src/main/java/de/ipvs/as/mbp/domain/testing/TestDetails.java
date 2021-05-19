@@ -50,8 +50,6 @@ public class TestDetails extends UserEntity {
 
     private boolean triggerRules;
 
-    private boolean useNewData;
-
     /**
      * Returns, if the selected rules of the test should be triggered or not
      *
@@ -197,26 +195,6 @@ public class TestDetails extends UserEntity {
     public void setConfig(List<List<ParameterInstance>> config) {
         this.config = config;
     }
-
-    /**
-     * Returns the information whether data from the last test run should be used again or not.
-     *
-     * @return useNewData boolean whether data from the last test run should be used again or not.
-     */
-    public boolean isUseNewData() {
-        return useNewData;
-    }
-
-    /**
-     * Sets the information whether data from the last test run should be used again or not.
-     *
-     * @param useNewData boolean whether data from the last test run should be used again or not.
-     */
-    public void setUseNewData(boolean useNewData) {
-        this.useNewData = useNewData;
-    }
-
-
     /**
      * Returns a list with the names of the rules of the application to be tested.
      *

@@ -42,8 +42,8 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * Performs a server request in order to start the current test (in case it has been stopped before).
          * @param testId The id of the test to be started
          */
-        function startTest(testId) {
-            return HttpService.postRequest(URL_TEST_START + testId);
+        function startTest(testId, useNewData) {
+            return HttpService.postRequest(URL_TEST_START + testId, useNewData);
 
         }
 
