@@ -140,7 +140,6 @@
 			<type>pom</type>
 		</dependency>
 
-
 		<!-- JFree Chart -->
 		<dependency>
 			<groupId>org.jfree</groupId>

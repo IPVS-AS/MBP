@@ -301,7 +301,7 @@ public class SSHDeployer implements IDeployer {
 
             // Sanity check
             if (brokerIP == null) {
-                throw new RuntimeException("Unable to resolve IP address of the broker.");
+                throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to resolve IP address of the broker.");
             }
 
             // Get topic name for the component

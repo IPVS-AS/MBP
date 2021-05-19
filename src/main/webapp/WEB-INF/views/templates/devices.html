@@ -158,13 +158,11 @@
                                  ng-class="{'has-error' : addDeviceCtrl.item.errors.componentType }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addDeviceCtrl.item.errors.componentType }">
-                                    <select class="form-control show-tick" id="device-form-select-component-type"
-                                            ng-model="addDeviceCtrl.item.componentType">
-                                        <option value="">Select device type *</option>
-                                        <option ng-repeat="deviceType in ctrl.deviceTypesList"
-                                                value="{{deviceType.name}}">
-                                            {{deviceType.name}}
-                                        </option>
+                                    <select class="form-control selectpicker show-tick" title="Device Type *"
+                                            data-header="Device Type *"
+                                            ng-model="addDeviceCtrl.item.componentType"
+                                            ng-options="t.name as t.name for t in ctrl.deviceTypesList">
+                                        <option value="" selected></option>
                                     </select>
                                 </div>
                                 <span class="help-block"
@@ -201,8 +199,7 @@
                                                ng-model="addDeviceCtrl.item.password"/>
                                     </div>
                                     <span class="input-group-addon" style="padding:0;">
-                                        <button type="button" class="list-filter-clear"
-                                                style="border-bottom: 1px solid #ddd; height:31px;"
+                                        <button type="button" class="list-filter-clear password-input-eye"
                                                 ng-click="ctrl.hidePassword = !ctrl.hidePassword">
                                             <i class="material-icons">{{ctrl.hidePassword ? "visibility" : "visibility_off"}}</i>
                                         </button>
@@ -215,9 +212,11 @@
                             <div class="form-group" ng-class="{'has-error' : addDeviceCtrl.item.errors.keypair }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addDeviceCtrl.item.errors.keypair }">
-                                    <select class="form-control show-tick" ng-model="addDeviceCtrl.item.keyPairId"
+                                    <select class="form-control selectpicker show-tick" title="SSH Key Pair"
+                                            data-header="SSH Key Pair"
+                                            ng-model="addDeviceCtrl.item.keyPairId"
                                             ng-options="t.id as (t.name) for t in ctrl.keyPairList">
-                                        <option value="">Select SSH key pair
+                                        <option value="" selected></option>
                                     </select>
                                 </div>
                                 <span class="help-block"
@@ -232,8 +231,6 @@
                                             data-header="Access Control Policies"
                                             ng-model="addDeviceCtrl.item.accessControlPolicyIds"
                                             ng-options="p.id as (p.name) for p in ctrl.accessControlPolicyList">
-                                        <option value="">Select access control policies
-                                        </option>
                                     </select>
                                 </div>
                                 <span class="help-block"

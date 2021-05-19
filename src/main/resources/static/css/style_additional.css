@@ -125,3 +125,12 @@ button.list-filter-clear {
     border: none;
     cursor: pointer;
 }
+
+.bootstrap-select>.dropdown-toggle {
+    padding-left: 0;
+}
+
+.password-input-eye {
+    border-bottom: 1px solid #ddd !important;
+    height:30px;
+}
