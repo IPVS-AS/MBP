@@ -146,7 +146,7 @@ public class TestEngine {
                 LinkedHashMap<Long, Double> valueList = entry.getValue();
                 for (Map.Entry<Long, Double> list : valueList.entrySet()) {
                     ArrayList timeValueTupel = new ArrayList();
-                    timeValueTupel.add(list.getKey());
+                    timeValueTupel.add(list.getKey() * 1000);
                     timeValueTupel.add(list.getValue());
                     tupelList.add(timeValueTupel);
                 }
