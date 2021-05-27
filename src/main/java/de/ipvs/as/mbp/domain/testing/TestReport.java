@@ -47,7 +47,7 @@ public class TestReport extends UserEntity {
 
     private long startTimeUnix;
 
-    private long EndTimeUnix;
+    private long endTimeUnix;
 
     private String successful;
 
@@ -183,7 +183,7 @@ public class TestReport extends UserEntity {
      * @return end time in unix format
      */
     public Integer getEndTimeUnix() {
-        return Math.toIntExact(EndTimeUnix);
+        return Math.toIntExact(endTimeUnix);
     }
 
     /**
@@ -192,7 +192,7 @@ public class TestReport extends UserEntity {
      * @param setEndTimeUnix end time in unix format
      */
     public void setEndTimeUnix(long setEndTimeUnix) {
-        this.EndTimeUnix = setEndTimeUnix;
+        this.endTimeUnix = setEndTimeUnix;
     }
 
     /**

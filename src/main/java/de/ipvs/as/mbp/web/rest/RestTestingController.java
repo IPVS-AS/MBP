@@ -10,6 +10,7 @@ import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.domain.testing.TestDetailsDTO;
 import de.ipvs.as.mbp.domain.testing.TestReport;
+import de.ipvs.as.mbp.domain.testing.TestRerunDTO;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
@@ -194,21 +195,41 @@ public class RestTestingController {
     @ApiResponses({@ApiResponse(code = 204, message = "Success!"),
             @ApiResponse(code = 401, message = "Not authorized to delete the test!"),
             @ApiResponse(code = 404, message = "Test or requesting user not found!")})
-    public ResponseEntity<Boolean> executeTest(@PathVariable(value = "testId") String testId,
-                                               @RequestParam(value = "testReportId", required = false) String testReportId,
-                                               @RequestBody boolean useNewData
+    public ResponseEntity<Boolean> executeTest(@PathVariable(value = "testId") String testId
+
     ) {
         try {
-            if (testDetailsRepository.findById(testId).isPresent()) {
-                TestDetails testDetails = testDetailsRepository.findById(testId).get();
-                if (useNewData) {
-                    // Start the test and get Map of sensor values
-                    testExecutor.executeTest(testDetails);
-                } else {
-                    testExecutor.rerunTest(testDetails, testReportId);
-                }
+            TestDetails testDetails = testDetailsRepository.findById(testId).get();
 
-            }
+            // Start the test and get Map of sensor values
+            testExecutor.executeTest(testDetails);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(true);
+
+    }
+
+
+    /**
+     * Starts the selected Test and creates the TestReport with the corresponding line chart.
+     *
+     * @param testId ID of the test to be executed
+     * @return list of the simulated values
+     */
+    @PostMapping(value = "/rerun-test/{testId}/{testReportId}")
+    @ApiOperation(value = "Deletes an existing test entity identified by its id if it's available for the requesting entity.")
+    @ApiResponses({@ApiResponse(code = 204, message = "Success!"),
+            @ApiResponse(code = 401, message = "Not authorized to delete the test!"),
+            @ApiResponse(code = 404, message = "Test or requesting user not found!")})
+    public ResponseEntity<Boolean> rerunTest(@PathVariable(value = "testId") String testId,
+                                             @PathVariable(value = "testReportId") String testReportId
+
+    ) {
+        try {
+            TestDetails testDetails = testDetailsRepository.findById(testId).get();
+
+            testExecutor.rerunTest(testDetails, testReportId);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
@@ -290,16 +311,6 @@ public class RestTestingController {
         return testAnalyzer.getCorrespondingRules(testDetailsRepository.findById(testId).get());
     }
 
-
-    /**
-     * Opens the selected Test-Report from the Test list
-     *
-     * @return HttpStatus
-     */
-    @GetMapping(value = "/downloadPDF/{path}")
-    public void openPDF(@PathVariable(value = "path") String path) throws IOException {
-        // return testEngine.downloadPDF(path);
-    }
 
     /**
      * Checks if pdf for the specific test exists.

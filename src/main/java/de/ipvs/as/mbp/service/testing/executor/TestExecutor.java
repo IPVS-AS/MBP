@@ -159,6 +159,7 @@ public class TestExecutor {
             testReport.setRules(oldReport.getRules());
             testReport.setRuleNames(oldReport.getRuleNames());
             testReport.setTriggerRules(oldReport.isTriggerRules());
+            testReport.setUseNewData(false);
 
             // get  information about the status of the rules before the execution of the test
             List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(test);
@@ -167,6 +168,7 @@ public class TestExecutor {
 
 
             testRerunService.addRerunComponents(reportId, test);
+            TestReport updatedReport = testReportRepository.findById(reportId).get();
             // add test and sensors to the activation list
             activateTest(test, false);
 
@@ -177,7 +179,15 @@ public class TestExecutor {
             startActuator();
 
 
-            sensorRerunService(testReport);
+            sensorRerunService(updatedReport, oldReport.getSimulationList());
+
+            // Get List of all simulated Values
+            Map<String, LinkedHashMap<Long, Double>> valueList =
+                    testAnalyzer.isFinished(reportId, test.getId());
+
+            saveAmountRulesTriggered(test, reportId, rulesBefore);
+            saveValues(test, reportId, valueList);
+            analyzeTest(test, reportId, rulesBefore);
 
         } catch (Exception e) {
 
@@ -185,13 +195,18 @@ public class TestExecutor {
 
     }
 
-    private void sensorRerunService(TestReport testReport) {
+    private void sensorRerunService(TestReport testReport, Map<String, LinkedHashMap<Long, Double>> simulationList ) {
+
+        IDeployer deployer = deployerDispatcher.getDeployer();
+
         for (Sensor sensor : testReport.getSensor()) {
             List<ParameterInstance> parametersWrapper = new ArrayList<>();
             if (!SIMULATOR_LIST.contains(sensor.getName()) &&
                     sensor.getName().contains(RERUN_IDENTIFIER)) {
-                deploymentWrapper.stopComponent(sensor);
-                for (Map.Entry<String, LinkedHashMap<Long, Double>> sensorValues : testReport.getSimulationList().entrySet()) {
+                if(deployer.isComponentRunning(sensor)){
+                    deployer.stopComponent(sensor);
+                }
+                for (Map.Entry<String, LinkedHashMap<Long, Double>> sensorValues : simulationList.entrySet()) {
                     if (sensor.getName().contains(sensorValues.getKey())) {
                         // Get parameter values for starting the sensors
                         Map<String, ParameterInstance> parameterValues =

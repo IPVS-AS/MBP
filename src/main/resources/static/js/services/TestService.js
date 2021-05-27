@@ -19,6 +19,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
         const URL_RULE_LIST_TEST = ENDPOINT_URI + "/test-details/ruleList/";
         const URL_DOWNLOAD_REPORT = 'api/test-details/downloadPDF/';
         const URL_UPDATE_TEST = ENDPOINT_URI + '/test-details/updateTest/';
+        const URL_RERUN_TEST = ENDPOINT_URI + '/test-details/rerun-test/'
 
         const vm = this;
 
@@ -44,8 +45,13 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          */
         function startTest(testId, useNewData) {
             return HttpService.postRequest(URL_TEST_START + testId, useNewData);
-
         }
+
+
+        function rerunTest(testId, reportId){
+            return HttpService.postRequest(URL_RERUN_TEST + testId +"/" + reportId);
+        }
+
 
         /**
          * [Public]
@@ -105,9 +111,8 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
          * Performs a server request to delete a specific test report of a test.
          */
         function deleteTestReport(reportId, testId) {
-            return HttpService.postRequest(URL_REPORT_DELETE + reportId).then(function (response)
-            {
-                if(response){
+            return HttpService.postRequest(URL_REPORT_DELETE + reportId).then(function (response) {
+                if (response) {
                     NotificationService.notify('Test Report successfully deleted.', 'success');
                 } else {
                     NotificationService.notify('Error during deletion.', 'error');
@@ -895,7 +900,8 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             downloadReport: downloadReport,
             getRuleListTest: getRuleListTest,
             updateTest: updateTest,
-            deleteTestReport: deleteTestReport
+            deleteTestReport: deleteTestReport,
+            rerunTest: rerunTest
 
         }
     }

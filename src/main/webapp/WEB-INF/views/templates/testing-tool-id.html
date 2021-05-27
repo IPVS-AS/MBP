@@ -72,7 +72,7 @@
                                 </button>
                             </div>
                             <div ng-switch-default>
-                                <button class="btn bg-cyan waves-effect" ng-click="testingChartCtrl.startComponent(true)"
+                                <button class="btn bg-cyan waves-effect" ng-click="testingChartCtrl.startComponent()"
                                         ng-disabled="testingChartCtrl.startTest=='STARTING_TEST'" type="button">
                                     <i class="material-icons">play_arrow</i>
                                     <span>Start Test</span>
@@ -130,11 +130,18 @@
                                     </button>
                                 </form>
                             </td>
-                            <td>
-                                <button class="btn bg-cyan waves-effect" ng-click=""
-                                        type="button">
-                                    <i class="material-icons">repeat</i>
-                                </button>
+                            <td class="align-center">
+                                <div ng-if="testReport.report.useNewData == false">
+
+                                        <i class="material-icons">repeat</i>
+                                </div>
+                                <div ng-if="testReport.report.useNewData == true">
+                                    <button class="btn bg-cyan waves-effect"
+                                            ng-click="testingChartCtrl.rerunTest(testReport.report.id)"
+                                            type="button">
+                                        <i class="material-icons">repeat</i>
+                                    </button>
+                                </div>
                             </td>
                             <td>
                                 <form ng-submit="ctrl.deleteTestReport(testReport.report.id)" style="margin-top: 3px;">
@@ -1064,6 +1071,12 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </h3>
+                <div style="text-align: center;" ng-if="testReportAnzeige.useNewData == false">
+                    <i class="material-icons" style="color:#8F8F8F" ;>repeat</i>
+                    <h6 style="color:#8F8F8F" ;>
+                        This was a Test Rerun
+                    </h6>
+                </div>
             </div>
             <form id="tableTest" ng-submit="addTestCtrl.addItem()">
                 <fieldset id="testing-report">
@@ -1093,8 +1106,8 @@
                                     </thead>
                                     <tbody>
                                     <tr>
-                                        <td>{{testReportAnzeige.startTestTime}}</td>
-                                        <td>{{testReportAnzeige.endTestTime}}</td>
+                                        <td>{{testReportAnzeige.startTimeUnix * 1000 | date:'dd.MM.yyyy HH:mm:ss'}}</td>
+                                        <td>{{testReportAnzeige.endTimeUnix * 1000 | date:'dd.MM.yyyy HH:mm:ss'}}</td>
                                         <td>
                                             <div ng-switch="testReportAnzeige.successful">
                                                 <div ng-switch-when="Successful">

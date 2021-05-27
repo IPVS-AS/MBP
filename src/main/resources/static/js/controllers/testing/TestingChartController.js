@@ -152,6 +152,32 @@ app.controller('TestingChartController',
                 });
             }
 
+            /**
+             * [Public]
+             *
+             * @param reportId
+             */
+            function rerunTest(reportId){
+                console.log('-------------------- READY TO RERUN'+ reportId);
+                //Show waiting screen
+                vm.startTest = 'STARTING_TEST';
+
+                //Perform request
+                TestService.rerunTest(COMPONENT_ID, reportId).then(function (response) {
+                    //Success
+                    if (response === true) {
+                        getPDFList();
+                        vm.startTest = "END_TEST";
+                        NotificationService.notify('Test completed successfully.', 'success');
+                    }
+                }, function (response) {
+                    //Handle failure
+                    vm.startTest = "ERROR_TEST";
+                    NotificationService.notify('Error during the test.', 'error');
+                });
+
+
+            }
 
             /**
              * [Public]
@@ -159,13 +185,12 @@ app.controller('TestingChartController',
              * Starts the current test (in case it has been stopped before) and shows a waiting screen during
              * the start progress.
              */
-            function startComponent(useNewData) {
-                console.log(useNewData)
+            function startComponent() {
                 //Show waiting screen
                 vm.startTest = 'STARTING_TEST';
 
                 //Perform request
-                TestService.startTest(COMPONENT_ID, useNewData).then(function (response) {
+                TestService.startTest(COMPONENT_ID).then(function (response) {
                     //Success
                     if(response === true){
                         getPDFList();
@@ -408,5 +433,6 @@ app.controller('TestingChartController',
             angular.extend(vm, {
                 startComponent: startComponent,
                 stopComponent: stopComponent,
+                rerunTest, rerunTest
             });
         }]);

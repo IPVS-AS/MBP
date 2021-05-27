@@ -139,7 +139,6 @@ app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'Notifica
         function postRequest(url, payload, dataType) {
             //Sanitize payload
             payload = payload || {};
-
             //Debug message
             debug("Initiating POST request at " + url + " with payload:", payload);
 
