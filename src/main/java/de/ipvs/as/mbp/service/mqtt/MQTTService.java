@@ -130,9 +130,8 @@ public class MQTTService {
      * @param brokerLocation The broker location to use
      * @param brokerAddress  The address of the broker to use
      * @throws MqttException In case of an error during execution of mqtt operations
-     * @throws IOException   In case of an I/O issue
      */
-    public void initialize(BrokerLocation brokerLocation, String brokerAddress) throws MqttException, IOException {
+    public void initialize(BrokerLocation brokerLocation, String brokerAddress) throws MqttException {
         //Disconnect the old mqtt client if already connected
         if ((mqttClient != null) && (mqttClient.isConnected())) {
             mqttClient.disconnectForcibly();

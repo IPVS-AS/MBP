@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * Entry point in case of unauthorized access.
- * @author Imeri Amil
  */
 @Component
 public class RestAuthenticationEntryPoint extends BasicAuthenticationEntryPoint {
