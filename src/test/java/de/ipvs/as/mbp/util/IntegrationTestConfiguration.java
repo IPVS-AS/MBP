@@ -1,9 +1,9 @@
 package de.ipvs.as.mbp.util;
 
+import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
+@SpringBootConfiguration
 @ComponentScan("de.ipvs.as.mbp")
 public class IntegrationTestConfiguration {
 }

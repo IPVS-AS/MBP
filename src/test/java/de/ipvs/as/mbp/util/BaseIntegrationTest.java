@@ -23,8 +23,6 @@ import org.testcontainers.utility.DockerImageName;
 public abstract class BaseIntegrationTest {
 
     @Container
-    public GenericContainer mongoDbContainer = new GenericContainer("mongo:latest")
-            .withExposedPorts(27017)
-            .withEnv("MONGO_INITDB_DATABASE", "mbp");
+    public static MongoDbContainer mongoDbContainer = MongoDbContainer.getInstance();
 
 }
