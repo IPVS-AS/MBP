@@ -108,15 +108,26 @@
                 </ul>
             </div>
             <div class="body">
+                <div>
+
+                    <div class="switch" style="margin-left: 0px;">
+                        Switch to the Rerun Mode:
+                        <label>
+                            <input id="ReuseSwitch" type="checkbox" ng-model="config.useNewData"
+                                   ng-click="">
+                            <span class="lever"></span>
+                        </label>
+                    </div>
+                </div>
+
                 <div id="pdfTable" style="height:350px;overflow:auto;">
                     <table class="table table-hover">
                         <thead>
                         <tr>
                             <th>Date and Time</th>
                             <th>Test Report
-                                <Report></Report>
                             </th>
-                            <th>Rerun Test</th>
+                            <th ng-if="config.useNewData == false">Rerun Test</th>
                             <th></th>
                         </tr>
                         </thead>
@@ -130,7 +141,7 @@
                                     </button>
                                 </form>
                             </td>
-                            <td class="align-center">
+                            <td class="align-center"  ng-if="config.useNewData == false">
                                 <div ng-if="testReport.report.useNewData == false">
 
                                     <i class="material-icons">repeat</i>
@@ -191,7 +202,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="{{rule.id}}" ng-repeat="rule in ctrl.ruleList">
+                    <tr id="{{rule.id}}" ng-repeat="rule in ruleList">
                         <td>
                             {{rule.name}}
                         </td>
@@ -239,7 +250,7 @@
                             </form>
                         </td>
                     </tr>
-                    <tr ng-show="ctrl.ruleList.length === 0">
+                    <tr ng-show="ruleList.length === 0">
                         <td>No rules registered.</td>
                     </tr>
                     </tbody>

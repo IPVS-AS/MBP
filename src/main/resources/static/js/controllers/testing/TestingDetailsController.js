@@ -8,7 +8,7 @@ app.controller('TestingDetailsController',
         function ($scope, $controller, TestService, TestReportService, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, HttpService, ENDPOINT_URI, ruleList) {
             //Initialization of variables that are used in the frontend by angular
             const vm = this;
-            vm.ruleList = ruleList;
+            vm.ruleList = [];
             vm.test = testingDetails;
             vm.executeRules = true;
             vm.sensorType = testingDetails.type;
@@ -83,24 +83,14 @@ app.controller('TestingDetailsController',
                     }
                 }
 
-                // Check if test is reusing data from the previous test
-                if (testingDetails.useNewData === false) {
-                    for (let sensorName in vm.sensorListTestNames) {
-                        for (let sensor in sensorList) {
-                            // If Test is in Rerun Mode only add the rerun sensors of the test to this list
-                            if (sensorList[sensor].name === RERUN_PREFIX + vm.sensorListTestNames[sensorName]) {
-                                vm.sensorListTest.push(sensorList[sensor]);
-                            }
-                        }
-                    }
-                } else {
-                    for (let sensor in sensorList) {
-                        if (testingDetails.type.indexOf(sensorList[sensor].name) !== -1) {
-                            vm.sensorListTest.push(sensorList[sensor]);
-                            vm.sensorListTestNames.push(sensorList[sensor].name);
-                        }
+
+                for (let sensor in sensorList) {
+                    if (testingDetails.type.indexOf(sensorList[sensor].name) !== -1) {
+                        vm.sensorListTest.push(sensorList[sensor]);
+                        vm.sensorListTestNames.push(sensorList[sensor].name);
                     }
                 }
+
 
             }
 
@@ -165,7 +155,9 @@ app.controller('TestingDetailsController',
              * The names and actions of this rules will be formatted for the user view.
              */
             function getTestRules() {
-                $scope.ruleList = TestService.getRuleListTest(COMPONENT_ID);
+                TestService.getRuleListTest(COMPONENT_ID).then(function (response) {
+                    $scope.ruleList = response;
+                });
                 for (let i = 0; i < testingDetails.rules.length; i++) {
                     if (i === 0) {
                         vm.ruleNames = vm.ruleNames + testingDetails.rules[i].name;
@@ -187,10 +179,10 @@ app.controller('TestingDetailsController',
             $scope.openReport = function (report) {
                 testReport = report.report;
                 $scope.testReportAnzeige = testReport;
-                getSimulationValuesTestReport(testReport.id);
+                getSimulationValuesTestReport( );
                 convertConfig(testReport);
                 convertRulesTriggered(testReport.amountRulesTriggered);
-                getRealSensorList();
+                getRealReportSensorList(testReport);
                 $('#testReport').modal('show');
             };
 
@@ -209,9 +201,10 @@ app.controller('TestingDetailsController',
             }
 
 
-            function getRealSensorList() {
+            function getRealReportSensorList(report) {
                 $scope.realSensorList = []
-                angular.forEach(vm.sensorListTest, function (sensor, key) {
+                console.log(report);
+                angular.forEach(report.sensor, function (sensor, key) {
                     if (!sensor.name.includes("TESTING_")) {
                         $scope.realSensorList.push(sensor)
                     }
@@ -285,8 +278,8 @@ app.controller('TestingDetailsController',
                             type: 'line',
                             zoomType: 'xy'
                         }, title: {
-                        text: ''
-                    },
+                            text: ''
+                        },
                         xAxis: {
                             type: 'datetime'
                         },
@@ -303,7 +296,7 @@ app.controller('TestingDetailsController',
                             y: 0,
                             showInLegend: true
                         },
-                        series:dataSeries
+                        series: dataSeries
                     }
                 )
 

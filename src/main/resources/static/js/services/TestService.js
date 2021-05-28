@@ -48,8 +48,8 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
         }
 
 
-        function rerunTest(testId, reportId){
-            return HttpService.postRequest(URL_RERUN_TEST + testId +"/" + reportId);
+        function rerunTest(testId, reportId) {
+            return HttpService.postRequest(URL_RERUN_TEST + testId + "/" + reportId);
         }
 
 

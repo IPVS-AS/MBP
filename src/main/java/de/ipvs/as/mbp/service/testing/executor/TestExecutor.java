@@ -116,15 +116,16 @@ public class TestExecutor {
     /**
      * Puts the test and the corresponding sensors into a list and resets the list of values that where previously saved in other tests.
      *
-     * @param test to be executed
      */
-    public void activateTest(TestDetails test, Boolean useNewData) {
+    public void activateTest(List<Sensor> testSensors, String id,Boolean useNewData) {
+
+        TestDetails test = testDetailsRepository.findById(id).get();
         Map<String, TestDetails> activeTests = getActiveTests();
         Map<String, LinkedHashMap<Long, Double>> list =
                 testAnalyzer.getTestValues();
 
         if (useNewData) {
-            for (Sensor sensor : test.getSensor()) {
+            for (Sensor sensor : testSensors) {
                 if (!sensor.getName().contains(RERUN_IDENTIFIER)) {
                     activeTests.put(sensor.getId(), test);
                     list.remove(sensor.getId());
@@ -133,7 +134,7 @@ public class TestExecutor {
 
             }
         } else {
-            for (Sensor sensor : test.getSensor()) {
+            for (Sensor sensor : testSensors) {
                 if (sensor.getName().contains(RERUN_IDENTIFIER)) {
                     activeTests.put(sensor.getId(), test);
                     list.remove(sensor.getId());
@@ -170,7 +171,7 @@ public class TestExecutor {
             testRerunService.addRerunComponents(reportId, test);
             TestReport updatedReport = testReportRepository.findById(reportId).get();
             // add test and sensors to the activation list
-            activateTest(test, false);
+            activateTest(updatedReport.getSensor(),  test.getId(), false);
 
             // Enable rules that belong to the test
             enableRules(test);
@@ -183,7 +184,7 @@ public class TestExecutor {
 
             // Get List of all simulated Values
             Map<String, LinkedHashMap<Long, Double>> valueList =
-                    testAnalyzer.isFinished(reportId, test.getId());
+                    testAnalyzer.isFinished(reportId, test.getId(), false);
 
             saveAmountRulesTriggered(test, reportId, rulesBefore);
             saveValues(test, reportId, valueList);
@@ -247,14 +248,14 @@ public class TestExecutor {
             String reportId = testReportRepository.save(testReport).getId();
 
             // add test and sensors to the activation list
-            activateTest(test, true);
+            activateTest(test.getSensor(),  test.getId(), true);
 
             // start all components relevant for the test
             startTest(testDetailsRepository.findById(test.getId()).get());
 
             // Get List of all simulated Values
             Map<String, LinkedHashMap<Long, Double>> valueList =
-                    testAnalyzer.isFinished(reportId, test.getId());
+                    testAnalyzer.isFinished(reportId, test.getId(), true);
 
             saveAmountRulesTriggered(test, reportId, rulesBefore);
             saveValues(test, reportId, valueList);
@@ -483,6 +484,7 @@ public class TestExecutor {
                              List<ParameterInstance> parameterValues) {
 
 
+        //Find suitable deployer component
         IDeployer deployer = deployerDispatcher.getDeployer();
 
         if (!deployer.isComponentDeployed(testSensor)) {

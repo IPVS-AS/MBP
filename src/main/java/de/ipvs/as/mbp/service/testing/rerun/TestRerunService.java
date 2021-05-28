@@ -163,7 +163,7 @@ public class TestRerunService {
             }
         }
         // add rerun Rules for the test
-        addRerunRule(test);
+        addRerunRule(test, testReport);
     }
 
     /**
@@ -255,9 +255,11 @@ public class TestRerunService {
      *
      * @param test to be repeated
      */
-    public void addRerunRule(TestDetails test) {
+    public void addRerunRule(TestDetails test, TestReport testReport) {
         // Get a list of every rule belonging to the IoT-Application
         List<Rule> applicationRules = testAnalyzer.getCorrespondingRules(test);
+        List<Rule> rerunRules = testReport.getRules();
+        List<String> ruleNames = testReport.getRuleNames();
         boolean notRegister = false;
 
         for (Rule rule : applicationRules) {
@@ -313,10 +315,22 @@ public class TestRerunService {
                 if (!notRegister) {
                     ruleRepository.insert(rerunRule);
                 }
-
-
             }
+            Rule ruleToAdd = ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).get();
+
+            if(!rerunRules.contains(ruleToAdd)){
+                rerunRules.add(ruleToAdd);
+            }
+            if(!ruleNames.contains(ruleToAdd.getName())){
+                ruleNames.add(ruleToAdd.getName());
+            }
+
         }
+
+        testReport.setRules(rerunRules);
+        testReport.setRuleNames(ruleNames);
+        testReportRepository.save(testReport);
+
     }
 
 

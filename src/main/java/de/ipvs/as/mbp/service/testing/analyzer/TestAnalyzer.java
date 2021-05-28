@@ -116,13 +116,11 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
     /**
      * Checks if the sensors of the specific test are running and so the test is running.
      *
-     * @param test specific test with all details
      * @return boolean, if test is still running
      */
-    public boolean areSensorsRunning(TestDetails test) {
-        List<Sensor> testingSensors = test.getSensor();
+    public boolean areSensorsRunning(List<Sensor> testSensors) {
         boolean response = false;
-        for (Sensor sensor : testingSensors) {
+        for (Sensor sensor : testSensors) {
             boolean sensorRunning = deploymentWrapper.isComponentRunning(sensor);
 
             if (sensorRunning == true) {
@@ -140,14 +138,18 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      * @param reportId Id of the the report in which to save the information of the test end time
      * @return value-list of the simulated Sensor
      */
-    public Map<String, LinkedHashMap<Long, Double>> isFinished(String reportId, String testId) {
+    public Map<String, LinkedHashMap<Long, Double>> isFinished(String reportId, String testId, Boolean useNewData) {
         boolean response = true;
         TestReport testReport = testReportRepository.findById(reportId).get();
         TestDetails test = testDetailsRepository.findById(testId).get();
 
         while (response) {
             // testRunning
-            response = areSensorsRunning(test);
+            if(useNewData){
+                response = areSensorsRunning(test.getSensor());
+            } else {
+                response = areSensorsRunning(testReport.getSensor());
+            }
         }
         // set and save end time
         testReport.setEndTestTimeNow();

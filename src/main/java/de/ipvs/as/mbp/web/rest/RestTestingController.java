@@ -300,9 +300,10 @@ public class RestTestingController {
 
 
     @GetMapping(value = "/ruleList/{testId}")
-    public List<Rule> ruleList(@PathVariable(value = "testId") String testId) {
+    public List<Rule>ruleList(@PathVariable(value = "testId") String testId) {
         // get  information about the status of the rules before the execution of the test
-        return testAnalyzer.getCorrespondingRules(testDetailsRepository.findById(testId).get());
+        List<Rule> ruleList = testAnalyzer.getCorrespondingRules(testDetailsRepository.findById(testId).get());
+        return  ruleList;
     }
 
 
