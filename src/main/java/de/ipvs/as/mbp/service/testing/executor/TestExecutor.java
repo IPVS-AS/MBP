@@ -168,7 +168,6 @@ public class TestExecutor {
             String reportId = testReportRepository.save(testReport).getId();
 
 
-            testRerunService.addRerunComponents(reportId, test);
             TestReport updatedReport = testReportRepository.findById(reportId).get();
             // add test and sensors to the activation list
             activateTest(updatedReport.getSensor(),  test.getId(), false);

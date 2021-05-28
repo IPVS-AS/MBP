@@ -5,6 +5,7 @@ import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.component.Sensor;
+import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.domain.testing.TestDetailsDTO;
@@ -338,12 +339,12 @@ public class RestTestingController {
      * @param useNewData boolean, whether a new data set should be used or not
      * @return edited configuration
      */
-   /* @PostMapping(value = "/editConfig/{testId}")
+    @PostMapping(value = "/editConfig/{testId}")
     public ResponseEntity<List<List<ParameterInstance>>> editConfig(@PathVariable(value = "testId") String testId,
                                                                     @RequestBody boolean useNewData) {
         List<List<ParameterInstance>> configList = testRerunService.editUseNewData(testId, useNewData);
         return new ResponseEntity<>(configList, HttpStatus.OK);
-    }*/
+    }
 
 
     /**

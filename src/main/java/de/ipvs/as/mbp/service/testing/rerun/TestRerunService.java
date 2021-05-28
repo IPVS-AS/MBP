@@ -92,20 +92,14 @@ public class TestRerunService {
      * @param useNewData information if a test should be repeated
      * @return the updated configuration list
      */
-   /* public List<List<ParameterInstance>> editUseNewData(String testId, boolean useNewData) {
+    public List<List<ParameterInstance>> editUseNewData(String testId, boolean useNewData) {
         TestDetails testDetails = testDetailsRepository.findById(testId).get();
         List<List<ParameterInstance>> configList = testDetails.getConfig();
 
 
-        if (!useNewData) {
-            testDetails.setUseNewData(false);
-
-        } else {
-            testDetails.setUseNewData(true);
-        }
 
         // add or deletes rerun components
-        editRerunComponents(testDetails);
+        editRerunComponents(useNewData, testDetails);
 
         // Change value for the configuration of every sensor simulator of the test
         for (List<ParameterInstance> config : configList) {
@@ -117,12 +111,11 @@ public class TestRerunService {
         }
 
         testDetails.setConfig(configList);
-        testDetails.setUseNewData(useNewData);
 
         // save the changes in the database
         testDetailsRepository.save(testDetails);
         return configList;
-    }*/
+    }
 
 
     /**
@@ -130,40 +123,38 @@ public class TestRerunService {
      *
      * @param test to be repeated
      */
-    /*public void editRerunComponents(TestDetails test) {
-        if (!test.isUseNewData()) {
+    public void editRerunComponents(boolean useNewData, TestDetails test) {
+        if (useNewData) {  // delete components not needed outside a test rerun
+            deleteRerunComponents(test);
+
+        } else {
             // add components needed for rerun the test
             addRerunComponents(test);
-        } else {
-            // delete components not needed outside a test rerun
-            deleteRerunComponents(test);
         }
     }
-*/
+
 
     /**
      * Adds operators, sensors and rules for repeating the test.
      *
-     * @param testReportId to be repeated
      */
-    public void addRerunComponents(String testReportId, TestDetails test) {
-        TestReport testReport = testReportRepository.findById(testReportId).get();
+    public void addRerunComponents(TestDetails test) {
 
         // add rerun operator if not existing
         addRerunOperators();
 
-
         // add rerun sensor for every sensor with a configuration in the test
-        for (List<ParameterInstance> config : testReport.getConfig()) {
+        for (List<ParameterInstance> config : test.getConfig()) {
             for (ParameterInstance parameterInstance : config) {
                 if (parameterInstance.getName().equals(CONFIG_SENSOR_NAME_KEY)) {
-                    addRerunSensors(parameterInstance.getValue().toString(), testReport);
+                    addRerunSensors(parameterInstance.getValue().toString(), test);
 
                 }
             }
         }
+
         // add rerun Rules for the test
-        addRerunRule(test, testReport);
+        addRerunRule(test);
     }
 
     /**
@@ -201,7 +192,7 @@ public class TestRerunService {
      *
      * @param realSensorName name of the real sensor
      */
-    public void addRerunSensors(String realSensorName, TestReport testReport) {
+    public void addRerunSensors(String realSensorName, TestDetails testDetails) {
         Sensor newSensor = new Sensor();
         newSensor.setOwner(null);
 
@@ -224,9 +215,9 @@ public class TestRerunService {
                     triggerService.registerComponentEventType(newSensor);
                 }
             }
-            if (!testReport.getSensor().contains(sensorRepository.findByName(newSensorName))) {
+            if (!testDetails.getSensor().contains(sensorRepository.findByName(newSensorName))) {
                 // add sensor to the test sensor list
-                addSensor(newSensorName, testReport);
+                addSensor(newSensorName, testDetails);
             }
 
         } catch (Exception e) {
@@ -239,13 +230,13 @@ public class TestRerunService {
      * Adds and saves a sensor to the sensor list of the test
      *
      * @param sensorName to be saved/added
-     * @param testReport in which the sensor should be added to
+     * @param testDetails in which the sensor should be added to
      */
-    public void addSensor(String sensorName, TestReport testReport) {
-        List<Sensor> sensors = testReport.getSensor();
+    public void addSensor(String sensorName, TestDetails testDetails) {
+        List<Sensor> sensors = testDetails.getSensor();
         sensors.add(sensorRepository.findByName(sensorName).get());
-        testReport.setSensor(sensors);
-        testReportRepository.save(testReport);
+        testDetails.setSensor(sensors);
+        testDetailsRepository.save(testDetails);
     }
 
 
@@ -255,11 +246,9 @@ public class TestRerunService {
      *
      * @param test to be repeated
      */
-    public void addRerunRule(TestDetails test, TestReport testReport) {
+    public void addRerunRule(TestDetails test) {
         // Get a list of every rule belonging to the IoT-Application
         List<Rule> applicationRules = testAnalyzer.getCorrespondingRules(test);
-        List<Rule> rerunRules = testReport.getRules();
-        List<String> ruleNames = testReport.getRuleNames();
         boolean notRegister = false;
 
         for (Rule rule : applicationRules) {
@@ -315,21 +304,10 @@ public class TestRerunService {
                 if (!notRegister) {
                     ruleRepository.insert(rerunRule);
                 }
-            }
-            Rule ruleToAdd = ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).get();
 
-            if(!rerunRules.contains(ruleToAdd)){
-                rerunRules.add(ruleToAdd);
-            }
-            if(!ruleNames.contains(ruleToAdd.getName())){
-                ruleNames.add(ruleToAdd.getName());
-            }
 
+            }
         }
-
-        testReport.setRules(rerunRules);
-        testReport.setRuleNames(ruleNames);
-        testReportRepository.save(testReport);
 
     }
 
