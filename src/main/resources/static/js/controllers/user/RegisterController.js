@@ -1,13 +1,13 @@
 /**
  * Controller for the rules list page.
  */
-app.controller('RegisterController', ['$scope', 'UserService', '$location', 'NotificationService',
-    function ($scope, UserService, $location, NotificationService) {
+app.controller('RegisterController', ['$scope', '$location', 'UserService', 'NotificationService',
+    function ($scope, $location, UserService, NotificationService) {
         let vm = this;
 
-        function register() {
+        function registerUser() {
             vm.dataLoading = true;
-            UserService.Create(vm.user).then(function (response) {
+            UserService.createUser(vm.user).then(function (response) {
                 NotificationService.showSuccess("Registration was successful!");
 
                 //Redirect
@@ -22,7 +22,7 @@ app.controller('RegisterController', ['$scope', 'UserService', '$location', 'Not
 
         //Expose functions
         angular.extend(vm, {
-            register: register
+            register: registerUser
         });
     }]
 );

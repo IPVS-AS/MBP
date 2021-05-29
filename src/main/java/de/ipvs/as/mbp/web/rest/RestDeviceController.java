@@ -87,7 +87,7 @@ public class RestDeviceController {
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("deviceId") String deviceId,
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
-		// Parse the access-request information
+		// Parse the access request information
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
     	// Retrieve the corresponding device (includes access-control)

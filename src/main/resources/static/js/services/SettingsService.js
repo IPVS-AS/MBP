@@ -3,8 +3,8 @@
 /**
  * Provides services for managing the application settings.
  */
-app.factory('SettingsService', ['HttpService', 'ENDPOINT_URI',
-    function (HttpService, ENDPOINT_URI) {
+app.factory('SettingsService', ['ENDPOINT_URI', 'HttpService',
+    function (ENDPOINT_URI, HttpService) {
         //URLs for server requests
         const URL_SETTINGS = ENDPOINT_URI + '/settings';
         const URL_DEFAULT_OPERATORS = ENDPOINT_URI + '/settings/default-operators';
@@ -23,7 +23,6 @@ app.factory('SettingsService', ['HttpService', 'ENDPOINT_URI',
         }
 
 
-
         /**
          * [Public]
          * Performs a server request in order to reinstall default components for the Testing-Tool.
@@ -38,7 +37,7 @@ app.factory('SettingsService', ['HttpService', 'ENDPOINT_URI',
          * Performs a server request in order to redeploy default components for the Testing-Tool.
          * @returns {*}
          */
-        function redeployTestingComponents(){
+        function redeployTestingComponents() {
             return HttpService.postRequest(URL_REDEPLOY_TEST_COMPONENTS)
         }
 

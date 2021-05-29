@@ -285,10 +285,6 @@ public class UserEntityService {
         requireAdmin(userService.getLoggedInUser());
     }
 
-    public void requireAdmin(String userId) throws MissingAdminPrivilegesException {
-        requireAdmin(userService.getForId(userId));
-    }
-
     public void requireAdmin(User user) throws MissingAdminPrivilegesException {
         if (!user.isAdmin()) {
             throw new MissingAdminPrivilegesException();
