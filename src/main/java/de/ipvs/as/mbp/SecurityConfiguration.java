@@ -1,7 +1,9 @@
 package de.ipvs.as.mbp;
 
-import de.ipvs.as.mbp.service.UserDetailsServiceImpl;
+import de.ipvs.as.mbp.repository.UserSessionRepository;
+import de.ipvs.as.mbp.service.user.UserDetailsServiceImpl;
 import org.springframework.beans.factory.BeanInitializationException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,31 +16,27 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.authentication.logout.HeaderWriterLogoutHandler;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.context.SecurityContextPersistenceFilter;
-import org.springframework.security.web.header.writers.ClearSiteDataHeaderWriter;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
+    //URLs to important pages
+    public static final String URL_LOGIN = "/login";
+    public static final String URL_LOGOUT = "/logout";
+
     private final AuthCookieFilter authCookieFilter;
 
-    private final CustomLogoutSuccessHandler logoutSuccessHandler;
-
-    public SecurityConfiguration() {
-        this.authCookieFilter = new AuthCookieFilter();
-        this.logoutSuccessHandler = new CustomLogoutSuccessHandler();
+    @Autowired
+    public SecurityConfiguration(UserSessionRepository userSessionRepository) {
+        this.authCookieFilter = new AuthCookieFilter(userSessionRepository);
     }
 
     @Bean
@@ -67,7 +65,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.OPTIONS, "/**")
                 .antMatchers("/resources/**")
                 .antMatchers("/webapp/**")
-                .antMatchers("/login", "/templates/register")
+                .antMatchers(URL_LOGIN, "/templates/register")
                 .antMatchers(HttpMethod.GET, RestConfiguration.BASE_PATH + "/settings/mbpinfo")
                 .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/users/authenticate")
                 .antMatchers(HttpMethod.POST, RestConfiguration.BASE_PATH + "/users")
@@ -82,10 +80,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .sessionManagement(c -> c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
                 .logout(c -> {
-                    c.addLogoutHandler(new HeaderWriterLogoutHandler(
-                            new ClearSiteDataHeaderWriter(ClearSiteDataHeaderWriter.Directive.ALL)));
-                    c.logoutSuccessHandler(this.logoutSuccessHandler);
+                    c.logoutRequestMatcher(new AntPathRequestMatcher(URL_LOGOUT));
                     c.deleteCookies(AuthCookieFilter.COOKIE_NAME);
+                    c.logoutSuccessHandler(authCookieFilter);
                 })
                 .authorizeRequests(c -> {
                     c.antMatchers("/api/authenticate").permitAll();
@@ -94,29 +91,5 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .exceptionHandling(c -> c
                         .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .addFilterAfter(this.authCookieFilter, SecurityContextPersistenceFilter.class);
-
-        //.logout()
-        //.logoutRequestMatcher(new AntPathRequestMatcher("/logout")).logoutSuccessUrl("/login")
-    }
-
-    private static class CustomLogoutSuccessHandler implements LogoutSuccessHandler {
-
-        public CustomLogoutSuccessHandler() {
-        }
-
-        @Override
-        public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response,
-                                    Authentication authentication) {
-
-            /*
-            String sessionId = AuthCookieFilter.extractAuthenticationCookie(request);
-            if (sessionId != null) {
-                this.dsl.delete(APP_SESSION).where(APP_SESSION.ID.eq(sessionId)).execute();
-            }
-
-            response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().flush();*/
-        }
-
     }
 }

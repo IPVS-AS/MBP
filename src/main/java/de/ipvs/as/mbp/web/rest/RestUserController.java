@@ -1,6 +1,5 @@
 package de.ipvs.as.mbp.web.rest;
 
-import de.ipvs.as.mbp.AuthCookieFilter;
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.user.User;
@@ -8,7 +7,8 @@ import de.ipvs.as.mbp.domain.user.UserLoginData;
 import de.ipvs.as.mbp.error.*;
 import de.ipvs.as.mbp.repository.UserRepository;
 import de.ipvs.as.mbp.repository.projection.UserExcerpt;
-import de.ipvs.as.mbp.service.UserService;
+import de.ipvs.as.mbp.service.user.UserService;
+import de.ipvs.as.mbp.service.user.UserSessionService;
 import de.ipvs.as.mbp.util.Pages;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +39,9 @@ public class RestUserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserSessionService userSessionService;
 
 
     @GetMapping(produces = "application/hal+json")
@@ -103,18 +106,15 @@ public class RestUserController {
         }
 
         // Check password
-        if (userService.checkPassword(user.getId(), loginData.getPassword())) {
-
-            ResponseCookie cookie = ResponseCookie
-                    .from(AuthCookieFilter.COOKIE_NAME, "asdfasdfsession234")
-                    .maxAge(999999).sameSite("Strict")
-                    .path("/").httpOnly(true).secure(true).build();
-
-            return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(user);
-        } else {
+        if (!userService.checkPassword(user.getId(), loginData.getPassword())) {
             throw new InvalidPasswordException();
         }
+
+        //Create new session and retrieve corresponding cookie
+        ResponseCookie sessionCookie = userSessionService.createSessionCookie(user);
+
+        //Build response from cookie
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, sessionCookie.toString()).body(user);
     }
 
     @DeleteMapping(path = "/{userId}")

@@ -131,7 +131,7 @@
             <a class="navbar-brand" href="./">MBP: A Platform for Managing IoT Environments</a>
         </div>
         <div style="float: right">
-            <a class="navbar-brand" href="./login" ng-show="loggedIn">
+            <a class="navbar-brand" th:href="@{/logout}" target="_parent" ng-show="loggedIn">
                 <i class="material-icons">power_settings_new</i>
                 <span>Logout</span>
             </a>

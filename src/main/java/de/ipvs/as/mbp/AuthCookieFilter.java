@@ -1,7 +1,10 @@
 package de.ipvs.as.mbp;
 
 import de.ipvs.as.mbp.domain.user.User;
+import de.ipvs.as.mbp.repository.UserSessionRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.web.filter.GenericFilterBean;
 
 import javax.servlet.FilterChain;
@@ -10,14 +13,18 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 
-public class AuthCookieFilter extends GenericFilterBean {
+public class AuthCookieFilter extends GenericFilterBean implements LogoutSuccessHandler {
 
     public final static String COOKIE_NAME = "authentication";
 
-    public AuthCookieFilter() {
+    private UserSessionRepository userSessionRepository;
+
+    public AuthCookieFilter(UserSessionRepository userSessionRepository) {
+        this.userSessionRepository = userSessionRepository;
     }
 
     @Override
@@ -52,5 +59,15 @@ public class AuthCookieFilter extends GenericFilterBean {
             }
         }
         return sessionId;
+    }
+
+    @Override
+    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+        System.out.println("asdf");
+
+        String sessionId = extractAuthenticationCookie(request);
+        //TODO delete session
+
+        response.sendRedirect(request.getContextPath() + SecurityConfiguration.URL_LOGIN);
     }
 }

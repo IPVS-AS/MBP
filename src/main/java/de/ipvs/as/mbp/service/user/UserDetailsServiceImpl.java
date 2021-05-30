@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.service;
+package de.ipvs.as.mbp.service.user;
 
 import java.util.Collections;
 import java.util.Locale;

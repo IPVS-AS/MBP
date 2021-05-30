@@ -5,7 +5,6 @@ app.factory('UserService', ['$rootScope', '$location', '$cookieStore', 'HttpServ
     function ($rootScope, $location, $cookieStore, HttpService, ENDPOINT_URI) {
 
         const URL_LOGIN_SUFFIX = '/users/login';
-        const URL_LOGOUT_SUFFIX = 'users/logout';
         const URL_PROMOTE_SUFFIX = '/promote';
         const URL_DEGRADE_SUFFIX = '/degrade';
         const URL_CHANGE_PASSWORD_SUFFIX = '/change_password';
