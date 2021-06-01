@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp;
+package de.ipvs.as.mbp.security;
 
 import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.domain.user.UserLoginData;

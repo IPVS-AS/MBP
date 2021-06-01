@@ -1,5 +1,6 @@
-package de.ipvs.as.mbp;
+package de.ipvs.as.mbp.security;
 
+import de.ipvs.as.mbp.SecurityConfiguration;
 import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.service.user.UserSessionService;
 import org.springframework.security.core.Authentication;

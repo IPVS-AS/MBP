@@ -7,10 +7,6 @@ import org.springframework.web.filter.FormContentFilter;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
-/**
- *
- * @author rafaelkperes
- */
 public class Initializer
         extends AbstractAnnotationConfigDispatcherServletInitializer {
     

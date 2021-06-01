@@ -1,5 +1,6 @@
 package de.ipvs.as.mbp;
 
+import de.ipvs.as.mbp.security.UserSessionCookieFilter;
 import de.ipvs.as.mbp.service.user.UserSessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

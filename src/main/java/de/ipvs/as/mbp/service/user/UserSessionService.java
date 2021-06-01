@@ -2,21 +2,25 @@ package de.ipvs.as.mbp.service.user;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import de.ipvs.as.mbp.UserSessionCookieFilter;
 import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.domain.user.UserSession;
 import de.ipvs.as.mbp.repository.UserRepository;
 import de.ipvs.as.mbp.repository.UserSessionRepository;
+import de.ipvs.as.mbp.security.UserSessionCookieFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseCookie;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Service class for managing user sessions.
+ * Service class for managing user sessions that is also responsible for periodically cleaning the session repository
+ * by deleting old user sessions.
  */
 @Service
 public class UserSessionService {
@@ -132,5 +136,20 @@ public class UserSessionService {
 
         //Store session in repository
         return userSessionRepository.insert(userSession);
+    }
+
+    /**
+     * Runs once a day and removes all user sessions from the session repository that are older than 7 days.
+     */
+    @Scheduled(fixedRate = 1000 * 60 * 60 * 24)
+    private void cleanupSessionRepository() {
+        //Iterate over all stored user sessions
+        for (UserSession userSession : userSessionRepository.findAll()) {
+            //Check if user session is older than 7 days
+            if (userSession.getCreated().plus(7, ChronoUnit.DAYS).isBefore(Instant.now())) {
+                //Invalidate session
+                invalidateSession(userSession.getSessionId());
+            }
+        }
     }
 }

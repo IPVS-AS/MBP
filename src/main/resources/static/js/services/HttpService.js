@@ -3,8 +3,8 @@
 /**
  * Provides services for HTTP requests.
  */
-app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'NotificationService',
-    function ($rootScope, $interval, ENDPOINT_URI, NotificationService) {
+app.factory('HttpService', ['$rootScope', '$location', '$interval', 'ENDPOINT_URI', 'NotificationService',
+    function ($rootScope, $location, $interval, ENDPOINT_URI, NotificationService) {
         //Enables or disables the debug mode
         const debugMode = true;
 
@@ -269,8 +269,13 @@ app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'Notifica
             if (errorMessage != null) {
                 NotificationService.showError(errorMessage);
             } else if (response.status === 0) {
+                //Request could not be executed
                 NotificationService.showError("Request to backend failed. Is it online?");
+            } else if (response.status === 401) {
+                //Unauthorized, i.e. user is probably not logged in
+                $location.path('/login');
             } else {
+                //Unknown error source
                 NotificationService.showError("Request was not successful.");
             }
 
