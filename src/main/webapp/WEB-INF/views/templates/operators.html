@@ -152,16 +152,6 @@
                                 <span class="help-block"
                                       ng-show="addOperatorCtrl.item.errors.dataModel">{{addOperatorCtrl.item.errors.dataModel}}</span>
                             </div>
-                            <!-- item.unit group -->
-                            <div class="form-group"
-                                 ng-class="{'has-error' : addOperatorCtrl.item.errors.unit }">
-                                <div class="form-line"
-                                     ng-class="{'focused error' : addOperatorCtrl.item.errors.unit }">
-                                    <unit-input ng-model="addOperatorCtrl.item.unit"></unit-input>
-                                </div>
-                                <span class="help-block"
-                                      ng-show="addOperatorCtrl.item.errors.unit">{{addOperatorCtrl.item.errors.unit}}</span>
-                            </div>
                             <!-- item.routine group -->
                             <label>Operator scripts: *</label>
                             <div class="form-group" ng-class="{'has-error' : addOperatorCtrl.item.errors.routines }">

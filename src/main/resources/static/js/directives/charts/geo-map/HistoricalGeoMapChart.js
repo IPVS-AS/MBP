@@ -127,7 +127,7 @@ app.directive('historicalGeoMapChart', ['$timeout', '$interval', function ($time
                 for (var i = 0; i < values.length; i++) {
                     var marker = L.marker([values[i][1][0], values[i][1][1]]);
                     latLngArr.push([values[i][1][0], values[i][1][1]])
-                    marker.bindPopup("<b>" + values[i][0] + "</b><br> Lat=" + values[i][1][0] + "°<br>Long=" + values[i][1][1] + "°");
+                    marker.bindPopup("<b>" + new Date(values[i][0]).toLocaleString() + "</b><br> Lat=" + values[i][1][0] + "°<br>Long=" + values[i][1][1] + "°");
                     marker.bindTooltip("" + i, {
                         permanent: true,
                         opacity: 0.7
