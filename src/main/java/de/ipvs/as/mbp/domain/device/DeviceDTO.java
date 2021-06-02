@@ -42,4 +42,28 @@ public class DeviceDTO extends UserEntityRequestDTO {
 		return keyPairId;
 	}
 
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setComponentType(String componentType) {
+		this.componentType = componentType;
+	}
+
+	public void setIpAddress(String ipAddress) {
+		this.ipAddress = ipAddress;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public void setKeyPairId(String keyPairId) {
+		this.keyPairId = keyPairId;
+	}
+
 }
