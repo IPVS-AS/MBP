@@ -66,8 +66,6 @@ app.controller('TestingDetailsController',
                 });
 
             })();
-
-
             /**
              * [Private]
              *
@@ -83,17 +81,26 @@ app.controller('TestingDetailsController',
                     }
                 }
 
-
-                for (let sensor in sensorList) {
-                    if (testingDetails.type.indexOf(sensorList[sensor].name) !== -1) {
-                        vm.sensorListTest.push(sensorList[sensor]);
-                        vm.sensorListTestNames.push(sensorList[sensor].name);
+                // Check if test is reusing data from the previous test
+                if (testingDetails.useNewData === false) {
+                    for (let sensorName in vm.sensorListTestNames) {
+                        for (let sensor in sensorList) {
+                            // If Test is in Rerun Mode only add the rerun sensors of the test to this list
+                            if (sensorList[sensor].name === RERUN_PREFIX + vm.sensorListTestNames[sensorName]) {
+                                vm.sensorListTest.push(sensorList[sensor]);
+                            }
+                        }
+                    }
+                } else {
+                    for (let sensor in sensorList) {
+                        if (testingDetails.type.indexOf(sensorList[sensor].name) !== -1) {
+                            vm.sensorListTest.push(sensorList[sensor]);
+                            vm.sensorListTestNames.push(sensorList[sensor].name);
+                        }
                     }
                 }
 
-
             }
-
 
             function getSimulationValuesTestReport(reportId) {
                 //Execute request
@@ -179,7 +186,7 @@ app.controller('TestingDetailsController',
             $scope.openReport = function (report) {
                 testReport = report.report;
                 $scope.testReportAnzeige = testReport;
-                getSimulationValuesTestReport( );
+                getSimulationValuesTestReport(testReport.id);
                 convertConfig(testReport);
                 convertRulesTriggered(testReport.amountRulesTriggered);
                 getRealReportSensorList(testReport);
@@ -249,7 +256,9 @@ app.controller('TestingDetailsController',
              */
             function getPDFList() {
                 vm.pdfDetails = [];
-                TestService.getPDFList(COMPONENT_ID);
+                TestService.getPDFList(COMPONENT_ID).then(function (response) {
+                    $scope.pdfTable = response;
+                });
             }
 
             /**
@@ -322,6 +331,7 @@ app.controller('TestingDetailsController',
                 TestService.editConfig(COMPONENT_ID, useNewDataConfig).then(function () {
                     window.location.reload();
                     getTestSensorList();
+                    $scope.config.useNewData = useNewData;
                 });
 
 

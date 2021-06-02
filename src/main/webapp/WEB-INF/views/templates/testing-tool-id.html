@@ -73,7 +73,7 @@
                             </div>
                             <div ng-switch-default>
                                 <button class="btn bg-cyan waves-effect" ng-click="testingChartCtrl.startComponent()"
-                                        ng-disabled="testingChartCtrl.startTest=='STARTING_TEST'" type="button">
+                                        ng-disabled="testingChartCtrl.startTest=='STARTING_TEST' || config.useNewData == true" type="button">
                                     <i class="material-icons">play_arrow</i>
                                     <span>Start Test</span>
                                 </button>
@@ -111,7 +111,7 @@
                 <div>
 
                     <div class="switch" style="margin-left: 0px;">
-                        Switch to the Rerun Mode:
+                        Rerun Mode:
                         <label>
                             <input id="ReuseSwitch" type="checkbox" ng-model="config.useNewData"
                                    ng-click="ctrl.editConfig(config.useNewData)">
@@ -127,7 +127,7 @@
                             <th>Date and Time</th>
                             <th>Test Report
                             </th>
-                            <th ng-if="config.useNewData == false">Rerun Test</th>
+                            <th ng-if="config.useNewData == true">Rerun Test</th>
                             <th></th>
                         </tr>
                         </thead>
@@ -141,7 +141,7 @@
                                     </button>
                                 </form>
                             </td>
-                            <td class="align-center"  ng-if="config.useNewData == false">
+                            <td class="align-center"  ng-if="config.useNewData == true">
                                 <div ng-if="testReport.report.useNewData == false">
 
                                     <i class="material-icons">repeat</i>

@@ -156,7 +156,7 @@ public class TestExecutor {
             testReport.setSensor(test.getSensor());
 
             // Dinge die sich ändern können
-            testReport.setConfig(oldReport.getConfig()); // alter Configuration wird übernommen
+            testReport.setConfig(oldReport.getConfig()); // TODO: Set useNewData in config to false so that simulator knows to reuse datar
             testReport.setRules(oldReport.getRules());
             testReport.setRuleNames(oldReport.getRuleNames());
             testReport.setTriggerRules(oldReport.isTriggerRules());

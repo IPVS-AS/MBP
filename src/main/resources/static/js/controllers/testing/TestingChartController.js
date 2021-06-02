@@ -158,7 +158,6 @@ app.controller('TestingChartController',
              * @param reportId
              */
             function rerunTest(reportId){
-                console.log('-------------------- READY TO RERUN'+ reportId);
                 //Show waiting screen
                 vm.startTest = 'STARTING_TEST';
 

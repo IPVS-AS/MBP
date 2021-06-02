@@ -97,6 +97,12 @@ public class TestRerunService {
         List<List<ParameterInstance>> configList = testDetails.getConfig();
 
 
+        if (!useNewData) {
+            testDetails.setUseNewData(false);
+
+        } else {
+            testDetails.setUseNewData(true);
+        }
 
         // add or deletes rerun components
         editRerunComponents(useNewData, testDetails);
@@ -234,9 +240,14 @@ public class TestRerunService {
      */
     public void addSensor(String sensorName, TestDetails testDetails) {
         List<Sensor> sensors = testDetails.getSensor();
-        sensors.add(sensorRepository.findByName(sensorName).get());
-        testDetails.setSensor(sensors);
-        testDetailsRepository.save(testDetails);
+        if(sensorRepository.findByName(sensorName).isPresent()){
+            Sensor rerunSensor =sensorRepository.findByName(sensorName).get();
+            if(!sensors.contains(rerunSensor)){
+                sensors.add(rerunSensor);
+                testDetails.setSensor(sensors);
+                testDetailsRepository.save(testDetails);
+            }
+        }
     }
 
 
@@ -249,6 +260,7 @@ public class TestRerunService {
     public void addRerunRule(TestDetails test) {
         // Get a list of every rule belonging to the IoT-Application
         List<Rule> applicationRules = testAnalyzer.getCorrespondingRules(test);
+        List<Rule> testRules = test.getRules();
         boolean notRegister = false;
 
         for (Rule rule : applicationRules) {
@@ -307,8 +319,20 @@ public class TestRerunService {
 
 
             }
-        }
 
+            if(ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).isPresent()){
+                if(!testRules.contains(ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).get())){
+
+                    testRules.add(ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).get());
+                }
+
+
+            }
+
+
+        }
+        test.setRules(testRules);
+        testDetailsRepository.save(test);
     }
 
 

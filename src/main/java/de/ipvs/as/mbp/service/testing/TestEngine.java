@@ -138,22 +138,25 @@ public class TestEngine {
 
             Map<String, LinkedHashMap<Long, Double>> simulationList = testReport.getSimulationList();
 
-            for (Map.Entry<String, LinkedHashMap<Long, Double>> entry : simulationList.entrySet()) {
-                ArrayList tupelList = new ArrayList();
+            if(simulationList != null && simulationList.size()> 0){
+                for (Map.Entry<String, LinkedHashMap<Long, Double>> entry : simulationList.entrySet()) {
+                    ArrayList tupelList = new ArrayList();
 
 
-                String key = entry.getKey();
-                LinkedHashMap<Long, Double> valueList = entry.getValue();
-                for (Map.Entry<Long, Double> list : valueList.entrySet()) {
-                    ArrayList timeValueTupel = new ArrayList();
-                    timeValueTupel.add(list.getKey() * 1000);
-                    timeValueTupel.add(list.getValue());
-                    tupelList.add(timeValueTupel);
+                    String key = entry.getKey();
+                    LinkedHashMap<Long, Double> valueList = entry.getValue();
+                    for (Map.Entry<Long, Double> list : valueList.entrySet()) {
+                        ArrayList timeValueTupel = new ArrayList();
+                        timeValueTupel.add(list.getKey() * 1000);
+                        timeValueTupel.add(list.getValue());
+                        tupelList.add(timeValueTupel);
+                    }
+
+                    simulationValues.put(key, tupelList);
+
                 }
-
-                simulationValues.put(key, tupelList);
-
             }
+
 
 
 

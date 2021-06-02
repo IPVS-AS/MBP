@@ -114,8 +114,6 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
          */
         function getValueLogs(componentId, component, pageDetails, unit) {
             let parameters = pageDetails;
-            console.log("---------------------------------------------------------------------------------------")
-            console.log(parameters)
             //Check if unit was provided
             if (unit) {
                 parameters.unit = unit;
