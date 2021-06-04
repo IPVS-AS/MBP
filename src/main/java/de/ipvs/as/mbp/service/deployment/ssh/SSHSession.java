@@ -15,7 +15,7 @@ import com.jcabi.ssh.SshByPassword;
  */
 public class SSHSession {
     //Default SSH port to use
-    private static final int DEFAULT_PORT = 22;
+    public static final int DEFAULT_PORT = 22;
 
     //Definitions of shell commands
     private static final String SHELL_TEST_AVAILABILITY = "test 5 -gt 2 && echo \"true\" || echo \"false\"";

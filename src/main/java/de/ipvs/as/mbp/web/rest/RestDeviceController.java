@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
+
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.error.EntityAlreadyExistsException;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
@@ -122,12 +124,13 @@ public class RestDeviceController {
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 409, message = "Device already exists!") })
     public ResponseEntity<EntityModel<Device>> create(
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@RequestBody DeviceDTO requestDto) throws EntityAlreadyExistsException, EntityNotFoundException {
+    		@RequestBody @Valid DeviceDTO requestDto) throws EntityAlreadyExistsException, EntityNotFoundException {
     	// Create device from request DTO
     	Device device = (Device) new Device()
     			.setName(requestDto.getName())
     			.setComponentType(requestDto.getComponentType())
     			.setIpAddress(requestDto.getIpAddress())
+				.setPort(requestDto.getPort())
     			.setDate(LocalDateTime.now().toString())
     			.setUsername(requestDto.getUsername())
     			.setPassword(requestDto.getPassword() == null ? null : requestDto.getPassword())

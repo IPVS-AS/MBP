@@ -5,6 +5,7 @@ import de.ipvs.as.mbp.domain.access_control.ACAttributeValue;
 import de.ipvs.as.mbp.domain.key_pair.KeyPair;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
+import de.ipvs.as.mbp.service.deployment.ssh.SSHSession;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.springframework.data.annotation.Id;
@@ -34,6 +35,9 @@ public class Device extends UserEntity {
 
     @ApiModelProperty(notes = "Network IP address", example = "192.168.209.174", required = true)
     private String ipAddress;
+
+    @ApiModelProperty(notes = "SSH Port", example = "22", required = false)
+    private Integer port;
 
     @ApiModelProperty(notes = "Creation date", example = "yyyy-MM-dd HH:mm:ss", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String date;
@@ -79,6 +83,18 @@ public class Device extends UserEntity {
 
     public String getComponentType() {
         return componentType;
+    }
+
+    public int getPort() {
+        if(port == null) {
+            return SSHSession.DEFAULT_PORT;
+        }
+        return port;
+    }
+
+    public Device setPort(Integer port) {
+        this.port = port;
+        return this;
     }
 
     public Device setComponentType(String componentType) {

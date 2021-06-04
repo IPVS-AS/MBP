@@ -1,6 +1,11 @@
 package de.ipvs.as.mbp.domain.device;
 
+import javax.enterprise.inject.Default;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 import de.ipvs.as.mbp.domain.user_entity.UserEntityRequestDTO;
+import de.ipvs.as.mbp.util.validation.OptionalPort;
 
 public class DeviceDTO extends UserEntityRequestDTO {
 
@@ -15,7 +20,10 @@ public class DeviceDTO extends UserEntityRequestDTO {
     private String password;
 
     private String keyPairId;
-    
+
+    @OptionalPort
+    private Integer port;
+
     // - - -
 
 	public String getName() {
@@ -42,4 +50,7 @@ public class DeviceDTO extends UserEntityRequestDTO {
 		return keyPairId;
 	}
 
+	public Integer getPort() {
+		return port;
+	}
 }
