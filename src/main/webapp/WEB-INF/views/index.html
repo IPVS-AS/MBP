@@ -96,6 +96,9 @@
     <!-- GitHub Fork Ribbon -->
     <link th:href="@{/plugins/gh-fork-ribbon/gh-fork-ribbon.min.css}" rel="stylesheet"/>
 
+    <!-- Discovery styles -->
+    <link th:href="@{/css/discovery.css}" rel="stylesheet">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/2.3.4/jspdf.plugin.autotable.min.js"></script>
@@ -190,6 +193,20 @@
                     </li>
                     <li>
                         <a href="view/key-pairs" menu-item="menu-item">Key Pairs</a>
+                    </li>
+                </ul>
+            </li>
+            <li menu-item="menu-item">
+                <a class="menu-toggle">
+                    <i class="material-icons">search</i>
+                    <span>Discovery</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/device-templates" menu-item="menu-item">Device Templates</a>
+                    </li>
+                    <li>
+                        <a href="view/discovery-topics" menu-item="menu-item">Topics</a>
                     </li>
                 </ul>
             </li>
@@ -458,5 +475,6 @@
 <script th:src="@{/js/controllers/user/UserListController.js}"></script>
 <script th:src="@{/js/controllers/env-models/EnvModelListController.js}"></script>
 <script th:src="@{/js/controllers/logs/ExceptionLogController.js}"></script>
+<script th:src="@{/js/controllers/discovery/DeviceTemplateListController.js}"></script>
 </body>
 </html>

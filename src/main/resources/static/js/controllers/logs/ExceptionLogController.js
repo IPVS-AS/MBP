@@ -4,8 +4,8 @@
  * Controller for the settings page.
  */
 app.controller('ExceptionLogController',
-    ['$scope', '$q', 'exceptionLogs', 'LogService', 'NotificationService',
-        function ($scope, $q, exceptionLogs, LogService, NotificationService) {
+    ['$scope', 'exceptionLogs', 'LogService', 'NotificationService',
+        function ($scope, exceptionLogs, LogService, NotificationService) {
             //Find DOM elements of exception logs table and stack trace modal
             const ELEMENT_LOGS_TABLE = $("#exception-logs-table");
             const ELEMENT_STACKTRACE_MODAL = $("#showStackTraceModal")

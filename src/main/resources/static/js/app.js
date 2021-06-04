@@ -390,6 +390,16 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
+            //Device templates
+            .when(viewPrefix + '/device-templates', {
+                category: 'device-templates',
+                templateUrl: 'templates/device-templates',
+                controller: 'DeviceTemplateListController as ctrl',
+                resolve: {
+
+                }
+            })
+
             //Operators list
             .when(viewPrefix + '/operators', {
                 category: 'operators',

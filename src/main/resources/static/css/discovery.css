@@ -1,0 +1,72 @@
+﻿div.discovery-template-menu {
+    position: relative;
+    width: 100%;
+    height: 460px;
+}
+
+div.discovery-template-menu canvas {
+    width: 100%;
+    height: 100%;
+}
+
+
+div.discovery-template-menu button.bubble-item {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    z-index: 10;
+    background-color: #1C8ADB;
+    background-size: 90px 90px;
+    background-position: center;
+    background-repeat: no-repeat;
+    box-shadow: 2px 2px 3px black;
+}
+
+div.discovery-template-menu button.bubble-item.bubble-devices {
+    width: 200px;
+    height: 200px;
+    left: calc(50% - 100px);
+    top: calc(50% - 100px);
+    background-image: url(../images/discovery/devices.png);
+    background-size: 130px 130px;
+}
+
+div.discovery-template-menu button.bubble-item.bubble-locations {
+    left: calc(15% - 60px);
+    top: calc(25% - 60px);
+    background-image: url(../images/discovery/locations.png);
+}
+
+div.discovery-template-menu button.bubble-item.bubble-identifiers {
+    left: calc(15% - 60px);
+    top: calc(75% - 60px);
+    background-image: url(../images/discovery/identifiers.png);
+}
+
+div.discovery-template-menu button.bubble-item.bubble-capabilities {
+    left: calc(75% - 60px);
+    top:  calc(15% - 60px);
+    background-image: url(../images/discovery/capabilities.png);
+}
+
+div.discovery-template-menu button.bubble-item.bubble-context {
+    left: calc(85% - 60px);
+    top: calc(50% - 60px);
+    background-image: url(../images/discovery/context.png);
+}
+
+div.discovery-template-menu button.bubble-item.bubble-attachments {
+    left: calc(75% - 60px);
+    top: calc(85% - 60px);
+    background-image: url(../images/discovery/attachments.png);
+}
+
+div.discovery-template-menu button.bubble-connector {
+    position: absolute;
+    width: 200px;
+    height: 25px;
+    left: 25px;
+    top: 25px;
+    z-index: 0;
+    background-color: black;
+}
