@@ -1,7 +1,6 @@
 package de.ipvs.as.mbp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.device.DeviceDTO;
 import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.KeyPairRepository;
@@ -11,6 +10,7 @@ import de.ipvs.as.mbp.util.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -22,10 +22,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class BasicTest extends BaseIntegrationTest {
 
     @Autowired
-    public MockMvc mockMvc;
+    private MockMvc mockMvc;
 
     @Autowired
-    public ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @Autowired
     private DeviceRepository deviceRepository;
@@ -47,24 +47,17 @@ public class BasicTest extends BaseIntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "admin", password = "12345")
     void createDeviceTest() throws Exception {
         System.out.println("User List: " + userService.getAll(Pageable.unpaged()).toList());
-
-//        UserAuthData userAuthData = new UserAuthData();
-//        userAuthData.setUsername("admin");
-//        userAuthData.setPassword("12345");
-//
-//        MvcResult userAuthResult = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/users/authenticate")
-//                .contentType("application/json")
-//                .content(objectMapper.writeValueAsString(userAuthData))
-//                .characterEncoding("utf-8"))
-//                .andDo(print())
-//                .andExpect(status().isOk()).andReturn();
+        System.out.println("User at test start" + userService.getLoggedInUser());
 
         DeviceDTO requestDto = new DeviceDTO();
         requestDto.setName("testDevice");
         requestDto.setUsername("admin");
         requestDto.setPassword("12345");
+        requestDto.setIpAddress("127.0.0.1");
+        requestDto.setComponentType("Computer");
 
         // .header("Authorization", "Basic YWRtaW46MTIzNDU=")
         // .header("X-MBP-Access-Request", "requesting-entity-firstname=admin;;requesting-entity-lastname=admin;;requesting-entity-username=admin")
@@ -72,14 +65,15 @@ public class BasicTest extends BaseIntegrationTest {
         MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/devices")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(requestDto))
-                .characterEncoding("utf-8")
-                .header("Authorization", "Basic YWRtaW46MTIzNDU="))
+                .characterEncoding("utf-8"))
                 .andDo(print())
                 .andExpect(status().isOk()).andReturn();
 
-        Device device = objectMapper.convertValue(result.getResponse().getContentAsString(), Device.class);
+        System.out.println(result.getResponse().getContentAsString());
 
-        Device deviceFromDB = userEntityService.getForId(deviceRepository, device.getId());
-        System.out.println(deviceFromDB);
+        //Device device = objectMapper.convertValue(result.getResponse().getContentAsString(), Device.class);
+
+        //Device deviceFromDB = userEntityService.getForId(deviceRepository, device.getId());
+        //System.out.println(deviceFromDB);
     }
 }

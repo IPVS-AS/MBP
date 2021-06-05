@@ -148,6 +148,8 @@ public class UserEntityService {
 
     public <E extends UserEntity> E create(UserEntityRepository<E> repository, E entity) throws EntityNotFoundException
     {
+        System.out.println("Create before User checking");
+        System.out.println("User in create" + userService.getLoggedInUser());
         //Retrieve the currently logged in user from the database
         User user = userService.getLoggedInUser();
 
