@@ -476,58 +476,17 @@ public class TestEngine {
         return responseEntity;
     }
 
-    /**
-     * Checks if the one and three dimensional sensor simulators are already registered.
-     *
-     * @param sensor Name of the sensor to be checked
-     * @return Boolean if the sensor is already registered or not
-     */
-    public Boolean isSimulatorRegistr(String sensor) {
-        Boolean registered = false;
-        String dimX = sensor + "X";
-        String dimY = sensor + "Y";
-        String dimZ = sensor + "Z";
-
-        if (THREE_DIM_SIMULATOR_LIST.contains(sensor)) {
-            Sensor sensorX = getSensorSimulator(dimX);
-            Sensor sensorY = getSensorSimulator(dimY);
-            Sensor sensorZ = getSensorSimulator(dimZ);
-
-            if (sensorX != null && sensorY != null && sensorZ != null) {
-                registered = true;
-            }
-        } else {
-            if (getSensorSimulator(sensor) != null) {
-                registered = true;
-            }
-        }
-
-        return registered;
-    }
-
+    
 
     /**
-     * Registers the wished three dimensional sensor simulator if the corresponding adapter is already registered.
-     *
-     * @param sensorName of the three dimensional sensor to be registered
-     * @return Response entity if registration was successful
-     */
-    public void registerThreeDimSensorSimulator(String sensorName) {
-        //TODO
-    }
-
-    /**
-     * Delete Tets with specific test id.
+     * Delete test with specific test id.
      *
      * @param testId
      */
     public void deleteTest(String testId) {
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
-
         if (testDetailsRepository.existsById(testId)) {
             testDetailsRepository.deleteById(testId);
         }
-
     }
 
     /**
@@ -549,5 +508,16 @@ public class TestEngine {
         }
 
         return responseEntity;
+    }
+
+    /**
+     * Deletes all test reports corresponding to a specific test.
+     *
+     * @param testId of the test from which the reports should be deleted.
+     */
+    public void deleteAllReports(String testId) {
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
+        List<TestReport> testReportList = testReportRepository.findAllByName(testDetails.getName());
+        testReportRepository.deleteAll(testReportList);
     }
 }

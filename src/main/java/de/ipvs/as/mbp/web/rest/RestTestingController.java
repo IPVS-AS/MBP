@@ -174,6 +174,7 @@ public class RestTestingController {
 
         if(testDetailsRepository.findById(testId).isPresent()){
             testRerunService.deleteRerunComponents(testDetailsRepository.findById(testId).get());
+            testEngine.deleteAllReports(testId);
         }
 
         // Parse the access-request information
