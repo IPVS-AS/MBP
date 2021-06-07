@@ -121,7 +121,7 @@ public class TestExecutor {
 
 
     /**
-     * Puts the test and the corresponding sensors into a list and resets the list of values that where previously saved in other tests.
+     * Puts the test and the corresponding sensors into a list and resets the list of values that where previously saved in other test executions.
      */
     public void activateTest(List<Sensor> testSensors, String id, Boolean useNewData) {
 
@@ -152,6 +152,32 @@ public class TestExecutor {
         testAnalyzer.setTestValues(list);
     }
 
+    public void deactivateTest(List<Sensor> testSensors, String id, Boolean useNewData) {
+
+        TestDetails test = testDetailsRepository.findById(id).get();
+        Map<String, TestDetails> activeTests = getActiveTests();
+        Map<String, LinkedHashMap<Long, Double>> list =
+                testAnalyzer.getTestValues();
+
+        if (useNewData) {
+            for (Sensor sensor : testSensors) {
+                if (!sensor.getName().contains(RERUN_IDENTIFIER)) {
+                   TestDetails removedTest =  activeTests.remove(sensor.getId());
+                }
+
+            }
+        } else {
+            for (Sensor sensor : testSensors) {
+                if (sensor.getName().contains(RERUN_IDENTIFIER)) {
+                    TestDetails removedTest =  activeTests.remove(sensor.getId());
+                }
+            }
+        }
+
+        setActiveTests(activeTests);
+        testAnalyzer.setTestValues(list);
+    }
+
     public void rerunTest(TestDetails test, String testReportId) {
         TestReport oldReport = testReportRepository.findById(testReportId).get();
         TestReport testReport = new TestReport();
@@ -164,8 +190,9 @@ public class TestExecutor {
             List<Sensor> rerunSensors = addRerunSensorsReport(test);
             testReport.setSensor(rerunSensors);
 
-            // Dinge die sich ändern können
-            testReport.setConfig(oldReport.getConfig()); // TODO: Set useNewData in config to false so that simulator knows to reuse datar
+
+
+            testReport.setConfig(oldReport.getConfig());
             List<Rule> rerunRules = addRerunRulesReport(oldReport.getRules());
             List<String> rerunRuleNames = addRerunRuleNamesReport(oldReport.getRuleNames());
 
@@ -175,7 +202,7 @@ public class TestExecutor {
             testReport.setUseNewData(false);
 
             // get  information about the status of the rules before the execution of the test
-            List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(test);
+            List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(testReport.getRules(), testReport.getSensor());
             testReport.setRuleInformationBefore(rulesBefore);
             String reportId = testReportRepository.save(testReport).getId();
 
@@ -199,6 +226,7 @@ public class TestExecutor {
 
             saveAmountRulesTriggered(test, reportId, rulesBefore);
             saveValues(test, reportId, valueList);
+            deactivateTest(test.getSensor(), test.getId(), false);
             analyzeTest(test, reportId, rulesBefore);
 
         } catch (Exception e) {
@@ -289,7 +317,7 @@ public class TestExecutor {
             testReport.setTriggerRules(test.isTriggerRules());
             testReport.setUseNewData(true);
             // get  information about the status of the rules before the execution of the test
-            List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(test);
+            List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(test.getRules(), test.getSensor());
             testReport.setRuleInformationBefore(rulesBefore);
             String reportId = testReportRepository.save(testReport).getId();
 
@@ -305,11 +333,12 @@ public class TestExecutor {
 
             saveAmountRulesTriggered(test, reportId, rulesBefore);
             saveValues(test, reportId, valueList);
+            deactivateTest(test.getSensor(), test.getId(), true);
             analyzeTest(test, reportId, rulesBefore);
         } catch (Exception e) {
             testReport.setEndTestTimeNow();
             testReport.setSuccessful("ERROR DURING TEST");
-            List<Rule> rulesAfter = testAnalyzer.getCorrespondingRules(test);
+            List<Rule> rulesAfter = testAnalyzer.getCorrespondingRules(test.getRules(), test.getSensor());
             saveAmountRulesTriggered(test, testReport.getId(), rulesAfter);
 
         }
@@ -317,12 +346,12 @@ public class TestExecutor {
 
     private void saveAmountRulesTriggered(TestDetails test, String reportId, List<Rule> rulesBefore) {
         TestReport report = testReportRepository.findById(reportId).get();
-        List<Rule> rulesAfter = testAnalyzer.getCorrespondingRules(test);
+        List<Rule> rulesAfter = testAnalyzer.getCorrespondingRules(report.getRules(), report.getSensor());
         Map<String, Integer> amountTriggered = new HashMap<>();
         for (Rule ruleBefore : rulesBefore) {
             for (Rule ruleAfter : rulesAfter) {
                 if (ruleAfter.getName().equals(ruleBefore.getName())) {
-                    amountTriggered.put(ruleAfter.getName(), ruleBefore.getExecutions() - ruleAfter.getExecutions());
+                    amountTriggered.put(ruleAfter.getName(), ruleAfter.getExecutions() -ruleBefore.getExecutions() );
                 }
             }
         }
@@ -445,13 +474,12 @@ public class TestExecutor {
      */
     private void saveValues(TestDetails test, String reportId,
                             Map<String, LinkedHashMap<Long, Double>> valueList) {
-
         Map<String, LinkedHashMap<Long, Double>> valueListTest = new HashMap<>();
         TestReport testReport = testReportRepository.findById(reportId).get();
         TestDetails testDetails =
                 testDetailsRepository.findById(test.getId()).get();
 
-        for (Sensor sensor : test.getSensor()) {
+        for (Sensor sensor : testReport.getSensor()) {
             if (valueList.get(sensor.getId()) != null) {
                 LinkedHashMap<Long, Double> temp = valueList.get(sensor.getId());
                 valueListTest.put(sensor.getName(), temp);
@@ -618,7 +646,7 @@ public class TestExecutor {
      */
     private void enableRules(TestDetails test) {
         // Get a list of every rule corresponding to the application
-        List<Rule> rules = testAnalyzer.getCorrespondingRules(test);
+        List<Rule> rules = testAnalyzer.getCorrespondingRules(test.getRules(), test.getSensor());
 
         //enable the selected rules for the test
         for (Rule rule : rules) {

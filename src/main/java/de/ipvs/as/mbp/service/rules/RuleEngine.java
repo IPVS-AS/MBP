@@ -87,6 +87,7 @@ public class RuleEngine {
             triggerService.registerTrigger(trigger, (ruleTrigger, output) -> {
                 //Induce the executions of rules that use this trigger on callback
                 induceRuleExecution(ruleTrigger, output);
+
             });
 
             Set<Rule> rulesOfTrigger = new HashSet<>();
@@ -158,17 +159,19 @@ public class RuleEngine {
 
         //Iterate over all rules and execute them
         for (Rule rule : ruleSet) {
-            ruleExecutor.executeRule(rule, output);
+
             ruleNames.add(rule.getName());
+            Testing testing = new Testing();
+            testing.setTrigger(ruleTrigger);
+            testing.setOutput(output);
+            testing.setRule(ruleNames);
+
+
+            testRepo.insert(testing);
+            ruleExecutor.executeRule(rule, output);
         }
 
-        Testing testing = new Testing();
-        testing.setTrigger(ruleTrigger);
-        testing.setOutput(output);
-        testing.setRule(ruleNames);
 
-
-        testRepo.insert(testing);
     }
 
     /**

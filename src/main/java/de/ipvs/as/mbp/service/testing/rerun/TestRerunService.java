@@ -22,7 +22,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -162,6 +164,10 @@ public class TestRerunService {
         addRerunRule(test);
     }
 
+    /**
+     * Delete the rerun components registered for the specific test
+     * @param testDetails test for which the rerun components should be deleted
+     */
     public void deleteRerunComponents(TestDetails testDetails) {
         deleteRerunRules(testDetails);
         deleteRerunSensors(testDetails);
@@ -174,29 +180,27 @@ public class TestRerunService {
      * @param testDetails to be repeated
      */
     public void removeRerunComponents(TestDetails testDetails) {
-        removeRerunRule(testDetails);
-        removeRerunSensors(testDetails);
+        TestDetails updatedTest = removeRerunRule(testDetails);
+        removeRerunSensors(updatedTest);
 
     }
 
+    /**
+     * Remove the rerun sensors from the configuration
+     * @param testDetails
+     */
     public void removeRerunSensors(TestDetails testDetails) {
+        List<Sensor> newSensorList = testDetails.getSensor();
+        ListIterator<Sensor> iterator = newSensorList.listIterator();
 
-        for (List<ParameterInstance> config : testDetails.getConfig()) {
-            for (ParameterInstance parameterInstance : config) {
-                if (parameterInstance.getName().equals(CONFIG_SENSOR_NAME_KEY)) {
-                    if (!SIMULATOR_LIST.contains(parameterInstance.getValue().toString())) {
-                        // Delete Reuse Operator
-                        String reuseName = RERUN_IDENTIFIER + parameterInstance.getValue();
-                        Sensor sensorReuse = sensorRepository.findByName(reuseName).get();
-                        if (sensorReuse != null) {
-                            testDetails.getSensor().remove(sensorReuse);
-                            testDetailsRepository.save(testDetails);
-
-                        }
-                    }
-                }
+        while (iterator.hasNext()){
+            if(iterator.next().getName().contains(RERUN_IDENTIFIER)){
+                iterator.remove();
             }
         }
+
+        testDetails.setSensor(newSensorList);
+        testDetailsRepository.save(testDetails);
     }
 
     public void deleteRerunSensors(TestDetails testDetails) {
@@ -283,7 +287,7 @@ public class TestRerunService {
      */
     public void addRerunRule(TestDetails test) {
         // Get a list of every rule belonging to the IoT-Application
-        List<Rule> applicationRules = testAnalyzer.getCorrespondingRules(test);
+        List<Rule> applicationRules = testAnalyzer.getCorrespondingRules(test.getRules(), test.getSensor());
         List<Rule> testRules = test.getRules();
         boolean notRegister = false;
 
@@ -360,8 +364,8 @@ public class TestRerunService {
         testDetailsRepository.save(test);
     }
 
-    public void removeRerunRule(TestDetails testDetails) {
-        List<Rule> testRules = testAnalyzer.getCorrespondingRules(testDetails);
+    public TestDetails removeRerunRule(TestDetails testDetails) {
+        List<Rule> testRules = testAnalyzer.getCorrespondingRules(testDetails.getRules(), testDetails.getSensor());
 
         for (Rule rule : testRules) {
             if (rule.getName().contains(RERUN_IDENTIFIER)) {
@@ -369,6 +373,7 @@ public class TestRerunService {
             }
         }
         testDetailsRepository.save(testDetails);
+        return testDetails;
     }
 
     /**
@@ -377,7 +382,7 @@ public class TestRerunService {
      * @param test for which the rerun rules should be deleted
      */
     public void deleteRerunRules(TestDetails test) {
-        List<Rule> testRules = testAnalyzer.getCorrespondingRules(test);
+        List<Rule> testRules = testAnalyzer.getCorrespondingRules(test.getRules(), test.getSensor());
 
         for (Rule rule : testRules) {
             if (rule.getName().contains(RERUN_IDENTIFIER)) {

@@ -172,7 +172,7 @@ public class RestTestingController {
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable("testId") String testId) throws MissingPermissionException, EntityNotFoundException {
 
-        if(testDetailsRepository.findById(testId).isPresent()){
+        if (testDetailsRepository.findById(testId).isPresent()) {
             testRerunService.deleteRerunComponents(testDetailsRepository.findById(testId).get());
             testEngine.deleteAllReports(testId);
         }
@@ -256,7 +256,6 @@ public class RestTestingController {
     }
 
 
-
     /**
      * Returns a HashMap with date and path to of all Test Reports regarding to a specific test.
      *
@@ -283,24 +282,13 @@ public class RestTestingController {
 
 
     @GetMapping(value = "/ruleList/{testId}")
-    public List<Rule>ruleList(@PathVariable(value = "testId") String testId) {
+    public List<Rule> ruleList(@PathVariable(value = "testId") String testId) {
         // get  information about the status of the rules before the execution of the test
-        List<Rule> ruleList = testAnalyzer.getCorrespondingRules(testDetailsRepository.findById(testId).get());
-        return  ruleList;
+        TestDetails testDetails = testDetailsRepository.findById(testId).get();
+        List<Rule> ruleList = testAnalyzer.getCorrespondingRules(testDetails.getRules(), testDetails.getSensor());
+        return ruleList;
     }
 
-
-    /**
-     * Checks if pdf for the specific test exists.
-     *
-     * @param testId ID of the specific test
-     * @return boolean, if pdf exists
-     */
-    @GetMapping(value = "/pdfExists/{testId}")
-    public void pdfExists(@PathVariable(value = "testId") String testId) {
-        TestDetails test = testDetailsRepository.findById(testId).get();
-        // return test.isPdfExists();
-    }
 
     /**
      * Deletes a specific test report of the specific test defined by the user.

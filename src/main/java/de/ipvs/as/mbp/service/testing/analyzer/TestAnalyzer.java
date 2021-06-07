@@ -202,7 +202,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
         TestReport testReport = testReportRepository.findById(reportId).get();
 
         List<String> ruleNames = new ArrayList<>();
-        List<Rule> ruleList = test.getRules();
+        List<Rule> ruleList = testReport.getRules();
 
         // add all  names and triggerIDs of the rules of the application  tested
         if (testReport.getUseNewData()) {
@@ -222,87 +222,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
         //calculate success
         String successResponse = successCalc(test, triggerValues, ruleNames);
 
-        // save the information
-        List<Double> triggerV = new ArrayList<>();
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerV.add(55.5);
-        triggerValues.put("RealSensor", triggerV );
+        testReport.setTriggerValues(triggerValues);
         testReport.setTriggerValues(triggerValues);
         testReport.setSuccessful(successResponse);
         testReport.setRulesExecuted(rulesExecuted);
@@ -329,7 +249,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
         long endTime = testReport.getEndTimeUnix();
 
         // get all triggerID's and rule names of the corresponding rules to the test
-        List<Rule> corresRules = getCorrespondingRules(testDetails);
+        List<Rule> corresRules = getCorrespondingRules(testReport.getRules(), testReport.getSensor());
         for (Rule rule : corresRules) {
             ruleNames.add(rule.getName());
             triggerID.add(rule.getTrigger().getId());
@@ -364,22 +284,26 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
     }
 
 
+
+
+
     /**
      * returns all rules that belong to a sensor that is part of the test and thus also belongs to the tested IoT-application.
      *
-     * @param test to be executed test
+     * @param testRules to be executed test
+     * @param sensorList list of sensors of the test
      * @return list of all rules corresponding to the specific test
      */
-    public List<Rule> getCorrespondingRules(TestDetails test) {
+    public List<Rule> getCorrespondingRules(List<Rule> testRules, List<Sensor> sensorList) {
         // Get the rules selected by the user with their information about the last execution,..
-        List<Rule> corresRules = new ArrayList<>(test.getRules());
+        List<Rule> corresRules = new ArrayList<>(testRules);
 
 
         // go through all rule triggers and check if the sensor id is included
         List<RuleTrigger> allRules = ruleTriggerRepository.findAll();
-        for (int i = 0; i < test.getSensor().size(); i++) {
+        for (int i = 0; i < sensorList.size(); i++) {
             for (RuleTrigger trigger : allRules) {
-                Sensor sensor = test.getSensor().get(i);
+                Sensor sensor = sensorList.get(i);
                 String sensorID = sensor.getId();
                 if (trigger.getQuery().contains(sensorID)) {
                     for (Rule nextRule : ruleRepository.findAll()) {

@@ -73,7 +73,8 @@
                             </div>
                             <div ng-switch-default>
                                 <button class="btn bg-cyan waves-effect" ng-click="testingChartCtrl.startComponent()"
-                                        ng-disabled="testingChartCtrl.startTest=='STARTING_TEST' || config.useNewData == true" type="button">
+                                        ng-disabled="testingChartCtrl.startTest=='STARTING_TEST' || config.useNewData == true"
+                                        type="button">
                                     <i class="material-icons">play_arrow</i>
                                     <span>Start Test</span>
                                 </button>
@@ -141,7 +142,7 @@
                                     </button>
                                 </form>
                             </td>
-                            <td class="align-center"  ng-if="config.useNewData == true">
+                            <td class="align-center" ng-if="config.useNewData == true">
                                 <div ng-if="testReport.report.useNewData == false">
 
                                     <i class="material-icons">repeat</i>
@@ -1311,7 +1312,7 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td ng-repeat="amountTriggerAfter in rulesTriggered | filter: rule.name">
+                                        <td ng-repeat="amountTriggerAfter in rulesTriggered | filter:{name:rule.name}:true">
                                             {{amountTriggerAfter.executions}}
                                         </td>
                                         <td>
@@ -1352,10 +1353,12 @@
                                     <div ng-switch-when="Not Successful">
                                         <p>Rules were triggered that shouldn't have been triggered: </p>
                                         <p> &ensp; &ensp; 1. Check which values led to the triggering of this rule. </p>
-                                        <p> &ensp; &ensp; 2. Check if it was just a sensor anomaly or if the condition of the rule was
+                                        <p> &ensp; &ensp; 2. Check if it was just a sensor anomaly or if the condition
+                                            of the rule was
                                             set too sensitively.
                                         <p> &ensp; &ensp; 3. Adjust the condition of the rule accordingly.
-                                        <p> &ensp; &ensp; &ensp; &ensp; &#8226; For example: increase the time window / window
+                                        <p> &ensp; &ensp; &ensp; &ensp; &#8226; For example: increase the time window /
+                                            window
                                             length, set the average higher, ...
                                         <p> &ensp; &ensp; 4. Repeat the test under the same conditions and check the
                                             result again.
@@ -1363,9 +1366,12 @@
                                             successfully.
                                         <hr>
                                         <p>Rules which should have been triggered weren't triggered: </p>
-                                        <p> &ensp; &ensp; 1. Check the values of the test and the condition of the rule, why the rule was not triggered. </p>
-                                        <p> &ensp; &ensp; 2. Set the condition of the rule to be more sensitive to the values.
-                                        <p> &ensp; &ensp; &ensp; &ensp; &#8226; For example: decrease the time window / window
+                                        <p> &ensp; &ensp; 1. Check the values of the test and the condition of the rule,
+                                            why the rule was not triggered. </p>
+                                        <p> &ensp; &ensp; 2. Set the condition of the rule to be more sensitive to the
+                                            values.
+                                        <p> &ensp; &ensp; &ensp; &ensp; &#8226; For example: decrease the time window /
+                                            window
                                             length, lower the average, ...
                                         <p> &ensp; &ensp; 4. Repeat the test under the same conditions and check the
                                             result again.

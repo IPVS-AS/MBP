@@ -14,15 +14,7 @@ app.controller('TestingController',
                 TEMPERATURE_PL: 'TESTING_TemperatureSensorPl',
                 HUMIDITY: 'TESTING_HumiditySensor',
                 HUMIDITY_PL: 'TESTING_HumiditySensorPl',
-                ACCELERATION: 'TESTING_AccelerationSensor',
-                ACCELERATION_PL: 'TESTING_AccelerationSensorPl',
-                GPS: 'TESTING_GPSSensor',
-                GPS_PL: 'TESTING_GPSSensorPl'
             };
-
-            const TESTING_DEVICE = "TESTING_Device";
-            const TESTING_ACTUATOR = "TESTING_Actuator";
-            const RERUN_OPERATOR = "RERUN_OPERATOR";
 
 
 
@@ -50,6 +42,10 @@ app.controller('TestingController',
                 }
 
 
+                angular.forEach(SIMULATOR_LIST, function (value) {
+                    checkSensorReg(String(value));
+                });
+
                 getRealSensors();
 
 
@@ -69,6 +65,55 @@ app.controller('TestingController',
                 });
             })();
 
+            /**
+             * [Public]
+             *
+             * Check if the Sensor-Simulator for the Test is registered.
+             *
+             * @param sensorSimulator to be checked
+             */
+
+            function checkSensorReg(sensorSimulator) {
+                let registered = "NOT_REGISTERED";
+                // go through every registered sensor and search for the sensor simulator
+                HttpService.getAll('sensors').then(function (sensorList) {
+                        if (sensorList.length > 0) {
+                            angular.forEach(sensorList, function (sensor) {
+                                if (sensor.name == sensorSimulator) {
+                                    registered = "REGISTERED";
+                                    vm.availableSensors.push(sensorSimulator);
+                                }
+                            })
+                        }
+                    }
+                );
+            }
+
+            /**
+             * [Private]
+             *
+             * Creates a list of all real sensors that can be included in a test.
+             */
+            function getRealSensors() {
+                angular.forEach(sensorList, function (sensor) {
+                    let realSensor = true;
+                    // Check if sensor is a sensor simulator
+                    angular.forEach(SIMULATOR_LIST, function (simulator) {
+                        if (simulator == sensor.name) {
+                            realSensor = false;
+                        }
+                    });
+
+                    if (sensor.name.includes("RERUN_")) {
+                        realSensor = false;
+                    }
+
+                    // Add to list if real sensor
+                    if (realSensor) {
+                        vm.realSensorList.push(sensor);
+                    }
+                });
+            }
 
 
             /**
