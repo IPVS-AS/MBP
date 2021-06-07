@@ -151,6 +151,7 @@ public class RestTestingController {
         testDetails.setType(requestDto.getType());
         testDetails.setRuleNames(requestDto.getRuleNames());
         testDetails.setConfig(requestDto.getConfig());
+        testDetails.setUseNewData(requestDto.isUseNewData());
         testDetails.setRules(rules);
         testDetails.setSensor(sensors);
         testDetails.setAccessControlPolicyIds(requestDto.getAccessControlPolicyIds());
@@ -170,6 +171,11 @@ public class RestTestingController {
     public ResponseEntity<Void> delete(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
             @PathVariable("testId") String testId) throws MissingPermissionException, EntityNotFoundException {
+
+        if(testDetailsRepository.findById(testId).isPresent()){
+            testRerunService.deleteRerunComponents(testDetailsRepository.findById(testId).get());
+        }
+
         // Parse the access-request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
@@ -249,31 +255,6 @@ public class RestTestingController {
     }
 
 
-    /**
-     * Adds or deletes the rerun Components for the specific test.
-     *
-     * @param testId ID of the specific test
-     * @return ResponseEntity (if successful or not)
-     */
-  /*  @PostMapping(value = "/rerun-components/{testId}")
-    public ResponseEntity editRerunComponents(@PathVariable(value = "testId") String testId) {
-        ResponseEntity responseEntity;
-        try {
-            if (testDetailsRepository.findById(testId).isPresent()) {
-                TestDetails testDetails = testDetailsRepository.findById(testId).get();
-                // Add or deletes Rerun Components for the specific test
-                testRerunService.editRerunComponents(testDetails);
-                responseEntity = new ResponseEntity(HttpStatus.OK);
-            } else {
-                responseEntity = new ResponseEntity((HttpStatus.NOT_FOUND));
-            }
-        } catch (Exception e) {
-            responseEntity = new ResponseEntity(HttpStatus.NOT_FOUND);
-        }
-
-        return responseEntity;
-    }
-*/
 
     /**
      * Returns a HashMap with date and path to of all Test Reports regarding to a specific test.
@@ -346,17 +327,6 @@ public class RestTestingController {
         return new ResponseEntity<>(configList, HttpStatus.OK);
     }
 
-
-    /**
-     * Changes the value "UseNewData", changed with the switch button, in the database.
-     *
-     * @return edited configuration
-     */
-    @PostMapping(value = "/addRerunOperator")
-    public ResponseEntity<String> addRerunOperator() {
-        return testRerunService.addRerunOperators();
-    }
-
     /**
      * Updates the configuration of the whole test, if the user change it.
      *
@@ -368,46 +338,6 @@ public class RestTestingController {
     public ResponseEntity<Boolean> updateTest(@PathVariable(value = "testId") String testId, @RequestBody String updateInformation) {
         return testEngine.editTestConfig(testId, updateInformation);
 
-    }
-
-    /**
-     * Registers the test device used for testing purposes.
-     *
-     * @return response entity if the registration was successful or not
-     */
-    @PostMapping(value = "/registerTestDevice")
-    public ResponseEntity registerTestDevice() {
-        return testEngine.registerTestDevice();
-    }
-
-    /**
-     * Registers the test device used for testing purposes.
-     *
-     * @return response entity if the registration was successful or not
-     */
-    @PostMapping(value = "/registerTestActuator")
-    public ResponseEntity registerTestActuator() {
-        return testEngine.registerTestActuator();
-    }
-
-    /**
-     * Register a one dimensional sensor simulator used for testing purposes.
-     *
-     * @return response entity if the registration was successful or not
-     */
-    @PostMapping(value = "/registerSensorSimulator")
-    public ResponseEntity registerSensorSimulator(@RequestBody String sensorName) {
-        return testEngine.registerSensorSimulator(sensorName);
-    }
-
-    /**
-     * Opens the selected Test-Report from the Test list
-     *
-     * @return HttpStatus
-     */
-    @GetMapping(value = "/checkRegistration")
-    public Boolean checkRegistration(@RequestBody String sensorName) {
-        return testEngine.isSimulatorRegistr(sensorName);
     }
 
 

@@ -124,6 +124,7 @@ app.controller('TestingChartController',
             function getPDFList() {
                 vm.pdfDetails = [];
                 TestService.getPDFList(COMPONENT_ID).then(function (response) {
+                    console.log("----------------------------------------------PDFTABLE----------------------------------")
                     $scope.pdfTable = response;
                 });
             }

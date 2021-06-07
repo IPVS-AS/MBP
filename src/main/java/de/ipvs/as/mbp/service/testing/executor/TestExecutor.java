@@ -6,17 +6,17 @@ import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
 import de.ipvs.as.mbp.domain.testing.TestReport;
-import de.ipvs.as.mbp.repository.ActuatorRepository;
-import de.ipvs.as.mbp.repository.TestDetailsRepository;
-import de.ipvs.as.mbp.repository.TestReportRepository;
+import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.service.deployment.DeployerDispatcher;
 import de.ipvs.as.mbp.service.deployment.IDeployer;
 import de.ipvs.as.mbp.service.rules.RuleEngine;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
 import de.ipvs.as.mbp.service.testing.rerun.TestRerunService;
+import de.ipvs.as.mbp.util.S;
 import de.ipvs.as.mbp.web.rest.RestDeploymentController;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -58,6 +58,13 @@ public class TestExecutor {
 
     @Autowired
     private DeploymentWrapper deploymentWrapper;
+
+    @Autowired
+    private SensorRepository sensorRepository;
+
+    @Autowired
+    private RuleRepository ruleRepository;
+
 
     @Autowired
     private DeployerDispatcher deployerDispatcher;
@@ -115,9 +122,8 @@ public class TestExecutor {
 
     /**
      * Puts the test and the corresponding sensors into a list and resets the list of values that where previously saved in other tests.
-     *
      */
-    public void activateTest(List<Sensor> testSensors, String id,Boolean useNewData) {
+    public void activateTest(List<Sensor> testSensors, String id, Boolean useNewData) {
 
         TestDetails test = testDetailsRepository.findById(id).get();
         Map<String, TestDetails> activeTests = getActiveTests();
@@ -153,12 +159,18 @@ public class TestExecutor {
             // Set the exact start time of the test
             testReport.setName(test.getName());
             testReport.setStartTestTimeNow();
-            testReport.setSensor(test.getSensor());
+
+            // Just add the rerun Sensors to the report information
+            List<Sensor> rerunSensors = addRerunSensorsReport(test);
+            testReport.setSensor(rerunSensors);
 
             // Dinge die sich ändern können
             testReport.setConfig(oldReport.getConfig()); // TODO: Set useNewData in config to false so that simulator knows to reuse datar
-            testReport.setRules(oldReport.getRules());
-            testReport.setRuleNames(oldReport.getRuleNames());
+            List<Rule> rerunRules = addRerunRulesReport(oldReport.getRules());
+            List<String> rerunRuleNames = addRerunRuleNamesReport(oldReport.getRuleNames());
+
+            testReport.setRules(rerunRules);
+            testReport.setRuleNames(rerunRuleNames);
             testReport.setTriggerRules(oldReport.isTriggerRules());
             testReport.setUseNewData(false);
 
@@ -170,7 +182,7 @@ public class TestExecutor {
 
             TestReport updatedReport = testReportRepository.findById(reportId).get();
             // add test and sensors to the activation list
-            activateTest(updatedReport.getSensor(),  test.getId(), false);
+            activateTest(updatedReport.getSensor(), test.getId(), false);
 
             // Enable rules that belong to the test
             enableRules(test);
@@ -195,7 +207,42 @@ public class TestExecutor {
 
     }
 
-    private void sensorRerunService(TestReport testReport, Map<String, LinkedHashMap<Long, Double>> simulationList ) {
+    private List<String> addRerunRuleNamesReport(List<String> ruleNames) {
+        List<String> rerunRuleNames = new ArrayList<>();
+
+        for (String ruleName : ruleNames) {
+            rerunRuleNames.add(RERUN_IDENTIFIER + ruleName);
+
+        }
+        return rerunRuleNames;
+    }
+
+    private List<Rule> addRerunRulesReport(List<Rule> testRules) {
+        List<Rule> rerunRules = new ArrayList<>();
+
+        for (Rule rule : testRules) {
+            if (ruleRepository.existsByName(RERUN_IDENTIFIER + rule.getName())) {
+                rerunRules.add(ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).get());
+            }
+        }
+
+        return rerunRules;
+    }
+
+    private List<Sensor> addRerunSensorsReport(TestDetails testDetails) {
+        List<Sensor> rerunSensors = new ArrayList<>();
+
+        for (Sensor sensor : testDetails.getSensor()) {
+            if (sensor.getName().contains(RERUN_IDENTIFIER)) {
+                rerunSensors.add(sensor);
+            }
+        }
+
+        return rerunSensors;
+    }
+
+
+    private void sensorRerunService(TestReport testReport, Map<String, LinkedHashMap<Long, Double>> simulationList) {
 
         IDeployer deployer = deployerDispatcher.getDeployer();
 
@@ -203,7 +250,7 @@ public class TestExecutor {
             List<ParameterInstance> parametersWrapper = new ArrayList<>();
             if (!SIMULATOR_LIST.contains(sensor.getName()) &&
                     sensor.getName().contains(RERUN_IDENTIFIER)) {
-                if(deployer.isComponentRunning(sensor)){
+                if (deployer.isComponentRunning(sensor)) {
                     deployer.stopComponent(sensor);
                 }
                 for (Map.Entry<String, LinkedHashMap<Long, Double>> sensorValues : simulationList.entrySet()) {
@@ -247,7 +294,7 @@ public class TestExecutor {
             String reportId = testReportRepository.save(testReport).getId();
 
             // add test and sensors to the activation list
-            activateTest(test.getSensor(),  test.getId(), true);
+            activateTest(test.getSensor(), test.getId(), true);
 
             // start all components relevant for the test
             startTest(testDetailsRepository.findById(test.getId()).get());
@@ -588,7 +635,9 @@ public class TestExecutor {
         TestDetails test = testDetailsRepository.findById(testId).get();
         // Stop every sensor running for the specific test
         for (Sensor sensor : test.getSensor()) {
-            deploymentWrapper.stopComponent(sensor);
+            if (deploymentWrapper.isComponentRunning(sensor)) {
+                deploymentWrapper.stopComponent(sensor);
+            }
         }
     }
 

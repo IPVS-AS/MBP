@@ -101,7 +101,7 @@
                 </h2>
                 <ul class="header-dropdown m-r--5">
                     <li>
-                        <a ng-click="ctrl.getPDFList()" class="clickable">
+                        <a ng-click="ctrl.getPDFList(ctrl.test.id)" class="clickable">
                             <i class="material-icons">refresh</i>
                         </a>
                     </li>
@@ -117,9 +117,9 @@
                                    ng-click="ctrl.editConfig(config.useNewData)">
                             <span class="lever"></span>
                         </label>
+                        <hr>
                     </div>
                 </div>
-
                 <div id="pdfTable" style="height:350px;overflow:auto;">
                     <table class="table table-hover">
                         <thead>
@@ -161,9 +161,6 @@
                                     </button>
                                 </form>
                             </td>
-                        </tr>
-                        <tr ng-show="pdfTable.length === 0">
-                            <td>No Test Report available.</td>
                         </tr>
                         </tbody>
                         <tfoot>
@@ -1267,7 +1264,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        {{ctrl.ruleNames}}
+                                        {{testReportAnzeige.ruleNames.join(', ')}}
                                     </td>
                                     <td>
                                         <div ng-if="testReportAnzeige.rulesExecuted.length >0">

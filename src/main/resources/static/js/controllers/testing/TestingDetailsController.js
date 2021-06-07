@@ -66,6 +66,7 @@ app.controller('TestingDetailsController',
                 });
 
             })();
+
             /**
              * [Private]
              *
@@ -674,137 +675,7 @@ app.controller('TestingDetailsController',
 
 
                                     break;
-                                case 'TESTING_GPSSensor':
-                                    config.forEach(function (parameterInstance) {
-                                        if (parameterInstance.name === "event") {
-                                            if (parameterInstance.name === "event") {
-                                                eventGPS = parameterInstance.value;
-                                            } else if (parameterInstance.name === "anomaly") {
-                                                anomalyGPS = parameterInstance.value;
-                                            } else if (parameterInstance.name === "useNewData") {
-                                                useNewData = !parameterInstance.value;
-                                            } else if (parameterInstance.name === "latitude") {
-                                                latitudeGPS = parameterInstance.value;
-                                            } else if (parameterInstance.name === "longitude") {
-                                                longitudeGPS = parameterInstance.value;
-                                            } else if (parameterInstance.name === "height") {
-                                                heightGPS = parameterInstance.value;
-                                            } else if (parameterInstance.name === "who") {
-                                                whoGPS = parameterInstance.value;
-                                            } else if (parameterInstance.name === "reactionMeters") {
-                                                reactionMetersGPS = parameterInstance.value;
-                                            }
-                                        }
-                                    });
 
-
-                                    $rootScope.config.eventGPS = eventGPS;
-                                    $rootScope.config.anomalyGPS = anomalyGPS;
-                                    $rootScope.config.latitudeGPS = latitudeGPS;
-                                    $rootScope.config.longitudeGPS = longitudeGPS;
-                                    $rootScope.config.hightGPS = heightGPS;
-                                    $rootScope.config.whoGPS = whoGPS;
-                                    $rootScope.config.reactionMetersGPS = reactionMetersGPS;
-
-                                    break;
-                                case 'TESTING_GPSSensorPl':
-                                    config.forEach(function (parameterInstance) {
-                                        if (parameterInstance.name === "event") {
-                                            eventGPSPl = parameterInstance.value;
-                                        } else if (parameterInstance.name === "anomaly") {
-                                            anomalyGPSPl = parameterInstance.value;
-                                        } else if (parameterInstance.name === "useNewData") {
-                                            useNewData = !parameterInstance.value;
-                                        } else if (parameterInstance.name === "latitude") {
-                                            latitudeGPSPl = parameterInstance.value;
-                                        } else if (parameterInstance.name === "longitude") {
-                                            longitudeGPSPl = parameterInstance.value;
-                                        } else if (parameterInstance.name === "height") {
-                                            heightGPSPl = parameterInstance.value;
-                                        } else if (parameterInstance.name === "who") {
-                                            whoGPSPl = parameterInstance.value;
-                                        } else if (parameterInstance.name === "reactionMeters") {
-                                            reactionMetersGPSPl = parameterInstance.value;
-                                        } else if (parameterInstance.name === "simTime") {
-                                            simTime = parameterInstance.value;
-                                        } else if (parameterInstance.name === "amountEvents") {
-                                            amountEvents = parameterInstance.value;
-                                        } else if (parameterInstance.name === "amountAnomalies") {
-                                            amountAnomalies = parameterInstance.value;
-
-                                        }
-
-                                        $rootScope.config.eventGPS = eventGPS;
-                                        $rootScope.config.anomalyGPS = anomalyGPS;
-                                        $rootScope.config.latitudeGPS = latitudeGPS;
-                                        $rootScope.config.longitudeGPS = longitudeGPS;
-                                        $rootScope.config.hightGPS = heightGPS;
-                                        $rootScope.config.whoGPS = whoGPS;
-                                        $rootScope.config.reactionMetersGPS = reactionMetersGPS;
-                                        $rootScope.config.simTime = simTime;
-                                        $rootScope.config.amountEvents = amountEvents;
-                                        $rootScope.config.amountAnomalies = amountAnomalies;
-
-                                    });
-                                    break;
-                                case 'TESTING_AccelerationSensor':
-                                    config.forEach(function (parameterInstance) {
-                                        if (parameterInstance.name === "event") {
-                                            eventAcc = parameterInstance.value;
-                                        } else if (parameterInstance.name === "anomaly") {
-                                            anomalyAcc = parameterInstance.value;
-                                        } else if (parameterInstance.name === "useNewData") {
-                                            useNewData = !parameterInstance.value;
-                                        } else if (parameterInstance.name === "weightObject") {
-                                            weightObjectAcc = parameterInstance.value;
-                                        } else if (parameterInstance.name === "sensitivityClass") {
-                                            sensitivityClassAcc = parameterInstance.value;
-                                        } else if (parameterInstance.name === "reactionMeters") {
-                                            reactionMetersAcc = parameterInstance.value;
-                                        }
-                                    });
-                                    $rootScope.config.eventAcc = eventAcc;
-                                    $rootScope.config.anomalyAcc = anomalyAcc;
-                                    $rootScope.config.reactionMetersAcc = reactionMetersAcc;
-                                    $rootScope.config.weightObjectAcc = weightObjectAcc;
-                                    $rootScope.config.sensitivityClassAcc = sensitivityClassAcc;
-
-                                    break;
-                                case 'TESTING_AccelerationSensorPl':
-                                    config.forEach(function (parameterInstance) {
-                                        if (parameterInstance.name === "event") {
-                                            eventAccPl = parameterInstance.value;
-                                        } else if (parameterInstance.name === "anomaly") {
-                                            anomalyAccPl = parameterInstance.value;
-                                        } else if (parameterInstance.name === "useNewData") {
-                                            useNewData = !parameterInstance.value;
-                                        } else if (parameterInstance.name === "weightObject") {
-                                            weightObjectAccPl = parameterInstance.value;
-                                        } else if (parameterInstance.name === "sensitivityClass") {
-                                            sensitivityClassAccPl = parameterInstance.value;
-                                        } else if (parameterInstance.name === "reactionMeters") {
-                                            reactionMetersAccPl = parameterInstance.value;
-                                        } else if (parameterInstance.name === "simTime") {
-                                            simTime = parameterInstance.value;
-                                        } else if (parameterInstance.name === "amountEvents") {
-                                            amountEvents = parameterInstance.value;
-                                        } else if (parameterInstance.name === "amountAnomalies") {
-                                            amountAnomalies = parameterInstance.value;
-
-                                        }
-
-                                    });
-
-                                    $rootScope.config.eventAccPl = eventAccPl;
-                                    $rootScope.config.anomalyAccPl = anomalyAccPl;
-                                    $rootScope.config.reactionMetersAccPl = reactionMetersAccPl;
-                                    $rootScope.config.weightObjectAccPl = weightObjectAccPl;
-                                    $rootScope.config.sensitivityClassAccPl = sensitivityClassAccPl;
-                                    $rootScope.config.simTime = simTime;
-                                    $rootScope.config.amountEvents = amountEvents;
-                                    $rootScope.config.amountAnomalies = amountAnomalies;
-
-                                    break;
                             }
                         }
                     });

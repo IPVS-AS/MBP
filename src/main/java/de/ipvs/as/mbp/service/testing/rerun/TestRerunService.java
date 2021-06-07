@@ -131,7 +131,7 @@ public class TestRerunService {
      */
     public void editRerunComponents(boolean useNewData, TestDetails test) {
         if (useNewData) {  // delete components not needed outside a test rerun
-            deleteRerunComponents(test);
+            removeRerunComponents(test);
 
         } else {
             // add components needed for rerun the test
@@ -142,7 +142,6 @@ public class TestRerunService {
 
     /**
      * Adds operators, sensors and rules for repeating the test.
-     *
      */
     public void addRerunComponents(TestDetails test) {
 
@@ -163,17 +162,26 @@ public class TestRerunService {
         addRerunRule(test);
     }
 
-    /**
-     * Deletes operators, sensors and rules when test should be not repeated.
-     *
-     * @param test to be repeated
-     */
-    public void deleteRerunComponents(TestDetails test) {
-        //Delete rerun rules
-        deleteRerunRules(test);
+    public void deleteRerunComponents(TestDetails testDetails) {
+        deleteRerunRules(testDetails);
+        deleteRerunSensors(testDetails);
+    }
 
-        // Delete the Reuse Adapters and Sensors for each real sensor if the data should not be reused
-        for (List<ParameterInstance> config : test.getConfig()) {
+
+    /**
+     * Removes sensors and rules from the test when it shouldn't be repeated.
+     *
+     * @param testDetails to be repeated
+     */
+    public void removeRerunComponents(TestDetails testDetails) {
+        removeRerunRule(testDetails);
+        removeRerunSensors(testDetails);
+
+    }
+
+    public void removeRerunSensors(TestDetails testDetails) {
+
+        for (List<ParameterInstance> config : testDetails.getConfig()) {
             for (ParameterInstance parameterInstance : config) {
                 if (parameterInstance.getName().equals(CONFIG_SENSOR_NAME_KEY)) {
                     if (!SIMULATOR_LIST.contains(parameterInstance.getValue().toString())) {
@@ -181,10 +189,26 @@ public class TestRerunService {
                         String reuseName = RERUN_IDENTIFIER + parameterInstance.getValue();
                         Sensor sensorReuse = sensorRepository.findByName(reuseName).get();
                         if (sensorReuse != null) {
-                            sensorRepository.delete(sensorReuse);
-                            test.getSensor().remove(sensorReuse);
-                            testDetailsRepository.save(test);
+                            testDetails.getSensor().remove(sensorReuse);
+                            testDetailsRepository.save(testDetails);
 
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void deleteRerunSensors(TestDetails testDetails) {
+
+        for (List<ParameterInstance> config : testDetails.getConfig()) {
+            for (ParameterInstance parameterInstance : config) {
+                if (parameterInstance.getName().equals(CONFIG_SENSOR_NAME_KEY)) {
+                    if (!SIMULATOR_LIST.contains(parameterInstance.getValue().toString())) {
+                        String reuseName = RERUN_IDENTIFIER + parameterInstance.getValue();
+                        if (sensorRepository.findByName(reuseName).isPresent()) {
+                            Sensor sensorReuse = sensorRepository.findByName(reuseName).get();
+                            sensorRepository.delete(sensorReuse);
                         }
                     }
                 }
@@ -235,14 +259,14 @@ public class TestRerunService {
     /**
      * Adds and saves a sensor to the sensor list of the test
      *
-     * @param sensorName to be saved/added
+     * @param sensorName  to be saved/added
      * @param testDetails in which the sensor should be added to
      */
     public void addSensor(String sensorName, TestDetails testDetails) {
         List<Sensor> sensors = testDetails.getSensor();
-        if(sensorRepository.findByName(sensorName).isPresent()){
-            Sensor rerunSensor =sensorRepository.findByName(sensorName).get();
-            if(!sensors.contains(rerunSensor)){
+        if (sensorRepository.findByName(sensorName).isPresent()) {
+            Sensor rerunSensor = sensorRepository.findByName(sensorName).get();
+            if (!sensors.contains(rerunSensor)) {
                 sensors.add(rerunSensor);
                 testDetails.setSensor(sensors);
                 testDetailsRepository.save(testDetails);
@@ -264,69 +288,70 @@ public class TestRerunService {
         boolean notRegister = false;
 
         for (Rule rule : applicationRules) {
-            if (!ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).isPresent()) {
-                // create new rule
-                Rule rerunRule = new Rule();
-                rerunRule.setName(RERUN_IDENTIFIER + rule.getName());
-                rerunRule.setOwner(null);
-                rerunRule.setActions(rule.getActions());
+            if (!rule.getName().contains(RERUN_IDENTIFIER)) {
+                if (!ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).isPresent()) {
+                    // create new rule
+                    Rule rerunRule = new Rule();
+                    rerunRule.setName(RERUN_IDENTIFIER + rule.getName());
+                    rerunRule.setOwner(null);
+                    rerunRule.setActions(rule.getActions());
 
-                // create/adjust trigger querey
-                if (!ruleTriggerRepository.findByName(RERUN_IDENTIFIER + rule.getTrigger().getName()).isPresent()) {
-                    // create new trigger
-                    RuleTrigger newTrigger = new RuleTrigger();
-                    newTrigger.setDescription(rule.getTrigger().getDescription());
-                    newTrigger.setName(RERUN_IDENTIFIER + rule.getTrigger().getName());
+                    // create/adjust trigger querey
+                    if (!ruleTriggerRepository.findByName(RERUN_IDENTIFIER + rule.getTrigger().getName()).isPresent()) {
+                        // create new trigger
+                        RuleTrigger newTrigger = new RuleTrigger();
+                        newTrigger.setDescription(rule.getTrigger().getDescription());
+                        newTrigger.setName(RERUN_IDENTIFIER + rule.getTrigger().getName());
 
-                    // adjust trigger query of the sensor of the test
-                    String triggerQuery = rule.getTrigger().getQuery();
-                    // Regex to get out the sensor ID
-                    Pattern pattern = Pattern.compile("(?<=sensor_)(.*)(?=\\)])");
-                    Matcher matcher = pattern.matcher(triggerQuery);
-                    while (matcher.find()) {
-                        String sensorID = matcher.group();
-                        List<Sensor> realSensors = sensorRepository.findAll();
-                        for (Sensor realSensor : realSensors) {
-                            if (realSensor.getId().equals(sensorID)) {
-                                Sensor rerunSensor = sensorRepository.findByName(RERUN_IDENTIFIER + realSensor.getName()).get();
-                                if (rerunSensor != null) {
-                                    // replace the sensor id in the trigger query with the rerun sensor id
-                                    triggerQuery = triggerQuery.replace(realSensor.getId(), rerunSensor.getId());
-                                    newTrigger.setQuery(triggerQuery);
-                                    ruleTriggerRepository.insert(newTrigger);
-                                } else {
-                                    notRegister = true;
-                                    break;
+                        // adjust trigger query of the sensor of the test
+                        String triggerQuery = rule.getTrigger().getQuery();
+                        // Regex to get out the sensor ID
+                        Pattern pattern = Pattern.compile("(?<=sensor_)(.*)(?=\\)])");
+                        Matcher matcher = pattern.matcher(triggerQuery);
+                        while (matcher.find()) {
+                            String sensorID = matcher.group();
+                            List<Sensor> realSensors = sensorRepository.findAll();
+                            for (Sensor realSensor : realSensors) {
+                                if (realSensor.getId().equals(sensorID)) {
+                                    if (sensorRepository.findByName(RERUN_IDENTIFIER + realSensor.getName()).isPresent()) {
+                                        Sensor rerunSensor = sensorRepository.findByName(RERUN_IDENTIFIER + realSensor.getName()).get();
+                                        // replace the sensor id in the trigger query with the rerun sensor id
+                                        triggerQuery = triggerQuery.replace(realSensor.getId(), rerunSensor.getId());
+                                        newTrigger.setQuery(triggerQuery);
+                                        ruleTriggerRepository.insert(newTrigger);
+                                    } else {
+                                        notRegister = true;
+                                        break;
+                                    }
+
+
                                 }
-
-
+                            }
+                            if (notRegister) {
+                                break;
+                            } else {
+                                // set the created trigger of the rerun rule
+                                rerunRule.setTrigger(newTrigger);
                             }
                         }
-                        if (notRegister) {
-                            break;
-                        } else {
-                            // set the created trigger of the rerun rule
-                            rerunRule.setTrigger(newTrigger);
-                        }
+                    } else {
+                        // set existing trigger of the rerun rule
+                        rerunRule.setTrigger(ruleTriggerRepository.findByName(RERUN_IDENTIFIER + rule.getTrigger().getName()).get());
                     }
-                } else {
-                    // set existing trigger of the rerun rule
-                    rerunRule.setTrigger(ruleTriggerRepository.findByName(RERUN_IDENTIFIER + rule.getTrigger().getName()).get());
+                    if (!notRegister) {
+                        ruleRepository.insert(rerunRule);
+                    }
+
+
                 }
-                if (!notRegister) {
-                    ruleRepository.insert(rerunRule);
+                if (ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).isPresent()) {
+                    if (!testRules.contains(ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).get())) {
+
+                        testRules.add(ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).get());
+                    }
+
+
                 }
-
-
-            }
-
-            if(ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).isPresent()){
-                if(!testRules.contains(ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).get())){
-
-                    testRules.add(ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).get());
-                }
-
-
             }
 
 
@@ -335,6 +360,16 @@ public class TestRerunService {
         testDetailsRepository.save(test);
     }
 
+    public void removeRerunRule(TestDetails testDetails) {
+        List<Rule> testRules = testAnalyzer.getCorrespondingRules(testDetails);
+
+        for (Rule rule : testRules) {
+            if (rule.getName().contains(RERUN_IDENTIFIER)) {
+                testDetails.getRules().remove(rule);
+            }
+        }
+        testDetailsRepository.save(testDetails);
+    }
 
     /**
      * Delete the rerun rules not needed in a test that should not be repeated.
