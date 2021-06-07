@@ -101,3 +101,9 @@ div.discovery-template-menu .bubble-item .bubble-connector {
     z-index: 0;
     background-color: #10507f;
 }
+
+#edit-templates-group .card.edit-templates-list .header h2 i.material-icons {
+    left: -12px;
+    top: -5px;
+    position: absolute;
+}

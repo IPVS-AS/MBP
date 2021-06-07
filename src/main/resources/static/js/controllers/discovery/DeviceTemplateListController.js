@@ -4,11 +4,16 @@
  * Controller for the settings page.
  */
 app.controller('DeviceTemplateListController',
-    ['$scope', '$interval', 'NotificationService',
-        function ($scope, $interval, NotificationService) {
+    ['$scope', '$interval', '$timeout', 'NotificationService',
+        function ($scope, $interval, $timeout, NotificationService) {
+            //Constants
+            const MAP_INIT_CENTER = [9.106631254042352, 48.74518217652443];
+            const MAP_INIT_ZOOM = 16;
+
             //Find relevant DOM elements
             const ELEMENT_MENU_BUTTONS = $("div.bubble-item");
             const ELEMENT_MENU_BUTTON_MAIN = $("div.bubble-item.bubble-devices")
+            const ELEMENT_EDITORS_COLLAPSES = $('#edit-templates-group > div.collapse');
 
             //Relevant CSS classes
             const CLASS_MENU_BUTTON_CONNECTOR = 'bubble-connector';
@@ -19,8 +24,9 @@ app.controller('DeviceTemplateListController',
              * Initializing function, sets up basic things.
              */
             (function initController() {
-                //Initialize the templates menu
+                //Initialize the templates menu and editor windows
                 initTemplatesMenu();
+                initEditorWindows();
             })();
 
             /**
@@ -79,7 +85,35 @@ app.controller('DeviceTemplateListController',
                 $interval(adjustMenu, 500, 3);
             }
 
+            /**
+             * [Private]
+             * Initializes the several editor windows.
+             */
+            function initEditorWindows() {
+                //Listen to show events of collapses
+                ELEMENT_EDITORS_COLLAPSES.on('show.bs.collapse', function (e) {
+                    //Hide the other collapses
+                    ELEMENT_EDITORS_COLLAPSES.not(e.target).collapse('hide')
+                }).on('shown.bs.collapse', function (e) {
+                    //Adjust size of location map to changed UI
+                    vm.locationMapApi.updateMapSize();
+
+                    //Scroll to top of the visible collapse
+                    $('html, body').animate({
+                        scrollTop: $(e.target).offset().top + 200
+                    }, 1000);
+                });
+
+                //TODO enable drawing
+                $timeout(function(){
+                    vm.locationMapApi.enableDrawing("Circle");
+                }, 100);
+            }
+
             //Expose functions that are used externally
-            angular.extend(vm, {});
+            angular.extend(vm, {
+                mapInitCenter: MAP_INIT_CENTER,
+                mapInitZoom: MAP_INIT_ZOOM
+            });
         }
     ]);

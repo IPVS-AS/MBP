@@ -57,72 +57,164 @@
     </div>
 
     <div id="edit-templates-group">
-        <div class="col-lg-12 panel"
-             style="margin-bottom: 0; background-color: transparent; border: none; border-radius: 0; box-shadow: none;">
-            <div id="edit-devices" class="card collapse" data-parent="#edit-templates-group">
-                <div class="header">
-                    <div class="col-lg-6">
-                        <h2>Device templates</h2>
-                    </div>
-                </div>
-                <div class="body">
-                    ASDF
+        <div id="edit-devices" class="card collapse">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>
+                        <i class="material-icons">devices</i>
+                        Device templates
+                    </h2>
                 </div>
             </div>
+            <div class="body">
+                ASDF
+            </div>
+        </div>
 
-            <div id="edit-locations" class="card collapse" data-parent="#edit-templates-group">
-                <div class="header">
-                    <div class="col-lg-6">
-                        <h2>Location templates</h2>
+        <div id="edit-locations" class="collapse">
+            <div class="col-lg-4">
+                <div class="card edit-templates-list">
+                    <div class="header">
+                        <div class="col-lg-8">
+                            <h2>
+                                <i class="material-icons">location_on</i>
+                                Location templates
+                                <small>Overview about the registered location templates.</small>
+                            </h2>
+                        </div>
+                        <div class="align-right">
+                            <button type="button"
+                                    class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
+                                    ng-click="">
+                                <i class="material-icons">add</i>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div class="body">
-                    ASDF
+                    <div class="body">
+                        <table class="table table-hover">
+                            <thead>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>Location 1</td>
+                                <td>Point</td>
+                                <td class="right">
+                                    <button type="submit" class="btn btn-sm bg-mbp-blue waves-effect waves-float">
+                                        <i class="material-icons" style="font-size:14px; color: white !important;">mode_edit</i>
+                                    </button>
+                                    <button type="submit" class="btn btn-sm bg-red waves-effect waves-float"
+                                            ng-click="">
+                                        <i class="material-icons" style="font-size:14px;">delete</i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Location 2</td>
+                                <td>Polygon</td>
+                                <td class="right">
+                                    <button type="submit" class="btn btn-sm bg-mbp-blue waves-effect waves-float">
+                                        <i class="material-icons" style="font-size:14px; color: white !important;">mode_edit</i>
+                                    </button>
+                                    <button type="submit" class="btn btn-sm bg-red waves-effect waves-float"
+                                            ng-click="">
+                                        <i class="material-icons" style="font-size:14px;">delete</i>
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
-
-            <div id="edit-identifiers" class="card collapse" data-parent="#edit-templates-group">
-                <div class="header">
-                    <div class="col-lg-6">
-                        <h2>Identifier templates</h2>
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="header">
+                        <h2 class="editable" data-toggle="modal" data-target="#modalLocationName"
+                            data-backdrop="static" data-keyboard="false">Location 1
+                            <i class="material-icons" style="font-size: 16px; margin-left: 5px;line-height: 15px;">mode_edit</i>
+                        </h2>
                     </div>
-                </div>
-                <div class="body">
-                    ASDF
+                    <div class="body">
+                        <div class="container-fluid">
+                            <div class="col-lg-3">
+                                <form>
+                                    <label for="email_address">Email Address</label>
+                                    <div class="form-group">
+                                        <div class="form-line">
+                                            <input type="text" id="email_address" class="form-control"
+                                                   placeholder="Enter your email address">
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary m-t-15 waves-effect">LOGIN</button>
+                                </form>
+                            </div>
+                            <div class="col-lg-9">
+                                <location-sketcher-map height="400" api="ctrl.locationMapApi"
+                                                       init-center="ctrl.mapInitCenter"
+                                                       init-zoom="ctrl.mapInitZoom">
+                                </location-sketcher-map>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <div id="edit-capabilities" class="card collapse" data-parent="#edit-templates-group">
-                <div class="header">
-                    <div class="col-lg-6">
-                        <h2>Capability templates</h2>
-                    </div>
-                </div>
-                <div class="body">
-                    ASDF
+        <div id="edit-identifiers" class="card collapse">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>
+                        <i class="material-icons">label</i>
+                        Identifier templates
+                    </h2>
                 </div>
             </div>
+            <div class="body">
+                ASDF
+            </div>
+        </div>
 
-            <div id="edit-context" class="card collapse" data-parent="#edit-templates-group">
-                <div class="header">
-                    <div class="col-lg-6">
-                        <h2>Context templates</h2>
-                    </div>
-                </div>
-                <div class="body">
-                    ASDF
+        <div id="edit-capabilities" class="card collapse">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>
+                        <i class="material-icons">list</i>
+                        Capability templates
+                    </h2>
                 </div>
             </div>
+            <div class="body">
+                ASDF
+            </div>
+        </div>
 
-            <div id="edit-attachments" class="card collapse" data-parent="#edit-templates-group">
-                <div class="header">
-                    <div class="col-lg-6">
-                        <h2>Attachment templates</h2>
-                    </div>
+        <div id="edit-context" class="card collapse">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>
+                        <i class="material-icons">share</i>
+                        Context templates
+                    </h2>
                 </div>
-                <div class="body">
-                    ASDF
+            </div>
+            <div class="body">
+                ASDF
+            </div>
+        </div>
+
+        <div id="edit-attachments" class="card collapse">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>
+                        <i class="material-icons">lightbulb_outline</i>
+                        Attachment templates
+                    </h2>
                 </div>
+            </div>
+            <div class="body">
+                ASDF
             </div>
         </div>
     </div>

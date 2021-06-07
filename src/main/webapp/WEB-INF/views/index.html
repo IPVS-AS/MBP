@@ -48,14 +48,8 @@
     <!-- Dropzone CSS -->
     <link th:href="@{/plugins/dropzone/min/dropzone.min.css}" rel="stylesheet"/>
 
-    <!-- Custom Css -->
-    <link th:href="@{/css/style.css}" rel="stylesheet">
-
     <!-- Directive styles -->
     <link th:href="@{/css/charts.css}" rel="stylesheet">
-
-    <!-- Additional styles -->
-    <link th:href="@{/css/style_additional.css}" rel="stylesheet">
 
     <!-- AdminBSB Themes. You can choose a theme from css/themes instead of get all themes -->
     <link th:href="@{/css/themes/all-themes.css}" rel="stylesheet"/>
@@ -96,7 +90,13 @@
     <!-- GitHub Fork Ribbon -->
     <link th:href="@{/plugins/gh-fork-ribbon/gh-fork-ribbon.min.css}" rel="stylesheet"/>
 
-    <!-- Discovery styles -->
+    <!-- Openlayers -->
+    <link th:href="@{/plugins/openlayers/openlayers.min.css}" rel="stylesheet"/>
+    <link th:href="@{/plugins/openlayers/geocoder.min.css}" rel="stylesheet"/>
+
+    <!-- Custom Css -->
+    <link th:href="@{/css/style.css}" rel="stylesheet">
+    <link th:href="@{/css/style_additional.css}" rel="stylesheet">
     <link th:href="@{/css/discovery.css}" rel="stylesheet">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
@@ -399,6 +399,10 @@
 <!-- CryptoJS -->
 <script th:src="@{/plugins/cryptojs/cryptojs.min.js}"></script>
 
+<!-- Openlayers -->
+<script th:src="@{/plugins/openlayers/openlayers.min.js}"></script>
+<script th:src="@{/plugins/openlayers/geocoder.min.js}"></script>
+
 <!-- Angular -->
 <script th:src="@{/js/app.js}"></script>
 <script th:src="@{/js/services/SessionService.js}"></script>
@@ -438,6 +442,7 @@
 <script th:src="@{/js/directives/env-models/EnvModelTool.js}"></script>
 <script th:src="@{/js/directives/stats/ValueLogStats.js}"></script>
 <script th:src="@{/js/directives/triggers/CEPQueryEditor.js}"></script>
+<script th:src="@{/js/directives/maps/LocationSketcherMap.js}"></script>
 
 <script th:src="@{/js/controllers/index/IndexController.js}"></script>
 <script th:src="@{/js/controllers/ItemListController.js}"></script>
