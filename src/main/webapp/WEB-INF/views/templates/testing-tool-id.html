@@ -1321,8 +1321,8 @@
                                                 Show Trigger values
                                             </a>
                                             <div id="triggerValues-{{rule.id}}" class="collapse">
-                                                <div ng-repeat="(ruleName, valueList) in testReportAnzeige.triggerValues | filter: rule.name">
-                                                    <code>{{valueList.join(", ")}}</code>
+                                                <div ng-repeat=" values in triggerValues | filter:{ruleName:rule.name}:true">
+                                                    <code>{{values.triggerValues.join(", ")}}</code>
                                                 </div>
                                             </div>
                                         </td>

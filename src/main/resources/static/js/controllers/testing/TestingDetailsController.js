@@ -190,9 +190,25 @@ app.controller('TestingDetailsController',
                 getSimulationValuesTestReport(testReport.id);
                 convertConfig(testReport);
                 convertRulesTriggered(testReport.amountRulesTriggered);
+                convertTriggerList(testReport.triggerValues);
                 getRealReportSensorList(testReport);
                 $('#testReport').modal('show');
             };
+
+            function convertTriggerList(triggerValues){
+                let triggeredValuesList = {};
+                let triggeredValuesLi = [];
+                angular.forEach(triggerValues, function (triggerValues, ruleName) {
+                    triggeredValuesLi.push({
+                        "ruleName": ruleName,
+                        "triggerValues": triggerValues
+                    })
+                });
+                triggeredValuesList.table = triggeredValuesLi;
+                console.log( triggeredValuesList.table)
+                $scope.triggerValues = triggeredValuesList.table;
+            }
+
 
             function convertRulesTriggered(amountRulesTriggered) {
 
