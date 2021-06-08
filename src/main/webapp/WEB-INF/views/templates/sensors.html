@@ -150,12 +150,11 @@
                             <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.componentType }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addSensorCtrl.item.errors.componentType }">
-                                    <select class="form-control show-tick" id="sensor-form-select-component-type"
-                                            ng-model="addSensorCtrl.item.componentType">
-                                        <option value="">Select sensor type *</option>
-                                        <option ng-repeat="type in ctrl.sensorTypes" value="{{type.name}}">
-                                            {{type.name}}
-                                        </option>
+                                    <select class="form-control selectpicker show-tick" title="Sensor Type *"
+                                            data-header="Sensor Type *"
+                                            ng-model="addSensorCtrl.item.componentType"
+                                            ng-options="t.name as t.name for t in ctrl.sensorTypes">
+                                        <option value="" selected></option>
                                     </select>
                                 </div>
                                 <span class="help-block"
@@ -165,11 +164,11 @@
                             <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.operator }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addSensorCtrl.item.errors.operator }">
-                                    <select class="form-control show-tick" id="sensor-form-select-operator"
+                                    <select class="form-control selectpicker show-tick" title="Extraction Operator *"
+                                            data-header="Extraction Operator *"
                                             ng-model="addSensorCtrl.item.operatorId"
                                             ng-options="t.id as (t.name) for t in ctrl.operatorList | filter:hideSimulators()">
-                                        <option value="">Select extraction operator *
-                                        <option/>
+                                        <option value="" selected></option>
                                     </select>
                                 </div>
                                 <span class="help-block"
@@ -178,11 +177,11 @@
                             <!-- item.device group -->
                             <div class="form-group" ng-class="{'has-error' : addSensorCtrl.item.errors.device }">
                                 <div class="form-line" ng-class="{'focused error' : addSensorCtrl.item.errors.device }">
-                                    <select class="form-control show-tick" id="sensor-form-select-device"
+                                    <select class="form-control selectpicker show-tick" title="Device *"
+                                            data-header="Device *"
                                             ng-model="addSensorCtrl.item.deviceId"
                                             ng-options="d.id as (d.name) for d in ctrl.deviceList | filter:hideSimulators()">
-                                        <option value="">Select device *
-                                        <option/>
+                                        <option value="" selected></option>
                                     </select>
                                 </div>
                                 <span class="help-block"
@@ -197,7 +196,6 @@
                                             data-header="Access Control Policies"
                                             ng-model="addSensorCtrl.item.accessControlPolicyIds"
                                             ng-options="p.id as (p.name) for p in ctrl.accessControlPolicyList">
-                                        <option value="">Select access control policies
                                     </select>
                                 </div>
                                 <span class="help-block"

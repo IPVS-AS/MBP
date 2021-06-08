@@ -1,24 +1,5 @@
 package de.ipvs.as.mbp.repository;
 
-import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
-import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
-
-import java.util.*;
-import java.util.function.Consumer;
-
-import de.ipvs.as.mbp.MongoConfiguration;
-import org.bson.Document;
-import org.bson.codecs.configuration.CodecRegistry;
-import org.bson.codecs.pojo.PojoCodecProvider;
-import org.bson.conversions.Bson;
-import de.ipvs.as.mbp.domain.valueLog.ValueLog;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Component;
-
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -26,6 +7,26 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
+import de.ipvs.as.mbp.MongoConfiguration;
+import de.ipvs.as.mbp.domain.valueLog.ValueLog;
+import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.PojoCodecProvider;
+import org.bson.conversions.Bson;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Consumer;
+
+import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
+import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 
 /**
  * Represents a repository for persisting and querying value logs, powered by
@@ -37,9 +38,6 @@ import com.mongodb.client.model.UpdateOptions;
  */
 @Component
 public class ValueLogRepository {
-
-    // Name of the database to use for the value logs
-    private static final String DATABASE_NAME = MongoConfiguration.DB_NAME;
 
     // Name of the collection to use for the value logs
     private static final String COLLECTION_NAME = "mongoValueLogs";
@@ -61,12 +59,15 @@ public class ValueLogRepository {
      * @param mongoClient The MongoDB bean to use
      */
     @Autowired
-    private ValueLogRepository(MongoClient mongoClient) {
+    private ValueLogRepository(MongoClient mongoClient, MongoConfiguration mongoConfiguration) {
         // Fetch coded registry for mapping value log objects from and to BSON documents
         CodecRegistry codecRegistry = fromRegistries(com.mongodb.MongoClient.getDefaultCodecRegistry(), fromProviders(PojoCodecProvider.builder().automatic(true).build()));
 
+        //Get database name from configuration
+        String databaseName = mongoConfiguration.getMongoDatabase();
+
         // Get value log database and collection with codec registry
-        this.valueLogDatabase = mongoClient.getDatabase(DATABASE_NAME).withCodecRegistry(codecRegistry);
+        this.valueLogDatabase = mongoClient.getDatabase(databaseName).withCodecRegistry(codecRegistry);
         this.valueLogCollection = valueLogDatabase.getCollection(COLLECTION_NAME, ValueLog.class);
     }
 
@@ -88,10 +89,8 @@ public class ValueLogRepository {
         Document filterQuery = new Document(IDREF_FIELD_NAME, valueLog.getIdref());
         filterQuery.append("nvalues", new Document("$lt", VALUES_PER_DOCUMENT));
 
-        Document valueLogAddDoc = new Document("values", valueLog);
-
         // Query for updating existing documents or creating new ones
-        Document updateQuery = new Document("$push", valueLogAddDoc);
+        Document updateQuery = new Document("$push", new Document("values", valueLog));
         updateQuery.append("$min", new Document("first", epochSeconds));
         updateQuery.append("$max", new Document("last", epochSeconds));
         updateQuery.append("$inc", new Document("nvalues", 1));
@@ -208,8 +207,8 @@ public class ValueLogRepository {
         // Replace root elements with value log sub-documents
         aggregateStages.add(Aggregates.replaceRoot("$values"));
 
-		// Fine-grained sorting on value log level
-		aggregateStages.add(Aggregates.sort(fineSortDocument));
+        // Fine-grained sorting on value log level
+        aggregateStages.add(Aggregates.sort(fineSortDocument));
 
         // Fine-grained offset for pagination on value log level (if necessary)
         if (offset > 0) {

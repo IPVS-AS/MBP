@@ -94,6 +94,11 @@ app.controller('OperatorListController',
                         operatorPreprocessing(operatorList[i]);
                     }
                 }
+
+                // Refresh select picker when the modal is opened
+                $('.modal').on('shown.bs.modal', function () {
+                    $('.selectpicker').selectpicker('refresh');
+                });
             })();
 
             //public

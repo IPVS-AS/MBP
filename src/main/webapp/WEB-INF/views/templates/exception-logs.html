@@ -1,0 +1,72 @@
+<div class="row clearfix" ng-hide="ng-hide">
+    <!-- Card with exception logs table -->
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="header">
+                <div class="col-lg-6">
+                    <h2>Exception logs<small>Log of exceptions that were unexpectedly thrown within the server.</small>
+                    </h2>
+                </div>
+                <div class="align-right">
+                    <button type="button"
+                            class="btn bg-red btn-circle waves-effect waves-circle waves-float m-t-0"
+                            ng-click="ctrl.deleteExceptionLogs()">
+                        <i class="material-icons">delete</i>
+                    </button>
+                </div>
+            </div>
+            <div class="body">
+                <div class="table-responsive">
+                    <table id="exception-logs-table"
+                           class="table table-bordered table-striped table-hover dataTable"
+                           style="width:100%;">
+                        <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>User</th>
+                            <th>Type</th>
+                            <th>Message</th>
+                            <th>Root Cause</th>
+                            <th>Stack trace</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- #END# List of Devices Card -->
+
+    <!-- Modal -->
+    <div class="modal fade" id="showStackTraceModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Exception stack trace
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </h5>
+                </div>
+                <form>
+                    <fieldset>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <pre class="stacktrace-container" style="height:400px;">
+                                    </pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary m-t-0 waves-effect" data-dismiss="modal">
+                                Close
+                            </button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- #END# Modal -->
+</div>

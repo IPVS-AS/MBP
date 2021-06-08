@@ -68,7 +68,8 @@ app.directive('unitInput', ['UnitService', function (UnitService) {
             '<span class="caret"></span>' +
             '</button>' +
             '<ul class="dropdown-menu dropdown-scrollable" role="menu">' +
-            '<li class="dropdown-header" ng-repeat-start="quantity in unitList">{{quantity.name}}</li>' +
+            '<input disable-auto-close type="search" ng-model="searchFilter" class="units-search-box" placeholder="Search..."/>' +
+            '<li class="dropdown-header" ng-repeat-start="quantity in unitList | filter: searchFilter">{{quantity.name}}</li>' +
             '<li><a href="#" ng-repeat="unit in quantity.units" ng-click="suggestionCallback(unit.format)">{{unit.name}}</a></li>' +
             '<li class="divider" ng-repeat-end></li>' +
             '</ul>' +
