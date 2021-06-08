@@ -11,7 +11,7 @@
                     class="btn bg-light-blue waves-effect">
                 <i class="material-icons">expand_less</i></button>
             </button>
-            {{data.name}}: <b>{{data.type}}{{data.dimension ? "[" + data.dimension + "]" : ""}}</b>
+            {{data.name}}: <b>{{data.type}}{{data.size ? "[" + data.size + "]" : ""}}</b>
 
             <button class="btn bg-green waves-effect" type="button" ng-click="edit(data)" ng-show="!data.isRoot"
             style="padding-left: 8px;padding-right: 8px;padding-bottom: 4px;padding-top: 4px;"><i
@@ -77,7 +77,7 @@
                     </th>
                     <td>
                         <input class="form-control" type="number"
-                               placeholder="1" ng-model="data.dimension" ng-change="parseToDataModelJson()"/>
+                               placeholder="1" ng-model="data.size" ng-change="parseToDataModelJson()"/>
                     </td>
                 </tr>
                 <tr ng-show="data.type != 'array' && data.type != 'object'">
