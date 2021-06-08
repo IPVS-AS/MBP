@@ -8,6 +8,8 @@ import json
 import os, fnmatch
 from os.path import expanduser
 import random
+from random import randint
+
 
 ############################
 # MQTT Client
@@ -104,7 +106,7 @@ def main(argv):
          outputValue2 = random.choice([20.0, 20.5, 21.0, 22.0, 22.5, 25.5, 30.0, 30.1, 31.5, 29.9, 35.0])
          outputValue3 = random.choice([20.0, 20.5, 21.0, 22.0, 22.5, 25.5, 30.0, 30.1, 31.5, 29.9, 35.0])
          
-         msg_pub = {"component": component.upper(), "id": component_id, "value": {"val1": outputValue, "val2": outputValue2, "val3": outputValue3}}
+         msg_pub = {"component": component.upper(), "id": component_id, "value": {"binaryVal": "ABCabc==","doubleVal": random.uniform(0.0, 80.0), "intVal": randint(0, 80), "dateVal": "26.02.2021 11:02:15.156", "stringVal": "Dies ist ein Test-String", "booleanVal": random.choice([True, False]), "longVal": randint(0, 100000), "decimal128Val": str(random.uniform(0.0, 100000000.0))}};
          publisher.sendMessage (topic_pub, json.dumps(msg_pub))
          #publisher.sendMessage (topic_pub, "42")
 

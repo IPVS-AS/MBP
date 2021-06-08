@@ -25,7 +25,7 @@
 		"description": "",
 		"semanticHint": "",
 		"type": "array",
-		"dimension": 4,
+		"size": 4,
 		"parent": "schema",
 		"children": ["val2"]
 	},
@@ -44,7 +44,7 @@
 		"semanticHint": "",
 		"type": "array",
 		"parent": "schema",
-		"dimension": 4,
+		"size": 4,
 		"children": ["arr3"]
 	},
 	{
@@ -53,7 +53,7 @@
 		"semanticHint": "",
 		"type": "array",
 		"parent": "arr2",
-		"dimension": 4,
+		"size": 4,
 		"children": ["val3"]
 	},
 	{
@@ -70,7 +70,7 @@
 		"semanticHint": "",
 		"type": "array",
 		"parent": "schema",
-		"dimension": 4,
+		"size": 4,
 		"children": ["obj1"]
 	},
 	{
@@ -87,7 +87,7 @@
 		"semanticHint": "",
 		"type": "array",
 		"parent": "obj1",
-		"dimension": 4,
+		"size": 4,
 		"children": ["val4"]
 	},
 	{
