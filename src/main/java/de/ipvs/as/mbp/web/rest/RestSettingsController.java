@@ -3,6 +3,7 @@ package de.ipvs.as.mbp.web.rest;
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.settings.MBPInfo;
 import de.ipvs.as.mbp.domain.settings.Settings;
+import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
 import de.ipvs.as.mbp.service.UserEntityService;
 import de.ipvs.as.mbp.service.settings.DefaultOperatorService;
@@ -17,8 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
 
 /**
  * REST Controller for settings related REST requests.
@@ -87,7 +86,7 @@ public class RestSettingsController {
     @PostMapping(value = "/default-test-components")
     @ApiOperation(value = "Loads default components from the resource directory of the MBP and makes them available for usage in the Testing-Tool by all users.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
-    public ResponseEntity<Void> reinstallTestingComponents()  {
+    public ResponseEntity<Void> reinstallTestingComponents() {
 
         // Delete & reinstall all default testing components
         defaultTestingComponents.replaceTestDevice();
@@ -108,7 +107,7 @@ public class RestSettingsController {
     @PostMapping(value = "/test-components-redeploy")
     @ApiOperation(value = "Redeploy the default sensors/actuator from the resource directory of the MBP for usage in the Testing-Tool by all users.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
-    public ResponseEntity<Void> redeployTestingComponents()  {
+    public ResponseEntity<Void> redeployTestingComponents() {
 
         // First delete all default testing components
         defaultTestingComponents.redeployComponents();
@@ -116,7 +115,6 @@ public class RestSettingsController {
         // Respond
         return ResponseEntity.ok().build();
     }
-
 
 
     /**
@@ -143,11 +141,16 @@ public class RestSettingsController {
     @PostMapping
     @ApiOperation(value = "Modifies the current settings of the platform", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to modify the settings")})
-    public ResponseEntity<Void> saveSettings(@RequestBody Settings settings) throws MissingAdminPrivilegesException, IOException, MqttException {
+    public ResponseEntity<Void> saveSettings(@RequestBody Settings settings) throws MissingAdminPrivilegesException {
+        //Require admin permissions
         userEntityService.requireAdmin();
 
         // Update settings and update MBP components if necessary
-        settingsService.saveSettings(settings);
+        try {
+            settingsService.updateSettings(settings);
+        } catch (MqttException e) {
+            throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not establish connection to MQTT broker.");
+        }
 
         //Everything fine
         return ResponseEntity.ok().build();
