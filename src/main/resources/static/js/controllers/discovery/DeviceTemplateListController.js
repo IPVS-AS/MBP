@@ -20,6 +20,9 @@ app.controller('DeviceTemplateListController',
 
             let vm = this;
 
+            //Define models for UI input
+            vm.locationInput = {};
+
             /**
              * Initializing function, sets up basic things.
              */
@@ -103,11 +106,6 @@ app.controller('DeviceTemplateListController',
                         scrollTop: $(e.target).offset().top + 200
                     }, 1000);
                 });
-
-                //TODO enable drawing
-                $timeout(function(){
-                    vm.locationMapApi.enableDrawing("Circle");
-                }, 100);
             }
 
             //Expose functions that are used externally

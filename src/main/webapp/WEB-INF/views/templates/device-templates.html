@@ -131,23 +131,80 @@
             <div class="col-lg-8">
                 <div class="card">
                     <div class="header">
-                        <h2 class="editable" data-toggle="modal" data-target="#modalLocationName"
-                            data-backdrop="static" data-keyboard="false">Location 1
+                        <h2 class="editable" ng-hide="location_name_edit" ng-click="location_name_edit=true;">
+                            {{ctrl.locationInput.name}}
                             <i class="material-icons" style="font-size: 16px; margin-left: 5px;line-height: 15px;">mode_edit</i>
+                        </h2>
+                        <h2 ng-show="location_name_edit">
+                            <form class="form-inline" ng-submit="location_name_edit=false;">
+                                <div class="form-group">
+                                    <div class="input-group form-line">
+                                        <input type="text" class="form-control" ng-model="ctrl.locationInput.name"
+                                               placeholder="Enter name..."/>
+                                        <div class="input-group-btn"
+                                             style="position:absolute; right:0; top:-10px; z-index: 5;">
+                                            <button type="submit" class="btn btn-sm bg-grey m-t-15 waves-effect">
+                                                Save
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
                         </h2>
                     </div>
                     <div class="body">
                         <div class="container-fluid">
                             <div class="col-lg-3">
-                                <form>
-                                    <label for="email_address">Email Address</label>
+                                <form ng-submit="ctrl.saveLocation()">
+                                    <label>Location type:</label>
                                     <div class="form-group">
                                         <div class="form-line">
-                                            <input type="text" id="email_address" class="form-control"
-                                                   placeholder="Enter your email address">
+                                            <select class="form-control" ng-model="ctrl.locationInput.type">
+                                                <option value="" selected="selected">Select...</option>
+                                                <option value="Informal">Informal</option>
+                                                <option value="Point">Point</option>
+                                                <option value="Circle">Circle Area</option>
+                                                <option value="Polygon">Polygon Area</option>
+                                            </select>
                                         </div>
                                     </div>
-                                    <button type="submit" class="btn btn-primary m-t-15 waves-effect">LOGIN</button>
+                                    <br/>
+                                    <small ng-show="ctrl.locationInput.type === 'Informal'">Location
+                                        description...</small>
+                                    <div class="form-group" ng-show="ctrl.locationInput.type === 'Informal'">
+                                        <div class="form-line">
+                                            <select class="form-control" ng-model="ctrl.locationInput.operator">
+                                                <option value="" selected="selected">Select...</option>
+                                                <option value="equals">equals</option>
+                                                <option value="contains">contains</option>
+                                                <option value="begins">begins with</option>
+                                                <option value="ends">ends with</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" ng-show="ctrl.locationInput.type === 'Informal'">
+                                        <div class="form-line">
+                                            <input type="text" class="form-control"
+                                                   ng-model="ctrl.locationInput.description"
+                                                   placeholder="Enter match..."/>
+                                        </div>
+                                    </div>
+                                    <small ng-show="ctrl.locationInput.type === 'Point'">You can either enter the
+                                        coordinates below or pick the location on the map.</small>
+                                    <div class="form-group" ng-show="ctrl.locationInput.type === 'Point'"
+                                         style="margin-bottom:0;">
+                                        <div class="form-line">
+                                            <input type="number" class="form-control"
+                                                   ng-model="ctrl.locationInput.latitude" placeholder="Latitude"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" ng-show="ctrl.locationInput.type === 'Point'">
+                                        <div class="form-line">
+                                            <input type="number" class="form-control"
+                                                   ng-model="ctrl.locationInput.longitude" placeholder="Longitude"/>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary m-t-15 waves-effect">Save</button>
                                 </form>
                             </div>
                             <div class="col-lg-9">
