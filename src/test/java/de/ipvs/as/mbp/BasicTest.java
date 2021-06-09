@@ -1,6 +1,7 @@
 package de.ipvs.as.mbp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.device.DeviceDTO;
 import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.KeyPairRepository;
@@ -9,11 +10,11 @@ import de.ipvs.as.mbp.service.UserService;
 import de.ipvs.as.mbp.util.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -48,10 +49,7 @@ public class BasicTest extends BaseIntegrationTest {
 
     @Test
     @WithMockUser(username = "admin", password = "12345")
-    void createDeviceTest() throws Exception {
-        System.out.println("User List: " + userService.getAll(Pageable.unpaged()).toList());
-        System.out.println("User at test start" + userService.getLoggedInUser());
-
+    void createDevice_returnOk() throws Exception {
         DeviceDTO requestDto = new DeviceDTO();
         requestDto.setName("testDevice");
         requestDto.setUsername("admin");
@@ -69,11 +67,46 @@ public class BasicTest extends BaseIntegrationTest {
                 .andDo(print())
                 .andExpect(status().isOk()).andReturn();
 
-        System.out.println(result.getResponse().getContentAsString());
+        Device responseDevice = objectMapper.readValue(result.getResponse().getContentAsString(), Device.class);
 
-        //Device device = objectMapper.convertValue(result.getResponse().getContentAsString(), Device.class);
+        Device deviceFromDB = userEntityService.getForId(deviceRepository, responseDevice.getId());
 
-        //Device deviceFromDB = userEntityService.getForId(deviceRepository, device.getId());
-        //System.out.println(deviceFromDB);
+        assertThat(responseDevice.getId()).isEqualTo(deviceFromDB.getId());
+        assertThat(deviceFromDB.getName()).isEqualTo(requestDto.getName());
+        assertThat(responseDevice.getName()).isEqualTo(requestDto.getName());
+        assertThat(deviceFromDB.getUsername()).isEqualTo(requestDto.getUsername());
+        assertThat(responseDevice.getUsername()).isEqualTo(requestDto.getUsername());
+        assertThat(deviceFromDB.getPassword()).isEqualTo(requestDto.getPassword());
+        assertThat(responseDevice.getPassword()).isNull();
+        assertThat(deviceFromDB.getComponentType()).isEqualTo(requestDto.getComponentType());
+        assertThat(responseDevice.getComponentType()).isEqualTo(requestDto.getComponentType());
+        assertThat(deviceFromDB.getIpAddress()).isEqualTo(requestDto.getIpAddress());
+        assertThat(responseDevice.getIpAddress()).isEqualTo(requestDto.getIpAddress());
     }
+
+    @Test
+    @WithMockUser(username = "admin", password = "12345")
+    void createDevice_returnConflict() throws Exception {
+        DeviceDTO requestDto = new DeviceDTO();
+        requestDto.setName("testDevice");
+        requestDto.setUsername("admin");
+        requestDto.setPassword("12345");
+        requestDto.setIpAddress("127.0.0.1");
+        requestDto.setComponentType("Computer");
+
+        mockMvc.perform(post(RestConfiguration.BASE_PATH + "/devices")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(requestDto))
+                .characterEncoding("utf-8"))
+                .andDo(print())
+                .andExpect(status().isOk()).andReturn();
+
+        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/devices")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(requestDto))
+                .characterEncoding("utf-8"))
+                .andDo(print())
+                .andExpect(status().isConflict()).andReturn();
+    }
+
 }
