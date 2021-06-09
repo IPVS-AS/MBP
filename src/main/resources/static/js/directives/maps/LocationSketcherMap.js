@@ -5,7 +5,7 @@
 /**
  * Directive which allows the user to sketch locations on a map.
  */
-app.directive('locationSketcherMap', ['$interval', function ($interval) {
+app.directive('locationSketcherMap', ['BASE_URI', '$interval', function (BASE_URI, $interval) {
     //Constants
     const ADDRESS_TYPE = 'nominatim';
     const ADDRESS_DATA_PROVIDER = 'osm';
@@ -44,11 +44,119 @@ app.directive('locationSketcherMap', ['$interval', function ($interval) {
         })();
 
         /**
+         * [Public]
+         * Creates a draw interaction for a given geometry type and adds it to the map. In case another
+         * draw interaction was previously added to the map, this will be removed before creating the new one.
+         *
+         * @param type The geometry type to draw
+         */
+        function addDrawInteraction(type) {
+            //Remove previous draw interaction if existing
+            removeDrawInteraction();
+
+            //Create draw interaction
+            drawInteraction = new ol.interaction.Draw({
+                source: vectorSource,
+                type: type || 'point'
+            });
+
+            //Register event when drawing ends and geometry is added
+            drawInteraction.on('drawend', onDrawEnd);
+
+            //Add interaction to map
+            map.addInteraction(drawInteraction);
+        }
+
+        /**
+         * [Public]
+         * Removes the currently active draw interaction from the map.
+         */
+        function removeDrawInteraction() {
+            //Check if draw interaction exists
+            if (drawInteraction == null) {
+                return;
+            }
+
+            //Remove draw interaction
+            map.removeInteraction(drawInteraction);
+            drawInteraction = null;
+        }
+
+        /**
+         * [Public]
+         * Returns the geometries that are currently displayed on the map.
+         * @return The displayed geometries
+         */
+        function getGeometries() {
+            return vectorSource.getFeatures();
+        }
+
+        /**
+         * [Public]
+         * Returns the number of geometries that are currently displayed on the map.
+         * @return The number of geometries
+         */
+        function getGeometriesCount() {
+            return vectorSource.getFeatures().length || 0;
+        }
+
+        /**
+         * [Public]
+         * Removes the geometries that are currently displayed on the map.
+         */
+        function removeGeometries() {
+            //Clear vector source
+            vectorSource.clear();
+        }
+
+        /**
+         * [Public]
+         * Wraps a given geometry as feature and adds it to the map.
+         * @param geometry The geometry to add
+         */
+        function addGeometry(geometry) {
+            //Wrap geometry into feature
+            let feature = new ol.Feature(geometry);
+
+            //Add feature to vector source
+            vectorSource.addFeature(feature)
+        }
+
+        /**
+         * [Public]
+         * Moves the view of the map in order to show a given geometry.
+         * @param geometry The geometry to show
+         */
+        function viewGeometry(geometry) {
+            //Move view of the map to the extent of the geometry
+            map.getView().fit(geometry, {
+                'size': map.getSize(),
+                'maxZoom': 18,
+                'duration': 1000
+            });
+        }
+
+
+        /**
+         * [Private]
          * Initializes the map.
          */
         function initMap() {
             //Resize map container
             ELEMENT_MAP.css({'width': '100%', 'height': attributes.height + 'px'});
+
+            //Define style for vector layer
+            let vectorStyle = new ol.style.Style({
+                image: new ol.style.Icon({
+                    anchor: [0.5, 62],
+                    anchorXUnits: 'fraction',
+                    anchorYUnits: 'pixels',
+                    scale: 0.7,
+                    src: BASE_URI + 'images/discovery/pin.png'
+                }),
+                fill: new ol.style.Fill({color: 'rgba(255, 255, 255, 0.4)'}),
+                stroke: new ol.style.Stroke({color: '#3399CC', width: 1.25})
+            });
 
             //Create data sources
             tileSource = new ol.source.OSM();
@@ -56,7 +164,7 @@ app.directive('locationSketcherMap', ['$interval', function ($interval) {
 
             //Create layers
             tileLayer = new ol.layer.Tile({source: tileSource});
-            vectorLayer = new ol.layer.Vector({source: vectorSource});
+            vectorLayer = new ol.layer.Vector({source: vectorSource, style: vectorStyle});
 
             //Create map
             map = new ol.Map({
@@ -96,25 +204,14 @@ app.directive('locationSketcherMap', ['$interval', function ($interval) {
         }
 
         /**
-         * Creates a draw interaction for a given geometry type and adds it to the map. In case another
-         * draw interaction was previously added to the map, this will be removed before creating the new one.
+         * [Private]
+         * Handles draw end events of the draw interaction.
          *
-         * @param type The geometry type to draw
+         * @param e The event to handle
          */
-        function addDrawInteraction(type) {
-            //Remove previous draw interaction if existing
-            if (drawInteraction != null) {
-                map.removeInteraction(drawInteraction);
-            }
-
-            //Create draw interaction
-            drawInteraction = new ol.interaction.Draw({
-                source: vectorSource,
-                type: type || 'point'
-            });
-
-            //Add interaction to map
-            map.addInteraction(drawInteraction);
+        function onDrawEnd(e) {
+            //Get geometry and trigger finish event
+            scope.drawingFinished({'geometry': e.feature.getGeometry()});
         }
 
         /*
@@ -124,7 +221,13 @@ app.directive('locationSketcherMap', ['$interval', function ($interval) {
             'updateMapSize': function () {
                 map.updateSize();
             },
-            'enableDrawing': addDrawInteraction
+            'enableDrawing': addDrawInteraction,
+            'disableDrawing': removeDrawInteraction,
+            'getGeometries': getGeometries,
+            'getGeometriesCount': getGeometriesCount,
+            'removeGeometries': removeGeometries,
+            'addGeometry': addGeometry,
+            'viewGeometry': viewGeometry
         };
     }
 
@@ -149,9 +252,10 @@ app.directive('locationSketcherMap', ['$interval', function ($interval) {
         ,
         link: link,
         scope: {
+            api: '=api',
             initCenter: '=initCenter',
             initZoom: '=initZoom',
-            api: '=api'
+            drawingFinished: '&drawingFinished'
         }
     };
 }

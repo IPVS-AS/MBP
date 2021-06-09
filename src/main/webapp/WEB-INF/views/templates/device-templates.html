@@ -159,7 +159,8 @@
                                     <label>Location type:</label>
                                     <div class="form-group">
                                         <div class="form-line">
-                                            <select class="form-control" ng-model="ctrl.locationInput.type">
+                                            <select class="form-control" ng-model="ctrl.locationInput.type"
+                                                    ng-change="ctrl.onLocationTypeChange()">
                                                 <option value="" selected="selected">Select...</option>
                                                 <option value="Informal">Informal</option>
                                                 <option value="Point">Point</option>
@@ -168,12 +169,12 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <br/>
                                     <small ng-show="ctrl.locationInput.type === 'Informal'">Location
                                         description...</small>
                                     <div class="form-group" ng-show="ctrl.locationInput.type === 'Informal'">
                                         <div class="form-line">
-                                            <select class="form-control" ng-model="ctrl.locationInput.operator">
+                                            <select class="form-control" ng-model="ctrl.locationInput.operator"
+                                                    style="margin-bottom:0;">
                                                 <option value="" selected="selected">Select...</option>
                                                 <option value="equals">equals</option>
                                                 <option value="contains">contains</option>
@@ -194,23 +195,33 @@
                                     <div class="form-group" ng-show="ctrl.locationInput.type === 'Point'"
                                          style="margin-bottom:0;">
                                         <div class="form-line">
-                                            <input type="number" class="form-control"
-                                                   ng-model="ctrl.locationInput.latitude" placeholder="Latitude"/>
+                                            <input type="number" class="form-control" placeholder="Latitude"
+                                                   min="-90" max="90" step="0.000001"
+                                                   ng-model="ctrl.locationInput.latitude"/>
                                         </div>
                                     </div>
-                                    <div class="form-group" ng-show="ctrl.locationInput.type === 'Point'">
+                                    <div class="form-group" ng-show="ctrl.locationInput.type === 'Point'"
+                                         style="margin-bottom: 0;">
                                         <div class="form-line">
-                                            <input type="number" class="form-control"
-                                                   ng-model="ctrl.locationInput.longitude" placeholder="Longitude"/>
+                                            <input type="number" class="form-control" placeholder="Longitude"
+                                                   min="-180" max="180" step="0.000001"
+                                                   ng-model="ctrl.locationInput.longitude"/>
                                         </div>
                                     </div>
+                                    <button class="btn btn-block btn-xs btn-default m-t-15 waves-effect"
+                                            ng-show="['Point', 'Circle', 'Polygon'].includes(ctrl.locationInput.type);"
+                                            ng-click="ctrl.onLocationChange()" style="margin: 0;">
+                                        <i class="material-icons">my_location</i>&nbsp;&nbsp;View
+                                    </button>
+                                    <br/>
                                     <button type="submit" class="btn btn-primary m-t-15 waves-effect">Save</button>
                                 </form>
                             </div>
                             <div class="col-lg-9">
                                 <location-sketcher-map height="400" api="ctrl.locationMapApi"
                                                        init-center="ctrl.mapInitCenter"
-                                                       init-zoom="ctrl.mapInitZoom">
+                                                       init-zoom="ctrl.mapInitZoom"
+                                                       drawing-finished="ctrl.onDrawingFinished(geometry)">
                                 </location-sketcher-map>
                             </div>
                         </div>

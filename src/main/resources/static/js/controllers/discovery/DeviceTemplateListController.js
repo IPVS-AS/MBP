@@ -33,6 +33,92 @@ app.controller('DeviceTemplateListController',
             })();
 
             /**
+             * [Public]
+             * Handles change events with respect to the location type, triggered by the user via the select element.
+             */
+            function onLocationTypeChange() {
+                //Remove the geometries that are currently visible on the map
+                vm.locationMapApi.removeGeometries();
+
+                //Check for selected location type
+                if (!(["Point", "Circle", "Polygon"].includes(vm.locationInput.type))) {
+                    //Disable drawing
+                    vm.locationMapApi.disableDrawing();
+                    return;
+                }
+
+                //Enable draw interaction for the selected type
+                vm.locationMapApi.enableDrawing(vm.locationInput.type);
+            }
+
+            /**
+             * [Public]
+             * Handles change events with respect to the location parameters.
+             */
+            function onLocationChange() {
+                //Geometry to add
+                let geometry = null;
+
+                //Check for location type
+                switch (vm.locationInput.type) {
+                    case "Point":
+                        //Determine coordinates of the point
+                        let coordinates = ol.proj.fromLonLat([vm.locationInput.longitude || 0,
+                            vm.locationInput.latitude || 0])
+
+                        //Create point geometry
+                        geometry = new ol.geom.Point(coordinates, "XY");
+                }
+
+                //Prepare map and UI
+                onLocationMapDrawingFinished(geometry);
+
+                //Add new geometry to map
+                vm.locationMapApi.addGeometry(geometry);
+
+                //Move view of the map in order to show the geometry
+                vm.locationMapApi.viewGeometry(geometry);
+            }
+
+
+            /**
+             * [Public]
+             * Handles the events when the user finished the drawing of a geometry.
+             *
+             * @param geometry The created geometry
+             */
+            function onLocationMapDrawingFinished(geometry) {
+                //Get geometry type
+                let geometryType = geometry.getType();
+
+                //Check whether selected type and geometry match
+                if (geometryType !== vm.locationInput.type) {
+                    return;
+                }
+
+                //Remove the geometries that are currently visible on the map
+                vm.locationMapApi.removeGeometries();
+
+                //Update location model according to the geometry
+                switch (geometryType) {
+                    case "Point":
+                        //Get coordinates
+                        let coordinates = ol.proj.toLonLat(geometry.getCoordinates());
+
+                        //Update models
+                        $timeout(() => {
+                            vm.locationInput.longitude = Math.round((coordinates[0] + Number.EPSILON) * 1e6) / 1e6;
+                            vm.locationInput.latitude = Math.round((coordinates[1] + Number.EPSILON) * 1e6) / 1e6;
+                        }, 10);
+
+                    case "Circle":
+                        break;
+                    case "Polygon":
+                        break;
+                }
+            }
+
+            /**
              * [Private]
              * Initializes the templates main menu.
              */
@@ -111,7 +197,10 @@ app.controller('DeviceTemplateListController',
             //Expose functions that are used externally
             angular.extend(vm, {
                 mapInitCenter: MAP_INIT_CENTER,
-                mapInitZoom: MAP_INIT_ZOOM
+                mapInitZoom: MAP_INIT_ZOOM,
+                onLocationTypeChange: onLocationTypeChange,
+                onLocationChange: onLocationChange,
+                onDrawingFinished: onLocationMapDrawingFinished
             });
         }
     ]);
