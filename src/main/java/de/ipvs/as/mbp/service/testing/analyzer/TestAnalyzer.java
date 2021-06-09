@@ -12,7 +12,6 @@ import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiverObserver;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
 import de.ipvs.as.mbp.service.testing.executor.TestExecutor;
-import de.ipvs.as.mbp.web.rest.RestDeploymentController;
 import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -37,8 +36,6 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
     @Autowired
     private TestRepository testRepo;
 
-    @Autowired
-    private RestDeploymentController restDeploymentController;
 
     @Autowired
     private RuleRepository ruleRepository;
@@ -47,7 +44,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
     private TestExecutor testExecutor;
 
     @Autowired
-    private PropertiesService propertiesService;
+    private final PropertiesService propertiesService;
 
     @Autowired
     private DeploymentWrapper deploymentWrapper;
@@ -75,7 +72,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
 
 
     /**
-     * Returns a list of all incomming values of the sensors of the activeted tests.
+     * Returns a list of all incoming values of the sensors of the activated tests.
      *
      * @return list of test values
      */
@@ -84,7 +81,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
     }
 
     /**
-     * Sets a list of all incomming values of the sensors of the activeted tests.
+     * Sets a list of all incoming values of the sensors of the activated tests.
      *
      * @param testValues list of test values
      */
@@ -122,11 +119,9 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
         boolean response = false;
         for (Sensor sensor : testSensors) {
             boolean sensorRunning = deploymentWrapper.isComponentRunning(sensor);
-
-            if (sensorRunning == true) {
+            if (sensorRunning) {
                 response = true;
             }
-
         }
 
         return response;
@@ -140,20 +135,26 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      */
     public Map<String, LinkedHashMap<Long, Double>> isFinished(String reportId, String testId, Boolean useNewData) {
         boolean response = true;
-        TestReport testReport = testReportRepository.findById(reportId).get();
-        TestDetails test = testDetailsRepository.findById(testId).get();
+        //Try to find specific test report and test
+        Optional<TestReport> testReportOptional = testReportRepository.findById(reportId);
+        Optional<TestDetails> testDetailsOptional = testDetailsRepository.findById(testId);
 
-        while (response) {
-            // testRunning
-            if(useNewData){
-                response = areSensorsRunning(test.getSensor());
-            } else {
-                response = areSensorsRunning(testReport.getSensor());
+        if (testReportOptional.isPresent() && testDetailsOptional.isPresent()) {
+            TestReport testReport = testReportOptional.get();
+            TestDetails test = testDetailsOptional.get();
+
+            while (response) {
+                // testRunning
+                if (useNewData) {
+                    response = areSensorsRunning(test.getSensor());
+                } else {
+                    response = areSensorsRunning(testReport.getSensor());
+                }
             }
+            // set and save end time
+            testReport.setEndTestTimeNow();
+            testReportRepository.save(testReport);
         }
-        // set and save end time
-        testReport.setEndTestTimeNow();
-        testReportRepository.save(testReport);
 
         return testEngine.getTestValues();
     }
@@ -171,23 +172,36 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
         boolean triggerRules = test.isTriggerRules();
 
         if (triggerRules) {
-            if (triggerValuesMap.size() == ruleNames.size()) {
-                for (String ruleName : ruleNames) {
-                    if (triggerValuesMap.containsKey(ruleName)) {
-                        success = "Successful";
-                    } else {
-                        success = "Not Successful";
-                        break;
-                    }
-                }
-
-            }
+            success = compareTriggeredRules(triggerValuesMap, ruleNames);
         } else {
             if (triggerValuesMap.size() == 0) {
                 success = "Successful";
             }
         }
 
+        return success;
+    }
+
+    /**
+     * Compares the rules to be triggered and the actually triggered rules during the test for the success calculation.
+     *
+     *
+     * @param triggerValuesMap List of all triggered rules and values during the test
+     * @param ruleNames names of the rules to be triggered during the test
+     * @return
+     */
+    private String compareTriggeredRules(Map<String, List<Double>> triggerValuesMap, List<String> ruleNames) {
+        String success = "Not Successful";
+        if (triggerValuesMap.size() == ruleNames.size()) {
+            for (String ruleName : ruleNames) {
+                if (triggerValuesMap.containsKey(ruleName)) {
+                    success = "Successful";
+                } else {
+                    success = "Not Successful";
+                    break;
+                }
+            }
+        }
         return success;
     }
 
@@ -198,9 +212,37 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      * @param testId ID of the executed test
      */
     public void testSuccess(String testId, String reportId) {
-        TestDetails test = testDetailsRepository.findById(testId).get();
-        TestReport testReport = testReportRepository.findById(reportId).get();
+        //Try to find specific test report and test
+        Optional<TestReport> testReportOptional = testReportRepository.findById(reportId);
+        Optional<TestDetails> testDetailsOptional = testDetailsRepository.findById(testId);
 
+        if (testReportOptional.isPresent() && testDetailsOptional.isPresent()) {
+            TestReport testReport = testReportOptional.get();
+            TestDetails test = testDetailsOptional.get();
+
+            // Calculate report information
+            List<String> ruleNames = getRuleNames(testReport);
+            Map<String, List<Double>> triggerValues = getTriggerValues(reportId);
+            List<String> rulesExecuted = getRulesExecuted(triggerValues);
+            String successResponse = successCalc(test, triggerValues, ruleNames);
+
+            // Save Report information
+            testReport.setTriggerValues(triggerValues);
+            testReport.setSuccessful(successResponse);
+            testReport.setRulesExecuted(rulesExecuted);
+            testReportRepository.save(testReport);
+            testDetailsRepository.save(test);
+        }
+
+    }
+
+    /**
+     * Returns the correct list of rule names for the success calculation.
+     *
+     * @param testReport of the test execution with all relevant information
+     * @return list of rule names needed for the success calculation
+     */
+    private List<String> getRuleNames(TestReport testReport) {
         List<String> ruleNames = new ArrayList<>();
         List<Rule> ruleList = testReport.getRules();
 
@@ -214,48 +256,57 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
                 ruleNames.add(RERUN_IDENTIFIER + rule.getName());
             }
         }
-
-        // get trigger values
-        Map<String, List<Double>> triggerValues = getTriggerValues(testId, reportId);
-        // get rules executed
-        List<String> rulesExecuted = getRulesExecuted(triggerValues);
-        //calculate success
-        String successResponse = successCalc(test, triggerValues, ruleNames);
-
-        testReport.setTriggerValues(triggerValues);
-        testReport.setTriggerValues(triggerValues);
-        testReport.setSuccessful(successResponse);
-        testReport.setRulesExecuted(rulesExecuted);
-        testReportRepository.save(testReport);
-        testDetailsRepository.save(test);
+        return ruleNames;
     }
+
 
     /**
      * Returns a list of all values that triggered the selected rules in the test, between start and end time.
      *
-     * @param testId ID of the executed test
      * @return List of trigger-values
      */
-    public Map<String, List<Double>> getTriggerValues(String testId, String reportId) {
+    public Map<String, List<Double>> getTriggerValues(String reportId) {
         Map<String, List<Double>> testValues = new HashMap<>();
 
+        //Try to find specific test report
+        Optional<TestReport> testReportOptional = testReportRepository.findById(reportId);
 
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
-        TestReport testReport = testReportRepository.findById(reportId).get();
-        List<String> ruleNames = new ArrayList<>();
-        List<String> triggerID = new ArrayList<>();
+        if (testReportOptional.isPresent()) {
+            TestReport testReport = testReportOptional.get();
 
-        Integer startTime = testReport.getStartTimeUnix();
-        long endTime = testReport.getEndTimeUnix();
+            // get start & end times of the test
+            Integer startTime = testReport.getStartTimeUnix();
+            long endTime = testReport.getEndTimeUnix();
 
-        // get all triggerID's and rule names of the corresponding rules to the test
-        List<Rule> corresRules = getCorrespondingRules(testReport.getRules(), testReport.getSensor());
-        for (Rule rule : corresRules) {
-            ruleNames.add(rule.getName());
-            triggerID.add(rule.getTrigger().getId());
+
+            List<String> ruleNames = new ArrayList<>();
+            List<String> triggerID = new ArrayList<>();
+
+            // get all triggerID's and rule names of the corresponding rules to the test
+            List<Rule> corresRules = getCorrespondingRules(testReport.getRules(), testReport.getSensor());
+            for (Rule rule : corresRules) {
+                ruleNames.add(rule.getName());
+                triggerID.add(rule.getTrigger().getId());
+            }
+
+            testValues = extractTriggerVals(testValues, startTime, endTime, ruleNames, triggerID);
         }
 
 
+        return testValues;
+    }
+
+    /**
+     * Extract the correct trigger values that occurred between the start and end times of the test.
+     *
+     * @param testValues list of all
+     * @param startTime of the executed test
+     * @param endTime of the executed test
+     * @param ruleNames which should be observed during the test
+     * @param triggerID trigger id's of the rules to be observed
+     * @return list of trigger values
+     */
+    private  Map<String, List<Double>> extractTriggerVals(Map<String, List<Double>> testValues, Integer startTime, long endTime, List<String> ruleNames, List<String> triggerID) {
         // Get all trigger values for  the test rules between start and end time
         for (int i = 0; i < ruleNames.size(); i++) {
             List<Double> values = new ArrayList<>();
@@ -270,8 +321,6 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
                         if (timeTiggerVal >= startTime && timeTiggerVal <= endTime) {
                             values.add(timeTiggerValue.get("value"));
                         }
-
-
                     }
                 }
                 if (values.size() > 0) {
@@ -280,17 +329,15 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
             }
 
         }
+
         return testValues;
     }
 
 
-
-
-
     /**
-     * returns all rules that belong to a sensor that is part of the test and thus also belongs to the tested IoT-application.
+     * Returns all rules that belong to a sensor that is part of the test and thus also belongs to the tested IoT-application.
      *
-     * @param testRules to be executed test
+     * @param testRules  to be executed test
      * @param sensorList list of sensors of the test
      * @return list of all rules corresponding to the specific test
      */
@@ -301,10 +348,9 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
 
         // go through all rule triggers and check if the sensor id is included
         List<RuleTrigger> allRules = ruleTriggerRepository.findAll();
-        for (int i = 0; i < sensorList.size(); i++) {
+        for (Sensor value : sensorList) {
             for (RuleTrigger trigger : allRules) {
-                Sensor sensor = sensorList.get(i);
-                String sensorID = sensor.getId();
+                String sensorID = value.getId();
                 if (trigger.getQuery().contains(sensorID)) {
                     for (Rule nextRule : ruleRepository.findAll()) {
                         if (nextRule.getTrigger().getId().equals(trigger.getId())) {

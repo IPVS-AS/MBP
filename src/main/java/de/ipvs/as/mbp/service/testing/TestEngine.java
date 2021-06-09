@@ -74,8 +74,6 @@ public class TestEngine {
     private TestReportRepository testReportRepository;
 
 
-    @Value("#{'${testingTool.threeDimensionalSensor}'.split(',')}")
-    List<String> THREE_DIM_SIMULATOR_LIST;
 
     @Value("#{'${testingTool.sensorSimulators}'.split(',')}")
     List<String> SIMULATOR_LIST;

@@ -24,11 +24,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             TEMPERATURE: 'TESTING_TemperatureSensor',
             TEMPERATURE_PL: 'TESTING_TemperatureSensorPl',
             HUMIDITY: 'TESTING_HumiditySensor',
-            HUMIDITY_PL: 'TESTING_HumiditySensorPl',
-            ACCELERATION: 'TESTING_AccelerationSensor',
-            ACCELERATION_PL: 'TESTING_AccelerationSensorPl',
-            GPS: 'TESTING_GPSSensor',
-            GPS_PL: 'TESTING_GPSSensorPl'
+            HUMIDITY_PL: 'TESTING_HumiditySensorPl'
         };
 
 

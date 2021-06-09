@@ -23,11 +23,7 @@ app.controller('TestingDetailsController',
             const SIMULATOR_LIST = ['TestingTemperatureSensor',
                 'TestingTemperatureSensorPl',
                 'TestingHumiditySensor',
-                'TestingHumiditySensorPl',
-                'TestingAccelerationSensor',
-                'TestingAccelerationSensorPl',
-                'TestingGPSSensor',
-                'TestingGPSSensorPl'];
+                'TestingHumiditySensorPl'];
             //URL for server requests
             const URL_SIMULATION_VALUES = ENDPOINT_URI + '/test-details/test-report/';
 
@@ -439,33 +435,6 @@ app.controller('TestingDetailsController',
                 let simTime;
                 let amountEvents;
                 let amountAnomalies;
-                let eventGPS;
-                let anomalyGPS;
-                let whoGPS;
-                let latitudeGPS;
-                let longitudeGPS;
-                let heightGPS;
-                let reactionMetersGPS;
-
-                let eventGPSPl;
-                let anomalyGPSPl;
-                let whoGPSPl;
-                let latitudeGPSPl;
-                let longitudeGPSPl;
-                let heightGPSPl;
-                let reactionMetersGPSPl;
-
-                let eventAcc;
-                let anomalyAcc;
-                let weightObjectAcc;
-                let sensitivityClassAcc;
-                let reactionMetersAcc;
-
-                let eventAccPl;
-                let anomalyAccPl;
-                let weightObjectAccPl;
-                let sensitivityClassAccPl;
-                let reactionMetersAccPl;
 
                 vm.rules = [];
                 vm.selectedRealSensor = [];
