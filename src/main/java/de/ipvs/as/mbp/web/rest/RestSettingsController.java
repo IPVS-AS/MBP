@@ -19,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * REST Controller for settings related REST requests.
  */
@@ -38,6 +40,9 @@ public class RestSettingsController {
 
     @Autowired
     private UserEntityService userEntityService;
+
+    @Autowired
+    private List<String> defaultOperatorWhitelist;
 
 
     /**
@@ -71,7 +76,7 @@ public class RestSettingsController {
         userEntityService.requireAdmin();
 
         // Call corresponding service function
-        defaultOperatorService.addDefaultOperators();
+        defaultOperatorService.addDefaultOperators(defaultOperatorWhitelist);
 
         // Respond
         return ResponseEntity.ok().build();

@@ -188,7 +188,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      *
      * @param triggerValuesMap List of all triggered rules and values during the test
      * @param ruleNames names of the rules to be triggered during the test
-     * @return
+     * @return if test was successful or not
      */
     private String compareTriggeredRules(Map<String, List<Double>> triggerValuesMap, List<String> ruleNames) {
         String success = "Not Successful";

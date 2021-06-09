@@ -8,9 +8,9 @@ import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
 import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
-import de.ipvs.as.mbp.domain.testing.TestReport;
 import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.service.cep.trigger.CEPTriggerService;
+import de.ipvs.as.mbp.service.settings.DefaultOperatorService;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +22,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,10 +48,7 @@ public class TestRerunService {
     private RuleRepository ruleRepository;
 
     @Autowired
-    private TestReportRepository testReportRepository;
-
-    @Autowired
-    private TestRerunOperatorService rerunOperatorService;
+    private DefaultOperatorService defaultOperatorService;
 
     @Autowired
     private SensorRepository sensorRepository;
@@ -62,6 +58,9 @@ public class TestRerunService {
 
     @Autowired
     private PropertiesService propertiesService;
+
+    @Autowired
+    private List<String> defaultRerunOperatorWhitelist;
 
     //To resolve ${} in @Value
     @Bean
@@ -94,35 +93,37 @@ public class TestRerunService {
      * @param useNewData information if a test should be repeated
      * @return the updated configuration list
      */
-    public List<List<ParameterInstance>> editUseNewData(String testId, boolean useNewData) {
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
-        List<List<ParameterInstance>> configList = testDetails.getConfig();
+    public ResponseEntity<List<List<ParameterInstance>>> editUseNewData(String testId, boolean useNewData) {
+        Optional<TestDetails> testDetailsOptional = testDetailsRepository.findById(testId);
 
+        if (testDetailsOptional.isPresent()) {
+            TestDetails testDetails = testDetailsOptional.get();
+            List<List<ParameterInstance>> configList = testDetails.getConfig();
 
-        if (!useNewData) {
-            testDetails.setUseNewData(false);
+            testDetails.setUseNewData(useNewData);
 
-        } else {
-            testDetails.setUseNewData(true);
-        }
+            // add or deletes rerun components
+            editRerunComponents(useNewData, testDetails);
 
-        // add or deletes rerun components
-        editRerunComponents(useNewData, testDetails);
-
-        // Change value for the configuration of every sensor simulator of the test
-        for (List<ParameterInstance> config : configList) {
-            for (ParameterInstance parameterInstance : config) {
-                if (parameterInstance.getName().equals("useNewData")) {
-                    parameterInstance.setValue(useNewData);
+            // Change value for the configuration of every sensor simulator of the test
+            for (List<ParameterInstance> config : configList) {
+                for (ParameterInstance parameterInstance : config) {
+                    if (parameterInstance.getName().equals("useNewData")) {
+                        parameterInstance.setValue(useNewData);
+                    }
                 }
             }
+
+            testDetails.setConfig(configList);
+
+            // save the changes in the database
+            testDetailsRepository.save(testDetails);
+
+            return new ResponseEntity<>(configList, HttpStatus.OK);
         }
 
-        testDetails.setConfig(configList);
 
-        // save the changes in the database
-        testDetailsRepository.save(testDetails);
-        return configList;
+        return new ResponseEntity<>(null, HttpStatus.OK);
     }
 
 
@@ -166,6 +167,7 @@ public class TestRerunService {
 
     /**
      * Delete the rerun components registered for the specific test
+     *
      * @param testDetails test for which the rerun components should be deleted
      */
     public void deleteRerunComponents(TestDetails testDetails) {
@@ -186,18 +188,14 @@ public class TestRerunService {
     }
 
     /**
-     * Remove the rerun sensors from the configuration
-     * @param testDetails
+     * Remove the rerun sensors of a specific test from the configuration
+     *
+     * @param testDetails test from which the rerun sensors should be removed
      */
     public void removeRerunSensors(TestDetails testDetails) {
         List<Sensor> newSensorList = testDetails.getSensor();
-        ListIterator<Sensor> iterator = newSensorList.listIterator();
 
-        while (iterator.hasNext()){
-            if(iterator.next().getName().contains(RERUN_IDENTIFIER)){
-                iterator.remove();
-            }
-        }
+        newSensorList.removeIf(sensor -> sensor.getName().contains(RERUN_IDENTIFIER));
 
         testDetails.setSensor(newSensorList);
         testDetailsRepository.save(testDetails);
@@ -230,26 +228,26 @@ public class TestRerunService {
         Sensor newSensor = new Sensor();
         newSensor.setOwner(null);
 
-        Operator rerunOperator = operatorRepository.findByName(RERUN_OPERATOR).get();
-        Device testingDevice = deviceRepository.findByName(TESTING_DEVICE).get();
+        Optional<Operator> rerunOperatorOptional = operatorRepository.findByName(RERUN_OPERATOR);
+        Optional<Device> testingDeviceOptional = deviceRepository.findByName(TESTING_DEVICE);
         String newSensorName = RERUN_IDENTIFIER + realSensorName;
 
         try {
-            if (!sensorRepository.findByName(newSensorName).isPresent()) {
-                if (rerunOperator != null && testingDevice != null) {
-                    // Set all relevant information
-                    newSensor.setName(newSensorName);
-                    newSensor.setComponentType("Computer");
-                    newSensor.setDevice(testingDevice);
-                    newSensor.setOperator(rerunOperator);
+            if (!sensorRepository.findByName(newSensorName).isPresent() && rerunOperatorOptional.isPresent() && testingDeviceOptional.isPresent()) {
 
-                    //Insert new sensor into repository
-                    sensorRepository.insert(newSensor);
-                    sensorRepository.save(newSensor);
-                    triggerService.registerComponentEventType(newSensor);
-                }
+                // Set all relevant information
+                newSensor.setName(newSensorName);
+                newSensor.setComponentType("Computer");
+                newSensor.setDevice(testingDeviceOptional.get());
+                newSensor.setOperator(rerunOperatorOptional.get());
+
+                //Insert new sensor into repository
+                sensorRepository.insert(newSensor);
+                sensorRepository.save(newSensor);
+                triggerService.registerComponentEventType(newSensor);
+
             }
-            if (!testDetails.getSensor().contains(sensorRepository.findByName(newSensorName))) {
+            if (!testDetails.getSensor().contains(sensorRepository.findByName(newSensorName).get())) {
                 // add sensor to the test sensor list
                 addSensor(newSensorName, testDetails);
             }
@@ -406,7 +404,7 @@ public class TestRerunService {
         try {
             if (!operatorRepository.findByName(RERUN_OPERATOR).isPresent()) {
                 //Call corresponding service function
-                rerunOperatorService.addRerunOperators();
+                defaultOperatorService.addDefaultOperators(defaultRerunOperatorWhitelist);
                 response = new ResponseEntity<>("Adapter successfully created", HttpStatus.OK);
             } else {
                 response = new ResponseEntity<>("Adapter already exists.", HttpStatus.OK);

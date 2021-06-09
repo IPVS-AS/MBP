@@ -65,8 +65,6 @@ public class TestExecutor {
     private final String CONFIG_SENSOR_NAME_KEY;
 
 
-    final IDeployer deployer = deployerDispatcher.getDeployer();
-
     //To resolve ${} in @Value
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertyConfigInDev() {
@@ -122,7 +120,6 @@ public class TestExecutor {
                     if (!sensor.getName().contains(RERUN_IDENTIFIER)) {
                         activeTests.put(sensor.getId(), test);
                         list.remove(sensor.getId());
-
                     }
 
                 }
@@ -141,18 +138,21 @@ public class TestExecutor {
 
     }
 
+    /**
+     * Removes the test and the corresponding sensors from the list of activated sensors/tests.
+     *
+     * @param testSensors list of sensors included into de specific test to deactivate
+     * @param useNewData  information if new sensor data should be generated or not
+     */
     public void deactivateTest(List<Sensor> testSensors, Boolean useNewData) {
-
         Map<String, TestDetails> activeTests = getActiveTests();
-        Map<String, LinkedHashMap<Long, Double>> list =
-                testAnalyzer.getTestValues();
+        Map<String, LinkedHashMap<Long, Double>> list = testAnalyzer.getTestValues();
 
         if (useNewData) {
             for (Sensor sensor : testSensors) {
                 if (!sensor.getName().contains(RERUN_IDENTIFIER)) {
                     activeTests.remove(sensor.getId());
                 }
-
             }
         } else {
             for (Sensor sensor : testSensors) {
@@ -166,82 +166,108 @@ public class TestExecutor {
         testAnalyzer.setTestValues(list);
     }
 
+    /**
+     * Reruns a specific test execution with the same configurations an sensor values.
+     *
+     * @param test         tests to be repeated
+     * @param testReportId test report with all needed information for the repetition
+     */
     public void rerunTest(TestDetails test, String testReportId) {
         try {
-
-            TestReport testReport = new TestReport();
             Optional<TestReport> oldReportOptional = testReportRepository.findById(testReportId);
 
             if (oldReportOptional.isPresent()) {
                 TestReport oldReport = oldReportOptional.get();
+                String reportId = setReportInformation(test, oldReport);
 
-                // Set the exact start time of the test
-                testReport.setName(test.getName());
-                testReport.setStartTestTimeNow();
+                if(testReportRepository.findById(reportId).isPresent()){
+                    TestReport updatedReport = testReportRepository.findById(reportId).get();
+                    // add test and sensors to the activation list
+                    activateTest(updatedReport.getSensor(), test.getId(), false);
 
-                // Just add the rerun Sensors to the report information
-                List<Sensor> rerunSensors = addRerunSensorsReport(test);
-                testReport.setSensor(rerunSensors);
+                    // Enable rules that belong to the test
+                    enableRules(test);
 
+                    // start Actuator
+                    startActuator();
 
-                testReport.setConfig(oldReport.getConfig());
-                List<Rule> rerunRules = addRerunRulesReport(oldReport.getRules());
-                List<String> rerunRuleNames = addRerunRuleNamesReport(oldReport.getRuleNames());
+                    // start Sensors
+                    sensorRerunService(updatedReport, oldReport.getSimulationList());
 
-                testReport.setRules(rerunRules);
-                testReport.setRuleNames(rerunRuleNames);
-                testReport.setTriggerRules(oldReport.isTriggerRules());
-                testReport.setUseNewData(false);
+                    // Get List of all simulated Values
+                    Map<String, LinkedHashMap<Long, Double>> valueList = testAnalyzer.isFinished(reportId, test.getId(), false);
 
-                // get  information about the status of the rules before the execution of the test
-                List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(testReport.getRules(), testReport.getSensor());
-                testReport.setRuleInformationBefore(rulesBefore);
-                String reportId = testReportRepository.save(testReport).getId();
+                    List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(updatedReport.getRules(), updatedReport.getSensor());
+                    saveAmountRulesTriggered(reportId, rulesBefore);
+                    saveValues(test, reportId, valueList);
 
-
-                TestReport updatedReport = testReportRepository.findById(reportId).get();
-                // add test and sensors to the activation list
-                activateTest(updatedReport.getSensor(), test.getId(), false);
-
-                // Enable rules that belong to the test
-                enableRules(test);
-
-                // start Actuator
-                startActuator();
-
-
-                sensorRerunService(updatedReport, oldReport.getSimulationList());
-
-                // Get List of all simulated Values
-                Map<String, LinkedHashMap<Long, Double>> valueList =
-                        testAnalyzer.isFinished(reportId, test.getId(), false);
-
-                saveAmountRulesTriggered(reportId, rulesBefore);
-                saveValues(test, reportId, valueList);
-                deactivateTest(test.getSensor(), false);
-                // Check the test for success
-                testAnalyzer.testSuccess(test.getId(), reportId);
-
+                    deactivateTest(test.getSensor(), false);
+                    // Check the test for success
+                    testAnalyzer.testSuccess(test.getId(), reportId);
+                }
             }
-
-
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
-    private List<String> addRerunRuleNamesReport(List<String> ruleNames) {
+
+    /**
+     * Adds and saves the specific report information for a test rerun.
+     *
+     * @param test to be executed
+     * @param oldReport report and configurations of the test to be repeated.
+     * @return Id of the generated test report
+     */
+    private String setReportInformation(TestDetails test, TestReport oldReport) {
+        TestReport testReport = new TestReport();
+
+        // Get information to add
+        List<Sensor> rerunSensors = getRerunSensorsReport(test);
+        List<Rule> rerunRules = getRerunRulesReport(oldReport.getRules());
+        List<String> rerunRuleNames = getRerunRuleNamesReport(oldReport.getRuleNames());
+
+        // enrich the test report with the specific information
+        testReport.setName(test.getName());
+        testReport.setStartTestTimeNow();
+        testReport.setSensor(rerunSensors);
+        testReport.setConfig(oldReport.getConfig());
+        testReport.setRules(rerunRules);
+        testReport.setRuleNames(rerunRuleNames);
+        testReport.setTriggerRules(oldReport.isTriggerRules());
+        testReport.setUseNewData(false);
+
+        // get  information about the status of the rules before the execution of the test
+        List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(testReport.getRules(), testReport.getSensor());
+        testReport.setRuleInformationBefore(rulesBefore);
+        return testReportRepository.save(testReport).getId();
+
+    }
+
+    /**
+     * Returns a list of rule names for the rerun tests filtered by the rerun identifier.
+     *
+     * @param ruleNames list of all rule names of the test to be filtered
+     * @return list of all rerun rule names of the test
+     */
+    private List<String> getRerunRuleNamesReport(List<String> ruleNames) {
         List<String> rerunRuleNames = new ArrayList<>();
 
         for (String ruleName : ruleNames) {
             rerunRuleNames.add(RERUN_IDENTIFIER + ruleName);
-
         }
         return rerunRuleNames;
     }
 
-    private List<Rule> addRerunRulesReport(List<Rule> testRules) {
+
+    /**
+     * Returns a list of rules for the rerun tests filtered by the rerun identifier.
+     *
+     * @param testRules list of all rules of the test to be filtered
+     * @return list of all rerun rules of the test
+     */
+    private List<Rule> getRerunRulesReport(List<Rule> testRules) {
         List<Rule> rerunRules = new ArrayList<>();
 
         for (Rule rule : testRules) {
@@ -253,7 +279,13 @@ public class TestExecutor {
         return rerunRules;
     }
 
-    private List<Sensor> addRerunSensorsReport(TestDetails testDetails) {
+    /**
+     * Returns a list of sensors for the rerun tests filtered by the rerun identifier.
+     *
+     * @param testDetails test sensors to be repeated/executed
+     * @return list of sensors to be started for the rerun
+     */
+    private List<Sensor> getRerunSensorsReport(TestDetails testDetails) {
         List<Sensor> rerunSensors = new ArrayList<>();
 
         for (Sensor sensor : testDetails.getSensor()) {
@@ -266,6 +298,12 @@ public class TestExecutor {
     }
 
 
+    /**
+     *
+     *
+     * @param testReport
+     * @param simulationList
+     */
     private void sensorRerunService(TestReport testReport, Map<String, LinkedHashMap<Long, Double>> simulationList) {
 
         IDeployer deployer = deployerDispatcher.getDeployer();
@@ -551,6 +589,7 @@ public class TestExecutor {
     public void startSensors(Sensor testSensor,
                              List<ParameterInstance> parameterValues) {
 
+        final IDeployer deployer = deployerDispatcher.getDeployer();
 
         if (!deployer.isComponentDeployed(testSensor)) {
             //if not deploy Sensor
@@ -615,6 +654,7 @@ public class TestExecutor {
      */
     private void startActuator() {
 
+        final IDeployer deployer = deployerDispatcher.getDeployer();
         //Try to find specific test report and test
         Optional<Actuator> testingActuatorOptional = actuatorRepository.findByName(TESTING_ACTUATOR);
 
@@ -654,6 +694,7 @@ public class TestExecutor {
      * @param testId of the test to be stopped
      */
     public void stopTest(String testId) {
+        final IDeployer deployer = deployerDispatcher.getDeployer();
         Optional<TestDetails> testDetailsOptional = testDetailsRepository.findById(testId);
 
         if (testDetailsOptional.isPresent()) {
