@@ -168,10 +168,14 @@ app.controller('TestingDetailsController',
                 });
                 for (let i = 0; i < testingDetails.rules.length; i++) {
                     if (i === 0) {
-                        vm.ruleNames = vm.ruleNames + testingDetails.rules[i].name;
+                        if (!testingDetails.rules[i].name.includes(RERUN_PREFIX)) {
+                            vm.ruleNames = vm.ruleNames + testingDetails.rules[i].name;
+                        }
                         vm.actionNames = vm.actionNames + testingDetails.rules[i].actionNames;
                     } else {
-                        vm.ruleNames = vm.ruleNames + ", " + testingDetails.rules[i].name;
+                        if (!testingDetails.rules[i].name.includes(RERUN_PREFIX)) {
+                            vm.ruleNames = vm.ruleNames + ", " + testingDetails.rules[i].name;
+                        }
                         for (let x = 0; x < testingDetails.rules[i].actionNames.length; x++) {
                             if (vm.actionNames.includes(testingDetails.rules[i].actionNames[x])) {
 
@@ -195,7 +199,7 @@ app.controller('TestingDetailsController',
                 $('#testReport').modal('show');
             };
 
-            function convertTriggerList(triggerValues){
+            function convertTriggerList(triggerValues) {
                 let triggeredValuesList = {};
                 let triggeredValuesLi = [];
                 angular.forEach(triggerValues, function (triggerValues, ruleName) {
@@ -205,7 +209,6 @@ app.controller('TestingDetailsController',
                     })
                 });
                 triggeredValuesList.table = triggeredValuesLi;
-                console.log( triggeredValuesList.table)
                 $scope.triggerValues = triggeredValuesList.table;
             }
 
@@ -227,7 +230,6 @@ app.controller('TestingDetailsController',
 
             function getRealReportSensorList(report) {
                 $scope.realSensorList = []
-                console.log(report);
                 angular.forEach(report.sensor, function (sensor, key) {
                     if (!sensor.name.includes("TESTING_")) {
                         $scope.realSensorList.push(sensor)
