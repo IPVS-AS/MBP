@@ -231,7 +231,6 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
             testReport.setSuccessful(successResponse);
             testReport.setRulesExecuted(rulesExecuted);
             testReportRepository.save(testReport);
-            testDetailsRepository.save(test);
         }
 
     }

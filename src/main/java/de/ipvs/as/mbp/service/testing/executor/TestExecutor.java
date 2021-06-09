@@ -12,11 +12,6 @@ import de.ipvs.as.mbp.service.deployment.IDeployer;
 import de.ipvs.as.mbp.service.rules.RuleEngine;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
-import de.ipvs.as.mbp.service.testing.rerun.TestRerunService;
-import de.ipvs.as.mbp.util.S;
-import de.ipvs.as.mbp.web.rest.RestDeploymentController;
-import de.ipvs.as.mbp.web.rest.helper.DeploymentWrapper;
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -45,32 +40,19 @@ public class TestExecutor {
     private ActuatorRepository actuatorRepository;
 
     @Autowired
-    private RestDeploymentController restDeploymentController;
-
-    @Autowired
     RuleEngine ruleEngine;
 
     @Autowired
     private TestAnalyzer testAnalyzer;
 
     @Autowired
-    private PropertiesService propertiesService;
-
-    @Autowired
-    private DeploymentWrapper deploymentWrapper;
-
-    @Autowired
-    private SensorRepository sensorRepository;
+    private final PropertiesService propertiesService;
 
     @Autowired
     private RuleRepository ruleRepository;
 
-
     @Autowired
     private DeployerDispatcher deployerDispatcher;
-
-    @Autowired
-    private TestRerunService testRerunService;
 
 
     // List of all active Tests
@@ -81,6 +63,9 @@ public class TestExecutor {
     private final String RERUN_IDENTIFIER;
     private final String TESTING_ACTUATOR;
     private final String CONFIG_SENSOR_NAME_KEY;
+
+
+    final IDeployer deployer = deployerDispatcher.getDeployer();
 
     //To resolve ${} in @Value
     @Bean
@@ -123,38 +108,41 @@ public class TestExecutor {
     /**
      * Puts the test and the corresponding sensors into a list and resets the list of values that where previously saved in other test executions.
      */
-    public void activateTest(List<Sensor> testSensors, String id, Boolean useNewData) {
+    public void activateTest(List<Sensor> testSensors, String testId, Boolean useNewData) {
+        Optional<TestDetails> testDetailsOptional = testDetailsRepository.findById(testId);
 
-        TestDetails test = testDetailsRepository.findById(id).get();
-        Map<String, TestDetails> activeTests = getActiveTests();
-        Map<String, LinkedHashMap<Long, Double>> list =
-                testAnalyzer.getTestValues();
+        if (testDetailsOptional.isPresent()) {
+            TestDetails test = testDetailsOptional.get();
+            Map<String, TestDetails> activeTests = getActiveTests();
+            Map<String, LinkedHashMap<Long, Double>> list =
+                    testAnalyzer.getTestValues();
 
-        if (useNewData) {
-            for (Sensor sensor : testSensors) {
-                if (!sensor.getName().contains(RERUN_IDENTIFIER)) {
-                    activeTests.put(sensor.getId(), test);
-                    list.remove(sensor.getId());
+            if (useNewData) {
+                for (Sensor sensor : testSensors) {
+                    if (!sensor.getName().contains(RERUN_IDENTIFIER)) {
+                        activeTests.put(sensor.getId(), test);
+                        list.remove(sensor.getId());
+
+                    }
 
                 }
-
-            }
-        } else {
-            for (Sensor sensor : testSensors) {
-                if (sensor.getName().contains(RERUN_IDENTIFIER)) {
-                    activeTests.put(sensor.getId(), test);
-                    list.remove(sensor.getId());
+            } else {
+                for (Sensor sensor : testSensors) {
+                    if (sensor.getName().contains(RERUN_IDENTIFIER)) {
+                        activeTests.put(sensor.getId(), test);
+                        list.remove(sensor.getId());
+                    }
                 }
             }
+
+            setActiveTests(activeTests);
+            testAnalyzer.setTestValues(list);
         }
 
-        setActiveTests(activeTests);
-        testAnalyzer.setTestValues(list);
     }
 
-    public void deactivateTest(List<Sensor> testSensors, String id, Boolean useNewData) {
+    public void deactivateTest(List<Sensor> testSensors, Boolean useNewData) {
 
-        TestDetails test = testDetailsRepository.findById(id).get();
         Map<String, TestDetails> activeTests = getActiveTests();
         Map<String, LinkedHashMap<Long, Double>> list =
                 testAnalyzer.getTestValues();
@@ -162,14 +150,14 @@ public class TestExecutor {
         if (useNewData) {
             for (Sensor sensor : testSensors) {
                 if (!sensor.getName().contains(RERUN_IDENTIFIER)) {
-                   TestDetails removedTest =  activeTests.remove(sensor.getId());
+                    activeTests.remove(sensor.getId());
                 }
 
             }
         } else {
             for (Sensor sensor : testSensors) {
                 if (sensor.getName().contains(RERUN_IDENTIFIER)) {
-                    TestDetails removedTest =  activeTests.remove(sensor.getId());
+                    activeTests.remove(sensor.getId());
                 }
             }
         }
@@ -179,58 +167,66 @@ public class TestExecutor {
     }
 
     public void rerunTest(TestDetails test, String testReportId) {
-        TestReport oldReport = testReportRepository.findById(testReportId).get();
-        TestReport testReport = new TestReport();
         try {
-            // Set the exact start time of the test
-            testReport.setName(test.getName());
-            testReport.setStartTestTimeNow();
 
-            // Just add the rerun Sensors to the report information
-            List<Sensor> rerunSensors = addRerunSensorsReport(test);
-            testReport.setSensor(rerunSensors);
+            TestReport testReport = new TestReport();
+            Optional<TestReport> oldReportOptional = testReportRepository.findById(testReportId);
 
+            if (oldReportOptional.isPresent()) {
+                TestReport oldReport = oldReportOptional.get();
 
+                // Set the exact start time of the test
+                testReport.setName(test.getName());
+                testReport.setStartTestTimeNow();
 
-            testReport.setConfig(oldReport.getConfig());
-            List<Rule> rerunRules = addRerunRulesReport(oldReport.getRules());
-            List<String> rerunRuleNames = addRerunRuleNamesReport(oldReport.getRuleNames());
-
-            testReport.setRules(rerunRules);
-            testReport.setRuleNames(rerunRuleNames);
-            testReport.setTriggerRules(oldReport.isTriggerRules());
-            testReport.setUseNewData(false);
-
-            // get  information about the status of the rules before the execution of the test
-            List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(testReport.getRules(), testReport.getSensor());
-            testReport.setRuleInformationBefore(rulesBefore);
-            String reportId = testReportRepository.save(testReport).getId();
+                // Just add the rerun Sensors to the report information
+                List<Sensor> rerunSensors = addRerunSensorsReport(test);
+                testReport.setSensor(rerunSensors);
 
 
-            TestReport updatedReport = testReportRepository.findById(reportId).get();
-            // add test and sensors to the activation list
-            activateTest(updatedReport.getSensor(), test.getId(), false);
+                testReport.setConfig(oldReport.getConfig());
+                List<Rule> rerunRules = addRerunRulesReport(oldReport.getRules());
+                List<String> rerunRuleNames = addRerunRuleNamesReport(oldReport.getRuleNames());
 
-            // Enable rules that belong to the test
-            enableRules(test);
+                testReport.setRules(rerunRules);
+                testReport.setRuleNames(rerunRuleNames);
+                testReport.setTriggerRules(oldReport.isTriggerRules());
+                testReport.setUseNewData(false);
 
-            // start Actuator
-            startActuator();
+                // get  information about the status of the rules before the execution of the test
+                List<Rule> rulesBefore = testAnalyzer.getCorrespondingRules(testReport.getRules(), testReport.getSensor());
+                testReport.setRuleInformationBefore(rulesBefore);
+                String reportId = testReportRepository.save(testReport).getId();
 
 
-            sensorRerunService(updatedReport, oldReport.getSimulationList());
+                TestReport updatedReport = testReportRepository.findById(reportId).get();
+                // add test and sensors to the activation list
+                activateTest(updatedReport.getSensor(), test.getId(), false);
 
-            // Get List of all simulated Values
-            Map<String, LinkedHashMap<Long, Double>> valueList =
-                    testAnalyzer.isFinished(reportId, test.getId(), false);
+                // Enable rules that belong to the test
+                enableRules(test);
 
-            saveAmountRulesTriggered(test, reportId, rulesBefore);
-            saveValues(test, reportId, valueList);
-            deactivateTest(test.getSensor(), test.getId(), false);
-            analyzeTest(test, reportId, rulesBefore);
+                // start Actuator
+                startActuator();
+
+
+                sensorRerunService(updatedReport, oldReport.getSimulationList());
+
+                // Get List of all simulated Values
+                Map<String, LinkedHashMap<Long, Double>> valueList =
+                        testAnalyzer.isFinished(reportId, test.getId(), false);
+
+                saveAmountRulesTriggered(reportId, rulesBefore);
+                saveValues(test, reportId, valueList);
+                deactivateTest(test.getSensor(), false);
+                // Check the test for success
+                testAnalyzer.testSuccess(test.getId(), reportId);
+
+            }
+
 
         } catch (Exception e) {
-
+            e.printStackTrace();
         }
 
     }
@@ -249,7 +245,7 @@ public class TestExecutor {
         List<Rule> rerunRules = new ArrayList<>();
 
         for (Rule rule : testRules) {
-            if (ruleRepository.existsByName(RERUN_IDENTIFIER + rule.getName())) {
+            if (ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).isPresent()) {
                 rerunRules.add(ruleRepository.findByName(RERUN_IDENTIFIER + rule.getName()).get());
             }
         }
@@ -325,53 +321,58 @@ public class TestExecutor {
             activateTest(test.getSensor(), test.getId(), true);
 
             // start all components relevant for the test
-            startTest(testDetailsRepository.findById(test.getId()).get());
+            startTest(test);
 
             // Get List of all simulated Values
             Map<String, LinkedHashMap<Long, Double>> valueList =
                     testAnalyzer.isFinished(reportId, test.getId(), true);
 
-            saveAmountRulesTriggered(test, reportId, rulesBefore);
+            saveAmountRulesTriggered(reportId, rulesBefore);
             saveValues(test, reportId, valueList);
-            deactivateTest(test.getSensor(), test.getId(), true);
-            analyzeTest(test, reportId, rulesBefore);
+            deactivateTest(test.getSensor(), true);
+            // Check the test for success
+            testAnalyzer.testSuccess(test.getId(), reportId);
         } catch (Exception e) {
             testReport.setEndTestTimeNow();
             testReport.setSuccessful("ERROR DURING TEST");
             List<Rule> rulesAfter = testAnalyzer.getCorrespondingRules(test.getRules(), test.getSensor());
-            saveAmountRulesTriggered(test, testReport.getId(), rulesAfter);
+            saveAmountRulesTriggered(testReport.getId(), rulesAfter);
 
         }
     }
 
-    private void saveAmountRulesTriggered(TestDetails test, String reportId, List<Rule> rulesBefore) {
-        TestReport report = testReportRepository.findById(reportId).get();
-        List<Rule> rulesAfter = testAnalyzer.getCorrespondingRules(report.getRules(), report.getSensor());
-        Map<String, Integer> amountTriggered = new HashMap<>();
-        for (Rule ruleBefore : rulesBefore) {
-            for (Rule ruleAfter : rulesAfter) {
-                if (ruleAfter.getName().equals(ruleBefore.getName())) {
-                    amountTriggered.put(ruleAfter.getName(), ruleAfter.getExecutions() -ruleBefore.getExecutions() );
+    private void saveAmountRulesTriggered(String reportId, List<Rule> rulesBefore) {
+        Optional<TestReport> reportOptional = testReportRepository.findById(reportId);
+
+        if (reportOptional.isPresent()) {
+            TestReport report = reportOptional.get();
+            List<Rule> rulesAfter = testAnalyzer.getCorrespondingRules(report.getRules(), report.getSensor());
+            Map<String, Integer> amountTriggered = new HashMap<>();
+            for (Rule ruleBefore : rulesBefore) {
+                for (Rule ruleAfter : rulesAfter) {
+                    if (ruleAfter.getName().equals(ruleBefore.getName())) {
+                        amountTriggered.put(ruleAfter.getName(), ruleAfter.getExecutions() - ruleBefore.getExecutions());
+                    }
                 }
             }
+            report.setAmountRulesTriggered(amountTriggered);
+            testReportRepository.save(report);
         }
-        report.setAmountRulesTriggered(amountTriggered);
-        testReportRepository.save(report);
     }
 
     private List<List<ParameterInstance>> getTestReportConfig(TestDetails test) {
         List<List<ParameterInstance>> reportConfig = new ArrayList<>();
 
         for (int i = 0; i < test.getConfig().size(); i++) {
-            List<ParameterInstance> ojh = test.getConfig().get(i);
-            List<ParameterInstance> simul = ojh.stream().filter(item -> item.getValue().toString().contains("TESTING_")).collect(Collectors.toList());
-            if (ojh.size() > 0) {
-                if (simul.size() > 0) {
+            List<ParameterInstance> configurations = test.getConfig().get(i);
+            List<ParameterInstance> simulators = configurations.stream().filter(item -> item.getValue().toString().contains("TESTING_")).collect(Collectors.toList());
+            if (configurations.size() > 0) {
+                if (simulators.size() > 0) {
                     List<ParameterInstance> newConfig;
-                    newConfig = convertConfigInstances(ojh);
+                    newConfig = convertConfigInstances(configurations);
                     reportConfig.add(newConfig);
                 } else {
-                    reportConfig.add(ojh);
+                    reportConfig.add(configurations);
                 }
             }
 
@@ -386,14 +387,18 @@ public class TestExecutor {
         List<ParameterInstance> convertedConfig = new ArrayList<>();
         ParameterInstance type = null;
         for (ParameterInstance instance : configInstance) {
-            Object i = instance.getValue();
-            if (instance.getName().equals("ConfigName")) {
-                type = getSensorType(instance.getValue());
-                convertedConfig.add(type);
-            } else if (instance.getName().equals("event")) {
-                convertedConfig.add(getEventType(type.getValue().toString(), Integer.parseInt(instance.getValue().toString())));
-            } else if (instance.getName().equals("anomaly")) {
-                convertedConfig.add(getAnomalyType(Integer.parseInt(instance.getValue().toString())));
+            switch (instance.getName()) {
+                case "ConfigName":
+                    type = getSensorType(instance.getValue());
+                    convertedConfig.add(type);
+                    break;
+                case "event":
+                    assert type != null;
+                    convertedConfig.add(getEventType(type.getValue().toString(), Integer.parseInt(instance.getValue().toString())));
+                    break;
+                case "anomaly":
+                    convertedConfig.add(getAnomalyType(Integer.parseInt(instance.getValue().toString())));
+                    break;
             }
         }
 
@@ -402,7 +407,7 @@ public class TestExecutor {
 
     private ParameterInstance getEventType(String type, int event) {
         ParameterInstance eventType = new ParameterInstance();
-        String simType = "";
+        String simType;
         if (type.equals("Temperature")) {
             simType = "Temperature";
         } else {
@@ -449,50 +454,39 @@ public class TestExecutor {
         return sensorType;
     }
 
-    /**
-     * Analysis of the test results and creation of the test report.
-     *
-     * @param test        that was executed
-     * @param rulesBefore status of the rules before the test was executed
-     */
-    private void analyzeTest(TestDetails test, String reportId, List<Rule> rulesBefore) {
-        // Check the test for success
-        testAnalyzer.testSuccess(test.getId(), reportId);
-        TestDetails testDetails =
-                testDetailsRepository.findById(test.getId()).get();
-
-
-        // save success and path of test report to database
-        testDetailsRepository.save(testDetails);
-    }
 
     /**
      * Saves the generated values through the test in the repository.
      *
-     * @param test      executed test
-     * @param valueList generated value list
+     * @param testDetails executed test
+     * @param valueList   generated value list
      */
-    private void saveValues(TestDetails test, String reportId,
+    private void saveValues(TestDetails testDetails, String reportId,
                             Map<String, LinkedHashMap<Long, Double>> valueList) {
         Map<String, LinkedHashMap<Long, Double>> valueListTest = new HashMap<>();
-        TestReport testReport = testReportRepository.findById(reportId).get();
-        TestDetails testDetails =
-                testDetailsRepository.findById(test.getId()).get();
 
-        for (Sensor sensor : testReport.getSensor()) {
-            if (valueList.get(sensor.getId()) != null) {
-                LinkedHashMap<Long, Double> temp = valueList.get(sensor.getId());
-                valueListTest.put(sensor.getName(), temp);
-                // list.remove(sensor.getId());
-                // save list of sensor values to database
-                testReport.setSimulationList(valueListTest);
-                testDetails.setSimulationList(valueListTest);
+        //Try to find specific test report and test
+        Optional<TestReport> testReportOptional = testReportRepository.findById(reportId);
+
+        if (testReportOptional.isPresent()) {
+            TestReport testReport = testReportOptional.get();
+
+            for (Sensor sensor : testReport.getSensor()) {
+                if (valueList.get(sensor.getId()) != null) {
+                    LinkedHashMap<Long, Double> temp = valueList.get(sensor.getId());
+                    valueListTest.put(sensor.getName(), temp);
+                    // list.remove(sensor.getId());
+                    // save list of sensor values to database
+                    testReport.setSimulationList(valueListTest);
+                    testDetails.setSimulationList(valueListTest);
+                }
+
             }
 
+            testReportRepository.save(testReport);
+            testDetailsRepository.save(testDetails);
         }
 
-        testReportRepository.save(testReport);
-        testDetailsRepository.save(testDetails);
 
     }
 
@@ -506,7 +500,7 @@ public class TestExecutor {
     public void startTest(TestDetails testDetails) {
 
         //check if test exists
-        if (testDetailsRepository.findByName(testDetails.getName()) == null) {
+        if (!testDetailsRepository.findByName(testDetails.getName()).isPresent()) {
             new ResponseEntity<>("Test does not exists.", HttpStatus.NOT_FOUND);
             return;
         }
@@ -558,18 +552,15 @@ public class TestExecutor {
                              List<ParameterInstance> parameterValues) {
 
 
-        //Find suitable deployer component
-        IDeployer deployer = deployerDispatcher.getDeployer();
-
         if (!deployer.isComponentDeployed(testSensor)) {
             //if not deploy Sensor
             deployer.deployComponent(testSensor);
         }
 
         if (deployer.isComponentRunning(testSensor)) {
-            deploymentWrapper.stopComponent(testSensor);
+            deployer.stopComponent(testSensor);
         }
-        deploymentWrapper.startComponent(testSensor, parameterValues);
+        deployer.startComponent(testSensor, parameterValues);
     }
 
 
@@ -623,19 +614,22 @@ public class TestExecutor {
      * Checks if the actuator simulator for the test is deployed and started. If not, this is now done here.
      */
     private void startActuator() {
-        //check if actuator is deployed
-        Actuator testingActuator =
-                actuatorRepository.findByName(TESTING_ACTUATOR).get();
 
-        testingActuator.getId();
-        IDeployer deployer = deployerDispatcher.getDeployer();
-        if (!deployer.isComponentDeployed(testingActuator)) {
-            //if false deploy actuator
-            deployer.deployComponent(testingActuator);
-        }
-        if (!deployer.isComponentRunning(testingActuator)) {
-            // start the Actuator
-            deploymentWrapper.startComponent(testingActuator, new ArrayList<>());
+        //Try to find specific test report and test
+        Optional<Actuator> testingActuatorOptional = actuatorRepository.findByName(TESTING_ACTUATOR);
+
+        if (testingActuatorOptional.isPresent()) {
+            Actuator testingActuator = testingActuatorOptional.get();
+
+            //check if actuator is deployed
+            if (!deployer.isComponentDeployed(testingActuator)) {
+                //if false deploy actuator
+                deployer.deployComponent(testingActuator);
+            }
+            if (!deployer.isComponentRunning(testingActuator)) {
+                // start the Actuator
+                deployer.startComponent(testingActuator, new ArrayList<>());
+            }
         }
     }
 
@@ -660,13 +654,18 @@ public class TestExecutor {
      * @param testId of the test to be stopped
      */
     public void stopTest(String testId) {
-        TestDetails test = testDetailsRepository.findById(testId).get();
-        // Stop every sensor running for the specific test
-        for (Sensor sensor : test.getSensor()) {
-            if (deploymentWrapper.isComponentRunning(sensor)) {
-                deploymentWrapper.stopComponent(sensor);
+        Optional<TestDetails> testDetailsOptional = testDetailsRepository.findById(testId);
+
+        if (testDetailsOptional.isPresent()) {
+            TestDetails test = testDetailsOptional.get();
+            // Stop every sensor running for the specific test
+            for (Sensor sensor : test.getSensor()) {
+                if (deployer.isComponentRunning(sensor)) {
+                    deployer.stopComponent(sensor);
+                }
             }
         }
+
     }
 
 }
