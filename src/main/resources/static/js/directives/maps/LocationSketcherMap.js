@@ -172,7 +172,7 @@ app.directive('locationSketcherMap', ['BASE_URI', '$interval', function (BASE_UR
             let pointResolution = ol.proj.getPointResolution(projection, resolutionAtEquator, position);
 
             //Transform distance from meters to projection unit
-            return (distance * resolutionAtEquator) / (ol.proj.METERS_PER_UNIT.m * pointResolution);
+            return (distance * resolutionAtEquator) / (projection.getMetersPerUnit() * pointResolution);
         }
 
 
