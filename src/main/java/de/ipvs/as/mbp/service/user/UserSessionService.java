@@ -115,7 +115,7 @@ public class UserSessionService {
         //Create corresponding cookie from session
         return ResponseCookie
                 .from(UserSessionCookieFilter.SESSION_COOKIE_NAME, userSession.getSessionId())
-                .maxAge(Duration.ofDays(30)).sameSite("strict").httpOnly(true).secure(true)
+                .maxAge(Duration.ofDays(30)).sameSite("strict").httpOnly(true)
                 .path("/").build();
     }
 
