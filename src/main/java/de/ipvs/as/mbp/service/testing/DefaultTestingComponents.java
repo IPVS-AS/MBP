@@ -19,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -68,12 +67,11 @@ public class DefaultTestingComponents {
     private DeploymentWrapper deploymentWrapper;
 
     @Autowired
-    private DefaultOperatorService defaultOperatorService;
+    private final DefaultOperatorService defaultOperatorService;
 
 
     @Autowired
     RuleTriggerRepository ruleTriggerRepository;
-
 
 
     private final String TEST_DEVICE;
@@ -86,8 +84,8 @@ public class DefaultTestingComponents {
     private final List<String> SENSOR_SIMULATORS = Arrays.asList("TESTING_TemperatureSensor", "TESTING_TemperatureSensorPl", "TESTING_HumiditySensor", "TESTING_HumiditySensorPl");
 
 
-    public DefaultTestingComponents(List<String> defaultTestComponentsWhiteList, ServletContext servletContext, OperatorRepository operatorRepository, DeviceRepository deviceRepository, DeviceCreateValidator deviceCreateValidator, ActuatorRepository actuatorRepository, ComponentCreateValidator componentCreateValidator, ComponentCreateEventHandler componentCreateEventHandler, DeviceCreateEventHandler deviceCreateEventHandler,
-                                    SensorRepository sensorRepository, TestDetailsRepository testDetailsRepository,DefaultOperatorService defaultOperatorService, RuleTriggerRepository ruleTriggerRepository) throws IOException {
+    public DefaultTestingComponents(List<String> defaultTestComponentsWhiteList, OperatorRepository operatorRepository, DeviceRepository deviceRepository, DeviceCreateValidator deviceCreateValidator, ActuatorRepository actuatorRepository, ComponentCreateValidator componentCreateValidator, ComponentCreateEventHandler componentCreateEventHandler, DeviceCreateEventHandler deviceCreateEventHandler,
+                                    SensorRepository sensorRepository, TestDetailsRepository testDetailsRepository, DefaultOperatorService defaultOperatorService, RuleTriggerRepository ruleTriggerRepository) throws IOException {
         // Get needed Strings out of the properties to create the testing components
         propertiesService = new PropertiesService();
         TEST_DEVICE = propertiesService.getPropertiesString("testingTool.testDeviceName");
@@ -122,10 +120,8 @@ public class DefaultTestingComponents {
     /**
      * Registers the wished sensor simulator if the corresponding adapter is already registered
      *
-     * @return ResponseEntity if the registration was successful or not
      */
-    public ResponseEntity<String> registerSensorSimulator(String simulatorName) {
-        ResponseEntity<String> responseEntity;
+    public void registerSensorSimulator(String simulatorName) {
 
         try {
             if (!sensorRepository.findByName(simulatorName).isPresent()) {
@@ -145,13 +141,10 @@ public class DefaultTestingComponents {
                 sensorRepository.insert(sensorSimulator);
                 componentCreateEventHandler.onCreate(sensorSimulator);
             }
-            responseEntity = new ResponseEntity<>(HttpStatus.OK);
-
         } catch (Exception e) {
-            responseEntity = new ResponseEntity<>(HttpStatus.CONFLICT);
+            e.printStackTrace();
         }
 
-        return responseEntity;
     }
 
     /**
@@ -184,7 +177,7 @@ public class DefaultTestingComponents {
                 testDevice.setName(TEST_DEVICE);
                 testDevice.setComponentType("Computer");
                 testDevice.setIpAddress(TEST_DEVICE_IP);
-    			testDevice.setDate(LocalDateTime.now().toString());
+                testDevice.setDate(LocalDateTime.now().toString());
                 testDevice.setUsername(TEST_DEVICE_USERNAME);
                 testDevice.setPassword(TEST_DEVICE_PASSWORD);
 
@@ -243,7 +236,7 @@ public class DefaultTestingComponents {
      *
      * @return if the replacement was successful or not.
      */
-    public ResponseEntity replaceSensorSimulators() {
+    public ResponseEntity<Void> replaceSensorSimulators() {
         try {
 
             // Replace each sensor simulator and their occurrences in the tests and rules one after the other.
@@ -276,10 +269,10 @@ public class DefaultTestingComponents {
 
         } catch (Exception exception) {
             exception.printStackTrace();
-            return new ResponseEntity(HttpStatus.CONFLICT);
+            return ResponseEntity.notFound().build();
         }
 
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.ok().build();
     }
 
 
@@ -345,7 +338,7 @@ public class DefaultTestingComponents {
      *
      * @return if the replacement was successful or not.
      */
-    public ResponseEntity replaceTestDevice() {
+    public ResponseEntity<Void> replaceTestDevice() {
         try {
             String oldDeviceId = null;
             // Delete the testing-device if exists
@@ -357,10 +350,10 @@ public class DefaultTestingComponents {
             replaceDeviceInRerun(oldDeviceId);
             // Add the new testing-device
         } catch (Exception e) {
-            return new ResponseEntity(HttpStatus.CONFLICT);
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     /**
@@ -409,7 +402,7 @@ public class DefaultTestingComponents {
      *
      * @return if the replacement was successful or not.
      */
-    public ResponseEntity replaceTestingActuator() {
+    public ResponseEntity<Void> replaceTestingActuator() {
         try {
             // Delete the testing-device if existing
             if (actuatorRepository.findByName(ACTUATOR_NAME).isPresent()) {
@@ -418,9 +411,9 @@ public class DefaultTestingComponents {
 
             registerActuatorSimulator();
         } catch (Exception e) {
-            return new ResponseEntity(HttpStatus.CONFLICT);
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-        return new ResponseEntity(HttpStatus.CONFLICT);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
 
@@ -429,7 +422,7 @@ public class DefaultTestingComponents {
      *
      * @return http status whether it was successful or not
      */
-    public ResponseEntity redeployComponents() {
+    public ResponseEntity<Void> redeployComponents() {
         Actuator testingActuator = null;
         try {
             if (actuatorRepository.findByName(ACTUATOR_NAME).isPresent()) {
@@ -456,9 +449,10 @@ public class DefaultTestingComponents {
                 }
             }
 
-            return new ResponseEntity(HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity(HttpStatus.CONFLICT);
+            ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
+
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 }

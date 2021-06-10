@@ -15,7 +15,6 @@ import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.RuleRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.repository.TestDetailsRepository;
-import de.ipvs.as.mbp.repository.TestReportRepository;
 import de.ipvs.as.mbp.service.UserEntityService;
 import de.ipvs.as.mbp.service.testing.TestEngine;
 import de.ipvs.as.mbp.service.testing.analyzer.TestAnalyzer;
@@ -26,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import java.util.Map;
+import java.util.Optional;
 
 
 import io.swagger.annotations.ApiOperation;
@@ -41,11 +41,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -79,8 +74,7 @@ public class RestTestingController {
     @Autowired
     private SensorRepository sensorRepository;
 
-    @Autowired
-    private TestReportRepository testReportRepository;
+
 
     @GetMapping(produces = "application/hal+json")
     @ApiOperation(value = "Retrieves all existing tests available for the requesting entity.", produces = "application/hal+json")
@@ -197,14 +191,11 @@ public class RestTestingController {
     @ApiResponses({@ApiResponse(code = 204, message = "Success!"),
             @ApiResponse(code = 401, message = "Not authorized to delete the test!"),
             @ApiResponse(code = 404, message = "Test or requesting user not found!")})
-    public ResponseEntity<Boolean> executeTest(@PathVariable(value = "testId") String testId
-
-    ) {
+    public ResponseEntity<Boolean> executeTest(@PathVariable(value = "testId") String testId) {
         try {
-            TestDetails testDetails = testDetailsRepository.findById(testId).get();
-
+            Optional<TestDetails> testDetailsOptional = testDetailsRepository.findById(testId);
             // Start the test and get Map of sensor values
-            testExecutor.executeTest(testDetails);
+            testDetailsOptional.ifPresent(testDetails -> testExecutor.executeTest(testDetails));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
@@ -229,9 +220,9 @@ public class RestTestingController {
 
     ) {
         try {
-            TestDetails testDetails = testDetailsRepository.findById(testId).get();
+            Optional<TestDetails> testDetailsOptional = testDetailsRepository.findById(testId);
+            testDetailsOptional.ifPresent(testDetails -> testExecutor.rerunTest(testDetails, testReportId));
 
-            testExecutor.rerunTest(testDetails, testReportId);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
@@ -282,11 +273,16 @@ public class RestTestingController {
 
 
     @GetMapping(value = "/ruleList/{testId}")
-    public List<Rule> ruleList(@PathVariable(value = "testId") String testId) {
+    public ResponseEntity<List<Rule>> ruleList(@PathVariable(value = "testId") String testId) {
         // get  information about the status of the rules before the execution of the test
-        TestDetails testDetails = testDetailsRepository.findById(testId).get();
-        List<Rule> ruleList = testAnalyzer.getCorrespondingRules(testDetails.getRules(), testDetails.getSensor());
-        return ruleList;
+        Optional<TestDetails> testDetailsOptional = testDetailsRepository.findById(testId);
+        if(testDetailsOptional.isPresent()){
+            List<Rule> ruleList = testAnalyzer.getCorrespondingRules(testDetailsOptional.get().getRules(), testDetailsOptional.get().getSensor());
+            return ResponseEntity.ok(ruleList);
+
+        }
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
     }
 
 
@@ -297,7 +293,7 @@ public class RestTestingController {
      * @return if deletion worked or not
      */
     @PostMapping(value = "/deleteTestReport/{reportId}")
-    public ResponseEntity<Boolean> deleteTestReport(@PathVariable(value = "reportId") String reportId) {
+    public ResponseEntity<Void> deleteTestReport(@PathVariable(value = "reportId") String reportId) {
         return testEngine.deleteReport(reportId);
     }
 
