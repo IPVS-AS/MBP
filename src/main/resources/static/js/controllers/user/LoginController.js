@@ -22,7 +22,7 @@ app.controller('LoginController', ['$scope', '$location', 'UserService',
             vm.dataLoading = true;
 
             //Perform login
-            UserService.loginUser(vm.username, vm.password).finally(function () {
+            UserService.loginUser(vm.username, vm.password).always(function () {
                 //Hide loader
                 vm.dataLoading = false;
                 $scope.$apply();
