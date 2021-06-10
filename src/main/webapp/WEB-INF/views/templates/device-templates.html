@@ -192,7 +192,10 @@
                                     </div>
                                     <small ng-show="ctrl.locationInput.type === 'Point'">You can either enter the
                                         coordinates below or pick the location on the map.</small>
-                                    <div class="form-group" ng-show="ctrl.locationInput.type === 'Point'"
+                                    <small ng-show="ctrl.locationInput.type === 'Circle'">You can either enter the
+                                        center coordinates and radius below or draw the area on the map.</small>
+                                    <div class="form-group"
+                                         ng-show="['Point', 'Circle'].includes(ctrl.locationInput.type)"
                                          style="margin-bottom:0;">
                                         <div class="form-line">
                                             <input type="number" class="form-control" placeholder="Latitude"
@@ -200,12 +203,22 @@
                                                    ng-model="ctrl.locationInput.latitude"/>
                                         </div>
                                     </div>
-                                    <div class="form-group" ng-show="ctrl.locationInput.type === 'Point'"
+                                    <div class="form-group"
+                                         ng-show="['Point', 'Circle'].includes(ctrl.locationInput.type)"
                                          style="margin-bottom: 0;">
                                         <div class="form-line">
                                             <input type="number" class="form-control" placeholder="Longitude"
                                                    min="-180" max="180" step="0.000001"
                                                    ng-model="ctrl.locationInput.longitude"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group"
+                                         ng-show="ctrl.locationInput.type === 'Circle'" style="margin-bottom: 0;">
+                                        <div class="form-line">
+                                            <input type="number" class="form-control" placeholder="Radius"
+                                                   min="0" max="99999" step="0.1" ng-model="ctrl.locationInput.radius"
+                                                   style="display:inline-block; width:60%;"/>
+                                            <span>m</span>
                                         </div>
                                     </div>
                                     <button class="btn btn-block btn-xs btn-default m-t-15 waves-effect"

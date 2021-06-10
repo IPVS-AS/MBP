@@ -138,6 +138,45 @@ app.directive('locationSketcherMap', ['BASE_URI', '$interval', function (BASE_UR
 
 
         /**
+         * Converts the unit of a given distance, measured around a given position, from the projection unit to meters.
+         * @param distance The distance to convert
+         * @param position The coordinates of the position around which the distance was measured
+         * @return {number} The converted distance in meters
+         */
+        function distanceToMeters(distance, position) {
+            //Get view of map and its projection
+            let view = map.getView();
+            let projection = view.getProjection();
+
+            //Determine resolution at equator and resolution at the given position
+            let resolutionAtEquator = view.getResolution();
+            let pointResolution = ol.proj.getPointResolution(projection, resolutionAtEquator, position);
+
+            //Transform distance from projection unit to meters
+            return (distance * projection.getMetersPerUnit() * pointResolution) / resolutionAtEquator;
+        }
+
+        /**
+         * Converts the unit of a given distance, measured around a given position, from meters to the projection unit.
+         * @param distance The distance to convert
+         * @param position The coordinates of the position around which the distance was measured
+         * @return {number} The converted distance in projection unit
+         */
+        function distanceFromMeters(position, distance) {
+            //Get view of map and its projection
+            let view = map.getView();
+            let projection = view.getProjection();
+
+            //Determine resolution at equator and resolution at the given position
+            let resolutionAtEquator = view.getResolution();
+            let pointResolution = ol.proj.getPointResolution(projection, resolutionAtEquator, position);
+
+            //Transform distance from meters to projection unit
+            return (distance * resolutionAtEquator) / (ol.proj.METERS_PER_UNIT.m * pointResolution);
+        }
+
+
+        /**
          * [Private]
          * Initializes the map.
          */
@@ -227,7 +266,9 @@ app.directive('locationSketcherMap', ['BASE_URI', '$interval', function (BASE_UR
             'getGeometriesCount': getGeometriesCount,
             'removeGeometries': removeGeometries,
             'addGeometry': addGeometry,
-            'viewGeometry': viewGeometry
+            'viewGeometry': viewGeometry,
+            'distanceToMeters': distanceToMeters,
+            'distanceFromMeters': distanceFromMeters
         };
     }
 

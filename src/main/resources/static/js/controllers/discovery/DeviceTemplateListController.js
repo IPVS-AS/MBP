@@ -60,14 +60,24 @@ app.controller('DeviceTemplateListController',
                 let geometry = null;
 
                 //Check for location type
-                switch (vm.locationInput.type) {
-                    case "Point":
-                        //Determine coordinates of the point
-                        let coordinates = ol.proj.fromLonLat([vm.locationInput.longitude || 0,
-                            vm.locationInput.latitude || 0])
+                if (vm.locationInput.type === "Point") {
+                    //Determine coordinates of the point
+                    let coordinates = ol.proj.fromLonLat([vm.locationInput.longitude || 0,
+                        vm.locationInput.latitude || 0])
 
-                        //Create point geometry
-                        geometry = new ol.geom.Point(coordinates, "XY");
+                    //Create point geometry
+                    geometry = new ol.geom.Point(coordinates, "XY");
+                } else if (vm.locationInput.type === "Circle") {
+                    //Determine center coordinates and radius
+                    let center = ol.proj.fromLonLat([vm.locationInput.longitude || 0, vm.locationInput.latitude || 0]);
+                    let radius = vm.locationMapApi.distanceFromMeters(center, vm.locationInput.radius || 0);
+
+                    //Create circle geometry
+                    geometry = new ol.geom.Circle(center, radius, "XY");
+                } else if (vm.locationInput.type === "Polygon") {
+
+                } else {
+                    return;
                 }
 
                 //Prepare map and UI
@@ -79,7 +89,6 @@ app.controller('DeviceTemplateListController',
                 //Move view of the map in order to show the geometry
                 vm.locationMapApi.viewGeometry(geometry);
             }
-
 
             /**
              * [Public]
@@ -100,21 +109,29 @@ app.controller('DeviceTemplateListController',
                 vm.locationMapApi.removeGeometries();
 
                 //Update location model according to the geometry
-                switch (geometryType) {
-                    case "Point":
-                        //Get coordinates
-                        let coordinates = ol.proj.toLonLat(geometry.getCoordinates());
+                if (geometryType === "Point") {
+                    //Get coordinates
+                    let coordinates = ol.proj.toLonLat(geometry.getCoordinates());
 
-                        //Update models
-                        $timeout(() => {
-                            vm.locationInput.longitude = Math.round((coordinates[0] + Number.EPSILON) * 1e6) / 1e6;
-                            vm.locationInput.latitude = Math.round((coordinates[1] + Number.EPSILON) * 1e6) / 1e6;
-                        }, 10);
+                    //Update models
+                    $timeout(() => {
+                        vm.locationInput.longitude = Math.round((coordinates[0] + Number.EPSILON) * 1e6) / 1e6;
+                        vm.locationInput.latitude = Math.round((coordinates[1] + Number.EPSILON) * 1e6) / 1e6;
+                    }, 10);
+                } else if (geometryType === "Circle") {
+                    //Get center coordinates and radius
+                    let center = geometry.getCenter();
+                    let coordinates = ol.proj.toLonLat(center);
+                    let radius = geometry.getRadius();
 
-                    case "Circle":
-                        break;
-                    case "Polygon":
-                        break;
+                    //Update models
+                    $timeout(() => {
+                        vm.locationInput.longitude = Math.round((coordinates[0] + Number.EPSILON) * 1e6) / 1e6;
+                        vm.locationInput.latitude = Math.round((coordinates[1] + Number.EPSILON) * 1e6) / 1e6;
+                        vm.locationInput.radius = Math.round(vm.locationMapApi.distanceToMeters(radius, center) * 10) / 10;
+                    }, 10);
+                } else if (geometryType === "Polygon") {
+                    //TODO
                 }
             }
 
