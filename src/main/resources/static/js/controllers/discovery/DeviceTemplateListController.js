@@ -75,7 +75,16 @@ app.controller('DeviceTemplateListController',
                     //Create circle geometry
                     geometry = new ol.geom.Circle(center, radius, "XY");
                 } else if (vm.locationInput.type === "Polygon") {
+                    //Determine points of the polygon
+                    let points = vm.locationInput.polygonPoints.split("\n").map(x => x.split("|").map(s => parseFloat(s)));
 
+                    //Sanity check
+                    if (points.length < 3) {
+                        return;
+                    }
+
+                    //Create polygon from the points and transform the coordinates
+                    geometry = new ol.geom.Polygon([points], "XY").transform('EPSG:4326', 'EPSG:3857');
                 } else {
                     return;
                 }
@@ -131,7 +140,16 @@ app.controller('DeviceTemplateListController',
                         vm.locationInput.radius = Math.round(vm.locationMapApi.distanceToMeters(radius, center) * 10) / 10;
                     }, 10);
                 } else if (geometryType === "Polygon") {
-                    //TODO
+                    //Extract and transform the outline points of the polygon
+                    let points = geometry.clone().transform('EPSG:3857', 'EPSG:4326').getCoordinates()[0];
+
+                    //Create string from all points
+                    let pointsString = points.map(p => p.map(s => Math.round(s * 1e6) / 1e6).join("|")).join("\n");
+
+                    // Update model
+                    $timeout(() => {
+                        vm.locationInput.polygonPoints = pointsString;
+                    }, 10);
                 }
             }
 

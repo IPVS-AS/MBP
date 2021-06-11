@@ -5,7 +5,7 @@
 /**
  * Directive which allows the user to sketch locations on a map.
  */
-app.directive('locationSketcherMap', ['BASE_URI', '$interval', function (BASE_URI, $interval) {
+app.directive('locationDrawerMap', ['BASE_URI', '$interval', function (BASE_URI, $interval) {
     //Constants
     const ADDRESS_TYPE = 'nominatim';
     const ADDRESS_DATA_PROVIDER = 'osm';
@@ -14,10 +14,6 @@ app.directive('locationSketcherMap', ['BASE_URI', '$interval', function (BASE_UR
 
     //CSS classes of interest
     const CLASS_MAP_CONTAINER = 'ol-map';
-
-    //Keys of interest
-    const KEY_ID = 'id';
-
 
     /**
      * Initializes the directive by passing references to its scope, DOM elements and attributes.

@@ -194,13 +194,16 @@
                                         coordinates below or pick the location on the map.</small>
                                     <small ng-show="ctrl.locationInput.type === 'Circle'">You can either enter the
                                         center coordinates and radius below or draw the area on the map.</small>
+                                    <small ng-show="ctrl.locationInput.type === 'Polygon'">You can either enter all
+                                        polygon coordinates below or draw the area on the map.</small>
                                     <div class="form-group"
                                          ng-show="['Point', 'Circle'].includes(ctrl.locationInput.type)"
                                          style="margin-bottom:0;">
                                         <div class="form-line">
                                             <input type="number" class="form-control" placeholder="Latitude"
                                                    min="-90" max="90" step="0.000001"
-                                                   ng-model="ctrl.locationInput.latitude"/>
+                                                   ng-model="ctrl.locationInput.latitude"
+                                                   style="font-family: monospace;"/>
                                         </div>
                                     </div>
                                     <div class="form-group"
@@ -209,7 +212,8 @@
                                         <div class="form-line">
                                             <input type="number" class="form-control" placeholder="Longitude"
                                                    min="-180" max="180" step="0.000001"
-                                                   ng-model="ctrl.locationInput.longitude"/>
+                                                   ng-model="ctrl.locationInput.longitude"
+                                                   style="font-family: monospace;"/>
                                         </div>
                                     </div>
                                     <div class="form-group"
@@ -217,9 +221,15 @@
                                         <div class="form-line">
                                             <input type="number" class="form-control" placeholder="Radius"
                                                    min="0" max="99999" step="0.1" ng-model="ctrl.locationInput.radius"
-                                                   style="display:inline-block; width:60%;"/>
+                                                   style="display:inline-block; width:60%; font-family: monospace;"/>
                                             <span>m</span>
                                         </div>
+                                    </div>
+                                    <div class="form-group" ng-show="ctrl.locationInput.type === 'Polygon'"
+                                         style="margin-bottom: 0;">
+                                        <textarea class="form-control" rows="5"
+                                                  ng-model="ctrl.locationInput.polygonPoints"
+                                                  style="width:120%; font-size:12px; font-family:monospace;"></textarea>
                                     </div>
                                     <button class="btn btn-block btn-xs btn-default m-t-15 waves-effect"
                                             ng-show="['Point', 'Circle', 'Polygon'].includes(ctrl.locationInput.type);"
@@ -231,11 +241,11 @@
                                 </form>
                             </div>
                             <div class="col-lg-9">
-                                <location-sketcher-map height="400" api="ctrl.locationMapApi"
-                                                       init-center="ctrl.mapInitCenter"
-                                                       init-zoom="ctrl.mapInitZoom"
-                                                       drawing-finished="ctrl.onDrawingFinished(geometry)">
-                                </location-sketcher-map>
+                                <location-drawer-map height="400" api="ctrl.locationMapApi"
+                                                     init-center="ctrl.mapInitCenter"
+                                                     init-zoom="ctrl.mapInitZoom"
+                                                     drawing-finished="ctrl.onDrawingFinished(geometry)">
+                                </location-drawer-map>
                             </div>
                         </div>
                     </div>
