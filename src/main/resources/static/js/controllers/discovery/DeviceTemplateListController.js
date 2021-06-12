@@ -4,8 +4,8 @@
  * Controller for the settings page.
  */
 app.controller('DeviceTemplateListController',
-    ['$scope', '$interval', '$timeout', 'NotificationService',
-        function ($scope, $interval, $timeout, NotificationService) {
+    ['$scope', '$controller', '$interval', '$timeout', 'locationTemplateList', 'addLocationTemplate', 'deleteLocationTemplate', 'DiscoveryService', 'NotificationService',
+        function ($scope, $controller, $interval, $timeout, locationTemplateList, addLocationTemplate, deleteLocationTemplate, DiscoveryService, NotificationService) {
             //Constants
             const MAP_INIT_CENTER = [9.106631254042352, 48.74518217652443];
             const MAP_INIT_ZOOM = 16;
@@ -14,6 +14,7 @@ app.controller('DeviceTemplateListController',
             const ELEMENT_MENU_BUTTONS = $("div.bubble-item");
             const ELEMENT_MENU_BUTTON_MAIN = $("div.bubble-item.bubble-devices")
             const ELEMENT_EDITORS_COLLAPSES = $('#edit-templates-group > div.collapse');
+            const ELEMENT_EDITORS_LOCATION_EDITOR = $('#edit-locations-editor');
 
             //Relevant CSS classes
             const CLASS_MENU_BUTTON_CONNECTOR = 'bubble-connector';
@@ -41,14 +42,14 @@ app.controller('DeviceTemplateListController',
                 vm.locationMapApi.removeGeometries();
 
                 //Check for selected location type
-                if (!(["Point", "Circle", "Polygon"].includes(vm.locationInput.type))) {
+                if (!(["Point", "Circle", "Polygon"].includes(vm.addLocationTemplateCtrl.item.type))) {
                     //Disable drawing
                     vm.locationMapApi.disableDrawing();
                     return;
                 }
 
                 //Enable draw interaction for the selected type
-                vm.locationMapApi.enableDrawing(vm.locationInput.type);
+                vm.locationMapApi.enableDrawing(vm.addLocationTemplateCtrl.item.type);
             }
 
             /**
@@ -60,23 +61,23 @@ app.controller('DeviceTemplateListController',
                 let geometry = null;
 
                 //Check for location type
-                if (vm.locationInput.type === "Point") {
+                if (vm.addLocationTemplateCtrl.item.type === "Point") {
                     //Determine coordinates of the point
-                    let coordinates = ol.proj.fromLonLat([vm.locationInput.longitude || 0,
-                        vm.locationInput.latitude || 0])
+                    let coordinates = ol.proj.fromLonLat([vm.addLocationTemplateCtrl.item.longitude || 0,
+                        vm.addLocationTemplateCtrl.item.latitude || 0])
 
                     //Create point geometry
                     geometry = new ol.geom.Point(coordinates, "XY");
-                } else if (vm.locationInput.type === "Circle") {
+                } else if (vm.addLocationTemplateCtrl.item.type === "Circle") {
                     //Determine center coordinates and radius
-                    let center = ol.proj.fromLonLat([vm.locationInput.longitude || 0, vm.locationInput.latitude || 0]);
-                    let radius = vm.locationMapApi.distanceFromMeters(center, vm.locationInput.radius || 0);
+                    let center = ol.proj.fromLonLat([vm.addLocationTemplateCtrl.item.longitude || 0, vm.addLocationTemplateCtrl.item.latitude || 0]);
+                    let radius = vm.locationMapApi.distanceFromMeters(center, vm.addLocationTemplateCtrl.item.radius || 0);
 
                     //Create circle geometry
                     geometry = new ol.geom.Circle(center, radius, "XY");
-                } else if (vm.locationInput.type === "Polygon") {
+                } else if (vm.addLocationTemplateCtrl.item.type === "Polygon") {
                     //Determine points of the polygon
-                    let points = vm.locationInput.polygonPoints.split("\n").map(x => x.split("|").map(s => parseFloat(s)));
+                    let points = vm.addLocationTemplateCtrl.item.pointsList.split("\n").map(x => x.split("|").map(s => parseFloat(s)));
 
                     //Sanity check
                     if (points.length < 3) {
@@ -110,7 +111,7 @@ app.controller('DeviceTemplateListController',
                 let geometryType = geometry.getType();
 
                 //Check whether selected type and geometry match
-                if (geometryType !== vm.locationInput.type) {
+                if (geometryType !== vm.addLocationTemplateCtrl.item.type) {
                     return;
                 }
 
@@ -124,8 +125,8 @@ app.controller('DeviceTemplateListController',
 
                     //Update models
                     $timeout(() => {
-                        vm.locationInput.longitude = Math.round((coordinates[0] + Number.EPSILON) * 1e6) / 1e6;
-                        vm.locationInput.latitude = Math.round((coordinates[1] + Number.EPSILON) * 1e6) / 1e6;
+                        vm.addLocationTemplateCtrl.item.longitude = Math.round((coordinates[0] + Number.EPSILON) * 1e6) / 1e6;
+                        vm.addLocationTemplateCtrl.item.latitude = Math.round((coordinates[1] + Number.EPSILON) * 1e6) / 1e6;
                     }, 10);
                 } else if (geometryType === "Circle") {
                     //Get center coordinates and radius
@@ -135,9 +136,9 @@ app.controller('DeviceTemplateListController',
 
                     //Update models
                     $timeout(() => {
-                        vm.locationInput.longitude = Math.round((coordinates[0] + Number.EPSILON) * 1e6) / 1e6;
-                        vm.locationInput.latitude = Math.round((coordinates[1] + Number.EPSILON) * 1e6) / 1e6;
-                        vm.locationInput.radius = Math.round(vm.locationMapApi.distanceToMeters(radius, center) * 10) / 10;
+                        vm.addLocationTemplateCtrl.item.longitude = Math.round((coordinates[0] + Number.EPSILON) * 1e6) / 1e6;
+                        vm.addLocationTemplateCtrl.item.latitude = Math.round((coordinates[1] + Number.EPSILON) * 1e6) / 1e6;
+                        vm.addLocationTemplateCtrl.item.radius = Math.round(vm.locationMapApi.distanceToMeters(radius, center) * 10) / 10;
                     }, 10);
                 } else if (geometryType === "Polygon") {
                     //Extract and transform the outline points of the polygon
@@ -148,9 +149,20 @@ app.controller('DeviceTemplateListController',
 
                     // Update model
                     $timeout(() => {
-                        vm.locationInput.polygonPoints = pointsString;
+                        vm.addLocationTemplateCtrl.item.pointsList = pointsString;
                     }, 10);
                 }
+            }
+
+            /**
+             * [Public]
+             * Shows the location template editor with an animation.
+             */
+            function showLocationTemplatesEditor() {
+                ELEMENT_EDITORS_LOCATION_EDITOR.slideUp().slideDown(400, function () {
+                    //Adjust size of location map to changed UI
+                    vm.locationMapApi.updateMapSize();
+                });
             }
 
             /**
@@ -229,13 +241,81 @@ app.controller('DeviceTemplateListController',
                 });
             }
 
+            /**
+             * [Private]
+             * Shows an alert that asks the user if he is sure that he wants to delete a certain entity.
+             *
+             * @param categoryName Name of the category to which the entity belongs
+             * @param entityList Reference to the list of entities to which the pertained entity belongs
+             * @param data A data object that contains the id of the entity that is supposed to be deleted
+             * @returns A promise of the user's decision
+             */
+            function confirmDelete(categoryName, entityList, data) {
+                let entityId = data.id;
+                let entityName = "";
+
+                //Determines the entity's name by checking the given list
+                for (let i = 0; i < entityList.length; i++) {
+                    if (entityId === entityList[i].id) {
+                        entityName = entityList[i].name;
+                        break;
+                    }
+                }
+
+                //Show the alert to the user and return the resulting promise
+                return Swal.fire({
+                    title: 'Delete ' + categoryName,
+                    type: 'warning',
+                    html: "Are you sure you want to delete the " + categoryName + " \"" + entityName + "\"?",
+                    showCancelButton: true,
+                    confirmButtonText: 'Delete',
+                    confirmButtonClass: 'bg-red',
+                    focusConfirm: false,
+                    cancelButtonText: 'Cancel'
+                });
+            }
+
             //Expose functions that are used externally
             angular.extend(vm, {
+                locationTemplateListCtrl: $controller('ItemListController as locationTemplateListCtrl', {
+                    $scope: $scope,
+                    list: locationTemplateList
+                }),
+                addLocationTemplateCtrl: $controller('AddItemController as addLocationTemplateCtrl', {
+                    $scope: $scope,
+                    entity: 'location template',
+                    addItem: function (data) {
+                        //Sanity check for location template type
+                        if ((!data.hasOwnProperty("type")) || (!addLocationTemplate.hasOwnProperty(data.type))) {
+                            return;
+                        }
+
+                        //Check if data contains polygon points string
+                        if (data.hasOwnProperty("pointsList")) {
+                            //Transform string to array of coordinates
+                            data.pointsList = data.pointsList.split("\n").map(x => x.split("|").map(s => parseFloat(s)));
+
+                            //Remove field from data if not enough polygon points
+                            if (points.length < 3) {
+                                delete data.pointsList;
+                            }
+                        }
+
+                        //Extend request
+                        return addLocationTemplate[data.type](data);
+                    }
+                }),
+                deleteLocationTemplateCtrl: $controller('DeleteItemController as deleteLocationTemplateCtrl', {
+                    $scope: $scope,
+                    deleteItem: deleteLocationTemplate,
+                    confirmDeletion: confirmDelete.bind(null, 'location template', locationTemplateList)
+                }),
                 mapInitCenter: MAP_INIT_CENTER,
                 mapInitZoom: MAP_INIT_ZOOM,
                 onLocationTypeChange: onLocationTypeChange,
                 onLocationChange: onLocationChange,
-                onDrawingFinished: onLocationMapDrawingFinished
+                onDrawingFinished: onLocationMapDrawingFinished,
+                showLocationTemplatesEditor: showLocationTemplatesEditor
             });
         }
     ]);

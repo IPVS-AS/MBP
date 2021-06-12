@@ -85,7 +85,7 @@
                         <div class="align-right">
                             <button type="button"
                                     class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
-                                    ng-click="">
+                                    ng-click="ctrl.locationInput = {'name': 'Unnamed'}; ctrl.showLocationTemplatesEditor();">
                                 <i class="material-icons">add</i>
                             </button>
                         </div>
@@ -129,17 +129,18 @@
                 </div>
             </div>
             <div class="col-lg-8">
-                <div class="card">
+                <div id="edit-locations-editor" class="card" style="display: none;">
                     <div class="header">
                         <h2 class="editable" ng-hide="location_name_edit" ng-click="location_name_edit=true;">
-                            {{ctrl.locationInput.name}}
+                            {{addLocationTemplateCtrl.item.name}}
                             <i class="material-icons" style="font-size: 16px; margin-left: 5px;line-height: 15px;">mode_edit</i>
                         </h2>
                         <h2 ng-show="location_name_edit">
                             <form class="form-inline" ng-submit="location_name_edit=false;">
                                 <div class="form-group">
                                     <div class="input-group form-line">
-                                        <input type="text" class="form-control" ng-model="ctrl.locationInput.name"
+                                        <input type="text" class="form-control"
+                                               ng-model="addLocationTemplateCtrl.item.name"
                                                placeholder="Enter name..."/>
                                         <div class="input-group-btn"
                                              style="position:absolute; right:0; top:-10px; z-index: 5;">
@@ -155,11 +156,11 @@
                     <div class="body">
                         <div class="container-fluid">
                             <div class="col-lg-3">
-                                <form ng-submit="ctrl.saveLocation()">
+                                <form ng-submit="addLocationTemplateCtrl.addItem()">
                                     <label>Location type:</label>
                                     <div class="form-group">
                                         <div class="form-line">
-                                            <select class="form-control" ng-model="ctrl.locationInput.type"
+                                            <select class="form-control" ng-model="addLocationTemplateCtrl.item.type"
                                                     ng-change="ctrl.onLocationTypeChange()">
                                                 <option value="" selected="selected">Select...</option>
                                                 <option value="Informal">Informal</option>
@@ -169,11 +170,12 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <small ng-show="ctrl.locationInput.type === 'Informal'">Location
+                                    <small ng-show="addLocationTemplateCtrl.item.type === 'Informal'">Location
                                         description...</small>
-                                    <div class="form-group" ng-show="ctrl.locationInput.type === 'Informal'">
+                                    <div class="form-group" ng-show="addLocationTemplateCtrl.item.type === 'Informal'">
                                         <div class="form-line">
-                                            <select class="form-control" ng-model="ctrl.locationInput.operator"
+                                            <select class="form-control"
+                                                    ng-model="addLocationTemplateCtrl.item.operator"
                                                     style="margin-bottom:0;">
                                                 <option value="" selected="selected">Select...</option>
                                                 <option value="equals">equals</option>
@@ -183,56 +185,61 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="form-group" ng-show="ctrl.locationInput.type === 'Informal'">
+                                    <div class="form-group" ng-show="addLocationTemplateCtrl.item.type === 'Informal'">
                                         <div class="form-line">
                                             <input type="text" class="form-control"
-                                                   ng-model="ctrl.locationInput.description"
+                                                   ng-model="addLocationTemplateCtrl.item.description"
                                                    placeholder="Enter match..."/>
                                         </div>
                                     </div>
-                                    <small ng-show="ctrl.locationInput.type === 'Point'">You can either enter the
+                                    <small ng-show="addLocationTemplateCtrl.item.type === 'Point'">You can either enter
+                                        the
                                         coordinates below or pick the location on the map.</small>
-                                    <small ng-show="ctrl.locationInput.type === 'Circle'">You can either enter the
+                                    <small ng-show="addLocationTemplateCtrl.item.type === 'Circle'">You can either enter
+                                        the
                                         center coordinates and radius below or draw the area on the map.</small>
-                                    <small ng-show="ctrl.locationInput.type === 'Polygon'">You can either enter all
+                                    <small ng-show="addLocationTemplateCtrl.item.type === 'Polygon'">You can either
+                                        enter all
                                         polygon coordinates below or draw the area on the map.</small>
                                     <div class="form-group"
-                                         ng-show="['Point', 'Circle'].includes(ctrl.locationInput.type)"
+                                         ng-show="['Point', 'Circle'].includes(addLocationTemplateCtrl.item.type)"
                                          style="margin-bottom:0;">
                                         <div class="form-line">
                                             <input type="number" class="form-control" placeholder="Latitude"
                                                    min="-90" max="90" step="0.000001"
-                                                   ng-model="ctrl.locationInput.latitude"
+                                                   ng-model="addLocationTemplateCtrl.item.latitude"
                                                    style="font-family: monospace;"/>
                                         </div>
                                     </div>
                                     <div class="form-group"
-                                         ng-show="['Point', 'Circle'].includes(ctrl.locationInput.type)"
+                                         ng-show="['Point', 'Circle'].includes(addLocationTemplateCtrl.item.type)"
                                          style="margin-bottom: 0;">
                                         <div class="form-line">
                                             <input type="number" class="form-control" placeholder="Longitude"
                                                    min="-180" max="180" step="0.000001"
-                                                   ng-model="ctrl.locationInput.longitude"
+                                                   ng-model="addLocationTemplateCtrl.item.longitude"
                                                    style="font-family: monospace;"/>
                                         </div>
                                     </div>
                                     <div class="form-group"
-                                         ng-show="ctrl.locationInput.type === 'Circle'" style="margin-bottom: 0;">
+                                         ng-show="addLocationTemplateCtrl.item.type === 'Circle'"
+                                         style="margin-bottom: 0;">
                                         <div class="form-line">
                                             <input type="number" class="form-control" placeholder="Radius"
-                                                   min="0" max="99999" step="0.1" ng-model="ctrl.locationInput.radius"
+                                                   min="0" max="99999" step="0.1"
+                                                   ng-model="addLocationTemplateCtrl.item.radius"
                                                    style="display:inline-block; width:60%; font-family: monospace;"/>
                                             <span>m</span>
                                         </div>
                                     </div>
-                                    <div class="form-group" ng-show="ctrl.locationInput.type === 'Polygon'"
+                                    <div class="form-group" ng-show="addLocationTemplateCtrl.item.type === 'Polygon'"
                                          style="margin-bottom: 0;">
                                         <textarea class="form-control" rows="5"
-                                                  ng-model="ctrl.locationInput.polygonPoints"
+                                                  ng-model="addLocationTemplateCtrl.item.pointsList"
                                                   style="width:120%; font-size:12px; font-family:monospace;"></textarea>
                                     </div>
-                                    <button class="btn btn-block btn-xs btn-default m-t-15 waves-effect"
-                                            ng-show="['Point', 'Circle', 'Polygon'].includes(ctrl.locationInput.type);"
+                                    <button type="button" class="btn btn-block btn-xs btn-default m-t-15 waves-effect"
+                                            ng-show="['Point', 'Circle', 'Polygon'].includes(addLocationTemplateCtrl.item.type);"
                                             ng-click="ctrl.onLocationChange()" style="margin: 0;">
                                         <i class="material-icons">my_location</i>&nbsp;&nbsp;View
                                     </button>

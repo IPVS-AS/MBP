@@ -302,7 +302,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            // Sensors List and Register (includes Device List and Register)
+            // Sensors list
             .when(viewPrefix + '/sensors', {
                 category: 'sensors',
                 templateUrl: 'templates/sensors',
@@ -344,7 +344,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            //Devices list and register
+            //Devices list
             .when(viewPrefix + '/devices', {
                 category: 'devices',
                 templateUrl: 'templates/devices',
@@ -396,7 +396,20 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 templateUrl: 'templates/device-templates',
                 controller: 'DeviceTemplateListController as ctrl',
                 resolve: {
-
+                    locationTemplateList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('discovery/location-templates');
+                    }],
+                    addLocationTemplate: ['HttpService', function (HttpService) {
+                        return {
+                            "Informal": angular.bind(this, HttpService.addOne, 'discovery/location-templates/informal'),
+                            "Point": angular.bind(this, HttpService.addOne, 'discovery/location-templates/point'),
+                            "Circle": angular.bind(this, HttpService.addOne, 'discovery/location-templates/circle'),
+                            "Polygon": angular.bind(this, HttpService.addOne, 'discovery/location-templates/polygon')
+                        }
+                    }],
+                    deleteLocationTemplate: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.deleteOne, 'discovery/location-templates');
+                    }]
                 }
             })
 
@@ -539,7 +552,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            //Testing-Tool
+            //Testing tool
             .when(viewPrefix + '/testing-tool', {
                 category: 'test-details',
                 templateUrl: 'templates/testing-tool',
