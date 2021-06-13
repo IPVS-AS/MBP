@@ -146,8 +146,7 @@ public class UserEntityService {
         return Optional.empty();
     }
 
-    public <E extends UserEntity> E create(UserEntityRepository<E> repository, E entity) throws EntityNotFoundException
-    {
+    public <E extends UserEntity> E create(UserEntityRepository<E> repository, E entity) throws EntityNotFoundException {
         //Retrieve the currently logged in user from the database
         User user = userService.getLoggedInUser();
 
@@ -185,6 +184,45 @@ public class UserEntityService {
 
         //Return created entity
         return createdEntity;
+    }
+
+    /**
+     * Updates an user entity in its repository.
+     *
+     * @param <E>           The type of the {@link UserEntity}
+     * @param repository    The repository to update the user entity in
+     * @param entityId      The id of the {@link UserEntity} to update
+     * @param updatedEntity The updated {@link UserEntity} to save
+     * @param accessRequest The {@link ACAccessRequest} containing the contextual information
+     * @return The updated user entity
+     */
+    public <E extends UserEntity> E updateWithAccessControlCheck(UserEntityRepository<E> repository, String entityId, E updatedEntity, ACAccessRequest accessRequest) throws EntityNotFoundException, MissingPermissionException {
+        //Retrieve the entity from the repository
+        E entity = getForId(repository, entityId);
+
+        //User must be loginable
+        requireLoginable();
+
+        //Check permissions
+        if ((!checkAdmin() && !checkOwner(entity))) {
+            // Not the owner -> check policies
+            requirePermission(repository, entityId, ACAccessType.UPDATE, accessRequest);
+        }
+
+        //Get all create validators that are associated with this entity type
+        MBPEntity[] annotations = entity.getClass().getAnnotationsByType(MBPEntity.class);
+        List<ICreateValidator<E>> validators = new ArrayList<>();
+        for (MBPEntity annotation : annotations) {
+            for (Class<? extends ICreateValidator<?>> c : annotation.createValidator()) {
+                validators.add((ICreateValidator<E>) DynamicBeanProvider.get(c));
+            }
+        }
+
+        //Validate the updated entity and throw exception if validation fails
+        validators.forEach(v -> v.validateCreatable(updatedEntity));
+
+        //Everything fine, update the entity in the repository
+        return repository.save(updatedEntity);
     }
 
     /**
@@ -238,11 +276,11 @@ public class UserEntityService {
         validators.forEach(v -> v.validateDeletable(entity));
     }
 
-    public <E extends IACRequestedEntity> List<E> filterForAdminOwnerAndPolicies(Supplier<List<E>> entitiesSupplier, ACAccessType accessType, ACAccessRequest accessRequest)  {
+    public <E extends IACRequestedEntity> List<E> filterForAdminOwnerAndPolicies(Supplier<List<E>> entitiesSupplier, ACAccessType accessType, ACAccessRequest accessRequest) {
         return filterForAdminOwnerAndPolicies(entitiesSupplier.get(), accessType, accessRequest);
     }
 
-    public <E extends IACRequestedEntity> List<E> filterForAdminOwnerAndPolicies(List<E> entities, ACAccessType accessType, ACAccessRequest accessRequest)  {
+    public <E extends IACRequestedEntity> List<E> filterForAdminOwnerAndPolicies(List<E> entities, ACAccessType accessType, ACAccessRequest accessRequest) {
         // Retrieve the currently logged in user from the database
         User user = userService.getLoggedInUser();
 
@@ -333,15 +371,15 @@ public class UserEntityService {
         }
     }
 
-    public void requireLoginable()  {
+    public void requireLoginable() {
         requireLoginable(userService.getLoggedInUser());
     }
 
-    public void requireLoginable(String userId)  {
+    public void requireLoginable(String userId) {
         requireLoginable(userService.getForId(userId));
     }
 
-    public void requireLoginable(User user){
+    public void requireLoginable(User user) {
         if (!user.isLoginable()) {
             throw new UserNotLoginableException();
         }

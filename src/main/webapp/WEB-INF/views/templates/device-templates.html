@@ -100,9 +100,11 @@
                                 <td>{{item.name}}</td>
                                 <td>{{item.type}}</td>
                                 <td class="right">
-                                    <button type="submit" class="btn btn-sm bg-mbp-blue waves-effect waves-float">
-                                        <i class="material-icons" style="font-size:14px; color: white !important;">mode_edit</i>
-                                    </button>
+                                    <form ng-submit="ctrl.editLocationTemplate(item.id)" style="display: inline-block">
+                                        <button type="submit" class="btn btn-sm bg-mbp-blue waves-effect waves-float">
+                                            <i class="material-icons" style="font-size:14px; color: white !important;">mode_edit</i>
+                                        </button>
+                                    </form>
                                     <form ng-submit="deleteLocationTemplateCtrl.deleteItem()"
                                           style="display: inline-block">
                                         <button type="submit" class="btn btn-sm bg-red waves-effect waves-float"
@@ -157,11 +159,12 @@
                     <div class="body">
                         <div class="container-fluid">
                             <div class="col-lg-3">
-                                <form ng-submit="addLocationTemplateCtrl.addItem()">
+                                <form ng-submit="ctrl.saveLocationTemplate();">
                                     <label>Location type:</label>
                                     <div class="form-group">
                                         <div class="form-line">
                                             <select class="form-control" ng-model="addLocationTemplateCtrl.item.type"
+                                                    ng-disabled="addLocationTemplateCtrl.item.id"
                                                     ng-change="ctrl.onLocationTypeChange()">
                                                 <option value="" selected="selected">Select...</option>
                                                 <option value="Informal">Informal</option>
@@ -267,7 +270,9 @@
                                         <i class="material-icons">my_location</i>&nbsp;&nbsp;View
                                     </button>
                                     <br/>
-                                    <button type="submit" class="btn btn-primary m-t-15 waves-effect">Save</button>
+                                    <button type="submit" class="btn btn-primary m-t-15 waves-effect"
+                                            ng-show="addLocationTemplateCtrl.item.type">Save
+                                    </button>
                                 </form>
                             </div>
                             <div class="col-lg-9">

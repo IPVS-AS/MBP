@@ -4,8 +4,8 @@
  * Controller for the settings page.
  */
 app.controller('DeviceTemplateListController',
-    ['$scope', '$controller', '$interval', '$timeout', 'locationTemplateList', 'addLocationTemplate', 'deleteLocationTemplate', 'DiscoveryService', 'NotificationService',
-        function ($scope, $controller, $interval, $timeout, locationTemplateList, addLocationTemplate, deleteLocationTemplate, DiscoveryService, NotificationService) {
+    ['$scope', '$controller', '$interval', '$timeout', 'locationTemplateList', 'addLocationTemplate', 'updateLocationTemplate', 'deleteLocationTemplate', 'DiscoveryService', 'NotificationService',
+        function ($scope, $controller, $interval, $timeout, locationTemplateList, addLocationTemplate, updateLocationTemplate, deleteLocationTemplate, DiscoveryService, NotificationService) {
             //Constants
             const MAP_INIT_CENTER = [9.106631254042352, 48.74518217652443];
             const MAP_INIT_ZOOM = 16;
@@ -21,8 +21,8 @@ app.controller('DeviceTemplateListController',
 
             let vm = this;
 
-            //Define models for UI input
-            vm.locationInput = {};
+            //Remember last location template type
+            let lastLocationTemplateType = "";
 
             /**
              * Initializing function, sets up basic things.
@@ -160,12 +160,82 @@ app.controller('DeviceTemplateListController',
              */
             function showLocationTemplatesEditor() {
                 ELEMENT_EDITORS_LOCATION_EDITOR.slideUp().slideDown(400, function () {
-                    //Remove geometries from map
-                    vm.locationMapApi.removeGeometries();
+                    //Remove geometries from map and update map interaction
+                    onLocationTypeChange();
 
                     //Adjust size of location map to changed UI
                     vm.locationMapApi.updateMapSize();
                 });
+            }
+
+            /**
+             * [Public]
+             * Prepares the editing of a certain location template, given by its ID.
+             *
+             * @param templateId The ID of the location template
+             */
+            function editLocationTemplate(templateId) {
+                //Find the location template with this ID
+                for (let i = 0; i < locationTemplateList.length; i++) {
+                    if (templateId === locationTemplateList[i].id) {
+                        //Found, copy data of the location template
+                        vm.addLocationTemplateCtrl.item = Object.assign({}, locationTemplateList[i])
+
+                        //Show template editor
+                        showLocationTemplatesEditor();
+                        break;
+                    }
+                }
+            }
+
+            /**
+             * [Public]
+             * Saves the currently modified location template, either by creating a new one or by updating an
+             * existing one.
+             */
+            function saveLocationTemplate() {
+                //Remember last location template type
+                lastLocationTemplateType = vm.addLocationTemplateCtrl.item.type;
+
+                //Check if location template ID is set
+                if (vm.addLocationTemplateCtrl.item.hasOwnProperty("id") && (vm.addLocationTemplateCtrl.item.id.length > 0)) {
+                    //Copy location template data to update controller
+                    vm.updateLocationTemplateCtrl.item = Object.assign({}, vm.addLocationTemplateCtrl.item);
+
+                    //Update existing location template
+                    vm.updateLocationTemplateCtrl.updateItem().then((data) => {
+                        $scope.$apply();
+                    }, () => {
+                        vm.addLocationTemplateCtrl.item.errors = vm.updateLocationTemplateCtrl.item.errors;
+                        $scope.$apply();
+                    });
+                } else {
+                    //Create new location template
+                    vm.addLocationTemplateCtrl.addItem();
+                }
+            }
+
+            /**
+             * [Private]
+             * Takes a location template object and transform the string of polygon points, if existing, to an array
+             * of coordinates in case the location template is of type polygon area.
+             *
+             * @param locationTemplate The location template to transform
+             * @return {*} The transformed location template
+             */
+            function transformPolygonPoints(locationTemplate) {
+                //Check if data contains polygon points string
+                if (!locationTemplate.hasOwnProperty("pointsList")) {
+                    //Nothing to do
+                    return locationTemplate;
+                }
+                //Transform string to array of coordinates
+                locationTemplate.points = locationTemplate.pointsList.split("\n").map(x => x.split("|").map(s => parseFloat(s)));
+
+                //Remove string from data object
+                delete locationTemplate.pointsList;
+
+                return locationTemplate;
             }
 
             /**
@@ -279,11 +349,29 @@ app.controller('DeviceTemplateListController',
             }
 
             //Watch controller result of location template additions
-            $scope.$watch(() => vm.addLocationTemplateCtrl.result, () => {
+            $scope.$watch(() => vm.addLocationTemplateCtrl.result, (data) => {
                     //Callback, close location editor
                     ELEMENT_EDITORS_LOCATION_EDITOR.slideUp();
+
+                    //Extend data for location template type
+                    data.type = lastLocationTemplateType;
+
+                    //Add location template to list
+                    vm.locationTemplateListCtrl.pushItem(data);
                 }
             );
+
+            //Watch controller result of location template updates
+            $scope.$watch(() => vm.updateLocationTemplateCtrl.result, (data) => {
+                //Callback, close location editor
+                ELEMENT_EDITORS_LOCATION_EDITOR.slideUp();
+
+                //Extend data for location template type
+                data.type = lastLocationTemplateType;
+
+                //Update location template list
+                vm.locationTemplateListCtrl.updateItem(data);
+            });
 
             //Watch controller result of location template deletions
             $scope.$watch(() => vm.deleteLocationTemplateCtrl.result, () => {
@@ -302,21 +390,20 @@ app.controller('DeviceTemplateListController',
                     entity: 'location template',
                     addItem: function (data) {
                         //Sanity check for location template type
-                        if ((!data.hasOwnProperty("type")) || (!addLocationTemplate.hasOwnProperty(data.type))) {
-                            return;
-                        }
-
-                        //Check if data contains polygon points string
-                        if (data.hasOwnProperty("pointsList")) {
-                            //Transform string to array of coordinates
-                            data.points = data.pointsList.split("\n").map(x => x.split("|").map(s => parseFloat(s)));
-
-                            //Remove string from data object
-                            delete data.pointsList;
-                        }
+                        if ((!data.hasOwnProperty("type")) || (!addLocationTemplate.hasOwnProperty(data.type))) return;
 
                         //Extend request
-                        return addLocationTemplate[data.type](data);
+                        return addLocationTemplate[data.type](transformPolygonPoints(data));
+                    }
+                }),
+                updateLocationTemplateCtrl: $controller('UpdateItemController as updateLocationTemplateCtrl', {
+                    $scope: $scope,
+                    updateItem: function (data) {
+                        //Sanity check for location template type
+                        if ((!data.hasOwnProperty("type")) || (!addLocationTemplate.hasOwnProperty(data.type))) return;
+
+                        //Extend request
+                        return updateLocationTemplate[data.type](transformPolygonPoints(data));
                     }
                 }),
                 deleteLocationTemplateCtrl: $controller('DeleteItemController as deleteLocationTemplateCtrl', {
@@ -329,7 +416,9 @@ app.controller('DeviceTemplateListController',
                 onLocationTypeChange: onLocationTypeChange,
                 onLocationChange: onLocationChange,
                 onDrawingFinished: onLocationMapDrawingFinished,
-                showLocationTemplatesEditor: showLocationTemplatesEditor
+                showLocationTemplatesEditor: showLocationTemplatesEditor,
+                editLocationTemplate: editLocationTemplate,
+                saveLocationTemplate: saveLocationTemplate
             });
         }
     ]);

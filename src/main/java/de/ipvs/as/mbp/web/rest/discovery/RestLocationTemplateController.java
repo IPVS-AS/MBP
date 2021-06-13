@@ -100,6 +100,63 @@ public class RestLocationTemplateController {
         return ResponseEntity.ok(userEntityService.entityToEntityModel(createdLocationTemplate));
     }
 
+
+    @PutMapping(path = "/informal/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+    @ApiOperation(value = "Updates an existing location template of type informal.", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 400, message = "Location template is invalid."), @ApiResponse(code = 404, message = "Location template not found!")})
+    public ResponseEntity<EntityModel<LocationTemplate>> updateInformal(@PathVariable(name = "id") String id, @RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestBody InformalLocationTemplate locationTemplate) throws MissingPermissionException, EntityNotFoundException {
+        // Parse the access request information
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+        //Update location template with access control check
+        LocationTemplate updatedLocationTemplate = userEntityService.updateWithAccessControlCheck(locationTemplateRepository, id, locationTemplate.setId(id), accessRequest);
+
+        //Return updated location template
+        return ResponseEntity.ok(userEntityService.entityToEntityModel(updatedLocationTemplate));
+    }
+
+    @PutMapping(path = "/point/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+    @ApiOperation(value = "Updates an existing location template of type point.", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 400, message = "Location template is invalid."), @ApiResponse(code = 404, message = "Location template not found!")})
+    public ResponseEntity<EntityModel<LocationTemplate>> updatePoint(@PathVariable(name = "id") String id, @RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestBody PointLocationTemplate locationTemplate) throws MissingPermissionException, EntityNotFoundException {
+        // Parse the access request information
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+        //Update location template with access control check
+        LocationTemplate updatedLocationTemplate = userEntityService.updateWithAccessControlCheck(locationTemplateRepository, id, locationTemplate.setId(id), accessRequest);
+
+        //Return updated location template
+        return ResponseEntity.ok(userEntityService.entityToEntityModel(updatedLocationTemplate));
+    }
+
+    @PutMapping(path = "/circle/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+    @ApiOperation(value = "Updates an existing location template of type circle area.", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 400, message = "Location template is invalid."), @ApiResponse(code = 404, message = "Location template not found!")})
+    public ResponseEntity<EntityModel<LocationTemplate>> updateCircleArea(@PathVariable(name = "id") String id, @RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestBody CircleLocationTemplate locationTemplate) throws MissingPermissionException, EntityNotFoundException {
+        // Parse the access request information
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+        //Update location template with access control check
+        LocationTemplate updatedLocationTemplate = userEntityService.updateWithAccessControlCheck(locationTemplateRepository, id, locationTemplate.setId(id), accessRequest);
+
+        //Return updated location template
+        return ResponseEntity.ok(userEntityService.entityToEntityModel(updatedLocationTemplate));
+    }
+
+    @PutMapping(path = "/polygon/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = "application/hal+json")
+    @ApiOperation(value = "Updates an existing location template of type polygon area.", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 400, message = "Location template is invalid."), @ApiResponse(code = 404, message = "Location template not found!")})
+    public ResponseEntity<EntityModel<LocationTemplate>> updatePolygonArea(@PathVariable(name = "id") String id, @RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestBody PolygonLocationTemplate locationTemplate) throws MissingPermissionException, EntityNotFoundException {
+        // Parse the access request information
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+        //Update location template with access control check
+        LocationTemplate updatedLocationTemplate = userEntityService.updateWithAccessControlCheck(locationTemplateRepository, id, locationTemplate.setId(id), accessRequest);
+
+        //Return updated location template
+        return ResponseEntity.ok(userEntityService.entityToEntityModel(updatedLocationTemplate));
+    }
+
     @DeleteMapping(path = "/{locationTemplateId}")
     @ApiOperation(value = "Deletes an existing location template, identified by its ID.")
     @ApiResponses({@ApiResponse(code = 204, message = "Success!"),
@@ -107,7 +164,7 @@ public class RestLocationTemplateController {
             @ApiResponse(code = 404, message = "Location template or requesting user not found!")})
     public ResponseEntity<Void> deleteLocationTemplate(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
                                                        @PathVariable("locationTemplateId") String locationTemplateId) throws EntityNotFoundException, MissingPermissionException {
-        // Parse the access-request information
+        // Parse the access request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
         //Delete the location template

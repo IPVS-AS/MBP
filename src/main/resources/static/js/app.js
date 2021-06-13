@@ -412,6 +412,14 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                             "Polygon": angular.bind(this, HttpService.addOne, 'discovery/location-templates/polygon')
                         }
                     }],
+                    updateLocationTemplate: ['HttpService', function (HttpService) {
+                        return {
+                            "Informal": angular.bind(this, HttpService.updateOne, 'discovery/location-templates/informal'),
+                            "Point": angular.bind(this, HttpService.updateOne, 'discovery/location-templates/point'),
+                            "Circle": angular.bind(this, HttpService.updateOne, 'discovery/location-templates/circle'),
+                            "Polygon": angular.bind(this, HttpService.updateOne, 'discovery/location-templates/polygon')
+                        }
+                    }],
                     deleteLocationTemplate: ['HttpService', function (HttpService) {
                         return angular.bind(this, HttpService.deleteOne, 'discovery/location-templates');
                     }]
