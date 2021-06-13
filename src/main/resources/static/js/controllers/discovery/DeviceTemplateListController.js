@@ -288,7 +288,7 @@ app.controller('DeviceTemplateListController',
             //Watch controller result of location template deletions
             $scope.$watch(() => vm.deleteLocationTemplateCtrl.result, () => {
                 //Callback, remove location template from list
-                vm.locationTemplateListCtrl.removeItem(vm.deleteLocationTemplateCtrl.result.id);
+                vm.locationTemplateListCtrl.removeItem(vm.deleteLocationTemplateCtrl.result);
             });
 
             //Expose functions that are used externally
