@@ -14,6 +14,7 @@ app.controller('DeviceTemplateListController',
             const ELEMENT_MENU_BUTTONS = $("div.bubble-item");
             const ELEMENT_MENU_BUTTON_MAIN = $("div.bubble-item.bubble-devices")
             const ELEMENT_EDITORS_COLLAPSES = $('#edit-templates-group > div.collapse');
+            const ELEMENT_EDITORS_LOCATION = $('#edit-locations');
             const ELEMENT_EDITORS_LOCATION_EDITOR = $('#edit-locations-editor');
 
             //Relevant CSS classes
@@ -176,16 +177,28 @@ app.controller('DeviceTemplateListController',
              */
             function editLocationTemplate(templateId) {
                 //Find the location template with this ID
+                let locationTemplate = null;
                 for (let i = 0; i < locationTemplateList.length; i++) {
                     if (templateId === locationTemplateList[i].id) {
-                        //Found, copy data of the location template
-                        vm.addLocationTemplateCtrl.item = Object.assign({}, locationTemplateList[i])
-
-                        //Show template editor
-                        showLocationTemplatesEditor();
+                        //Found, remember location template
+                        locationTemplate = locationTemplateList[i];
                         break;
                     }
                 }
+
+                //Sanity check
+                if (locationTemplate == null) return;
+
+                //Set copy of location template
+                vm.addLocationTemplateCtrl.item = Object.assign({}, locationTemplate)
+
+                //Create string from coordinate array if polygon
+                if (locationTemplate.type === "Polygon") {
+                    vm.addLocationTemplateCtrl.item.pointsList = locationTemplate.points.map(p => p.map(s => Math.round(s * 1e6) / 1e6).join("|")).join("\n");
+                }
+
+                //Show template editor
+                showLocationTemplatesEditor();
             }
 
             /**
@@ -200,13 +213,10 @@ app.controller('DeviceTemplateListController',
                 //Check if location template ID is set
                 if (vm.addLocationTemplateCtrl.item.hasOwnProperty("id") && (vm.addLocationTemplateCtrl.item.id.length > 0)) {
                     //Copy location template data to update controller
-                    vm.updateLocationTemplateCtrl.item = Object.assign({}, vm.addLocationTemplateCtrl.item);
+                    vm.updateLocationTemplateCtrl.item = vm.addLocationTemplateCtrl.item;
 
                     //Update existing location template
                     vm.updateLocationTemplateCtrl.updateItem().then((data) => {
-                        $scope.$apply();
-                    }, () => {
-                        vm.addLocationTemplateCtrl.item.errors = vm.updateLocationTemplateCtrl.item.errors;
                         $scope.$apply();
                     });
                 } else {
@@ -217,7 +227,7 @@ app.controller('DeviceTemplateListController',
 
             /**
              * [Private]
-             * Takes a location template object and transform the string of polygon points, if existing, to an array
+             * Takes a location template object and transforms the string of polygon points, if existing, to an array
              * of coordinates in case the location template is of type polygon area.
              *
              * @param locationTemplate The location template to transform
@@ -350,6 +360,9 @@ app.controller('DeviceTemplateListController',
 
             //Watch controller result of location template additions
             $scope.$watch(() => vm.addLocationTemplateCtrl.result, (data) => {
+                    //Sanity check
+                    if (!data) return;
+
                     //Callback, close location editor
                     ELEMENT_EDITORS_LOCATION_EDITOR.slideUp();
 
@@ -363,6 +376,9 @@ app.controller('DeviceTemplateListController',
 
             //Watch controller result of location template updates
             $scope.$watch(() => vm.updateLocationTemplateCtrl.result, (data) => {
+                //Sanity check
+                if (!data) return;
+
                 //Callback, close location editor
                 ELEMENT_EDITORS_LOCATION_EDITOR.slideUp();
 
@@ -371,10 +387,16 @@ app.controller('DeviceTemplateListController',
 
                 //Update location template list
                 vm.locationTemplateListCtrl.updateItem(data);
+
+                //Fix location template name in overview table (hacky solution)
+                ELEMENT_EDITORS_LOCATION.find('table tr#' + data.id + ' td').first().html(data.name);
             });
 
             //Watch controller result of location template deletions
-            $scope.$watch(() => vm.deleteLocationTemplateCtrl.result, () => {
+            $scope.$watch(() => vm.deleteLocationTemplateCtrl.result, (data) => {
+                //Sanity check
+                if (!data) return;
+
                 //Callback, remove location template from list
                 vm.locationTemplateListCtrl.removeItem(vm.deleteLocationTemplateCtrl.result);
             });
