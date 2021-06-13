@@ -397,7 +397,12 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 controller: 'DeviceTemplateListController as ctrl',
                 resolve: {
                     locationTemplateList: ['HttpService', function (HttpService) {
-                        return HttpService.getAll('discovery/location-templates');
+                        return HttpService.getAllTypes('discovery/location-templates', {
+                            "informalLocationTemplates": "Informal",
+                            "pointLocationTemplates": "Point",
+                            "circleLocationTemplates": "Circle",
+                            "polygonLocationTemplates": "Polygon"
+                        });
                     }],
                     addLocationTemplate: ['HttpService', function (HttpService) {
                         return {

@@ -1,7 +1,11 @@
 package de.ipvs.as.mbp.domain.discovery.location;
 
-import org.springframework.data.mongodb.core.mapping.Document;
+import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 
+/**
+ * Objects of this class represent location templates for location points.
+ */
+@MBPEntity(createValidator = PointLocationTemplateCreateValidator.class)
 public class PointLocationTemplate extends LocationTemplate {
     private double latitude;
     private double longitude;

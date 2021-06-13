@@ -160,6 +160,9 @@ app.controller('DeviceTemplateListController',
              */
             function showLocationTemplatesEditor() {
                 ELEMENT_EDITORS_LOCATION_EDITOR.slideUp().slideDown(400, function () {
+                    //Remove geometries from map
+                    vm.locationMapApi.removeGeometries();
+
                     //Adjust size of location map to changed UI
                     vm.locationMapApi.updateMapSize();
                 });
@@ -266,7 +269,7 @@ app.controller('DeviceTemplateListController',
                 return Swal.fire({
                     title: 'Delete ' + categoryName,
                     type: 'warning',
-                    html: "Are you sure you want to delete the " + categoryName + " \"" + entityName + "\"?",
+                    html: "Are you sure you want to delete the " + categoryName + " \"<strong>" + entityName + "</strong>\"?",
                     showCancelButton: true,
                     confirmButtonText: 'Delete',
                     confirmButtonClass: 'bg-red',
@@ -274,6 +277,19 @@ app.controller('DeviceTemplateListController',
                     cancelButtonText: 'Cancel'
                 });
             }
+
+            //Watch controller result of location template additions
+            $scope.$watch(() => vm.addLocationTemplateCtrl.result, () => {
+                    //Callback, close location editor
+                    ELEMENT_EDITORS_LOCATION_EDITOR.slideUp();
+                }
+            );
+
+            //Watch controller result of location template deletions
+            $scope.$watch(() => vm.deleteLocationTemplateCtrl.result, () => {
+                //Callback, remove location template from list
+                vm.locationTemplateListCtrl.removeItem(vm.deleteLocationTemplateCtrl.result.id);
+            });
 
             //Expose functions that are used externally
             angular.extend(vm, {
@@ -293,12 +309,10 @@ app.controller('DeviceTemplateListController',
                         //Check if data contains polygon points string
                         if (data.hasOwnProperty("pointsList")) {
                             //Transform string to array of coordinates
-                            data.pointsList = data.pointsList.split("\n").map(x => x.split("|").map(s => parseFloat(s)));
+                            data.points = data.pointsList.split("\n").map(x => x.split("|").map(s => parseFloat(s)));
 
-                            //Remove field from data if not enough polygon points
-                            if (points.length < 3) {
-                                delete data.pointsList;
-                            }
+                            //Remove string from data object
+                            delete data.pointsList;
                         }
 
                         //Extend request

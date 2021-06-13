@@ -8,9 +8,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.GeneratedValue;
 
+/**
+ * Abstract base class for location templates.
+ */
 @Document
 @ApiModel(description = "Model for location templates")
-public class LocationTemplate extends UserEntity {
+public abstract class LocationTemplate extends UserEntity {
     @Id
     @GeneratedValue
     @ApiModelProperty(notes = "Location template ID", example = "5c8f7ad66f9e3c1bacb0fa99", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)

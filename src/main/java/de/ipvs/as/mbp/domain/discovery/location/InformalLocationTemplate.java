@@ -1,8 +1,12 @@
 package de.ipvs.as.mbp.domain.discovery.location;
 
 import de.ipvs.as.mbp.domain.discovery.operators.StringAttributeOperator;
-import org.springframework.data.mongodb.core.mapping.Document;
+import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 
+/**
+ * Objects of this class represent location templates for informal location descriptions.
+ */
+@MBPEntity(createValidator = InformalLocationTemplateCreateValidator.class)
 public class InformalLocationTemplate extends LocationTemplate {
     private StringAttributeOperator operator;
     private String match;

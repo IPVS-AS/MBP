@@ -20,7 +20,7 @@
                         <button type="button" data-toggle="collapse" data-target="#edit-locations"
                                 class="btn btn-circle waves-effect waves-circle waves-float m-t-0">
                         </button>
-                        <div class="bubble-badge">25</div>
+                        <div class="bubble-badge">{{locationTemplateListCtrl.items.length}}</div>
                         <div class="bubble-connector"></div>
                     </div>
                     <div class="bubble-item bubble-identifiers">
@@ -85,44 +85,43 @@
                         <div class="align-right">
                             <button type="button"
                                     class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
-                                    ng-click="ctrl.locationInput = {'name': 'Unnamed'}; ctrl.showLocationTemplatesEditor();">
+                                    ng-click="addLocationTemplateCtrl.item = {'name': 'Unnamed'}; ctrl.showLocationTemplatesEditor();">
                                 <i class="material-icons">add</i>
                             </button>
                         </div>
                     </div>
                     <div class="body">
-                        <table class="table table-hover">
+                        <table class="table table-hover" st-table="displayedCollection"
+                               st-safe-src="locationTemplateListCtrl.items">
                             <thead>
                             </thead>
                             <tbody>
-                            <tr>
-                                <td>Location 1</td>
-                                <td>Point</td>
+                            <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
+                                <td>{{item.name}}</td>
+                                <td>{{item.type}}</td>
                                 <td class="right">
                                     <button type="submit" class="btn btn-sm bg-mbp-blue waves-effect waves-float">
                                         <i class="material-icons" style="font-size:14px; color: white !important;">mode_edit</i>
                                     </button>
-                                    <button type="submit" class="btn btn-sm bg-red waves-effect waves-float"
-                                            ng-click="">
-                                        <i class="material-icons" style="font-size:14px;">delete</i>
-                                    </button>
+                                    <form ng-submit="deleteLocationTemplateCtrl.deleteItem()"
+                                          style="display: inline-block">
+                                        <button type="submit" class="btn btn-sm bg-red waves-effect waves-float"
+                                                ng-click="deleteLocationTemplateCtrl.item.id = item.id">
+                                            <i class="material-icons" style="font-size:14px;">delete</i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
-                            <tr>
-                                <td>Location 2</td>
-                                <td>Polygon</td>
-                                <td class="right">
-                                    <button type="submit" class="btn btn-sm bg-mbp-blue waves-effect waves-float">
-                                        <i class="material-icons" style="font-size:14px; color: white !important;">mode_edit</i>
-                                    </button>
-                                    <button type="submit" class="btn btn-sm bg-red waves-effect waves-float"
-                                            ng-click="">
-                                        <i class="material-icons" style="font-size:14px;">delete</i>
-                                    </button>
-                                </td>
+                            <tr ng-show="locationTemplateListCtrl.items.length === 0">
+                                <td>No location templates registered.</td>
+                                <td></td>
+                                <td></td>
                             </tr>
                             </tbody>
                             <tfoot>
+                            <tr>
+                                <td class="text-center" st-pagination="" st-items-by-page="5" colspan="3"></td>
+                            </tr>
                             </tfoot>
                         </table>
                     </div>
@@ -152,6 +151,8 @@
                                 </div>
                             </form>
                         </h2>
+                        <span class="help-block" ng-show="addLocationTemplateCtrl.item.errors.name"
+                              style="color: #a94442;">{{addLocationTemplateCtrl.item.errors.name}}</span>
                     </div>
                     <div class="body">
                         <div class="container-fluid">
@@ -172,25 +173,32 @@
                                     </div>
                                     <small ng-show="addLocationTemplateCtrl.item.type === 'Informal'">Location
                                         description...</small>
-                                    <div class="form-group" ng-show="addLocationTemplateCtrl.item.type === 'Informal'">
-                                        <div class="form-line">
+                                    <div class="form-group" ng-show="addLocationTemplateCtrl.item.type === 'Informal'"
+                                         ng-class="{'has-error' : addLocationTemplateCtrl.item.errors.operator }">
+                                        <div class="form-line"
+                                             ng-class="{'focused error' : addLocationTemplateCtrl.item.errors.operator }">
                                             <select class="form-control"
                                                     ng-model="addLocationTemplateCtrl.item.operator"
                                                     style="margin-bottom:0;">
                                                 <option value="" selected="selected">Select...</option>
                                                 <option value="equals">equals</option>
                                                 <option value="contains">contains</option>
-                                                <option value="begins">begins with</option>
-                                                <option value="ends">ends with</option>
+                                                <option value="begins_with">begins with</option>
+                                                <option value="ends_with">ends with</option>
                                             </select>
                                         </div>
+                                        <span class="help-block" ng-show="addLocationTemplateCtrl.item.errors.operator">{{addLocationTemplateCtrl.item.errors.operator}}</span>
                                     </div>
-                                    <div class="form-group" ng-show="addLocationTemplateCtrl.item.type === 'Informal'">
-                                        <div class="form-line">
+                                    <div class="form-group" ng-show="addLocationTemplateCtrl.item.type === 'Informal'"
+                                         ng-class="{'has-error' : addLocationTemplateCtrl.item.errors.match }">
+                                        <div class="form-line"
+                                             ng-class="{'focused error' : addLocationTemplateCtrl.item.errors.match }">
                                             <input type="text" class="form-control"
-                                                   ng-model="addLocationTemplateCtrl.item.description"
+                                                   ng-model="addLocationTemplateCtrl.item.match"
                                                    placeholder="Enter match..."/>
                                         </div>
+                                        <span class="help-block"
+                                              ng-show="addLocationTemplateCtrl.item.errors.match">{{addLocationTemplateCtrl.item.errors.match}}</span>
                                     </div>
                                     <small ng-show="addLocationTemplateCtrl.item.type === 'Point'">You can either enter
                                         the
@@ -203,40 +211,55 @@
                                         polygon coordinates below or draw the area on the map.</small>
                                     <div class="form-group"
                                          ng-show="['Point', 'Circle'].includes(addLocationTemplateCtrl.item.type)"
+                                         ng-class="{'has-error' : addLocationTemplateCtrl.item.errors.latitude }"
                                          style="margin-bottom:0;">
-                                        <div class="form-line">
+                                        <div class="form-line"
+                                             ng-class="{'focused error' : addLocationTemplateCtrl.item.errors.latitude }">
                                             <input type="number" class="form-control" placeholder="Latitude"
                                                    min="-90" max="90" step="0.000001"
                                                    ng-model="addLocationTemplateCtrl.item.latitude"
                                                    style="font-family: monospace;"/>
                                         </div>
+                                        <span class="help-block" ng-show="addLocationTemplateCtrl.item.errors.latitude">{{addLocationTemplateCtrl.item.errors.latitude}}</span>
                                     </div>
                                     <div class="form-group"
                                          ng-show="['Point', 'Circle'].includes(addLocationTemplateCtrl.item.type)"
+                                         ng-class="{'has-error' : addLocationTemplateCtrl.item.errors.longitude }"
                                          style="margin-bottom: 0;">
-                                        <div class="form-line">
+                                        <div class="form-line"
+                                             ng-class="{'focused error' : addLocationTemplateCtrl.item.errors.longitude }">
                                             <input type="number" class="form-control" placeholder="Longitude"
                                                    min="-180" max="180" step="0.000001"
                                                    ng-model="addLocationTemplateCtrl.item.longitude"
                                                    style="font-family: monospace;"/>
                                         </div>
+                                        <span class="help-block"
+                                              ng-show="addLocationTemplateCtrl.item.errors.longitude">{{addLocationTemplateCtrl.item.errors.longitude}}</span>
                                     </div>
                                     <div class="form-group"
                                          ng-show="addLocationTemplateCtrl.item.type === 'Circle'"
+                                         ng-class="{'has-error' : addLocationTemplateCtrl.item.errors.radius }"
                                          style="margin-bottom: 0;">
-                                        <div class="form-line">
+                                        <div class="form-line"
+                                             ng-class="{'focused error' : addLocationTemplateCtrl.item.errors.radius }">
                                             <input type="number" class="form-control" placeholder="Radius"
                                                    min="0" max="99999" step="0.1"
                                                    ng-model="addLocationTemplateCtrl.item.radius"
                                                    style="display:inline-block; width:60%; font-family: monospace;"/>
                                             <span>m</span>
                                         </div>
+                                        <span class="help-block"
+                                              ng-show="addLocationTemplateCtrl.item.errors.radius">{{addLocationTemplateCtrl.item.errors.radius}}</span>
                                     </div>
                                     <div class="form-group" ng-show="addLocationTemplateCtrl.item.type === 'Polygon'"
+                                         ng-class="{'has-error' : addLocationTemplateCtrl.item.errors.pointsList }"
                                          style="margin-bottom: 0;">
                                         <textarea class="form-control" rows="5"
                                                   ng-model="addLocationTemplateCtrl.item.pointsList"
+                                                  ng-class="{'focused error' : addLocationTemplateCtrl.item.errors.pointsList }"
                                                   style="width:120%; font-size:12px; font-family:monospace;"></textarea>
+                                        <span class="help-block"
+                                              ng-show="addLocationTemplateCtrl.item.errors.pointsList">{{addLocationTemplateCtrl.item.errors.pointsList}}</span>
                                     </div>
                                     <button type="button" class="btn btn-block btn-xs btn-default m-t-15 waves-effect"
                                             ng-show="['Point', 'Circle', 'Polygon'].includes(addLocationTemplateCtrl.item.type);"

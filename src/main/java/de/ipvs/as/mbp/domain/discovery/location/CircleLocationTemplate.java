@@ -1,8 +1,10 @@
 package de.ipvs.as.mbp.domain.discovery.location;
 
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
-import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * Objects of this class represent location templates for circle areas.
+ */
 @MBPEntity(createValidator = CircleLocationTemplateCreateValidator.class)
 public class CircleLocationTemplate extends LocationTemplate {
     private double latitude;
