@@ -136,7 +136,7 @@
                             <tr ng-repeat="testReport in pdfTable | orderBy:'-date'">
                                 <td>{{testReport.date * 1000 | date:'dd.MM.yyyy HH:mm:ss'}}</td>
                                 <td>
-                                    <form ng-submit="openReport(testReport)" style="display: inline-block">
+                                    <form ng-submit="testReportCtrl.openReport(testReport)" style="display: inline-block">
                                         <button type="submit" class="btn bg-cyan waves-effect">
                                             <span>Open Report</span>
                                         </button>

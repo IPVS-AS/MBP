@@ -4,15 +4,14 @@
  * Controller for the test details pages that can be used to extend more specific controllers with a default behaviour.
  */
 app.controller('TestingDetailsController',
-    ['$scope', '$controller', 'TestService', 'TestReportService', 'testingDetails', 'sensorList', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'HttpService', 'ENDPOINT_URI', 'ruleList',
-        function ($scope, $controller, TestService, TestReportService, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, HttpService, ENDPOINT_URI, ruleList) {
+    ['$scope', '$controller', 'TestService', 'testingDetails', 'sensorList', '$rootScope', '$routeParams', '$interval', 'UnitService', 'NotificationService', '$http', 'HttpService', 'ENDPOINT_URI', 'ruleList',
+        function ($scope, $controller, TestService, testingDetails, sensorList, $rootScope, $routeParams, $interval, UnitService, NotificationService, $http, HttpService, ENDPOINT_URI, ruleList) {
             //Initialization of variables that are used in the frontend by angular
             const vm = this;
             vm.ruleList = [];
             vm.test = testingDetails;
             vm.executeRules = true;
             vm.sensorType = testingDetails.type;
-            let testReport = null;
 
 
             // ID of the Test
@@ -23,8 +22,6 @@ app.controller('TestingDetailsController',
                 'TestingTemperatureSensorPl',
                 'TestingHumiditySensor',
                 'TestingHumiditySensorPl'];
-            //URL for server requests
-            const URL_SIMULATION_VALUES = ENDPOINT_URI + '/test-details/test-report/';
 
 
             // Storing variables
@@ -96,31 +93,8 @@ app.controller('TestingDetailsController',
 
             }
 
-            /**
-             * [Private]
-             *
-             *
-             * @param reportId
-             * @return {*}
-             */
-            function getSimulationValuesTestReport(reportId) {
-                //Execute request
-                return HttpService.getRequest(URL_SIMULATION_VALUES + reportId).then(function (response) {
-                    convertSimulationValues(response);
-                });
-            }
 
-            function convertSimulationValues(response) {
-                let simulationValues = [];
 
-                angular.forEach(response, function (timeValue, sensorName) {
-                    simulationValues.push({
-                        name: sensorName,
-                        data: timeValue
-                    });
-                });
-                getReportChart(simulationValues);
-            }
 
             /**
              * [Public]
@@ -188,105 +162,6 @@ app.controller('TestingDetailsController',
 
             }
 
-            // convert all needed information for the specific test report and open the modal
-            $scope.openReport = function (report) {
-                testReport = report.report;
-                $scope.testReportAnzeige = testReport;
-                getSimulationValuesTestReport(testReport.id);
-                convertConfig(testReport);
-                convertRulesTriggered(testReport.amountRulesTriggered);
-                convertTriggerList(testReport.triggerValues);
-                getRealReportSensorList(testReport);
-                $('#testReport').modal('show');
-            };
-
-            /**
-             * [Private]
-             * Converts the structure of the value trigger list to show them correctly in the report.
-             * @param triggerValues
-             */
-            function convertTriggerList(triggerValues) {
-                let triggeredValuesList = {};
-                let triggeredValuesLi = [];
-                angular.forEach(triggerValues, function (triggerValues, ruleName) {
-                    triggeredValuesLi.push({
-                        "ruleName": ruleName,
-                        "triggerValues": triggerValues
-                    })
-                });
-                triggeredValuesList.table = triggeredValuesLi;
-                $scope.triggerValues = triggeredValuesList.table;
-            }
-
-
-            /**
-             * [Private]
-             * Convert the structure of the rule execution information to show this correctly in the report.
-             * @param amountRulesTriggered
-             */
-            function convertRulesTriggered(amountRulesTriggered) {
-                let amountRulesTriggeredList = {};
-                let amountRulesTriggeredL = [];
-                angular.forEach(amountRulesTriggered, function (executions, rule) {
-                    amountRulesTriggeredL.push({
-                        "name": rule,
-                        "executions": executions
-                    })
-                });
-                amountRulesTriggeredList.table = amountRulesTriggeredL;
-                $scope.rulesTriggered = amountRulesTriggeredList.table;
-            }
-
-
-            /**
-             * [Private]
-             * Get a list of all real sensors included into the test, to display them in the test report.
-             * @param report
-             */
-            function getRealReportSensorList(report) {
-                $scope.realSensorList = []
-                angular.forEach(report.sensor, function (sensor, key) {
-                    if (!sensor.name.includes("TESTING_")) {
-                        $scope.realSensorList.push(sensor)
-                    }
-                });
-            }
-
-            /**
-             * [Private]
-             * Converts structure of the sensor configurations of the sensor simulators to show them correctly in the report.
-             * @param testReport
-             */
-            function convertConfig(testReport) {
-                let simulationConfig = [];
-                let config = {};
-
-                angular.forEach(testReport.config, function (config, key) {
-                    let type = "";
-                    let event = "";
-                    let anomaly = "";
-                    angular.forEach(config, function (configDetails, key) {
-                        if (configDetails["name"] === "Type") {
-                            type = configDetails["value"];
-                        } else if (configDetails["name"] === "eventType") {
-                            event = configDetails["value"];
-                        } else if (configDetails["name"] === "anomalyType") {
-                            anomaly = configDetails["value"];
-                        }
-                    });
-                    if (type && event && anomaly) {
-                        simulationConfig.push({
-                            "type": type,
-                            "event": event,
-                            "anomaly": anomaly
-                        })
-                    }
-
-
-                });
-                config.configTable = simulationConfig;
-                $scope.configTable = config.configTable;
-            }
 
             /**
              * [Public]
@@ -310,41 +185,6 @@ app.controller('TestingDetailsController',
                 });
             }
 
-            /**
-             * [Private]
-             * Creates the charts for the test reports with the generated sensor values during the test.
-             *
-             * @param dataSeries
-             */
-            function getReportChart(dataSeries) {
-                Highcharts.chart('reportChart', {
-                        chart: {
-                            type: 'line',
-                            zoomType: 'xy'
-                        }, title: {
-                            text: ''
-                        },
-                        xAxis: {
-                            type: 'datetime'
-                        },
-
-                        tooltip: {
-                            valueDecimals: 2,
-                            valuePrefix: '',
-                        },
-                        legend: {
-                            layout: 'horizontal',
-                            align: 'center',
-                            verticalAlign: 'bottom',
-                            x: 0,
-                            y: 0,
-                            showInLegend: true
-                        },
-                        series: dataSeries
-                    }
-                )
-
-            }
 
 
             /**
@@ -434,7 +274,7 @@ app.controller('TestingDetailsController',
                 };
                 domtoimage.toPng(document.getElementById("tableTest"), options)
                     .then(function (blob) {
-                        TestReportService.generateReport(blob);
+                        //TestReportService.generateReport(blob);
                     });
             }
 
@@ -712,6 +552,10 @@ app.controller('TestingDetailsController',
                     historicalChartContainer: 'historicalValues',
                     historicalChartSlider: 'historicalChartSlider'
                 }), {
+                testReportCtrl: $controller('TestReportController as testReportCtrl',
+                    { $scope: $scope,
+                        openReport: $scope.openReport
+                    }),
                 updateTestCtrl: $controller('UpdateItemController as updateTestCtrl', {
                     $scope: $scope,
                     updateItem: updateTest
