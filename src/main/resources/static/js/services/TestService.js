@@ -11,8 +11,7 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
         const URL_TEST_STOP = ENDPOINT_URI + '/test-details/test/stop/';
         const URL_REPORT_LIST = ENDPOINT_URI + '/test-details/pdfList/';
         const URL_REPORT_DELETE = ENDPOINT_URI + '/test-details/deleteTestReport/';
-        const URL_RULE_LIST_TEST = ENDPOINT_URI + "/test-details/ruleList/";
-        const URL_DOWNLOAD_REPORT = 'api/test-details/downloadPDF/';
+        const URL_RULE_LIST_TEST = ENDPOINT_URI + '/test-details/ruleList/';
         const URL_UPDATE_TEST = ENDPOINT_URI + '/test-details/updateTest/';
         const URL_RERUN_TEST = ENDPOINT_URI + '/test-details/rerun-test/'
 
@@ -38,7 +37,13 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             return HttpService.postRequest(URL_TEST_START + testId, useNewData);
         }
 
-
+        /**
+         * [Public]
+         *
+         * Performs a server request in order to start a test rerun of a specific test execution.
+         * @param testId The id of the test to be started
+         * @param reportId of the test which should be repeated
+         */
         function rerunTest(testId, reportId) {
             return HttpService.postRequest(URL_RERUN_TEST + testId + "/" + reportId);
         }
@@ -118,7 +123,6 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
         }
 
 
-
         /**
          * [Public]
          *
@@ -140,19 +144,6 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             return HttpService.getRequest(URL_RULE_LIST_TEST + testId);
         }
 
-
-        /**
-         * [Public]
-         *
-         * Sends a server request in order to open a window for downloading/open the specific test report
-         *
-         * @param testId Id from which a report should be opened
-         * @param endTimeUnix end time of the test report to be opened
-         * @returns {Window}
-         */
-        function downloadReport(testId, endTimeUnix) {
-            return window.open(URL_DOWNLOAD_REPORT + testId + "_" + endTimeUnix, '_blank');
-        }
 
         /**
          * [Private]
@@ -495,7 +486,6 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             getPDFList: getPDFList,
             editConfig: editConfig,
             getTestData: getTestData,
-            downloadReport: downloadReport,
             getRuleListTest: getRuleListTest,
             updateTest: updateTest,
             deleteTestReport: deleteTestReport,

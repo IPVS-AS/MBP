@@ -41,18 +41,14 @@ app.controller('TestingController',
                     NotificationService.notify("Could not retrieve test list.", "error");
                 }
 
-
                 angular.forEach(SIMULATOR_LIST, function (value) {
                     checkSensorReg(String(value));
                 });
 
                 getRealSensors();
 
-
                 $scope.availableSensors = vm.availableSensors;
                 $scope.realSensorList = vm.realSensorList;
-
-
 
                 //Refresh test select picker when the modal is opened
                 $('.modal').on('shown.bs.modal', function () {
@@ -99,34 +95,7 @@ app.controller('TestingController',
                     let realSensor = true;
                     // Check if sensor is a sensor simulator
                     angular.forEach(SIMULATOR_LIST, function (simulator) {
-                        if (simulator == sensor.name) {
-                            realSensor = false;
-                        }
-                    });
-
-                    if (sensor.name.includes("RERUN_")) {
-                        realSensor = false;
-                    }
-
-                    // Add to list if real sensor
-                    if (realSensor) {
-                        vm.realSensorList.push(sensor);
-                    }
-                });
-            }
-
-
-            /**
-             * [Private]
-             *
-             * Creates a list of all real sensors that can be included in a test.
-             */
-            function getRealSensors() {
-                angular.forEach(sensorList, function (sensor) {
-                    let realSensor = true;
-                    // Check if sensor is a sensor simulator
-                    angular.forEach(SIMULATOR_LIST, function (simulator) {
-                        if (simulator == sensor.name) {
+                        if (simulator === sensor.name) {
                             realSensor = false;
                         }
                     });
@@ -261,12 +230,9 @@ app.controller('TestingController',
                         addItem: function (data) {
                             let selectedSensorsReal = vm.selectedRealSensor;
                             let selectedSimulators = vm.selectedSensors;
-
                             let parameterValuesReal = vm.parameterVal;
 
-
                             const newTestObject = TestService.getTestData(selectedSimulators, selectedSensorsReal, parameterValuesReal, vm.config, vm.rules, ruleList, vm.executeRules, data);
-
 
                             return addTest(newTestObject);
 

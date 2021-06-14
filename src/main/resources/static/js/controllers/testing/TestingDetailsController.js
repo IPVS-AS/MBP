@@ -12,13 +12,12 @@ app.controller('TestingDetailsController',
             vm.test = testingDetails;
             vm.executeRules = true;
             vm.sensorType = testingDetails.type;
-            var testReport = null;
+            let testReport = null;
 
 
             // ID of the Test
             const COMPONENT_ID = $routeParams.id;
             const RERUN_PREFIX = "RERUN_";
-            const CONFIG_NAME_REAL_SENSOR = "ConfigRealSensors";
             // Constant list of the sensor simulators, that can be included in the test
             const SIMULATOR_LIST = ['TestingTemperatureSensor',
                 'TestingTemperatureSensorPl',
@@ -50,9 +49,7 @@ app.controller('TestingDetailsController',
                 getPDFList();
                 getTestRules();
                 getConfig();
-                //  disableReuse();
                 getTestSensorList();
-                // define the parameters of the real sensors included into the test
                 getRealSensorList();
 
 
@@ -99,6 +96,13 @@ app.controller('TestingDetailsController',
 
             }
 
+            /**
+             * [Private]
+             *
+             *
+             * @param reportId
+             * @return {*}
+             */
             function getSimulationValuesTestReport(reportId) {
                 //Execute request
                 return HttpService.getRequest(URL_SIMULATION_VALUES + reportId).then(function (response) {
@@ -184,6 +188,7 @@ app.controller('TestingDetailsController',
 
             }
 
+            // convert all needed information for the specific test report and open the modal
             $scope.openReport = function (report) {
                 testReport = report.report;
                 $scope.testReportAnzeige = testReport;
@@ -195,6 +200,11 @@ app.controller('TestingDetailsController',
                 $('#testReport').modal('show');
             };
 
+            /**
+             * [Private]
+             * Converts the structure of the value trigger list to show them correctly in the report.
+             * @param triggerValues
+             */
             function convertTriggerList(triggerValues) {
                 let triggeredValuesList = {};
                 let triggeredValuesLi = [];
@@ -209,8 +219,12 @@ app.controller('TestingDetailsController',
             }
 
 
+            /**
+             * [Private]
+             * Convert the structure of the rule execution information to show this correctly in the report.
+             * @param amountRulesTriggered
+             */
             function convertRulesTriggered(amountRulesTriggered) {
-
                 let amountRulesTriggeredList = {};
                 let amountRulesTriggeredL = [];
                 angular.forEach(amountRulesTriggered, function (executions, rule) {
@@ -224,6 +238,11 @@ app.controller('TestingDetailsController',
             }
 
 
+            /**
+             * [Private]
+             * Get a list of all real sensors included into the test, to display them in the test report.
+             * @param report
+             */
             function getRealReportSensorList(report) {
                 $scope.realSensorList = []
                 angular.forEach(report.sensor, function (sensor, key) {
@@ -233,6 +252,11 @@ app.controller('TestingDetailsController',
                 });
             }
 
+            /**
+             * [Private]
+             * Converts structure of the sensor configurations of the sensor simulators to show them correctly in the report.
+             * @param testReport
+             */
             function convertConfig(testReport) {
                 let simulationConfig = [];
                 let config = {};
@@ -266,7 +290,6 @@ app.controller('TestingDetailsController',
 
             /**
              * [Public]
-             *
              * Creates a server request to get a list of all generated Test Reports regarding to the Test of the IoT-Application.
              */
             function getPDFList() {
@@ -276,18 +299,9 @@ app.controller('TestingDetailsController',
                 });
             }
 
-            /**
-             * [Public]
-             *
-             * Sends a server request to open the test report of a specific test given by its id.
-             */
-            function downloadPDF(path) {
-                window.open('api/test-details/downloadPDF/' + path, '_blank');
-            }
 
             /**
              * [Public]
-             *
              * Creates a server request to delete a certain Test Report for the specific Test
              */
             function deleteTestReport(reportId) {
@@ -296,6 +310,12 @@ app.controller('TestingDetailsController',
                 });
             }
 
+            /**
+             * [Private]
+             * Creates the charts for the test reports with the generated sensor values during the test.
+             *
+             * @param dataSeries
+             */
             function getReportChart(dataSeries) {
                 Highcharts.chart('reportChart', {
                         chart: {
@@ -404,8 +424,15 @@ app.controller('TestingDetailsController',
             }
 
 
+            /**
+             * [Private]
+             * Export the test report modal to pdf.
+             */
             function getPDF() {
-                domtoimage.toPng(document.getElementById("tableTest"))
+                const options = {
+                    quality: 0.95
+                };
+                domtoimage.toPng(document.getElementById("tableTest"), options)
                     .then(function (blob) {
                         TestReportService.generateReport(blob);
                     });
@@ -442,18 +469,7 @@ app.controller('TestingDetailsController',
                 $rootScope.selectedRealSensor = [];
 
 
-                for (let y = 0; y < testingDetails.type.length; y++) {
-
-                    if (!checkSimulator(testingDetails.type[y])) {
-                        for (let z = 0; z < sensorList.length; z++) {
-                            if (sensorList[z].name === testingDetails.type[y]) {
-                                vm.selectedRealSensor.push(sensorList[z]);
-                            }
-
-                        }
-                    }
-
-                }
+                getRealSensorList();
                 $rootScope.selectedRealSensor = vm.selectedRealSensor;
 
 
@@ -700,7 +716,6 @@ app.controller('TestingDetailsController',
                     $scope: $scope,
                     updateItem: updateTest
                 }),
-                downloadPDF: downloadPDF,
                 getPDFList: getPDFList,
                 editConfig: editConfig,
                 editTestConfiguration: updateTest,

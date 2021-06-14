@@ -3985,7 +3985,13 @@ section.content {
 }
 
 .side-by-side {
+    max-height: 500px;
     display: flex;
+}
+
+.side-by-side-scroll {
+    overflow-y: scroll;
+    flex: 1;
 }
 
 /* Infobox ===================================== */
@@ -6180,6 +6186,7 @@ section.content {
     padding: 10px;
     border: 1px solid #eee;
 }
+
 
 /* Panel ======================================= */
 .panel-group .panel-col-red {
