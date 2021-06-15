@@ -252,7 +252,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
             }
         } else {
             for (Rule rule : ruleList) {
-                ruleNames.add(RERUN_IDENTIFIER + rule.getName());
+                ruleNames.add(rule.getName());
             }
         }
         return ruleNames;

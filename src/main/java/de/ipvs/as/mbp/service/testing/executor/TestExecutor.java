@@ -397,7 +397,7 @@ public class TestExecutor {
     /**
      * Calculate and save the amount of rule executions during the test for the corresponding rules of the application.
      *
-     * @param reportId of the report in which to save the test execution information
+     * @param reportId    of the report in which to save the test execution information
      * @param rulesBefore information about the state of the rules before the test execution
      */
     private void saveAmountRulesTriggered(String reportId, List<Rule> rulesBefore) {
@@ -453,6 +453,9 @@ public class TestExecutor {
     private List<ParameterInstance> convertConfigInstances(List<ParameterInstance> configInstance) {
         List<ParameterInstance> convertedConfig = new ArrayList<>();
         ParameterInstance type = null;
+        ParameterInstance eventInstance = null;
+        ParameterInstance anomalyInstance = null;
+        int event;
         for (ParameterInstance instance : configInstance) {
             switch (instance.getName()) {
                 case "ConfigName":
@@ -461,13 +464,23 @@ public class TestExecutor {
                     break;
                 case "event":
                     assert type != null;
+                    eventInstance = instance;
                     convertedConfig.add(getEventType(type.getValue().toString(), Integer.parseInt(instance.getValue().toString())));
                     break;
                 case "anomaly":
-                    convertedConfig.add(getAnomalyType(Integer.parseInt(instance.getValue().toString())));
+                    anomalyInstance = instance;
                     break;
             }
         }
+
+        assert eventInstance != null;
+        event = Integer.parseInt(eventInstance.getValue().toString());
+        if (event != 1 || event != 2) {
+            convertedConfig.add(getAnomalyType(Integer.parseInt(eventInstance.getValue().toString())));
+        } else {
+            convertedConfig.add(getAnomalyType(Integer.parseInt(anomalyInstance.getValue().toString())));
+        }
+
         return convertedConfig;
     }
 
@@ -475,9 +488,8 @@ public class TestExecutor {
     /**
      * Converts the configuration event numbers into human readable configuration types to display them in the test report.
      *
-     * @param type type of simulator (temperature / humidity)
+     * @param type  type of simulator (temperature / humidity)
      * @param event number of event to be simulated defined by the user
-     *
      * @return human readable event type
      */
     private ParameterInstance getEventType(String type, int event) {
@@ -492,7 +504,7 @@ public class TestExecutor {
             case 2:
                 eventType.setValue(simType + " drop");
                 break;
-            case 3:
+            default:
                 eventType.setValue("-");
                 break;
         }

@@ -206,7 +206,7 @@ app.controller('TestingDetailsController',
                 TestService.editConfig(COMPONENT_ID, useNewDataConfig).then(function () {
                     window.location.reload();
                     getTestSensorList();
-                    $scope.config.useNewData = useNewData;
+                    $scope.useNewDataSuccess = useNewData;
                 });
 
 
@@ -323,6 +323,7 @@ app.controller('TestingDetailsController',
                 });
 
                 $scope.config.useNewData = !testingDetails.useNewData;
+
 
                 testingDetails.config.forEach(function (config) {
                     config.forEach(function (parameterInstance) {

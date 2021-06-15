@@ -16,10 +16,11 @@ app.controller('TestingController',
                 HUMIDITY_PL: 'TESTING_HumiditySensorPl',
             };
 
+            const RERUN_IDENTIFIER = 'RERUN_';
 
 
             const vm = this;
-            vm.ruleList = ruleList;
+            vm.ruleList = [];
             //Stores the parameters and their values as assigned by the user
             vm.parameterValues = [];
             //Settings objects that contains application settings for this page
@@ -48,6 +49,8 @@ app.controller('TestingController',
 
                 getRealSensors();
 
+                ruleListSelection();
+
 
                 $scope.availableSensors = vm.availableSensors;
                 $scope.realSensorList = vm.realSensorList;
@@ -59,6 +62,20 @@ app.controller('TestingController',
                 });
 
             })();
+
+
+            function ruleListSelection() {
+                console.log(ruleList)
+                angular.forEach(ruleList, function (rule, index) {
+                    if (!rule.name.includes(RERUN_IDENTIFIER)) {
+                        vm.ruleList.push(rule);
+                        console.log(vm.ruleList)
+
+                    }
+                });
+
+            }
+
 
             /**
              * [Public]
@@ -84,32 +101,6 @@ app.controller('TestingController',
                 );
             }
 
-            /**
-             * [Private]
-             *
-             * Creates a list of all real sensors that can be included in a test.
-             */
-            function getRealSensors() {
-                angular.forEach(sensorList, function (sensor) {
-                    let realSensor = true;
-                    // Check if sensor is a sensor simulator
-                    angular.forEach(SIMULATOR_LIST, function (simulator) {
-                        if (simulator == sensor.name) {
-                            realSensor = false;
-                        }
-                    });
-
-                    if (sensor.name.includes("RERUN_")) {
-                        realSensor = false;
-                    }
-
-                    // Add to list if real sensor
-                    if (realSensor) {
-                        vm.realSensorList.push(sensor);
-                    }
-                });
-            }
-
 
             /**
              * [Private]
@@ -121,12 +112,12 @@ app.controller('TestingController',
                     let realSensor = true;
                     // Check if sensor is a sensor simulator
                     angular.forEach(SIMULATOR_LIST, function (simulator) {
-                        if (simulator == sensor.name) {
+                        if (simulator === sensor.name) {
                             realSensor = false;
                         }
                     });
 
-                    if (sensor.name.includes("RERUN_")) {
+                    if (sensor.name.includes(RERUN_IDENTIFIER)) {
                         realSensor = false;
                     }
 
@@ -136,8 +127,6 @@ app.controller('TestingController',
                     }
                 });
             }
-
-
 
 
             /**
@@ -186,8 +175,6 @@ app.controller('TestingController',
                     document.getElementById("addRealSensor").innerHTML = '<i class="material-icons">add</i>';
                 }
             }
-
-
 
 
             /**
@@ -239,7 +226,6 @@ app.controller('TestingController',
                     cancelButtonText: 'Cancel'
                 });
             }
-
 
 
             // expose controller ($controller will auto-add to $scope)
