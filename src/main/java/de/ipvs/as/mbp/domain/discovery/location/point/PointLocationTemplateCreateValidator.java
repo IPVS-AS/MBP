@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.domain.discovery.location;
+package de.ipvs.as.mbp.domain.discovery.location.point;
 
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.service.validation.ICreateValidator;
@@ -21,11 +21,11 @@ public class PointLocationTemplateCreateValidator implements ICreateValidator<Po
     public void validateCreatable(PointLocationTemplate pointLocationTemplate) {
         //Sanity check
         if (pointLocationTemplate == null) {
-            throw new EntityValidationException("The entity is invalid.");
+            throw new EntityValidationException("The location template is invalid.");
         }
 
         //Create exception to collect invalid fields
-        EntityValidationException exception = new EntityValidationException("Could not create location template because some fields are invalid.");
+        EntityValidationException exception = new EntityValidationException("Could not create location template, because some fields are invalid.");
 
         //Check name
         if (Validation.isNullOrEmpty(pointLocationTemplate.getName())) {

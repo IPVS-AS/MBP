@@ -14,6 +14,8 @@ app.controller('DeviceTemplateListController',
             const ELEMENT_MENU_BUTTONS = $("div.bubble-item");
             const ELEMENT_MENU_BUTTON_MAIN = $("div.bubble-item.bubble-devices")
             const ELEMENT_EDITORS_COLLAPSES = $('#edit-templates-group > div.collapse');
+            const ELEMENT_EDITORS_DEVICE = $('#edit-devices');
+            const ELEMENT_EDITORS_DEVICE_EDITOR = $('#edit-devices-editor');
             const ELEMENT_EDITORS_LOCATION = $('#edit-locations');
             const ELEMENT_EDITORS_LOCATION_EDITOR = $('#edit-locations-editor');
 
@@ -33,6 +35,30 @@ app.controller('DeviceTemplateListController',
                 initTemplatesMenu();
                 initEditorWindows();
             })();
+
+            /**
+             * [Public]
+             * Shows the device template editor with an animation.
+             */
+            function showDeviceTemplatesEditor(){
+                //First hide and then show the editor
+                ELEMENT_EDITORS_DEVICE_EDITOR.slideUp().slideDown();
+            }
+
+            /**
+             * [Public]
+             * Shows the location template editor with an animation.
+             */
+            function showLocationTemplatesEditor() {
+                //First hide and then show the editor
+                ELEMENT_EDITORS_LOCATION_EDITOR.slideUp().slideDown(400, function () {
+                    //Remove geometries from map and update map interaction
+                    onLocationTypeChange();
+
+                    //Adjust size of location map to changed UI
+                    vm.locationMapApi.updateMapSize();
+                });
+            }
 
             /**
              * [Public]
@@ -153,20 +179,6 @@ app.controller('DeviceTemplateListController',
                         vm.addLocationTemplateCtrl.item.pointsList = pointsString;
                     }, 10);
                 }
-            }
-
-            /**
-             * [Public]
-             * Shows the location template editor with an animation.
-             */
-            function showLocationTemplatesEditor() {
-                ELEMENT_EDITORS_LOCATION_EDITOR.slideUp().slideDown(400, function () {
-                    //Remove geometries from map and update map interaction
-                    onLocationTypeChange();
-
-                    //Adjust size of location map to changed UI
-                    vm.locationMapApi.updateMapSize();
-                });
             }
 
             /**
@@ -435,12 +447,13 @@ app.controller('DeviceTemplateListController',
                 }),
                 mapInitCenter: MAP_INIT_CENTER,
                 mapInitZoom: MAP_INIT_ZOOM,
-                onLocationTypeChange: onLocationTypeChange,
-                onLocationChange: onLocationChange,
-                onDrawingFinished: onLocationMapDrawingFinished,
+                showDeviceTemplatesEditor: showDeviceTemplatesEditor,
                 showLocationTemplatesEditor: showLocationTemplatesEditor,
                 editLocationTemplate: editLocationTemplate,
-                saveLocationTemplate: saveLocationTemplate
+                saveLocationTemplate: saveLocationTemplate,
+                onLocationTypeChange: onLocationTypeChange,
+                onLocationChange: onLocationChange,
+                onDrawingFinished: onLocationMapDrawingFinished
             });
         }
     ]);

@@ -1,5 +1,6 @@
-package de.ipvs.as.mbp.domain.discovery.location;
+package de.ipvs.as.mbp.domain.discovery.location.circle;
 
+import de.ipvs.as.mbp.domain.discovery.location.LocationTemplate;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 
 /**

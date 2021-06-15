@@ -1,7 +1,7 @@
-package de.ipvs.as.mbp.domain.discovery.location;
+package de.ipvs.as.mbp.domain.discovery.location.polygon;
 
+import de.ipvs.as.mbp.domain.discovery.location.LocationTemplate;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 

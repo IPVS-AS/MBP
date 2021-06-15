@@ -57,17 +57,97 @@
     </div>
 
     <div id="edit-templates-group">
-        <div id="edit-devices" class="card collapse">
-            <div class="header">
-                <div class="col-lg-6">
-                    <h2>
-                        <i class="material-icons">devices</i>
-                        Device templates
-                    </h2>
+        <div id="edit-devices" class="collapse">
+            <div class="col-lg-4">
+                <div class="card edit-templates-list">
+                    <div class="header">
+                        <div class="col-lg-8">
+                            <h2>
+                                <i class="material-icons">devices</i>
+                                Device templates
+                                <small>Overview about the registered device templates.</small>
+                            </h2>
+                        </div>
+                        <div class="align-right">
+                            <button type="button"
+                                    class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
+                                    ng-click="addDeviceTemplateCtrl.item = {'name': 'Unnamed'}; ctrl.showDeviceTemplatesEditor();">
+                                <i class="material-icons">add</i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="body">
+                        <table class="table table-hover" st-table="displayedCollection2" st-safe-src="deviceTemplateListCtrl.items">
+                            <thead>
+                            </thead>
+                            <tbody>
+                            <tr id="{{device.id}}" ng-repeat="device in displayedCollection2">
+                                <td>{{device.name}}</td>
+                                <td class="right">
+                                    <!--
+                                    <form ng-submit="ctrl.editDeviceTemplate(device.id)" style="display: inline-block">
+                                        <button type="submit" class="btn btn-sm bg-mbp-blue waves-effect waves-float">
+                                            <i class="material-icons" style="font-size:14px; color: white !important;">mode_edit</i>
+                                        </button>
+                                    </form>-->
+                                    <form ng-submit="deleteDeviceTemplateCtrl.deleteItem()"
+                                          style="display: inline-block">
+                                        <button type="submit" class="btn btn-sm bg-red waves-effect waves-float"
+                                                ng-click="deleteDeviceTemplateCtrl.item.id = device.id">
+                                            <i class="material-icons" style="font-size:14px;">delete</i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr ng-show="deviceTemplateListCtrl.items.length === 0">
+                                <td>No device templates registered.</td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td class="text-center" st-pagination="" st-items-by-page="5" colspan="3"></td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
                 </div>
             </div>
-            <div class="body">
-                ASDF
+            <div class="col-lg-8">
+                <div id="edit-devices-editor" class="card" style="display: none;">
+                    <div class="header">
+                        <h2 class="editable" ng-hide="entity_name_edit" ng-click="entity_name_edit=true;">
+                            {{addDeviceTemplateCtrl.item.name}}
+                            <i class="material-icons" style="font-size: 16px; margin-left: 5px;line-height: 15px;">mode_edit</i>
+                        </h2>
+                        <h2 ng-show="entity_name_edit">
+                            <form class="form-inline" ng-submit="entity_name_edit=false;">
+                                <div class="form-group">
+                                    <div class="input-group form-line">
+                                        <input type="text" class="form-control"
+                                               ng-model="addDeviceTemplateCtrl.item.name"
+                                               placeholder="Enter name..."/>
+                                        <div class="input-group-btn"
+                                             style="position:absolute; right:0; top:-10px; z-index: 5;">
+                                            <button type="submit" class="btn btn-sm bg-grey m-t-15 waves-effect">
+                                                Save
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </h2>
+                        <span class="help-block" ng-show="addDeviceTemplateCtrl.item.errors.name"
+                              style="color: #a94442;">{{addDeviceTemplateCtrl.item.errors.name}}</span>
+                    </div>
+                    <div class="body">
+                        <div class="container-fluid">
+                            <form ng-submit="addDeviceTemplateCtrl.addItem();">
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -132,12 +212,12 @@
             <div class="col-lg-8">
                 <div id="edit-locations-editor" class="card" style="display: none;">
                     <div class="header">
-                        <h2 class="editable" ng-hide="location_name_edit" ng-click="location_name_edit=true;">
+                        <h2 class="editable" ng-hide="entity_name_edit" ng-click="entity_name_edit=true;">
                             {{addLocationTemplateCtrl.item.name}}
                             <i class="material-icons" style="font-size: 16px; margin-left: 5px;line-height: 15px;">mode_edit</i>
                         </h2>
-                        <h2 ng-show="location_name_edit">
-                            <form class="form-inline" ng-submit="location_name_edit=false;">
+                        <h2 ng-show="entity_name_edit">
+                            <form class="form-inline" ng-submit="entity_name_edit=false;">
                                 <div class="form-group">
                                     <div class="input-group form-line">
                                         <input type="text" class="form-control"

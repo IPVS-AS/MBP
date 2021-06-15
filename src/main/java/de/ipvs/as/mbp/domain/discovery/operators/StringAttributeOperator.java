@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 /**
  * Enumeration of operators that can be applied to string attributes.
  */
-public enum StringAttributeOperator {
+public enum StringAttributeOperator implements DiscoveryTemplateOperator {
     EQUALS("equals"), CONTAINS("contains"), BEGINS_WITH("begins_with"), ENDS_WITH("ends_with");
 
     //Externally visible name of the operator
@@ -19,15 +19,6 @@ public enum StringAttributeOperator {
      */
     StringAttributeOperator(String name) {
         setName(name);
-    }
-
-    /**
-     * Returns the name of the string attribute operator.
-     *
-     * @return The name
-     */
-    public String getName() {
-        return name;
     }
 
     /**
@@ -54,7 +45,7 @@ public enum StringAttributeOperator {
      * a provided operator name needs to be mapped to the actual operator object.
      *
      * @param name The name of the string attribute operator
-     * @return The corresponding string attribute operator
+     * @return The corresponding string attribute operator or null if not found
      */
     @JsonCreator
     public static StringAttributeOperator create(String name) {
@@ -63,15 +54,15 @@ public enum StringAttributeOperator {
             return null;
         }
 
-        //Compare every available string attribute operator against the provided name
+        //Compare every available operator against the provided name
         for (StringAttributeOperator operator : values()) {
-            if (name.equalsIgnoreCase(operator.getName())) {
+            if (name.equalsIgnoreCase(operator.value())) {
                 //Matching operator found
                 return operator;
             }
         }
 
-        //No matching string attribute operator was found
+        //No matching operator was found
         return null;
     }
 }
