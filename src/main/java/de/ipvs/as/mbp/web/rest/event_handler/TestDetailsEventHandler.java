@@ -35,8 +35,6 @@ public class TestDetailsEventHandler {
     @HandleBeforeCreate
 
     public void testStarted(TestDetails testDetails) {
-
-
         List<Sensor> sensorArray = new ArrayList<>();
 
         if (testDetails.getType().size() > 0) {

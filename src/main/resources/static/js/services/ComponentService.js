@@ -164,7 +164,6 @@ app.factory('ComponentService', ['HttpService', '$resource', '$q', 'ENDPOINT_URI
             }
 
             //Return final value log array so that it is accessible in the promise
-            console.log(finalValues)
             return finalValues;
         }
 

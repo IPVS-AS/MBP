@@ -250,7 +250,7 @@ public class TestReport extends UserEntity {
     }
 
     /**
-     * Returns the id of the test.
+     * Returns the id of the test report.
      *
      * @return id
      */
@@ -259,7 +259,7 @@ public class TestReport extends UserEntity {
     }
 
     /**
-     * Sets the id of the test.
+     * Sets the id of the test report.
      *
      * @param id of the test
      */
@@ -357,27 +357,57 @@ public class TestReport extends UserEntity {
         this.ruleNames = ruleNames;
     }
 
+    /**
+     * Returns a list with the rule information before the test execution.
+     *
+     * @return list of rule information before the test execution
+     */
     public List<Rule> getRuleInformationBefore() {
         return ruleInformationBefore;
     }
 
+    /**
+     * Sets a list with the rule information before the test execution.
+     *
+     * @param ruleInformationBefore rule information before the test execution
+     */
     public void setRuleInformationBefore(List<Rule> ruleInformationBefore) {
         this.ruleInformationBefore = ruleInformationBefore;
     }
 
+    /**
+     * Returns a map with the information about which rule was triggered how often during the test execution.
+     *
+     * @return map with information about which rule was triggered how often during the test execution
+     */
     public Map<String, Integer> getAmountRulesTriggered() {
         return amountRulesTriggered;
     }
 
+    /**
+     * Sets a map with the information about which rule was triggered how often during the test execution.
+     *
+     * @param amountRulesTriggered information about which rule was triggered how often during the test execution
+     */
     public void setAmountRulesTriggered(Map<String, Integer> amountRulesTriggered) {
         this.amountRulesTriggered = amountRulesTriggered;
     }
 
 
+    /**
+     * Returns the information if the test execution is a test repetition or not.
+     *
+     * @return boolean if this execution was a repetition or not
+     */
     public Boolean getUseNewData() {
         return useNewData;
     }
 
+    /**
+     * Sets the information if the test execution is a test repetition or not.
+     *
+     * @param useNewData boolean if this execution was a repetition or not
+     */
     public void setUseNewData(Boolean useNewData) {
         this.useNewData = useNewData;
     }
