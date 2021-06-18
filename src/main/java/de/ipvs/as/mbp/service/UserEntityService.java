@@ -418,5 +418,4 @@ public class UserEntityService {
     public <E extends UserEntity> EntityModel<E> entityToEntityModel(E entity) {
         return new EntityModel<E>(entity, linkTo(getClass()).slash(entity.getId()).withSelfRel());
     }
-
 }

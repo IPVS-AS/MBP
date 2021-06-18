@@ -396,6 +396,15 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 templateUrl: 'templates/device-templates',
                 controller: 'DeviceTemplateListController as ctrl',
                 resolve: {
+                    deviceTemplateList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('discovery/device-templates');
+                    }],
+                    addDeviceTemplate: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.addOne, 'discovery/device-templates');
+                    }],
+                    deleteDeviceTemplate: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.deleteOne, 'discovery/device-templates');
+                    }],
                     locationTemplateList: ['HttpService', function (HttpService) {
                         return HttpService.getAllTypes('discovery/location-templates', {
                             "informalLocationTemplates": "Informal",

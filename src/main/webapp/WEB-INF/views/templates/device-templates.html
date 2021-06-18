@@ -77,11 +77,12 @@
                         </div>
                     </div>
                     <div class="body">
-                        <table class="table table-hover" st-table="displayedCollection2" st-safe-src="deviceTemplateListCtrl.items">
+                        <table class="table table-hover" st-table="deviceCollection"
+                               st-safe-src="deviceTemplateListCtrl.items">
                             <thead>
                             </thead>
                             <tbody>
-                            <tr id="{{device.id}}" ng-repeat="device in displayedCollection2">
+                            <tr id="{{device.id}}" ng-repeat="device in deviceCollection">
                                 <td>{{device.name}}</td>
                                 <td class="right">
                                     <!--
@@ -144,6 +145,96 @@
                     <div class="body">
                         <div class="container-fluid">
                             <form ng-submit="addDeviceTemplateCtrl.addItem();">
+                                <!-- Tab buttons -->
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li role="presentation" class="active">
+                                        <a data-target="#edit-devices-requirements" data-toggle="tab" style="">
+                                            <i class="material-icons">playlist_add_check</i>&nbsp;Requirements
+                                        </a>
+                                    </li>
+                                    <li role="presentation" class="">
+                                        <a data-target="#edit-devices-scoring-criteria" data-toggle="tab" style="">
+                                            <i class="material-icons">format_list_numbered</i>&nbsp;Scoring Criteria
+                                        </a>
+                                    </li>
+                                </ul>
+                                <!-- Tab panes -->
+                                <div class="tab-content">
+                                    <div role="tabpanel" class="tab-pane fade active in" id="edit-devices-requirements">
+                                        <div class="align-right">
+                                            <div class="btn-group dropup">
+                                                <button type="button" class="btn btn-primary dropdown-toggle"
+                                                        data-toggle="dropdown">
+                                                    <i class="material-icons">add</i>&nbsp;Add&nbsp;<span
+                                                        class="caret"></span>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a href="#" class=" waves-effect waves-block">Name</a></li>
+                                                    <li><a href="#" class=" waves-effect waves-block">Description</a>
+                                                    </li>
+                                                    <li><a href="#" class=" waves-effect waves-block">Keywords</a></li>
+                                                    <li role="separator" class="divider"></li>
+                                                    <li><a href="#" class=" waves-effect waves-block">Location</a></li>
+                                                    <li><a href="#" class=" waves-effect waves-block">Identifiers</a>
+                                                    </li>
+                                                    <li><a href="#" class=" waves-effect waves-block">Capabilities</a>
+                                                    </li>
+                                                    <li><a href="#" class=" waves-effect waves-block">Context</a></li>
+                                                    <li><a href="#" class=" waves-effect waves-block">Attachments</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="list-group criteria-list">
+                                            <a class="list-group-item"><i class="material-icons">location_on</i>
+                                                Device is ...
+                                                <div class="form-group" ng-class="{'has-error' : false }">
+                                                    <div class="form-line" ng-class="{'focused error' : false }">
+                                                        <select class="form-control show-tick"
+                                                                ng-model="device_editor_location_type">
+                                                            <option value="">Select ...</option>
+                                                            <option value="described_by">described by ...</option>
+                                                            <option value="at_location">at location ...</option>
+                                                            <option value="in_area">in area ...</option>
+                                                        </select>
+                                                    </div>
+                                                    <span class="help-block"
+                                                          ng-show="false">{{}}</span>
+                                                </div>
+                                                <div class="form-group" ng-class="{'has-error' : false }">
+                                                    <div class="form-line" ng-class="{'focused error' : false }">
+                                                        <select class="form-control show-tick">
+                                                            <option value="">Select ...</option>
+                                                            <option ng-repeat="lt in locationTemplateListCtrl.items | byLocationTemplateType:device_editor_location_type"
+                                                                    value="{{lt.id}}">
+                                                                {{lt.name}}
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                    <span class="help-block"
+                                                          ng-show="false">{{}}</span>
+                                                </div>
+                                                <button type="button"
+                                                        class="btn btn-sm bg-red waves-effect waves-float right"
+                                                        ng-click="">
+                                                    <i class="material-icons" style="font-size:14px;">delete</i>
+                                                </button>
+                                            </a>
+                                            <a href="#" class="list-group-item">Morbi leo risus</a>
+                                            <a href="#" class="list-group-item">Porta ac consectetur ac</a>
+                                            <a href="#" class="list-group-item">Vestibulum at eros</a>
+                                        </div>
+
+
+                                    </div>
+                                    <div role="tabpanel" class="tab-pane fade" id="edit-devices-scoring-criteria">
+                                        <b>Scoring criteria</b>
+                                        <p>
+                                        </p>
+                                    </div>
+                                </div>
+                                <br/>
+                                <button type="submit" class="btn btn-primary m-t-15 waves-effect">Save</button>
                             </form>
                         </div>
                     </div>
@@ -176,11 +267,12 @@
                             <thead>
                             </thead>
                             <tbody>
-                            <tr id="{{item.id}}" ng-repeat="item in displayedCollection">
-                                <td>{{item.name}}</td>
-                                <td>{{item.type}}</td>
+                            <tr id="{{location.id}}" ng-repeat="location in displayedCollection">
+                                <td>{{location.name}}</td>
+                                <td>{{location.type}}</td>
                                 <td class="right">
-                                    <form ng-submit="ctrl.editLocationTemplate(item.id)" style="display: inline-block">
+                                    <form ng-submit="ctrl.editLocationTemplate(location.id)"
+                                          style="display: inline-block">
                                         <button type="submit" class="btn btn-sm bg-mbp-blue waves-effect waves-float">
                                             <i class="material-icons" style="font-size:14px; color: white !important;">mode_edit</i>
                                         </button>
@@ -188,7 +280,7 @@
                                     <form ng-submit="deleteLocationTemplateCtrl.deleteItem()"
                                           style="display: inline-block">
                                         <button type="submit" class="btn btn-sm bg-red waves-effect waves-float"
-                                                ng-click="deleteLocationTemplateCtrl.item.id = item.id">
+                                                ng-click="deleteLocationTemplateCtrl.item.id = location.id">
                                             <i class="material-icons" style="font-size:14px;">delete</i>
                                         </button>
                                     </form>

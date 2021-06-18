@@ -18,7 +18,7 @@ import java.util.List;
  */
 public enum LocationRequirementOperator implements DeviceRequirementOperator {
     DESCRIBED_BY("described_by", Collections.singletonList(InformalLocationTemplate.class)),
-    AT_POINT("at_point", Collections.singletonList(PointLocationTemplate.class)),
+    AT_LOCATION("at_location", Collections.singletonList(PointLocationTemplate.class)),
     IN_AREA("in_area", Arrays.asList(CircleLocationTemplate.class, PolygonLocationTemplate.class));
 
     //Externally visible name of the operator

@@ -4,8 +4,14 @@
  * Controller for the settings page.
  */
 app.controller('DeviceTemplateListController',
-    ['$scope', '$controller', '$interval', '$timeout', 'locationTemplateList', 'addLocationTemplate', 'updateLocationTemplate', 'deleteLocationTemplate', 'DiscoveryService', 'NotificationService',
-        function ($scope, $controller, $interval, $timeout, locationTemplateList, addLocationTemplate, updateLocationTemplate, deleteLocationTemplate, DiscoveryService, NotificationService) {
+    ['$scope', '$controller', '$interval', '$timeout',
+        'deviceTemplateList', 'addDeviceTemplate', 'deleteDeviceTemplate',
+        'locationTemplateList', 'addLocationTemplate', 'updateLocationTemplate', 'deleteLocationTemplate',
+        'DiscoveryService', 'NotificationService',
+        function ($scope, $controller, $interval, $timeout,
+                  deviceTemplateList, addDeviceTemplate, deleteDeviceTemplate,
+                  locationTemplateList, addLocationTemplate, updateLocationTemplate, deleteLocationTemplate,
+                  DiscoveryService, NotificationService) {
             //Constants
             const MAP_INIT_CENTER = [9.106631254042352, 48.74518217652443];
             const MAP_INIT_ZOOM = 16;
@@ -40,7 +46,7 @@ app.controller('DeviceTemplateListController',
              * [Public]
              * Shows the device template editor with an animation.
              */
-            function showDeviceTemplatesEditor(){
+            function showDeviceTemplatesEditor() {
                 //First hide and then show the editor
                 ELEMENT_EDITORS_DEVICE_EDITOR.slideUp().slideDown();
             }
@@ -411,10 +417,30 @@ app.controller('DeviceTemplateListController',
 
                 //Callback, remove location template from list
                 vm.locationTemplateListCtrl.removeItem(vm.deleteLocationTemplateCtrl.result);
+
+                //Check if the deleted template was edited
+                if (vm.addLocationTemplateCtrl.item.id === vm.deleteLocationTemplateCtrl.result) {
+                    //Hide the location template editor
+                    ELEMENT_EDITORS_LOCATION_EDITOR.slideUp();
+                }
             });
 
             //Expose functions that are used externally
             angular.extend(vm, {
+                deviceTemplateListCtrl: $controller('ItemListController as deviceTemplateListCtrl', {
+                    $scope: $scope,
+                    list: deviceTemplateList
+                }),
+                addDeviceTemplateCtrl: $controller('AddItemController as addDeviceTemplateCtrl', {
+                    $scope: $scope,
+                    entity: 'device template',
+                    addItem: addDeviceTemplate
+                }),
+                deleteDeviceTemplateCtrl: $controller('DeleteItemController as deleteDeviceTemplateCtrl', {
+                    $scope: $scope,
+                    deleteItem: deleteDeviceTemplate,
+                    confirmDeletion: confirmDelete.bind(null, 'device template', deviceTemplateList)
+                }),
                 locationTemplateListCtrl: $controller('ItemListController as locationTemplateListCtrl', {
                     $scope: $scope,
                     list: locationTemplateList

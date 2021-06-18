@@ -107,3 +107,17 @@ div.discovery-template-menu .bubble-item .bubble-connector {
     top: -5px;
     position: absolute;
 }
+
+#edit-templates-group #edit-devices .criteria-list > .list-group-item {
+    margin-top: 20px;
+    border-radius: 3px;
+}
+
+#edit-templates-group #edit-devices .criteria-list > .list-group-item button {
+    margin-top: -5px;
+}
+
+#edit-templates-group #edit-devices .criteria-list > .list-group-item > i.material-icons {
+    vertical-align: middle;
+    margin-left: -8px;
+}

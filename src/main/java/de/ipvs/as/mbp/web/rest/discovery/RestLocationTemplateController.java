@@ -3,7 +3,7 @@ package de.ipvs.as.mbp.web.rest.discovery;
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
-import de.ipvs.as.mbp.domain.discovery.location.*;
+import de.ipvs.as.mbp.domain.discovery.location.LocationTemplate;
 import de.ipvs.as.mbp.domain.discovery.location.circle.CircleLocationTemplate;
 import de.ipvs.as.mbp.domain.discovery.location.informal.InformalLocationTemplate;
 import de.ipvs.as.mbp.domain.discovery.location.point.PointLocationTemplate;
@@ -43,7 +43,7 @@ public class RestLocationTemplateController {
 
 
     @GetMapping(produces = "application/hal+json")
-    @ApiOperation(value = "Retrieves all location template entities that are available for the requesting user.", produces = "application/hal+json")
+    @ApiOperation(value = "Retrieves all location templates that are available for the requesting user.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 404, message = "Requesting user not found!")})
     public ResponseEntity<PagedModel<EntityModel<LocationTemplate>>> all(
             @RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
@@ -161,18 +161,18 @@ public class RestLocationTemplateController {
         return ResponseEntity.ok(userEntityService.entityToEntityModel(updatedLocationTemplate));
     }
 
-    @DeleteMapping(path = "/{locationTemplateId}")
+    @DeleteMapping(path = "/{id}")
     @ApiOperation(value = "Deletes an existing location template, identified by its ID.")
     @ApiResponses({@ApiResponse(code = 204, message = "Success!"),
             @ApiResponse(code = 401, message = "Not authorized to delete this location template!"),
             @ApiResponse(code = 404, message = "Location template or requesting user not found!")})
-    public ResponseEntity<Void> deleteLocationTemplate(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
-                                                       @PathVariable("locationTemplateId") String locationTemplateId) throws EntityNotFoundException, MissingPermissionException {
+    public ResponseEntity<Void> delete(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
+                                       @PathVariable("id") String id) throws EntityNotFoundException, MissingPermissionException {
         // Parse the access request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
         //Delete the location template
-        userEntityService.deleteWithAccessControlCheck(locationTemplateRepository, locationTemplateId, accessRequest);
+        userEntityService.deleteWithAccessControlCheck(locationTemplateRepository, id, accessRequest);
         return ResponseEntity.noContent().build();
     }
 }
