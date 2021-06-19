@@ -71,7 +71,7 @@
                         <div class="align-right">
                             <button type="button"
                                     class="btn bg-mbp-blue btn-circle waves-effect waves-circle waves-float"
-                                    ng-click="addDeviceTemplateCtrl.item = {'name': 'Unnamed'}; ctrl.showDeviceTemplatesEditor();">
+                                    ng-click="addDeviceTemplateCtrl.item = {'name': 'Unnamed', 'requirements': [], 'scoringCriteria': []}; ctrl.showDeviceTemplatesEditor();">
                                 <i class="material-icons">add</i>
                             </button>
                         </div>
@@ -80,10 +80,17 @@
                         <table class="table table-hover" st-table="deviceCollection"
                                st-safe-src="deviceTemplateListCtrl.items">
                             <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Reqs.</th>
+                                <th>Scoring</th>
+                            </tr>
                             </thead>
                             <tbody>
                             <tr id="{{device.id}}" ng-repeat="device in deviceCollection">
                                 <td>{{device.name}}</td>
+                                <td class="align-center">{{device.requirements.length}}</td>
+                                <td class="align-center">{{device.scoringCriteria.length}}</td>
                                 <td class="right">
                                     <!--
                                     <form ng-submit="ctrl.editDeviceTemplate(device.id)" style="display: inline-block">
@@ -102,6 +109,7 @@
                             </tr>
                             <tr ng-show="deviceTemplateListCtrl.items.length === 0">
                                 <td>No device templates registered.</td>
+                                <td></td>
                                 <td></td>
                                 <td></td>
                             </tr>
@@ -162,70 +170,170 @@
                                 <div class="tab-content">
                                     <div role="tabpanel" class="tab-pane fade active in" id="edit-devices-requirements">
                                         <div class="align-right">
-                                            <div class="btn-group dropup">
+                                            <div class="btn-group"><!-- dropup-->
                                                 <button type="button" class="btn btn-primary dropdown-toggle"
                                                         data-toggle="dropdown">
                                                     <i class="material-icons">add</i>&nbsp;Add&nbsp;<span
                                                         class="caret"></span>
                                                 </button>
                                                 <ul class="dropdown-menu">
-                                                    <li><a href="#" class=" waves-effect waves-block">Name</a></li>
-                                                    <li><a href="#" class=" waves-effect waves-block">Description</a>
+                                                    <li><a href="#" class=" waves-effect waves-block"
+                                                           ng-click="addDeviceTemplateCtrl.item.requirements.push({'type': 'name'});">Name</a>
                                                     </li>
-                                                    <li><a href="#" class=" waves-effect waves-block">Keywords</a></li>
+                                                    <li><a href="#" class=" waves-effect waves-block"
+                                                           ng-click="addDeviceTemplateCtrl.item.requirements.push({'type': 'description', 'operator': 'or'});">Description</a>
+                                                    </li>
+                                                    <!--
+                                                    <li><a href="#" class=" waves-effect waves-block"
+                                                           ng-click="addDeviceTemplateCtrl.item.requirements.push({'type': 'keywords'});">Keywords</a>
+                                                    </li>-->
                                                     <li role="separator" class="divider"></li>
-                                                    <li><a href="#" class=" waves-effect waves-block">Location</a></li>
-                                                    <li><a href="#" class=" waves-effect waves-block">Identifiers</a>
+                                                    <li><a href="#" class=" waves-effect waves-block"
+                                                           ng-click="addDeviceTemplateCtrl.item.requirements.push({'type': 'location'});">Location</a>
                                                     </li>
-                                                    <li><a href="#" class=" waves-effect waves-block">Capabilities</a>
-                                                    </li>
-                                                    <li><a href="#" class=" waves-effect waves-block">Context</a></li>
-                                                    <li><a href="#" class=" waves-effect waves-block">Attachments</a>
-                                                    </li>
+                                                    <!--
+                                                    <li><a href="#" class=" waves-effect waves-block"
+                                                           ng-click="addDeviceTemplateCtrl.item.requirements.push({'type': 'identifier'});">Identifier</a>
+                                                    </li>-->
+                                                    <!--
+                                                    <li><a href="#" class=" waves-effect waves-block"
+                                                           ng-click="addDeviceTemplateCtrl.item.requirements.push({'type': 'capabilities'});">Capabilities</a>
+                                                    </li>-->
+                                                    <!--
+                                                    <li><a href="#" class=" waves-effect waves-block"
+                                                           ng-click="addDeviceTemplateCtrl.item.requirements.push({'type': 'context'});">Context</a>
+                                                    </li>-->
+                                                    <!--
+                                                    <li><a href="#" class=" waves-effect waves-block"
+                                                           ng-click="addDeviceTemplateCtrl.item.requirements.push({'type': 'attachment'});">Attachment</a>
+                                                    </li>-->
                                                 </ul>
                                             </div>
                                         </div>
                                         <div class="list-group criteria-list">
-                                            <a class="list-group-item"><i class="material-icons">location_on</i>
-                                                Device is ...
-                                                <div class="form-group" ng-class="{'has-error' : false }">
-                                                    <div class="form-line" ng-class="{'focused error' : false }">
-                                                        <select class="form-control show-tick"
-                                                                ng-model="device_editor_location_type">
-                                                            <option value="">Select ...</option>
-                                                            <option value="described_by">described by ...</option>
-                                                            <option value="at_location">at location ...</option>
-                                                            <option value="in_area">in area ...</option>
-                                                        </select>
+                                            <a class="list-group-item"
+                                               ng-repeat="req in addDeviceTemplateCtrl.item.requirements">
+                                                <div class="row clearfix">
+                                                    <div class="col-lg-1" ng-switch="req.type">
+                                                        <i class="material-icons" ng-switch-when="name">format_color_text</i>
+                                                        <i class="material-icons"
+                                                           ng-switch-when="description">comment</i>
+                                                        <i class="material-icons" ng-switch-when="keywords">vpn_key</i>
+                                                        <i class="material-icons"
+                                                           ng-switch-when="location">location_on</i>
+                                                        <i class="material-icons" ng-switch-when="identifier">label</i>
+                                                        <i class="material-icons" ng-switch-when="capabilities">list</i>
+                                                        <i class="material-icons" ng-switch-when="context">share</i>
+                                                        <i class="material-icons" ng-switch-when="attachment">lightbulb_outline</i>
                                                     </div>
-                                                    <span class="help-block"
-                                                          ng-show="false">{{}}</span>
-                                                </div>
-                                                <div class="form-group" ng-class="{'has-error' : false }">
-                                                    <div class="form-line" ng-class="{'focused error' : false }">
-                                                        <select class="form-control show-tick">
-                                                            <option value="">Select ...</option>
-                                                            <option ng-repeat="lt in locationTemplateListCtrl.items | byLocationTemplateType:device_editor_location_type"
-                                                                    value="{{lt.id}}">
-                                                                {{lt.name}}
-                                                            </option>
-                                                        </select>
+                                                    <div class="col-lg-2" ng-show="req.type === 'name'">
+                                                        Device name...
                                                     </div>
-                                                    <span class="help-block"
-                                                          ng-show="false">{{}}</span>
+                                                    <div class="col-lg-3" ng-show="req.type === 'name'">
+                                                        <div class="form-group" ng-class="{'has-error' : false }">
+                                                            <div class="form-line"
+                                                                 ng-class="{'focused error' : false }">
+                                                                <select class="form-control show-tick"
+                                                                        ng-model="req.operator">
+                                                                    <option value="">Select ...</option>
+                                                                    <option value="equals">equals</option>
+                                                                    <option value="contains">contains</option>
+                                                                    <option value="begins_with">begins with</option>
+                                                                    <option value="ends_with">ends with</option>
+                                                                </select>
+                                                            </div>
+                                                            <span class="help-block" ng-show="false">{{}}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-5" ng-show="req.type === 'name'">
+                                                        <div class="form-group" ng-class="{'has-error' : false }"
+                                                             ng-show="req.operator">
+                                                            <div class="form-line"
+                                                                 ng-class="{'focused error' : false }">
+                                                                <input type="text" class="form-control"
+                                                                       placeholder="Enter match..."
+                                                                       ng-model="req.match">
+                                                            </div>
+                                                            <span class="help-block" ng-show="false">{{}}</span>
+                                                        </div>
+                                                    </div>
+
+
+                                                    <div class="col-lg-2" ng-show="req.type === 'description'">
+                                                        Description contains...
+                                                    </div>
+                                                    <div class="col-lg-5" ng-show="req.type === 'description'">
+                                                        <div class="form-group" ng-class="{'has-error' : false }">
+                                                            <div class="form-line"
+                                                                 ng-class="{'focused error' : false }">
+                                                                <input type="text" class="form-control"
+                                                                       placeholder="Enter match..."
+                                                                       ng-model="req.match">
+                                                            </div>
+                                                            <span class="help-block" ng-show="false">{{}}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-3" ng-show="req.type === 'description'">
+                                                        <div class="switch">
+                                                            <label>AND
+                                                                <input type="checkbox" ng-model="req.operator"
+                                                                       ng-true-value="'or'" ng-false-value="'and'">
+                                                                <span class="lever"></span>
+                                                            </label>OR
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-lg-2" style="margin-top: 8px;"
+                                                         ng-show="req.type === 'location'">
+                                                        Device is...
+                                                    </div>
+                                                    <div class="col-lg-3" ng-show="req.type === 'location'">
+                                                        <div class="form-group" ng-class="{'has-error' : false }">
+                                                            <div class="form-line"
+                                                                 ng-class="{'focused error' : false }">
+                                                                <select class="form-control show-tick"
+                                                                        ng-model="req.operator">
+                                                                    <option value="">Select ...</option>
+                                                                    <option value="described_by">described by</option>
+                                                                    <option value="at_location">at location</option>
+                                                                    <option value="in_area">in area</option>
+                                                                </select>
+                                                            </div>
+                                                            <span class="help-block"
+                                                                  ng-show="false">{{}}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-5" ng-show="req.type === 'location'">
+                                                        <div class="form-group" ng-class="{'has-error' : false }"
+                                                             ng-show="req.operator">
+                                                            <div class="form-line"
+                                                                 ng-class="{'focused error' : false }">
+                                                                <select class="form-control show-tick"
+                                                                        ng-model="req.locationTemplateId">
+                                                                    <option value="">Select location template...
+                                                                        ({{(locationTemplateListCtrl.items | byLocationTemplateType:req.operator).length}})
+                                                                    </option>
+                                                                    <option ng-repeat="lt in locationTemplateListCtrl.items | byLocationTemplateType:req.operator"
+                                                                            value="{{lt.id}}">
+                                                                        {{lt.name}}
+                                                                    </option>
+                                                                </select>
+                                                            </div>
+                                                            <span class="help-block" ng-show="false">{{}}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-lg-1">
+                                                        <button type="button"
+                                                                class="btn btn-sm bg-red waves-effect waves-float right"
+                                                                ng-click="addDeviceTemplateCtrl.item.requirements.splice($index, 1);">
+                                                            <i class="material-icons" style="font-size:14px;">delete</i>
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <button type="button"
-                                                        class="btn btn-sm bg-red waves-effect waves-float right"
-                                                        ng-click="">
-                                                    <i class="material-icons" style="font-size:14px;">delete</i>
-                                                </button>
                                             </a>
-                                            <a href="#" class="list-group-item">Morbi leo risus</a>
-                                            <a href="#" class="list-group-item">Porta ac consectetur ac</a>
-                                            <a href="#" class="list-group-item">Vestibulum at eros</a>
+                                            <span ng-show="addDeviceTemplateCtrl.item.requirements.length === 0">
+                                                No requirements so far.</span>
                                         </div>
-
-
                                     </div>
                                     <div role="tabpanel" class="tab-pane fade" id="edit-devices-scoring-criteria">
                                         <b>Scoring criteria</b>

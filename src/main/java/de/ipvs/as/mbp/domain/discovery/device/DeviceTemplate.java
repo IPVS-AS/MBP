@@ -1,6 +1,8 @@
 package de.ipvs.as.mbp.domain.discovery.device;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ipvs.as.mbp.domain.discovery.device.requirements.DeviceRequirement;
+import de.ipvs.as.mbp.domain.discovery.device.requirements.RequirementsDeserializer;
 import de.ipvs.as.mbp.domain.discovery.device.scoring.ScoringCriterion;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
@@ -28,6 +30,7 @@ public class DeviceTemplate extends UserEntity {
     @ApiModelProperty(notes = "Device template name", example = "My home", required = true)
     private String name;
 
+    @JsonDeserialize(using = RequirementsDeserializer.class)
     @ApiModelProperty(notes = "List of requirements for devices.")
     private List<DeviceRequirement> requirements;
 

@@ -6,23 +6,23 @@ import com.fasterxml.jackson.annotation.JsonValue;
 /**
  * Enumeration of operators that can be applied to string attributes.
  */
-public enum StringAttributeOperator implements DiscoveryTemplateOperator {
+public enum StringOperator implements DiscoveryTemplateOperator {
     EQUALS("equals"), CONTAINS("contains"), BEGINS_WITH("begins_with"), ENDS_WITH("ends_with");
 
     //Externally visible name of the operator
     private String name;
 
     /**
-     * Creates a new string attribute operator with a given name.
+     * Creates a new string operator with a given name.
      *
      * @param name The desired name of the operator
      */
-    StringAttributeOperator(String name) {
+    StringOperator(String name) {
         setName(name);
     }
 
     /**
-     * Sets the name of the string attribute operator.
+     * Sets the name of the string operator.
      *
      * @param name The name to set
      */
@@ -31,7 +31,7 @@ public enum StringAttributeOperator implements DiscoveryTemplateOperator {
     }
 
     /**
-     * Serializes a string attribute operator by returning its name.
+     * Serializes a string operator by returning its name.
      *
      * @return The name of the operator
      */
@@ -41,21 +41,21 @@ public enum StringAttributeOperator implements DiscoveryTemplateOperator {
     }
 
     /**
-     * Returns the string attribute operator that corresponds to a given name. This method is called when
+     * Returns the string operator that corresponds to a given name. This method is called when
      * a provided operator name needs to be mapped to the actual operator object.
      *
-     * @param name The name of the string attribute operator
-     * @return The corresponding string attribute operator or null if not found
+     * @param name The name of the string operator
+     * @return The corresponding string operator or null if not found
      */
     @JsonCreator
-    public static StringAttributeOperator create(String name) {
+    public static StringOperator create(String name) {
         //Sanity check for provided name
         if ((name == null) || name.isEmpty()) {
             return null;
         }
 
         //Compare every available operator against the provided name
-        for (StringAttributeOperator operator : values()) {
+        for (StringOperator operator : values()) {
             if (name.equalsIgnoreCase(operator.value())) {
                 //Matching operator found
                 return operator;

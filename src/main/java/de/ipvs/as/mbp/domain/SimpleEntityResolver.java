@@ -17,6 +17,11 @@ public class SimpleEntityResolver {
 
     @SuppressWarnings("unchecked")
     public static Optional<Object> resolve(Class<?> repositoryClass, String entityId) {
+        //Sanity check
+        if ((entityId == null) || entityId.isEmpty()) {
+            return Optional.empty();
+        }
+
         //Remember matching repository
         MongoRepository<Object, String> repository;
 

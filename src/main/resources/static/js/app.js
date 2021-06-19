@@ -397,7 +397,7 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 controller: 'DeviceTemplateListController as ctrl',
                 resolve: {
                     deviceTemplateList: ['HttpService', function (HttpService) {
-                        return HttpService.getAll('discovery/device-templates');
+                        return HttpService.getAll('discovery/device-templates', 'deviceTemplates');
                     }],
                     addDeviceTemplate: ['HttpService', function (HttpService) {
                         return angular.bind(this, HttpService.addOne, 'discovery/device-templates');

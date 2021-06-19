@@ -1,7 +1,7 @@
 package de.ipvs.as.mbp.domain.discovery.location.informal;
 
 import de.ipvs.as.mbp.domain.discovery.location.LocationTemplate;
-import de.ipvs.as.mbp.domain.discovery.operators.StringAttributeOperator;
+import de.ipvs.as.mbp.domain.discovery.operators.StringOperator;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 
 /**
@@ -9,18 +9,18 @@ import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
  */
 @MBPEntity(createValidator = InformalLocationTemplateCreateValidator.class)
 public class InformalLocationTemplate extends LocationTemplate {
-    private StringAttributeOperator operator;
+    private StringOperator operator;
     private String match;
 
     public InformalLocationTemplate() {
         super();
     }
 
-    public StringAttributeOperator getOperator() {
+    public StringOperator getOperator() {
         return operator;
     }
 
-    public InformalLocationTemplate setOperator(StringAttributeOperator operator) {
+    public InformalLocationTemplate setOperator(StringOperator operator) {
         this.operator = operator;
         return this;
     }

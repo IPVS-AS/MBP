@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Enumeration of operators that can be used in location requirements.
  */
-public enum LocationRequirementOperator implements DeviceRequirementOperator {
+public enum LocationOperator implements DeviceRequirementOperator {
     DESCRIBED_BY("described_by", Collections.singletonList(InformalLocationTemplate.class)),
     AT_LOCATION("at_location", Collections.singletonList(PointLocationTemplate.class)),
     IN_AREA("in_area", Arrays.asList(CircleLocationTemplate.class, PolygonLocationTemplate.class));
@@ -33,7 +33,7 @@ public enum LocationRequirementOperator implements DeviceRequirementOperator {
      * @param name                  The desired name of the operator
      * @param locationTemplateTypes The matching location template types
      */
-    LocationRequirementOperator(String name, List<Class<? extends LocationTemplate>> locationTemplateTypes) {
+    LocationOperator(String name, List<Class<? extends LocationTemplate>> locationTemplateTypes) {
         setName(name);
         setLocationTemplateTypes(locationTemplateTypes);
     }
@@ -83,14 +83,14 @@ public enum LocationRequirementOperator implements DeviceRequirementOperator {
      * @return The corresponding location requirement operator or null if not found
      */
     @JsonCreator
-    public static LocationRequirementOperator create(String name) {
+    public static LocationOperator create(String name) {
         //Sanity check for provided name
         if ((name == null) || name.isEmpty()) {
             return null;
         }
 
         //Compare every available operator against the provided name
-        for (LocationRequirementOperator operator : values()) {
+        for (LocationOperator operator : values()) {
             if (name.equalsIgnoreCase(operator.value())) {
                 //Matching operator found
                 return operator;
