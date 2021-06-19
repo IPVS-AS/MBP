@@ -5,11 +5,11 @@
  */
 app.controller('DeviceTemplateListController',
     ['$scope', '$controller', '$interval', '$timeout',
-        'deviceTemplateList', 'addDeviceTemplate', 'deleteDeviceTemplate',
+        'deviceTemplateList', 'addDeviceTemplate', 'updateDeviceTemplate', 'deleteDeviceTemplate',
         'locationTemplateList', 'addLocationTemplate', 'updateLocationTemplate', 'deleteLocationTemplate',
         'DiscoveryService', 'NotificationService',
         function ($scope, $controller, $interval, $timeout,
-                  deviceTemplateList, addDeviceTemplate, deleteDeviceTemplate,
+                  deviceTemplateList, addDeviceTemplate, updateDeviceTemplate, deleteDeviceTemplate,
                   locationTemplateList, addLocationTemplate, updateLocationTemplate, deleteLocationTemplate,
                   DiscoveryService, NotificationService) {
             //Constants
@@ -49,6 +49,59 @@ app.controller('DeviceTemplateListController',
             function showDeviceTemplatesEditor() {
                 //First hide and then show the editor
                 ELEMENT_EDITORS_DEVICE_EDITOR.slideUp().slideDown();
+            }
+
+            /**
+             * [Public]
+             * Prepares the editing of a certain device template, given by its ID.
+             *
+             * @param templateId The ID of the device template
+             */
+            function editDeviceTemplate(templateId) {
+                //Find the device template with this ID
+                let deviceTemplate = null;
+                for (let i = 0; i < deviceTemplateList.length; i++) {
+                    if (templateId === deviceTemplateList[i].id) {
+                        //Found, remember device template
+                        deviceTemplate = deviceTemplateList[i];
+                        break;
+                    }
+                }
+
+                //Sanity check
+                if (deviceTemplate == null) return;
+
+                //Set copy of location template
+                vm.addDeviceTemplateCtrl.item = Object.assign({}, deviceTemplate)
+
+                //Show template editor
+                showDeviceTemplatesEditor();
+            }
+
+            /**
+             * [Public]
+             * Saves the currently modified device template, either by creating a new one or by updating an
+             * existing one.
+             */
+            function saveDeviceTemplate() {
+                //Check if device template ID is set
+                if (vm.addDeviceTemplateCtrl.item.hasOwnProperty("id") && (vm.addDeviceTemplateCtrl.item.id.length > 0)) {
+                    //Copy location template data to update controller
+                    vm.updateDeviceTemplateCtrl.item = vm.addDeviceTemplateCtrl.item;
+
+                    //Remove location template field from location requirements (only ID needed)
+                    for (let i = 0; i < vm.updateDeviceTemplateCtrl.item.requirements.length; i++) {
+                        delete vm.updateDeviceTemplateCtrl.item.requirements[i].locationTemplate;
+                    }
+
+                    //Update existing location template
+                    vm.updateDeviceTemplateCtrl.updateItem().then((data) => {
+                        $scope.$apply();
+                    });
+                } else {
+                    //Create new device template
+                    vm.addDeviceTemplateCtrl.addItem();
+                }
             }
 
             /**
@@ -376,6 +429,49 @@ app.controller('DeviceTemplateListController',
                 });
             }
 
+            //Watch controller result of device template additions
+            $scope.$watch(() => vm.addDeviceTemplateCtrl.result, (data) => {
+                    //Sanity check
+                    if (!data) return;
+
+                    //Callback, close device editor
+                    ELEMENT_EDITORS_DEVICE_EDITOR.slideUp();
+
+                    //Add device template to list
+                    vm.deviceTemplateListCtrl.pushItem(data);
+                }
+            );
+
+            //Watch controller result of device template updates
+            $scope.$watch(() => vm.updateDeviceTemplateCtrl.result, (data) => {
+                //Sanity check
+                if (!data) return;
+
+                //Callback, close device editor
+                ELEMENT_EDITORS_DEVICE_EDITOR.slideUp();
+
+                //Update device template list
+                vm.deviceTemplateListCtrl.updateItem(data);
+
+                //Fix device template name in overview table (hacky solution)
+                ELEMENT_EDITORS_DEVICE.find('table tr#' + data.id + ' td').first().html(data.name);
+            });
+
+            //Watch controller result of device template deletions
+            $scope.$watch(() => vm.deleteDeviceTemplateCtrl.result, (data) => {
+                //Sanity check
+                if (!data) return;
+
+                //Callback, remove device template from list
+                vm.deviceTemplateListCtrl.removeItem(vm.deleteDeviceTemplateCtrl.result);
+
+                //Check if the deleted template was edited
+                if (vm.addDeviceTemplateCtrl.item.id === vm.deleteDeviceTemplateCtrl.result) {
+                    //Hide the device template editor
+                    ELEMENT_EDITORS_DEVICE_EDITOR.slideUp();
+                }
+            });
+
             //Watch controller result of location template additions
             $scope.$watch(() => vm.addLocationTemplateCtrl.result, (data) => {
                     //Sanity check
@@ -436,6 +532,10 @@ app.controller('DeviceTemplateListController',
                     entity: 'device template',
                     addItem: addDeviceTemplate
                 }),
+                updateDeviceTemplateCtrl: $controller('UpdateItemController as updateDeviceTemplateCtrl', {
+                    $scope: $scope,
+                    updateItem: updateDeviceTemplate
+                }),
                 deleteDeviceTemplateCtrl: $controller('DeleteItemController as deleteDeviceTemplateCtrl', {
                     $scope: $scope,
                     deleteItem: deleteDeviceTemplate,
@@ -474,6 +574,8 @@ app.controller('DeviceTemplateListController',
                 mapInitCenter: MAP_INIT_CENTER,
                 mapInitZoom: MAP_INIT_ZOOM,
                 showDeviceTemplatesEditor: showDeviceTemplatesEditor,
+                editDeviceTemplate: editDeviceTemplate,
+                saveDeviceTemplate: saveDeviceTemplate,
                 showLocationTemplatesEditor: showLocationTemplatesEditor,
                 editLocationTemplate: editLocationTemplate,
                 saveLocationTemplate: saveLocationTemplate,

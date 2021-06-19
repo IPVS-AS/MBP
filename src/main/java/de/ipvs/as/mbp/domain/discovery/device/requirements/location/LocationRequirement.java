@@ -65,6 +65,15 @@ public class LocationRequirement extends DeviceRequirement {
     }
 
     /**
+     * Returns the ID of the location template that is referenced in the location requirement.
+     *
+     * @return The location template ID
+     */
+    public String getLocationTemplateId() {
+        return this.locationTemplateId;
+    }
+
+    /**
      * Returns the location template of the location requirement.
      *
      * @return The location template

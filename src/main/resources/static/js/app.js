@@ -402,6 +402,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     addDeviceTemplate: ['HttpService', function (HttpService) {
                         return angular.bind(this, HttpService.addOne, 'discovery/device-templates');
                     }],
+                    updateDeviceTemplate: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.updateOne, 'discovery/device-templates');
+                    }],
                     deleteDeviceTemplate: ['HttpService', function (HttpService) {
                         return angular.bind(this, HttpService.deleteOne, 'discovery/device-templates');
                     }],

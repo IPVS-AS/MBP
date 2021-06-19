@@ -83,7 +83,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Reqs.</th>
-                                <th>Scoring</th>
+                                <th>Criteria</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -92,12 +92,11 @@
                                 <td class="align-center">{{device.requirements.length}}</td>
                                 <td class="align-center">{{device.scoringCriteria.length}}</td>
                                 <td class="right">
-                                    <!--
                                     <form ng-submit="ctrl.editDeviceTemplate(device.id)" style="display: inline-block">
                                         <button type="submit" class="btn btn-sm bg-mbp-blue waves-effect waves-float">
                                             <i class="material-icons" style="font-size:14px; color: white !important;">mode_edit</i>
                                         </button>
-                                    </form>-->
+                                    </form>
                                     <form ng-submit="deleteDeviceTemplateCtrl.deleteItem()"
                                           style="display: inline-block">
                                         <button type="submit" class="btn btn-sm bg-red waves-effect waves-float"
@@ -152,7 +151,7 @@
                     </div>
                     <div class="body">
                         <div class="container-fluid">
-                            <form ng-submit="addDeviceTemplateCtrl.addItem();">
+                            <form ng-submit="ctrl.saveDeviceTemplate();">
                                 <!-- Tab buttons -->
                                 <ul class="nav nav-tabs" role="tablist">
                                     <li role="presentation" class="active">
@@ -309,13 +308,10 @@
                                                             <div class="form-line"
                                                                  ng-class="{'focused error' : false }">
                                                                 <select class="form-control show-tick"
+                                                                        ng-options="lt.id as lt.name for lt in locationTemplateListCtrl.items | byLocationTemplateType:req.operator"
                                                                         ng-model="req.locationTemplateId">
                                                                     <option value="">Select location template...
                                                                         ({{(locationTemplateListCtrl.items | byLocationTemplateType:req.operator).length}})
-                                                                    </option>
-                                                                    <option ng-repeat="lt in locationTemplateListCtrl.items | byLocationTemplateType:req.operator"
-                                                                            value="{{lt.id}}">
-                                                                        {{lt.name}}
                                                                     </option>
                                                                 </select>
                                                             </div>
