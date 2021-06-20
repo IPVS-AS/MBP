@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.SimpleEntityResolver;
 import de.ipvs.as.mbp.domain.discovery.device.requirements.DeviceRequirement;
 import de.ipvs.as.mbp.domain.discovery.location.LocationTemplate;
+import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.repository.discovery.LocationTemplateRepository;
 
 import java.util.Optional;
@@ -109,7 +110,7 @@ public class LocationRequirement extends DeviceRequirement {
 
         //Sanity check
         if (locationTemplate == null) {
-            throw new IllegalArgumentException("The location template ID is invalid!");
+            return this;
         }
 
         //Check compatibility between operator and template
@@ -145,6 +146,25 @@ public class LocationRequirement extends DeviceRequirement {
     @Override
     public String getTypeName() {
         return TYPE_NAME;
+    }
+
+    /**
+     * Validates the device requirement by extending the provided exception with information about invalid fields.
+     *
+     * @param exception   The exception to extend as part of the validation
+     * @param fieldPrefix Prefix that is supposed to be added to the fields that are validated
+     */
+    @Override
+    public void validate(EntityValidationException exception, String fieldPrefix) {
+        //Check operator
+        if (operator == null) {
+            exception.addInvalidField(fieldPrefix + ".operator", "An operator must be selected.");
+        }
+
+        //Check if location template exists
+        if ((this.locationTemplateId == null) || (this.locationTemplateId.isEmpty()) || getLocationTemplate() == null) {
+            exception.addInvalidField(fieldPrefix + ".locationTemplateId", "The referenced location template does not exist.");
+        }
     }
 
     /**

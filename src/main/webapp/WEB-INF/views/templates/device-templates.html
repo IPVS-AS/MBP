@@ -27,28 +27,28 @@
                         <button type="button" data-toggle="collapse" data-target="#edit-identifiers"
                                 class="btn btn-circle waves-effect waves-circle waves-float m-t-0">
                         </button>
-                        <div class="bubble-badge">25</div>
+                        <div class="bubble-badge">0</div>
                         <div class="bubble-connector"></div>
                     </div>
                     <div class="bubble-item bubble-capabilities">
                         <button type="button" data-toggle="collapse" data-target="#edit-capabilities"
                                 class="btn btn-circle waves-effect waves-circle waves-float m-t-0">
                         </button>
-                        <div class="bubble-badge">25</div>
+                        <div class="bubble-badge">0</div>
                         <div class="bubble-connector"></div>
                     </div>
                     <div class="bubble-item bubble-context">
                         <button type="button" data-toggle="collapse" data-target="#edit-context"
                                 class="btn btn-circle waves-effect waves-circle waves-float m-t-0">
                         </button>
-                        <div class="bubble-badge">25</div>
+                        <div class="bubble-badge">0</div>
                         <div class="bubble-connector"></div>
                     </div>
                     <div class="bubble-item bubble-attachments">
                         <button type="button" data-toggle="collapse" data-target="#edit-attachments"
                                 class="btn btn-circle waves-effect waves-circle waves-float m-t-0">
                         </button>
-                        <div class="bubble-badge">25</div>
+                        <div class="bubble-badge">0</div>
                         <div class="bubble-connector"></div>
                     </div>
                 </div>
@@ -229,9 +229,10 @@
                                                         Device name...
                                                     </div>
                                                     <div class="col-lg-3" ng-show="req.type === 'name'">
-                                                        <div class="form-group" ng-class="{'has-error' : false }">
+                                                        <div class="form-group"
+                                                             ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].operator'] }">
                                                             <div class="form-line"
-                                                                 ng-class="{'focused error' : false }">
+                                                                 ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].operator'] }">
                                                                 <select class="form-control show-tick"
                                                                         ng-model="req.operator">
                                                                     <option value="">Select ...</option>
@@ -241,19 +242,22 @@
                                                                     <option value="ends_with">ends with</option>
                                                                 </select>
                                                             </div>
-                                                            <span class="help-block" ng-show="false">{{}}</span>
+                                                            <span class="help-block"
+                                                                  ng-show="addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].operator']">{{addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].operator']}}</span>
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-5" ng-show="req.type === 'name'">
-                                                        <div class="form-group" ng-class="{'has-error' : false }"
+                                                        <div class="form-group"
+                                                             ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].match'] }"
                                                              ng-show="req.operator">
                                                             <div class="form-line"
-                                                                 ng-class="{'focused error' : false }">
+                                                                 ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].match'] }">
                                                                 <input type="text" class="form-control"
                                                                        placeholder="Enter match..."
                                                                        ng-model="req.match">
                                                             </div>
-                                                            <span class="help-block" ng-show="false">{{}}</span>
+                                                            <span class="help-block"
+                                                                  ng-show="addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].match']">{{addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].match']}}</span>
                                                         </div>
                                                     </div>
 
@@ -262,14 +266,16 @@
                                                         Description contains...
                                                     </div>
                                                     <div class="col-lg-5" ng-show="req.type === 'description'">
-                                                        <div class="form-group" ng-class="{'has-error' : false }">
+                                                        <div class="form-group"
+                                                             ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].match'] }">
                                                             <div class="form-line"
-                                                                 ng-class="{'focused error' : false }">
+                                                                 ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].match'] }">
                                                                 <input type="text" class="form-control"
                                                                        placeholder="Enter match..."
                                                                        ng-model="req.match">
                                                             </div>
-                                                            <span class="help-block" ng-show="false">{{}}</span>
+                                                            <span class="help-block"
+                                                                  ng-show="addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].match']">{{addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].match']}}</span>
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-3" ng-show="req.type === 'description'">
@@ -287,24 +293,28 @@
                                                         {{(req.operator === 'described_by') ? 'Location is...' : 'Device is...'}}
                                                     </div>
                                                     <div class="col-lg-3" ng-show="req.type === 'location'">
-                                                        <div class="form-group" ng-class="{'has-error' : false }">
+                                                        <div class="form-group"
+                                                             ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].operator'] }">
                                                             <div class="form-line"
-                                                                 ng-class="{'focused error' : false }">
-                                                                <select class="form-control show-tick" ng-model="req.operator">
+                                                                 ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].operator'] }">
+                                                                <select class="form-control show-tick"
+                                                                        ng-model="req.operator">
                                                                     <option value="">Select ...</option>
                                                                     <option value="described_by">described by</option>
                                                                     <option value="at_location">at location</option>
                                                                     <option value="in_area">in area</option>
                                                                 </select>
                                                             </div>
-                                                            <span class="help-block" ng-show="false">{{}}</span>
+                                                            <span class="help-block"
+                                                                  ng-show="addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].operator']">{{addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].operator']}}</span>
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-5" ng-show="req.type === 'location'">
-                                                        <div class="form-group" ng-class="{'has-error' : false }"
+                                                        <div class="form-group"
+                                                             ng-class="{'has-error' : addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].locationTemplateId'] }"
                                                              ng-show="req.operator">
                                                             <div class="form-line"
-                                                                 ng-class="{'focused error' : false }">
+                                                                 ng-class="{'focused error' : addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].locationTemplateId'] }">
                                                                 <select class="form-control show-tick"
                                                                         ng-options="lt.id as lt.name for lt in locationTemplateListCtrl.items | byLocationTemplateType:req.operator"
                                                                         ng-model="req.locationTemplateId">
@@ -313,7 +323,8 @@
                                                                     </option>
                                                                 </select>
                                                             </div>
-                                                            <span class="help-block" ng-show="false">{{}}</span>
+                                                            <span class="help-block"
+                                                                  ng-show="addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].locationTemplateId']">{{addDeviceTemplateCtrl.item.errors['requirements[' + $index + '].locationTemplateId']}}</span>
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-1">

@@ -1,11 +1,11 @@
 package de.ipvs.as.mbp.domain.discovery.device.requirements.meta;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.discovery.device.requirements.DeviceRequirement;
 import de.ipvs.as.mbp.domain.discovery.operators.StringOperator;
+import de.ipvs.as.mbp.error.EntityValidationException;
 
 /**
  * Objects of this class represent name requirements for devices.
@@ -87,4 +87,25 @@ public class NameRequirement extends DeviceRequirement {
     public String getTypeName() {
         return TYPE_NAME;
     }
+
+    /**
+     * Validates the device requirement by extending the provided exception with information about invalid fields.
+     *
+     * @param exception   The exception to extend as part of the validation
+     * @param fieldPrefix Prefix that is supposed to be added to the fields that are validated
+     */
+    @Override
+    public void validate(EntityValidationException exception, String fieldPrefix) {
+        //Check operator
+        if (operator == null) {
+            exception.addInvalidField(fieldPrefix + ".operator", "An operator must be selected.");
+        }
+
+        //Check match
+        if ((match == null) || (match.isEmpty())) {
+            exception.addInvalidField(fieldPrefix + ".match", "The match must not be empty.");
+        }
+    }
+
+
 }

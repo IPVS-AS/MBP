@@ -1,9 +1,13 @@
 package de.ipvs.as.mbp.domain.discovery.device;
 
+import de.ipvs.as.mbp.domain.discovery.device.requirements.DeviceRequirement;
+import de.ipvs.as.mbp.domain.discovery.device.scoring.ScoringCriterion;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.service.validation.ICreateValidator;
 import de.ipvs.as.mbp.util.Validation;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * Creation validator for {@link DeviceTemplate} entities.
@@ -31,7 +35,19 @@ public class DeviceTemplateCreateValidator implements ICreateValidator<DeviceTem
             exception.addInvalidField("name", "The name must not be empty.");
         }
 
-        //TODO
+        //Iterate over all requirements for validation
+        List<DeviceRequirement> requirements = deviceTemplate.getRequirements();
+        for (int i = 0; i < requirements.size(); i++) {
+            //Ask current requirement to validate itself
+            requirements.get(i).validate(exception, "requirements[" + i + "]");
+        }
+
+        //Iterate over all scoring criteria for validation
+        List<ScoringCriterion> criteria = deviceTemplate.getScoringCriteria();
+        for (int i = 0; i < criteria.size(); i++) {
+            //Ask current criterion to validate itself
+            criteria.get(i).validate(exception, "scoringCriteria[" + i + "]");
+        }
 
         //Throw exception if there are invalid fields
         if (exception.hasInvalidFields()) {

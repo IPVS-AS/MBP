@@ -99,8 +99,11 @@ app.controller('DeviceTemplateListController',
                         $scope.$apply();
                     });
                 } else {
-                    //Create new device template
-                    vm.addDeviceTemplateCtrl.addItem();
+                    //Create new device template TODO remove callback
+                    vm.addDeviceTemplateCtrl.addItem().then(function () {
+                        console.log("Errors:");
+                        console.log(vm.addDeviceTemplateCtrl.item.errors);
+                    });
                 }
             }
 
