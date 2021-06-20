@@ -86,9 +86,7 @@ app.controller('ItemListController',
                 let filterTerm = vm.filterTerm.trim().toLowerCase();
 
                 //Sanity checks
-                if ((item == null) || (typeof item === 'undefined') || (!item.hasOwnProperty('name'))) {
-                    return false;
-                } else if (filterTerm === "") {
+                if ((item == null) || (typeof item === 'undefined') || (!item.hasOwnProperty('name')) || (filterTerm === "")) {
                     return true;
                 }
 

@@ -445,13 +445,13 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 controller: 'RequestTopicListController as ctrl',
                 resolve: {
                     requestTopicList: ['HttpService', function (HttpService) {
-                        return HttpService.getAll('discovery/request-topics');
+                        return HttpService.getAll('discovery/request-topics', 'requestTopics');
                     }],
                     addRequestTopic: ['HttpService', function (HttpService) {
-                        return angular.bind(this, HttpService.addOne, 'discovery/request-topic');
+                        return angular.bind(this, HttpService.addOne, 'discovery/request-topics');
                     }],
                     deleteRequestTopic: ['HttpService', function (HttpService) {
-                        return angular.bind(this, HttpService.deleteOne, 'discovery/request-topic');
+                        return angular.bind(this, HttpService.deleteOne, 'discovery/request-topics');
                     }]
                 }
             })

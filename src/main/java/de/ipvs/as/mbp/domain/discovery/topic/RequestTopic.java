@@ -1,10 +1,6 @@
 package de.ipvs.as.mbp.domain.discovery.topic;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplateCreateValidator;
-import de.ipvs.as.mbp.domain.discovery.device.requirements.RequirementsDeserializer;
-import de.ipvs.as.mbp.domain.discovery.topic.condition.CompletenessCondition;
-import de.ipvs.as.mbp.domain.discovery.topic.condition.CompletenessConditionDeserializer;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
 import io.swagger.annotations.ApiModel;
@@ -15,11 +11,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import javax.persistence.GeneratedValue;
 
 /**
- * Objects of this class represent topics to which discovery requests can be sent. Each topic specifies a completness
- * condition which indicates when the sending of replies to requests can be considered as finished.
+ * Objects of this class represent topics to which discovery requests can be sent. Each topic specifies a timeout
+ * after which the sending of replies to requests can be considered as finished and a number of expected
+ * replies after which the sending is considered as finished as well.
  */
 @Document
-@MBPEntity(createValidator = DeviceTemplateCreateValidator.class)
+@MBPEntity(createValidator = RequestTopicCreateValidator.class)
 @ApiModel(description = "Model for discovery request topics")
 public class RequestTopic extends UserEntity {
     private static final String TOPIC_PATTERN = "{userId}/discovery/{suffix}";
@@ -32,9 +29,11 @@ public class RequestTopic extends UserEntity {
     @ApiModelProperty(notes = "Topic suffix", example = "manufacturing")
     private String suffix;
 
-    @JsonDeserialize(using = CompletenessConditionDeserializer.class)
-    @ApiModelProperty(notes = "Completeness condition")
-    private CompletenessCondition completenessCondition;
+    @ApiModelProperty(notes = "Timeout value (in ms)", example = "5000")
+    private int timeout; //Milliseconds, 10 ms - 1 minute
+
+    @ApiModelProperty(notes = "Expected number of replies", example = "5")
+    private int expectedReplies; // > 0
 
 
     /**
@@ -87,28 +86,55 @@ public class RequestTopic extends UserEntity {
     }
 
     /**
-     * Returns the completeness condition of the request topic.
+     * Returns the timeout (in ms) after which the sending of replies to requests can be considered as finished.
      *
-     * @return The completeness condition
+     * @return The timeout
      */
-    public CompletenessCondition getCompletenessCondition() {
-        return completenessCondition;
+    public int getTimeout() {
+        return timeout;
     }
 
     /**
-     * Sets the completeness condition of the request topic.
+     * Sets the timeout (in ms) after which the sending of replies to requests can be considered as finished.
      *
-     * @param completenessCondition The completeness condition to set
+     * @param timeout The timeout value to set
      * @return The request topic
      */
-    public RequestTopic setCompletenessCondition(CompletenessCondition completenessCondition) {
-        //Sanity check
-        if (completenessCondition == null) {
-            throw new IllegalArgumentException("Completeness condition must not be null.");
-        }
-
-        //Set completeness condition
-        this.completenessCondition = completenessCondition;
+    public RequestTopic setTimeout(int timeout) {
+        this.timeout = timeout;
         return this;
+    }
+
+    /**
+     * Returns the expected number of replies after which the sending of replies to requests can be considered as finished.
+     *
+     * @return The expected number of replies
+     */
+    public int getExpectedReplies() {
+        return expectedReplies;
+    }
+
+    /**
+     * Sets the expected number of replies after which the sending of replies to requests can be considered as finished.
+     *
+     * @param expectedReplies The expected number of replies to set
+     * @return The request topic
+     */
+    public RequestTopic setExpectedReplies(int expectedReplies) {
+        this.expectedReplies = expectedReplies;
+        return this;
+    }
+
+    /**
+     * Returns the full, absolute request topic stopic.
+     *
+     * @return The full topic string
+     */
+    @JsonProperty("fullTopic")
+    public String getFullTopic() {
+        //Fill in pattern
+        return TOPIC_PATTERN
+                .replaceAll("\\{userId}", this.getOwner().getId())
+                .replaceAll("\\{suffix}", this.suffix);
     }
 }

@@ -71,6 +71,9 @@ app.controller('RequestTopicListController',
 
                     //Add request topic to list
                     vm.requestTopicListCtrl.pushItem(data);
+
+                    //Close modal on success
+                    $("#addRequestTopicModal").modal('toggle');
                 }
             );
 
