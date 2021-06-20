@@ -438,6 +438,24 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
+            //Request topic list
+            .when(viewPrefix + '/request-topics', {
+                category: 'request-topics',
+                templateUrl: 'templates/request-topics',
+                controller: 'RequestTopicListController as ctrl',
+                resolve: {
+                    requestTopicList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('discovery/request-topics');
+                    }],
+                    addRequestTopic: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.addOne, 'discovery/request-topic');
+                    }],
+                    deleteRequestTopic: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.deleteOne, 'discovery/request-topic');
+                    }]
+                }
+            })
+
             //Operators list
             .when(viewPrefix + '/operators', {
                 category: 'operators',

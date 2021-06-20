@@ -4,8 +4,6 @@ import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
-import de.ipvs.as.mbp.domain.discovery.location.LocationTemplate;
-import de.ipvs.as.mbp.domain.discovery.location.point.PointLocationTemplate;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.discovery.DeviceTemplateRepository;
@@ -26,7 +24,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 /**
- * REST Controller for managing {@link LocationTemplate}s.
+ * REST Controller for managing {@link DeviceTemplate}s.
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH + "/discovery/device-templates")
@@ -49,7 +47,7 @@ public class RestDeviceTemplateController {
         // Parse the access-request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
-        // Retrieve the corresponding location templates (includes access-control)
+        // Retrieve the corresponding device templates (includes access-control)
         List<DeviceTemplate> deviceTemplates = userEntityService.getPageWithAccessControlCheck(deviceTemplateRepository, ACAccessType.READ, accessRequest, pageable);
 
         // Create self link
@@ -62,10 +60,10 @@ public class RestDeviceTemplateController {
     @ApiOperation(value = "Creates a new device template.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 400, message = "Device template is invalid.")})
     public ResponseEntity<EntityModel<DeviceTemplate>> create(@RequestBody DeviceTemplate deviceTemplate) throws EntityNotFoundException {
-        //Save location template in repository
+        //Save device template in repository
         DeviceTemplate createdDeviceTemplate = userEntityService.create(deviceTemplateRepository, deviceTemplate);
 
-        //Return created location template
+        //Return created device template
         return ResponseEntity.ok(userEntityService.entityToEntityModel(createdDeviceTemplate));
     }
 
@@ -76,10 +74,10 @@ public class RestDeviceTemplateController {
         // Parse the access request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
-        //Update location template with access control check
+        //Update device template with access control check
         DeviceTemplate updatedDeviceTemplate = userEntityService.updateWithAccessControlCheck(deviceTemplateRepository, id, deviceTemplate.setId(id), accessRequest);
 
-        //Return updated location template
+        //Return updated device template
         return ResponseEntity.ok(userEntityService.entityToEntityModel(updatedDeviceTemplate));
     }
 
@@ -93,7 +91,7 @@ public class RestDeviceTemplateController {
         // Parse the access request information
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
-        //Delete the location template
+        //Delete the device template
         userEntityService.deleteWithAccessControlCheck(deviceTemplateRepository, id, accessRequest);
         return ResponseEntity.noContent().build();
     }

@@ -284,22 +284,20 @@
 
                                                     <div class="col-lg-2" style="margin-top: 8px;"
                                                          ng-show="req.type === 'location'">
-                                                        Device is...
+                                                        {{(req.operator === 'described_by') ? 'Location is...' : 'Device is...'}}
                                                     </div>
                                                     <div class="col-lg-3" ng-show="req.type === 'location'">
                                                         <div class="form-group" ng-class="{'has-error' : false }">
                                                             <div class="form-line"
                                                                  ng-class="{'focused error' : false }">
-                                                                <select class="form-control show-tick"
-                                                                        ng-model="req.operator">
+                                                                <select class="form-control show-tick" ng-model="req.operator">
                                                                     <option value="">Select ...</option>
                                                                     <option value="described_by">described by</option>
                                                                     <option value="at_location">at location</option>
                                                                     <option value="in_area">in area</option>
                                                                 </select>
                                                             </div>
-                                                            <span class="help-block"
-                                                                  ng-show="false">{{}}</span>
+                                                            <span class="help-block" ng-show="false">{{}}</span>
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-5" ng-show="req.type === 'location'">
