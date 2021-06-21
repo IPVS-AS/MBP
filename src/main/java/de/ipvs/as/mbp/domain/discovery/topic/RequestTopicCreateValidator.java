@@ -2,7 +2,7 @@ package de.ipvs.as.mbp.domain.discovery.topic;
 
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
-import de.ipvs.as.mbp.service.UserService;
+import de.ipvs.as.mbp.service.user.UserService;
 import de.ipvs.as.mbp.service.validation.ICreateValidator;
 import de.ipvs.as.mbp.util.Validation;
 import org.springframework.beans.factory.annotation.Autowired;

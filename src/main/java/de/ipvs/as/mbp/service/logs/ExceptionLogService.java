@@ -2,7 +2,7 @@ package de.ipvs.as.mbp.service.logs;
 
 import de.ipvs.as.mbp.domain.logs.ExceptionLog;
 import de.ipvs.as.mbp.repository.ExceptionLogRepository;
-import de.ipvs.as.mbp.service.UserService;
+import de.ipvs.as.mbp.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.service;
+package de.ipvs.as.mbp.service.user;
 
 import java.util.Collections;
 import java.util.Locale;
@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * Load a user from the database.
- * @author Imeri Amil
  */
 @Component
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -26,9 +25,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(final String username) {
         String lowercaseUsername = username.toLowerCase(Locale.ENGLISH);
         Optional<User> userFromDatabase = userRepository.findByUsername(lowercaseUsername);
-        return userFromDatabase.map(user -> {
-            return new org.springframework.security.core.userdetails.User(lowercaseUsername,
-                user.getPassword(), Collections.emptyList());
-        }).orElseThrow(() -> new UsernameNotFoundException("User " + lowercaseUsername + " was not found in the database"));
+        return userFromDatabase.map(user -> new org.springframework.security.core.userdetails.User(lowercaseUsername,
+            user.getPassword(), Collections.emptyList())).orElseThrow(() -> new UsernameNotFoundException("User " + lowercaseUsername + " was not found in the database"));
     }
 }

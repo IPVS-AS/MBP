@@ -7,7 +7,7 @@ import de.ipvs.as.mbp.domain.user.UserAuthData;
 import de.ipvs.as.mbp.error.*;
 import de.ipvs.as.mbp.repository.UserRepository;
 import de.ipvs.as.mbp.repository.projection.UserExcerpt;
-import de.ipvs.as.mbp.service.UserService;
+import de.ipvs.as.mbp.service.user.UserService;
 import de.ipvs.as.mbp.util.Pages;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,7 @@
 package de.ipvs.as.mbp;
 
 import de.ipvs.as.mbp.security.RestAuthenticationEntryPoint;
-import de.ipvs.as.mbp.service.UserDetailsServiceImpl;
+import de.ipvs.as.mbp.service.user.UserDetailsServiceImpl;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

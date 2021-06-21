@@ -14,7 +14,7 @@ import de.ipvs.as.mbp.error.EntityAlreadyExistsException;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.EntityStillInUseException;
 import de.ipvs.as.mbp.error.MissingOwnerPrivilegesException;
-import de.ipvs.as.mbp.service.UserService;
+import de.ipvs.as.mbp.service.user.UserService;
 import de.ipvs.as.mbp.util.C;
 import de.ipvs.as.mbp.util.Pages;
 import de.ipvs.as.mbp.domain.access_control.ACAbstractCondition;

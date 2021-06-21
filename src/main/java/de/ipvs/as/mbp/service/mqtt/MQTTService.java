@@ -3,7 +3,6 @@ package de.ipvs.as.mbp.service.mqtt;
 import de.ipvs.as.mbp.domain.settings.BrokerLocation;
 import de.ipvs.as.mbp.domain.settings.Settings;
 import de.ipvs.as.mbp.service.settings.SettingsService;
-import org.apache.commons.codec.binary.Base64;
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.json.JSONException;
@@ -22,7 +21,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -329,8 +327,7 @@ public class MQTTService {
      */
     public void requestOAuth2Token() {
         RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders httpHeaders = createHeaders(httpUser, httpPassword);
-        HttpEntity<String> request = new HttpEntity<>(httpHeaders);
+        HttpEntity<String> request = new HttpEntity<>(new HttpHeaders());
         UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(oauth2TokenUri)
                 .queryParam("grant_type", oauth2GrantType)
                 .queryParam("client-id", oauth2ClientId)
@@ -342,26 +339,5 @@ public class MQTTService {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Create a header for basic http authentication (base64 encoded).
-     *
-     * @param username is the name of the OAuth client
-     * @param password is the secrect of the OAuth client
-     * @return an instance of {@link HttpHeaders}
-     */
-    private HttpHeaders createHeaders(String username, String password) {
-        return new HttpHeaders() {
-            private static final long serialVersionUID = 5554119924235604741L;
-
-            {
-                String auth = username + ":" + password;
-                byte[] encodedAuth = Base64.encodeBase64(
-                        auth.getBytes(StandardCharsets.US_ASCII));
-                String authHeader = "Basic " + new String(encodedAuth);
-                set("Authorization", authHeader);
-            }
-        };
     }
 }

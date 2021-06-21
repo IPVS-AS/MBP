@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.service;
+package de.ipvs.as.mbp.service.user;
 
 import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.error.MBPException;
