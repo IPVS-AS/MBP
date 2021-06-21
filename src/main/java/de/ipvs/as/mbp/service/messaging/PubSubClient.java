@@ -1,5 +1,6 @@
 package de.ipvs.as.mbp.service.messaging;
 
+import de.ipvs.as.mbp.service.messaging.handler.PubSubConnectionLossHandler;
 import de.ipvs.as.mbp.service.messaging.handler.PubSubExceptionHandler;
 import de.ipvs.as.mbp.service.messaging.handler.PubSubMessageHandler;
 
@@ -12,50 +13,37 @@ import de.ipvs.as.mbp.service.messaging.handler.PubSubMessageHandler;
 public interface PubSubClient {
     /**
      * Establishes an unsecured connection to the publish-subscribe messaging broker that is available at a given
-     * host address with a given port.
+     * host address with a given port. In case there is already an active connection to the messaging broker,
+     * this connection is gracefully aborted and a new connection is established.
      *
-     * @param hostURI The host address of the messaging broker
+     * @param hostAddress The host address of the messaging broker
      * @param port    The port of the messaging broker
      */
-    void connect(String hostURI, int port);
+    void connect(String hostAddress, int port);
 
     /**
      * Establishes a secured connection to the publish-subscribe messaging broker that is available at a given
-     * host address with a given port, by using a given username and password for authentication.
+     * host address with a given port, by using a given username and password for authentication. In case there is
+     * already an active connection to the messaging broker, this connection is gracefully aborted and a new connection
+     * is established.
      *
-     * @param hostURI  The host address of the messaging broker
+     * @param hostAddress  The host address of the messaging broker
      * @param port     The port of the messaging broker
      * @param username The username to use for authentication
      * @param password The password to use for authentication
      */
-    void connectSecure(String hostURI, int port, String username, String password);
-
-    /**
-     * Gracefully disconnects from the current publish-subscribe messaging broker and establishes an unsecure connection
-     * to possibly another broker at a given host address with a given port.
-     *
-     * @param hostURI The host address of the new messaging broker
-     * @param port    The port of the new messaging broker
-     */
-    void reconnect(String hostURI, int port);
-
-    /**
-     * Gracefully disconnects from the current publish-subscribe messaging broker and establishes a secure connection
-     * to possibly another broker at a given host address with a given port, by using a given username and password
-     * for authentication.
-     *
-     * @param hostURI  The host address of the new messaging broker
-     * @param port     The port of the new messaging broker
-     * @param username The username to use for authentication
-     * @param password The password to use for authentication
-     */
-    void reconnectSecure(String hostURI, int port, String username, String password);
+    void connectSecure(String hostAddress, int port, String username, String password);
 
     /**
      * Gracefully disconnects from the publish-subscribe messaging broker in case a connection was
      * previously established.
      */
     void disconnect();
+
+    /**
+     * Disconnects and destroys the client such that all allocated resources are released.
+     */
+    void close();
 
     /**
      * Returns whether there is currently an active connection to the publish-subscribe messaging broker.
@@ -105,6 +93,14 @@ public interface PubSubClient {
      * @param exceptionHandler The exception handler to set
      */
     void setExceptionHandler(PubSubExceptionHandler exceptionHandler);
+
+    /**
+     * Registers an connection loss handler that is notified when the connection to the publish-subscribe messaging
+     * broker is lost.
+     *
+     * @param connectionLossHandler The connection loss handler to set
+     */
+    void setConnectionLossHandler(PubSubConnectionLossHandler connectionLossHandler);
 
     /**
      * Returns whether a given topic matches a given topic filter, according to the topic pattern that is used by

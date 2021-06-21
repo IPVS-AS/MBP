@@ -32,6 +32,9 @@ public class SettingsService {
     @Value("${mqtt_broker.default.host}")
     private String defaultBrokerHost;
 
+    @Value("${mqtt_broker.default.port}")
+    private String defaultBrokerPort;
+
     @Value("${git.branch}")
     private String branch;
 

@@ -1,7 +1,7 @@
 package de.ipvs.as.mbp;
 
 import de.ipvs.as.mbp.service.messaging.PubSubClient;
-import de.ipvs.as.mbp.service.messaging.impl.mqtt.MQTTClient;
+import de.ipvs.as.mbp.service.messaging.impl.mqtt.MQTTClientConnector;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -22,6 +22,6 @@ public class PubSubConfiguration {
     @Bean
     public PubSubClient pubSubClient() {
         //Use MQTT for publish-subscribe-based messaging
-        return new MQTTClient();
+        return new MQTTClientConnector();
     }
 }
