@@ -11,7 +11,7 @@ import de.ipvs.as.mbp.repository.RuleTriggerRepository;
 import de.ipvs.as.mbp.repository.TestDetailsRepository;
 import de.ipvs.as.mbp.repository.TestRepository;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
-import de.ipvs.as.mbp.service.receiver.ValueLogReceiverObserver;
+import de.ipvs.as.mbp.service.receiver.ValueLogObserver;
 import de.ipvs.as.mbp.service.testing.PropertiesService;
 import de.ipvs.as.mbp.service.testing.executor.TestExecutor;
 import de.ipvs.as.mbp.web.rest.RestDeploymentController;
@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.*;
 
 @Component
-public class TestAnalyzer implements ValueLogReceiverObserver {
+public class TestAnalyzer implements ValueLogObserver {
 
 
     @Autowired

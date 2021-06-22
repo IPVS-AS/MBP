@@ -35,17 +35,15 @@ public class PubSubService {
     //Port at which the messaging broker listens
     private static final int BROKER_PORT = 1883;
 
-    @Autowired
-    private PubSubClient pubSubClient;
-
-    @Autowired
-    private SettingsService settingsService;
+    //Auto-wired components
+    private final PubSubClient pubSubClient;
+    private final SettingsService settingsService;
 
     //Dispatcher for incoming messages
-    private MessageDispatcher messageDispatcher;
+    private final MessageDispatcher messageDispatcher;
 
     //Remembers all topics that are currently subscribed
-    private Set<String> subscribedTopicFilters;
+    private final Set<String> subscribedTopicFilters;
 
     //Stores the current OAuth2 access token
     private String oauthAccessToken;
@@ -70,9 +68,16 @@ public class PubSubService {
 
     /**
      * Creates and initializes the service for a given client that enables publish-subscribe-based messaging.
+     *
+     * @param pubSubClient    The publish-subscribe-based messaging client to use (auto-wired)
+     * @param settingsService The settings service (auto-wired)
      */
     @Autowired
-    public PubSubService() {
+    public PubSubService(PubSubClient pubSubClient, SettingsService settingsService) {
+        //Store references to components
+        this.pubSubClient = pubSubClient;
+        this.settingsService = settingsService;
+
         //Initialize sub-components and data structures
         this.messageDispatcher = new MessageDispatcher(pubSubClient);
         this.subscribedTopicFilters = new HashSet<>();
@@ -142,12 +147,41 @@ public class PubSubService {
         }
     }
 
+    /**
+     * Gracefully disconnects from the publish-subscribe-based messaging broker if a connection exists and
+     * re-establishes the connection by using the broker settings that are returned by the settings service.
+     */
+    public void reconnect() {
+        //Execute re-connect
+        connectClient();
+    }
+
+    /**
+     * Gracefully disconnects from the publish-subscribe-based messaging broker if a connection exists and
+     * re-establishes the connection by using a given broker address and broker location.
+     */
+    public void reconnect(String brokerAddress, BrokerLocation brokerLocation) {
+        //Execute re-connect
+        connectClient(brokerAddress, brokerLocation);
+    }
+
+    public boolean isConnected(){
+        return pubSubClient.isConnected();
+    }
+
     private void connectClient() {
-        //Retrieve broker location and URL from the settings service
+        //Retrieve current settings from the settings service
         Settings settings = settingsService.getSettings();
+
+        //Get broker location and address
         BrokerLocation brokerLocation = settings.getBrokerLocation();
         String brokerAddress = settings.getBrokerIPAddress();
 
+        //Establish the connection
+        connectClient(brokerAddress, brokerLocation);
+    }
+
+    private void connectClient(String brokerAddress, BrokerLocation brokerLocation) {
         //Check whether broker is local
         if (brokerLocation.equals(BrokerLocation.LOCAL) || brokerLocation.equals(BrokerLocation.LOCAL_SECURE)) {
             //Override broker address
@@ -167,7 +201,7 @@ public class PubSubService {
         }
 
         //Subscribe to all remembered topics
-        this.subscribedTopicFilters.forEach(t -> pubSubClient.subscribe(t));
+        this.subscribedTopicFilters.forEach(pubSubClient::subscribe);
     }
 
     private void addSubscription(String topicFilter) {

@@ -3,7 +3,7 @@ package de.ipvs.as.mbp.service.log_writer;
 import de.ipvs.as.mbp.domain.valueLog.ValueLog;
 import de.ipvs.as.mbp.repository.ValueLogRepository;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
-import de.ipvs.as.mbp.service.receiver.ValueLogReceiverObserver;
+import de.ipvs.as.mbp.service.receiver.ValueLogObserver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
  * into the InfluxDB time series database.
  */
 @Service
-public class ValueLogWriter implements ValueLogReceiverObserver {
+public class ValueLogWriter implements ValueLogObserver {
 
     //Repository component to use for storing value logs (autowired)
     private ValueLogRepository valueLogRepository;

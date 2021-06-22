@@ -4,13 +4,15 @@ import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.settings.BrokerLocation;
 import de.ipvs.as.mbp.domain.settings.MBPInfo;
 import de.ipvs.as.mbp.domain.settings.Settings;
+import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.repository.SettingsRepository;
 import de.ipvs.as.mbp.service.deployment.demo.DemoDeployer;
-import de.ipvs.as.mbp.service.mqtt.MQTTService;
+import de.ipvs.as.mbp.service.messaging.PubSubService;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -94,12 +96,11 @@ public class SettingsService {
         //Get previous settings
         Settings previousSettings = getSettings();
 
-        //Check whether MQTT broker settings changed
+        //Check whether the messaging broker settings changed
         if ((!previousSettings.getBrokerLocation().equals(settings.getBrokerLocation())) ||
                 (!previousSettings.getBrokerIPAddress().equals(settings.getBrokerIPAddress()))) {
-            //Broker settings changed, get MQTT service and reinitialize the connection
-            MQTTService mqttService = DynamicBeanProvider.get(MQTTService.class);
-            mqttService.initialize(settings.getBrokerLocation(), settings.getBrokerIPAddress());
+            //Broker settings changed, so re-connect the messaging client with the new settings
+            reconnectMessagingClient(settings.getBrokerIPAddress(), settings.getBrokerLocation());
         }
 
         //Check whether the demo mode setting changed
@@ -127,6 +128,27 @@ public class SettingsService {
 
         //Save settings into repository
         settingsRepository.save(settings);
+    }
+
+    /**
+     * Uses the publish-subscribe-based messaging service to re-connect the messaging client with the
+     * new broker settings. Finally, it is checked whether the new connection could be established successfully.
+     * If this is not the case, an exception is thrown.
+     *
+     * @param brokerAddress  The broker address to use
+     * @param brokerLocation The location of the broker
+     */
+    private void reconnectMessagingClient(String brokerAddress, BrokerLocation brokerLocation) {
+        //Retrieve the publish-subscribe-based messaging service
+        PubSubService pubSubService = DynamicBeanProvider.get(PubSubService.class);
+
+        //Ask the service to re-connect the messaging client with the new broker settings
+        pubSubService.reconnect(brokerAddress, brokerLocation);
+
+        //Check if the connection was established successfully
+        if (!pubSubService.isConnected()) {
+            throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to connect to the messaging broker.");
+        }
     }
 
     /**

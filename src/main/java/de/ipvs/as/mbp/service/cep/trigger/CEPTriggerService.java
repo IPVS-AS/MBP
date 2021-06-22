@@ -14,7 +14,7 @@ import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.MonitoringOperatorRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
-import de.ipvs.as.mbp.service.receiver.ValueLogReceiverObserver;
+import de.ipvs.as.mbp.service.receiver.ValueLogObserver;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringOperator;
 import de.ipvs.as.mbp.service.cep.engine.core.CEPEngine;
 import de.ipvs.as.mbp.service.cep.engine.core.events.CEPEventType;
@@ -31,7 +31,7 @@ import org.springframework.stereotype.Service;
  * and works as a observer for the received value logs.
  */
 @Service
-public class CEPTriggerService implements ValueLogReceiverObserver {
+public class CEPTriggerService implements ValueLogObserver {
 
     //The CEP engine instance to use
     private CEPEngine engine;

@@ -1,39 +1,34 @@
 package de.ipvs.as.mbp.domain.valueLog;
 
-import java.time.Instant;
-
 import de.ipvs.as.mbp.domain.access_control.IACValueLog;
-
+import de.ipvs.as.mbp.service.receiver.ValueLogReceiver;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.time.Instant;
+
 /**
- * Objects of this class represent value logs that were received by the MQTT broker and
- * are recorded by this application.
+ * Objects of this class represent value logs that were received by the {@link ValueLogReceiver} from devices via
+ * publish-subscribe-based messaging.
  */
-@ApiModel(description = "Model for value logs of components")
+@ApiModel(description = "Model for received value logs")
 public class ValueLog implements IACValueLog<Double> {
 
-    @ApiModelProperty(notes = "Receive time", example = "{\"nano\":0,\"epochSecond\":1570635657}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    @ApiModelProperty(notes = "Receiving time", example = "{\"nano\":0,\"epochSecond\":1570635657}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private Instant time;
 
-    // Default MQTT fields
-    @ApiModelProperty(notes = "MQTT Quality of Service", example = "0", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
-    private Integer qos;
-    
-    @ApiModelProperty(notes = "MQTT topic", example = "sensor/5c97dc2583aeb6078c5ab672", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    @ApiModelProperty(notes = "Topic", example = "sensor/5c97dc2583aeb6078c5ab672", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String topic;
-    
-    @ApiModelProperty(notes = "Full received MQTT message", example = "{ \"component\": \"SENSOR\", \"id\": \"5d9dfeafb1c4d32a86e5b73d\", \"value\": \"434880.000000\"}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+
+    @ApiModelProperty(notes = "Full received message", example = "{ \"component\": \"SENSOR\", \"id\": \"5d9dfeafb1c4d32a86e5b73d\", \"value\": \"434880.000000\"}", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String message;
 
-    // Fields parsed from the MQTT message
     @ApiModelProperty(notes = "ID of the pertaining component", example = "5c97dc2583aeb6078c5ab672", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String idref;
-    
+
     @ApiModelProperty(notes = "Type of the pertaining component", example = "SENSOR", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private String component; //Component type
-    
+
     @ApiModelProperty(notes = "Received value", example = "27.5", accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private double value;
 
@@ -57,26 +52,7 @@ public class ValueLog implements IACValueLog<Double> {
     }
 
     /**
-     * Returns the quality of service with which the value log was sent.
-     *
-     * @return The quality of service
-     */
-    public Integer getQos() {
-        return qos;
-    }
-
-    /**
-     * Sets the quality of service with which the value log was sent.
-     *
-     * @param qos The quality of service to set
-     */
-    public ValueLog setQos(Integer qos) {
-        this.qos = qos;
-        return this;
-    }
-
-    /**
-     * Returns the MQTT topic under which the value log was received.
+     * Returns the topic under which the value log message was published.
      *
      * @return The topic
      */
@@ -85,7 +61,7 @@ public class ValueLog implements IACValueLog<Double> {
     }
 
     /**
-     * Sets the MQTT topic under which the value log was received.
+     * Sets the topic under which the value log message was received.
      *
      * @param topic The topic to set
      */
@@ -95,7 +71,7 @@ public class ValueLog implements IACValueLog<Double> {
     }
 
     /**
-     * Returns the MQTT message that was originally received.
+     * Returns the message that was originally received.
      *
      * @return The message
      */
@@ -104,7 +80,7 @@ public class ValueLog implements IACValueLog<Double> {
     }
 
     /**
-     * Sets the MQTT message that was originally received.
+     * Sets the message that was originally received.
      *
      * @param message The message to set
      */

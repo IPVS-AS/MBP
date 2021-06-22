@@ -169,7 +169,7 @@ public class MQTTClientConnector implements PubSubClient {
     @Override
     public void publish(String topic, String message) {
         //Check if client is initialized and connected
-        requireConnected();
+        requireInitialized();
 
         //Sanity check for parameters
         if ((topic == null) || (topic.isEmpty())) {
@@ -200,7 +200,7 @@ public class MQTTClientConnector implements PubSubClient {
     @Override
     public void subscribe(String topicFilter) {
         //Check if client is initialized and connected
-        requireConnected();
+        requireInitialized();
 
         //Sanity check for topic filter
         if ((topicFilter == null) || (topicFilter.isEmpty())) {
@@ -225,7 +225,7 @@ public class MQTTClientConnector implements PubSubClient {
     @Override
     public void unsubscribe(String topicFilter) {
         //Check if client is initialized and connected
-        requireConnected();
+        requireInitialized();
 
         //Sanity check for topic filter
         if ((topicFilter == null) || (topicFilter.isEmpty())) {
@@ -320,13 +320,13 @@ public class MQTTClientConnector implements PubSubClient {
     }
 
     /**
-     * Checks whether the MQTT client is initialized and connected to the MQTT messaging broker. If this is not the
-     * case, an exception is thrown.
+     * Checks whether the MQTT client is initialized, but not necessarily connected to the MQTT messaging broker.
+     * An exception is thrown if not initialization was done.
      */
-    private void requireConnected() {
-        //Check if client is initialized and connected
-        if (!isConnected()) {
-            throw new IllegalStateException("The MQTT client is not connected.");
+    private void requireInitialized() {
+        //Check if client is initialized
+        if (this.mqttClient == null) {
+            throw new IllegalStateException("The MQTT client is not initialized.");
         }
     }
 
@@ -335,7 +335,7 @@ public class MQTTClientConnector implements PubSubClient {
      * with a given port.
      *
      * @param hostAddress The host address of the messaging broker
-     * @param port    The port of the messaging broker
+     * @param port        The port of the messaging broker
      * @throws MqttException In case of an unexpected MQTT-related failure
      */
     private void createMQTTClient(String hostAddress, int port) throws MqttException {
@@ -423,7 +423,7 @@ public class MQTTClientConnector implements PubSubClient {
         String brokerURL = String.format(BROKER_URL_TEMPLATE, hostAddress, port).toLowerCase();
 
         //Validate resulting host address
-        if (!(new UrlValidator(new String[]{"http", "https", "udp", "tcp"}).isValid(brokerURL))) {
+        if (!(new UrlValidator(new String[]{"http", "https", "udp", "tcp"}, UrlValidator.ALLOW_LOCAL_URLS).isValid(brokerURL))) {
             throw new IllegalArgumentException("Resulting MQTT broker URL is invalid.");
         }
 
