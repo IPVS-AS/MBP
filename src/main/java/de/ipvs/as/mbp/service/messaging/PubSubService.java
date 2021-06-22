@@ -5,7 +5,7 @@ import de.ipvs.as.mbp.domain.settings.Settings;
 import de.ipvs.as.mbp.service.messaging.dispatcher.MessageDispatcher;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.JSONMessageListener;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.MessageListener;
-import de.ipvs.as.mbp.service.messaging.dispatcher.listener.SubscriptionMessageListener;
+import de.ipvs.as.mbp.service.messaging.dispatcher.listener.StringMessageListener;
 import de.ipvs.as.mbp.service.settings.SettingsService;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,16 +25,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.util.*;
 
 /**
- * This service offers technology-agnostic messaging functions for interacting with publish-subscribe-based middleware
- * that is connected to the MBP.
+ * This service offers technology-agnostic messaging functions for interacting with a messaging client that connects
+ * itself to an external publish-subscribe-based messaging broker.
  */
 @Service
 @EnableScheduling
 @PropertySource(value = "classpath:application.properties")
 public class PubSubService {
-    //Port at which the messaging broker listens
-    private static final int BROKER_PORT = 1883;
-
     //Auto-wired components
     private final PubSubClient pubSubClient;
     private final SettingsService settingsService;
@@ -90,54 +87,115 @@ public class PubSubService {
     }
 
 
-    public void publish(String topic, JSONObject jsonObject) {
-        //Transform provided JSON message to string and publish it
-        publish(topic, jsonObject.toString());
-    }
-
+    /**
+     * Publishes a message, given as string, under a given topic at the messaging broker.
+     *
+     * @param topic   The topic under which the message is supposed to be published
+     * @param message The message to publish
+     */
     public void publish(String topic, String message) {
         //Publish message via the client
         pubSubClient.publish(topic, message);
     }
 
-    public void publish(Collection<String> topics, JSONObject jsonObject) {
+    /**
+     * Publishes a message, given as JSON object, under a given topic at the messaging broker.
+     *
+     * @param topic      The topic under which the message is supposed to be published
+     * @param jsonObject The message to publish
+     */
+    public void publish(String topic, JSONObject jsonObject) {
         //Transform provided JSON message to string and publish it
-        publish(topics, jsonObject.toString());
+        publish(topic, jsonObject.toString());
     }
 
+    /**
+     * Publishes a message, given as string, under several given topics at the messaging broker.
+     *
+     * @param topics  Collection of topics under which the message is supposed to be published
+     * @param message The message to publish
+     */
     public void publish(Collection<String> topics, String message) {
         //Publish the message under each provided topic individually
         topics.forEach(t -> publish(t, message));
     }
 
-    public void subscribe(String topicFilter, MessageListener listener) {
+    /**
+     * Publishes a message, given as JSON object, under several given topics at the messaging broker.
+     *
+     * @param topics     Collection of topics under which the message is supposed to be published
+     * @param jsonObject The message to publish
+     */
+    public void publish(Collection<String> topics, JSONObject jsonObject) {
+        //Transform provided JSON message to string and publish it
+        publish(topics, jsonObject.toString());
+    }
+
+    /**
+     * Subscribes a given message listener to a given topic filter at the messaging broker, such that the listener
+     * is notified when a message is published at the broker under a topic that matches the topic filter.
+     *
+     * @param topicFilter The topic filter to subscribe to
+     * @param listener    The listener to call in case a matching message is published at the broker
+     */
+    public void subscribe(String topicFilter, StringMessageListener listener) {
         //Add subscription
         addSubscription(topicFilter);
 
-        //Update dispatcher
+        //Create corresponding subscription at the dispatcher
         this.messageDispatcher.subscribe(topicFilter, listener);
     }
 
+    /**
+     * Subscribes a given JSON message listener to a given topic filter at the messaging broker, such that the listener
+     * is notified when a message is published at the broker under a topic that matches the topic filter.
+     *
+     * @param topicFilter The topic filter to subscribe to
+     * @param listener    The listener to call in case a matching message is published at the broker
+     */
     public void subscribeJSON(String topicFilter, JSONMessageListener listener) {
         //Add subscription
         addSubscription(topicFilter);
 
-        //Update dispatcher
+        //Create corresponding subscription at the dispatcher
         this.messageDispatcher.subscribeJSON(topicFilter, listener);
     }
 
-    public void subscribe(List<String> topicFilter, MessageListener listener) {
+    /**
+     * Subscribes a given message listener to several given topic filters at the messaging broker, such that the
+     * listener is notified when a message is published at the broker under a topic that matches at least one
+     * of the topic filters.
+     *
+     * @param topicFilters The topic filters to subscribe to
+     * @param listener     The listener to call in case a matching message is published at the broker
+     */
+    public void subscribe(List<String> topicFilters, StringMessageListener listener) {
         //Create one subscription for each topic filter
-        topicFilter.forEach(t -> subscribe(t, listener));
+        topicFilters.forEach(t -> subscribe(t, listener));
     }
 
-    public void subscribeJSON(List<String> topicFilter, JSONMessageListener listener) {
+    /**
+     * Subscribes a given JSON message listener to several given topic filters at the messaging broker, such that the
+     * listener is notified when a message is published at the broker under a topic that matches at least one
+     * of the topic filters.
+     *
+     * @param topicFilters The topic filters to subscribe to
+     * @param listener     The listener to call in case a matching message is published at the broker
+     */
+    public void subscribeJSON(List<String> topicFilters, JSONMessageListener listener) {
         //Create one subscription for each topic filter
-        topicFilter.forEach(t -> subscribeJSON(t, listener));
+        topicFilters.forEach(t -> subscribeJSON(t, listener));
     }
 
-    public void unsubscribe(String topicFilter, SubscriptionMessageListener listener) {
-        //Remove subscription from dispatcher
+    /**
+     * Unsubscribes a given listener from a given topic filter at the messaging broker. This only has an effect
+     * if the listener previously created an subscription at the messaging broker for exactly the same topic filter.
+     *
+     * @param topicFilter The topic filter to unsubscribe the listener from
+     * @param listener    The listener to unsubscribe
+     */
+    public void unsubscribe(String topicFilter, MessageListener listener) {
+        //Unsubscribe from dispatcher
         boolean remainingSubscriptions = this.messageDispatcher.unsubscribe(topicFilter, listener);
 
         //Check if no subscriptions remain for this topic filter
@@ -158,17 +216,30 @@ public class PubSubService {
 
     /**
      * Gracefully disconnects from the publish-subscribe-based messaging broker if a connection exists and
-     * re-establishes the connection by using a given broker address and broker location.
+     * re-establishes the connection by using a given broker location, broker address and broker port.
+     *
+     * @param brokerLocation The broker location to use
+     * @param brokerAddress  The broker address to use
+     * @param brokerPort     The broker port to use
      */
-    public void reconnect(String brokerAddress, BrokerLocation brokerLocation) {
+    public void reconnect(BrokerLocation brokerLocation, String brokerAddress, int brokerPort) {
         //Execute re-connect
-        connectClient(brokerAddress, brokerLocation);
+        connectClient(brokerLocation, brokerAddress, brokerPort);
     }
 
-    public boolean isConnected(){
+    /**
+     * Checks and returns whether the client is currently connected to the messaging broker.
+     *
+     * @return True, if the client is connected to the messaging broker; false otherwise.
+     */
+    public boolean isConnected() {
         return pubSubClient.isConnected();
     }
 
+    /**
+     * Lets the messaging client establish a connection to the messaging broker by using the broker settings
+     * as provided by the settings service.
+     */
     private void connectClient() {
         //Retrieve current settings from the settings service
         Settings settings = settingsService.getSettings();
@@ -176,12 +247,21 @@ public class PubSubService {
         //Get broker location and address
         BrokerLocation brokerLocation = settings.getBrokerLocation();
         String brokerAddress = settings.getBrokerIPAddress();
+        int brokerPort = settings.getBrokerPort();
 
         //Establish the connection
-        connectClient(brokerAddress, brokerLocation);
+        connectClient(brokerLocation, brokerAddress, brokerPort);
     }
 
-    private void connectClient(String brokerAddress, BrokerLocation brokerLocation) {
+    /**
+     * Lets the messaging client establish a connection to the messaging broker by using the giving broker location,
+     * broker address and broker port.
+     *
+     * @param brokerLocation THe broker location to use
+     * @param brokerAddress  The broker address to use
+     * @param brokerPort     The broker port to use
+     */
+    private void connectClient(BrokerLocation brokerLocation, String brokerAddress, int brokerPort) {
         //Check whether broker is local
         if (brokerLocation.equals(BrokerLocation.LOCAL) || brokerLocation.equals(BrokerLocation.LOCAL_SECURE)) {
             //Override broker address
@@ -194,16 +274,21 @@ public class PubSubService {
             requestOAuth2Token();
 
             //Establish a secure connection
-            pubSubClient.connectSecure(brokerAddress, BROKER_PORT, this.oauthAccessToken, "any");
+            pubSubClient.connectSecure(brokerAddress, brokerPort, this.oauthAccessToken, "any");
         } else {
             //Establish an unsecure connection
-            pubSubClient.connect(brokerAddress, BROKER_PORT);
+            pubSubClient.connect(brokerAddress, brokerPort);
         }
 
         //Subscribe to all remembered topics
         this.subscribedTopicFilters.forEach(pubSubClient::subscribe);
     }
 
+    /**
+     * Creates a subscription for a given topic filter at the messaging broker.
+     *
+     * @param topicFilter The topic filter to subscribe to
+     */
     private void addSubscription(String topicFilter) {
         //Remember subscription of this topic filter
         this.subscribedTopicFilters.add(topicFilter);
@@ -250,7 +335,9 @@ public class PubSubService {
         try {
             JSONObject body = new JSONObject(response.getBody());
             this.oauthAccessToken = body.getString("access_token");
-        } catch (JSONException ignored) {
+        } catch (JSONException e) {
+            //The access token request failed
+            System.err.println("Could not retrieve access token: " + e.getMessage());
         }
     }
 }

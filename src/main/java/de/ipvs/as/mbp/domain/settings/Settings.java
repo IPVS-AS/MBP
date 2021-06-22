@@ -4,8 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- * Objects of this class hold the user-defined application-wide settings as models and may be used as DTOs when
- * communicating with clients.
+ * Collection of user-defined application-wide settings.
  */
 @Document
 public class Settings {
@@ -18,6 +17,7 @@ public class Settings {
     //All setting properties with default values
     private BrokerLocation brokerLocation = BrokerLocation.LOCAL;
     private String brokerIPAddress = "127.0.0.1";
+    private int brokerPort = 1883;
     private boolean demoMode = false;
 
     /**
@@ -47,7 +47,8 @@ public class Settings {
     }
 
     /**
-     * Returns the location of the MQTT broker that is supposed to be used for the application.
+     * Returns the location of the messaging broker that is supposed to be used for publish-subscribe-based messaging
+     * within the MBP.
      *
      * @return The broker location
      */
@@ -56,7 +57,8 @@ public class Settings {
     }
 
     /**
-     * Sets the broker location of the MQTT broker that is supposed to be used for the application.
+     * Sets the location of the messaging broker that is supposed to be used for publish-subscribe-based messaging
+     * within the MBP.
      *
      * @param brokerLocation The broker location to set
      */
@@ -69,8 +71,8 @@ public class Settings {
     }
 
     /**
-     * Returns the IP address of the MQTT broker that is supposed to be used for the application. Only required if
-     * the broker location is "remote".
+     * Returns the IP address of the messaging broker that is supposed to be used for publish-subscribe-based
+     * messaging within the MBP.
      *
      * @return The IP address of the broker
      */
@@ -79,8 +81,8 @@ public class Settings {
     }
 
     /**
-     * Sets the IP address of the MQTT broker that is supposed to be used for the application. Only required if
-     * the broker location is "remote".
+     * Sets the IP address of the messaging broker that is supposed to be used for publish-subscribe-based messaging
+     * within the MBP. Only required if the broker location is "remote".
      *
      * @param brokerIPAddress The IP address of the broker to set
      */
@@ -89,12 +91,28 @@ public class Settings {
         if ((brokerIPAddress == null) || brokerIPAddress.isEmpty()) {
             throw new IllegalArgumentException("Broker IP address must not be null or empty.");
         }
-        //Check if provided ip address is of a valid format --> removed to allow host names as well
-        //if (!Validation.isValidIPAddress(brokerIPAddress)) {
-        //    throw new IllegalArgumentException("Invalid broker IP address provided.");
-        //}
 
         this.brokerIPAddress = brokerIPAddress;
+    }
+
+    /**
+     * Returns the port of the messaging broker that is supposed to be used for publish-subscribe-based messaging
+     * within the MBP.
+     *
+     * @return The broker port
+     */
+    public int getBrokerPort() {
+        return brokerPort;
+    }
+
+    /**
+     * Sets the port of the messaging broker that is supposed to be used for publish-subscribe-based messaging
+     * within the MBP.
+     *
+     * @param brokerPort The broker port to set
+     */
+    public void setBrokerPort(int brokerPort) {
+        this.brokerPort = brokerPort;
     }
 
     /**

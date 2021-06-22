@@ -98,9 +98,10 @@ public class SettingsService {
 
         //Check whether the messaging broker settings changed
         if ((!previousSettings.getBrokerLocation().equals(settings.getBrokerLocation())) ||
-                (!previousSettings.getBrokerIPAddress().equals(settings.getBrokerIPAddress()))) {
+                (!previousSettings.getBrokerIPAddress().equals(settings.getBrokerIPAddress())) ||
+                (previousSettings.getBrokerPort() != settings.getBrokerPort())) {
             //Broker settings changed, so re-connect the messaging client with the new settings
-            reconnectMessagingClient(settings.getBrokerIPAddress(), settings.getBrokerLocation());
+            reconnectMessagingClient(settings.getBrokerLocation(), settings.getBrokerIPAddress(), settings.getBrokerPort());
         }
 
         //Check whether the demo mode setting changed
@@ -135,15 +136,16 @@ public class SettingsService {
      * new broker settings. Finally, it is checked whether the new connection could be established successfully.
      * If this is not the case, an exception is thrown.
      *
-     * @param brokerAddress  The broker address to use
      * @param brokerLocation The location of the broker
+     * @param brokerAddress  The broker address to use
+     * @param brokerPort     The broker port to use
      */
-    private void reconnectMessagingClient(String brokerAddress, BrokerLocation brokerLocation) {
+    private void reconnectMessagingClient(BrokerLocation brokerLocation, String brokerAddress, int brokerPort) {
         //Retrieve the publish-subscribe-based messaging service
         PubSubService pubSubService = DynamicBeanProvider.get(PubSubService.class);
 
         //Ask the service to re-connect the messaging client with the new broker settings
-        pubSubService.reconnect(brokerAddress, brokerLocation);
+        pubSubService.reconnect(brokerLocation, brokerAddress, brokerPort);
 
         //Check if the connection was established successfully
         if (!pubSubService.isConnected()) {
@@ -163,6 +165,7 @@ public class SettingsService {
         //Set fields to default values
         defaultSettings.setBrokerLocation(BrokerLocation.valueOf(defaultBrokerLocation));
         defaultSettings.setBrokerIPAddress(defaultBrokerHost);
+        defaultSettings.setBrokerPort(Integer.parseInt(defaultBrokerPort));
 
         return defaultSettings;
     }

@@ -1,7 +1,7 @@
 package de.ipvs.as.mbp.service.messaging.handler;
 
 /**
- * Handler that is notified in case the fonnection to the external messaging broker is lost.
+ * Handler that is notified in case the connection to the external messaging broker is lost.
  */
 public interface PubSubConnectionLossHandler {
     /**

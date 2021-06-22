@@ -1,16 +1,9 @@
 package de.ipvs.as.mbp.service.messaging.dispatcher.listener;
 
 /**
- * Interface with callback that is triggered when a message is published under a topic to which the implementing
- * component subscribed itself.
+ * Marker interface for callback interfaces that are triggered when a message, which was received by the
+ * publish-subscribe-based messaging service, needs to be dispatched to a component of the MBP by the message
+ * dispatcher of the messaging service.
  */
-public interface MessageListener extends SubscriptionMessageListener {
-    /**
-     * Called when a message is published on a topic to which the implementing component subscribed itself.
-     *
-     * @param message     The published message
-     * @param topic       The topic under which the message was published
-     * @param topicFilter The topic filter that was used in the subscription
-     */
-    void onMessagePublished(String message, String topic, String topicFilter);
+public interface MessageListener {
 }
