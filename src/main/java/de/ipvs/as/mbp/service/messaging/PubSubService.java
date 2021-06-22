@@ -23,6 +23,10 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This service offers technology-agnostic messaging functions for interacting with a messaging client that connects
@@ -32,12 +36,21 @@ import java.util.*;
 @EnableScheduling
 @PropertySource(value = "classpath:application.properties")
 public class PubSubService {
+    //Delay between re-connect attempts
+    private static final int RECONNECT_DELAY = 10 * 1000;
+
     //Auto-wired components
     private final PubSubClient pubSubClient;
     private final SettingsService settingsService;
 
     //Dispatcher for incoming messages
     private final MessageDispatcher messageDispatcher;
+
+    //Thread pool for re-connects on connection los
+    private final ScheduledExecutorService threadPool = Executors.newSingleThreadScheduledExecutor();
+
+    //Scheduled future for re-connect attempts
+    private ScheduledFuture<?> reconnectAttempt;
 
     //Remembers all topics that are currently subscribed
     private final Set<String> subscribedTopicFilters;
@@ -66,7 +79,7 @@ public class PubSubService {
     /**
      * Creates and initializes the service for a given client that enables publish-subscribe-based messaging.
      *
-     * @param pubSubClient    The publish-subscribe-based messaging client to use (auto-wired)
+     * @param pubSubClient    The messaging client to use (auto-wired)
      * @param settingsService The settings service (auto-wired)
      */
     @Autowired
@@ -81,6 +94,9 @@ public class PubSubService {
 
         //Set a message handler that delegates incoming messages to the dispatcher
         pubSubClient.setMessageHandler(messageDispatcher::dispatchMessage);
+
+        //Provide the responsible method of this service as connection loss handler
+        pubSubClient.setConnectionLossHandler(this::handleConnectionLoss);
 
         //Let the client connect
         connectClient();
@@ -206,7 +222,7 @@ public class PubSubService {
     }
 
     /**
-     * Gracefully disconnects from the publish-subscribe-based messaging broker if a connection exists and
+     * Gracefully disconnects from the messaging broker if a connection exists and
      * re-establishes the connection by using the broker settings that are returned by the settings service.
      */
     public void reconnect() {
@@ -215,7 +231,7 @@ public class PubSubService {
     }
 
     /**
-     * Gracefully disconnects from the publish-subscribe-based messaging broker if a connection exists and
+     * Gracefully disconnects from the messaging broker if a connection exists and
      * re-establishes the connection by using a given broker location, broker address and broker port.
      *
      * @param brokerLocation The broker location to use
@@ -295,6 +311,33 @@ public class PubSubService {
 
         //Let the client add the subscription
         this.pubSubClient.subscribe(topicFilter);
+    }
+
+    /**
+     * Starts and manages periodic re-connect attempts when the messaging client looses its connection to the
+     * messaging broker. As soon as the connection could be established again, the re-connect attempts are terminated.
+     * Furthermore it is ensured that only at most one re-connect attempt is active at the same time.
+     *
+     * @param cause A {@link Throwable} containing the cause of the connection loss (ignored)
+     */
+    private void handleConnectionLoss(Throwable cause) {
+        //Do nothing if reconnect attempts are already active
+        if ((this.reconnectAttempt != null) && (!this.reconnectAttempt.isDone())) {
+            return;
+        }
+
+        //Schedule periodic reconnect attempts
+        this.reconnectAttempt = threadPool.scheduleWithFixedDelay(() -> {
+            //Check if client is connected now
+            if (pubSubClient.isConnected()) {
+                //Connection established, thus cancel the re-connect attempts
+                reconnectAttempt.cancel(true);
+                return;
+            }
+
+            //Try to re-connect to the messaging broker
+            connectClient();
+        }, 0, RECONNECT_DELAY, TimeUnit.MILLISECONDS);
     }
 
 

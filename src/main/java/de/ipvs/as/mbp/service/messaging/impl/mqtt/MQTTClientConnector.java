@@ -31,10 +31,10 @@ public class MQTTClientConnector implements PubSubClient {
     private MqttClient mqttClient = null;
 
     //Memory persistence to use for the client
-    private MemoryPersistence memoryPersistence;
+    private final MemoryPersistence memoryPersistence;
 
     //Callback object to use for handling asynchronous events
-    private MqttCallback mqttCallback;
+    private final MqttCallback mqttCallback;
 
     //Handlers for messages, exceptions and connection losses
     private PubSubMessageHandler messageHandler;
@@ -65,8 +65,11 @@ public class MQTTClientConnector implements PubSubClient {
             //Create or re-create the MQTT client
             createMQTTClient(hostAddress, port);
 
-            //Let the client connect to the broker
-            this.mqttClient.connect();
+            //Create connect options
+            MqttConnectOptions connectOptions = createConnectOptions();
+
+            //Let the client connect to the broker using the options
+            this.mqttClient.connect(connectOptions);
         } catch (MqttException e) {
             //Handle the exception
             handleException(e);
@@ -90,8 +93,10 @@ public class MQTTClientConnector implements PubSubClient {
             //Create or re-create the MQTT client
             createMQTTClient(hostAddress, port);
 
-            //Create connect options to enable a secure connection
-            MqttConnectOptions connectOptions = createConnectOptions(username, password);
+            //Create connect options and extend them for security parameters
+            MqttConnectOptions connectOptions = createConnectOptions();
+            connectOptions.setUserName(username);
+            connectOptions.setPassword(password.toCharArray());
 
             //Let the client connect to the broker using the options
             this.mqttClient.connect(connectOptions);
@@ -363,24 +368,20 @@ public class MQTTClientConnector implements PubSubClient {
     }
 
     /**
-     * Creates and returns MQTT connect options from a given username and password that can be used to authenticate
-     * the client at the external MQTT messaging broker. The options object as resulting from this method is required
-     * for establishing secure connections.
+     * Creates, configures and returns a new {@link MqttConnectOptions} object that contains all desired connect options
+     * for the MQTT client and can optionally be extended for further options, e.g. secure-related ones.
      *
-     * @param username The username to use for authentication
-     * @param password The password to use for authentication
-     * @return The resulting MQTT connect options
+     * @return The resulting connect options
      */
-    private MqttConnectOptions createConnectOptions(String username, String password) {
-        //Create empty connect options object
+    private MqttConnectOptions createConnectOptions() {
+        //Create new connect options object
         MqttConnectOptions connectOptions = new MqttConnectOptions();
 
-        //Adjust the options to enable authentication with username and password
+        //Set desired connect options
         connectOptions.setCleanSession(true);
-        connectOptions.setUserName(username);
-        connectOptions.setPassword(password.toCharArray());
+        connectOptions.setConnectionTimeout(5000);
 
-        //Return the resulting connect options
+        //Return finished connect options
         return connectOptions;
     }
 
@@ -397,7 +398,7 @@ public class MQTTClientConnector implements PubSubClient {
             return;
         }
 
-        //No exception handler set, print to standard output
+        //No exception handler set, thus print to standard output
         System.err.printf("%s: %s%n", exception.getClass().getSimpleName(), exception.getMessage());
         exception.printStackTrace();
     }
