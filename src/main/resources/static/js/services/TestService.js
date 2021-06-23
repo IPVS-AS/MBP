@@ -71,19 +71,14 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             return HttpService.getRequest(URL_REPORT_LIST + testId).then(function (response) {
                 const pdfList = {};
                 let pdfDetails = [];
-                if (Object.keys(response).length > 0) {
-                    angular.forEach(response, function (value, key) {
-                        pdfDetails.push({
-                            "date": Number(key),
-                            "report": value
-                        });
+                angular.forEach(response, function (value, key) {
+                    pdfDetails.push({
+                        "date": Number(key),
+                        "report": value
                     });
-                    pdfList.pdfTable = pdfDetails;
-                    return pdfList.pdfTable;
-                } else {
-                    return document.getElementById("pdfTable").innerHTML = "There is no Test Report for this Test yet.";
-
-                }
+                });
+                pdfList.pdfTable = pdfDetails;
+                return pdfList.pdfTable;
             });
         }
 
@@ -216,7 +211,6 @@ app.factory('TestService', ['HttpService', '$http', '$resource', '$q', 'ENDPOINT
             newTestObject.ruleNames = ruleNames;
 
             let parameterValues = [];
-
 
 
             try {

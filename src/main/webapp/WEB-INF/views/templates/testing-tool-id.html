@@ -94,34 +94,25 @@
 
         <!-- Test Report Card -->
         <div class="col-lg-6 side-by-side ">
-            <div class="card stats-card side-by-side-scroll" >
+            <div class="card stats-card side-by-side-scroll">
                 <div class="header">
                     <h2>
                         Test Report overview
                         <small>Overview of the generated Test Reports of the already passed tests.</small>
                     </h2>
-                    <ul class="header-dropdown m-r--5">
-                        <li>
-                            <a ng-click="ctrl.getPDFList(ctrl.test.id)" class="clickable">
-                                <i class="material-icons">refresh</i>
-                            </a>
-                        </li>
-                    </ul>
                 </div>
-                <div class="body" >
-                    <div>
-
-                        <div class="switch" style="margin-left: 0px;">
-                            Rerun Mode:
-                            <label>
-                                <input id="ReuseSwitch" type="checkbox" ng-model="config.useNewData"
-                                       ng-click="ctrl.editConfig(config.useNewData)">
-                                <span class="lever"></span>
-                            </label>
-                            <hr>
-                        </div>
+                <div class="body">
+                    <div class="switch" style="margin-left: 0px;">
+                        Rerun Mode:
+                        <label>
+                            <input id="ReuseSwitch" type="checkbox" ng-model="config.useNewData"
+                                   ng-click="ctrl.editConfig(config.useNewData)">
+                            <span class="lever"></span>
+                        </label>
+                        <hr>
                     </div>
-                    <div id="pdfTable" >
+                    
+                    <div id="pdfTable">
                         <table class="table table-hover">
                             <thead>
                             <tr>
@@ -136,7 +127,8 @@
                             <tr ng-repeat="testReport in pdfTable | orderBy:'-date'">
                                 <td>{{testReport.date * 1000 | date:'dd.MM.yyyy HH:mm:ss'}}</td>
                                 <td>
-                                    <form ng-submit="testReportCtrl.openReport(testReport)" style="display: inline-block">
+                                    <form ng-submit="testReportCtrl.openReport(testReport)"
+                                          style="display: inline-block">
                                         <button type="submit" class="btn bg-cyan waves-effect">
                                             <span>Open Report</span>
                                         </button>
@@ -164,13 +156,10 @@
                                     </form>
                                 </td>
                             </tr>
-                            </tbody>
-                            <tfoot>
-                            <tr>
-                                <td class="text-center" st-pagination="" st-items-by-page="10" colspan="4"></td>
+                            <tr ng-show="pdfTable.length === 0">
+                                <td>There is no Test Report for this Test yet.</td>
                             </tr>
-
-                            </tfoot>
+                            </tbody>
                         </table>
                     </div>
 
@@ -875,7 +864,8 @@
                                 </table>
                             </div>
                         </div>
-                        <div class="card deployment-card" ng-if="realSensorList.length > 0 || simulatedSensorList.length > 0">
+                        <div class="card deployment-card"
+                             ng-if="realSensorList.length > 0 || simulatedSensorList.length > 0">
                             <div class="header">
                                 <i class="material-icons" style="position: absolute">show_chart</i>
                                 <h2 style="margin-left: 35px;">
