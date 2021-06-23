@@ -14,7 +14,7 @@ import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.repository.projection.ComponentExcerpt;
-import de.ipvs.as.mbp.service.UserEntityService;
+import de.ipvs.as.mbp.service.user.UserEntityService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

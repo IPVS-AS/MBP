@@ -13,7 +13,7 @@ import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.MonitoringOperatorRepository;
 import de.ipvs.as.mbp.repository.projection.MonitoringOperatorExcerpt;
-import de.ipvs.as.mbp.service.UserEntityService;
+import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.domain.monitoring.MonitoringOperator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

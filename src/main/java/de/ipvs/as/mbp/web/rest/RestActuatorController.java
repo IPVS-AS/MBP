@@ -11,7 +11,7 @@ import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.OperatorRepository;
-import de.ipvs.as.mbp.service.UserEntityService;
+import de.ipvs.as.mbp.service.user.UserEntityService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;

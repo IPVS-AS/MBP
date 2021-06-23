@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.service;
+package de.ipvs.as.mbp.service.user;
 
 import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.error.MBPException;
@@ -34,15 +34,13 @@ public class UserService {
     }
 
     public User getForId(String id) {
-        return userRepository.findById(id).orElseThrow(
-                () -> new MBPException(HttpStatus.NOT_FOUND,
-                        "User with id '" + id + "' does not exist!"));
+        return userRepository.findById(id).orElseThrow(() -> new MBPException(HttpStatus.NOT_FOUND, "User with ID '" +
+                id + "' does not exist!"));
     }
 
     public User getForUsername(String username) {
-        return userRepository.findByUsername(username).orElseThrow(
-                () -> new MBPException(HttpStatus.NOT_FOUND,
-                        "User with username '" + username + "' does not exist!"));
+        return userRepository.findByUsername(username).orElseThrow(() -> new MBPException(HttpStatus.NOT_FOUND,
+                "User with username '" + username + "' does not exist!"));
     }
 
     public User create(User user) {

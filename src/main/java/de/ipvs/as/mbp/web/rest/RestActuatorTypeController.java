@@ -10,7 +10,7 @@ import de.ipvs.as.mbp.error.EntityAlreadyExistsException;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.ActuatorTypeRepository;
-import de.ipvs.as.mbp.service.UserEntityService;
+import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.entity_type.ActuatorType;

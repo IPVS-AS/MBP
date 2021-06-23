@@ -14,7 +14,7 @@ import de.ipvs.as.mbp.error.DeploymentException;
 import de.ipvs.as.mbp.error.EnvironmentModelParseException;
 import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.repository.*;
-import de.ipvs.as.mbp.service.UserService;
+import de.ipvs.as.mbp.service.user.UserService;
 import de.ipvs.as.mbp.service.deployment.ComponentState;
 import de.ipvs.as.mbp.service.deployment.DeployerDispatcher;
 import de.ipvs.as.mbp.service.deployment.IDeployer;
