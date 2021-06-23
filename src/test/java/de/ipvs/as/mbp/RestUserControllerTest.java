@@ -9,6 +9,7 @@ import de.ipvs.as.mbp.repository.UserRepository;
 import de.ipvs.as.mbp.service.user.UserService;
 import de.ipvs.as.mbp.service.user.UserSessionService;
 import de.ipvs.as.mbp.util.BaseIntegrationTest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,12 +23,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class RestUserControllerTest  extends BaseIntegrationTest {
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -38,17 +33,9 @@ public class RestUserControllerTest  extends BaseIntegrationTest {
 
     @Test
     void retrieveAllUsers_returnOk() throws Exception {
-        UserLoginData adminLogin = new UserLoginData("admin", "12345");
+        Cookie adminCookie = this.getSessionCookieForAdmin();
 
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/users/login")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(adminLogin)))
-                .andDo(print())
-                .andExpect(status().isOk()).andReturn();
-
-        Cookie adminCookie = result.getResponse().getCookie("user_session");
-
-        result = mockMvc.perform(get(RestConfiguration.BASE_PATH + "/users")
+        MvcResult result = mockMvc.perform(get(RestConfiguration.BASE_PATH + "/users")
                 .contentType("application/json")
                 .cookie(adminCookie))
                 .andDo(print())
@@ -65,17 +52,9 @@ public class RestUserControllerTest  extends BaseIntegrationTest {
 
     @Test
     void getUserEntityForUsername_returnOk() throws Exception {
-        UserLoginData adminLogin = new UserLoginData("admin", "12345");
+        Cookie adminCookie = this.getSessionCookieForAdmin();
 
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/users/login")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(adminLogin)))
-                .andDo(print())
-                .andExpect(status().isOk()).andReturn();
-
-        Cookie adminCookie = result.getResponse().getCookie("user_session");
-
-        result = mockMvc.perform(get(RestConfiguration.BASE_PATH + "/users")
+        MvcResult result = mockMvc.perform(get(RestConfiguration.BASE_PATH + "/users")
                 .contentType("application/json")
                 .queryParam("username", "admin")
                 .cookie(adminCookie))

@@ -14,6 +14,10 @@ public class IoTDeviceContainer extends GenericContainer<IoTDeviceContainer> {
         this.withExposedPorts(22);
     }
 
+    public Integer getSshPort() {
+        return this.getMappedPort(22);
+    }
+
     public Shell openSshShell() throws Exception {
         if (!this.isRunning()) {
             this.start();

@@ -27,12 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class BasicTest extends BaseIntegrationTest {
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
     private DeviceRepository deviceRepository;
 
     @Autowired
@@ -60,23 +54,12 @@ public class BasicTest extends BaseIntegrationTest {
         requestDto.setIpAddress("127.0.0.1");
         requestDto.setComponentType("Computer");
 
-        UserLoginData userLoginData = new UserLoginData();
-        userLoginData.setUsername("admin");
-        userLoginData.setPassword("12345");
-
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/users/login")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(userLoginData))
-                .characterEncoding("utf-8"))
-                .andDo(print())
-                .andExpect(status().isOk()).andReturn();
-
-        Cookie cookie = result.getResponse().getCookie("user_session");
+        Cookie cookie = getSessionCookieForAdmin();
         
         // .header("Authorization", "Basic YWRtaW46MTIzNDU=")
         // .header("X-MBP-Access-Request", "requesting-entity-firstname=admin;;requesting-entity-lastname=admin;;requesting-entity-username=admin")
 
-        result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/devices")
+        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/devices")
                 .cookie(cookie)
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(requestDto))

@@ -28,12 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class RestDeviceControllerTest extends BaseIntegrationTest {
 
     @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
     private DeviceRepository deviceRepository;
 
     @Autowired
@@ -49,17 +43,7 @@ public class RestDeviceControllerTest extends BaseIntegrationTest {
 
     @BeforeEach
     void initializeLogins() throws Exception {
-        UserLoginData adminLogin = new UserLoginData("admin", "12345");
-
-        // .header("X-MBP-Access-Request", "requesting-entity-firstname=admin;;requesting-entity-lastname=admin;;requesting-entity-username=admin")
-
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/users/login")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(adminLogin)))
-                .andDo(print())
-                .andExpect(status().isOk()).andReturn();
-
-        adminCookie = result.getResponse().getCookie("user_session");
+        adminCookie = this.getSessionCookieForAdmin();
     }
 
     @Test
