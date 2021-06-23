@@ -15,8 +15,6 @@ import java.util.Map;
  */
 @Component
 public class SSHSessionPool {
-    //Port of the remote devices to use for SSH connections
-    private static final int SSH_PORT = 22;
 
     //Map (device id -> SSH session) of sessions
     private Map<String, SSHSession> sessionsMap;
@@ -124,11 +122,12 @@ public class SSHSessionPool {
         }
 
         //Retrieve ssh connection parameter
-        String url = device.getIpAddress();
+        String hostAddress = device.getIpAddress();
         String username = device.getUsername();
+        int port = device.getPort();
 
         //Create new ssh session and connect
-        SSHSession sshSession = new SSHSession(url, SSH_PORT, username, password, privateKey);
+        SSHSession sshSession = new SSHSession(hostAddress, port, username, password, privateKey);
         sshSession.connect();
 
         return sshSession;

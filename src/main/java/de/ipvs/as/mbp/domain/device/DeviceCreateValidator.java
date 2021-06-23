@@ -46,6 +46,11 @@ public class DeviceCreateValidator implements ICreateValidator<Device> {
             exception.addInvalidField("ipAddress", "The IP address is invalid.");
         }
 
+        int port = entity.getPort();
+        if(port < 1 || port > 65535) {
+            exception.addInvalidField("port", "Invalid port. The port must be in between 1 and 65535");
+        }
+
         //Check user name
         if (Validation.isNullOrEmpty(entity.getUsername())) {
             exception.addInvalidField("username", "The user name must not be empty.");
