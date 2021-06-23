@@ -139,14 +139,6 @@ public class RestDeviceController {
         //Get affected device with access control check
         Device device = userEntityService.getForIdWithAccessControlCheck(deviceRepository, id, ACAccessType.READ, accessRequest);
 
-        device.setName(requestDto.getName())
-                .setComponentType(requestDto.getComponentType())
-                .setIpAddress(requestDto.getIpAddress())
-                .setUsername(requestDto.getUsername())
-                .setPassword(requestDto.getPassword() == null ? null : requestDto.getPassword())
-                .setKeyPair(requestDto.getKeyPairId() == null ? null : userEntityService.getForId(keyPairRepository, requestDto.getKeyPairId()))
-                .setAccessControlPolicyIds(requestDto.getAccessControlPolicyIds());
-
         //Check name for update
         if (Validation.isNullOrEmpty(requestDto.getName())) device.setName(requestDto.getName());
 
