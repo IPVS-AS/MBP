@@ -1,19 +1,17 @@
-/* global app */
-
 /**
  * Controller for the device list page.
  */
 app.controller('DeviceListController',
-    ['$scope', '$controller', '$interval', 'DeviceService', 'DefaultComponentsService', 'deviceList', 'addDevice', 'deleteDevice', 'keyPairList', 'accessControlPolicyList',
-        'deviceTypesList', 'NotificationService',
-        function ($scope, $controller, $interval, DeviceService, DefaultComponentsService, deviceList, addDevice, deleteDevice, keyPairList, accessControlPolicyList,
-                  deviceTypesList, NotificationService) {
+    ['$scope', '$controller', '$interval', 'DeviceService', 'DefaultComponentsService', 'deviceList', 'addDevice',
+        'updateDevice', 'deleteDevice', 'keyPairList', 'accessControlPolicyList', 'deviceTypesList',
+        'NotificationService',
+        function ($scope, $controller, $interval, DeviceService, DefaultComponentsService, deviceList, addDevice,
+                  updateDevice, deleteDevice, keyPairList, accessControlPolicyList, deviceTypesList,
+                  NotificationService) {
             let vm = this;
-
 
             //Set field for password visibility
             vm.hidePassword = true;
-
 
             /**
              * Initializing function, sets up basic things.
@@ -47,9 +45,8 @@ app.controller('DeviceListController',
                 });
             })();
 
-            //Extend each device in deviceList for the formatted mac address, a state and a reload function
+            //Extend each device in deviceList for a state and a reload function
             for (let i in deviceList) {
-                deviceList[i].formattedMacAddress = DeviceService.formatMacAddress(deviceList[i].macAddress);
                 deviceList[i].state = 'LOADING';
                 deviceList[i].reloadState = createReloadStateFunction(deviceList[i].id);
             }
@@ -110,6 +107,51 @@ app.controller('DeviceListController',
                         cancelButtonText: 'Cancel'
                     });
                 });
+            }
+
+            /**
+             * [Public]
+             * Prepares the editing of a certain device, given by its ID.
+             *
+             * @param deviceId The ID of the device
+             */
+            function editDevice(deviceId) {
+                //Find the device template with this ID
+                let device = null;
+                for (let i = 0; i < deviceList.length; i++) {
+                    if (deviceId === deviceList[i].id) {
+                        //Found, remember device
+                        device = deviceList[i];
+                        break;
+                    }
+                }
+
+                //Sanity check
+                if (device == null) return;
+
+                //Set copy of location template
+                vm.addDeviceCtrl.item = Object.assign({}, device)
+            }
+
+            /**
+             * [Public]
+             * Saves the currently modified device, either by creating a new one or by updating an
+             * existing one.
+             */
+            function saveDevice() {
+                //Check if device ID is set
+                if (vm.addDeviceCtrl.item.hasOwnProperty("id") && (vm.addDeviceCtrl.item.id.length > 0)) {
+                    //Copy device data to update controller
+                    vm.updateDeviceCtrl.item = vm.addDeviceCtrl.item;
+
+                    //Update existing device
+                    vm.updateDeviceCtrl.updateItem().then((data) => {
+                        $scope.$apply();
+                    });
+                } else {
+                    //Create new device
+                    vm.addDeviceCtrl.addItem();
+                }
             }
 
             /**
@@ -200,10 +242,22 @@ app.controller('DeviceListController',
                                 deviceObject[property] = data[property];
                             }
                         }
-                        delete deviceObject.formattedMacAddress;
-                        deviceObject.macAddress = DeviceService.normalizeMacAddress(data.formattedMacAddress);
 
                         return addDevice(deviceObject);
+                    }
+                }),
+                updateDeviceCtrl: $controller('UpdateItemController as updateDeviceCtrl', {
+                    $scope: $scope,
+                    updateItem: function (data) {
+                        let deviceObject = {};
+
+                        for (let property in data) {
+                            if (data.hasOwnProperty(property)) {
+                                deviceObject[property] = data[property];
+                            }
+                        }
+
+                        return updateDevice(deviceObject);
                     }
                 }),
                 deleteDeviceCtrl: $controller('DeleteItemController as deleteDeviceCtrl', {
@@ -213,7 +267,9 @@ app.controller('DeviceListController',
                 }),
                 accessControlPolicyList: accessControlPolicyList,
                 deviceTypesList: deviceTypesList,
-                keyPairList: keyPairList
+                keyPairList: keyPairList,
+                editDevice: editDevice,
+                saveDevice: saveDevice
             });
 
             // $watch 'addItem' result and add to 'itemList'
@@ -234,9 +290,6 @@ app.controller('DeviceListController',
                         device.state = 'LOADING';
                         device.reloadState = createReloadStateFunction(device.id);
 
-                        //Add formatted MAC address
-                        device.formattedMacAddress = DeviceService.formatMacAddress(device.macAddress);
-
                         //Add device to device list
                         vm.deviceListCtrl.pushItem(device);
                         $scope.simExists = DefaultComponentsService.getListWoSimulators(deviceList);
@@ -246,6 +299,25 @@ app.controller('DeviceListController',
                     }
                 }
             );
+
+            //Watch controller result of device updates
+            $scope.$watch(() => vm.updateDeviceCtrl.result, (device) => {
+                //Sanity check
+                if (!device) return;
+
+                //Close modal on success
+                $("#addDeviceModal").modal('toggle');
+
+                //Add state and reload function to the new object
+                device.state = 'LOADING';
+                device.reloadState = createReloadStateFunction(device.id);
+
+                //Update device list
+                vm.deviceListCtrl.updateItem(device);
+
+                //Retrieve state of the new device
+                getDeviceState(device.id);
+            });
 
             // $watch 'deleteItem' result and remove from 'itemList'
             $scope.$watch(

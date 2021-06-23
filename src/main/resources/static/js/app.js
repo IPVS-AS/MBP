@@ -356,6 +356,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     addDevice: ['HttpService', function (HttpService) {
                         return angular.bind(this, HttpService.addOne, 'devices');
                     }],
+                    updateDevice: ['HttpService', function (HttpService) {
+                        return angular.bind(this, HttpService.updateOne, 'devices');
+                    }],
                     deleteDevice: ['HttpService', function (HttpService) {
                         return angular.bind(this, HttpService.deleteOne, 'devices');
                     }],
