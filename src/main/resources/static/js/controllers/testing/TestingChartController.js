@@ -122,6 +122,11 @@ app.controller('TestingChartController',
             function getPDFList() {
                 vm.pdfDetails = [];
                 TestService.getPDFList(COMPONENT_ID).then(function (response) {
+                    if(response.length > 0){
+                        document.getElementById("ReuseSwitch").removeAttribute('disabled');
+                    } else {
+                        document.getElementById("ReuseSwitch").disabled = true;
+                    }
                     $scope.pdfTable = response;
                 });
             }

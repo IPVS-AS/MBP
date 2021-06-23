@@ -49,7 +49,6 @@ app.controller('TestingDetailsController',
                 getTestSensorList();
                 getRealSensorList();
 
-
                 //Refresh test select picker when the modal is opened
                 $('.modal').on('shown.bs.modal', function () {
                     $('.selectpicker').selectpicker('refresh');
@@ -170,6 +169,11 @@ app.controller('TestingDetailsController',
             function getPDFList() {
                 vm.pdfDetails = [];
                 TestService.getPDFList(COMPONENT_ID).then(function (response) {
+                    if(response.length > 0){
+                        document.getElementById("ReuseSwitch").removeAttribute('disabled');
+                    } else {
+                        document.getElementById("ReuseSwitch").disabled = true;
+                    }
                     $scope.pdfTable = response;
                 });
             }
@@ -208,8 +212,6 @@ app.controller('TestingDetailsController',
                     getTestSensorList();
                     $scope.useNewDataSuccess = useNewData;
                 });
-
-
             }
 
 
@@ -277,6 +279,8 @@ app.controller('TestingDetailsController',
                         //TestReportService.generateReport(blob);
                     });
             }
+
+
 
 
             /**
