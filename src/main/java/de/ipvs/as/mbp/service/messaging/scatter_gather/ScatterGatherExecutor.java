@@ -12,6 +12,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ScatterGatherExecutor {
 
+    //TODO new class for request topic (ScatterGatherRequest) that consists out of topic, timeout and replies
+    //TODO Check if AtomicReference is needed everywhere
+    //TODO make sure unsubscription of topic works
+    //TODO Use List instead of set (removes duplicates automatically :-( )
+    //TODO Implement for JSON as well
+    //TODO Better alternative for Thread.sleep
+
     private final PubSubService pubSubService;
 
     public ScatterGatherExecutor(PubSubService pubSubService) {
