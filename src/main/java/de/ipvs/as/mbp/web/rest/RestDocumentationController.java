@@ -8,7 +8,7 @@ import java.util.Arrays;
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.SwaggerConfiguration;
 import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
-import de.ipvs.as.mbp.service.UserEntityService;
+import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.web.rest.response.DocumentationMetaData;
 import de.ipvs.as.mbp.web.rest.response.DocumentationURL;
 import org.springframework.beans.factory.annotation.Autowired;
