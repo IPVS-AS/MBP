@@ -1,9 +1,13 @@
 package de.ipvs.as.mbp.service.settings;
 
+import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.settings.BrokerLocation;
 import de.ipvs.as.mbp.domain.settings.MBPInfo;
 import de.ipvs.as.mbp.domain.settings.Settings;
 import de.ipvs.as.mbp.repository.SettingsRepository;
+import de.ipvs.as.mbp.service.deployment.demo.DemoDeployer;
+import de.ipvs.as.mbp.service.mqtt.MQTTService;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.DependsOn;
@@ -78,9 +82,39 @@ public class SettingsService {
     }
 
     /**
-     * Saves all settings that are provided as part of the settings object persistently in the MongoDB repository.
+     * Saves all settings that are provided as part of the settings object persistently in the MongoDB repository
+     * and updates affected components accordingly.
      *
-     * @param settings The settings to save
+     * @param settings The new settings
+     */
+    public void updateSettings(Settings settings) throws MqttException {
+        //Get previous settings
+        Settings previousSettings = getSettings();
+
+        //Check whether MQTT broker settings changed
+        if ((!previousSettings.getBrokerLocation().equals(settings.getBrokerLocation())) ||
+                (!previousSettings.getBrokerIPAddress().equals(settings.getBrokerIPAddress()))) {
+            //Broker settings changed, get MQTT service and reinitialize the connection
+            MQTTService mqttService = DynamicBeanProvider.get(MQTTService.class);
+            mqttService.initialize(settings.getBrokerLocation(), settings.getBrokerIPAddress());
+        }
+
+        //Check whether the demo mode setting changed
+        if (!previousSettings.isDemoMode() == settings.isDemoMode()) {
+            //Retrieve demo deployer component bean
+            DemoDeployer demoDeployer = DynamicBeanProvider.get(DemoDeployer.class);
+            demoDeployer.resetDeployedComponents();
+        }
+
+        //Everything worked, thus save settings to repository
+        saveSettings(settings);
+    }
+
+    /**
+     * Saves all settings that are provided as part of the settings object persistently in the MongoDB repository
+     * without updating possibly affected components.
+     *
+     * @param settings The new settings
      */
     public void saveSettings(Settings settings) {
         //Sanity check

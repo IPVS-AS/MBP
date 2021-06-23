@@ -3,20 +3,19 @@ package de.ipvs.as.mbp.web.rest;
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.constants.Constants;
 import de.ipvs.as.mbp.domain.user.User;
-import de.ipvs.as.mbp.domain.user.UserAuthData;
+import de.ipvs.as.mbp.domain.user.UserLoginData;
 import de.ipvs.as.mbp.error.*;
 import de.ipvs.as.mbp.repository.UserRepository;
 import de.ipvs.as.mbp.repository.projection.UserExcerpt;
-import de.ipvs.as.mbp.service.UserService;
+import de.ipvs.as.mbp.service.user.UserService;
+import de.ipvs.as.mbp.service.user.UserSessionService;
 import de.ipvs.as.mbp.util.Pages;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -40,6 +39,9 @@ public class RestUserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserSessionService userSessionService;
 
 
     @GetMapping(produces = "application/hal+json")
@@ -89,14 +91,14 @@ public class RestUserController {
         return query.isEmpty() ? ResponseEntity.ok(new ArrayList<>()) : ResponseEntity.ok(userRepository.findByUsernameContains(query.trim()));
     }
 
-    @PostMapping(value = "/authenticate")
-    @ApiOperation(value = "Authenticates a user", produces = "application/hal+json")
+    @PostMapping(value = "/login")
+    @ApiOperation(value = "Performs login for a user", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"),
             @ApiResponse(code = 403, message = "Invalid password!"),
             @ApiResponse(code = 404, message = "User or requesting user not found!")})
-    public ResponseEntity<User> authenticate(@RequestBody @ApiParam(value = "Authentication data", required = true) UserAuthData authData) throws InvalidPasswordException, UserNotLoginableException {
+    public ResponseEntity<User> login(@RequestBody @ApiParam(value = "Login data", required = true) UserLoginData loginData) throws InvalidPasswordException, UserNotLoginableException {
         // Retrieve user from database
-        User user = userService.getForUsername(authData.getUsername().toLowerCase(Locale.ENGLISH));
+        User user = userService.getForUsername(loginData.getUsername().toLowerCase(Locale.ENGLISH));
 
         //Check if login into user is possible
         if (!user.isLoginable()) {
@@ -104,11 +106,15 @@ public class RestUserController {
         }
 
         // Check password
-        if (userService.checkPassword(user.getId(), authData.getPassword())) {
-            return ResponseEntity.ok(user);
-        } else {
+        if (!userService.checkPassword(user.getId(), loginData.getPassword())) {
             throw new InvalidPasswordException();
         }
+
+        //Create new session and retrieve corresponding cookie
+        ResponseCookie sessionCookie = userSessionService.createSessionCookie(user);
+
+        //Build response from cookie
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, sessionCookie.toString()).body(user);
     }
 
     @DeleteMapping(path = "/{userId}")

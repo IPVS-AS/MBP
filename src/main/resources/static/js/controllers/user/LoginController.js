@@ -1,36 +1,29 @@
-app.controller('LoginController', ['$scope', '$location', '$rootScope', 'AuthenticationService', 'NotificationService',
-    function ($scope, $location, $rootScope, AuthenticationService, NotificationService) {
+app.controller('LoginController', ['$scope', '$location', 'UserService',
+    function ($scope, $location, UserService) {
         let vm = this;
-
-        vm.dataLoading = false;
 
         /**
          * Initializing function, sets up basic things.
          */
         (function initController() {
             //Reset login status
-            AuthenticationService.ClearCredentials();
-            AuthenticationService.Logout();
+            UserService.logoutUser();
+
+            //Hide loader
+            vm.dataLoading = false;
         })();
 
         /**
          * [Public]
-         * Performs user login with the form data from the template.
+         * Performs a server request in order to login a user with the entered form data.
          */
         function login() {
+            //Show loader
             vm.dataLoading = true;
-            AuthenticationService.Login(vm.username, vm.password).then(function (userData) {
-                //Sanitize user data
-                userData = userData || [];
 
-                //Enable authorization locally
-                AuthenticationService.SetCredentials(vm.username, vm.password, userData);
-
-                //Redirect
-                $location.path('/');
-            }, function (response) {
-
-            }).then(function () {
+            //Perform login
+            UserService.loginUser(vm.username, vm.password).always(function () {
+                //Hide loader
                 vm.dataLoading = false;
                 $scope.$apply();
             });

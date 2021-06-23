@@ -4,7 +4,7 @@ import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.logs.ExceptionLog;
 import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
 import de.ipvs.as.mbp.repository.ExceptionLogRepository;
-import de.ipvs.as.mbp.service.UserService;
+import de.ipvs.as.mbp.service.user.UserService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
