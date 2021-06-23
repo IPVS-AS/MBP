@@ -288,7 +288,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
                 triggerID.add(rule.getTrigger().getId());
             }
 
-            testValues = extractTriggerVals(testValues, startTime, endTime, ruleNames, triggerID);
+            testValues = extractTriggerValues(testValues, startTime, endTime, ruleNames, triggerID);
         }
 
 
@@ -296,7 +296,7 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
     }
 
     /**
-     * Extract the correct trigger values that occurred between the start and end times of the test.
+     * Extract the correct trigger values saved in the database (Testing) for the rules included in a specific test that occurred between the start and end times.
      *
      * @param testValues list of all
      * @param startTime of the executed test
@@ -305,20 +305,22 @@ public class TestAnalyzer implements ValueLogReceiverObserver {
      * @param triggerID trigger id's of the rules to be observed
      * @return list of trigger values
      */
-    private  Map<String, List<Double>> extractTriggerVals(Map<String, List<Double>> testValues, Integer startTime, long endTime, List<String> ruleNames, List<String> triggerID) {
+    private  Map<String, List<Double>> extractTriggerValues(Map<String, List<Double>> testValues, Integer startTime, long endTime, List<String> ruleNames, List<String> triggerID) {
         // Get all trigger values for  the test rules between start and end time
         for (int i = 0; i < ruleNames.size(); i++) {
             List<Double> values = new ArrayList<>();
             String ruleName = ruleNames.get(i);
             if (testRepo.findAllByTriggerId(triggerID.get(i)) != null) {
+                // Only check the list of trigger values of the triggers included in the test
                 List<Testing> test = testRepo.findAllByTriggerId(triggerID.get(i));
                 for (Testing testing : test) {
                     if (testing.getRule().contains(ruleName)) {
-                        LinkedHashMap<String, Double> timeTiggerValue = (LinkedHashMap<String, Double>) testing.getOutput().getOutputMap().get("event_0");
-                        LinkedHashMap<String, Long> timeTiggerValMp = (LinkedHashMap<String, Long>) testing.getOutput().getOutputMap().get("event_0");
-                        long timeTiggerVal = timeTiggerValMp.get("time");
-                        if (timeTiggerVal >= startTime && timeTiggerVal <= endTime) {
-                            values.add(timeTiggerValue.get("value"));
+                        LinkedHashMap<String, Double> timeTriggerValue = (LinkedHashMap<String, Double>) testing.getOutput().getOutputMap().get("event_0");
+                        LinkedHashMap<String, Long> timeTriggerValMap = (LinkedHashMap<String, Long>) testing.getOutput().getOutputMap().get("event_0");
+                        long timeTriggerVal = timeTriggerValMap.get("time");
+                        // check if trigger value occurred during the test
+                        if (timeTriggerVal >= startTime && timeTriggerVal <= endTime) {
+                            values.add(timeTriggerValue.get("value"));
                         }
                     }
                 }

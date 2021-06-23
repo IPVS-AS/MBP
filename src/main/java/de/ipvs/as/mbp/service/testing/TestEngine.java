@@ -58,6 +58,12 @@ public class TestEngine {
         return pdfList;
     }
 
+    /**
+     * Returns a list of the generated sensor values of a specific test execution with a specific format to display them in the Highchart.
+     *
+     * @param reportId of the report for which the sensor values should be returned
+     * @return list of sensor values for all sensors within the test report
+     */
     public Map<String, ArrayList> getSimulationValues(String reportId) {
         Map<String, ArrayList> simulationValues = new HashMap<>();
 
