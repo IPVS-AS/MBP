@@ -124,7 +124,7 @@ public class RestDeviceController {
     @ApiResponses({ @ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 409, message = "Device already exists!") })
     public ResponseEntity<EntityModel<Device>> create(
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable,
-    		@RequestBody @Valid DeviceDTO requestDto) throws EntityAlreadyExistsException, EntityNotFoundException {
+    		@RequestBody DeviceDTO requestDto) throws EntityAlreadyExistsException, EntityNotFoundException {
     	// Create device from request DTO
     	Device device = (Device) new Device()
     			.setName(requestDto.getName())
