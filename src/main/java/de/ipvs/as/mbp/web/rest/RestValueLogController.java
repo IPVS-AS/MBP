@@ -17,7 +17,7 @@ import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.repository.ValueLogRepository;
 import de.ipvs.as.mbp.service.UnitConverterService;
-import de.ipvs.as.mbp.service.UserEntityService;
+import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.service.access_control.ACEffectService;
 import de.ipvs.as.mbp.util.S;
 import de.ipvs.as.mbp.web.rest.helper.MonitoringHelper;

@@ -5,7 +5,7 @@ import de.ipvs.as.mbp.domain.settings.MBPInfo;
 import de.ipvs.as.mbp.domain.settings.Settings;
 import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
-import de.ipvs.as.mbp.service.UserEntityService;
+import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.service.settings.DefaultOperatorService;
 import de.ipvs.as.mbp.service.settings.SettingsService;
 import de.ipvs.as.mbp.service.testing.DefaultTestingComponents;
