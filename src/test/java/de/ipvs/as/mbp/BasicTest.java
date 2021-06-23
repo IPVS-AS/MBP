@@ -1,15 +1,19 @@
 package de.ipvs.as.mbp;
 
+import javax.servlet.http.Cookie;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ipvs.as.mbp.domain.device.Device;
 import de.ipvs.as.mbp.domain.device.DeviceDTO;
+import de.ipvs.as.mbp.domain.user.UserLoginData;
 import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.KeyPairRepository;
-import de.ipvs.as.mbp.service.UserEntityService;
-import de.ipvs.as.mbp.service.UserService;
+import de.ipvs.as.mbp.service.user.UserEntityService;
+import de.ipvs.as.mbp.service.user.UserService;
 import de.ipvs.as.mbp.util.BaseIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.server.Session;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -48,7 +52,6 @@ public class BasicTest extends BaseIntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "admin", password = "12345")
     void createDevice_returnOk() throws Exception {
         DeviceDTO requestDto = new DeviceDTO();
         requestDto.setName("testDevice");
@@ -57,10 +60,24 @@ public class BasicTest extends BaseIntegrationTest {
         requestDto.setIpAddress("127.0.0.1");
         requestDto.setComponentType("Computer");
 
+        UserLoginData userLoginData = new UserLoginData();
+        userLoginData.setUsername("admin");
+        userLoginData.setPassword("12345");
+
+        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/users/login")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(userLoginData))
+                .characterEncoding("utf-8"))
+                .andDo(print())
+                .andExpect(status().isOk()).andReturn();
+
+        Cookie cookie = result.getResponse().getCookie("user_session");
+        
         // .header("Authorization", "Basic YWRtaW46MTIzNDU=")
         // .header("X-MBP-Access-Request", "requesting-entity-firstname=admin;;requesting-entity-lastname=admin;;requesting-entity-username=admin")
 
-        MvcResult result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/devices")
+        result = mockMvc.perform(post(RestConfiguration.BASE_PATH + "/devices")
+                .cookie(cookie)
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(requestDto))
                 .characterEncoding("utf-8"))
