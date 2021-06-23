@@ -201,18 +201,16 @@ public class TestRerunService {
         testDetailsRepository.save(testDetails);
     }
 
+    /**
+     *  Delete the rerun sensors of a specific test, if they are not used in any other test.
+     *  
+     * @param testDetails from which the rerun sensors should be deleted.
+     */
     public void deleteRerunSensors(TestDetails testDetails) {
-
-        for (List<ParameterInstance> config : testDetails.getConfig()) {
-            for (ParameterInstance parameterInstance : config) {
-                if (parameterInstance.getName().equals(CONFIG_SENSOR_NAME_KEY)) {
-                    if (!SIMULATOR_LIST.contains(parameterInstance.getValue().toString())) {
-                        String reuseName = RERUN_IDENTIFIER + parameterInstance.getValue();
-                        if (sensorRepository.findByName(reuseName).isPresent()) {
-                            Sensor sensorReuse = sensorRepository.findByName(reuseName).get();
-                            sensorRepository.delete(sensorReuse);
-                        }
-                    }
+        for(Sensor sensor: testDetails.getSensor()){
+            if(sensor.getName().contains(RERUN_IDENTIFIER)){
+                if(!sensorExistsInMultipleTest(sensor.getId())){
+                    sensorRepository.delete(sensor);
                 }
             }
         }
@@ -382,16 +380,41 @@ public class TestRerunService {
     public void deleteRerunRules(TestDetails test) {
         List<Rule> testRules = testAnalyzer.getCorrespondingRules(test.getRules(), test.getSensor());
 
+
         for (Rule rule : testRules) {
             if (rule.getName().contains(RERUN_IDENTIFIER)) {
-                if (rule.getTrigger() != null) {
-                    ruleTriggerRepository.delete(rule.getTrigger());
-                }
-                ruleRepository.delete(rule);
+               if(!ruleExistsInMultipleTests(rule.getId())){
+                   if (rule.getTrigger() != null) {
+                       ruleTriggerRepository.delete(rule.getTrigger());
+                   }
+                   ruleRepository.delete(rule);
+               }
+
             }
         }
     }
 
+    /**
+     * Checks if the rule exists in more than one test.
+     *
+     * @param ruleId rule for which the existence in the tests should be checked.
+     * @return true if rule exists in more then one test
+     */
+    private Boolean ruleExistsInMultipleTests(String ruleId){
+        List<TestDetails> existingInTests = testDetailsRepository.findAllByRulesId(ruleId);
+        return existingInTests.size() > 1;
+    }
+
+    /**
+     * Checks if the sensor exists in more than one test.
+     *
+     * @param sensorId sensor for which the existence in the tests should be checked.
+     * @return true if sensor exists in more then one test
+     */
+    private Boolean sensorExistsInMultipleTest(String sensorId){
+        List<TestDetails> existingInTest = testDetailsRepository.findAllBySensorId(sensorId);
+        return existingInTest.size() > 1;
+    }
 
     /**
      * Called when the client wants to load default operators and make them available for usage
