@@ -44,6 +44,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
             convertRulesTriggered(testReport.amountRulesTriggered);
             convertTriggerList(testReport.triggerValues);
             getRealReportSensorList(testReport);
+            getSimulatedSensorList(testReport);
             $('#testReport').modal('show');
         };
 
@@ -163,6 +164,21 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
                 }
             });
         }
+
+        /**
+         * [Private]
+         * Get a list of all simulated sensors included into the test.
+         * @param report
+         */
+        function getSimulatedSensorList(report){
+            $scope.simulatedSensorList = []
+            angular.forEach(report.sensor, function (sensor, key) {
+                if (sensor.name.includes("TESTING_")) {
+                    $scope.simulatedSensorList.push(sensor)
+                }
+            });
+        }
+
 
         /**
          * [Private]

@@ -10,6 +10,7 @@ import de.ipvs.as.mbp.domain.device.DeviceCreateValidator;
 import de.ipvs.as.mbp.domain.operator.Operator;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
+import de.ipvs.as.mbp.domain.testing.TestReport;
 import de.ipvs.as.mbp.repository.*;
 import de.ipvs.as.mbp.repository.projection.ComponentExcerpt;
 import de.ipvs.as.mbp.service.settings.DefaultOperatorService;
@@ -35,6 +36,8 @@ public class DefaultTestingComponents {
     @Autowired
     private final TestDetailsRepository testDetailsRepository;
 
+    @Autowired
+    private TestReportRepository testReportRepository;
 
     @Autowired
     private final OperatorRepository operatorRepository;
@@ -84,8 +87,9 @@ public class DefaultTestingComponents {
     private final List<String> SENSOR_SIMULATORS = Arrays.asList("TESTING_TemperatureSensor", "TESTING_TemperatureSensorPl", "TESTING_HumiditySensor", "TESTING_HumiditySensorPl");
 
 
-    public DefaultTestingComponents(List<String> defaultTestComponentsWhiteList, OperatorRepository operatorRepository, DeviceRepository deviceRepository, DeviceCreateValidator deviceCreateValidator, ActuatorRepository actuatorRepository, ComponentCreateValidator componentCreateValidator, ComponentCreateEventHandler componentCreateEventHandler, DeviceCreateEventHandler deviceCreateEventHandler,
+    public DefaultTestingComponents(List<String> defaultTestComponentsWhiteList, TestReportRepository testReportRepository, OperatorRepository operatorRepository, DeviceRepository deviceRepository, DeviceCreateValidator deviceCreateValidator, ActuatorRepository actuatorRepository, ComponentCreateValidator componentCreateValidator, ComponentCreateEventHandler componentCreateEventHandler, DeviceCreateEventHandler deviceCreateEventHandler,
                                     SensorRepository sensorRepository, TestDetailsRepository testDetailsRepository, DefaultOperatorService defaultOperatorService, RuleTriggerRepository ruleTriggerRepository) throws IOException {
+        this.testReportRepository = testReportRepository;
         // Get needed Strings out of the properties to create the testing components
         propertiesService = new PropertiesService();
         TEST_DEVICE = propertiesService.getPropertiesString("testingTool.testDeviceName");
@@ -107,19 +111,24 @@ public class DefaultTestingComponents {
         this.deviceCreateEventHandler = deviceCreateEventHandler;
         this.ruleTriggerRepository = ruleTriggerRepository;
         this.testDetailsRepository = testDetailsRepository;
+        this.testReportRepository = testReportRepository;
         this.defaultOperatorService = defaultOperatorService;
 
 
-        replaceTestDevice();
-        replaceOperators();
-        replaceTestingActuator();
-        replaceSensorSimulators();
+        registerDevice();
+        defaultOperatorService.addDefaultOperators(defaultTestComponentsWhiteList);
+        registerActuatorSimulator();
+        registerAllSensorSimulators();
 
     }
+
+
+
 
     /**
      * Registers the wished sensor simulator if the corresponding adapter is already registered
      *
+     * @param simulatorName name of the simulator to register
      */
     public void registerSensorSimulator(String simulatorName) {
 
@@ -144,8 +153,18 @@ public class DefaultTestingComponents {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
+
+    /**
+     *  Registers all sensor simulators if the corresponding adapter is already registered.
+     */
+    private void registerAllSensorSimulators(){
+        for (String sensorName : SENSOR_SIMULATORS) {
+            registerSensorSimulator(sensorName);
+        }
+    }
+
+
 
     /**
      * Returns the type of the sensor simulator that can be "Temperature" or "Humidity".
@@ -242,12 +261,14 @@ public class DefaultTestingComponents {
             // Replace each sensor simulator and their occurrences in the tests and rules one after the other.
             for (String sensorName : SENSOR_SIMULATORS) {
                 List<TestDetails> affectedTestDetails = null;
+                List<TestReport> affectedtTestReports = null;
                 String oldSensorId = null;
 
                 // Get a list of the tests which uses the specific sensor simulator to be replaced
                 if (sensorRepository.findByName(sensorName).isPresent()) {
                     oldSensorId = sensorRepository.findByName(sensorName).get().getId();
                     affectedTestDetails = testDetailsRepository.findAllBySensorId(oldSensorId);
+                    affectedtTestReports = testReportRepository.findAllBySensorId(oldSensorId);
                 }
 
                 // Delete the sensor simulator
@@ -261,6 +282,7 @@ public class DefaultTestingComponents {
                 // Replace the reinstalled sensor simulator in the affected tests
                 if (affectedTestDetails != null && affectedTestDetails.size() >= 1) {
                     replaceSimulatorInTest(affectedTestDetails);
+                    replaceSimulatorInReport(affectedtTestReports);
                 }
 
                 // Replace the reinstalled sensor simulator in the affected rules.
@@ -309,6 +331,30 @@ public class DefaultTestingComponents {
             }
         }
     }
+
+    /**
+     * Replaces the reinstalled sensor simulator in the test reports in which the sensor simulator is used.
+     *
+     * @param affectedReports List of the test reports affected by the sensor simulator reinstall
+     */
+    public void replaceSimulatorInReport(List<TestReport> affectedReports) {
+        for (TestReport report : affectedReports) {
+            List<Sensor> sensorList = report.getSensor();
+            for (Sensor sensor : sensorList) {
+                if (sensorRepository.findByName(sensor.getName()).isPresent()) {
+                    // Get the index of the reinstalled sensor and replace it with the new one
+                    int index = sensorList.indexOf(sensor);
+                    Sensor replacedSensor = sensorRepository.findByName(sensor.getName()).get();
+                    sensorList.set(index, replacedSensor);
+                }
+
+            }
+            // Save the modified test
+            report.setSensor(sensorList);
+            testReportRepository.save(report);
+        }
+    }
+
 
     /**
      * Replaces the reinstalled sensor simulator in the tests in which the sensor simulator is used.

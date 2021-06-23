@@ -20,4 +20,6 @@ public interface TestReportRepository extends MongoRepository<TestReport, String
     Optional<TestReport> findById(@Param("id") String id);
 
     List<TestReport> findAllByName(@Param("name") String name);
+
+    List<TestReport> findAllBySensorId(@Param("sensor") String id);
 }

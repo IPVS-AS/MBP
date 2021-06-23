@@ -168,9 +168,6 @@ public class DefaultOperatorService {
             }
         }
 
-        //Check for failure
-        if (!inserted) {
-            throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "All available default operators have already been added.");
-        }
+
     }
 }
