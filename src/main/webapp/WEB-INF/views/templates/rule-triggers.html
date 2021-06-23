@@ -45,7 +45,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection | filter:ruleTriggerListCtrl.nameFilter">
+                    <tr id="{{item.id}}" ng-repeat="item in displayedCollection | filter:ruleTriggerListCtrl.nameFilter"  ng-if="item.name.indexOf('RERUN_') === -1">
                         <td>
                             {{item.name}}
                         </td>

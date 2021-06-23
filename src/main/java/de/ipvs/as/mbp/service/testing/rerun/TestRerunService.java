@@ -203,7 +203,7 @@ public class TestRerunService {
 
     /**
      *  Delete the rerun sensors of a specific test, if they are not used in any other test.
-     *  
+     *
      * @param testDetails from which the rerun sensors should be deleted.
      */
     public void deleteRerunSensors(TestDetails testDetails) {
