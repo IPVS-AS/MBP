@@ -1,12 +1,16 @@
 package de.ipvs.as.mbp.service.messaging;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import de.ipvs.as.mbp.domain.settings.BrokerLocation;
 import de.ipvs.as.mbp.domain.settings.Settings;
 import de.ipvs.as.mbp.service.messaging.dispatcher.MessageDispatcher;
+import de.ipvs.as.mbp.service.messaging.dispatcher.listener.DomainMessageListener;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.JSONMessageListener;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.MessageListener;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.StringMessageListener;
+import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
 import de.ipvs.as.mbp.service.settings.SettingsService;
+import de.ipvs.as.mbp.util.Json;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,7 +110,7 @@ public class PubSubService {
     /**
      * Publishes a message, given as string, under a given topic at the messaging broker.
      *
-     * @param topic   The topic under which the message is supposed to be published
+     * @param topic   The topic under which the string message is supposed to be published
      * @param message The message to publish
      */
     public void publish(String topic, String message) {
@@ -117,7 +121,7 @@ public class PubSubService {
     /**
      * Publishes a message, given as JSON object, under a given topic at the messaging broker.
      *
-     * @param topic      The topic under which the message is supposed to be published
+     * @param topic      The topic under which the JSON message is supposed to be published
      * @param jsonObject The message to publish
      */
     public void publish(String topic, JSONObject jsonObject) {
@@ -126,9 +130,24 @@ public class PubSubService {
     }
 
     /**
+     * Publishes a message, given as {@link DomainMessage} object, under a given topic at the
+     * messaging broker.
+     *
+     * @param topic   The topic under which the domain message is supposed to be published
+     * @param message The message to publish
+     */
+    public void publish(String topic, DomainMessage<?> message) {
+        //Transform the message to JSON
+        String jsonString = transformMessageToJSON(message);
+
+        //Publish the message
+        publish(topic, jsonString);
+    }
+
+    /**
      * Publishes a message, given as string, under several given topics at the messaging broker.
      *
-     * @param topics  Collection of topics under which the message is supposed to be published
+     * @param topics  Collection of topics under which the string message is supposed to be published
      * @param message The message to publish
      */
     public void publish(Collection<String> topics, String message) {
@@ -139,12 +158,26 @@ public class PubSubService {
     /**
      * Publishes a message, given as JSON object, under several given topics at the messaging broker.
      *
-     * @param topics     Collection of topics under which the message is supposed to be published
+     * @param topics     Collection of topics under which the JSON message is supposed to be published
      * @param jsonObject The message to publish
      */
     public void publish(Collection<String> topics, JSONObject jsonObject) {
         //Transform provided JSON message to string and publish it
         publish(topics, jsonObject.toString());
+    }
+
+    /**
+     * Publishes a message, given as {@link DomainMessage} object under several given topics at the messaging broker.
+     *
+     * @param topics  Collection of topics under which the domain message is supposed to be published
+     * @param message The message to publish
+     */
+    public void publish(Collection<String> topics, DomainMessage<?> message) {
+        //Transform the message to JSON
+        String jsonString = transformMessageToJSON(message);
+
+        //Publish the message
+        publish(topics, jsonString);
     }
 
     /**
@@ -175,6 +208,21 @@ public class PubSubService {
 
         //Create corresponding subscription at the dispatcher
         this.messageDispatcher.subscribeJSON(topicFilter, listener);
+    }
+
+    /**
+     * Subscribes a given domain message listener to a given topic filter at the messaging broker, such that the listener
+     * is notified when a message is published at the broker under a topic that matches the topic filter.
+     *
+     * @param topicFilter The topic filter to subscribe to
+     * @param listener    The listener to call in case a matching message is published at the broker
+     */
+    public void subscribeDomain(String topicFilter, DomainMessageListener<?> listener) {
+        //Add subscription
+        addSubscription(topicFilter);
+
+        //Create corresponding subscription at the dispatcher
+        this.messageDispatcher.subscribeDomain(topicFilter, listener);
     }
 
     /**
@@ -381,6 +429,23 @@ public class PubSubService {
         } catch (JSONException e) {
             //The access token request failed
             System.err.println("Could not retrieve access token: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Transforms a given domain message to a JSON string and returns it. If the transformation failes,
+     * a error message is printed and an empty JSON object is returned.
+     *
+     * @param message The message to transform
+     * @return The resulting JSON string
+     */
+    private String transformMessageToJSON(DomainMessage<?> message) {
+        //Use jackson to transform the message to JSON
+        try {
+            return Json.MAPPER.writeValueAsString(message);
+        } catch (JsonProcessingException e) {
+            System.err.printf("Failed to transform %s to JSON string: %s%n", message.getClass().getName(), e.getMessage());
+            return new JSONObject().toString();
         }
     }
 }

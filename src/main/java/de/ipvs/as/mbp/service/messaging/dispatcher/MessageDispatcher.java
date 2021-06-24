@@ -1,12 +1,17 @@
 package de.ipvs.as.mbp.service.messaging.dispatcher;
 
 import de.ipvs.as.mbp.service.messaging.PubSubClient;
+import de.ipvs.as.mbp.service.messaging.dispatcher.listener.DomainMessageListener;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.JSONMessageListener;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.MessageListener;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.StringMessageListener;
+import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
+import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -64,6 +69,18 @@ public class MessageDispatcher {
     }
 
     /**
+     * Subscribes a given domain message listener to a given topic filter at the dispatcher, such that incoming
+     * domain messages will be dispatched to the listener if the topic of the message matches the topic filter.
+     *
+     * @param topicFilter The topic filter to subscribe to
+     * @param listener    The listener to dispatch matching messages to
+     */
+    public void subscribeDomain(String topicFilter, DomainMessageListener<?> listener) {
+        //Perform subscription
+        performSubscription(topicFilter, listener);
+    }
+
+    /**
      * Unsubscribes a listener from a given topic filter at the message dispatcher. The topic filter must be
      * exactly the same as the one that was used in the subscription of the listener. As a result, this method
      * returns whether there are still remaining subscriptions for this topic filter.
@@ -116,15 +133,19 @@ public class MessageDispatcher {
             //Iterate over all subscriptions for this topic filter
             subscriptionMap.get(topicFilter).forEach(listener -> {
                 //Check listener type
-                if (listener instanceof JSONMessageListener) {
+                if (listener instanceof DomainMessageListener) {
+                    //Notify listener
+                    ((DomainMessageListener<?>) listener).onMessageDispatched(message, topic, topicFilter);
+                }
+                else if (listener instanceof StringMessageListener) {
+                    //Notify listener
+                    ((StringMessageListener) listener).onMessageDispatched(message, topic, topicFilter);
+                } else if (listener instanceof JSONMessageListener) {
                     //Convert message to JSON object
                     JSONObject jsonMessage = transformMessageToJSON(message);
 
                     //Notify listener
                     ((JSONMessageListener) listener).onMessageDispatched(jsonMessage, topic, topicFilter);
-                } else if (listener instanceof StringMessageListener) {
-                    //Notify listener
-                    ((StringMessageListener) listener).onMessageDispatched(message, topic, topicFilter);
                 }
             });
         });

@@ -3,6 +3,7 @@ package de.ipvs.as.mbp.domain.discovery.topic;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
+import de.ipvs.as.mbp.service.messaging.scatter_gather.ScatterGatherConfig;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.springframework.data.annotation.Id;
@@ -136,5 +137,18 @@ public class RequestTopic extends UserEntity {
         return TOPIC_PATTERN
                 .replaceAll("\\{userId}", this.getOwner().getId())
                 .replaceAll("\\{suffix}", this.suffix);
+    }
+
+    /**
+     * Creates a {@link ScatterGatherConfig} object from the request topic that can be used in the execution
+     * of scatter gather requests.
+     *
+     * @return The resulting request object
+     */
+    public ScatterGatherConfig toScatterGatherRequest() {
+        //Pass the fields to a new ScatterGatherRequest object
+        return new ScatterGatherConfig(getFullTopic())
+                .setTimeout(getTimeout())
+                .setExpectedReplies(getExpectedReplies());
     }
 }

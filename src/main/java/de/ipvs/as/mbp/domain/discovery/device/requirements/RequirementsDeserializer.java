@@ -3,11 +3,10 @@ package de.ipvs.as.mbp.domain.discovery.device.requirements;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import de.ipvs.as.mbp.error.EntityValidationException;
+import de.ipvs.as.mbp.util.Json;
 import org.reflections.Reflections;
 
 import java.io.IOException;
@@ -79,7 +78,7 @@ public class RequirementsDeserializer extends StdDeserializer<List<DeviceRequire
             }
 
             //Deserialize requirement for its corresponding class
-            DeviceRequirement requirement = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).treeToValue(node, REQUIREMENT_TYPES.get(type));
+            DeviceRequirement requirement = Json.MAPPER.treeToValue(node, REQUIREMENT_TYPES.get(type));
 
             //Check if requirement is valid and add it to list
             if (requirement != null) {
