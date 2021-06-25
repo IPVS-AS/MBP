@@ -1,23 +1,18 @@
-/*
+
 package de.ipvs.as.mbp.service.messaging.scatter_gather;
 
-import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.service.messaging.PubSubService;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.StringMessageListener;
-import org.json.JSONObject;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class ScatterGatherRequestBuilder {
 
-    //TODO new class for request topic (ScatterGatherRequest) that consists out of topic, timeout and replies
-    //TODO Check if AtomicReference is needed everywhere
     //TODO make sure unsubscription of topic works
     //TODO Use List instead of set (removes duplicates automatically :-( )
-    //TODO Implement for JSON as well
 
     private final PubSubService pubSubService;
 
@@ -25,74 +20,79 @@ public class ScatterGatherRequestBuilder {
         this.pubSubService = pubSubService;
     }
 
+    public ScatterGatherRequest<String> create(ScatterGatherConfig config) {
+        //Sanity check
+        if (config == null) {
+            throw new IllegalArgumentException("The scatter gather configuration must not be null.");
+        }
 
-    public ScatterGatherRequest<String> create(ScatterGatherConfig config, String replyTopicFilter, String requestMessage) {
-
-    }
-
-    public ScatterGatherRequest<JSONObject> createJSON(ScatterGatherConfig config, String replyTopicFilter, JSONObject requestMessage){
-
-    }
-
-    public ScatterGatherRequest<String> create(Collection<ScatterGatherConfig> configs, String replyTopicFilter, String requestMessage){
-        CompletableFuture.allOf(configs.stream().map(c -> create(c, replyTopicFilter, requestMessage).getFuture()));
-    }
-
-    public ScatterGatherRequest<JSONObject> createJSON(Collection<ScatterGatherConfig> configs, String replyTopicFilter, JSONObject requestMessage){
-
+        //Create the request
+        return create(Collections.singletonList(config));
     }
 
 
-    private Supplier<List<String>> createRequestStage(){
+    public ScatterGatherRequest<String> create(Collection<ScatterGatherConfig> configs) {
+        //Sanity check
+        if ((configs == null) || (configs.isEmpty()) || (configs.stream().anyMatch(Objects::isNull))) {
+            throw new IllegalArgumentException("The scatter gather configurations must not be null or none.");
+        }
 
+        //Create one request stage per provided config
+        List<CompletableFuture<List<String>>> individualFutures = configs.stream().map(this::createRequestStage).collect(Collectors.toList());
+
+        //Convert list of futures to array
+        CompletableFuture<?>[] futuresArray = new CompletableFuture[individualFutures.size()];
+        futuresArray = individualFutures.toArray(futuresArray);
+
+        //Combine all futures into one
+        CompletableFuture<Void> overallFuture = CompletableFuture.allOf(futuresArray);
+
+        //Wrap all futures into one request object
+        return new ScatterGatherRequest<>(overallFuture, individualFutures);
     }
 
-    private CompletableFuture<List<String>> createUnsubscribeStage(){
 
-    }
+    private CompletableFuture<List<String>> createRequestStage(ScatterGatherConfig config) {
+        //Create atomic reference wrapper for the future object itself and the reply message listener
+        final AtomicReference<CompletableFuture<List<String>>> futureReference = new AtomicReference<>();
+        final AtomicReference<StringMessageListener> replyListenerReference = new AtomicReference<>();
 
-    private CompletableFuture<List<JSONObject>> createJSONConversionStage(){
+        futureReference.set(CompletableFuture.supplyAsync(() -> {
+            //Create result list for incoming reply messages
+            List<String> replyMessages = new ArrayList<>();
 
-    }
-
-
-    public CompletableFuture<Set<String>> scatterGatherOld(RequestTopic requestTopic, String replyTopicFilter, String requestMessage) {
-
-        final AtomicReference<CompletableFuture<Set<String>>> futureReference = new AtomicReference<>();
-        final AtomicReference<StringMessageListener> subscriberReference = new AtomicReference<>();
-
-        CompletableFuture<Set<String>> completableFuture = CompletableFuture.supplyAsync(() -> {
-            Set<String> replyMessages = new HashSet<>();
-
-            StringMessageListener listener = (message, topic, topicFilter) -> {
+            //Create listener for the incoming reply messages
+            replyListenerReference.set((message, topic, topicFilter) -> {
+                //Add received message to list
                 replyMessages.add(message);
 
-                if ((replyMessages.size() >= requestTopic.getExpectedReplies())) {
+                //Check if number of received replies matches the number of expected ones
+                if ((replyMessages.size() >= config.getExpectedReplies())) {
+                    //Probably all replies received, thus terminate
                     futureReference.get().complete(replyMessages);
                 }
-            };
-            subscriberReference.set(listener);
-            pubSubService.subscribe(replyTopicFilter, listener);
+            });
 
-            pubSubService.publish("requesttopic", requestMessage);
+            //Subscribe listener to reply topic filter
+            pubSubService.subscribe(config.getReplyTopicFilter(), replyListenerReference.get());
 
+            //Publish request
+            pubSubService.publish(config.getRequestTopic(), config.getRequestMessage());
+
+            //Sleep until timeout
             try {
-                Thread.sleep(requestTopic.getTimeout());
+                Thread.sleep(config.getTimeout());
             } catch (InterruptedException ignored) {
             }
 
+            //Return all received messages
             return replyMessages;
+        }));
 
-        }).thenApply(messages -> {
-            pubSubService.unsubscribe(replyTopicFilter, subscriberReference.get());
+        //Add stage for unsubscription of the listener and return the result
+        return futureReference.get().thenApply(messages -> {
+            pubSubService.unsubscribe(config.getReplyTopicFilter(), replyListenerReference.get());
             return messages;
         });
-        futureReference.set(completableFuture);
-        return completableFuture;
-    }
-
-    public void scatterGatherOld(RequestTopic requestTopic, String replyTopicFilter, JSONObject requestMessage) {
-        this.scatterGatherOld(requestTopic, replyTopicFilter, requestMessage.toString());
     }
 }
-*/

@@ -7,6 +7,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation for classes that define the structure of publish-subscribe-based messages. It allows to specify
+ * names for the various message types, as well as links to other message types that serve as replies
+ * for requests.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface DomainMessageTemplate {

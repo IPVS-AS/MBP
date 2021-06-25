@@ -252,6 +252,19 @@ public class PubSubService {
     }
 
     /**
+     * Subscribes a given domain message listener to several given topic filters at the messaging broker, such that the
+     * listener is notified when a message is published at the broker under a topic that matches at least one
+     * of the topic filters.
+     *
+     * @param topicFilters The topic filters to subscribe to
+     * @param listener     The listener to call in case a matching message is published at the broker
+     */
+    public void subscribeDomain(List<String> topicFilters, DomainMessageListener<?> listener) {
+        //Create one subscription for each topic filter
+        topicFilters.forEach(t -> subscribeDomain(t, listener));
+    }
+
+    /**
      * Unsubscribes a given listener from a given topic filter at the messaging broker. This only has an effect
      * if the listener previously created an subscription at the messaging broker for exactly the same topic filter.
      *
@@ -266,6 +279,9 @@ public class PubSubService {
         if (!remainingSubscriptions) {
             //Remove topic filter from set of subscribed topic filters
             this.subscribedTopicFilters.remove(topicFilter);
+
+            //Unsubscribe topic at message broker
+            this.pubSubClient.unsubscribe(topicFilter);
         }
     }
 
@@ -445,6 +461,8 @@ public class PubSubService {
             return Json.MAPPER.writeValueAsString(message);
         } catch (JsonProcessingException e) {
             System.err.printf("Failed to transform %s to JSON string: %s%n", message.getClass().getName(), e.getMessage());
+
+            //Return empty JSON string
             return new JSONObject().toString();
         }
     }

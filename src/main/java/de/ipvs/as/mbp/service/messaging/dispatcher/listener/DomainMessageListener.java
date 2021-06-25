@@ -57,7 +57,7 @@ public class DomainMessageListener<T extends DomainMessage<? extends DomainMessa
             //Trigger callback of provided listener
             this.listener.onMessageDispatched(domainMessage, topic, topicFilter);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            System.err.printf("Failed to create domain message from JSON string: %s%n", e.getMessage());
         }
     }
 }

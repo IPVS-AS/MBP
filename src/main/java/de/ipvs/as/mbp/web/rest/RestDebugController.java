@@ -1,13 +1,10 @@
 package de.ipvs.as.mbp.web.rest;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import de.ipvs.as.mbp.RestConfiguration;
-import de.ipvs.as.mbp.domain.discovery.messages.test.DiscoveryTestReply;
-import de.ipvs.as.mbp.domain.discovery.messages.test.DiscoveryTestRequest;
 import de.ipvs.as.mbp.service.messaging.PubSubService;
-import de.ipvs.as.mbp.service.messaging.dispatcher.listener.DomainMessageListener;
-import de.ipvs.as.mbp.service.messaging.message.DomainDocumentMessage;
-import de.ipvs.as.mbp.service.messaging.message.reply.ReplyMessage;
+import de.ipvs.as.mbp.service.messaging.scatter_gather.ScatterGatherConfig;
+import de.ipvs.as.mbp.service.messaging.scatter_gather.ScatterGatherRequest;
+import de.ipvs.as.mbp.service.messaging.scatter_gather.ScatterGatherRequestBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -37,25 +36,20 @@ public class RestDebugController {
      */
     @RequestMapping(value = "/debug", method = RequestMethod.GET)
     public ResponseEntity<String> debug() throws ExecutionException, InterruptedException {
-        /*
         ScatterGatherRequestBuilder scatterGatherRequestBuilder = new ScatterGatherRequestBuilder(pubSubService);
 
-        CompletableFuture<Set<String>> future = scatterGatherRequestBuilder.scatterGatherOld(new RequestTopic().setSuffix("testtopic").setExpectedReplies(2).setTimeout(10 * 1000),
-                "replytome", "This is just a test!");
+        //Create request configurations
+        ScatterGatherConfig config1 = new ScatterGatherConfig("requestTopic", "replytome", "hallo")
+                .setTimeout(60 * 1000)
+                .setExpectedReplies(3);
 
-        Set<String> replies = future.get();*/
+        ScatterGatherConfig config2 = new ScatterGatherConfig("requestTopic2", "reply2", "hallo2")
+                .setTimeout(60 * 1000)
+                .setExpectedReplies(2);
 
-        DiscoveryTestRequest request = new DiscoveryTestRequest();
+        ScatterGatherRequest<String> request = scatterGatherRequestBuilder.create(Arrays.asList(config1, config2));
+        List<String> result = request.execute();
 
-        pubSubService.publish("testtopic", new DomainDocumentMessage(request));
-
-        pubSubService.subscribeDomain("test",
-                new DomainMessageListener<>(
-                        new TypeReference<ReplyMessage<DiscoveryTestReply>>() {
-                        }, (message, topic, topicFilter) -> {
-                    System.out.println("da!");
-                }));
-
-        return new ResponseEntity<String>("done", HttpStatus.OK);
+        return new ResponseEntity<>(Arrays.toString(result.toArray()), HttpStatus.OK);
     }
 }

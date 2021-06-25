@@ -1,6 +1,5 @@
 package de.ipvs.as.mbp.domain.discovery.messages.test;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageTemplate;
 import de.ipvs.as.mbp.service.messaging.message.request.RequestMessageBody;
 

@@ -1,25 +1,33 @@
 package de.ipvs.as.mbp.service.messaging.scatter_gather;
 
 /**
- * Objects of this class represent scatter gather configurations that can be used in the {@link ScatterGatherRequestBuilder}.
- * A configuration consists out of a request topic under which the request is supposed to be published,
- * a timeout value that indicates until which point in time replies to a request are accepted and an expected
+ * Objects of this class represent scatter gather configurations that can be used in the {@link ScatterGatherRequestBuilder}
+ * in order to create scatter gather requests.
+ * Such a configuration consists out of a request topic under which the request is supposed to be published,
+ * a reply topic filter that describes the topics under which the replies will be published, the
+ * request message that is supposed to be published under the request topic, a timeout value that indicates
+ * until which point in time replies to a request are accepted and an expected
  * number of replies which allows to close the receiving phase before the timeout occurs.
  */
 public class ScatterGatherConfig {
     private String requestTopic;
+    private String replyTopicFilter;
+    private String requestMessage;
     private int timeout = 60 * 1000; //milliseconds
     private int expectedReplies = Integer.MAX_VALUE;
 
     /**
-     * Creates a new scatter gather configuration for a given request topic. For the timeout, the default value
-     * of one minute is used, while the number of expected replies is set to {@link Integer.MAX_VALUE}.
+     * Creates a new scatter gather configuration for a given request topic, reply topic filter and request message.
+     * For the timeout, the default value of one minute is used, while the number of expected replies is
+     * set to {@link Integer.MAX_VALUE}.
      *
      * @param requestTopic The request topic to use
      */
-    public ScatterGatherConfig(String requestTopic) {
-        //Set request topic
+    public ScatterGatherConfig(String requestTopic, String replyTopicFilter, String requestMessage) {
+        //Set fields
         setRequestTopic(requestTopic);
+        setReplyTopicFilter(replyTopicFilter);
+        setRequestMessage(requestMessage);
     }
 
     /**
@@ -35,7 +43,7 @@ public class ScatterGatherConfig {
      * Sets the request topic of the scatter gather configuration.
      *
      * @param requestTopic The request topic to set
-     * @return The request
+     * @return The configuration
      */
     public ScatterGatherConfig setRequestTopic(String requestTopic) {
         //Sanity check
@@ -45,6 +53,56 @@ public class ScatterGatherConfig {
 
         //Set request topic
         this.requestTopic = requestTopic;
+        return this;
+    }
+
+    /**
+     * Returns the filter for reply topics of the scatter gather configuration.
+     *
+     * @return The reply topic filter
+     */
+    public String getReplyTopicFilter() {
+        return replyTopicFilter;
+    }
+
+    /**
+     * Sets the filter for reply topics of the scatter gather configuration.
+     *
+     * @param replyTopicFilter The reply topic filter to set
+     * @return The configuration
+     */
+    public ScatterGatherConfig setReplyTopicFilter(String replyTopicFilter) {
+        //Sanity check
+        if ((replyTopicFilter == null) || replyTopicFilter.isEmpty()) {
+            throw new IllegalArgumentException("Reply topic filter not be null or empty.");
+        }
+
+        this.replyTopicFilter = replyTopicFilter;
+        return this;
+    }
+
+    /**
+     * Returns the request message of the scatter gather configuration.
+     *
+     * @return The request message
+     */
+    public String getRequestMessage() {
+        return requestMessage;
+    }
+
+    /**
+     * Sets the request message of the scatter gather configuration.
+     *
+     * @param requestMessage The request message to set
+     * @return The configuration
+     */
+    public ScatterGatherConfig setRequestMessage(String requestMessage) {
+        //Sanity check
+        if ((requestMessage == null) || requestMessage.isEmpty()) {
+            throw new IllegalArgumentException("Request message must not be null or empty.");
+        }
+
+        this.requestMessage = requestMessage;
         return this;
     }
 
@@ -62,7 +120,7 @@ public class ScatterGatherConfig {
      * milliseconds, while the default is one minute.
      *
      * @param timeout The timeout value to set
-     * @return The request
+     * @return The configuration
      */
     public ScatterGatherConfig setTimeout(int timeout) {
         //Sanity check
@@ -89,7 +147,7 @@ public class ScatterGatherConfig {
      * default value is {@link Integer.MAX_VALUE}.
      *
      * @param expectedReplies The number of expected replies to set
-     * @return The request
+     * @return The configuration
      */
     public ScatterGatherConfig setExpectedReplies(int expectedReplies) {
         //Sanity check

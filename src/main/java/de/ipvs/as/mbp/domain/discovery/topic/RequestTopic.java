@@ -138,17 +138,4 @@ public class RequestTopic extends UserEntity {
                 .replaceAll("\\{userId}", this.getOwner().getId())
                 .replaceAll("\\{suffix}", this.suffix);
     }
-
-    /**
-     * Creates a {@link ScatterGatherConfig} object from the request topic that can be used in the execution
-     * of scatter gather requests.
-     *
-     * @return The resulting request object
-     */
-    public ScatterGatherConfig toScatterGatherRequest() {
-        //Pass the fields to a new ScatterGatherRequest object
-        return new ScatterGatherConfig(getFullTopic())
-                .setTimeout(getTimeout())
-                .setExpectedReplies(getExpectedReplies());
-    }
 }
