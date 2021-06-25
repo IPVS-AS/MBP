@@ -1,9 +1,7 @@
 package de.ipvs.as.mbp.service.messaging.message;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import de.ipvs.as.mbp.service.messaging.message.reply.ReplyMessageBody;
 import de.ipvs.as.mbp.util.InstantSerializer;
 
 import java.time.Instant;
@@ -56,26 +54,6 @@ public class DomainMessage<T extends DomainMessageBody> {
     public DomainMessage<T> setTimestamp(Instant timestamp) {
         this.timestamp = timestamp;
         return this;
-    }
-
-    @JsonIgnore
-    public Class<? extends ReplyMessageBody> getReplyType() {
-        //Check for message body
-        if (this.messageBody == null) {
-            return null;
-        }
-
-        //Get class of message body
-        Class<? extends DomainMessageBody> messageBodyClass = messageBody.getClass();
-
-        //Check if annotation is available
-        requireAnnotation(messageBody);
-
-        //Retrieve class from annotation
-        Class<? extends ReplyMessageBody> replyClass = messageBodyClass.getAnnotation(DomainMessageTemplate.class).replyType();
-
-        //Return class or null if no reply
-        return replyClass.equals(ReplyMessageBody.NoReply.class) ? null : replyClass;
     }
 
     private String getTypeName(DomainMessageBody messageBody) {

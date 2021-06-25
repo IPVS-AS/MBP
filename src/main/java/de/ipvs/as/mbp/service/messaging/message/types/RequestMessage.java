@@ -1,11 +1,11 @@
-package de.ipvs.as.mbp.service.messaging.message.request;
+package de.ipvs.as.mbp.service.messaging.message.types;
 
 import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
+import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
 
-import java.util.UUID;
-
-public class RequestMessage<T extends RequestMessageBody> extends DomainMessage<T> {
+public class RequestMessage<T extends DomainMessageBody> extends DomainMessage<T> {
     private String returnTopic;
+
 
     public RequestMessage(T messageBody, String returnTopic) {
         super(messageBody);

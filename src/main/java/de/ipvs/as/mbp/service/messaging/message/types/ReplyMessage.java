@@ -1,8 +1,9 @@
-package de.ipvs.as.mbp.service.messaging.message.reply;
+package de.ipvs.as.mbp.service.messaging.message.types;
 
 import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
+import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
 
-public class ReplyMessage<T extends ReplyMessageBody> extends DomainMessage<T> {
+public class ReplyMessage<T extends DomainMessageBody> extends DomainMessage<T> {
 
     private String correlationId;
     private String senderId;

@@ -1,8 +1,13 @@
 package de.ipvs.as.mbp.web.rest;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import de.ipvs.as.mbp.RestConfiguration;
+import de.ipvs.as.mbp.domain.discovery.messages.test.DiscoveryTestReply;
 import de.ipvs.as.mbp.service.messaging.PubSubService;
-import de.ipvs.as.mbp.service.messaging.scatter_gather.ScatterGatherConfig;
+import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
+import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
+import de.ipvs.as.mbp.service.messaging.message.types.ReplyMessage;
+import de.ipvs.as.mbp.service.messaging.scatter_gather.RequestStageConfig;
 import de.ipvs.as.mbp.service.messaging.scatter_gather.ScatterGatherRequest;
 import de.ipvs.as.mbp.service.messaging.scatter_gather.ScatterGatherRequestBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,16 +44,20 @@ public class RestDebugController {
         ScatterGatherRequestBuilder scatterGatherRequestBuilder = new ScatterGatherRequestBuilder(pubSubService);
 
         //Create request configurations
-        ScatterGatherConfig config1 = new ScatterGatherConfig("requestTopic", "replytome", "hallo")
+        RequestStageConfig config1 = new RequestStageConfig("requestTopic", "replytome", "hallo")
                 .setTimeout(60 * 1000)
                 .setExpectedReplies(3);
 
-        ScatterGatherConfig config2 = new ScatterGatherConfig("requestTopic2", "reply2", "hallo2")
+        RequestStageConfig config2 = new RequestStageConfig("requestTopic2", "reply2", "hallo2")
                 .setTimeout(60 * 1000)
                 .setExpectedReplies(2);
 
-        ScatterGatherRequest<String> request = scatterGatherRequestBuilder.create(Arrays.asList(config1, config2));
-        List<String> result = request.execute();
+        ScatterGatherRequest<? extends DomainMessage<? extends DomainMessageBody>> request = scatterGatherRequestBuilder.addRequestStage(config1)
+                .addRequestStage(config2)
+                .buildForDomain(new TypeReference<ReplyMessage<DiscoveryTestReply>>() {
+                });
+
+        List<? extends DomainMessage<? extends DomainMessageBody>> result = request.execute();
 
         return new ResponseEntity<>(Arrays.toString(result.toArray()), HttpStatus.OK);
     }

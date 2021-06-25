@@ -1,20 +1,21 @@
 package de.ipvs.as.mbp.service.messaging.scatter_gather;
 
 /**
- * Objects of this class represent scatter gather configurations that can be used in the {@link ScatterGatherRequestBuilder}
- * in order to create scatter gather requests.
+ * Objects of this class represent scatter gather request configurations that can be used in the
+ * {@link ScatterGatherRequestBuilder} in order to create stages of scatter gather requests.
  * Such a configuration consists out of a request topic under which the request is supposed to be published,
  * a reply topic filter that describes the topics under which the replies will be published, the
  * request message that is supposed to be published under the request topic, a timeout value that indicates
  * until which point in time replies to a request are accepted and an expected
  * number of replies which allows to close the receiving phase before the timeout occurs.
  */
-public class ScatterGatherConfig {
+public class RequestStageConfig {
     private String requestTopic;
     private String replyTopicFilter;
     private String requestMessage;
     private int timeout = 60 * 1000; //milliseconds
     private int expectedReplies = Integer.MAX_VALUE;
+
 
     /**
      * Creates a new scatter gather configuration for a given request topic, reply topic filter and request message.
@@ -23,7 +24,7 @@ public class ScatterGatherConfig {
      *
      * @param requestTopic The request topic to use
      */
-    public ScatterGatherConfig(String requestTopic, String replyTopicFilter, String requestMessage) {
+    public RequestStageConfig(String requestTopic, String replyTopicFilter, String requestMessage) {
         //Set fields
         setRequestTopic(requestTopic);
         setReplyTopicFilter(replyTopicFilter);
@@ -45,7 +46,7 @@ public class ScatterGatherConfig {
      * @param requestTopic The request topic to set
      * @return The configuration
      */
-    public ScatterGatherConfig setRequestTopic(String requestTopic) {
+    public RequestStageConfig setRequestTopic(String requestTopic) {
         //Sanity check
         if ((requestTopic == null) || requestTopic.isEmpty()) {
             throw new IllegalArgumentException("Request topic must not be null or empty.");
@@ -71,7 +72,7 @@ public class ScatterGatherConfig {
      * @param replyTopicFilter The reply topic filter to set
      * @return The configuration
      */
-    public ScatterGatherConfig setReplyTopicFilter(String replyTopicFilter) {
+    public RequestStageConfig setReplyTopicFilter(String replyTopicFilter) {
         //Sanity check
         if ((replyTopicFilter == null) || replyTopicFilter.isEmpty()) {
             throw new IllegalArgumentException("Reply topic filter not be null or empty.");
@@ -96,7 +97,7 @@ public class ScatterGatherConfig {
      * @param requestMessage The request message to set
      * @return The configuration
      */
-    public ScatterGatherConfig setRequestMessage(String requestMessage) {
+    public RequestStageConfig setRequestMessage(String requestMessage) {
         //Sanity check
         if ((requestMessage == null) || requestMessage.isEmpty()) {
             throw new IllegalArgumentException("Request message must not be null or empty.");
@@ -122,7 +123,7 @@ public class ScatterGatherConfig {
      * @param timeout The timeout value to set
      * @return The configuration
      */
-    public ScatterGatherConfig setTimeout(int timeout) {
+    public RequestStageConfig setTimeout(int timeout) {
         //Sanity check
         if ((timeout < 10) || (timeout > 60000)) {
             throw new IllegalArgumentException("The timeout value must be between 10 and 60000 milliseconds.");
@@ -149,7 +150,7 @@ public class ScatterGatherConfig {
      * @param expectedReplies The number of expected replies to set
      * @return The configuration
      */
-    public ScatterGatherConfig setExpectedReplies(int expectedReplies) {
+    public RequestStageConfig setExpectedReplies(int expectedReplies) {
         //Sanity check
         if (expectedReplies < 1) {
             throw new IllegalArgumentException("The number of expected replies must not be null.");

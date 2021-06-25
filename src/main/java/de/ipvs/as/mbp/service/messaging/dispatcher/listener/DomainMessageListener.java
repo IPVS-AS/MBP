@@ -15,27 +15,28 @@ import de.ipvs.as.mbp.util.Json;
  */
 public class DomainMessageListener<T extends DomainMessage<? extends DomainMessageBody>> implements StringMessageListener {
     /**
-     * Callback interface that has to be implemented by components that make use of an object of this class
-     * for receiving callbacks on the arrival of domain messages..
+     * Callback interface that has to be implemented by objects of this class for receiving callbacks on the arrival
+     * of domain messages..
      *
      * @param <T> The domain message type to which the incoming messages are supposed to be transformed
      */
-    public interface IDomainMessageListener<T> {
-        /**
-         * Called when a string message is received from the messaging broker that was published under a topic that matches
-         * the topic filter to which the implementing component subscribed itself.
-         *
-         * @param message     The received message
-         * @param topic       The topic under which the message was published
-         * @param topicFilter The topic filter that was used in the corresponding subscription at the message dispatcher
-         */
-        void onMessageDispatched(T message, String topic, String topicFilter);
+    public interface IDomainMessageListener<T> extends MessageListener<T> {
     }
 
+    //Fields
     private final TypeReference<T> typeReference;
     private final IDomainMessageListener<T> listener;
 
+    /**
+     * Creates a new domain message listener from a given type references, which describes the type to which the
+     * message is supposed to be transformed, and a given message listener which receives the callback for the
+     * transformed message.
+     *
+     * @param typeReference The type reference to use
+     * @param listener      The message listener to use
+     */
     public DomainMessageListener(TypeReference<T> typeReference, IDomainMessageListener<T> listener) {
+        //Set fields
         this.typeReference = typeReference;
         this.listener = listener;
     }
