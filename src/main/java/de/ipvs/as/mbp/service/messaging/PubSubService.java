@@ -1,6 +1,5 @@
 package de.ipvs.as.mbp.service.messaging;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import de.ipvs.as.mbp.domain.settings.BrokerLocation;
 import de.ipvs.as.mbp.domain.settings.Settings;
 import de.ipvs.as.mbp.service.messaging.dispatcher.MessageDispatcher;
@@ -271,7 +270,7 @@ public class PubSubService {
      * @param topicFilter The topic filter to unsubscribe the listener from
      * @param listener    The listener to unsubscribe
      */
-    public void unsubscribe(String topicFilter, MessageListener listener) {
+    public void unsubscribe(String topicFilter, MessageListener<?> listener) {
         //Unsubscribe from dispatcher
         boolean remainingSubscriptions = this.messageDispatcher.unsubscribe(topicFilter, listener);
 
@@ -282,6 +281,9 @@ public class PubSubService {
 
             //Unsubscribe topic at message broker
             this.pubSubClient.unsubscribe(topicFilter);
+
+            //TODO
+            System.out.println("Unsubscribed " + topicFilter);
         }
     }
 
@@ -456,14 +458,7 @@ public class PubSubService {
      * @return The resulting JSON string
      */
     private String transformMessageToJSON(DomainMessage<?> message) {
-        //Use jackson to transform the message to JSON
-        try {
-            return Json.MAPPER.writeValueAsString(message);
-        } catch (JsonProcessingException e) {
-            System.err.printf("Failed to transform %s to JSON string: %s%n", message.getClass().getName(), e.getMessage());
-
-            //Return empty JSON string
-            return new JSONObject().toString();
-        }
+        //Transform the message
+        return Json.of(message);
     }
 }

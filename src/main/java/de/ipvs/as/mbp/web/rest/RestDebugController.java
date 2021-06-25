@@ -10,6 +10,7 @@ import de.ipvs.as.mbp.service.messaging.message.types.ReplyMessage;
 import de.ipvs.as.mbp.service.messaging.scatter_gather.RequestStageConfig;
 import de.ipvs.as.mbp.service.messaging.scatter_gather.ScatterGatherRequest;
 import de.ipvs.as.mbp.service.messaging.scatter_gather.ScatterGatherRequestBuilder;
+import de.ipvs.as.mbp.service.messaging.scatter_gather.correlation.DomainCorrelationVerifier;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,16 +45,18 @@ public class RestDebugController {
         ScatterGatherRequestBuilder scatterGatherRequestBuilder = new ScatterGatherRequestBuilder(pubSubService);
 
         //Create request configurations
-        RequestStageConfig config1 = new RequestStageConfig("requestTopic", "replytome", "hallo")
+        RequestStageConfig<String> config1 = new RequestStageConfig<>("requestTopic", "replytome", "hallo")
                 .setTimeout(60 * 1000)
                 .setExpectedReplies(3);
 
-        RequestStageConfig config2 = new RequestStageConfig("requestTopic2", "reply2", "hallo2")
+        RequestStageConfig<String> config2 = new RequestStageConfig<>("requestTopic2", "reply2", "hallo2")
                 .setTimeout(60 * 1000)
                 .setExpectedReplies(2);
 
         ScatterGatherRequest<? extends DomainMessage<? extends DomainMessageBody>> request = scatterGatherRequestBuilder.addRequestStage(config1)
                 .addRequestStage(config2)
+                .setCorrelationVerifier(new DomainCorrelationVerifier<>(new TypeReference<ReplyMessage<DiscoveryTestReply>>() {
+                }, (message, config) -> message.getCorrelationId().equals("5")))
                 .buildForDomain(new TypeReference<ReplyMessage<DiscoveryTestReply>>() {
                 });
 

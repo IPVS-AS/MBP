@@ -4,15 +4,17 @@ package de.ipvs.as.mbp.service.messaging.scatter_gather;
  * Objects of this class represent scatter gather request configurations that can be used in the
  * {@link ScatterGatherRequestBuilder} in order to create stages of scatter gather requests.
  * Such a configuration consists out of a request topic under which the request is supposed to be published,
- * a reply topic filter that describes the topics under which the replies will be published, the
- * request message that is supposed to be published under the request topic, a timeout value that indicates
+ * a reply topic filter that describes the topics under which the replies will be published, a request message of
+ * arbitrary type that is supposed to be published under the request topic, a timeout value that indicates
  * until which point in time replies to a request are accepted and an expected
  * number of replies which allows to close the receiving phase before the timeout occurs.
+ *
+ * @param <T> The type of the request message
  */
-public class RequestStageConfig {
+public class RequestStageConfig<T> {
     private String requestTopic;
     private String replyTopicFilter;
-    private String requestMessage;
+    private T requestMessage;
     private int timeout = 60 * 1000; //milliseconds
     private int expectedReplies = Integer.MAX_VALUE;
 
@@ -24,7 +26,7 @@ public class RequestStageConfig {
      *
      * @param requestTopic The request topic to use
      */
-    public RequestStageConfig(String requestTopic, String replyTopicFilter, String requestMessage) {
+    public RequestStageConfig(String requestTopic, String replyTopicFilter, T requestMessage) {
         //Set fields
         setRequestTopic(requestTopic);
         setReplyTopicFilter(replyTopicFilter);
@@ -46,7 +48,7 @@ public class RequestStageConfig {
      * @param requestTopic The request topic to set
      * @return The configuration
      */
-    public RequestStageConfig setRequestTopic(String requestTopic) {
+    public RequestStageConfig<T> setRequestTopic(String requestTopic) {
         //Sanity check
         if ((requestTopic == null) || requestTopic.isEmpty()) {
             throw new IllegalArgumentException("Request topic must not be null or empty.");
@@ -72,7 +74,7 @@ public class RequestStageConfig {
      * @param replyTopicFilter The reply topic filter to set
      * @return The configuration
      */
-    public RequestStageConfig setReplyTopicFilter(String replyTopicFilter) {
+    public RequestStageConfig<T> setReplyTopicFilter(String replyTopicFilter) {
         //Sanity check
         if ((replyTopicFilter == null) || replyTopicFilter.isEmpty()) {
             throw new IllegalArgumentException("Reply topic filter not be null or empty.");
@@ -87,7 +89,7 @@ public class RequestStageConfig {
      *
      * @return The request message
      */
-    public String getRequestMessage() {
+    public T getRequestMessage() {
         return requestMessage;
     }
 
@@ -97,9 +99,9 @@ public class RequestStageConfig {
      * @param requestMessage The request message to set
      * @return The configuration
      */
-    public RequestStageConfig setRequestMessage(String requestMessage) {
+    public RequestStageConfig<T> setRequestMessage(T requestMessage) {
         //Sanity check
-        if ((requestMessage == null) || requestMessage.isEmpty()) {
+        if ((requestMessage == null) || requestMessage.toString().isEmpty()) {
             throw new IllegalArgumentException("Request message must not be null or empty.");
         }
 
@@ -123,7 +125,7 @@ public class RequestStageConfig {
      * @param timeout The timeout value to set
      * @return The configuration
      */
-    public RequestStageConfig setTimeout(int timeout) {
+    public RequestStageConfig<T> setTimeout(int timeout) {
         //Sanity check
         if ((timeout < 10) || (timeout > 60000)) {
             throw new IllegalArgumentException("The timeout value must be between 10 and 60000 milliseconds.");
@@ -150,7 +152,7 @@ public class RequestStageConfig {
      * @param expectedReplies The number of expected replies to set
      * @return The configuration
      */
-    public RequestStageConfig setExpectedReplies(int expectedReplies) {
+    public RequestStageConfig<T> setExpectedReplies(int expectedReplies) {
         //Sanity check
         if (expectedReplies < 1) {
             throw new IllegalArgumentException("The number of expected replies must not be null.");

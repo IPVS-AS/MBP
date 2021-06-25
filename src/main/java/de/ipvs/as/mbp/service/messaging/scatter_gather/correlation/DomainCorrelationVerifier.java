@@ -1,6 +1,5 @@
 package de.ipvs.as.mbp.service.messaging.scatter_gather.correlation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
@@ -57,15 +56,15 @@ public class DomainCorrelationVerifier<T extends DomainMessage<? extends DomainM
      */
     @Override
     public boolean isCorrelated(String message, RequestStageConfig config) {
-        try {
-            //Transform message to domain message object of provided type
-            T domainMessage = Json.MAPPER.readValue(message, this.typeReference);
+        //Transform message to domain message object of provided type
+        T domainMessage = Json.toObject(message, this.typeReference);
 
-            //Call provided correlation verifier to do the verification
-            return this.correlationVerifier.isCorrelated(domainMessage, config);
-        } catch (JsonProcessingException e) {
-            System.err.printf("Failed to create domain message from JSON string: %s%n", e.getMessage());
+        //Sanity check
+        if (domainMessage == null) {
+            return false;
         }
-        return false;
+
+        //Call provided correlation verifier to do the verification
+        return this.correlationVerifier.isCorrelated(domainMessage, config);
     }
 }

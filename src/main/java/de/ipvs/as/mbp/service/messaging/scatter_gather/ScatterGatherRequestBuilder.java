@@ -22,46 +22,53 @@ import java.util.stream.Collectors;
 
 public class ScatterGatherRequestBuilder {
 
+    //Publish-subscribe-based messaging service to use
     private final PubSubService pubSubService;
-    private final Set<CompletableFuture<List<String>>> requestStages;
+
+    //Request stage configurations
+    private final Set<RequestStageConfig<?>> requestStageConfigs;
+
+    //Correlation verifier to use
+    private CorrelationVerifier<?> correlationVerifier = null;
 
     public ScatterGatherRequestBuilder(PubSubService pubSubService) {
         //Set publish-subscribe-based messaging service
         this.pubSubService = pubSubService;
 
-        //Create new set of request stages
-        this.requestStages = new HashSet<>();
+        //Create new set of request stage configurations
+        this.requestStageConfigs = new HashSet<>();
     }
 
-    public ScatterGatherRequestBuilder addRequestStage(RequestStageConfig config) {
-        return addRequestStage(config, null);
-    }
 
-    public ScatterGatherRequestBuilder addRequestStage(RequestStageConfig config, CorrelationVerifier<?> correlationVerifier) {
-        //Sanity check
-        if (config == null) {
-            throw new IllegalArgumentException("The scatter gather configuration must not be null.");
-        }
-
-        //Create the request stage and add it to the set
-        this.requestStages.add(createRequestStage(config, correlationVerifier));
+    public ScatterGatherRequestBuilder setCorrelationVerifier(CorrelationVerifier<?> correlationVerifier) {
+        //Set the correlation verifier (null means no verifier)
+        this.correlationVerifier = correlationVerifier;
 
         //Return builder for chaining
         return this;
     }
 
-    public ScatterGatherRequestBuilder addRequestStages(Collection<RequestStageConfig> configs) {
-        return addRequestStages(configs, null);
+    public ScatterGatherRequestBuilder addRequestStage(RequestStageConfig<?> config) {
+        //Sanity check
+        if (config == null) {
+            throw new IllegalArgumentException("The scatter gather configuration must not be null.");
+        }
+
+        //Add request stage configuration to set
+        this.requestStageConfigs.add(config);
+
+        //Return builder for chaining
+        return this;
     }
 
-    public ScatterGatherRequestBuilder addRequestStages(Collection<RequestStageConfig> configs, CorrelationVerifier<?> correlationVerifier) {
+    public ScatterGatherRequestBuilder addRequestStages(Collection<RequestStageConfig<?>> configs) {
         //Sanity check
         if ((configs == null) || (configs.isEmpty()) || (configs.stream().anyMatch(Objects::isNull))) {
             throw new IllegalArgumentException("The scatter gather configurations must not be null or none.");
         }
 
-        //Create request stages for all configs and add them to the set
-        configs.forEach(c -> this.requestStages.add(createRequestStage(c, correlationVerifier)));
+        //Add request stage configurations to set
+        this.requestStageConfigs.addAll(configs);
 
         //Return builder for chaining
         return this;
@@ -69,21 +76,33 @@ public class ScatterGatherRequestBuilder {
 
     public ScatterGatherRequest<String> buildForString() {
         //Ensure that there are request stages
-        requireRequestStages();
+        requireRequestStageConfigs();
+
+        //Check correlation verifier compatibility
+        requireCompatibleCorrelationVerifier(this.correlationVerifier, StringCorrelationVerifier.class);
+
+        //Create request stages for all available configs
+        Set<CompletableFuture<List<String>>> requestStages = createRequestStages(this.correlationVerifier);
 
         //Combine all request stages of the set
-        CompletableFuture<Void> overallFuture = combineRequestStages(new HashSet<>(this.requestStages));
+        CompletableFuture<Void> overallFuture = combineRequestStages(new HashSet<>(requestStages));
 
         //Wrap all futures into one request object
-        return new ScatterGatherRequest<>(overallFuture, this.requestStages);
+        return new ScatterGatherRequest<>(overallFuture, requestStages);
     }
 
     public ScatterGatherRequest<JSONObject> buildForJSON() {
         //Ensure that there are request stages
-        requireRequestStages();
+        requireRequestStageConfigs();
+
+        //Check correlation verifier compatibility
+        requireCompatibleCorrelationVerifier(this.correlationVerifier, JSONCorrelationVerifier.class);
+
+        //Create request stages for all available configs
+        Set<CompletableFuture<List<String>>> requestStages = createRequestStages(this.correlationVerifier);
 
         //Extend all request stages for  transformation
-        Set<CompletableFuture<List<JSONObject>>> transformedStages = this.requestStages.stream()
+        Set<CompletableFuture<List<JSONObject>>> transformedStages = requestStages.stream()
                 .map(s -> s.thenApply(getJSONTransformation()))
                 .collect(Collectors.toSet());
 
@@ -96,10 +115,16 @@ public class ScatterGatherRequestBuilder {
 
     public ScatterGatherRequest<DomainMessage<? extends DomainMessageBody>> buildForDomain(TypeReference<? extends DomainMessage<? extends DomainMessageBody>> typeReference) {
         //Ensure that there are request stages
-        requireRequestStages();
+        requireRequestStageConfigs();
+
+        //Check correlation verifier compatibility
+        requireCompatibleCorrelationVerifier(this.correlationVerifier, DomainCorrelationVerifier.class);
+
+        //Create request stages for all available configs
+        Set<CompletableFuture<List<String>>> requestStages = createRequestStages(this.correlationVerifier);
 
         //Extend all request stages for transformation
-        Set<CompletableFuture<List<DomainMessage<? extends DomainMessageBody>>>> transformedStages = this.requestStages.stream()
+        Set<CompletableFuture<List<DomainMessage<? extends DomainMessageBody>>>> transformedStages = requestStages.stream()
                 .map(s -> s.thenApply(getDomainMessageTransformation(typeReference)))
                 .collect(Collectors.toSet());
 
@@ -110,7 +135,16 @@ public class ScatterGatherRequestBuilder {
         return new ScatterGatherRequest<>(overallFuture, transformedStages);
     }
 
-    private CompletableFuture<List<String>> createRequestStage(RequestStageConfig config, CorrelationVerifier<?> correlationVerifier) {
+    private Set<CompletableFuture<List<String>>> createRequestStages(CorrelationVerifier<?> correlationVerifier) {
+        //Check for state
+        requireRequestStageConfigs();
+
+        //Stream through all configs and create request stages from them
+        return this.requestStageConfigs.stream().map(c -> createRequestStage(c, correlationVerifier))
+                .collect(Collectors.toSet());
+    }
+
+    private CompletableFuture<List<String>> createRequestStage(RequestStageConfig<?> config, CorrelationVerifier<?> correlationVerifier) {
         //Create atomic reference wrapper for the future object itself and the reply message listener
         final AtomicReference<CompletableFuture<List<String>>> futureReference = new AtomicReference<>();
         final AtomicReference<StringMessageListener> replyListenerReference = new AtomicReference<>();
@@ -140,8 +174,8 @@ public class ScatterGatherRequestBuilder {
             //Subscribe listener to reply topic filter
             pubSubService.subscribe(config.getReplyTopicFilter(), replyListenerReference.get());
 
-            //Publish request
-            pubSubService.publish(config.getRequestTopic(), config.getRequestMessage());
+            //Transform request message to string and publish request
+            pubSubService.publish(config.getRequestTopic(), config.getRequestMessage().toString());
 
             //Sleep until timeout
             try {
@@ -171,13 +205,8 @@ public class ScatterGatherRequestBuilder {
     }
 
     private Function<List<String>, List<DomainMessage<? extends DomainMessageBody>>> getDomainMessageTransformation(TypeReference<? extends DomainMessage<? extends DomainMessageBody>> typeReference) {
-        return strings -> strings.stream().map(s -> {
-            try {
-                return Json.MAPPER.readValue(s, typeReference);
-            } catch (Exception e) {
-                return null;
-            }
-        }).collect(Collectors.toList());
+        //Stream through all string messages and transform them to domain message objects
+        return strings -> strings.stream().map(s -> Json.toObject(s, typeReference)).collect(Collectors.toList());
     }
 
     private CompletableFuture<Void> combineRequestStages(Collection<CompletableFuture<?>> requestStages) {
@@ -189,7 +218,7 @@ public class ScatterGatherRequestBuilder {
         return CompletableFuture.allOf(stagesArray);
     }
 
-    private boolean isCorrelated(String message, RequestStageConfig config, CorrelationVerifier<?> correlationVerifier) {
+    private boolean isCorrelated(String message, RequestStageConfig<?> config, CorrelationVerifier<?> correlationVerifier) {
         //Check if correlation verifier is provided
         if (correlationVerifier == null) {
             //No verifier, thus keep all messages
@@ -215,10 +244,22 @@ public class ScatterGatherRequestBuilder {
         return true;
     }
 
-    private void requireRequestStages() {
-        //Check if there are any request stages
-        if (this.requestStages.isEmpty()) {
+    private void requireRequestStageConfigs() {
+        //Check if there are any request stage configurations
+        if (this.requestStageConfigs.isEmpty()) {
             throw new IllegalStateException("Request stages need to be added before the request can be build.");
+        }
+    }
+
+    private void requireCompatibleCorrelationVerifier(CorrelationVerifier<?> verifier, Class<?> verifierClass) {
+        //Check for null
+        if ((verifier == null) || (verifierClass == null)) {
+            return;
+        }
+
+        //Check if correlation verifier is instance of the provided class
+        if (!verifierClass.isInstance(verifier)) {
+            throw new IllegalArgumentException(String.format("The correlation verifier for this build method must be of class %s, but is %s.", verifierClass.getName(), verifier.getClass().getName()));
         }
     }
 }

@@ -3,6 +3,7 @@ package de.ipvs.as.mbp.service.messaging.message;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import de.ipvs.as.mbp.util.InstantSerializer;
+import de.ipvs.as.mbp.util.Json;
 
 import java.time.Instant;
 
@@ -75,5 +76,16 @@ public class DomainMessage<T extends DomainMessageBody> {
         if (!messageBodyClass.isAnnotationPresent(DomainMessageTemplate.class)) {
             throw new IllegalArgumentException(String.format("The class of the message body must be annotated with the %s annotation.", DomainMessageTemplate.class.getName()));
         }
+    }
+
+    /**
+     * Uses Jackson to transforms the object to a JSON string and returns the result.
+     *
+     * @return The resulting JSON string
+     */
+    @Override
+    public String toString() {
+        //Transform object to JSON string
+        return Json.of(this);
     }
 }

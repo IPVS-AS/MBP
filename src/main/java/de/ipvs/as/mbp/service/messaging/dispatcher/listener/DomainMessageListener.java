@@ -1,6 +1,5 @@
 package de.ipvs.as.mbp.service.messaging.dispatcher.listener;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
@@ -51,14 +50,10 @@ public class DomainMessageListener<T extends DomainMessage<? extends DomainMessa
      */
     @Override
     public void onMessageDispatched(String message, String topic, String topicFilter) {
-        try {
-            //Convert message to domain message object of provided type
-            T domainMessage = Json.MAPPER.readValue(message, this.typeReference);
+        //Convert message to domain message object of provided type
+        T domainMessage = Json.toObject(message, this.typeReference);
 
-            //Trigger callback of provided listener
-            this.listener.onMessageDispatched(domainMessage, topic, topicFilter);
-        } catch (JsonProcessingException e) {
-            System.err.printf("Failed to create domain message from JSON string: %s%n", e.getMessage());
-        }
+        //Trigger callback of provided listener
+        this.listener.onMessageDispatched(domainMessage, topic, topicFilter);
     }
 }
