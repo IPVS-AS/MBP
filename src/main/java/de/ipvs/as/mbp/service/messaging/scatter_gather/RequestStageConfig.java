@@ -1,5 +1,10 @@
 package de.ipvs.as.mbp.service.messaging.scatter_gather;
 
+import de.ipvs.as.mbp.service.messaging.message.types.RequestMessage;
+
+//TODO Remove type and create sublcasses for String, JSON and RequestMessage with abstract getReturnTopicFilter
+//TODO String and JSON return their field, RequestMessage config returns it from the provided request message
+
 /**
  * Objects of this class represent configurations for scatter gather requests that can be used in the
  * {@link ScatterGatherRequestBuilder} in order to create stages of scatter gather requests.
@@ -26,6 +31,12 @@ public class RequestStageConfig<T> {
 
     //Expected number of replies to close the receiving phase before the timout
     private int expectedReplies = Integer.MAX_VALUE;
+
+    public RequestStageConfig(String requestTopic, RequestMessage<?> requestMessage) {
+        //Set fields
+        setRequestTopic(requestTopic);
+        setRequestMessage((T) requestMessage);
+    }
 
 
     /**
@@ -112,6 +123,20 @@ public class RequestStageConfig<T> {
         //Sanity check
         if ((requestMessage == null) || requestMessage.toString().isEmpty()) {
             throw new IllegalArgumentException("Request message must not be null or empty.");
+        }
+
+        //Check if message is of type RequestMessage
+        if (requestMessage instanceof RequestMessage) {
+            //Extract reply topic from request message
+            String returnTopic = ((RequestMessage<?>) requestMessage).getReturnTopic();
+
+            //Check return topic
+            if ((returnTopic == null) || (returnTopic.isEmpty())) {
+                throw new IllegalArgumentException("The provided request message contains an invalid return topic.");
+            }
+
+            //Set return topic of config accordingly
+            this.replyTopicFilter = returnTopic;
         }
 
         this.requestMessage = requestMessage;

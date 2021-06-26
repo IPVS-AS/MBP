@@ -5,21 +5,42 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageTemplate;
 
+/**
+ * Reply message that is supposed to be received in response to {@link DiscoveryTestRequest} messages and indicates
+ * the availability of a discovery gateway as well as the number of devices it knows about.
+ */
 @DomainMessageTemplate("discovery_test_reply")
 public class DiscoveryTestReply extends DomainMessageBody {
-    private int numDevices;
+    //Number of devices the gateway knows about
+    private int devicesCount;
 
+    /**
+     * Creates a new discovery test reply message from a given number of known devices.
+     *
+     * @param devicesCount The number of devices the gateway knows about
+     */
     @JsonCreator
-    public DiscoveryTestReply(@JsonProperty("numDevices") int numDevices) {
-        this.numDevices = numDevices;
+    public DiscoveryTestReply(@JsonProperty("devicesCount") int devicesCount) {
+        this.devicesCount = devicesCount;
     }
 
-    public int getNumDevices() {
-        return numDevices;
+    /**
+     * Returns the number of known devices.
+     *
+     * @return The number of devices
+     */
+    public int getDevicesCount() {
+        return devicesCount;
     }
 
-    public DiscoveryTestReply setNumDevices(int numDevices) {
-        this.numDevices = numDevices;
+    /**
+     * Sets the number of known devices
+     *
+     * @param devicesCount The number of devices to set
+     * @return The discovery test reply message
+     */
+    public DiscoveryTestReply setDevicesCount(int devicesCount) {
+        this.devicesCount = devicesCount;
         return this;
     }
 }

@@ -136,6 +136,9 @@ public class PubSubService {
      * @param message The message to publish
      */
     public void publish(String topic, DomainMessage<?> message) {
+        //Update timestamp of message
+        message.updateTimestamp();
+
         //Transform the message to JSON
         String jsonString = transformMessageToJSON(message);
 
@@ -172,6 +175,9 @@ public class PubSubService {
      * @param message The message to publish
      */
     public void publish(Collection<String> topics, DomainMessage<?> message) {
+        //Update timestamp of message
+        message.updateTimestamp();
+
         //Transform the message to JSON
         String jsonString = transformMessageToJSON(message);
 
