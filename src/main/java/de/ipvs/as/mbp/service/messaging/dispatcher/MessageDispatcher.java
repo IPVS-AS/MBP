@@ -29,7 +29,7 @@ public class MessageDispatcher {
     private final PubSubClient pubSubClient;
 
     //Map (topic filter --> list of subscriptions) to store subscriptions
-    private final Map<String, Set<MessageListener>> subscriptionMap;
+    private final Map<String, Set<MessageListener<?>>> subscriptionMap;
 
     /**
      * Creates and initializes the message dispatcher.
@@ -89,14 +89,14 @@ public class MessageDispatcher {
      * @param listener    The listener to unsubscribe
      * @return True, if there are remaining subscriptions for this topic filter; false otherwise
      */
-    public boolean unsubscribe(String topicFilter, MessageListener listener) {
+    public boolean unsubscribe(String topicFilter, MessageListener<?> listener) {
         //Check if the subscription map contains the topic filter
         if (!this.subscriptionMap.containsKey(topicFilter)) {
             return false;
         }
 
         //Get subscriptions for this topic filter from map
-        Set<MessageListener> subscriptions = this.subscriptionMap.get(topicFilter);
+        Set<MessageListener<?>> subscriptions = this.subscriptionMap.get(topicFilter);
 
         //Check if listener is already subscribed
         if (!subscriptions.contains(listener)) {
@@ -176,11 +176,11 @@ public class MessageDispatcher {
      * @param topicFilter The topic filter to subscribe to
      * @param listener    The listener to dispatch matching messages to
      */
-    private void performSubscription(String topicFilter, MessageListener listener) {
+    private void performSubscription(String topicFilter, MessageListener<?> listener) {
         //Check whether the topic filter is already registered
         if (subscriptionMap.containsKey(topicFilter)) {
             //Get all subscriptions for this topic filter
-            Set<MessageListener> subscriptions = subscriptionMap.get(topicFilter);
+            Set<MessageListener<?>> subscriptions = subscriptionMap.get(topicFilter);
 
             //Check if listener is already subscribed
             if (subscriptions.contains(listener)) {
@@ -191,7 +191,7 @@ public class MessageDispatcher {
             subscriptions.add(listener);
         } else {
             //Create new set of subscriptions for this topic filter
-            Set<MessageListener> listeners = new HashSet<>();
+            Set<MessageListener<?>> listeners = new HashSet<>();
             listeners.add(listener);
             subscriptionMap.put(topicFilter, listeners);
         }

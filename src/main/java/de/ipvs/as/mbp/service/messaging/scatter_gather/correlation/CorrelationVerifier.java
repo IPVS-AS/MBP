@@ -17,5 +17,5 @@ public interface CorrelationVerifier<T> {
      * @param config  The request stage configuration to check
      * @return True, if the message and the configuration are correlated; false otherwise
      */
-    boolean isCorrelated(T message, RequestStageConfig config);
+    boolean isCorrelated(T message, RequestStageConfig<?> config);
 }

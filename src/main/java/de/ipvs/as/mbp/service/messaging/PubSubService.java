@@ -281,9 +281,6 @@ public class PubSubService {
 
             //Unsubscribe topic at message broker
             this.pubSubClient.unsubscribe(topicFilter);
-
-            //TODO
-            System.out.println("Unsubscribed " + topicFilter);
         }
     }
 

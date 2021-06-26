@@ -55,7 +55,7 @@ public class DomainCorrelationVerifier<T extends DomainMessage<? extends DomainM
      * @return True, if the message and the configuration are correlated; false otherwise
      */
     @Override
-    public boolean isCorrelated(String message, RequestStageConfig config) {
+    public boolean isCorrelated(String message, RequestStageConfig<?> config) {
         //Transform message to domain message object of provided type
         T domainMessage = Json.toObject(message, this.typeReference);
 

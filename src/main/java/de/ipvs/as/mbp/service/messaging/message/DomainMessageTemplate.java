@@ -6,18 +6,19 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for classes that define the structure of publish-subscribe-based messages. It allows to specify
- * a name for the corresponding message type by which the messages can be identified.
+ * Annotation for classes that define the body structure of the messages that are supposed to be transferred via
+ * publish-subscribe-based messaging. It allows to specify a name for the message type that results from using
+ * the body in a message. This type name should allow to uniquely identify the type of messages.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface DomainMessageTemplate {
 
     /**
-     * Provides the domain-specific type name of the message which allows to identify the type
-     * of the message.
+     * Provides the name of the message type that results from using the body in a message. This type name
+     * allows to uniquely identify the type of messages.
      *
-     * @return The domain-specific type name
+     * @return The type name
      */
     String value();
 }

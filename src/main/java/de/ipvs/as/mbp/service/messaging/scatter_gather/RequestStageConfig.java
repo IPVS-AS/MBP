@@ -1,7 +1,7 @@
 package de.ipvs.as.mbp.service.messaging.scatter_gather;
 
 /**
- * Objects of this class represent scatter gather request configurations that can be used in the
+ * Objects of this class represent configurations for scatter gather requests that can be used in the
  * {@link ScatterGatherRequestBuilder} in order to create stages of scatter gather requests.
  * Such a configuration consists out of a request topic under which the request is supposed to be published,
  * a reply topic filter that describes the topics under which the replies will be published, a request message of
@@ -12,10 +12,19 @@ package de.ipvs.as.mbp.service.messaging.scatter_gather;
  * @param <T> The type of the request message
  */
 public class RequestStageConfig<T> {
+    //Topic under which the request is supposed to be published
     private String requestTopic;
+
+    //Topic filter for resulting reply messages
     private String replyTopicFilter;
+
+    //Request message to publish
     private T requestMessage;
+
+    //Timeout after which the request should conclude at latest
     private int timeout = 60 * 1000; //milliseconds
+
+    //Expected number of replies to close the receiving phase before the timout
     private int expectedReplies = Integer.MAX_VALUE;
 
 
