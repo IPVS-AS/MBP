@@ -5,7 +5,8 @@
             <div class="header">
                 <div class="col-lg-6">
                     <h2>Request topics
-                        <small>Topics at which discovery requests are supposed to be published.</small>
+                        <small>Topics under which discovery requests to external repositories are supposed to be
+                            published.</small>
                     </h2>
                 </div>
                 <div class="align-right">
@@ -23,7 +24,7 @@
                     <tr>
                         <th>Topic</th>
                         <th class="align-center">Timeout</th>
-                        <th class="align-center">Expected replies</th>
+                        <th class="align-center">Exp. replies</th>
                         <th class="align-center">Owner</th>
                     </tr>
                     </thead>
@@ -42,6 +43,29 @@
                             {{topic.expectedReplies}}
                         </td>
                         <td class="align-center">{{topic.ownerName ? topic.ownerName : "None"}}</td>
+                        <td>
+                            <form ng-submit="ctrl.testRequestTopic(topic.id)" style="display: inline-block">
+                                <button type="submit" class="btn btn-block btn-primary m-t-0 waves-effect">
+                                    Test
+                                </button>
+                            </form>&nbsp;
+                            <a class="clickable" data-toggle="collapse" data-target="#results-{{topic.id}}"
+                               ng-show="topic.testResults">
+                                Toggle results
+                            </a>
+                            <div id="results-{{topic.id}}" class="collapse" ng-show="topic.testResults"
+                                 style="margin-top: 10px;">
+                                <ul class="list-group">
+                                    <li class="list-group-item bg-mbp-blue">Repository replies:</li>
+                                    <li class="list-group-item"
+                                        ng-repeat="(name, devicesCount) in topic.testResults">{{name}}<span
+                                            class="badge bg-teal">{{devicesCount}} devices</span></li>
+                                    <li class="list-group-item" ng-show="(topic.testResults | json) == '{}'">
+                                        None
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
                         <td>
                             <form ng-submit="deleteRequestTopicCtrl.deleteItem()"
                                   style="display: inline-block">

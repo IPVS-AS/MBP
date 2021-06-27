@@ -42,6 +42,14 @@ public class DiscoveryGateway {
 
     }
 
+    /**
+     * Checks the availability of discovery repositories for a given {@link RequestTopic} and returns
+     * a map (repository name --> device descriptions count) containing the unique names of the repositories
+     * that replied to the request as well as the number of device descriptions they contain.
+     *
+     * @param requestTopic The request topic for which the repository availability is supposed to be tested
+     * @return The resulting map (repository ID --> device descriptions count)
+     */
     public Map<String, Integer> getAvailableRepositories(RequestTopic requestTopic) {
         //Sanity check
         if (requestTopic == null) {
@@ -62,11 +70,42 @@ public class DiscoveryGateway {
         return repositoryMap;
     }
 
+    /**
+     * Creates and executes a scatter gather request for a given {@link RequestTopic}. Thereby, a request message with
+     * a given {@link DomainMessageBody} of an arbitrary sub-type is published under the request topic and then the
+     * corresponding replies are received and subsequently converted to {@link ReplyMessage}s of a given sub-type.
+     * Finally, a list of these response messages is returned as result of this method call.
+     * All in all, this method forms a easy-to-use framework for executing synchronous, discovery-related
+     * scatter gather requests.
+     *
+     * @param requestTopic       The request topics to use
+     * @param requestMessageBody The body to use in the request message
+     * @param replyTypeReference References the desired type to which the reply messages are supposed to be transformed
+     * @param <Q>                The type of the request message body
+     * @param <R>                The type of the response message body
+     * @return The resulting list of response messages in the desired type
+     */
     private <Q extends DomainMessageBody, R extends DomainMessageBody> List<ReplyMessage<R>> sendRepositoryRequest(RequestTopic requestTopic, Q requestMessageBody, TypeReference<ReplyMessage<R>> replyTypeReference) {
+        //Wrap request topic in list and call responsible method
         return sendRepositoryRequest(Collections.singletonList(requestTopic), requestMessageBody, replyTypeReference);
     }
 
 
+    /**
+     * Creates and executes a scatter gather request for a given collection of {@link RequestTopic}s. Thereby,
+     * a request message with a given {@link DomainMessageBody} of an arbitrary sub-type is published under the request
+     * topics and then the corresponding replies are received and subsequently converted to {@link ReplyMessage}s of
+     * a given sub-type. Finally, a list of these response messages is returned as result of this method call.
+     * All in all, this method forms a easy-to-use framework for executing synchronous, discovery-related
+     * scatter gather requests.
+     *
+     * @param requestTopics      The collection of request topics to use
+     * @param requestMessageBody The body to use in the request message
+     * @param replyTypeReference References the desired type to which the reply messages are supposed to be transformed
+     * @param <Q>                The type of the request message body
+     * @param <R>                The type of the response message body
+     * @return The resulting list of response messages in the desired type
+     */
     private <Q extends DomainMessageBody, R extends DomainMessageBody> List<ReplyMessage<R>> sendRepositoryRequest(Collection<RequestTopic> requestTopics, Q requestMessageBody, TypeReference<ReplyMessage<R>> replyTypeReference) {
         //Sanity checks
         if ((requestTopics == null) || (requestTopics.isEmpty()) || requestTopics.stream().anyMatch(Objects::isNull)) {

@@ -2,8 +2,8 @@
  * Controller for the request topic list page.
  */
 app.controller('RequestTopicListController',
-    ['$scope', '$controller', 'requestTopicList', 'addRequestTopic', 'deleteRequestTopic', 'NotificationService',
-        function ($scope, $controller, requestTopicList, addRequestTopic, deleteRequestTopic, NotificationService) {
+    ['$scope', '$controller', 'requestTopicList', 'addRequestTopic', 'deleteRequestTopic', 'DiscoveryService', 'NotificationService',
+        function ($scope, $controller, requestTopicList, addRequestTopic, deleteRequestTopic, DiscoveryService, NotificationService) {
 
             let vm = this;
 
@@ -13,6 +13,39 @@ app.controller('RequestTopicListController',
             (function initController() {
 
             })();
+
+            /**
+             * [Public]
+             * Performs a server request in order to retrieve information about the repositories that are available
+             * for a certain request topic, given by its ID. This way, it can be tested whether the request topics
+             * works as intended. The received data is then displayed to the user.
+             *
+             * @param requestTopicId The ID of the request topic to test
+             */
+            function testRequestTopic(requestTopicId) {
+                DiscoveryService.testRequestTopic(requestTopicId).then(function (testResults) {
+                    //Find the request topic with this ID in the list
+                    for (let i = 0; i < requestTopicList.length; i++) {
+                        //Check if current request topic matches the desired one
+                        if (requestTopicId !== requestTopicList[i].id) {
+                            continue;
+                        }
+
+                        //Extend the request topic object for the test results
+                        requestTopicList[i].testResults = testResults;
+                        break;
+                    }
+
+                    //Check number of entries in the test resulsts map
+                    if (Object.keys(testResults).length > 0) {
+                        //Responses were received
+                        NotificationService.notify("The test concluded successfully.", "success")
+                    } else {
+                        //No responses were received
+                        NotificationService.notify("The test concluded, but no responses from repositories were received.", "warning")
+                    }
+                });
+            }
 
             /**
              * [Public]
@@ -61,7 +94,8 @@ app.controller('RequestTopicListController',
                     $scope: $scope,
                     deleteItem: deleteRequestTopic,
                     confirmDeletion: confirmDelete
-                })
+                }),
+                testRequestTopic: testRequestTopic
             });
 
             //Watch controller result of request topic additions
