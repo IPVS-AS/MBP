@@ -4,7 +4,7 @@ import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageTemplate;
 
 /**
- * Request message that is supposed to test the availability of discovery gateways.
+ * Request message that is supposed to test the availability of discovery repositories.
  */
 @DomainMessageTemplate(value = "discovery_test")
 public class DiscoveryTestRequest extends DomainMessageBody {

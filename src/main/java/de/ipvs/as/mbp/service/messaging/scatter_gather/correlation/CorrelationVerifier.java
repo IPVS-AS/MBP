@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.service.messaging.scatter_gather.correlation;
 
-import de.ipvs.as.mbp.service.messaging.scatter_gather.RequestStageConfig;
+import de.ipvs.as.mbp.service.messaging.scatter_gather.config.RequestStageConfig;
 
 /**
  * Base interface for more concrete correlation verifier interfaces for specific message data types.

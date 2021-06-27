@@ -2,12 +2,15 @@ package de.ipvs.as.mbp.service.messaging;
 
 import de.ipvs.as.mbp.domain.settings.BrokerLocation;
 import de.ipvs.as.mbp.domain.settings.Settings;
+import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.service.messaging.dispatcher.MessageDispatcher;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.DomainMessageListener;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.JSONMessageListener;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.MessageListener;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.StringMessageListener;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
+import de.ipvs.as.mbp.service.messaging.scatter_gather.ScatterGatherRequestBuilder;
+import de.ipvs.as.mbp.service.messaging.topics.ReturnTopicGenerator;
 import de.ipvs.as.mbp.service.settings.SettingsService;
 import de.ipvs.as.mbp.util.Json;
 import org.json.JSONException;
@@ -44,6 +47,7 @@ public class PubSubService {
 
     //Auto-wired components
     private final PubSubClient pubSubClient;
+    private final ReturnTopicGenerator returnTopicGenerator;
     private final SettingsService settingsService;
 
     //Dispatcher for incoming messages
@@ -80,15 +84,19 @@ public class PubSubService {
     private String oauth2ClientId;
 
     /**
-     * Creates and initializes the service for a given client that enables publish-subscribe-based messaging.
+     * Creates and initializes the service for a given {@link PubSubClient} that enables publish-subscribe-based
+     * messaging, a {@link ReturnTopicGenerator} that is able to generate return topics and a
+     * {@link SettingsService} that manages application settings.
      *
-     * @param pubSubClient    The messaging client to use (auto-wired)
-     * @param settingsService The settings service (auto-wired)
+     * @param pubSubClient         The messaging client to use (auto-wired)
+     * @param returnTopicGenerator The return topic generator to use (auto-wired)
+     * @param settingsService      The settings service (auto-wired)
      */
     @Autowired
-    public PubSubService(PubSubClient pubSubClient, SettingsService settingsService) {
+    public PubSubService(PubSubClient pubSubClient, ReturnTopicGenerator returnTopicGenerator, SettingsService settingsService) {
         //Store references to components
         this.pubSubClient = pubSubClient;
+        this.returnTopicGenerator = returnTopicGenerator;
         this.settingsService = settingsService;
 
         //Initialize sub-components and data structures
@@ -288,6 +296,40 @@ public class PubSubService {
             //Unsubscribe topic at message broker
             this.pubSubClient.unsubscribe(topicFilter);
         }
+    }
+
+    /**
+     * Creates and returns a new {@link ScatterGatherRequestBuilder} including all its dependencies which subsequently
+     * can be used to construct scatter gather requests in a step by step manner.
+     *
+     * @return The created {@link ScatterGatherRequestBuilder}
+     */
+    public ScatterGatherRequestBuilder buildScatterGatherRequest() {
+        //Create new request builder and return it
+        return new ScatterGatherRequestBuilder(this, this.returnTopicGenerator);
+    }
+
+    /**
+     * Creates a return topic from a given category name.
+     *
+     * @param category The category name to use
+     * @return The resulting return topic
+     */
+    public String generateReturnTopic(String category) {
+        //Generate the topic
+        return returnTopicGenerator.create(category);
+    }
+
+    /**
+     * Creates a return topic from a given {@link User} and category name.
+     *
+     * @param user     The user to use
+     * @param category The category name to use
+     * @return The resulting return topic
+     */
+    public String generateReturnTopic(User user, String category) {
+        //Generate the topic
+        return returnTopicGenerator.create(user, category);
     }
 
     /**

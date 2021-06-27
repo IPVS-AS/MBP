@@ -6,18 +6,19 @@ import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageTemplate;
 
 /**
- * Reply message that is supposed to be received in response to {@link DiscoveryTestRequest} messages and indicates
- * the availability of a discovery gateway as well as the number of devices it knows about.
+ * Reply message that is supposed to be received in response to {@link DiscoveryTestRequest} messages. It indicates
+ * the availability of an external discovery repository and contains the number of device descriptions the repository
+ * holds.
  */
 @DomainMessageTemplate("discovery_test_reply")
 public class DiscoveryTestReply extends DomainMessageBody {
-    //Number of devices the gateway knows about
+    //Number of device descriptions the repository contains
     private int devicesCount;
 
     /**
      * Creates a new discovery test reply message from a given number of known devices.
      *
-     * @param devicesCount The number of devices the gateway knows about
+     * @param devicesCount The number of device descriptions the repository contains
      */
     @JsonCreator
     public DiscoveryTestReply(@JsonProperty("devicesCount") int devicesCount) {
@@ -25,18 +26,18 @@ public class DiscoveryTestReply extends DomainMessageBody {
     }
 
     /**
-     * Returns the number of known devices.
+     * Returns the number of device descriptions.
      *
-     * @return The number of devices
+     * @return The number of device descriptions
      */
     public int getDevicesCount() {
         return devicesCount;
     }
 
     /**
-     * Sets the number of known devices
+     * Sets the number of device descriptions
      *
-     * @param devicesCount The number of devices to set
+     * @param devicesCount The number of device descriptions to set
      * @return The discovery test reply message
      */
     public DiscoveryTestReply setDevicesCount(int devicesCount) {

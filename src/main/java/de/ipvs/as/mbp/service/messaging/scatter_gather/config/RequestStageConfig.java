@@ -1,27 +1,21 @@
-package de.ipvs.as.mbp.service.messaging.scatter_gather;
+package de.ipvs.as.mbp.service.messaging.scatter_gather.config;
 
-import de.ipvs.as.mbp.service.messaging.message.types.RequestMessage;
-
-//TODO Remove type and create sublcasses for String, JSON and RequestMessage with abstract getReturnTopicFilter
-//TODO String and JSON return their field, RequestMessage config returns it from the provided request message
+import de.ipvs.as.mbp.service.messaging.scatter_gather.ScatterGatherRequestBuilder;
 
 /**
- * Objects of this class represent configurations for scatter gather requests that can be used in the
- * {@link ScatterGatherRequestBuilder} in order to create stages of scatter gather requests.
- * Such a configuration consists out of a request topic under which the request is supposed to be published,
- * a reply topic filter that describes the topics under which the replies will be published, a request message of
- * arbitrary type that is supposed to be published under the request topic, a timeout value that indicates
- * until which point in time replies to a request are accepted and an expected
- * number of replies which allows to close the receiving phase before the timeout occurs.
+ * Base class for request stage configurations that serve as descriptions of scatter gather request stages and can
+ * be used in the {@link ScatterGatherRequestBuilder} to add such stages to a scatter gather request under construction.
+ * A request stage configuration consists out of a request topic under which the request is supposed to be published,
+ * a return topic that describes the topic under which the replies are expected to be published, a request
+ * message of an arbitrary type that is supposed to be published under the request topic, a timeout value that indicates
+ * until which point in time replies to a request are accepted and an expected number of replies which allows to close
+ * the receiving phase before the timeout occurs.
  *
  * @param <T> The type of the request message
  */
-public class RequestStageConfig<T> {
+public abstract class RequestStageConfig<T> {
     //Topic under which the request is supposed to be published
     private String requestTopic;
-
-    //Topic filter for resulting reply messages
-    private String replyTopicFilter;
 
     //Request message to publish
     private T requestMessage;
@@ -32,26 +26,27 @@ public class RequestStageConfig<T> {
     //Expected number of replies to close the receiving phase before the timout
     private int expectedReplies = Integer.MAX_VALUE;
 
-    public RequestStageConfig(String requestTopic, RequestMessage<?> requestMessage) {
-        //Set fields
-        setRequestTopic(requestTopic);
-        setRequestMessage((T) requestMessage);
-    }
-
-
     /**
-     * Creates a new scatter gather configuration for a given request topic, reply topic filter and request message.
-     * For the timeout, the default value of one minute is used, while the number of expected replies is
-     * set to {@link Integer.MAX_VALUE}.
+     * Creates a new request stage configuration from a given request topic and request message. For the timeout,
+     * the default value of one minute is used, while the number of expected replies is set to
+     * {@link Integer.MAX_VALUE}.
      *
-     * @param requestTopic The request topic to use
+     * @param requestTopic   The request topic to use
+     * @param requestMessage The request message to use
      */
-    public RequestStageConfig(String requestTopic, String replyTopicFilter, T requestMessage) {
+    public RequestStageConfig(String requestTopic, T requestMessage) {
         //Set fields
         setRequestTopic(requestTopic);
-        setReplyTopicFilter(replyTopicFilter);
         setRequestMessage(requestMessage);
     }
+
+    /**
+     * Returns the return topic which describes the topic under which the replies to the request of this stage
+     * are expected to be published.
+     *
+     * @return The return topic
+     */
+    public abstract String getReturnTopic();
 
     /**
      * Returns the request topic of the scatter gather configuration.
@@ -80,31 +75,6 @@ public class RequestStageConfig<T> {
     }
 
     /**
-     * Returns the filter for reply topics of the scatter gather configuration.
-     *
-     * @return The reply topic filter
-     */
-    public String getReplyTopicFilter() {
-        return replyTopicFilter;
-    }
-
-    /**
-     * Sets the filter for reply topics of the scatter gather configuration.
-     *
-     * @param replyTopicFilter The reply topic filter to set
-     * @return The configuration
-     */
-    public RequestStageConfig<T> setReplyTopicFilter(String replyTopicFilter) {
-        //Sanity check
-        if ((replyTopicFilter == null) || replyTopicFilter.isEmpty()) {
-            throw new IllegalArgumentException("Reply topic filter not be null or empty.");
-        }
-
-        this.replyTopicFilter = replyTopicFilter;
-        return this;
-    }
-
-    /**
      * Returns the request message of the scatter gather configuration.
      *
      * @return The request message
@@ -123,20 +93,6 @@ public class RequestStageConfig<T> {
         //Sanity check
         if ((requestMessage == null) || requestMessage.toString().isEmpty()) {
             throw new IllegalArgumentException("Request message must not be null or empty.");
-        }
-
-        //Check if message is of type RequestMessage
-        if (requestMessage instanceof RequestMessage) {
-            //Extract reply topic from request message
-            String returnTopic = ((RequestMessage<?>) requestMessage).getReturnTopic();
-
-            //Check return topic
-            if ((returnTopic == null) || (returnTopic.isEmpty())) {
-                throw new IllegalArgumentException("The provided request message contains an invalid return topic.");
-            }
-
-            //Set return topic of config accordingly
-            this.replyTopicFilter = returnTopic;
         }
 
         this.requestMessage = requestMessage;

@@ -7,15 +7,15 @@ import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
  * Objects of this class represent request messages, i.e. messages that contain data and intent to invoke
  * a specific behaviour of the receiver as reaction to receiving this message, which typically involves the sending
  * of a corresponding {@link ReplyMessage} to the primal sender. By default, request messages carry a return topic
- * that indicates under which topic the reply messages for each request are expected to be published and a correlation
- * identifier that allows to associate replies with the preceding requests. The body of the message can be of an
- * arbitrary type that inherits from {@link DomainMessageBody}.
+ * that describes the topic under which the reply messages for each request are expected to be published and
+ * a correlation identifier that allows to associate replies with the preceding requests. The body of the message
+ * can be of an arbitrary type that inherits from {@link DomainMessageBody}.
  *
  * @param <T> The type of the message body
  */
 public class RequestMessage<T extends DomainMessageBody> extends DomainMessage<T> {
 
-    //Expected topic for replies
+    //Topic for reply messages
     private String returnTopic;
 
     //User-defined correlation identifier
@@ -39,6 +39,21 @@ public class RequestMessage<T extends DomainMessageBody> extends DomainMessage<T
     public RequestMessage(T messageBody, String returnTopic) {
         super(messageBody);
         setReturnTopic(returnTopic);
+    }
+
+    /**
+     * Creates a new request message as copy of a existing request message. However, no copy of the message body is
+     * created; instead the same reference is used.
+     *
+     * @param requestMessage The existing request message to copy
+     */
+    public RequestMessage(RequestMessage<T> requestMessage) {
+        //Call copy constructor of super class
+        super(requestMessage);
+
+        //Copy fields from the provided request message
+        this.returnTopic = requestMessage.returnTopic;
+        this.correlationId = requestMessage.correlationId;
     }
 
     /**

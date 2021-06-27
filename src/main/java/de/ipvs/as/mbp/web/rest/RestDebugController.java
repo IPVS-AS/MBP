@@ -1,16 +1,9 @@
 package de.ipvs.as.mbp.web.rest;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import de.ipvs.as.mbp.RestConfiguration;
-import de.ipvs.as.mbp.domain.discovery.messages.test.DiscoveryTestReply;
-import de.ipvs.as.mbp.service.messaging.PubSubService;
-import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
-import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
-import de.ipvs.as.mbp.service.messaging.message.types.ReplyMessage;
-import de.ipvs.as.mbp.service.messaging.scatter_gather.RequestStageConfig;
-import de.ipvs.as.mbp.service.messaging.scatter_gather.ScatterGatherRequest;
-import de.ipvs.as.mbp.service.messaging.scatter_gather.ScatterGatherRequestBuilder;
-import de.ipvs.as.mbp.service.messaging.scatter_gather.correlation.DomainCorrelationVerifier;
+import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
+import de.ipvs.as.mbp.repository.discovery.RequestTopicRepository;
+import de.ipvs.as.mbp.service.discovery.DiscoveryGateway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -32,7 +23,10 @@ import java.util.concurrent.ExecutionException;
 public class RestDebugController {
 
     @Autowired
-    private PubSubService pubSubService;
+    private RequestTopicRepository requestTopicRepository;
+
+    @Autowired
+    private DiscoveryGateway discoveryGateway;
 
     /**
      * REST interface for debugging purposes. Feel free to implement your own debugging and testing stuff here,
@@ -42,26 +36,16 @@ public class RestDebugController {
      */
     @RequestMapping(value = "/debug", method = RequestMethod.GET)
     public ResponseEntity<String> debug() throws ExecutionException, InterruptedException {
-        ScatterGatherRequestBuilder scatterGatherRequestBuilder = new ScatterGatherRequestBuilder(pubSubService);
+        //Check for empty
+        if (requestTopicRepository.findAll().size() < 1) {
+            return new ResponseEntity<>("nix", HttpStatus.OK);
+        }
 
-        //Create request configurations
-        RequestStageConfig<String> config1 = new RequestStageConfig<>("requestTopic", "replytome", "hallo")
-                .setTimeout(60 * 1000)
-                .setExpectedReplies(3);
+        //Get first request topic
+        RequestTopic firstTopic = requestTopicRepository.findAll().get(0);
 
-        RequestStageConfig<String> config2 = new RequestStageConfig<>("requestTopic2", "reply2", "hallo2")
-                .setTimeout(60 * 1000)
-                .setExpectedReplies(2);
+        discoveryGateway.checkAvailableRepositories(firstTopic);
 
-        ScatterGatherRequest<? extends DomainMessage<? extends DomainMessageBody>> request = scatterGatherRequestBuilder.addRequestStage(config1)
-                .addRequestStage(config2)
-                .setCorrelationVerifier(new DomainCorrelationVerifier<>(new TypeReference<ReplyMessage<DiscoveryTestReply>>() {
-                }, (message, config) -> message.getCorrelationId().equals("5")))
-                .buildForDomain(new TypeReference<ReplyMessage<DiscoveryTestReply>>() {
-                });
-
-        List<? extends DomainMessage<? extends DomainMessageBody>> result = request.execute();
-
-        return new ResponseEntity<>(Arrays.toString(result.toArray()), HttpStatus.OK);
+        return new ResponseEntity<>("ok", HttpStatus.OK);
     }
 }

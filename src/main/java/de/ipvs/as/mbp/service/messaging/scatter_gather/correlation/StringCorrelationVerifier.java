@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.service.messaging.scatter_gather.correlation;
 
-import de.ipvs.as.mbp.service.messaging.scatter_gather.RequestStageConfig;
+import de.ipvs.as.mbp.service.messaging.scatter_gather.config.RequestStageConfig;
 
 /**
  * Verifies whether a received string message correlates with a {@link RequestStageConfig} that generated

@@ -3,7 +3,6 @@ package de.ipvs.as.mbp.domain.discovery.topic;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.user_entity.MBPEntity;
 import de.ipvs.as.mbp.domain.user_entity.UserEntity;
-import de.ipvs.as.mbp.service.messaging.scatter_gather.RequestStageConfig;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.springframework.data.annotation.Id;

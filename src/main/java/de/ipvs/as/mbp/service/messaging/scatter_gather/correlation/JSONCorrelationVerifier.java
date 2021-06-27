@@ -1,6 +1,6 @@
 package de.ipvs.as.mbp.service.messaging.scatter_gather.correlation;
 
-import de.ipvs.as.mbp.service.messaging.scatter_gather.RequestStageConfig;
+import de.ipvs.as.mbp.service.messaging.scatter_gather.config.RequestStageConfig;
 import org.json.JSONObject;
 
 /**

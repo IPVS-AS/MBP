@@ -2,6 +2,7 @@ package de.ipvs.as.mbp.service.messaging.scatter_gather;
 
 import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
+import de.ipvs.as.mbp.service.messaging.scatter_gather.config.RequestStageConfig;
 import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;

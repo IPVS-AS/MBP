@@ -3,7 +3,7 @@ package de.ipvs.as.mbp.service.messaging.scatter_gather.correlation;
 import com.fasterxml.jackson.core.type.TypeReference;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
-import de.ipvs.as.mbp.service.messaging.scatter_gather.RequestStageConfig;
+import de.ipvs.as.mbp.service.messaging.scatter_gather.config.RequestStageConfig;
 import de.ipvs.as.mbp.util.Json;
 
 /**

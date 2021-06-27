@@ -48,6 +48,24 @@ public abstract class DomainMessage<T extends DomainMessageBody> {
     }
 
     /**
+     * Creates a new domain message as copy of a existing domain message. However, no copy of the message body is
+     * created; instead the same reference is used.
+     *
+     * @param domainMessage The existing domain message to copy
+     */
+    public DomainMessage(DomainMessage<T> domainMessage) {
+        //Sanity check
+        if (domainMessage == null) {
+            throw new IllegalArgumentException("The original domain message must not be null when creating a copy.");
+        }
+
+        //Copy fields from the provided domain message
+        this.typeName = domainMessage.typeName;
+        this.messageBody = domainMessage.messageBody;
+        this.timestamp = domainMessage.timestamp;
+    }
+
+    /**
      * Returns the the type name of the message which allows to identify the message type.
      *
      * @return The type name

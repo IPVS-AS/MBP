@@ -6,10 +6,13 @@ import de.ipvs.as.mbp.service.messaging.PubSubService;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.StringMessageListener;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
+import de.ipvs.as.mbp.service.messaging.scatter_gather.config.DomainRequestStageConfig;
+import de.ipvs.as.mbp.service.messaging.scatter_gather.config.RequestStageConfig;
 import de.ipvs.as.mbp.service.messaging.scatter_gather.correlation.CorrelationVerifier;
 import de.ipvs.as.mbp.service.messaging.scatter_gather.correlation.DomainCorrelationVerifier;
 import de.ipvs.as.mbp.service.messaging.scatter_gather.correlation.JSONCorrelationVerifier;
 import de.ipvs.as.mbp.service.messaging.scatter_gather.correlation.StringCorrelationVerifier;
+import de.ipvs.as.mbp.service.messaging.topics.ReturnTopicGenerator;
 import de.ipvs.as.mbp.util.Json;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,14 +27,14 @@ import java.util.stream.Collectors;
  * Objects of this class can be used in order to build {@link ScatterGatherRequest}s step by step. A scatter gather
  * request is able to synchronously publish user-defined request messages under one or even multiple topics and to
  * receive, process and collect the replies that are published by the receivers of the request messages under
- * corresponding reply topics in response to the requests. Scatter gather requests can deal with different types
+ * corresponding return topics in response to the requests. Scatter gather requests can deal with different types
  * of reply messages (string, JSON or {@link DomainMessage} objects) and consist out of multiple stages where
  * each stage represents one request message that is published under one topic. Scatter gather request stages
  * are created from {@link RequestStageConfig}s which wrap all the information that is necessary in order to create the
  * stage. This also includes a timeout value and an expected number of replies which determine when the receiving
  * of reply messages to a preceding request message can be considered as complete for the corresponding request stage.
  * A scatter gather request terminates as soon as all request stages concluded successfully.
- * Across multiple request stages, the same reply topic may be used for receiving the replies that are published in
+ * Across multiple request stages, the same return topic may be used for receiving the replies that are published in
  * response to the request messages. However, in order to avoid the processing of duplicated messages in this case,
  * a {@link CorrelationVerifier} should be set when building the {@link ScatterGatherRequest}. Such a correlation
  * verifier is responsible to decide whether an incoming reply message correlates with the {@link RequestStageConfig}
@@ -43,6 +46,9 @@ public class ScatterGatherRequestBuilder {
     //Publish-subscribe-based messaging service to use
     private final PubSubService pubSubService;
 
+    //Return topic generator to use
+    private final ReturnTopicGenerator returnTopicGenerator;
+
     //Request stage configurations
     private final Set<RequestStageConfig<?>> requestStageConfigs;
 
@@ -50,14 +56,17 @@ public class ScatterGatherRequestBuilder {
     private CorrelationVerifier<?> correlationVerifier = null;
 
     /**
-     * Creates a new scatter gather request builder from a given {@link PubSubService} which is supposed to be
-     * used for performing publish-subscribe-based messaging tasks.
+     * Creates a new scatter gather request builder from a given {@link PubSubService}, which is supposed to be
+     * used for performing publish-subscribe-based messaging tasks, and a {@link ReturnTopicGenerator} that is able
+     * to generate unique return topics.
      *
-     * @param pubSubService The publish-subscribe-based messaging service to use
+     * @param pubSubService        The publish-subscribe-based messaging service to use
+     * @param returnTopicGenerator The return topic generator to use
      */
-    public ScatterGatherRequestBuilder(PubSubService pubSubService) {
-        //Set publish-subscribe-based messaging service
+    public ScatterGatherRequestBuilder(PubSubService pubSubService, ReturnTopicGenerator returnTopicGenerator) {
+        //Set provided dependencies
         this.pubSubService = pubSubService;
+        this.returnTopicGenerator = returnTopicGenerator;
 
         //Create new set of request stage configurations
         this.requestStageConfigs = new HashSet<>();
@@ -68,7 +77,7 @@ public class ScatterGatherRequestBuilder {
      * Sets the {@link CorrelationVerifier} of the scatter gather request under construction. The correlation verifier
      * is responsible to decide  whether an incoming reply message matches the {@link RequestStageConfig} for which
      * it was received, which can typically done by comparing correlation identifiers. This way, the processing of
-     * duplicated messages can be avoided when the same reply topic is used cross multiple scatter gather
+     * duplicated messages can be avoided when the same return topic is used cross multiple scatter gather
      * request stages.
      *
      * @param correlationVerifier The correlation verifier to set
@@ -180,9 +189,11 @@ public class ScatterGatherRequestBuilder {
      * {@link ScatterGatherRequest} object that is able to deal with {@link DomainMessage}s as reply messages.
      * The resulting request can be synchronously executed at any time.
      *
+     * @param <R> The type of the reply domain message
      * @return The resulting scatter gather request
      */
-    public ScatterGatherRequest<DomainMessage<? extends DomainMessageBody>> buildForDomain(TypeReference<? extends DomainMessage<? extends DomainMessageBody>> typeReference) {
+
+    public <R extends DomainMessage<? extends DomainMessageBody>> ScatterGatherRequest<R> buildForDomain(TypeReference<R> typeReference) {
         //Ensure that there are request stages
         requireRequestStages();
 
@@ -193,7 +204,7 @@ public class ScatterGatherRequestBuilder {
         Set<CompletableFuture<List<String>>> requestStages = createRequestStages(this.correlationVerifier);
 
         //Extend all request stages for transformation
-        Set<CompletableFuture<List<DomainMessage<? extends DomainMessageBody>>>> transformedStages = requestStages.stream()
+        Set<CompletableFuture<List<R>>> transformedStages = requestStages.stream()
                 .map(s -> s.thenApply(getDomainMessageTransformation(typeReference)))
                 .collect(Collectors.toSet());
 
@@ -201,14 +212,14 @@ public class ScatterGatherRequestBuilder {
         CompletableFuture<Void> overallFuture = combineRequestStages(new HashSet<>(transformedStages));
 
         //Wrap all futures into one request object
-        return new ScatterGatherRequest<>(overallFuture, transformedStages);
+        return new ScatterGatherRequest<R>(overallFuture, transformedStages);
     }
 
     /**
      * Creates and returns request stages from the {@link RequestStageConfig}s which were previously added
      * to the request builder. Each request stage is represented by a executable {@link CompletableFuture} and includes
      * the publishing of the request message, the receiving of reply messages, their transformation, as well as
-     * the unsubscription from the reply topic after the receiving phase concluded. Optionally, a correlation verifier
+     * the unsubscription from the return topic after the receiving phase concluded. Optionally, a correlation verifier
      * can be passed which will then be used in order to retain only those messages which correlate with the
      * {@link RequestStageConfig} that resulted in a request stage for which the message was possibly received.
      *
@@ -227,7 +238,7 @@ public class ScatterGatherRequestBuilder {
     /**
      * Creates and returns a request stage from a given {@link RequestStageConfig}. The request stage is represented
      * by a executable {@link CompletableFuture} and includes the publishing of the request message, the receiving of
-     * reply messages, their transformation, as well as the unsubscription from the reply topic after the receiving
+     * reply messages, their transformation, as well as the unsubscription from the return topic after the receiving
      * phase concluded. Optionally, a correlation verifier can be passed that will then be used in order to retain
      * only those messages which correlate with the {@link RequestStageConfig} for which the request stage was created.
      *
@@ -236,9 +247,19 @@ public class ScatterGatherRequestBuilder {
      * @return The resulting completable future that represents the created request stage
      */
     private CompletableFuture<List<String>> createRequestStage(RequestStageConfig<?> config, CorrelationVerifier<?> correlationVerifier) {
-        //Create atomic reference wrapper for the future object itself and the reply message listener
+        //Retrieve return topic from configuration
+        String returnTopic = config.getReturnTopic();
+
+        //When a domain request, check the return topic for validity (always fine for the others)
+        if ((config instanceof DomainRequestStageConfig) && ((returnTopic == null) || (returnTopic.isEmpty()))) {
+            //Generate a new unique return topic
+            returnTopic = this.returnTopicGenerator.create("default");
+        }
+
+        //Create atomic reference wrapper for the future object itself, the reply message listener and the return topic
         final AtomicReference<CompletableFuture<List<String>>> futureReference = new AtomicReference<>();
         final AtomicReference<StringMessageListener> replyListenerReference = new AtomicReference<>();
+        final AtomicReference<String> returnTopicReference = new AtomicReference<>(returnTopic);
 
         //Create and store the completable future
         futureReference.set(CompletableFuture.supplyAsync(() -> {
@@ -263,8 +284,8 @@ public class ScatterGatherRequestBuilder {
                 }
             });
 
-            //Subscribe listener to reply topic filter
-            pubSubService.subscribe(config.getReplyTopicFilter(), replyListenerReference.get());
+            //Subscribe listener to return topic
+            pubSubService.subscribe(returnTopicReference.get(), replyListenerReference.get());
 
             //Transform request message to string and publish request
             pubSubService.publish(config.getRequestTopic(), config.getRequestMessage().toString());
@@ -281,7 +302,7 @@ public class ScatterGatherRequestBuilder {
 
         //Add stage for unsubscription of the listener and return the result
         return futureReference.get().thenApply(messages -> {
-            pubSubService.unsubscribe(config.getReplyTopicFilter(), replyListenerReference.get());
+            pubSubService.unsubscribe(returnTopicReference.get(), replyListenerReference.get());
             return messages;
         });
     }
@@ -351,9 +372,10 @@ public class ScatterGatherRequestBuilder {
      * If the transformation fails for one string, null is added to the result list instead.
      *
      * @param typeReference The type reference describing the target type to use in the transformation
+     * @param <R>           The type of the reply domain message
      * @return The resulting transformation function
      */
-    private Function<List<String>, List<DomainMessage<? extends DomainMessageBody>>> getDomainMessageTransformation(TypeReference<? extends DomainMessage<? extends DomainMessageBody>> typeReference) {
+    private <R extends DomainMessage<? extends DomainMessageBody>> Function<List<String>, List<R>> getDomainMessageTransformation(TypeReference<R> typeReference) {
         //Stream through all string messages and transform them to domain message objects
         return strings -> strings.stream().map(s -> Json.toObject(s, typeReference)).collect(Collectors.toList());
     }

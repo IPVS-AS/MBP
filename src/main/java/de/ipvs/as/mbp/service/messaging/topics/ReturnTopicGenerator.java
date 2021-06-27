@@ -40,12 +40,12 @@ public class ReturnTopicGenerator {
      * @param category The category name to use
      * @return The resulting return topic
      */
-    public String createReturnTopic(String category) {
+    public String create(String category) {
         //Get current user
         User user = userService.getLoggedInUser();
 
         //Create return topic
-        return createReturnTopic(user, category, generateCorrelationId());
+        return create(user, category, generateCorrelationId());
     }
 
     /**
@@ -55,9 +55,9 @@ public class ReturnTopicGenerator {
      * @param category The category name to use
      * @return The resulting return topic
      */
-    public String createReturnTopic(User user, String category) {
+    public String create(User user, String category) {
         //Create return topic
-        return createReturnTopic(user, category, generateCorrelationId());
+        return create(user, category, generateCorrelationId());
     }
 
     /**
@@ -67,12 +67,12 @@ public class ReturnTopicGenerator {
      * @param correlationId The correlation identifier to use
      * @return The resulting return topic
      */
-    public String createReturnTopic(String category, String correlationId) {
+    public String create(String category, String correlationId) {
         //Get current user
         User user = userService.getLoggedInUser();
 
         //Create return topic
-        return createReturnTopic(user, category, correlationId);
+        return create(user, category, correlationId);
     }
 
     /**
@@ -83,7 +83,7 @@ public class ReturnTopicGenerator {
      * @param correlationId The correlation identifier to use
      * @return The resulting return topic
      */
-    public String createReturnTopic(User user, String category, String correlationId) {
+    public String create(User user, String category, String correlationId) {
         //Sanity checks for parameters
         if ((user == null) || (user.getId() == null) || (user.getId().isEmpty())) {
             throw new IllegalArgumentException("The user ID must not be null or empty.");
