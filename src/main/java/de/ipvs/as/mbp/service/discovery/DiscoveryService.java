@@ -13,6 +13,7 @@ import java.util.Map;
 @Service
 public class DiscoveryService {
 
+    //The discovery gateway to use
     @Autowired
     private DiscoveryGateway discoveryGateway;
 
@@ -27,19 +28,19 @@ public class DiscoveryService {
 
     /**
      * Checks the availability of discovery repositories for a given {@link RequestTopic} and returns
-     * a map (repository ID --> device descriptions count) containing the identifiers of the repositories
+     * a map (repository name --> device descriptions count) containing the unique names of the repositories
      * that replied to the request as well as the number of device descriptions they contain.
      *
      * @param requestTopic The request topic for which the repository availability is supposed to be tested
      * @return The resulting map (repository ID --> device descriptions count)
      */
-    public Map<String, Integer> checkAvailableRepositories(RequestTopic requestTopic) {
+    public Map<String, Integer> getAvailableRepositories(RequestTopic requestTopic) {
         //Sanity check
         if (requestTopic == null) {
             throw new IllegalArgumentException("Request topic must not be null.");
         }
 
         //Call the corresponding gateway method
-        return checkAvailableRepositories(requestTopic);
+        return discoveryGateway.getAvailableRepositories(requestTopic);
     }
 }

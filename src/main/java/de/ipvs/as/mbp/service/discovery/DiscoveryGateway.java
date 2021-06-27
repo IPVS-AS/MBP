@@ -5,7 +5,6 @@ import de.ipvs.as.mbp.domain.discovery.messages.test.DiscoveryTestReply;
 import de.ipvs.as.mbp.domain.discovery.messages.test.DiscoveryTestRequest;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.service.messaging.PubSubService;
-import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
 import de.ipvs.as.mbp.service.messaging.message.types.ReplyMessage;
 import de.ipvs.as.mbp.service.messaging.message.types.RequestMessage;
@@ -16,11 +15,7 @@ import de.ipvs.as.mbp.service.messaging.scatter_gather.config.RequestStageConfig
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 /**
  * This service offers various discovery-related functions that require communication with the discovery repositories
@@ -40,32 +35,56 @@ public class DiscoveryGateway {
     @Autowired
     private PubSubService pubSubService;
 
-    public Map<String, Integer> checkAvailableRepositories(RequestTopic requestTopic) {
-        //TODO Sanity checks
+    /**
+     * Creates and initializes the discovery gateway.
+     */
+    public DiscoveryGateway() {
+
+    }
+
+    public Map<String, Integer> getAvailableRepositories(RequestTopic requestTopic) {
+        //Sanity check
+        if (requestTopic == null) {
+            throw new IllegalArgumentException("Request topic must not be null.");
+        }
+
+        //Create result map
+        Map<String, Integer> repositoryMap = new HashMap<>();
 
         //Create request message body
         DiscoveryTestRequest requestBody = new DiscoveryTestRequest();
 
-        //Execute the request
-        List<DiscoveryTestReply> replies = sendRepositoryRequest(requestTopic, requestBody, new TypeReference<ReplyMessage<DiscoveryTestReply>>() {
-        });
+        //Execute the request and add the sender names and numbers of device descriptions to the map
+        sendRepositoryRequest(requestTopic, requestBody, new TypeReference<ReplyMessage<DiscoveryTestReply>>() {
+        }).forEach(m -> repositoryMap.put(m.getSenderName(), m.getMessageBody().getDevicesCount()));
 
-        return null;
+        //Return result map
+        return repositoryMap;
     }
 
-    private <Q extends DomainMessageBody, R extends DomainMessageBody> List<R> sendRepositoryRequest(RequestTopic requestTopic, Q requestMessageBody, TypeReference<ReplyMessage<R>> replyTypeReference) {
+    private <Q extends DomainMessageBody, R extends DomainMessageBody> List<ReplyMessage<R>> sendRepositoryRequest(RequestTopic requestTopic, Q requestMessageBody, TypeReference<ReplyMessage<R>> replyTypeReference) {
         return sendRepositoryRequest(Collections.singletonList(requestTopic), requestMessageBody, replyTypeReference);
     }
 
 
-    private <Q extends DomainMessageBody, R extends DomainMessageBody> List<R> sendRepositoryRequest(Collection<RequestTopic> requestTopics, Q requestMessageBody, TypeReference<ReplyMessage<R>> replyTypeReference) {
-        //TODO sanity checks
+    private <Q extends DomainMessageBody, R extends DomainMessageBody> List<ReplyMessage<R>> sendRepositoryRequest(Collection<RequestTopic> requestTopics, Q requestMessageBody, TypeReference<ReplyMessage<R>> replyTypeReference) {
+        //Sanity checks
+        if ((requestTopics == null) || (requestTopics.isEmpty()) || requestTopics.stream().anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException("The request topics must not be null or empty.");
+        } else if (requestMessageBody == null) {
+            throw new IllegalArgumentException("The request message body must not be null.");
+        } else if (replyTypeReference == null) {
+            throw new IllegalArgumentException("The reply message type reference must not be null.");
+        }
 
         //Start building of a new scatter gather request
         ScatterGatherRequestBuilder requestBuilder = this.pubSubService.buildScatterGatherRequest();
 
         //Iterate over all provided request topics
         for (RequestTopic topic : requestTopics) {
+            //Put request topic together
+            String requestTopic = topic.getFullTopic() + TOPIC_SUFFIX_TEST_REQUEST;
+
             //Generate a new return topic by using the owner of the request topic
             String returnTopic = pubSubService.generateReturnTopic(topic.getOwner(), "discovery");
 
@@ -74,7 +93,7 @@ public class DiscoveryGateway {
 
             //Create request stage config for this request topic
             RequestStageConfig<RequestMessage<Q>> stageConfig =
-                    new DomainRequestStageConfig<>(topic.getFullTopic() + TOPIC_SUFFIX_TEST_REQUEST, stageRequestMessage)
+                    new DomainRequestStageConfig<>(requestTopic, stageRequestMessage)
                             .setTimeout(topic.getTimeout())
                             .setExpectedReplies(topic.getExpectedReplies());
 
@@ -85,10 +104,7 @@ public class DiscoveryGateway {
         //Build scatter gather request
         ScatterGatherRequest<ReplyMessage<R>> scatterGatherRequest = requestBuilder.buildForDomain(replyTypeReference);
 
-        //Execute request and collect results
-        List<ReplyMessage<R>> requestResults = scatterGatherRequest.execute();
-
-        //Stream result list and return only the message bodies
-        return requestResults.stream().map(DomainMessage::getMessageBody).collect(Collectors.toList());
+        //Execute request and collect and return the results
+        return scatterGatherRequest.execute();
     }
 }

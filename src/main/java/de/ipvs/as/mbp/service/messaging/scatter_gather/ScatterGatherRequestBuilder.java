@@ -6,7 +6,6 @@ import de.ipvs.as.mbp.service.messaging.PubSubService;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.StringMessageListener;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
-import de.ipvs.as.mbp.service.messaging.scatter_gather.config.DomainRequestStageConfig;
 import de.ipvs.as.mbp.service.messaging.scatter_gather.config.RequestStageConfig;
 import de.ipvs.as.mbp.service.messaging.scatter_gather.correlation.CorrelationVerifier;
 import de.ipvs.as.mbp.service.messaging.scatter_gather.correlation.DomainCorrelationVerifier;
@@ -247,19 +246,9 @@ public class ScatterGatherRequestBuilder {
      * @return The resulting completable future that represents the created request stage
      */
     private CompletableFuture<List<String>> createRequestStage(RequestStageConfig<?> config, CorrelationVerifier<?> correlationVerifier) {
-        //Retrieve return topic from configuration
-        String returnTopic = config.getReturnTopic();
-
-        //When a domain request, check the return topic for validity (always fine for the others)
-        if ((config instanceof DomainRequestStageConfig) && ((returnTopic == null) || (returnTopic.isEmpty()))) {
-            //Generate a new unique return topic
-            returnTopic = this.returnTopicGenerator.create("default");
-        }
-
         //Create atomic reference wrapper for the future object itself, the reply message listener and the return topic
         final AtomicReference<CompletableFuture<List<String>>> futureReference = new AtomicReference<>();
         final AtomicReference<StringMessageListener> replyListenerReference = new AtomicReference<>();
-        final AtomicReference<String> returnTopicReference = new AtomicReference<>(returnTopic);
 
         //Create and store the completable future
         futureReference.set(CompletableFuture.supplyAsync(() -> {
@@ -285,7 +274,7 @@ public class ScatterGatherRequestBuilder {
             });
 
             //Subscribe listener to return topic
-            pubSubService.subscribe(returnTopicReference.get(), replyListenerReference.get());
+            pubSubService.subscribe(config.getReturnTopic(), replyListenerReference.get());
 
             //Transform request message to string and publish request
             pubSubService.publish(config.getRequestTopic(), config.getRequestMessage().toString());
@@ -302,7 +291,8 @@ public class ScatterGatherRequestBuilder {
 
         //Add stage for unsubscription of the listener and return the result
         return futureReference.get().thenApply(messages -> {
-            pubSubService.unsubscribe(returnTopicReference.get(), replyListenerReference.get());
+            System.out.println("Doing unsubscribe!");
+            pubSubService.unsubscribe(config.getReturnTopic(), replyListenerReference.get());
             return messages;
         });
     }

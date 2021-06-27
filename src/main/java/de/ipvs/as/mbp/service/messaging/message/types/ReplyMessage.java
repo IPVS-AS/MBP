@@ -17,8 +17,8 @@ public class ReplyMessage<T extends DomainMessageBody> extends DomainMessage<T> 
     //User-defined correlation identifier
     private String correlationId;
 
-    //Domain-specific sender identifier
-    private String senderId;
+    //Domain-specific sender name
+    private String senderName;
 
     /**
      * Creates a new reply message without data and content.
@@ -57,24 +57,24 @@ public class ReplyMessage<T extends DomainMessageBody> extends DomainMessage<T> 
     }
 
     /**
-     * Sets the sender identifier which allows to identify the sender of this reply message based on domain-specific
+     * Sets the sender name which allows to identify the sender of this reply message based on domain-specific
      * information.
      *
-     * @return The sender identifier
+     * @return The sender name
      */
-    public String getSenderId() {
-        return senderId;
+    public String getSenderName() {
+        return senderName;
     }
 
     /**
-     * Sets the sender identifier which allows to identify the sender of this reply message based on domain-specific
+     * Sets the sender name which allows to identify the sender of this reply message based on domain-specific
      * information.
      *
-     * @param senderId The sender identifier to set
+     * @param senderName The sender name to set
      * @return The reply message
      */
-    public ReplyMessage<T> setSenderId(String senderId) {
-        this.senderId = senderId;
+    public ReplyMessage<T> setSenderName(String senderName) {
+        this.senderName = senderName;
         return this;
     }
 }

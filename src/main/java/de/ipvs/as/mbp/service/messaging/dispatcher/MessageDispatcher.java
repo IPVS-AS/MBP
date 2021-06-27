@@ -5,17 +5,14 @@ import de.ipvs.as.mbp.service.messaging.dispatcher.listener.DomainMessageListene
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.JSONMessageListener;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.MessageListener;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.StringMessageListener;
-import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
-import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Other components can subscribe themselves to the message dispatcher with a given topic filter and will
@@ -41,7 +38,7 @@ public class MessageDispatcher {
         this.pubSubClient = pubSubClient;
 
         //Initialize subscription map
-        this.subscriptionMap = new HashMap<>();
+        this.subscriptionMap = new ConcurrentHashMap<>();
     }
 
     /**
@@ -51,7 +48,7 @@ public class MessageDispatcher {
      * @param topicFilter The topic filter to subscribe to
      * @param listener    The listener to dispatch matching messages to
      */
-    public void subscribe(String topicFilter, StringMessageListener listener) {
+    public synchronized void subscribe(String topicFilter, StringMessageListener listener) {
         //Perform subscription
         performSubscription(topicFilter, listener);
     }
@@ -63,7 +60,7 @@ public class MessageDispatcher {
      * @param topicFilter The topic filter to subscribe to
      * @param listener    The listener to dispatch matching messages to
      */
-    public void subscribeJSON(String topicFilter, JSONMessageListener listener) {
+    public synchronized void subscribeJSON(String topicFilter, JSONMessageListener listener) {
         //Perform subscription
         performSubscription(topicFilter, listener);
     }
@@ -75,7 +72,7 @@ public class MessageDispatcher {
      * @param topicFilter The topic filter to subscribe to
      * @param listener    The listener to dispatch matching messages to
      */
-    public void subscribeDomain(String topicFilter, DomainMessageListener<?> listener) {
+    public synchronized void subscribeDomain(String topicFilter, DomainMessageListener<?> listener) {
         //Perform subscription
         performSubscription(topicFilter, listener);
     }
@@ -89,7 +86,7 @@ public class MessageDispatcher {
      * @param listener    The listener to unsubscribe
      * @return True, if there are remaining subscriptions for this topic filter; false otherwise
      */
-    public boolean unsubscribe(String topicFilter, MessageListener<?> listener) {
+    public synchronized boolean unsubscribe(String topicFilter, MessageListener<?> listener) {
         //Check if the subscription map contains the topic filter
         if (!this.subscriptionMap.containsKey(topicFilter)) {
             return false;
@@ -126,28 +123,31 @@ public class MessageDispatcher {
      * @param topic   The topic of the message to dispatch
      * @param message The body of the message to dispatch
      */
-    public void dispatchMessage(String topic, String message) {
-        //Iterate over all subscribed topic filters that match the topic
-        this.subscriptionMap
-                .keySet().stream().filter(t -> pubSubClient.topicMatchesFilter(topic, t)).forEach(topicFilter -> {
-            //Iterate over all subscriptions for this topic filter
-            subscriptionMap.get(topicFilter).forEach(listener -> {
-                //Check listener type
-                if (listener instanceof DomainMessageListener) {
-                    //Notify listener
-                    ((DomainMessageListener<?>) listener).onMessageDispatched(message, topic, topicFilter);
-                }
-                else if (listener instanceof StringMessageListener) {
-                    //Notify listener
-                    ((StringMessageListener) listener).onMessageDispatched(message, topic, topicFilter);
-                } else if (listener instanceof JSONMessageListener) {
-                    //Convert message to JSON object
-                    JSONObject jsonMessage = transformMessageToJSON(message);
+    public synchronized void dispatchMessage(String topic, String message) {
+        //Create map (listener --> topic filter) for all subscribers that need to be notified
+        Map<MessageListener<?>, String> subscribers = new HashMap<>();
 
-                    //Notify listener
-                    ((JSONMessageListener) listener).onMessageDispatched(jsonMessage, topic, topicFilter);
-                }
-            });
+        //Determine affected subscribers and their subscribed topic filters and add them to the map
+        this.subscriptionMap.keySet().stream() //Stream through all subscribed topic filters
+                .filter(t -> pubSubClient.topicMatchesFilter(topic, t)) //Filter for matches with the message topic
+                .forEach(tf -> this.subscriptionMap.get(tf).forEach(s -> subscribers.put(s, tf)));
+
+        //Stream through all affected subscribers and notify them
+        subscribers.forEach((listener, topicFilter) -> {
+            //Check listener type
+            if (listener instanceof DomainMessageListener) {
+                //Notify listener
+                ((DomainMessageListener<?>) listener).onMessageDispatched(message, topic, topicFilter);
+            } else if (listener instanceof StringMessageListener) {
+                //Notify listener
+                ((StringMessageListener) listener).onMessageDispatched(message, topic, topicFilter);
+            } else if (listener instanceof JSONMessageListener) {
+                //Convert message to JSON object
+                JSONObject jsonMessage = transformMessageToJSON(message);
+
+                //Notify listener
+                ((JSONMessageListener) listener).onMessageDispatched(jsonMessage, topic, topicFilter);
+            }
         });
     }
 
@@ -176,7 +176,7 @@ public class MessageDispatcher {
      * @param topicFilter The topic filter to subscribe to
      * @param listener    The listener to dispatch matching messages to
      */
-    private void performSubscription(String topicFilter, MessageListener<?> listener) {
+    private synchronized void performSubscription(String topicFilter, MessageListener<?> listener) {
         //Check whether the topic filter is already registered
         if (subscriptionMap.containsKey(topicFilter)) {
             //Get all subscriptions for this topic filter
