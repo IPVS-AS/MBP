@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.discovery.device.requirements.DeviceRequirement;
 import de.ipvs.as.mbp.domain.discovery.operators.StringOperator;
 import de.ipvs.as.mbp.error.EntityValidationException;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Objects of this class represent name requirements for devices.
@@ -105,6 +107,26 @@ public class NameRequirement extends DeviceRequirement {
         if ((match == null) || (match.isEmpty())) {
             exception.addInvalidField(fieldPrefix + ".match", "The match must not be empty.");
         }
+    }
+
+    /**
+     * Transforms the device requirement to a {@link JSONObject} that can be used as requirement within a device
+     * description query. The transformation happens by extending a provided {@link JSONObject} for necessary fields
+     * and finally returning the extended {@link JSONObject} again.
+     * The type of the requirement does not need to be explicitly added.
+     *
+     * @param jsonObject The {@link JSONObject} to extend
+     * @return The resulting extended {@link JSONObject}
+     * @throws JSONException In case a non-resolvable issue occurred during the transformation
+     */
+    @Override
+    public JSONObject toQueryRequirement(JSONObject jsonObject) throws JSONException {
+        //Add fields
+        jsonObject.put("operator", this.operator.value());
+        jsonObject.put("match", this.match);
+
+        //Return extended JSONObject
+        return jsonObject;
     }
 
 

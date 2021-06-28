@@ -1,8 +1,8 @@
 package de.ipvs.as.mbp.service.discovery;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import de.ipvs.as.mbp.domain.discovery.messages.test.DiscoveryTestReply;
-import de.ipvs.as.mbp.domain.discovery.messages.test.DiscoveryTestRequest;
+import de.ipvs.as.mbp.domain.discovery.messages.test.RepositoryTestReply;
+import de.ipvs.as.mbp.domain.discovery.messages.test.RepositoryTestRequest;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.service.messaging.PubSubService;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
@@ -60,10 +60,10 @@ public class DiscoveryGateway {
         Map<String, Integer> repositoryMap = new HashMap<>();
 
         //Create request message body
-        DiscoveryTestRequest requestBody = new DiscoveryTestRequest();
+        RepositoryTestRequest requestBody = new RepositoryTestRequest();
 
         //Execute the request and add the sender names and numbers of device descriptions to the map
-        sendRepositoryRequest(requestTopic, requestBody, new TypeReference<ReplyMessage<DiscoveryTestReply>>() {
+        sendRepositoryRequest(requestTopic, requestBody, new TypeReference<ReplyMessage<RepositoryTestReply>>() {
         }).forEach(m -> repositoryMap.put(m.getSenderName(), m.getMessageBody().getDevicesCount()));
 
         //Return result map

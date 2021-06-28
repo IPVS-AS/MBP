@@ -8,6 +8,8 @@ import de.ipvs.as.mbp.domain.discovery.device.requirements.DeviceRequirement;
 import de.ipvs.as.mbp.domain.discovery.location.LocationTemplate;
 import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.repository.discovery.LocationTemplateRepository;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Optional;
 
@@ -165,6 +167,34 @@ public class LocationRequirement extends DeviceRequirement {
         if ((this.locationTemplateId == null) || (this.locationTemplateId.isEmpty()) || getLocationTemplate() == null) {
             exception.addInvalidField(fieldPrefix + ".locationTemplateId", "The referenced location template does not exist.");
         }
+    }
+
+    /**
+     * Transforms the device requirement to a {@link JSONObject} that can be used as requirement within a device
+     * description query. The transformation happens by extending a provided {@link JSONObject} for necessary fields
+     * and finally returning the extended {@link JSONObject} again.
+     * The type of the requirement does not need to be explicitly added.
+     *
+     * @param jsonObject The {@link JSONObject} to extend
+     * @return The resulting extended {@link JSONObject}
+     * @throws JSONException In case a non-resolvable issue occurred during the transformation
+     */
+    @Override
+    public JSONObject toQueryRequirement(JSONObject jsonObject) throws JSONException {
+        //Retrieve location template from repository
+        LocationTemplate locationTemplate = getLocationTemplate();
+
+        //Add operator
+        jsonObject.put("operator", this.operator.value());
+
+        //Get requirement details from the location template
+        JSONObject requirementDetails = locationTemplate.toQueryRequirementDetails(new JSONObject());
+
+        //Add details to JSONObject
+        jsonObject.put("details", requirementDetails);
+
+        //Return extended JSONObject
+        return jsonObject;
     }
 
     /**

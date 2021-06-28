@@ -291,7 +291,6 @@ public class ScatterGatherRequestBuilder {
 
         //Add stage for unsubscription of the listener and return the result
         return futureReference.get().thenApply(messages -> {
-            System.out.println("Doing unsubscribe!");
             pubSubService.unsubscribe(config.getReturnTopic(), replyListenerReference.get());
             return messages;
         });

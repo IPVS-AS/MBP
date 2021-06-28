@@ -144,7 +144,6 @@ public class MessageDispatcher {
             } else if (listener instanceof JSONMessageListener) {
                 //Convert message to JSON object
                 JSONObject jsonMessage = transformMessageToJSON(message);
-
                 //Notify listener
                 ((JSONMessageListener) listener).onMessageDispatched(jsonMessage, topic, topicFilter);
             }

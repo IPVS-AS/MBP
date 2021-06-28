@@ -432,7 +432,8 @@ public class PubSubService {
      * @param cause A {@link Throwable} containing the cause of the connection loss (ignored)
      */
     private void handleConnectionLoss(Throwable cause) {
-        System.err.println("Lost connection");
+        //Print information to console
+        System.err.println("PubSubClient lost connection:");
         cause.printStackTrace();
 
         //Do nothing if reconnect attempts are already active
