@@ -7,7 +7,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
  * Enumeration of operators that can be applied to string attributes.
  */
 public enum StringOperator implements DiscoveryTemplateOperator {
-    EQUALS("equals"), CONTAINS("contains"), BEGINS_WITH("begins_with"), ENDS_WITH("ends_with");
+    EQUALS("equals"), CONTAINS("contains"), BEGINS_WITH("begins_with"), ENDS_WITH("ends_with"),
+    NOT_EQUALS("not_equals");
 
     //Externally visible name of the operator
     private String name;

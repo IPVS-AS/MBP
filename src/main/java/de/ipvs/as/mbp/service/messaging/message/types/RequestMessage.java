@@ -14,6 +14,8 @@ import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
  * @param <T> The type of the message body
  */
 public class RequestMessage<T extends DomainMessageBody> extends DomainMessage<T> {
+    //Sender name
+    private static final String senderName = "MBP";
 
     //Topic for reply messages
     private String returnTopic;
@@ -54,6 +56,15 @@ public class RequestMessage<T extends DomainMessageBody> extends DomainMessage<T
         //Copy fields from the provided request message
         this.returnTopic = requestMessage.returnTopic;
         this.correlationId = requestMessage.correlationId;
+    }
+
+    /**
+     * Returns the fixed sender name of the MBP.
+     *
+     * @return The sender name
+     */
+    public String getSenderName() {
+        return senderName;
     }
 
     /**

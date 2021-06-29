@@ -66,7 +66,7 @@ public enum LocationOperator implements DeviceRequirementOperator {
     }
 
     /**
-     * Serializes a location requirement operator by returning its name.
+     * Serializes the location requirement operator by returning its name.
      *
      * @return The name of the operator
      */

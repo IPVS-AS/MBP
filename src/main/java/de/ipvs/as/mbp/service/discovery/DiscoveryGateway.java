@@ -1,6 +1,10 @@
 package de.ipvs.as.mbp.service.discovery;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import de.ipvs.as.mbp.domain.discovery.description.DeviceDescriptionSet;
+import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
+import de.ipvs.as.mbp.domain.discovery.messages.query.DeviceQueryReply;
+import de.ipvs.as.mbp.domain.discovery.messages.query.DeviceQueryRequest;
 import de.ipvs.as.mbp.domain.discovery.messages.test.RepositoryTestReply;
 import de.ipvs.as.mbp.domain.discovery.messages.test.RepositoryTestRequest;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
@@ -16,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * This service offers various discovery-related functions that require communication with the discovery repositories
@@ -43,6 +48,36 @@ public class DiscoveryGateway {
     }
 
     /**
+     * Requests device descriptions matching a given device template from the discovery repositories that are available
+     * under a given collection of {@link RequestTopic}s. The device descriptions that are received from the discovery
+     * repositories in response are returned as list of {@link DeviceDescriptionSet}s, containing one set per repository.
+     *
+     * @param requestTopics  The collection of {@link RequestTopic}s to use for sending the request to the repositories
+     * @param deviceTemplate The device template to query device descriptions for
+     * @return The resulting list of {@link DeviceDescriptionSet}s
+     */
+    public List<DeviceDescriptionSet> getDevicesForTemplate(Collection<RequestTopic> requestTopics, DeviceTemplate deviceTemplate) {
+        //Sanity check
+        if (deviceTemplate == null) {
+            throw new IllegalArgumentException("Device template must not be null.");
+        }
+
+        //Create the request message body
+        DeviceQueryRequest requestBody = new DeviceQueryRequest()
+                .setRequirements(deviceTemplate.getRequirements())  //Set requirements from device template
+                .setScoringCriteria(deviceTemplate.getScoringCriteria()); //Set scoring criteria from device template
+
+        //Execute the request and add the sender names and numbers of device descriptions to the map
+        List<ReplyMessage<DeviceQueryReply>> replies = sendRepositoryRequest(requestTopics, requestBody, new TypeReference<ReplyMessage<DeviceQueryReply>>() {
+        });
+
+        //Stream the replies and create device descriptions sets from them
+        return replies.stream().map(r -> new DeviceDescriptionSet(r.getSenderName(), deviceTemplate.getId())
+                .addDeviceDescriptions(r.getMessageBody().getDeviceDescriptions())) //Add device descriptions
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Checks the availability of discovery repositories for a given {@link RequestTopic} and returns
      * a map (repository name --> device descriptions count) containing the unique names of the repositories
      * that replied to the request as well as the number of device descriptions they contain.
@@ -59,7 +94,7 @@ public class DiscoveryGateway {
         //Create result map
         Map<String, Integer> repositoryMap = new HashMap<>();
 
-        //Create request message body
+        //Create the request message body
         RepositoryTestRequest requestBody = new RepositoryTestRequest();
 
         //Execute the request and add the sender names and numbers of device descriptions to the map
