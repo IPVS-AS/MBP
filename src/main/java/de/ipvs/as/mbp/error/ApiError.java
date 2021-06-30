@@ -1,7 +1,7 @@
 package de.ipvs.as.mbp.error;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import de.ipvs.as.mbp.util.InstantSerializer;
+import de.ipvs.as.mbp.util.InstantToStringSerializer;
 import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
@@ -16,7 +16,7 @@ import java.util.Map;
 public class ApiError {
     private HttpStatus status;
     private int statusCode;
-    @JsonSerialize(using = InstantSerializer.class)
+    @JsonSerialize(using = InstantToStringSerializer.class)
     private Instant timestamp;
     private String message;
     private Map<String, String> detailMessages = new HashMap<>();

@@ -1,8 +1,10 @@
 package de.ipvs.as.mbp.service.messaging.message;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import de.ipvs.as.mbp.util.InstantSerializer;
+import de.ipvs.as.mbp.util.InstantFromEpochMilliDeserializer;
+import de.ipvs.as.mbp.util.InstantToEpochMilliSerializer;
 import de.ipvs.as.mbp.util.Json;
 
 import java.time.Instant;
@@ -28,7 +30,8 @@ public abstract class DomainMessage<T extends DomainMessageBody> {
 
     //Timestamp when the message was sent
     @JsonProperty("time")
-    @JsonSerialize(using = InstantSerializer.class)
+    @JsonSerialize(using = InstantToEpochMilliSerializer.class)
+    @JsonDeserialize(using = InstantFromEpochMilliDeserializer.class)
     private Instant timestamp = Instant.now();
 
     /**
