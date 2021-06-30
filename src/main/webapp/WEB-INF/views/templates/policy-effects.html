@@ -146,13 +146,14 @@
                                 <span class="help-block"
                                       ng-show="addPolicyEffectCtrl.item.errors.description">{{addPolicyEffectCtrl.item.errors.description}}</span>
                             </div>
-                            <span class="help-block" style="font-style: italic">Fields with * are mandatory.</span>
                             <!-- item.type group -->
                             <div class="form-group" ng-class="{'has-error' : addPolicyEffectCtrl.item.errors.type }">
                                 <div class="form-line"
                                      ng-class="{'focused error' : addPolicyEffectCtrl.item.errors.type }">
-                                    <select class="form-control show-tick" ng-model="addPolicyEffectCtrl.item.type">
-                                        <option disabled selected value>Select action type *</option>
+                                    <select class="form-control selectpicker show-tick" title="Action Type *"
+                                            data-header="Action Type *"
+                                            ng-model="addPolicyEffectCtrl.item.type">
+                                        <option value="" selected></option>
                                         <option id="NUMERIC_ACCURACY_MODIFICATION"
                                                 value="NUMERIC_ACCURACY_MODIFICATION">Numeric Accuracy Modification
                                         </option>

@@ -1,0 +1,53 @@
+{
+  "name": "TESTING_TemperatureSensorPl",
+  "description": "Operator for simulating the sensor data of a planned temperature sensor.",
+  "unit": "°C",
+  "files": [
+    "PlannedTempSim.jar",
+    "install.sh",
+    "start.sh",
+    "stop.sh",
+    "running.sh"
+  ],
+  "parameters": [
+    {
+      "name": "event",
+      "type": "Number",
+      "unit": "",
+      "mandatory": false
+    },
+    {
+      "name": "anomaly",
+      "type": "Number",
+      "unit": "",
+      "mandatory": false
+    },{
+      "name": "room",
+      "type": "Text",
+      "unit": "",
+      "mandatory": false
+    },{
+      "name": "useNewData",
+      "type": "Switch",
+      "unit": "",
+      "mandatory": false
+    },
+    {
+      "name": "simTime",
+      "type": "Text",
+      "unit": "",
+      "mandatory": false
+    },{
+      "name": "amountEvents",
+      "type": "Number",
+      "unit": "",
+      "mandatory": false
+    },{
+      "name": "amountAnomalies",
+      "type": "Number",
+      "unit": "",
+      "mandatory": false
+    }
+
+  ]
+}

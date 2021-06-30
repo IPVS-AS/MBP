@@ -1,33 +1,25 @@
 package de.ipvs.as.mbp.web.rest;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import de.ipvs.as.mbp.RestConfiguration;
-import de.ipvs.as.mbp.error.EntityNotFoundException;
-import de.ipvs.as.mbp.error.MissingPermissionException;
-import de.ipvs.as.mbp.repository.DeviceRepository;
-import de.ipvs.as.mbp.service.UserEntityService;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.device.Device;
-import de.ipvs.as.mbp.service.deploy.DeviceState;
-import de.ipvs.as.mbp.service.deploy.SSHDeployer;
+import de.ipvs.as.mbp.error.EntityNotFoundException;
+import de.ipvs.as.mbp.error.MissingPermissionException;
+import de.ipvs.as.mbp.repository.DeviceRepository;
+import de.ipvs.as.mbp.service.user.UserEntityService;
+import de.ipvs.as.mbp.service.deployment.DeployerDispatcher;
+import de.ipvs.as.mbp.service.deployment.DeviceState;
+import de.ipvs.as.mbp.service.deployment.IDeployer;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * REST Controller for requests related to the availability of devices.
@@ -44,7 +36,7 @@ public class RestDeviceStateController {
 	private DeviceRepository deviceRepository;
 
 	@Autowired
-	private SSHDeployer sshDeployer;
+	private DeployerDispatcher deployerDispatcher;
 
 
 	@GetMapping("/state")
@@ -58,9 +50,12 @@ public class RestDeviceStateController {
 		// Get all devices
 		List<Device> devices = userEntityService.getAllWithAccessControlCheck(deviceRepository, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
 
+		//Find suitable deployer component
+		IDeployer deployer = deployerDispatcher.getDeployer();
+
 		// Iterate over all devices and determine the device state
 		for (Device device : devices) {
-			DeviceState state = sshDeployer.determineDeviceState(device);
+			DeviceState state = deployer.retrieveDeviceState(device);
 			deviceStates.put(device.getId(), state);
 		}
 
@@ -78,8 +73,11 @@ public class RestDeviceStateController {
 		// Retrieve the device from the database
 		Device device = userEntityService.getForIdWithAccessControlCheck(deviceRepository, deviceId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
 
+		//Find suitable deployer component
+		IDeployer deployer = deployerDispatcher.getDeployer();
+
 		// Determine device state
-		DeviceState deviceState = sshDeployer.determineDeviceState(device);
+		DeviceState deviceState = deployer.retrieveDeviceState(device);
 
 		return ResponseEntity.ok(new EntityModel<DeviceState>(deviceState));
 	}

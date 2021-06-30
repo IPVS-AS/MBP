@@ -1,7 +1,5 @@
 package de.ipvs.as.mbp;
 
-import java.util.List;
-
 import de.ipvs.as.mbp.constants.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -13,6 +11,7 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
+import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
@@ -25,25 +24,23 @@ import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ITemplateResolver;
 
-/**
- *
- * @author rafaelkperes
- */
+import java.util.List;
+
 @Configuration
 @EnableWebMvc
 @EnableSpringDataWebSupport
 @ComponentScan(basePackages = {
-    Constants.ROOT_PACKAGE
+        Constants.ROOT_PACKAGE
 })
 @EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
-public class WebServletConfiguration implements WebMvcConfigurer {
+public class WebServletConfiguration extends AbstractSecurityWebApplicationInitializer implements WebMvcConfigurer {
 
-	@Autowired
+    @Autowired
     private ApplicationContext applicationContext;
 
     private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {
-        "classpath:/META-INF/resources/", "classpath:/resources/",
-        "classpath:/static/", "classpath:/public/"};
+            "classpath:/META-INF/resources/", "classpath:/resources/",
+            "classpath:/static/", "classpath:/public/"};
 
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
@@ -51,17 +48,11 @@ public class WebServletConfiguration implements WebMvcConfigurer {
         configurer.defaultContentType(MediaTypes.HAL_JSON);
     }
 
-//    @Override
-//    public void setApplicationContext(ApplicationContext ac)
-//            throws BeansException {
-//        this.applicationContext = ac;
-//    }
-
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         System.out.println("load addResourceHandlers");
         registry.addResourceHandler("swagger-ui.html")
-        	.addResourceLocations("classpath:/META-INF/resources/");
+                .addResourceLocations("classpath:/META-INF/resources/");
         if (!registry.hasMappingForPattern("/webjars/**")) {
             registry.addResourceHandler("/webjars/**").addResourceLocations(
                     "classpath:/META-INF/resources/webjars/");
@@ -73,13 +64,12 @@ public class WebServletConfiguration implements WebMvcConfigurer {
     }
 
     @Override
-    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers){
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
         PageableHandlerMethodArgumentResolver resolver = new PageableHandlerMethodArgumentResolver();
         resolver.setFallbackPageable(PageRequest.of(0, Integer.MAX_VALUE));
         argumentResolvers.add(resolver);
     }
 
-    /* start Thymeleaf */
     @Bean
     public ViewResolver viewResolver() {
         ThymeleafViewResolver resolver = new ThymeleafViewResolver();
@@ -104,5 +94,4 @@ public class WebServletConfiguration implements WebMvcConfigurer {
         resolver.setTemplateMode(TemplateMode.HTML);
         return resolver;
     }
-    /* end Thymeleaf */
 }

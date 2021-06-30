@@ -514,7 +514,22 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 }
             })
 
-            // Testing-Tool
+            //Exception logs
+            .when(viewPrefix + '/exception-logs', {
+                category: 'exception-logs',
+                templateUrl: 'templates/exception-logs',
+                controller: 'ExceptionLogController as ctrl',
+                resolve: {
+                    exceptionLogs: ['LogService', function (LogService) {
+                        //Retrieve settings initially
+                        return LogService.getExceptionLogs(10, 0, "time,desc").then(function (response) {
+                            return response;
+                        });
+                    }]
+                }
+            })
+
+            //Testing-Tool
             .when(viewPrefix + '/testing-tool', {
                 category: 'test-details',
                 templateUrl: 'templates/testing-tool',
@@ -535,7 +550,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                     deleteTest: ['HttpService', function (HttpService) {
                         // bind category parameter
                         return angular.bind(this, HttpService.deleteOne, 'test-details');
-
+                    }],
+                    accessControlPolicyList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('policies');
                     }]
                 }
             })
@@ -572,18 +589,15 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
     }
 ]);
 
-app.run(['$rootScope', '$timeout', 'SessionService', '$location', '$cookieStore',
-    function ($rootScope, $timeout, SessionService, $location, $cookieStore) {
+app.run(['$rootScope', '$cookieStore', '$timeout', '$location',
+    function ($rootScope, $cookieStore, $timeout, $location) {
 
         //Keep user logged in after page refresh
         $rootScope.globals = $cookieStore.get('globals') || {};
-        /*
-        if ($rootScope.globals.currentUser) {
-            $http.defaults.headers.common['Authorization'] = 'Basic ' + $rootScope.globals.currentUser.authdata;
-        }*/
 
-        $rootScope.$on('$locationChangeStart', function (event, next, current) {
-            // redirect to login page if not logged in and trying to access a restricted page
+        //Register listener for location change
+        $rootScope.$on('$locationChangeStart', function () {
+            // Redirect user to login page if not logged in
             let restrictedPage = $.inArray($location.path(), ['/login', '/register']) === -1;
             let loggedIn = $rootScope.globals.currentUser;
             if (restrictedPage && !loggedIn) {
@@ -593,7 +607,6 @@ app.run(['$rootScope', '$timeout', 'SessionService', '$location', '$cookieStore'
 
         $rootScope.$on('$viewContentLoaded', function () {
             $timeout(function () {
-
                 $rootScope.loggedIn = $rootScope.globals.currentUser;
 
                 if ($rootScope.loggedIn) {

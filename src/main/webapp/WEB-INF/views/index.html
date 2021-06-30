@@ -21,20 +21,26 @@
     <!-- Bootstrap Css -->
     <link th:href="@{/plugins/bootstrap/css/bootstrap.min.css}" rel="stylesheet"/>
 
-    <!-- Angular Css -->
-    <link th:href="@{/css/angular.css}" rel="stylesheet"/>
-
     <!-- Waves Effect Css -->
     <link th:href="@{/plugins/node-waves/waves.css}" rel="stylesheet"/>
 
     <!-- Animation Css -->
     <link th:href="@{/plugins/animate-css/animate.css}" rel="stylesheet"/>
 
+    <!-- jQuery-UI -->
+    <link th:href="@{/plugins/jquery-ui/jquery-ui.css}" rel="stylesheet"/>
+
+    <!-- jQuery DataTables -->
+    <link th:href="@{/plugins/jquery-datatables/dataTables.bootstrap.min.css}" rel="stylesheet"/>
+
+    <!-- jQuery QueryBuilder -->
+    <link th:href="@{/plugins/jquery-querybuilder/css/query-builder.default.css}" rel="stylesheet"/>
+
+    <!-- jQuery-UI Rotatable -->
+    <link th:href="@{/plugins/jquery-ui-rotatable/jquery.ui.rotatable.css}" rel="stylesheet"/>
+
     <!-- Morris Chart Css-->
     <link th:href="@{/plugins/morrisjs/morris.css}" rel="stylesheet"/>
-
-    <!-- JQuery DataTable Css -->
-    <link th:href="@{/plugins/jquery-datatable/skin/bootstrap/css/dataTables.bootstrap.css}" rel="stylesheet">
 
     <!-- Dropzone CSS -->
     <link th:href="@{/plugins/dropzone/min/dropzone.min.css}" rel="stylesheet"/>
@@ -63,9 +69,6 @@
     <!-- Font Awesome -->
     <link th:href="@{/plugins/fontawesome/all.css}" rel="stylesheet">
 
-    <!-- JQuery UI -->
-    <link th:href="@{/plugins/jquery-ui/jquery-ui.css}" rel="stylesheet"/>
-
     <!-- JsPlumb Defaults -->
     <link th:href="@{/plugins/jsplumb/css/jsPlumb-defaults.css}" rel="stylesheet"/>
 
@@ -84,17 +87,23 @@
     <!-- Ion RangeSlider -->
     <link th:href="@{/plugins/ion-rangeslider/ion.rangeSlider.min.css}" rel="stylesheet"/>
 
-    <!-- jQuery-QueryBuilder -->
-    <link th:href="@{/plugins/jquery-querybuilder/css/query-builder.default.css}" rel="stylesheet"/>
-
     <!-- Easy Autocomplete -->
     <link th:href="@{/plugins/easy-autocomplete/autocomplete.min.css}" rel="stylesheet"/>
 
-    <!-- jQuery-UI-Rotatable -->
-    <link th:href="@{/plugins/jquery-ui-rotatable/jquery.ui.rotatable.css}" rel="stylesheet"/>
-
     <!-- GitHub Fork Ribbon -->
     <link th:href="@{/plugins/gh-fork-ribbon/gh-fork-ribbon.min.css}" rel="stylesheet"/>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.4.1/jspdf.debug.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/2.3.4/jspdf.plugin.autotable.min.js"></script>
+
+
+    <script src="path/to/dom-to-image-more.min.js"/>
+    <script>
+        domtoimage.toPng(node)
+        //...
+    </script>
+
 </head>
 
 <body class="theme-blue" ng-cloak="ng-cloak" ng-controller="IndexController as ctrl">
@@ -119,7 +128,7 @@
             <a class="navbar-brand" href="./">MBP: A Platform for Managing IoT Environments</a>
         </div>
         <div style="float: right">
-            <a class="navbar-brand" href="./login" ng-show="loggedIn">
+            <a class="navbar-brand" th:href="@{/logout}" target="_parent" ng-show="loggedIn">
                 <i class="material-icons">power_settings_new</i>
                 <span>Logout</span>
             </a>
@@ -238,7 +247,7 @@
                     </li>
                 </ul>
             </li>
-            <li href="view/settings" menu-item="menu-item" ng-show="userData.isAdmin">
+            <li href="view/users" menu-item="menu-item" ng-show="userData.isAdmin">
                 <a href="view/users">
                     <i class="material-icons">people</i>
                     <span>User Management</span>
@@ -249,6 +258,17 @@
                     <i class="material-icons">settings</i>
                     <span>Settings</span>
                 </a>
+            </li>
+            <li menu-item="menu-item" ng-show="userData.isAdmin">
+                <a class="menu-toggle">
+                    <i class="material-icons">list</i>
+                    <span>Logs</span>
+                </a>
+                <ul class="ml-menu">
+                    <li>
+                        <a href="view/exception-logs" menu-item="menu-item">Exception logs</a>
+                    </li>
+                </ul>
             </li>
         </ul>
     </div>
@@ -274,10 +294,23 @@
 <!-- JQuery -->
 <script th:src="@{/plugins/jquery/jquery-3.1.1.min.js}"></script>
 
-<!-- JQuery UI -->
+<!-- JQuery-UI -->
 <script th:src="@{/plugins/jquery-ui/jquery-ui.js}"></script>
 
-<!-- Handle naming conflict between jQuery UI and Bootstrap -->
+<!-- jQuery DataTables -->
+<script th:src="@{/plugins/jquery-datatables/dataTables.min.js}"></script>
+<script th:src="@{/plugins/jquery-datatables/dataTables.bootstrap.min.js}"></script>
+
+<!-- jQuery Steps -->
+<script th:src="@{/plugins/jquery-steps/jquery.steps.min.js}"></script>
+
+<!-- jQuery QueryBuilder -->
+<script th:src="@{/plugins/jquery-querybuilder/js/query-builder.standalone.min.js}"></script>
+
+<!-- jQuery CountTo -->
+<script th:src="@{/plugins/jquery-countTo/countTo.js}"></script>
+
+<!-- Handle naming conflict between jQuery-UI and Bootstrap -->
 <script>
     $.widget.bridge('uibutton', $.ui.button);
     $.widget.bridge('uitooltip', $.ui.tooltip);
@@ -291,9 +324,6 @@
 
 <!-- Dropzone Js -->
 <script th:src="@{/plugins/dropzone/min/dropzone.min.js}"></script>
-
-<!-- JQuery Steps Plugin Js -->
-<script th:src="@{/plugins/jquery-steps/jquery.steps.min.js}"></script>
 
 <!-- Custom Template Js -->
 <script th:src="@{/js/admin.js}"></script>
@@ -334,15 +364,6 @@
 <!-- JsPlumb -->
 <script th:src="@{/plugins/jsplumb/jsplumb.js}"></script>
 
-<!-- jQuery-Steps -->
-<script th:src="@{/plugins/jquery-steps/jquery.steps.min.js}"></script>
-
-<!-- jQuery-QueryBuilder -->
-<script th:src="@{/plugins/jquery-querybuilder/js/query-builder.standalone.min.js}"></script>
-
-<!-- jQuery-CountTo -->
-<script th:src="@{/plugins/jquery-countTo/countTo.js}"></script>
-
 <!-- Easy Autocomplete -->
 <script th:src="@{/plugins/easy-autocomplete/autocomplete.min.js}"></script>
 
@@ -360,14 +381,12 @@
 
 <!-- Angular -->
 <script th:src="@{/js/app.js}"></script>
-<script th:src="@{/js/services/SessionService.js}"></script>
 <script th:src="@{/js/services/FileReader.js}"></script>
 <script th:src="@{/js/services/KeyPairService.js}"></script>
 <script th:src="@{/js/services/DeviceService.js}"></script>
 <script th:src="@{/js/services/ComponentService.js}"></script>
 <script th:src="@{/js/services/OperatorService.js}"></script>
 <script th:src="@{/js/services/MonitoringService.js}"></script>
-<script th:src="@{/js/services/AuthenticationService.js}"></script>
 <script th:src="@{/js/services/UserService.js}"></script>
 <script th:src="@{/js/services/EnvModelService.js}"></script>
 <script th:src="@{/js/services/UnitService.js}"></script>
@@ -375,6 +394,7 @@
 <script th:src="@{/js/services/RuleService.js}"></script>
 <script th:src="@{/js/services/SettingsService.js}"></script>
 <script th:src="@{/js/services/TestService.js}"></script>
+<script th:src="@{/js/services/DefaultComponentsService.js}"></script>
 
 <script th:src="@{/js/services/RuleActionService.js}"></script>
 <script th:src="@{/js/services/RuleTriggerService.js}"></script>
@@ -383,7 +403,7 @@
 <script th:src="@{/js/services/PolicyEffectService.js}"></script>
 <script th:src="@{/js/services/HttpService.js}"></script>
 <script th:src="@{/js/services/TestService.js}"></script>
-
+<script th:src="@{/js/services/LogService.js}"></script>
 
 <script th:src="@{/js/directives/menuItem.js}"></script>
 <script th:src="@{/js/directives/popover.js}"></script>
@@ -409,10 +429,9 @@
 <script th:src="@{/js/controllers/key-pairs/KeyPairListController.js}"></script>
 <script th:src="@{/js/controllers/actuators/ActuatorListController.js}"></script>
 <script th:src="@{/js/controllers/sensors/SensorListController.js}"></script>
-<script th:src="@{/js/controllers/testing/TestingController.js}"></script>
+<script th:src="@{/js/controllers/testing/TestingListController.js}"></script>
 <script th:src="@{/js/controllers/testing/TestingDetailsController.js}"></script>
 <script th:src="@{/js/controllers/testing/TestingChartController.js}"></script>
-
 
 <script th:src="@{/js/controllers/devices/DeviceListController.js}"></script>
 <script th:src="@{/js/controllers/devices/DeviceDetailsController.js}"></script>
@@ -433,5 +452,6 @@
 <script th:src="@{/js/controllers/user/RegisterController.js}"></script>
 <script th:src="@{/js/controllers/user/UserListController.js}"></script>
 <script th:src="@{/js/controllers/env-models/EnvModelListController.js}"></script>
+<script th:src="@{/js/controllers/logs/ExceptionLogController.js}"></script>
 </body>
 </html>

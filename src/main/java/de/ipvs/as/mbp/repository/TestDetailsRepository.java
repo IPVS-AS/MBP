@@ -12,11 +12,13 @@ import java.util.Optional;
  * Repository for test details of the tests that were created by the user with the testing-tool.
  */
 @RepositoryRestResource(collectionResourceRel = "test-details", path = "test-details")
-public interface TestDetailsRepository extends MongoRepository<TestDetails, String> {
+public interface TestDetailsRepository extends MongoRepository<TestDetails, String>, UserEntityRepository<TestDetails> {
 
-    TestDetails findByName(@Param("name") String name);
+    Optional<TestDetails> findByName(@Param("name") String name);
 
     Optional<TestDetails> findById(@Param("id") String id);
 
     List<TestDetails> findAllBySensorId(@Param("sensor") String id);
+
+    List<TestDetails> findAllBySensorName(@Param("sensor") String name);
 }

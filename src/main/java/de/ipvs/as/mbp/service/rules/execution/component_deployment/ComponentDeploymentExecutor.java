@@ -8,13 +8,13 @@ import de.ipvs.as.mbp.error.EntityValidationException;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
 import de.ipvs.as.mbp.service.cep.engine.core.output.CEPOutput;
-import de.ipvs.as.mbp.service.deploy.ComponentState;
-import de.ipvs.as.mbp.service.deploy.SSHDeployer;
+import de.ipvs.as.mbp.service.deployment.ComponentState;
+import de.ipvs.as.mbp.service.deployment.DeployerDispatcher;
+import de.ipvs.as.mbp.service.deployment.IDeployer;
 import de.ipvs.as.mbp.service.rules.execution.RuleActionExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -29,29 +29,29 @@ public class ComponentDeploymentExecutor implements RuleActionExecutor {
     private static final String PARAM_KEY_DEPLOY_ACTION = "deploy";
 
     //Regular expression describing permissible component strings
-    private static final String REGEX_COMPONENT_STRING = "(?:actuator|sensor)\\/[A-z0-9]+";
+    private static final String REGEX_COMPONENT_STRING = "(?:actuator|sensor)/[A-z0-9]+";
 
     //Autowired
-    private ActuatorRepository actuatorRepository;
+    private final ActuatorRepository actuatorRepository;
 
     //Autowired
-    private SensorRepository sensorRepository;
+    private final SensorRepository sensorRepository;
 
     //Autowired
-    private SSHDeployer sshDeployer;
+    private final DeployerDispatcher deployerDispatcher;
 
     /**
      * Initializes the component deployment executor.
      *
      * @param actuatorRepository The actuator repository
      * @param sensorRepository   The sensor repository
-     * @param sshDeployer        The SSH deployer service
+     * @param deployerDispatcher The deployer dispatcher component
      */
     @Autowired
-    public ComponentDeploymentExecutor(ActuatorRepository actuatorRepository, SensorRepository sensorRepository, SSHDeployer sshDeployer) {
+    public ComponentDeploymentExecutor(ActuatorRepository actuatorRepository, SensorRepository sensorRepository, DeployerDispatcher deployerDispatcher) {
         this.actuatorRepository = actuatorRepository;
         this.sensorRepository = sensorRepository;
-        this.sshDeployer = sshDeployer;
+        this.deployerDispatcher = deployerDispatcher;
     }
 
     /**
@@ -122,6 +122,9 @@ public class ComponentDeploymentExecutor implements RuleActionExecutor {
      */
     @Override
     public boolean execute(RuleAction action, Rule rule, CEPOutput output) {
+        //Find suitable deployer component
+        IDeployer deployer = deployerDispatcher.getDeployer();
+
         //Get parameters
         Map<String, String> parameters = action.getParameters();
         String componentString = parameters.get(PARAM_KEY_COMPONENT);
@@ -139,7 +142,7 @@ public class ComponentDeploymentExecutor implements RuleActionExecutor {
         DeploymentAction deploymentAction = DeploymentAction.valueOf(deployActionString);
 
         //Get current component state
-        ComponentState componentState = sshDeployer.determineComponentState(component);
+        ComponentState componentState = deployer.retrieveComponentState(component);
 
         //Return with failure if component is not available
         if (ComponentState.UNKNOWN.equals(componentState) || ComponentState.NOT_READY.equals(componentState)) {
@@ -153,7 +156,7 @@ public class ComponentDeploymentExecutor implements RuleActionExecutor {
                 case DEPLOY:
                     //Deploy component if ready
                     if (ComponentState.READY.equals(componentState)) {
-                        sshDeployer.deployComponent(component);
+                        deployer.deployComponent(component);
                     }
 
                     break;
@@ -161,18 +164,18 @@ public class ComponentDeploymentExecutor implements RuleActionExecutor {
                     //Check component state
                     if (ComponentState.READY.equals(componentState)) {
                         //Component is ready, so deploy and start it
-                        sshDeployer.deployComponent(component);
-                        sshDeployer.startComponent(component, new ArrayList<>());
+                        deployer.deployComponent(component);
+                        deployer.startComponent(component, new ArrayList<>());
                     } else if (ComponentState.DEPLOYED.equals(componentState)) {
                         //Component is deployed, so just start it
-                        sshDeployer.startComponent(component, new ArrayList<>());
+                        deployer.startComponent(component, new ArrayList<>());
                     }
 
                     break;
                 case STOP:
                     //Stop component if running
                     if (ComponentState.RUNNING.equals(componentState)) {
-                        sshDeployer.stopComponent(component);
+                        deployer.stopComponent(component);
                     }
 
                     break;
@@ -180,21 +183,20 @@ public class ComponentDeploymentExecutor implements RuleActionExecutor {
                     //Check component state
                     if (ComponentState.RUNNING.equals(componentState)) {
                         //Component is running, so stop and undeploy it
-                        sshDeployer.stopComponent(component);
-                        sshDeployer.undeployComponent(component);
+                        deployer.stopComponent(component);
+                        deployer.undeployComponent(component);
                     } else if (ComponentState.DEPLOYED.equals(componentState)) {
                         //Component is deployed, so just undeploy it
-                        sshDeployer.undeployComponent(component);
+                        deployer.undeployComponent(component);
                     }
                 default:
                     return false;
             }
 
             //Check if component is now in target state
-            ComponentState finalState = sshDeployer.determineComponentState(component);
+            ComponentState finalState = deployer.retrieveComponentState(component);
             return deploymentAction.getTargetState().equals(finalState);
-
-        } catch (IOException e) {
+        } catch (Exception e) {
             return false;
         }
     }

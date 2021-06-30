@@ -1,8 +1,10 @@
 package de.ipvs.as.mbp.service.env_model;
 
-import de.ipvs.as.mbp.domain.component.*;
+import de.ipvs.as.mbp.domain.component.Actuator;
+import de.ipvs.as.mbp.domain.component.Component;
+import de.ipvs.as.mbp.domain.component.ComponentCreateEventHandler;
+import de.ipvs.as.mbp.domain.component.Sensor;
 import de.ipvs.as.mbp.domain.device.Device;
-import de.ipvs.as.mbp.domain.device.DeviceCreateValidator;
 import de.ipvs.as.mbp.domain.env_model.EnvironmentModel;
 import de.ipvs.as.mbp.domain.key_pair.KeyPair;
 import de.ipvs.as.mbp.domain.operator.Operator;
@@ -12,9 +14,10 @@ import de.ipvs.as.mbp.error.DeploymentException;
 import de.ipvs.as.mbp.error.EnvironmentModelParseException;
 import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.repository.*;
-import de.ipvs.as.mbp.service.UserService;
-import de.ipvs.as.mbp.service.deploy.ComponentState;
-import de.ipvs.as.mbp.service.deploy.SSHDeployer;
+import de.ipvs.as.mbp.service.user.UserService;
+import de.ipvs.as.mbp.service.deployment.ComponentState;
+import de.ipvs.as.mbp.service.deployment.DeployerDispatcher;
+import de.ipvs.as.mbp.service.deployment.IDeployer;
 import de.ipvs.as.mbp.service.env_model.events.EnvironmentModelEventService;
 import de.ipvs.as.mbp.service.env_model.events.types.EntityStateEvent;
 import org.json.JSONArray;
@@ -26,7 +29,6 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,12 +39,6 @@ import java.util.Map;
  */
 @org.springframework.stereotype.Component
 public class EnvironmentModelService {
-
-    @Autowired
-    private DeviceCreateValidator deviceCreateValidator;
-
-    @Autowired
-    private ComponentCreateValidator componentCreateValidator;
 
     @Autowired
     private EnvironmentModelRepository environmentModelRepository;
@@ -72,7 +68,7 @@ public class EnvironmentModelService {
     private EnvironmentModelEventService eventService;
 
     @Autowired
-    private SSHDeployer sshDeployer;
+    private DeployerDispatcher deployerDispatcher;
 
     //JSON key names
     private static final String MODEL_JSON_KEY_NODES = "nodes";
@@ -101,9 +97,9 @@ public class EnvironmentModelService {
      *
      * @param model The environment model for which the entity states are supposed to be determined
      * @return The map (node id -> entity state) holding the states of all entities
-     * @throws EnvironmentModelParseException
+     * @throws EnvironmentModelParseException In case the environment model could not be parsed
      */
-    public Map<String, EntityState> determineEntityStates(EnvironmentModel model) throws EnvironmentModelParseException {
+    public Map<String, EntityState> retrieveEntityStates(EnvironmentModel model) throws EnvironmentModelParseException {
         //Sanity check
         if (model == null) {
             throw new EnvironmentModelParseException("Model must not be null.");
@@ -132,8 +128,11 @@ public class EnvironmentModelService {
                 continue;
             }
 
+            //Find suitable deployer component
+            IDeployer deployer = deployerDispatcher.getDeployer();
+
             //Determine state of the component
-            ComponentState componentState = sshDeployer.determineComponentState((Component) entity);
+            ComponentState componentState = deployer.retrieveComponentState((Component) entity);
 
             //Translate component state to entity state and add it to map
             switch (componentState) {
@@ -155,7 +154,7 @@ public class EnvironmentModelService {
      * Unregisters (deletes) the entities of an environment model.
      *
      * @param model The model whose entities are supposed to be unregistered.
-     * @throws EnvironmentModelParseException
+     * @throws EnvironmentModelParseException In case the environment model could not be parsed
      */
     public void unregisterEntities(EnvironmentModel model) throws EnvironmentModelParseException {
         //Sanity check
@@ -178,11 +177,11 @@ public class EnvironmentModelService {
 
             //Check entity type
             if (entity instanceof Device) {
-                deviceRepository.deleteById(((Device) entity).getId());
+                deviceRepository.deleteById(entity.getId());
             } else if (entity instanceof Actuator) {
-                actuatorRepository.deleteById(((Actuator) entity).getId());
+                actuatorRepository.deleteById(entity.getId());
             } else if (entity instanceof Sensor) {
-                sensorRepository.deleteById(((Sensor) entity).getId());
+                sensorRepository.deleteById(entity.getId());
             }
         }
     }
@@ -191,7 +190,7 @@ public class EnvironmentModelService {
      * Registers the components of an environment model.
      *
      * @param model The model whose components are supposed to be registered
-     * @throws EnvironmentModelParseException
+     * @throws EnvironmentModelParseException In case the environment model could not be parsed
      */
     public void registerComponents(EnvironmentModel model) throws EnvironmentModelParseException {
         //Sanity check
@@ -288,6 +287,9 @@ public class EnvironmentModelService {
             throw new IllegalArgumentException("Model must not be null.");
         }
 
+        //Find suitable deployer component
+        IDeployer deployer = deployerDispatcher.getDeployer();
+
         //Map holding all occurred errors
         Map<String, String> deploymentErrors = new HashMap<>();
 
@@ -308,7 +310,7 @@ public class EnvironmentModelService {
             Component component = (Component) entity;
 
             //Resolve current state of the component
-            ComponentState componentState = sshDeployer.determineComponentState(component);
+            ComponentState componentState = deployer.retrieveComponentState(component);
 
             //Check if deployment is necessary and possible
             switch (componentState) {
@@ -328,19 +330,17 @@ public class EnvironmentModelService {
                     //Update deployment error map
                     deploymentErrors.put(nodeId, "Impossible to deploy, device is not available.");
                     continue;
-                case READY:
-                    break;
                 default:
                     break;
             }
 
             //Try to deploy component
             try {
-                sshDeployer.deployComponent(component);
+                deployer.deployComponent(component);
 
                 //Publish update event
                 publishEntityState(model, nodeId, component, EntityState.DEPLOYED);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 //Remember error
                 deploymentErrors.put(nodeId, "Deployment failed unexpectedly.");
             }
@@ -355,13 +355,15 @@ public class EnvironmentModelService {
      * Undeploys the components of an environment model.
      *
      * @param model The model whose components are supposed to be undeployed
-     * @throws DeploymentException
      */
-    public void undeployComponents(EnvironmentModel model) throws DeploymentException {
+    public void undeployComponents(EnvironmentModel model) {
         //Sanity check
         if (model == null) {
             throw new IllegalArgumentException("Model must not be null.");
         }
+
+        //Find suitable deployer component
+        IDeployer deployer = deployerDispatcher.getDeployer();
 
         //Map holding all occurred errors
         Map<String, String> undeploymentErrors = new HashMap<>();
@@ -383,7 +385,7 @@ public class EnvironmentModelService {
             Component component = (Component) entity;
 
             //Resolve current state of the component
-            ComponentState componentState = sshDeployer.determineComponentState(component);
+            ComponentState componentState = deployer.retrieveComponentState(component);
 
             //Check if undeployment is necessary and possible
             switch (componentState) {
@@ -395,19 +397,17 @@ public class EnvironmentModelService {
                     continue;
                 case DEPLOYED:
                     break;
-                case RUNNING:
-                    break;
                 default:
                     break;
             }
 
             //Try to undeploy component
             try {
-                sshDeployer.undeployComponent(component);
+                deployer.undeployComponent(component);
 
                 //Publish update event
                 publishEntityState(model, nodeId, component, EntityState.REGISTERED);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 //Remember error
                 undeploymentErrors.put(nodeId, "Undeployment failed unexpectedly.");
             }
@@ -422,13 +422,15 @@ public class EnvironmentModelService {
      * Starts the components of an environment model.
      *
      * @param model The model whose components are supposed to be started
-     * @throws DeploymentException
      */
-    public void startComponents(EnvironmentModel model) throws DeploymentException {
+    public void startComponents(EnvironmentModel model) {
         //Sanity check
         if (model == null) {
             throw new IllegalArgumentException("Model must not be null.");
         }
+
+        //Find suitable deployer component
+        IDeployer deployer = deployerDispatcher.getDeployer();
 
         //Map holding all occurred errors
         Map<String, String> startErrors = new HashMap<>();
@@ -450,7 +452,7 @@ public class EnvironmentModelService {
             Component component = (Component) entity;
 
             //Resolve current state of the component
-            ComponentState componentState = sshDeployer.determineComponentState(component);
+            ComponentState componentState = deployer.retrieveComponentState(component);
 
             //Check if starting is necessary and possible
             switch (componentState) {
@@ -475,11 +477,11 @@ public class EnvironmentModelService {
 
             //Try to start component
             try {
-                sshDeployer.startComponent(component, new ArrayList<>());
+                deployer.startComponent(component, new ArrayList<>());
 
                 //Publish update event
                 publishEntityState(model, nodeId, component, EntityState.STARTED);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 //Remember error
                 startErrors.put(nodeId, "Starting failed unexpectedly.");
             }
@@ -502,6 +504,9 @@ public class EnvironmentModelService {
             throw new IllegalArgumentException("Model must not be null.");
         }
 
+        //Find suitable deployer component
+        IDeployer deployer = deployerDispatcher.getDeployer();
+
         //Map holding all occurred errors
         Map<String, String> stopErrors = new HashMap<>();
 
@@ -522,7 +527,7 @@ public class EnvironmentModelService {
             Component component = (Component) entity;
 
             //Resolve current state of the component
-            ComponentState componentState = sshDeployer.determineComponentState(component);
+            ComponentState componentState = deployer.retrieveComponentState(component);
 
             //Check if stopping is necessary and possible
             switch (componentState) {
@@ -536,19 +541,17 @@ public class EnvironmentModelService {
                     //Impossible to undeploy component
                     publishEntityState(model, nodeId, component, EntityState.REGISTERED);
                     continue;
-                case RUNNING:
-                    break;
                 default:
                     break;
             }
 
             //Try to stop component
             try {
-                sshDeployer.stopComponent(component);
+                deployer.stopComponent(component);
 
                 //Publish update event
                 publishEntityState(model, nodeId, component, EntityState.DEPLOYED);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 //Remember error
                 stopErrors.put(nodeId, "Stopping failed unexpectedly.");
             }
@@ -563,7 +566,7 @@ public class EnvironmentModelService {
      * Converts a given parse result object into an action response object by transforming all parse errors.
      *
      * @param parseResult The parse result object to transform
-     * @throws EnvironmentModelParseException
+     * @throws EnvironmentModelParseException In case the environment model could not be parsed
      */
     private void checkParseResult(EnvironmentModelParseResult parseResult) throws EnvironmentModelParseException {
         //Sanity check
@@ -798,8 +801,7 @@ public class EnvironmentModelService {
         }
 
         //Store registered Component
-        Component registeredComponent = null;
-
+        Component registeredComponent;
 
         //Insert component into its repository and return the new id
         if (component instanceof Actuator) {

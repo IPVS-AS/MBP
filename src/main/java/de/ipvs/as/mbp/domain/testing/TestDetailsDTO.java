@@ -1,11 +1,12 @@
 package de.ipvs.as.mbp.domain.testing;
 
 import de.ipvs.as.mbp.domain.operator.parameters.ParameterInstance;
+import de.ipvs.as.mbp.domain.user_entity.UserEntityRequestDTO;
 
 
 import java.util.List;
 
-public class TestDetailsDTO {
+public class TestDetailsDTO extends UserEntityRequestDTO {
 
     private String name;
 

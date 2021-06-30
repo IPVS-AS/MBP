@@ -3,11 +3,12 @@ package de.ipvs.as.mbp.web.rest;
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.settings.MBPInfo;
 import de.ipvs.as.mbp.domain.settings.Settings;
+import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.error.MissingAdminPrivilegesException;
-import de.ipvs.as.mbp.service.UserEntityService;
-import de.ipvs.as.mbp.service.mqtt.MQTTService;
+import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.service.settings.DefaultOperatorService;
 import de.ipvs.as.mbp.service.settings.SettingsService;
+import de.ipvs.as.mbp.service.testing.DefaultTestingComponents;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -17,8 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
 
 /**
  * REST Controller for settings related REST requests.
@@ -32,13 +31,14 @@ public class RestSettingsController {
     private DefaultOperatorService defaultOperatorService;
 
     @Autowired
+    private DefaultTestingComponents defaultTestingComponents;
+
+    @Autowired
     private SettingsService settingsService;
 
     @Autowired
-    private MQTTService mqttService;
-
-    @Autowired
     private UserEntityService userEntityService;
+
 
     /**
      * Returns information about the running MBP app instance and the environment in which it is operated.
@@ -62,7 +62,7 @@ public class RestSettingsController {
      * in actuators and sensors by all users.
      *
      * @return A response entity containing the result of the request
-     * @throws MissingAdminPrivilegesException In case of insufficient permissions
+     * @throws MissingAdminPrivilegesException In case the current user misses admin privileges
      */
     @PostMapping(value = "/default-operators")
     @ApiOperation(value = "Loads default operators from the resource directory of the MBP and makes them available for usage in actuators and sensors by all users.", produces = "application/hal+json")
@@ -78,23 +78,57 @@ public class RestSettingsController {
     }
 
     /**
+     * Called when the client wants to reinstall  the invisible default components for the Testing-Tool and
+     * make them available for usage in the Testing-Tool by all users.
+     *
+     * @return A response entity containing the result of the request
+     */
+    @PostMapping(value = "/default-test-components")
+    @ApiOperation(value = "Loads default components from the resource directory of the MBP and makes them available for usage in the Testing-Tool by all users.", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
+    public ResponseEntity<Void> reinstallTestingComponents() {
+
+        // Delete & reinstall all default testing components
+        defaultTestingComponents.replaceTestDevice();
+        defaultTestingComponents.replaceOperators();
+        defaultTestingComponents.replaceTestingActuator();
+        defaultTestingComponents.replaceSensorSimulators();
+
+        // Respond
+        return ResponseEntity.ok().build();
+    }
+
+
+    /**
+     * Called when the client wants to redeploy the invisible default components for the Testing-Tool.
+     *
+     * @return A response entity containing the result of the request
+     */
+    @PostMapping(value = "/test-components-redeploy")
+    @ApiOperation(value = "Redeploy the default sensors/actuator from the resource directory of the MBP for usage in the Testing-Tool by all users.", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to perform this action"), @ApiResponse(code = 500, message = "Default operators could not be added")})
+    public ResponseEntity<Void> redeployTestingComponents() {
+
+        // First delete all default testing components
+        defaultTestingComponents.redeployComponents();
+
+        // Respond
+        return ResponseEntity.ok().build();
+    }
+
+
+    /**
      * Called when the client wants to retrieve the settings.
      *
      * @return The settings object
-     * @throws MissingAdminPrivilegesException
+     * @throws MissingAdminPrivilegesException In case the current user misses admin privileges
      */
     @GetMapping
     @ApiOperation(value = "Retrieves the current settings of the platform", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success")})
     public ResponseEntity<Settings> getSettings() throws MissingAdminPrivilegesException {
         //Get settings from settings service and return them
-        Settings settings;
-        try {
-            settings = settingsService.getSettings();
-        } catch (IOException e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity<>(settings, HttpStatus.OK);
+        return new ResponseEntity<>(settingsService.getSettings(), HttpStatus.OK);
     }
 
     /**
@@ -102,22 +136,20 @@ public class RestSettingsController {
      *
      * @param settings The settings to update
      * @return OK (200) in case everything was successful
-     * @throws MissingAdminPrivilegesException
+     * @throws MissingAdminPrivilegesException In case the current user misses admin privileges
      */
     @PostMapping
     @ApiOperation(value = "Modifies the current settings of the platform", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success"), @ApiResponse(code = 403, message = "Not authorized to modify the settings")})
     public ResponseEntity<Void> saveSettings(@RequestBody Settings settings) throws MissingAdminPrivilegesException {
+        //Require admin permissions
         userEntityService.requireAdmin();
 
-        // Save settings and re-initialize MQTT service, since it needs to use a different IP address now
+        // Update settings and update MBP components if necessary
         try {
-            settingsService.saveSettings(settings);
-            mqttService.initialize();
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            settingsService.updateSettings(settings);
         } catch (MqttException e) {
-            e.printStackTrace();
+            throw new MBPException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not establish connection to MQTT broker.");
         }
 
         //Everything fine

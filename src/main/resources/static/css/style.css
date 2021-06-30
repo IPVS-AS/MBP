@@ -10812,3 +10812,11 @@ html.ie11 .bs-searchbox .form-control {
     width: 90%;
 }
 
+/* Search box */
+.units-search-box {
+    font-size: 16px;
+    padding: 3px 4px 4px 10px;
+    border: 2px solid #ddd;
+    margin: 5px;
+}
+

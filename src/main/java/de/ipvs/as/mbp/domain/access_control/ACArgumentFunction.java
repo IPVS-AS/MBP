@@ -5,8 +5,6 @@ import java.util.function.Predicate;
 
 /**
  * Enumeration for different functions that can be used to compare two arguments.
- * 
- * @author Jakob Benz
  */
 public enum ACArgumentFunction {
 	
@@ -14,13 +12,13 @@ public enum ACArgumentFunction {
 	 * Function that evaluates to {@code true}, if and only if
 	 * two arguments are equal.
 	 */
-	EQUALS("=", compareResult -> compareResult == 0, (l, r) -> l.equals(r)),
+	EQUALS("=", compareResult -> compareResult == 0, (l, r) -> l.equalsIgnoreCase(r)),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * two arguments are not equal.
 	 */
-	NOT_EQUALS("!=", compareResult -> compareResult != 0, (l, r) -> !l.equals(r)),
+	NOT_EQUALS("!=", compareResult -> compareResult != 0, (l, r) -> !l.equalsIgnoreCase(r)),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
@@ -50,37 +48,37 @@ public enum ACArgumentFunction {
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument starts with the second argument.
 	 */
-	STARTS_WITH("starts with", null, (l, r) -> l.startsWith(r)),
+	STARTS_WITH("starts with", null, (l, r) -> l.toLowerCase().startsWith(r.toLowerCase())),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument does not start with the second argument.
 	 */
-	NOT_STARTS_WITH("does not start with", null, (l, r) -> !l.startsWith(r)),
+	NOT_STARTS_WITH("does not start with", null, (l, r) -> !l.toLowerCase().startsWith(r.toLowerCase())),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument contains the second argument.
 	 */
-	CONTAINS("contains", null, (l, r) -> l.contains(r)),
+	CONTAINS("contains", null, (l, r) -> l.toLowerCase().contains(r.toLowerCase())),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument does not contain the second argument.
 	 */
-	NOT_CONTAINS("does not contain", null, (l, r) -> l.contains(r)),
+	NOT_CONTAINS("does not contain", null, (l, r) -> l.toLowerCase().contains(r.toLowerCase())),
 	
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument ends with the second argument.
 	 */
-	ENDS_WITH("ends with", null, (l, r) -> l.endsWith(r)),
+	ENDS_WITH("ends with", null, (l, r) -> l.toLowerCase().endsWith(r.toLowerCase())),
 
 	/**
 	 * Function that evaluates to {@code true}, if and only if
 	 * the first argument does not end with the second argument.
 	 */
-	NOT_ENDS_WITH("does not end with", null, (l, r) -> !l.endsWith(r));
+	NOT_ENDS_WITH("does not end with", null, (l, r) -> !l.toLowerCase().endsWith(r.toLowerCase()));
 	
 	// - - -
 	

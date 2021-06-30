@@ -3,8 +3,8 @@
 /**
  * Provides services for HTTP requests.
  */
-app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'NotificationService',
-    function ($rootScope, $interval, ENDPOINT_URI, NotificationService) {
+app.factory('HttpService', ['$rootScope', '$location', '$interval', 'ENDPOINT_URI', 'NotificationService',
+    function ($rootScope, $location, $interval, ENDPOINT_URI, NotificationService) {
         //Enables or disables the debug mode
         const debugMode = true;
 
@@ -35,17 +35,10 @@ app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'Notifica
          */
         function generateHeader() {
             //Create header object
-            let headers = {
+            return {
                 'Content-Type': 'application/json;charset=UTF8',
                 'X-MBP-Access-Request': getUserAttributes()
-            }
-
-            //Check if authorization can be added to the header
-            if ($rootScope.globals.currentUser) {
-                headers['Authorization'] = 'Basic ' + $rootScope.globals.currentUser.authdata;
-            }
-
-            return headers;
+            };
         }
 
         /**
@@ -54,8 +47,10 @@ app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'Notifica
          * @returns The created XMLHttpRequest
          */
         function createXHR() {
+            //Create XHR
             let xhr = new window.XMLHttpRequest();
 
+            //Register listeners for start and end
             xhr.addEventListener("loadstart", onRequestStart, false);
             xhr.addEventListener("loadend", onRequestFinished, false);
 
@@ -274,8 +269,13 @@ app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'Notifica
             if (errorMessage != null) {
                 NotificationService.showError(errorMessage);
             } else if (response.status === 0) {
+                //Request could not be executed
                 NotificationService.showError("Request to backend failed. Is it online?");
+            } else if (response.status === 401) {
+                //Unauthorized, i.e. user is probably not logged in
+                $location.path('/login');
             } else {
+                //Unknown error source
                 NotificationService.showError("Request was not successful.");
             }
 
@@ -365,7 +365,23 @@ app.factory('HttpService', ['$rootScope', '$interval', 'ENDPOINT_URI', 'Notifica
                 if ((typeof data !== 'object') || (typeof data.page !== 'object')) {
                     return 0;
                 }
-                return data.page.totalElements || 0;
+
+                let counter = data.page.totalElements;
+
+
+                angular.forEach(data._embedded,
+                    function (value, key) {
+                        if (key === "sensors" || key === "devices" || key === "actuators") {
+                            value.some(function (component) {
+                                if (component.name.includes("TESTING_")) {
+                                    counter = counter - 1;
+                                }
+                            });
+                        }
+                    });
+
+
+                return counter || 0;
             });
         }
 

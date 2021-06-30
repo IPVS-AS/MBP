@@ -14,7 +14,7 @@ import de.ipvs.as.mbp.error.MBPException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.ActuatorRepository;
 import de.ipvs.as.mbp.repository.SensorRepository;
-import de.ipvs.as.mbp.service.UserEntityService;
+import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.service.access_control.ACEffectService;
 import de.ipvs.as.mbp.service.stats.ValueLogStatsService;
 import de.ipvs.as.mbp.service.stats.model.ValueLogStats;

@@ -15,7 +15,6 @@ import de.ipvs.as.mbp.domain.rules.Rule;
 import de.ipvs.as.mbp.domain.rules.RuleAction;
 import de.ipvs.as.mbp.domain.rules.RuleTrigger;
 import de.ipvs.as.mbp.domain.testing.TestDetails;
-import de.ipvs.as.mbp.domain.user.Authority;
 import de.ipvs.as.mbp.domain.user.User;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
@@ -34,8 +33,6 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 /**
  * Contains crucial rest configurations for the application.
- *
- * @author rafaelkperes, Jan
  */
 @Configuration
 public class RestConfiguration implements RepositoryRestConfigurer {
@@ -69,7 +66,7 @@ public class RestConfiguration implements RepositoryRestConfigurer {
                 Device.class,
                 Operator.class, MonitoringOperator.class,
                 Actuator.class, Sensor.class,
-                User.class, Authority.class,
+                User.class,
                 EntityType.class,
                 EnvironmentModel.class,
                 Rule.class, RuleTrigger.class, RuleAction.class,

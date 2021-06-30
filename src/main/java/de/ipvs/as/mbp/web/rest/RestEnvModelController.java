@@ -6,7 +6,7 @@ import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.EnvironmentModelParseException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.EnvironmentModelRepository;
-import de.ipvs.as.mbp.service.UserEntityService;
+import de.ipvs.as.mbp.service.user.UserEntityService;
 import io.swagger.annotations.*;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
@@ -138,7 +138,7 @@ public class RestEnvModelController {
         EnvironmentModel environmentModel = userEntityService.getForIdWithAccessControlCheck(environmentModelRepository, environmentModelId, ACAccessType.READ, ACAccessRequest.valueOf(accessRequestHeader));
 
         // Determine entity states
-        environmentModelService.determineEntityStates(environmentModel);
+        environmentModelService.retrieveEntityStates(environmentModel);
         return ResponseEntity.ok().build();
     }
 

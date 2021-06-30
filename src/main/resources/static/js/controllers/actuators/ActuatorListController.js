@@ -5,10 +5,12 @@
  */
 app.controller('ActuatorListController',
     ['$scope', '$controller', '$interval', 'actuatorList', 'addActuator', 'deleteActuator',
-        'deviceList', 'operatorList', 'actuatorTypesList', 'accessControlPolicyList', 'ComponentService', 'NotificationService',
+        'deviceList', 'operatorList', 'actuatorTypesList', 'accessControlPolicyList', 'ComponentService','DefaultComponentsService', 'NotificationService',
         function ($scope, $controller, $interval, actuatorList, addActuator, deleteActuator,
-                  deviceList, operatorList, actuatorTypesList, accessControlPolicyList, ComponentService, NotificationService) {
+                  deviceList, operatorList, actuatorTypesList, accessControlPolicyList, ComponentService, DefaultComponentsService,NotificationService) {
             let vm = this;
+
+
 
             vm.operatorList = operatorList;
             vm.deviceList = deviceList;
@@ -18,6 +20,7 @@ app.controller('ActuatorListController',
              */
             (function initController() {
                 loadActuatorStates();
+                $scope.simExists = DefaultComponentsService.getListWoSimulators(actuatorList);
 
                 //Interval for updating actuator states on a regular basis
                 let interval = $interval(function () {
@@ -52,6 +55,8 @@ app.controller('ActuatorListController',
                 }
                 return "#";
             };
+
+
 
             /**
              * [Public]
@@ -156,6 +161,21 @@ app.controller('ActuatorListController',
                 });
             }
 
+
+            /**
+             * [Public]
+             * @returns {function(...[*]=)}
+             */
+            $scope.hideSimulators = function () {
+                return function (item) {
+                    if (item.name.indexOf("TESTING_") === -1){
+                        return true;
+                    }
+                    return false;
+                };
+            };
+
+
             //Expose controller ($controller will auto-add to $scope)
             angular.extend(vm, {
                 actuatorListCtrl: $controller('ItemListController as actuatorListCtrl', {
@@ -197,6 +217,7 @@ app.controller('ActuatorListController',
 
                         //Add actuator to actuator list
                         vm.actuatorListCtrl.pushItem(actuator);
+                        $scope.simExists = DefaultComponentsService.getListWoSimulators(actuatorList);
 
                         //Retrieve state of the new actuator
                         getActuatorState(actuator.id);
@@ -213,6 +234,7 @@ app.controller('ActuatorListController',
                 function () {
                     let id = vm.deleteActuatorCtrl.result;
                     vm.actuatorListCtrl.removeItem(id);
+                    $scope.simExists = DefaultComponentsService.getListWoSimulators(actuatorList);
                 }
             );
 

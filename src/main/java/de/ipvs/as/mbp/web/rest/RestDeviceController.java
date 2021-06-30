@@ -13,7 +13,7 @@ import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
 import de.ipvs.as.mbp.repository.DeviceRepository;
 import de.ipvs.as.mbp.repository.KeyPairRepository;
-import de.ipvs.as.mbp.service.UserEntityService;
+import de.ipvs.as.mbp.service.user.UserEntityService;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.device.Device;
@@ -42,8 +42,6 @@ import io.swagger.annotations.ApiResponses;
 
 /**
  * REST Controller for managing {@link Device}s.
- * 
- * @author Jakob Benz
  */
 @RestController
 @RequestMapping(RestConfiguration.BASE_PATH + "/devices")
@@ -89,7 +87,7 @@ public class RestDeviceController {
     		@RequestHeader("X-MBP-Access-Request") String accessRequestHeader,
     		@PathVariable("deviceId") String deviceId,
     		@ApiParam(value = "Page parameters", required = true) Pageable pageable) throws EntityNotFoundException, MissingPermissionException {
-		// Parse the access-request information
+		// Parse the access request information
 		ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 		
     	// Retrieve the corresponding device (includes access-control)
