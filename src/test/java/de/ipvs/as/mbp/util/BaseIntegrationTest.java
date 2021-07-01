@@ -1,7 +1,5 @@
 package de.ipvs.as.mbp.util;
 
-import javax.servlet.http.Cookie;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.user.UserLoginData;
@@ -11,12 +9,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import javax.servlet.http.Cookie;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public abstract class BaseIntegrationTest {
 
+    public static final String REQUEST_CONTENT_TYPE = "application/json;charset=UTF-8";
     @Container
     public static MongoDbContainer mongoDbContainer = MongoDbContainer.getInstance();
 
@@ -38,6 +40,19 @@ public abstract class BaseIntegrationTest {
 
     @Autowired
     protected ObjectMapper objectMapper;
+
+
+    public HttpHeaders getMBPAccessHeaderForAdmin() {
+        return getMBPAccessHeaderForUser("admin", "admin", "admin");
+    }
+
+    public HttpHeaders getMBPAccessHeaderForUser(String firstname, String lastname, String username) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-MBP-Access-Request", String.format(
+                "requesting-entity-firstname=%s;;requesting-entity-lastname=%s;;requesting-entity-username=%s",
+                firstname, lastname, username));
+        return headers;
+    }
 
     public Cookie getSessionCookieForAdmin() throws Exception {
         return getSessionCookie("admin", "12345");
