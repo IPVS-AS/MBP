@@ -34,10 +34,10 @@ app.controller('DeviceDetailsController',
 
                 //Make device details and list of compatible operators available
                 vm.device = deviceDetails;
-                vm.compatibleOperators = compatibleOperators;
+                vm.compatibleOperators = compatibleOperators || [];
 
                 //Prepare monitoring operator objects
-                for (let i = 0; i < compatibleOperators.length; i++) {
+                for (let i = 0; i < vm.compatibleOperators; i++) {
                     //Retrieve operator
                     let operator = vm.compatibleOperators[i];
 
@@ -456,9 +456,9 @@ app.controller('DeviceDetailsController',
              */
             function initParameters() {
                 //Extend parameter array for one array per compatible operator
-                for (let i = 0; i < compatibleOperators.length; i++) {
+                for (let i = 0; i < vm.compatibleOperators.length; i++) {
                     //Get formal parameters for the current operator
-                    let formalParams = compatibleOperators[i].parameters;
+                    let formalParams = vm.compatibleOperators[i].parameters;
 
                     //Array for the parameters of the current operator
                     let operatorParameterArray = [];

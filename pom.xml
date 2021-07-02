@@ -32,8 +32,9 @@
             <url>https://jcenter.bintray.com</url>
         </repository>
     </repositories>
-    <dependencies>
 
+
+    <dependencies>
         <!-- Spring -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -69,6 +70,13 @@
             <groupId>org.eclipse.paho</groupId>
             <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
             <version>1.2.5</version>
+        </dependency>
+
+        <!-- Caching -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>2.9.1</version>
         </dependency>
 
         <!-- Esper CEP -->
@@ -131,21 +139,21 @@
         </dependency>
 
 
-		<!-- IText -->
-		<!-- https://mvnrepository.com/artifact/com.itextpdf/itext7-core -->
-		<dependency>
-			<groupId>com.itextpdf</groupId>
-			<artifactId>itext7-core</artifactId>
-			<version>7.1.10</version>
-			<type>pom</type>
-		</dependency>
+        <!-- IText -->
+        <!-- https://mvnrepository.com/artifact/com.itextpdf/itext7-core -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itext7-core</artifactId>
+            <version>7.1.10</version>
+            <type>pom</type>
+        </dependency>
 
-		<!-- JFree Chart -->
-		<dependency>
-			<groupId>org.jfree</groupId>
-			<artifactId>jfreechart</artifactId>
-			<version>1.5.0</version>
-		</dependency>
+        <!-- JFree Chart -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.0</version>
+        </dependency>
 
         <!--Apache Commons -->
         <dependency>
@@ -320,18 +328,8 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.webjars</groupId>
-                        <artifactId>jquery</artifactId>
-                        <version>2.1.1</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.webjars</groupId>
                         <artifactId>angularjs</artifactId>
-                        <version>1.3.8</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.webjars</groupId>
-                        <artifactId>bootstrap</artifactId>
-                        <version>3.2.0</version>
+                        <version>1.3.17</version>
                     </dependency>
                 </dependencies>
             </plugin>

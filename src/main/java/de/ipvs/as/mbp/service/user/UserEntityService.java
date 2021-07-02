@@ -1,4 +1,4 @@
-package de.ipvs.as.mbp.service;
+package de.ipvs.as.mbp.service.user;
 
 import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.domain.access_control.*;
@@ -283,10 +283,6 @@ public class UserEntityService {
 
     public void requireAdmin() throws MissingAdminPrivilegesException {
         requireAdmin(userService.getLoggedInUser());
-    }
-
-    public void requireAdmin(String userId) throws MissingAdminPrivilegesException {
-        requireAdmin(userService.getForId(userId));
     }
 
     public void requireAdmin(User user) throws MissingAdminPrivilegesException {

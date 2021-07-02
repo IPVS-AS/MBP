@@ -11,6 +11,7 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.config.EnableHypermediaSupport;
+import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
@@ -32,7 +33,7 @@ import java.util.List;
         Constants.ROOT_PACKAGE
 })
 @EnableHypermediaSupport(type = EnableHypermediaSupport.HypermediaType.HAL)
-public class WebServletConfiguration implements WebMvcConfigurer {
+public class WebServletConfiguration extends AbstractSecurityWebApplicationInitializer implements WebMvcConfigurer {
 
     @Autowired
     private ApplicationContext applicationContext;
