@@ -3,6 +3,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y sudo git openssh-server openssh-client nano vim python3 python3-pip python3-venv tmux htop rsyslog && \
+    pip3 install paho-mqtt && \
     apt-get clean -y && \
     useradd -m -U -s /bin/bash mbp  && \
     groupadd wheel && \

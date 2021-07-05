@@ -103,7 +103,7 @@ public class BasicDeviceTest extends BaseDeviceTest {
     }
 
     @Test
-    void deviceRunScript() throws Exception {
+    void deviceRunStartScript() throws Exception {
         Cookie sessionCookie = getSessionCookieForAdmin();
 
         Device deviceObj = this.createNewDevice(device, sessionCookie, "connect-mockdevice");
@@ -113,7 +113,7 @@ public class BasicDeviceTest extends BaseDeviceTest {
                 sessionCookie,
                 "TestOperator",
                 "",
-                new OperatorRoutine("test.sh", testScript)
+                new OperatorRoutine("start.sh", testScript)
         );
 
         // Create sensor
@@ -131,7 +131,7 @@ public class BasicDeviceTest extends BaseDeviceTest {
         CommandOutput commandOutput = device.runCommand("cat /home/mbp/calllog.log");
         assertThat(commandOutput.getStderr()).isEmpty();
         String stdoutString = commandOutput.getStdout();
+        assertThat(stdoutString).contains("Test Script was called");
         System.out.println(stdoutString);
-
     }
 }

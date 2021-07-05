@@ -24,6 +24,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class BaseDeviceTest extends BaseIntegrationTest {
 
+    public OperatorRoutine[] getDummyOperatorRoutines() {
+        return null;
+    }
+
     public Device createNewDevice(IoTDeviceContainer container, Cookie sessionCookie, String name) throws Exception {
         DeviceDTO requestDto = new DeviceDTO();
         requestDto.setName(name);
@@ -82,7 +86,9 @@ public class BaseDeviceTest extends BaseIntegrationTest {
     public void startSensor(Cookie sessionCookie, String sensorId) throws Exception {
         mockMvc.perform(post(RestConfiguration.BASE_PATH + "/start/sensor/" + sensorId)
                 .headers(getMBPAccessHeaderForAdmin())
-                .cookie(sessionCookie))
+                .cookie(sessionCookie)
+                .contentType(REQUEST_CONTENT_TYPE)
+                .content("[]"))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
