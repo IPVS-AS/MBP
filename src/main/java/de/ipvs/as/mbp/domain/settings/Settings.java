@@ -15,6 +15,7 @@ public class Settings {
     private String id = SETTINGS_DOC_ID;
 
     //All setting properties with default values
+    private String senderName = "MBP";
     private BrokerLocation brokerLocation = BrokerLocation.LOCAL;
     private String brokerIPAddress = "127.0.0.1";
     private int brokerPort = 1883;
@@ -44,6 +45,32 @@ public class Settings {
      */
     protected void setId(String ignored) {
         id = SETTINGS_DOC_ID;
+    }
+
+    /**
+     * Returns the sender name that is displayed in messages that are published by the MBP in order to help
+     * receivers of the messages to identify the sender.
+     *
+     * @return The sender name
+     */
+    public String getSenderName() {
+        return senderName;
+    }
+
+    /**
+     * Sets the sender name that is displayed in messages that are published by the MBP in order to help
+     * receivers of the messages to identify the sender.
+     *
+     * @param senderName The sender name to set
+     */
+    public void setSenderName(String senderName) {
+        //Sanity check
+        if ((senderName == null) || (senderName.isEmpty())) {
+            throw new IllegalArgumentException("The sender name must not be null or empty.");
+        }
+
+        //Set sender name
+        this.senderName = senderName;
     }
 
     /**

@@ -33,9 +33,6 @@ import java.util.stream.Collectors;
 @Service
 public class DiscoveryGateway {
 
-    //Suffixes of the topics to use for publishing requests //TODO move to annotation?
-    private static final String TOPIC_SUFFIX_TEST_REQUEST = "/test";
-
     //The publish-subscribe-based messaging service to use
     @Autowired
     private PubSubService pubSubService;
@@ -157,14 +154,14 @@ public class DiscoveryGateway {
 
         //Iterate over all provided request topics
         for (RequestTopic topic : requestTopics) {
-            //Put request topic together
-            String requestTopic = topic.getFullTopic() + TOPIC_SUFFIX_TEST_REQUEST;
+            //Create topic by using the RequestTopic and the suffix as specified by the message body
+            String requestTopic = topic.getFullTopic() + "/" + requestMessageBody.getTopicSuffix();
 
             //Generate a new return topic by using the owner of the request topic
             String returnTopic = pubSubService.generateReturnTopic(topic.getOwner(), "discovery");
 
             //Create new request message from given message body and set return topic accordingly
-            RequestMessage<Q> stageRequestMessage = new RequestMessage<Q>(requestMessageBody).setReturnTopic(returnTopic);
+            RequestMessage<Q> stageRequestMessage = new RequestMessage<>(requestMessageBody).setReturnTopic(returnTopic);
 
             //Create request stage config for this request topic
             RequestStageConfig<RequestMessage<Q>> stageConfig =

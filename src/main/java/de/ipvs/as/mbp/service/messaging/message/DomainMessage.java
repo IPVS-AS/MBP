@@ -143,35 +143,13 @@ public abstract class DomainMessage<T extends DomainMessageBody> {
      * @param messageBody The message body to inspect
      * @return The retrieved type name
      */
-    private String getTypeName(DomainMessageBody messageBody) {
-        //Get class of message body
-        Class<? extends DomainMessageBody> messageBodyClass = messageBody.getClass();
-
-        //Check if annotation is available
-        requireAnnotation(messageBody);
-
-        //Retrieve message type name from annotation
-        return messageBodyClass.getAnnotation(DomainMessageTemplate.class).value();
+    public String getTypeName(DomainMessageBody messageBody) {
+        //Retrieve the message type name from the message body
+        return messageBody.getTypeName();
     }
 
     /**
-     * Checks whether the {@link DomainMessageTemplate} annotation is placed above the class of the given message body.
-     * If this is not the case, an exception will be thrown.
-     *
-     * @param messageBody The message body to inspect
-     */
-    private void requireAnnotation(DomainMessageBody messageBody) {
-        //Get class of message body
-        Class<? extends DomainMessageBody> messageBodyClass = messageBody.getClass();
-
-        //Check if annotation is available
-        if (!messageBodyClass.isAnnotationPresent(DomainMessageTemplate.class)) {
-            throw new IllegalArgumentException(String.format("The class of the message body must be annotated with the %s annotation.", DomainMessageTemplate.class.getName()));
-        }
-    }
-
-    /**
-     * Uses Jackson in ordder to transform the domain messageto a JSON string and returns the result.
+     * Uses Jackson in order to transform the domain messageto a JSON string and returns the result.
      *
      * @return The resulting JSON string
      */

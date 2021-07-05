@@ -24,17 +24,23 @@ import java.util.Optional;
 @Service
 @DependsOn({"applicationPropertiesConfigurer", "gitPropertiesConfigurer"})
 public class SettingsService {
+
     @Autowired
     private SettingsRepository settingsRepository;
 
-    //Auto-injected data
-    @Value("${mqtt_broker.default.location}")
+    /*
+    Auto-injected data
+     */
+    @Value("${mbp.default.sender_name}")
+    private String defaultSenderName;
+
+    @Value("${pubsub_broker.default.location}")
     private String defaultBrokerLocation;
 
-    @Value("${mqtt_broker.default.host}")
+    @Value("${pubsub_broker.default.host}")
     private String defaultBrokerHost;
 
-    @Value("${mqtt_broker.default.port}")
+    @Value("${pubsub_broker.default.port}")
     private String defaultBrokerPort;
 
     @Value("${git.branch}")
@@ -163,6 +169,7 @@ public class SettingsService {
         Settings defaultSettings = new Settings();
 
         //Set fields to default values
+        defaultSettings.setSenderName(defaultSenderName);
         defaultSettings.setBrokerLocation(BrokerLocation.valueOf(defaultBrokerLocation));
         defaultSettings.setBrokerIPAddress(defaultBrokerHost);
         defaultSettings.setBrokerPort(Integer.parseInt(defaultBrokerPort));

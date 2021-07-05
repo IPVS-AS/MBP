@@ -9,6 +9,7 @@ import de.ipvs.as.mbp.service.messaging.dispatcher.listener.JSONMessageListener;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.MessageListener;
 import de.ipvs.as.mbp.service.messaging.dispatcher.listener.StringMessageListener;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
+import de.ipvs.as.mbp.service.messaging.message.types.RequestMessage;
 import de.ipvs.as.mbp.service.messaging.scatter_gather.ScatterGatherRequestBuilder;
 import de.ipvs.as.mbp.service.messaging.topics.ReturnTopicGenerator;
 import de.ipvs.as.mbp.service.settings.SettingsService;

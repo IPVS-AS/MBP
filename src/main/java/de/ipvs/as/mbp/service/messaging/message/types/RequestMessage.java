@@ -1,7 +1,10 @@
 package de.ipvs.as.mbp.service.messaging.message.types;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.ipvs.as.mbp.DynamicBeanProvider;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessage;
 import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
+import de.ipvs.as.mbp.service.settings.SettingsService;
 
 /**
  * Objects of this class represent request messages, i.e. messages that contain data and intent to invoke
@@ -14,9 +17,6 @@ import de.ipvs.as.mbp.service.messaging.message.DomainMessageBody;
  * @param <T> The type of the message body
  */
 public class RequestMessage<T extends DomainMessageBody> extends DomainMessage<T> {
-    //Sender name
-    private static final String senderName = "MBP";
-
     //Topic for reply messages
     private String returnTopic;
 
@@ -59,12 +59,15 @@ public class RequestMessage<T extends DomainMessageBody> extends DomainMessage<T
     }
 
     /**
-     * Returns the fixed sender name of the MBP.
+     * Returns the sender name that is displayed in messages which are published by the MBP in order to make the
+     * MBP identifiable. The sender name is directly retrieved from the settings by using the {@link SettingsService}.
      *
-     * @return The sender name
+     * @return The retrieved sender name
      */
+    @JsonProperty
     public String getSenderName() {
-        return senderName;
+        //Get SettingsService through the DynamicBeanProvider and retrieve the sender name
+        return DynamicBeanProvider.get(SettingsService.class).getSettings().getSenderName();
     }
 
     /**

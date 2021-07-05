@@ -6,7 +6,7 @@ import de.ipvs.as.mbp.service.messaging.message.DomainMessageTemplate;
 /**
  * Request message that is supposed to test the availability of discovery repositories.
  */
-@DomainMessageTemplate(value = "repository_test")
+@DomainMessageTemplate(value = "repository_test", topicSuffix = "test")
 public class RepositoryTestRequest extends DomainMessageBody {
 
     /**

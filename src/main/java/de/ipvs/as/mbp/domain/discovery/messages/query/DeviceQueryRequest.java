@@ -16,7 +16,7 @@ import java.util.List;
  * Furthermore, it can be specified whether asynchronous subscriptions for changes in the result set of the query
  * are supposed to be created on the repositories.
  */
-@DomainMessageTemplate("device_query")
+@DomainMessageTemplate(value = "device_query", topicSuffix = "query")
 public class DeviceQueryRequest extends DomainMessageBody {
     //List of requirements that serve as conditions within the query
     @JsonSerialize(using = DeviceQueryRequirementsSerializer.class)

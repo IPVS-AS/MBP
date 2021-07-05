@@ -9,7 +9,6 @@
                 </h2>
             </div>
             <div class="body">
-                <h2 class="card-inside-title">Default operators</h2>
                 <div class="row clearfix">
                     <div class="col-xs-12">
                         <form ng-submit="ctrl.saveSettings()">
@@ -52,6 +51,17 @@
                                     </div>
                                     <span class="help-block">IP address of the MQTT broker to use</span>
                                 </div>
+                                <h2 class="card-inside-title">Sender name</h2>
+                                <span class="help-block">Please specify the sender name that is supposed to be
+                                    displayed in messages that are published by this application. It may help the
+                                    receivers of messages to identify the sender.</span>
+                                <div class="form-group">
+                                    <div class="form-line">
+                                        <input class="form-control" type="text" placeholder="Sender name"
+                                               ng-model="ctrl.settings.senderName"/>
+                                    </div>
+                                </div>
+
                                 <h2 class="card-inside-title">Demonstration mode</h2>
                                 <span class="help-block">The demo mode allows to test and demonstrate the features
                                 of the MBP without actually deploying operators on real devices.
@@ -108,15 +118,17 @@
                         </span>
                         <form>
                             <div class="form-group align-left">
-                                        <button type="submit" class="btn btn-primary m-t-15 waves-effect" ng-click="ctrl.reinstallTestingComponents()">
-                                            Reinstall Components
-                                        </button>
-                                        <button type="submit" class="btn btn-primary m-t-15 waves-effect" ng-click="ctrl.redeployTestingComponents()">
-                                            Redeploy Components
-                                        </button>
+                                <button type="submit" class="btn btn-primary m-t-15 waves-effect"
+                                        ng-click="ctrl.reinstallTestingComponents()">
+                                    Reinstall Components
+                                </button>
+                                <button type="submit" class="btn btn-primary m-t-15 waves-effect"
+                                        ng-click="ctrl.redeployTestingComponents()">
+                                    Redeploy Components
+                                </button>
                             </div>
                         </form>
-                     </div>
+                    </div>
                 </div>
             </div>
         </div>
