@@ -5,10 +5,12 @@
  */
 app.controller('DeviceTemplateListController',
     ['$scope', '$controller', '$interval', '$timeout',
+        'requestTopicList',
         'deviceTemplateList', 'addDeviceTemplate', 'updateDeviceTemplate', 'deleteDeviceTemplate',
         'locationTemplateList', 'addLocationTemplate', 'updateLocationTemplate', 'deleteLocationTemplate',
         'DiscoveryService', 'NotificationService',
         function ($scope, $controller, $interval, $timeout,
+                  requestTopicList,
                   deviceTemplateList, addDeviceTemplate, updateDeviceTemplate, deleteDeviceTemplate,
                   locationTemplateList, addLocationTemplate, updateLocationTemplate, deleteLocationTemplate,
                   DiscoveryService, NotificationService) {
@@ -44,11 +46,27 @@ app.controller('DeviceTemplateListController',
 
             /**
              * [Public]
+             * Performs a server request in order to test the results that the current device template
+             * produces in a discovery query for a given list of request topics.
+             * @param requestTopics Array of request topic identifiers on which the template is supposed to be tested
+             */
+            function testDeviceTemplate(requestTopics) {
+                alert("hier!");
+                console.log("Topics:");
+                console.log(requestTopics);
+            }
+
+
+            /**
+             * [Public]
              * Shows the device template editor with an animation.
              */
             function showDeviceTemplatesEditor() {
                 //First hide and then show the editor
-                ELEMENT_EDITORS_DEVICE_EDITOR.slideUp().slideDown();
+                ELEMENT_EDITORS_DEVICE_EDITOR.slideUp().slideDown(400, () => {
+                    //Refresh all select pickers after animation completed
+                    $('.selectpicker').selectpicker('refresh').selectpicker("selectAll");
+                });
             }
 
             /**
@@ -526,6 +544,7 @@ app.controller('DeviceTemplateListController',
 
             //Expose functions that are used externally
             angular.extend(vm, {
+                requestTopicList: requestTopicList,
                 deviceTemplateListCtrl: $controller('ItemListController as deviceTemplateListCtrl', {
                     $scope: $scope,
                     list: deviceTemplateList
@@ -576,6 +595,7 @@ app.controller('DeviceTemplateListController',
                 }),
                 mapInitCenter: MAP_INIT_CENTER,
                 mapInitZoom: MAP_INIT_ZOOM,
+                testDeviceTemplate: testDeviceTemplate,
                 showDeviceTemplatesEditor: showDeviceTemplatesEditor,
                 editDeviceTemplate: editDeviceTemplate,
                 saveDeviceTemplate: saveDeviceTemplate,

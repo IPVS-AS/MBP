@@ -1,7 +1,7 @@
 package de.ipvs.as.mbp.service.discovery;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import de.ipvs.as.mbp.domain.discovery.description.DeviceDescriptionSet;
+import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionSet;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.messages.query.DeviceQueryReply;
 import de.ipvs.as.mbp.domain.discovery.messages.query.DeviceQueryRequest;
@@ -50,13 +50,14 @@ public class DiscoveryGateway {
     /**
      * Requests device descriptions matching a given device template from the discovery repositories that are available
      * under a given collection of {@link RequestTopic}s. The device descriptions that are received from the discovery
-     * repositories in response are returned as list of {@link DeviceDescriptionSet}s, containing one set per repository.
+     * repositories in response are returned as list of {@link DeviceDescriptionSet}s, containing one set
+     * per repository.
      *
-     * @param requestTopics  The collection of {@link RequestTopic}s to use for sending the request to the repositories
      * @param deviceTemplate The device template to query device descriptions for
+     * @param requestTopics  The collection of {@link RequestTopic}s to use for sending the request to the repositories
      * @return The resulting list of {@link DeviceDescriptionSet}s
      */
-    public List<DeviceDescriptionSet> getDevicesForTemplate(Collection<RequestTopic> requestTopics, DeviceTemplate deviceTemplate) {
+    public List<DeviceDescriptionSet> getDevicesForTemplate(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
         //Sanity check
         if (deviceTemplate == null) {
             throw new IllegalArgumentException("Device template must not be null.");

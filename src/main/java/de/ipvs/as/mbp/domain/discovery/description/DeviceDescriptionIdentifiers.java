@@ -2,6 +2,8 @@ package de.ipvs.as.mbp.domain.discovery.description;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Objects;
+
 /**
  * Objects of this class collect various identifiers and characteristics of a device within {@link DeviceDescription}s.
  */
@@ -128,5 +130,15 @@ public class DeviceDescriptionIdentifiers {
     public DeviceDescriptionIdentifiers setMacAddress(String macAddress) {
         this.macAddress = macAddress;
         return this;
+    }
+
+    /**
+     * Calculates and returns a hash code for the identifier collection, based on its MAC address.
+     *
+     * @return The resulting hash code
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.macAddress);
     }
 }

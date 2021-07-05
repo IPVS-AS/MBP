@@ -1,8 +1,12 @@
 package de.ipvs.as.mbp.domain.discovery.description;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ipvs.as.mbp.util.InstantFromEpochMilliDeserializer;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -19,7 +23,7 @@ public class DeviceDescription {
     //Keywords
     private Set<String> keywords;
 
-    //Location of the devices
+    //Location of the device description
     private DeviceDescriptionLocation location;
 
     //Device identifiers
@@ -35,6 +39,11 @@ public class DeviceDescription {
     @JsonProperty("ssh")
     private DeviceDescriptionSSHDetails sshDetails;
 
+    //Timestamp indicating the last update of the description
+    @JsonProperty("last_update")
+    @JsonDeserialize(using = InstantFromEpochMilliDeserializer.class)
+    private Instant lastUpdateTimestamp;
+
     /**
      * Creates a new, empty device description.
      */
@@ -43,7 +52,7 @@ public class DeviceDescription {
     }
 
     /**
-     * Returns the name of the device.
+     * Returns the name of the device description.
      *
      * @return The device name
      */
@@ -52,7 +61,7 @@ public class DeviceDescription {
     }
 
     /**
-     * Sets the name of the device.
+     * Sets the name of the device description.
      *
      * @param name The name to set
      * @return The device description
@@ -63,7 +72,7 @@ public class DeviceDescription {
     }
 
     /**
-     * Returns the description of the device.
+     * Returns the description of the device description.
      *
      * @return The description
      */
@@ -72,7 +81,7 @@ public class DeviceDescription {
     }
 
     /**
-     * Sets the description of the device.
+     * Sets the description of the device description.
      *
      * @param description The description to set
      * @return The device description
@@ -83,7 +92,7 @@ public class DeviceDescription {
     }
 
     /**
-     * Returns the keywords of the device.
+     * Returns the keywords of the device description.
      *
      * @return The set of keywords
      */
@@ -92,7 +101,7 @@ public class DeviceDescription {
     }
 
     /**
-     * Sets the keywords of the device.
+     * Sets the keywords of the device description.
      *
      * @param keywords The set of keywords to set
      * @return The device description
@@ -103,7 +112,7 @@ public class DeviceDescription {
     }
 
     /**
-     * Returns the location details of the device.
+     * Returns the location details of the device description.
      *
      * @return The location details
      */
@@ -112,7 +121,7 @@ public class DeviceDescription {
     }
 
     /**
-     * Sets the location details of the device.
+     * Sets the location details of the device description.
      *
      * @param location The location details to set
      * @return The device description
@@ -123,7 +132,7 @@ public class DeviceDescription {
     }
 
     /**
-     * Returns the identifiers collection of the device.
+     * Returns the identifiers collection of the device description.
      *
      * @return The identifiers collection
      */
@@ -132,7 +141,7 @@ public class DeviceDescription {
     }
 
     /**
-     * Sets the identifiers collection of the device.
+     * Sets the identifiers collection of the device description.
      *
      * @param identifiers The identifiers collection to set
      * @return The device description
@@ -143,7 +152,7 @@ public class DeviceDescription {
     }
 
     /**
-     * Returns the capabilities of the device.
+     * Returns the capabilities of the device description.
      *
      * @return The list of capabilities
      */
@@ -152,7 +161,7 @@ public class DeviceDescription {
     }
 
     /**
-     * Sets the capabilities of the device.
+     * Sets the capabilities of the device description.
      *
      * @param capabilities The list of capabilities to set
      * @return The device description
@@ -163,7 +172,7 @@ public class DeviceDescription {
     }
 
     /**
-     * Returns the attachments of the device.
+     * Returns the attachments of the device description.
      *
      * @return The list of attachments
      */
@@ -172,7 +181,7 @@ public class DeviceDescription {
     }
 
     /**
-     * Sets the attachments of the device.
+     * Sets the attachments of the device description.
      *
      * @param attachments The list of attachments to set
      * @return The device description
@@ -183,7 +192,7 @@ public class DeviceDescription {
     }
 
     /**
-     * Returns the SSH details of the device.
+     * Returns the SSH details of the device description.
      *
      * @return The SSH details
      */
@@ -192,13 +201,33 @@ public class DeviceDescription {
     }
 
     /**
-     * Sets the SSH details of the device.
+     * Sets the SSH details of the device description.
      *
      * @param sshDetails The SSH details to set
      * @return The device description
      */
     public DeviceDescription setSshDetails(DeviceDescriptionSSHDetails sshDetails) {
         this.sshDetails = sshDetails;
+        return this;
+    }
+
+    /**
+     * Returns the timestamp indicating when the device description was updated for the last time.
+     *
+     * @return The timestamp
+     */
+    public Instant getLastUpdateTimestamp() {
+        return lastUpdateTimestamp;
+    }
+
+    /**
+     * Sets the timestamp indicating when the device description was updated for the last time.
+     *
+     * @param lastUpdateTimestamp The timestamp to set
+     * @return The device description
+     */
+    public DeviceDescription setLastUpdateTimestamp(Instant lastUpdateTimestamp) {
+        this.lastUpdateTimestamp = lastUpdateTimestamp;
         return this;
     }
 
@@ -217,5 +246,23 @@ public class DeviceDescription {
         if ((identifiers == null) || (that.identifiers == null) || (identifiers.getMacAddress() == null) || (that.identifiers.getMacAddress() == null))
             return false;
         return identifiers.getMacAddress().equalsIgnoreCase(that.identifiers.getMacAddress());
+    }
+
+    /**
+     * Calculates and returns a hash code for the device description, preferably based solely on the MAC address
+     * of the {@link DeviceDescriptionIdentifiers}.
+     *
+     * @return The resulting hash code
+     */
+    @Override
+    public int hashCode() {
+        //Check if the identifier collection is available
+        if (this.identifiers != null) {
+            //Use only the MAC address for calculating the hash code
+            return this.identifiers.hashCode();
+        }
+
+        //MAC address is not available, thus use all fields
+        return Objects.hash(name, description, keywords, location, identifiers, capabilities, attachments, sshDetails, lastUpdateTimestamp);
     }
 }

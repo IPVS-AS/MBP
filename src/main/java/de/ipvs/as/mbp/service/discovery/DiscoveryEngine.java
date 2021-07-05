@@ -1,36 +1,46 @@
 package de.ipvs.as.mbp.service.discovery;
 
 import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionRanking;
+import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionSet;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
+import de.ipvs.as.mbp.service.discovery.processing.DeviceDescriptionProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 
 /**
- * This service provides various discovery-related service functions that may be offered to the user via the REST API.
- * It outsources all messaging-related logic and behaviour to the {@link DiscoveryGateway}.
+ * This components manages the overall discovery process by orchestrating the various involved components and takes
+ * care about the execution of discovery-related tasks.
  */
-@Service
-public class DiscoveryService {
+@Component
+public class DiscoveryEngine {
 
     /*
     Auto-wired components
      */
     @Autowired
-    private DiscoveryEngine discoveryEngine;
+    private DeviceDescriptionProcessor deviceDescriptionProcessor;
 
     @Autowired
     private DiscoveryGateway discoveryGateway;
 
+    /**
+     * Creates the discovery engine.
+     */
+    public DiscoveryEngine() {
+
+    }
 
     /**
-     * Creates and initializes the discovery service.
+     * Initializes the discovery engine.
      */
-    public DiscoveryService() {
+    @PostConstruct
+    public void initialize() {
 
     }
 
@@ -52,26 +62,10 @@ public class DiscoveryService {
             throw new IllegalArgumentException("The request topics must not be null or empty.");
         }
 
-        //Use the discovery engine to retrieve the ranking of device descriptions
-        return discoveryEngine.findDeviceDescriptions(deviceTemplate, requestTopics);
-    }
+        //Use the gateway to find all device descriptions that match the device template
+        List<DeviceDescriptionSet> deviceDescriptionSets = this.discoveryGateway.getDevicesForTemplate(deviceTemplate, requestTopics);
 
-
-    /**
-     * Checks the availability of discovery repositories for a given {@link RequestTopic} and returns
-     * a map (repository name --> device descriptions count) containing the unique names of the repositories
-     * that replied to the request as well as the number of device descriptions they contain.
-     *
-     * @param requestTopic The request topic for which the repository availability is supposed to be tested
-     * @return The resulting map (repository ID --> device descriptions count)
-     */
-    public Map<String, Integer> getAvailableRepositories(RequestTopic requestTopic) {
-        //Sanity check
-        if (requestTopic == null) {
-            throw new IllegalArgumentException("Request topic must not be null.");
-        }
-
-        //Call the corresponding gateway method
-        return discoveryGateway.getAvailableRepositories(requestTopic);
+        //Use the processor to filter, aggregate, score and rank the descriptions
+        return deviceDescriptionProcessor.process(deviceDescriptionSets, deviceTemplate);
     }
 }

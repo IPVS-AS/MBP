@@ -3,6 +3,7 @@ package de.ipvs.as.mbp.web.rest.discovery;
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
+import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
@@ -15,7 +16,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * REST Controller for discovery-related tasks.
@@ -33,6 +37,45 @@ public class RestDiscoveryController {
 
     @Autowired
     private DiscoveryService discoveryService;
+
+    /**
+     * Creates a discovery query from a given device template and sends it as requests to a collection of
+     * {@link RequestTopic}s, given as set of request topic IDs. The resulting replies of the discovery repositories
+     * containing the device descriptions matching the query are then aggregated, processed and returned as response.
+     * This way, it can be tested which results a device template produces before it is actually created.
+     *
+     * @param accessRequestHeader Access request headers
+     * @param deviceTemplate      The device template to test
+     * @param requestTopicIds     The set of request topic IDs
+     * @return
+     * @throws EntityNotFoundException    In case a request topic or user could not be found
+     * @throws MissingPermissionException In case of insufficient permissions to access one of the request topics
+     */
+    @GetMapping("/testDeviceTemplate")
+    @ApiOperation(value = "Transforms a given device template to a discovery query, sends it to a list of request topics and returns the processed responses.", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to access the request topic!"), @ApiResponse(code = 404, message = "Request topic or user not found!")})
+    public ResponseEntity<Void> testDeviceTemplate(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestParam DeviceTemplate deviceTemplate, @RequestParam("requestTopics") Set<String> requestTopicIds) throws EntityNotFoundException, MissingPermissionException {
+        //Get access request
+        ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
+
+        //Set to store the request topics as resulting from the IDs
+        Set<RequestTopic> requestTopics = new HashSet<>();
+
+        //Iterate over all request topic IDs
+        for(String topicId : requestTopicIds){
+            //Get request topic object and add it to the set
+            requestTopics.add(userEntityService.getForIdWithAccessControlCheck(requestTopicRepository, topicId, ACAccessType.READ, accessRequest));
+        }
+
+        discoveryService.ge
+
+
+        //Retrieve information about the available repositories
+        Map<String, Integer> repositoryData = discoveryService.getAvailableRepositories(requestTopic);
+
+        //Return result map
+        return new ResponseEntity<>(repositoryData, HttpStatus.OK);
+    }
 
     /**
      * Retrieves information about the repositories that are available for a given request topic. This way,

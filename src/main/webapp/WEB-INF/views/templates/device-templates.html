@@ -347,7 +347,20 @@
                                     </div>
                                 </div>
                                 <br/>
-                                <button type="submit" class="btn btn-primary m-t-15 waves-effect">Save</button>
+                                <div style="display: flex;">
+                                    <button type="submit" class="btn btn-primary m-t-15 waves-effect">Save</button>
+                                    <button type="button" class="btn bg-blue-grey m-t-15 waves-effect"
+                                            style="margin-left: 30px; "
+                                            ng-click="ctrl.testDeviceTemplate(testRequestTopics);">Test
+                                    </button>
+                                    <span style="width: 200px; margin-left: 10px; margin-top: 11px">
+                                    <select class="form-control selectpicker" title="Request topics"
+                                            data-header="Request topics"
+                                            ng-options="topic.id as (topic.suffix) for topic in ctrl.requestTopicList"
+                                            ng-model="testRequestTopics" multiple>
+                                    </select>
+                                    </span>
+                                </div>
                             </form>
                         </div>
                     </div>

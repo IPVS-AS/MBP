@@ -396,6 +396,9 @@ app.config(['$provide', '$routeProvider', '$locationProvider', '$resourceProvide
                 templateUrl: 'templates/device-templates',
                 controller: 'DeviceTemplateListController as ctrl',
                 resolve: {
+                    requestTopicList: ['HttpService', function (HttpService) {
+                        return HttpService.getAll('discovery/request-topics', 'requestTopics');
+                    }],
                     deviceTemplateList: ['HttpService', function (HttpService) {
                         return HttpService.getAll('discovery/device-templates', 'deviceTemplates');
                     }],

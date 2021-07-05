@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import de.ipvs.as.mbp.domain.discovery.device.requirements.DeviceRequirement;
 import de.ipvs.as.mbp.domain.discovery.messages.query.DeviceQueryRequest;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,20 +27,21 @@ public class DeviceQueryRequirementsSerializer extends JsonSerializer<List<Devic
      */
     @Override
     public void serialize(List<DeviceRequirement> requirementsList, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        //Start array
-        gen.writeStartArray();
+        //Create result JSON array
+        JSONArray resultArray = new JSONArray();
 
-        //Stream through all device requirements and serialize them
-        requirementsList.forEach(r -> {
+        //Stream through all requirements, serialize and add them to the array
+        requirementsList.stream().map(r -> {
             try {
-                //Serialize requirement and add separator
-                gen.writeRaw(r.toQueryRequirement(new JSONObject()).toString());
-                gen.writeRaw(",");
-            } catch (JSONException | IOException ignored) {
+                //Serialize requirement
+                return r.toQueryRequirement(new JSONObject());
+            } catch (JSONException e) {
+                //Add empty JSON object instead
+                return new JSONObject();
             }
-        });
+        }).forEach(resultArray::put);
 
-        //End array
-        gen.writeEndArray();
+        //Write result array to the provided generator
+        gen.writeRawValue(resultArray.toString());
     }
 }
