@@ -43,17 +43,13 @@ app.controller('TestingController',
                 }
 
 
-                angular.forEach(SIMULATOR_LIST, function (value) {
-                    checkSensorReg(String(value));
-                });
-
+                checkSensorReg();
                 getRealSensors();
-
                 ruleListSelection();
 
 
-                $scope.availableSensors = vm.availableSensors;
                 $scope.realSensorList = vm.realSensorList;
+                $scope.availableSensors = vm.availableSensors;
 
 
                 //Refresh test select picker when the modal is opened
@@ -85,20 +81,15 @@ app.controller('TestingController',
              * @param sensorSimulator to be checked
              */
 
-            function checkSensorReg(sensorSimulator) {
-                let registered = "NOT_REGISTERED";
+            function checkSensorReg() {
                 // go through every registered sensor and search for the sensor simulator
-                HttpService.getAll('sensors').then(function (sensorList) {
-                        if (sensorList.length > 0) {
-                            angular.forEach(sensorList, function (sensor) {
-                                if (sensor.name === sensorSimulator) {
-                                    registered = "REGISTERED";
-                                    vm.availableSensors.push(sensorSimulator);
-                                }
-                            })
+                if (sensorList.length > 0) {
+                    angular.forEach(sensorList, function (sensor) {
+                        if (Object.values(SIMULATOR_LIST).indexOf(sensor.name) > -1) {
+                            vm.availableSensors.push(sensor.name);
                         }
-                    }
-                );
+                    })
+                }
             }
 
 
