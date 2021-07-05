@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
+
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.error.EntityAlreadyExistsException;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
@@ -128,6 +130,7 @@ public class RestDeviceController {
     			.setName(requestDto.getName())
     			.setComponentType(requestDto.getComponentType())
     			.setIpAddress(requestDto.getIpAddress())
+				.setPort(requestDto.getPort())
     			.setDate(LocalDateTime.now().toString())
     			.setUsername(requestDto.getUsername())
     			.setPassword(requestDto.getPassword() == null ? null : requestDto.getPassword())

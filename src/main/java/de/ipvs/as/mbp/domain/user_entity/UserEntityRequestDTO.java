@@ -14,11 +14,18 @@ public abstract class UserEntityRequestDTO {
     // - - -
 
     public EnvironmentModel getEnvironmentModelId() {
-		return environmentModelId;
-	}
-    
+        return environmentModelId;
+    }
+
+    public void setEnvironmentModelId(EnvironmentModel environmentModelId) {
+        this.environmentModelId = environmentModelId;
+    }
+
     public List<String> getAccessControlPolicyIds() {
-		return accessControlPolicyIds;
-	}
-    
+        return accessControlPolicyIds;
+    }
+
+    public void setAccessControlPolicyIds(List<String> accessControlPolicyIds) {
+        this.accessControlPolicyIds = accessControlPolicyIds;
+    }
 }
