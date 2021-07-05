@@ -54,7 +54,7 @@ public class RestDiscoveryController {
     @GetMapping("/testDeviceTemplate")
     @ApiOperation(value = "Transforms a given device template to a discovery query, sends it to a list of request topics and returns the processed responses.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to access the request topic!"), @ApiResponse(code = 404, message = "Request topic or user not found!")})
-    public ResponseEntity<Void> testDeviceTemplate(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestParam DeviceTemplate deviceTemplate, @RequestParam("requestTopics") Set<String> requestTopicIds) throws EntityNotFoundException, MissingPermissionException {
+    public ResponseEntity<String> testDeviceTemplate(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestParam DeviceTemplate deviceTemplate, @RequestParam("requestTopics") Set<String> requestTopicIds) throws EntityNotFoundException, MissingPermissionException {
         //Get access request
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
@@ -67,14 +67,10 @@ public class RestDiscoveryController {
             requestTopics.add(userEntityService.getForIdWithAccessControlCheck(requestTopicRepository, topicId, ACAccessType.READ, accessRequest));
         }
 
-        discoveryService.ge
-
-
-        //Retrieve information about the available repositories
-        Map<String, Integer> repositoryData = discoveryService.getAvailableRepositories(requestTopic);
+        //TODO
 
         //Return result map
-        return new ResponseEntity<>(repositoryData, HttpStatus.OK);
+        return new ResponseEntity<>("", HttpStatus.OK);
     }
 
     /**
