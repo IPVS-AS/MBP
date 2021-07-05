@@ -101,6 +101,18 @@ public class DeviceDescriptionSet implements Set<DeviceDescription> {
         return this;
     }
 
+    /**
+     * Adds a given collection of {@link DeviceDescription}s to the set.
+     *
+     * @param deviceDescriptions The collection of device descriptions to add
+     * @return The device description set
+     */
+    public DeviceDescriptionSet addDeviceDescriptions(Collection<DeviceDescription> deviceDescriptions) {
+        //Add the device descriptions
+        this.deviceDescriptions.addAll(deviceDescriptions);
+        return this;
+    }
+
 
     /**
      * Returns the number of elements in this set (its cardinality).  If this
