@@ -15,23 +15,110 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         //URL for server requests
         const URL_SIMULATION_VALUES = ENDPOINT_URI + '/test-details/test-report/';
 
+
+        /**
+         * [Private]
+         * Export the test report modal to pdf.
+         */
+        async function getPDF(report) {
+            const chart = await getChart();
+            await generateReport(chart, report);
+        }
+
+
+        function getChart() {
+            const options = {
+                quality: 0.95
+            };
+
+            return new Promise(function (resolve, reject) {
+                domtoimage.toPng(document.getElementById("chart"), options)
+                    .then(function (blob) {
+                        resolve(blob);
+                    });
+            })
+        }
+
+
+        function getImageDimensions(file) {
+            if (file !== false) {
+                return new Promise(function (resolved, rejected) {
+                    var i = new Image()
+                    i.onload = function () {
+                        resolved({w: i.width, h: i.height})
+                    };
+                    i.src = file
+                })
+
+            }
+        }
+
         /**
          * [Public]
          *
          * Converts the png of the test report into a pdf.
          * @param testId The id of the test to be started
          */
-        function generateReport(table2) {
-            const doc = new jsPDF("p", "mm", "a4");
+        async function generateReport(chart, testReport) {
+            const dimensionChart = await getImageDimensions(chart);
 
-            doc.setFontSize(40);
-            doc.setFontSize(18);
-            doc.text(18, 25, "Test-Report");
-            doc.addImage(table2, 'PNG', 15, 25, 180, 280, "dc", "NONE", 0);
+            var doc = new jsPDF()
 
-            let data = [{id: 1, name: "Peter"}, {id: 2, name: "Chris"}];
-            doc.table(20, 30, data);
-            doc.save('TestReport.pdf');
+            var generalInformation = doc.autoTableHtmlToJson(document.getElementById("generalInformation"));
+            var simulatedSensorInfo = doc.autoTableHtmlToJson(document.getElementById("simulatedSensorInfo"));
+            var realSensorInfo = doc.autoTableHtmlToJson(document.getElementById("informationRealSensors"));
+
+            var pageSize = doc.internal.pageSize
+            var pageWidth = pageSize.width ? pageSize.width : pageSize.getWidth()
+            var generalInfo = doc.splitTextToSize("General information", pageWidth - 35, {})
+            var involvedSim = doc.splitTextToSize("Involved Sensor-Simulators", pageWidth - 35, {})
+            var involvedRealSensors = doc.splitTextToSize("Involved real Sensors", pageWidth - 35, {})
+
+
+            doc.setFontSize(12);
+            doc.setTextColor(128, 128, 128);
+            doc.text(generalInfo, 14, 20)
+            doc.autoTable(generalInformation.columns, generalInformation.data, {
+                margin: {top: 23}, headStyles: {
+                    fillColor: [241, 196, 15],
+                    fontSize: 15,
+                }
+            });
+
+            var header = function (data) {
+                doc.setFontSize(18);
+                doc.setTextColor(40);
+                doc.setFontStyle('normal');
+                //doc.addImage(headerImgData, 'JPEG', data.settings.margin.left, 20, 50, 50);
+                doc.text("Testing Report: " + testReport.name, data.settings.margin.left, 10);
+            };
+
+            var options = {
+                beforePageContent: header,
+                margin: {
+                    top: 80
+                },
+                startY: doc.autoTableEndPosY() + 8,
+                theme: 'striped',
+            };
+
+            doc.setFontSize(12);
+            doc.setTextColor(128, 128, 128);
+
+            if (simulatedSensorInfo !== null) {
+                doc.text(involvedSim, 14, doc.autoTableEndPosY() + 5)
+                doc.autoTable(simulatedSensorInfo.columns, simulatedSensorInfo.data, options);
+            }
+
+            if (realSensorInfo !== null) {
+                doc.text(involvedRealSensors, 14, doc.autoTableEndPosY() + 5)
+                doc.autoTable(realSensorInfo.columns, realSensorInfo.data, options);
+            }
+            doc.addImage(chart, 'PNG', 15, doc.autoTableEndPosY()+5, dimensionChart.w / 6, dimensionChart.h / 6, "chart", "NONE", 0);
+
+            doc.save("table.pdf");
+
+
         }
 
 
@@ -170,7 +257,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
          * Get a list of all simulated sensors included into the test.
          * @param report
          */
-        function getSimulatedSensorList(report){
+        function getSimulatedSensorList(report) {
             $scope.simulatedSensorList = []
             angular.forEach(report.sensor, function (sensor, key) {
                 if (sensor.name.includes("TESTING_")) {
@@ -220,6 +307,7 @@ app.controller('TestReportController', ['$scope', '$controller', 'HttpService', 
         return {
             generateReport: generateReport,
             openReport: $scope.openReport,
+            getPDF: getPDF
 
         }
 

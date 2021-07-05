@@ -743,7 +743,7 @@
                                 </h2>
                             </div>
                             <div class="body">
-                                <table class="table table-hover">
+                                <table id="generalInformation" class="table table-hover">
                                     <thead>
                                     <tr>
                                         <th>Start-Time</th>
@@ -790,7 +790,7 @@
                                 </h2>
                             </div>
                             <div class="body">
-                                <table class="table table-hover" st-table="displayedCollection"
+                                <table id="simulatedSensorInfo" class="table table-hover" st-table="displayedCollection"
                                        st-safe-src="ruleListCtrl.items">
                                     <thead>
                                     <tr>
@@ -832,7 +832,7 @@
                                 </h2>
                             </div>
                             <div class="body">
-                                <table class="table table-hover" st-table="displayedCollection">
+                                <table id="informationRealSensors" class="table table-hover" st-table="displayedCollection">
                                     <thead>
                                     <tr>
                                         <th>Name</th>
@@ -864,7 +864,7 @@
                                 </table>
                             </div>
                         </div>
-                        <div class="card deployment-card"
+                        <div id="chart" class="card deployment-card"
                              ng-if="realSensorList.length > 0 || simulatedSensorList.length > 0">
                             <div class="header">
                                 <i class="material-icons" style="position: absolute">show_chart</i>
@@ -966,12 +966,6 @@
                                         </td>
                                     </tr>
                                     </tbody>
-                                    <tfoot>
-                                    <tr>
-                                        <td class="text-center" st-pagination="" st-items-by-page="10"
-                                            colspan="4"></td>
-                                    </tr>
-                                    </tfoot>
                                 </table>
                             </div>
                         </div>
@@ -1037,13 +1031,11 @@
                                 data-dismiss="modal">
                             Close
                         </button>
-                        <!--
                         <button id="getPDF"
                                 class="btn bg-blue m-t-0 waves-effect"
-                                ng-click="ctrl.getPDF()">
-                            Print to pdf
+                                ng-click="testReportCtrl.getPDF(testReportAnzeige)">
+                            Export as PDF
                         </button>
-                        -->
                     </div>
                 </fieldset>
             </form>
