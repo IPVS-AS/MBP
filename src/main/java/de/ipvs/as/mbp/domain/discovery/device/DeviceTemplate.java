@@ -1,5 +1,6 @@
 package de.ipvs.as.mbp.domain.discovery.device;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ipvs.as.mbp.domain.discovery.device.requirements.DeviceRequirement;
 import de.ipvs.as.mbp.domain.discovery.device.requirements.RequirementsDeserializer;

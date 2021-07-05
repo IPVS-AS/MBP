@@ -1,6 +1,7 @@
 package de.ipvs.as.mbp.domain.discovery.device.requirements.location;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.ipvs.as.mbp.domain.SimpleEntityResolver;
@@ -81,6 +82,7 @@ public class LocationRequirement extends DeviceRequirement {
      *
      * @return The location template
      */
+    @JsonIgnore
     public LocationTemplate getLocationTemplate() {
         return resolveLocationTemplate(this.locationTemplateId);
     }

@@ -7,6 +7,25 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', function (ENDPOI
 
     //URL suffixes for the various requests
     const URL_SUFFIX_TEST_TOPIC = 'getRepositories/';
+    const URL_SUFFIX_TEST_DEVICE_TEMPLATE = 'testDeviceTemplate';
+
+    /**
+     * [Public]
+     * Performs a server request in order to retrieve a ranked representation of device descriptions that match the
+     * requirements of a given device template from discovery repositories that are available under a given collection
+     * of request topics, provided as collection of their IDs. This way, the query results of a device template can
+     * be tested before the template is actually created.
+     *
+     * @param deviceTemplate The device template to test
+     * @param requestTopicIds The set of request topic IDs
+     * @returns {*} The resulting promise of the request
+     */
+    function testDeviceTemplate(deviceTemplate, requestTopicIds) {
+        return HttpService.postRequest(URL_DISCOVERY + URL_SUFFIX_TEST_DEVICE_TEMPLATE, {
+            'deviceTemplate': deviceTemplate,
+            'requestTopics': requestTopicIds
+        });
+    }
 
     /**
      * [Public]
@@ -23,6 +42,7 @@ app.factory('DiscoveryService', ['ENDPOINT_URI', 'HttpService', function (ENDPOI
 
     //Expose public functions
     return {
+        testDeviceTemplate: testDeviceTemplate,
         testRequestTopic: testRequestTopic
     };
 }]);

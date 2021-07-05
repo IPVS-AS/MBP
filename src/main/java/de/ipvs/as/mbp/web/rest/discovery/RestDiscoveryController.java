@@ -3,7 +3,10 @@ package de.ipvs.as.mbp.web.rest.discovery;
 import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
+import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionRanking;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
+import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplateCreateValidator;
+import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplateTestDTO;
 import de.ipvs.as.mbp.domain.discovery.topic.RequestTopic;
 import de.ipvs.as.mbp.error.EntityNotFoundException;
 import de.ipvs.as.mbp.error.MissingPermissionException;
@@ -19,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * REST Controller for discovery-related tasks.
@@ -28,6 +30,9 @@ import java.util.stream.Collectors;
 @RequestMapping(RestConfiguration.BASE_PATH + "/discovery")
 @Api(tags = {"Discovery"})
 public class RestDiscoveryController {
+
+    @Autowired
+    private DeviceTemplateCreateValidator deviceTemplateCreateValidator;
 
     @Autowired
     private RequestTopicRepository requestTopicRepository;
@@ -39,38 +44,47 @@ public class RestDiscoveryController {
     private DiscoveryService discoveryService;
 
     /**
-     * Creates a discovery query from a given device template and sends it as requests to a collection of
-     * {@link RequestTopic}s, given as set of request topic IDs. The resulting replies of the discovery repositories
-     * containing the device descriptions matching the query are then aggregated, processed and returned as response.
-     * This way, it can be tested which results a device template produces before it is actually created.
+     * Retrieves device descriptions that match the requirements of a given {@link DeviceTemplate} from discovery
+     * repositories that are available under a given collection of {@link RequestTopic}s, provided as set
+     * of their IDs. The resulting device descriptions are then processed and and ranked with respect to the scoring
+     * criteria of the device template. The resulting {@link DeviceDescriptionRanking} is subsequently returned as
+     * response. This way, the query results of a device template can be tested before the template is actually created.
      *
-     * @param accessRequestHeader Access request headers
-     * @param deviceTemplate      The device template to test
-     * @param requestTopicIds     The set of request topic IDs
-     * @return
+     * @param accessRequestHeader   Access request headers
+     * @param deviceTemplateTestDTO A DTO containing the device template to test and the set of request topic IDs
+     * @return A response containing the resulting {@link DeviceDescriptionRanking}
      * @throws EntityNotFoundException    In case a request topic or user could not be found
      * @throws MissingPermissionException In case of insufficient permissions to access one of the request topics
      */
-    @GetMapping("/testDeviceTemplate")
-    @ApiOperation(value = "Transforms a given device template to a discovery query, sends it to a list of request topics and returns the processed responses.", produces = "application/hal+json")
-    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 401, message = "Not authorized to access the request topic!"), @ApiResponse(code = 404, message = "Request topic or user not found!")})
-    public ResponseEntity<String> testDeviceTemplate(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestParam DeviceTemplate deviceTemplate, @RequestParam("requestTopics") Set<String> requestTopicIds) throws EntityNotFoundException, MissingPermissionException {
+    @PostMapping("/testDeviceTemplate")
+    @ApiOperation(value = "Retrieves device descriptions that match the requirements of a given device template and processes them to a ranking.", produces = "application/hal+json")
+    @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 400, message = "The device template is invalid!"), @ApiResponse(code = 401, message = "Not authorized to access the request topic!"), @ApiResponse(code = 404, message = "Request topic or user not found!")})
+    public ResponseEntity<DeviceDescriptionRanking> testDeviceTemplate(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestBody DeviceTemplateTestDTO deviceTemplateTestDTO) throws EntityNotFoundException, MissingPermissionException {
+        //Unpack the DTO
+        DeviceTemplate deviceTemplate = deviceTemplateTestDTO.getDeviceTemplate();
+        Set<String> requestTopicIds = deviceTemplateTestDTO.getRequestTopicIds();
+
         //Get access request
         ACAccessRequest accessRequest = ACAccessRequest.valueOf(accessRequestHeader);
 
-        //Set to store the request topics as resulting from the IDs
+        //Validate the device template
+        this.deviceTemplateCreateValidator.validateCreatable(deviceTemplate);
+
+        //Create set for storing the request topics that result from the IDs
         Set<RequestTopic> requestTopics = new HashSet<>();
 
         //Iterate over all request topic IDs
-        for(String topicId : requestTopicIds){
+        for (String topicId : requestTopicIds) {
             //Get request topic object and add it to the set
-            requestTopics.add(userEntityService.getForIdWithAccessControlCheck(requestTopicRepository, topicId, ACAccessType.READ, accessRequest));
+            requestTopics.add(userEntityService.getForIdWithAccessControlCheck(requestTopicRepository, topicId,
+                    ACAccessType.READ, accessRequest));
         }
 
-        //TODO
+        //Retrieve the device descriptions and process them to a ranking
+        DeviceDescriptionRanking ranking = discoveryService.retrieveDeviceDescriptions(deviceTemplate, requestTopics);
 
         //Return result map
-        return new ResponseEntity<>("", HttpStatus.OK);
+        return new ResponseEntity<>(ranking, HttpStatus.OK);
     }
 
     /**

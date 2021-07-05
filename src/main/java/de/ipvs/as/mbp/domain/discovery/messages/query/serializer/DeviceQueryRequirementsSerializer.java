@@ -33,11 +33,10 @@ public class DeviceQueryRequirementsSerializer extends JsonSerializer<List<Devic
         //Stream through all requirements, serialize and add them to the array
         requirementsList.stream().map(r -> {
             try {
-                //Serialize requirement
-                return r.toQueryRequirement(new JSONObject());
+                //Serialize requirement and add the type name
+                return r.toQueryRequirement(new JSONObject()).put("type", r.getTypeName());
             } catch (JSONException e) {
-                //Add empty JSON object instead
-                return new JSONObject();
+                return new JSONObject(); //Use empty JSON object instead
             }
         }).forEach(resultArray::put);
 

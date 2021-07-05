@@ -41,9 +41,8 @@ public class DeviceDescriptionProcessor {
     public DeviceDescriptionRanking process(Collection<DeviceDescriptionSet> deviceDescriptionSets,
                                             DeviceTemplate deviceTemplate) {
         //Sanity checks
-        if ((deviceDescriptionSets == null) || (deviceDescriptionSets.isEmpty()) ||
-                (deviceDescriptionSets.stream().anyMatch(Objects::isNull))) {
-            throw new IllegalArgumentException("The device descriptions must not be null or empty.");
+        if ((deviceDescriptionSets == null) || (deviceDescriptionSets.stream().anyMatch(Objects::isNull))) {
+            throw new IllegalArgumentException("The device descriptions must not be null.");
         } else if (deviceTemplate == null) {
             throw new IllegalArgumentException("The device template must not be null.");
         }

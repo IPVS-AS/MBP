@@ -46,14 +46,34 @@ app.controller('DeviceTemplateListController',
 
             /**
              * [Public]
-             * Performs a server request in order to test the results that the current device template
+             * Performs a server request in order to test the results that the currently edited device template
              * produces in a discovery query for a given list of request topics.
-             * @param requestTopics Array of request topic identifiers on which the template is supposed to be tested
+             * @param requestTopics Array of request topic IDs on which the device template is supposed to be tested
              */
             function testDeviceTemplate(requestTopics) {
-                alert("hier!");
-                console.log("Topics:");
-                console.log(requestTopics);
+                //Retrieve and copy current device template from controller
+                let deviceTemplate = Object.assign({}, vm.addDeviceTemplateCtrl.item);
+
+                //Remove irrelevant fields
+                let fieldsWhitelist = ['id', 'name', 'requirements', 'scoringCriteria'];
+                for (let key in deviceTemplate) {
+                    //Check for own property
+                    if (!deviceTemplate.hasOwnProperty(key)) {
+                        continue;
+                    }
+
+                    //Remove current field if not whitelisted
+                    if (!fieldsWhitelist.includes(key)) {
+                        delete deviceTemplate[key];
+                    }
+                }
+
+                //Perform server request
+                DiscoveryService.testDeviceTemplate(deviceTemplate, requestTopics).then(function (result) {
+                    console.log("Result:");
+                    console.log(result);
+                    //TODO handle validation errors
+                });
             }
 
 
@@ -117,11 +137,8 @@ app.controller('DeviceTemplateListController',
                         $scope.$apply();
                     });
                 } else {
-                    //Create new device template TODO remove callback
-                    vm.addDeviceTemplateCtrl.addItem().then(function () {
-                        console.log("Errors:");
-                        console.log(vm.addDeviceTemplateCtrl.item.errors);
-                    });
+                    //Create new device template
+                    vm.addDeviceTemplateCtrl.addItem();
                 }
             }
 

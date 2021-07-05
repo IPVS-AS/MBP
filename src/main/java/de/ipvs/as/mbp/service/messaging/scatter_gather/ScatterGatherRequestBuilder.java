@@ -211,7 +211,7 @@ public class ScatterGatherRequestBuilder {
         CompletableFuture<Void> overallFuture = combineRequestStages(new HashSet<>(transformedStages));
 
         //Wrap all futures into one request object
-        return new ScatterGatherRequest<R>(overallFuture, transformedStages);
+        return new ScatterGatherRequest<>(overallFuture, transformedStages);
     }
 
     /**

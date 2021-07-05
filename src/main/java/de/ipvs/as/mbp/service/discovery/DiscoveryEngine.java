@@ -54,7 +54,7 @@ public class DiscoveryEngine {
      * @param requestTopics  The collection of request topics to use for querying the discovery repositories
      * @return The resulting ranking of the device descriptions
      */
-    public DeviceDescriptionRanking findDeviceDescriptions(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
+    public DeviceDescriptionRanking retrieveDeviceDescriptions(DeviceTemplate deviceTemplate, Collection<RequestTopic> requestTopics) {
         //Sanity checks
         if (deviceTemplate == null) {
             throw new IllegalArgumentException("The device template must not be null.");
