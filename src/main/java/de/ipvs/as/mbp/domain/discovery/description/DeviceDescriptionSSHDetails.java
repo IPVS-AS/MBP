@@ -1,11 +1,14 @@
 package de.ipvs.as.mbp.domain.discovery.description;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Objects of this class are typically part of {@link DeviceDescription}s and collect data that is required to
  * establish a SSH connection to the described device.
  */
 public class DeviceDescriptionSSHDetails {
     //IP address of the device within the network that is shared with the MBP
+    @JsonProperty("ip_address")
     private String ipAddress;
 
     //Username for SSH login
@@ -15,6 +18,7 @@ public class DeviceDescriptionSSHDetails {
     private String password;
 
     //Private key for SSH login
+    @JsonProperty("private_key")
     private String privateKey;
 
     /**

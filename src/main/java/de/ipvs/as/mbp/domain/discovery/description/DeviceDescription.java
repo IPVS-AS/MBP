@@ -2,6 +2,7 @@ package de.ipvs.as.mbp.domain.discovery.description;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ipvs.as.mbp.domain.discovery.description.deserializer.DeviceDescriptionCapabilitiesDeserializer;
 import de.ipvs.as.mbp.util.InstantFromEpochMilliDeserializer;
 
 import java.time.Instant;
@@ -30,6 +31,7 @@ public class DeviceDescription {
     private DeviceDescriptionIdentifiers identifiers;
 
     //Device capabilities
+    @JsonDeserialize(using = DeviceDescriptionCapabilitiesDeserializer.class)
     private List<DeviceDescriptionCapability> capabilities;
 
     //Device attachments (actuators and sensors)

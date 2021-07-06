@@ -5,7 +5,7 @@ package de.ipvs.as.mbp.domain.discovery.description;
  * consists out of a name, a value of type {@link String}, {@link Double} or {@link Boolean} and an optional flag
  * indicating whether the capability behaves cumulative.
  */
-public class DeviceDescriptionCapability extends DeviceDescriptionIdentifiers {
+public class DeviceDescriptionCapability  {
     private String name;
     private Object value;
     private boolean cumulative = false;

@@ -38,13 +38,13 @@ public class DeviceDescriptionSetValidityFilter implements Predicate<DeviceDescr
             return false;
         }
 
-        //Check whether the referenced device template matches the one of this object
-        if (!deviceDescriptionSet.getDeviceTemplateId().equals(this.deviceTemplate.getId())) {
-            return false;
+        //Check if IDs are available at all
+        if((this.deviceTemplate.getId() == null) || (deviceDescriptionSet.getDeviceTemplateId() == null)){
+            return true;
         }
 
-        //Everything fine
-        return true;
+        //Check whether the referenced device template matches the one of this object
+        return deviceDescriptionSet.getDeviceTemplateId().equals(this.deviceTemplate.getId());
     }
 
     /**

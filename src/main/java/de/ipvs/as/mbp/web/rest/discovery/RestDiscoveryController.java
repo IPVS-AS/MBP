@@ -4,6 +4,7 @@ import de.ipvs.as.mbp.RestConfiguration;
 import de.ipvs.as.mbp.domain.access_control.ACAccessRequest;
 import de.ipvs.as.mbp.domain.access_control.ACAccessType;
 import de.ipvs.as.mbp.domain.discovery.collections.DeviceDescriptionRanking;
+import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplateCreateValidator;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplateTestDTO;
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -59,7 +61,7 @@ public class RestDiscoveryController {
     @PostMapping("/testDeviceTemplate")
     @ApiOperation(value = "Retrieves device descriptions that match the requirements of a given device template and processes them to a ranking.", produces = "application/hal+json")
     @ApiResponses({@ApiResponse(code = 200, message = "Success!"), @ApiResponse(code = 400, message = "The device template is invalid!"), @ApiResponse(code = 401, message = "Not authorized to access the request topic!"), @ApiResponse(code = 404, message = "Request topic or user not found!")})
-    public ResponseEntity<DeviceDescriptionRanking> testDeviceTemplate(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestBody DeviceTemplateTestDTO deviceTemplateTestDTO) throws EntityNotFoundException, MissingPermissionException {
+    public ResponseEntity<List<DeviceDescription>> testDeviceTemplate(@RequestHeader("X-MBP-Access-Request") String accessRequestHeader, @RequestBody DeviceTemplateTestDTO deviceTemplateTestDTO) throws EntityNotFoundException, MissingPermissionException {
         //Unpack the DTO
         DeviceTemplate deviceTemplate = deviceTemplateTestDTO.getDeviceTemplate();
         Set<String> requestTopicIds = deviceTemplateTestDTO.getRequestTopicIds();
@@ -84,7 +86,7 @@ public class RestDiscoveryController {
         DeviceDescriptionRanking ranking = discoveryService.retrieveDeviceDescriptions(deviceTemplate, requestTopics);
 
         //Return result map
-        return new ResponseEntity<>(ranking, HttpStatus.OK);
+        return new ResponseEntity<>(ranking.toList(), HttpStatus.OK);
     }
 
     /**

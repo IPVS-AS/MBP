@@ -13,9 +13,6 @@ public class DeviceDescriptionAttachment {
     @JsonProperty("type")
     private DeviceDescriptionAttachmentType attachmentType;
 
-    //Name of the attachment
-    private String name;
-
     //Model name of the attachment
     @JsonProperty("model")
     private String modelName;
@@ -33,7 +30,7 @@ public class DeviceDescriptionAttachment {
      * @param attachmentType The attachment type to set
      */
     @JsonCreator
-    public DeviceDescriptionAttachment(DeviceDescriptionAttachmentType attachmentType) {
+    public DeviceDescriptionAttachment(@JsonProperty("type") DeviceDescriptionAttachmentType attachmentType) {
         setAttachmentType(attachmentType);
     }
 
@@ -60,26 +57,6 @@ public class DeviceDescriptionAttachment {
 
         //Set field
         this.attachmentType = attachmentType;
-        return this;
-    }
-
-    /**
-     * Returns the name of the attachment.
-     *
-     * @return The attachment name
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Sets the name of the attachment.
-     *
-     * @param name The attachment name to set
-     * @return The attachment
-     */
-    public DeviceDescriptionAttachment setName(String name) {
-        this.name = name;
         return this;
     }
 

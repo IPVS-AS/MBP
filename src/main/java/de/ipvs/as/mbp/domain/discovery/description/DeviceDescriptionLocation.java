@@ -8,7 +8,7 @@ public class DeviceDescriptionLocation {
     private String description;
 
     //Geographic location in lon/lat
-    private DeviceDescriptionGeoPoint point;
+    private DeviceDescriptionGeoPoint coordinates;
 
     /**
      * Creates a new, empty location object.
@@ -42,18 +42,18 @@ public class DeviceDescriptionLocation {
      *
      * @return The geographical location
      */
-    public DeviceDescriptionGeoPoint getPoint() {
-        return point;
+    public DeviceDescriptionGeoPoint getCoordinates() {
+        return coordinates;
     }
 
     /**
      * Sets the geographical location of the device.
      *
-     * @param point The geographical location to set
+     * @param coordinates The geographical location to set
      * @return The location object
      */
-    public DeviceDescriptionLocation setPoint(DeviceDescriptionGeoPoint point) {
-        this.point = point;
+    public DeviceDescriptionLocation setCoordinates(DeviceDescriptionGeoPoint coordinates) {
+        this.coordinates = coordinates;
         return this;
     }
 }

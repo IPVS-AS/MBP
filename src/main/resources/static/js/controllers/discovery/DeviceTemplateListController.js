@@ -24,6 +24,7 @@ app.controller('DeviceTemplateListController',
             const ELEMENT_EDITORS_COLLAPSES = $('#edit-templates-group > div.collapse');
             const ELEMENT_EDITORS_DEVICE = $('#edit-devices');
             const ELEMENT_EDITORS_DEVICE_EDITOR = $('#edit-devices-editor');
+            const ELEMENT_EDITORS_DEVICE_TEST_RESULTS = $('#edit-devices-test-results');
             const ELEMENT_EDITORS_LOCATION = $('#edit-locations');
             const ELEMENT_EDITORS_LOCATION_EDITOR = $('#edit-locations-editor');
 
@@ -68,11 +69,36 @@ app.controller('DeviceTemplateListController',
                     }
                 }
 
+                //Show loading spinner
+                vm.deviceTemplateTestLoading = true;
+
                 //Perform server request
                 DiscoveryService.testDeviceTemplate(deviceTemplate, requestTopics).then(function (result) {
-                    console.log("Result:");
-                    console.log(result);
-                    //TODO handle validation errors
+                    //Expose test results
+                    vm.deviceTemplateTestResults = result || [];
+
+                    //First hide and then show the editor
+                    ELEMENT_EDITORS_DEVICE_TEST_RESULTS.slideUp().slideDown(400, function () {
+                        //Clear displayed validation errors
+                        vm.addDeviceTemplateCtrl.item.errors = {};
+
+                        //After animation completed, scroll to the top of the visible card
+                        $('html, body').animate({
+                            scrollTop: ELEMENT_EDITORS_DEVICE_TEST_RESULTS.offset().top
+                        }, 500);
+                    });
+                }, function (response) {
+                    //An error occurred, check whether validation error messages are available
+                    if ((response.status !== 400) || (!response.hasOwnProperty("responseJSON")) || (!response.responseJSON) ||
+                        (!response.responseJSON.hasOwnProperty("detailMessages")) || (!response.responseJSON.detailMessages)) {
+                        return;
+                    }
+
+                    //Expose validation errors
+                    vm.addDeviceTemplateCtrl.item.errors = response.responseJSON.detailMessages;
+                }).always(() => {
+                    //Hide the loading spinner
+                    vm.deviceTemplateTestLoading = false;
                 });
             }
 
@@ -610,6 +636,8 @@ app.controller('DeviceTemplateListController',
                     deleteItem: deleteLocationTemplate,
                     confirmDeletion: confirmDelete.bind(null, 'location template', locationTemplateList)
                 }),
+                deviceTemplateTestResults: [],
+                deviceTemplateTestLoading: false,
                 mapInitCenter: MAP_INIT_CENTER,
                 mapInitZoom: MAP_INIT_ZOOM,
                 testDeviceTemplate: testDeviceTemplate,

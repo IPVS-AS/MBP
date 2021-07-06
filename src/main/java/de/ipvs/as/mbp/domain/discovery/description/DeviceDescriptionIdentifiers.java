@@ -19,10 +19,11 @@ public class DeviceDescriptionIdentifiers {
     private String manufacturer;
 
     //The name and version of the device's operating system
-    @JsonProperty("osName")
+    @JsonProperty("os_name")
     private String operatingSystemName;
 
     //The MAC address of the device
+    @JsonProperty("mac_address")
     private String macAddress;
 
     /**

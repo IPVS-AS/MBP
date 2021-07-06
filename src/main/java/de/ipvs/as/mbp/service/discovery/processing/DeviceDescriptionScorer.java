@@ -11,7 +11,7 @@ import java.util.Comparator;
  * lists and other collections of {@link DeviceDescription}.
  * The resulting scores are guaranteed to be greater than or equal to zero.
  */
-public class DeviceScorer implements Comparator<DeviceDescription> {
+public class DeviceDescriptionScorer implements Comparator<DeviceDescription> {
     //Device template to use for calculating the scores
     private DeviceTemplate deviceTemplate;
 
@@ -20,7 +20,7 @@ public class DeviceScorer implements Comparator<DeviceDescription> {
      *
      * @param deviceTemplate The device template to use for calculating the scores.
      */
-    public DeviceScorer(DeviceTemplate deviceTemplate) {
+    public DeviceDescriptionScorer(DeviceTemplate deviceTemplate) {
         setDeviceTemplate(deviceTemplate);
     }
 

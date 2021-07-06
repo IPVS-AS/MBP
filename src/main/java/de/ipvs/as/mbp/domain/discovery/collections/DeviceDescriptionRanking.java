@@ -2,9 +2,10 @@ package de.ipvs.as.mbp.domain.discovery.collections;
 
 import de.ipvs.as.mbp.domain.discovery.description.DeviceDescription;
 import de.ipvs.as.mbp.domain.discovery.device.DeviceTemplate;
-import de.ipvs.as.mbp.service.discovery.processing.DeviceScorer;
+import de.ipvs.as.mbp.service.discovery.processing.DeviceDescriptionScorer;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Objects of this class represent queues of {@link DeviceDescription}s that are sorted by the scores that
@@ -13,7 +14,7 @@ import java.util.*;
 public class DeviceDescriptionRanking implements Queue<DeviceDescription> {
 
     //The device scorer to use for calculating the scores based on a device template
-    private DeviceScorer deviceScorer;
+    private DeviceDescriptionScorer deviceDescriptionScorer;
 
     //Priority queue for storing and sorting the descriptions automatically
     private PriorityQueue<DeviceDescription> queue;
@@ -35,7 +36,7 @@ public class DeviceDescriptionRanking implements Queue<DeviceDescription> {
      * @return The device template
      */
     public DeviceTemplate getDeviceTemplate() {
-        return deviceScorer == null ? null : deviceScorer.getDeviceTemplate();
+        return deviceDescriptionScorer == null ? null : deviceDescriptionScorer.getDeviceTemplate();
     }
 
     /**
@@ -51,12 +52,12 @@ public class DeviceDescriptionRanking implements Queue<DeviceDescription> {
         }
 
         //Create new device scorer that uses the given device template
-        this.deviceScorer = new DeviceScorer(deviceTemplate);
+        this.deviceDescriptionScorer = new DeviceDescriptionScorer(deviceTemplate);
 
         //Check whether the current queue is empty
         if ((this.queue == null) || (this.queue.isEmpty())) {
             //No elements, so just create a new queue with the new device scorer
-            this.queue = new PriorityQueue<>(this.deviceScorer);
+            this.queue = new PriorityQueue<>(this.deviceDescriptionScorer);
             return;
         }
 
@@ -64,10 +65,31 @@ public class DeviceDescriptionRanking implements Queue<DeviceDescription> {
         List<DeviceDescription> oldDescriptions = new ArrayList<>(this.queue);
 
         //Create new priority queue with the new device scorer
-        this.queue = new PriorityQueue<>(this.deviceScorer);
+        this.queue = new PriorityQueue<>(this.deviceDescriptionScorer);
 
         //Add all old device descriptions to the new queue again
         this.queue.addAll(oldDescriptions);
+    }
+
+    /**
+     * Returns a list representation of the ranking.
+     *
+     * @return The resulting list of device descriptions
+     */
+    public List<DeviceDescription> toList() {
+        return new ArrayList<>(this.queue);
+    }
+
+    /**
+     * Returns a map (device description --> score) of the device descriptions that are part of the ranking
+     * and the scores that are associated with them.
+     *
+     * @return The map (device description --> score) of device descriptions and their scores
+     */
+    public Map<DeviceDescription, Integer> getScores() {
+        //Stream through the contents of the queue and collect them as map
+        return this.queue.stream()
+                .collect(Collectors.toMap(d -> d, d -> this.deviceDescriptionScorer.scoreDeviceDescription(d)));
     }
 
     /**
